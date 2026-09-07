@@ -74,7 +74,7 @@ Estabelece a hierarquia entre brilho máximo (glow), dados funcionais e carimbos
 | `TextPrimary`      | `#EDEFF0` | Texto corrido de leitura primária e valores preenchidos em formulários.                           |
 | `LabelFunctional`  | `#CADCF2` | Rótulos funcionais em caixa alta (`RAÇA`, `OCUPAÇÃO`, `IDADE`, `SEXO`).                           |
 | `LabelLight`       | `#D8E6F6` | Variação iluminada de rótulos de identificação.                                                   |
-| `Muted`            | `#C2C9CC` | Metadados secundários e textos miúdos do HUD.                                                     |
+| `Muted`            | `#C2C9CC` | Metadados secundários; usar tamanho e peso menores para preservar hierarquia.                     |
 | `MetaStamp`        | `#D5D1E5` | Carimbos técnicos, códigos de auditoria e selos normativos (`CE//SDO`).                           |
 | `MetalType`        | `#B0A8CE` | Tipografia de estilo metal/acid (`GERAL`, `ESQUIVA`, `POSTURA`) — aspecto cromado frio.           |
 | `MetalDeep`        | `#8F82BA` | Sombra ou variação de baixa luz do estilo metal cromado.                                          |
@@ -145,6 +145,77 @@ Gama de advertência, desgaste biológico, loucura e status negativos.
 
 ---
 
+## Tokens Semânticos
+
+Componentes devem escolher primeiro uma função semântica e somente depois sua cor. Tokens brutos da
+paleta não devem ser usados para inventar novos significados em telas isoladas.
+
+| Função | Token base | Uso |
+| --- | --- | --- |
+| Ação primária / ativo | `AcidCyan` | salvar, adicionar, foco e sincronização concluída |
+| Informação | `EnergyBlue` | recursos estáveis, seleção secundária e informação |
+| Perigo / destrutivo | `AcidMagenta` | remover, corrupção, erro e ficha trancada |
+| Atenção física | `NeonCoral` | exaustão, trauma e degradação |
+| Texto primário | `Ice` / `TextPrimary` | valores e conteúdo principal |
+| Texto secundário | `Muted` | metadados que não carregam a informação principal |
+| Borda discreta | `TechCutDark` | campos inativos, tabelas e subdivisões |
+
+Uma cor de recurso pode ser usada em borda, ícone e barra, mas o rótulo textual permanece em `Ice`
+quando a combinação do token com o fundo não alcançar contraste suficiente.
+
+## Tipografia
+
+- **Display:** serifada pesada/itálica apenas em nomes e títulos curtos. Quando uma fonte acid/metal
+  licenciada for adicionada, ela deve ficar empacotada no app e possuir fallback documentado.
+- **Interface:** monoespaçada para telemetria, códigos, números e labels curtos.
+- **Leitura:** sans-serif para história, efeitos, descrições e textos multilinha.
+- Corpo mínimo: 12 sp; texto corrente recomendado: 14–16 sp; labels operacionais: mínimo 11 sp.
+- Caixa alta é reservada a comandos, status e títulos; não usar em parágrafos.
+
+## Hierarquia e Densidade
+
+Cada viewport deve possuir um único foco elétrico dominante. O orçamento visual é:
+
+1. `AcidCyan` para a ação/estado principal;
+2. `AcidMagenta` somente quando houver risco, bloqueio ou destruição;
+3. azuis para informação persistente;
+4. grid e ornamentos sempre abaixo do contraste do conteúdo.
+
+Códigos de barra, selos e cortes diagonais não devem aparecer juntos mais de uma vez no mesmo painel.
+Se o ornamento competir com o nome, valor ou ação, reduza sua opacidade ou remova-o.
+
+## Acessibilidade
+
+- Texto normal deve buscar contraste mínimo de 4,5:1; texto grande, 3:1.
+- Estado nunca depende somente de cor: usar texto (`LOCKED`, `SYNC_OK`), ícone e cor em conjunto.
+- Área interativa mínima de 48 dp.
+- Campos desabilitados continuam legíveis e explicam o estado `FICHA TRANCADA`.
+- Magenta sobre `Void` pode ser usado como texto em opacidade total; não reduzir sua opacidade em
+  mensagens críticas.
+- `StatHeader`, `StatHeaderLight` e `EnergyBlue` não devem ser usados como texto pequeno sobre
+  `Carbon`; ficam restritos a bordas, ícones e barras.
+
+## Estados dos Componentes
+
+| Estado | Borda | Conteúdo | Indicador |
+| --- | --- | --- | --- |
+| Inativo | `TechCutDark` | `TextPrimary` | nenhum |
+| Foco | `AcidCyan` | `Ice` | cursor cyan |
+| Sincronizando | `EnergyBlue` | `Ice` | `LOCAL_DELTA` |
+| Sincronizado | `AcidCyan` | `Ice` | `SYNC_OK` |
+| Trancado | `AcidMagenta` | legível, não editável | cadeado + `LOCKED` |
+| Erro/destrutivo | `AcidMagenta` | `HazardText` | mensagem explícita |
+
+## Layout Responsivo
+
+- Telefones compactos: uma coluna; pares somente para campos curtos.
+- Larguras maiores: conteúdo central limitado e painéis em duas colunas quando não quebrar a ordem
+  canônica da ficha.
+- Listas longas usam blocos repetíveis com ação de remoção no cabeçalho.
+- A ordem das 13 seções segue o modelo canônico e não deve variar entre tamanhos de tela.
+
+---
+
 ## Componentes do Design System
 
 ### HudBackground
@@ -202,7 +273,6 @@ Campo de preenchimento estruturado:
 
 Tokens e componentes fundamentais estão localizados em:
 
-- [SdoDesignSystem.kt](file:///mnt/c/Users/Kinderman/Documents/Projects/SDO-Companion/app/src/main/java/com/kinderman/sdo/ui/SdoDesignSystem.kt)
-- Telas
-  consumidoras: [MainActivity.kt](file:///mnt/c/Users/Kinderman/Documents/Projects/SDO-Companion/app/src/main/java/com/kinderman/sdo/MainActivity.kt)
-
+- [SdoDesignSystem.kt](app/src/main/java/com/kinderman/sdo/ui/SdoDesignSystem.kt)
+- [Telas de personagem](app/src/main/java/com/kinderman/sdo/presentation/character)
+- [Modelo canônico no domínio](app/src/main/java/com/kinderman/sdo/domain/model/Character.kt)

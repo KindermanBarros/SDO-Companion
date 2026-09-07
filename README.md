@@ -7,16 +7,41 @@ técnico, telemetria e geometria neo-brutalista.
 As regras visuais, tokens e componentes estão documentados no
 [`DESIGN_GUIDE.md`](DESIGN_GUIDE.md).
 
-## MVP
+## Funcionalidades
 
 - login único com Google via Firebase Authentication e Credential Manager;
 - perfil Jogador/Mestre carregado do Firestore;
-- ficha baseada em `90 - Modelos/Modelo de Ficha.md`;
-- identidade, recursos, atributos, conhecimentos, proteções, caminho, história e notas;
+- ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
+- todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
+  Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
 - persistência local com Room;
 - sincronização com Cloud Firestore;
-- regras: jogador acessa a própria ficha; mestre acessa todas;
+- exclusão offline-first com sincronização da remoção;
+- jogador edita e remove as próprias fichas enquanto estiverem destrancadas;
+- a Mestre/Historiador acessa, edita, tranca, destranca e remove qualquer ficha;
 - CI com lint, testes e APK de release assinado como artifact no GitHub Actions.
+
+## Arquitetura
+
+O código segue Clean Architecture em camadas e separa regras de negócio de Android/Firebase:
+
+```text
+domain/
+  model/       modelos canônicos da ficha
+  policy/      autorização de leitura, edição, bloqueio e exclusão
+  repository/  contratos de dados e autenticação
+  usecase/     operações da aplicação
+data/
+  auth/        Google Sign-In e perfil Firebase
+  local/       Room, DAO, conversores e migrações
+  repository/  sincronização offline-first com Firestore
+presentation/
+  login/ dashboard/ character/  telas e estado de UI
+ui/            tokens e componentes do design system
+```
+
+As telas dependem dos contratos do domínio. Regras de autorização são aplicadas no domínio,
+novamente no repositório e, como última barreira, em `firebase/firestore.rules`.
 
 ## Configuração Firebase
 
@@ -24,25 +49,29 @@ As regras visuais, tokens e componentes estão documentados no
 2. Ative Authentication > Google e Cloud Firestore.
 3. Baixe `google-services.json` em `app/google-services.json` (o arquivo é ignorado pelo Git).
 4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`.
-5. Crie `users/{uid}` com `role: "MASTER"` apenas para a conta da mestre. Contas comuns devem usar
-   `PLAYER`.
+5. Publique `firebase/firestore.rules`. O primeiro login verificado de `kindbarros@gmail.com` cria ou
+   corrige automaticamente o perfil para `role: "MASTER"`. As outras contas recebem `PLAYER`.
 6. No GitHub, salve o JSON puro ou em Base64 no secret `GOOGLE_SERVICES_JSON`.
 7. Configure os secrets de assinatura `SDO_KEYSTORE_BASE64`,
    `SDO_KEYSTORE_PASSWORD`, `SDO_KEY_ALIAS` e `SDO_KEY_PASSWORD`.
 
 O keystore de release é exclusivo do SDO Companion e nunca deve ser commitado.
 
-> Sem configuração Firebase, o app oferece um modo local de demonstração. Em builds configurados, a
-> role vem exclusivamente de `users/{uid}.role`; as regras impedem que um jogador se promova.
+> Sem configuração Firebase, o app oferece um modo local de demonstração. A autorização remota usa
+> o e-mail verificado da conta bootstrap e `users/{uid}.role`; jogadores não podem se promover.
 
 ## Executar
 
 Abra a raiz do repositório no Android Studio, sincronize o Gradle e rode o módulo `app`. Sem
 `google-services.json`, o app continua utilizável localmente com Room.
 
+## Manutenção de dependências
+
+O Dependabot verifica Gradle e GitHub Actions semanalmente. Atualizações minor/patch são agrupadas;
+majors permanecem isoladas para revisão e devem passar por lint, testes e build assinado antes do merge.
+
 ## Próximas fatias
 
-1. edição completa de poderes, inventário, corpo, órgãos, magias e condições;
-2. campanhas e convites por código;
-3. conflitos de edição e sincronização em tempo real;
-4. testes de DAO, regras do Firestore e Compose UI.
+1. campanhas e convites por código;
+2. resolução explícita de conflitos de edição;
+3. testes instrumentados do Room, regras do Firestore e Compose UI.
