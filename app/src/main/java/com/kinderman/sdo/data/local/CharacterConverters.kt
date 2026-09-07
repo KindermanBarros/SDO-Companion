@@ -50,14 +50,14 @@ class CharacterConverters {
         else Power(name = p.getOrElse(0) { "" }, origin = p.getOrElse(1) { "" }, cost = p.getOrElse(2) { "" }, action = p.getOrElse(3) { "" }, range = p.getOrElse(4) { "" }, duration = p.getOrElse(5) { "" }, limit = p.getOrElse(6) { "" }, effect = p.getOrElse(7) { "" })
     } }
 
-    @TypeConverter fun inventoryToString(value: List<InventoryItem>) = value.joinToString(ROW) { listOf(it.id, it.state, it.name, it.load.toString(), it.durability, it.region, it.effect).row() }
-    @TypeConverter fun stringToInventory(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> InventoryItem(p[0], p.getOrElse(1) { "M" }, p.getOrElse(2) { "" }, p.getOrNull(3)?.toIntOrNull() ?: 0, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrElse(6) { "" }) } }
+    @TypeConverter fun inventoryToString(value: List<InventoryItem>) = value.joinToString(ROW) { listOf(it.id, it.state, it.name, it.load.toString(), it.durability, it.region, it.effect, it.pg.toString(), it.pl.toString()).row() }
+    @TypeConverter fun stringToInventory(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> InventoryItem(p[0], p.getOrElse(1) { "M" }, p.getOrElse(2) { "" }, p.getOrNull(3)?.toIntOrNull() ?: 0, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrElse(6) { "" }, p.getOrNull(7)?.toIntOrNull() ?: 0, p.getOrNull(8)?.toIntOrNull() ?: 0) } }
 
     @TypeConverter fun knowledgesToString(value: List<SpecialKnowledge>) = value.joinToString(ROW) { listOf(it.id, it.name, it.attribute, it.value.toString()).row() }
     @TypeConverter fun stringToKnowledges(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> SpecialKnowledge(p[0], p.getOrElse(1) { "" }, p.getOrElse(2) { "" }, p.getOrNull(3)?.toIntOrNull() ?: 0) } }
 
-    @TypeConverter fun bodyToString(value: List<BodyRegion>) = value.joinToString(ROW) { listOf(it.roll.toString(), it.name, it.failures.toString(), it.damage, it.implants, it.equipment, it.localProtection.toString(), it.generalProtection.toString()).row() }
-    @TypeConverter fun stringToBody(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> BodyRegion(p[0].toIntOrNull() ?: 0, p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrNull(6)?.toIntOrNull() ?: 0, p.getOrNull(7)?.toIntOrNull() ?: 0) } }
+    @TypeConverter fun bodyToString(value: List<BodyRegion>) = value.joinToString(ROW) { listOf(it.roll.toString(), it.name, it.failures.toString(), it.damage, it.implants, it.equipment, it.localProtection.toString(), it.generalProtection.toString(), it.equippedItemIds.joinToString(",")).row() }
+    @TypeConverter fun stringToBody(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> BodyRegion(p[0].toIntOrNull() ?: 0, p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrNull(6)?.toIntOrNull() ?: 0, p.getOrNull(7)?.toIntOrNull() ?: 0, p.getOrElse(8) { "" }.split(',').filter(String::isNotBlank)) } }
 
     @TypeConverter fun organsToString(value: List<OrganStatus>) = value.joinToString(ROW) { listOf(it.id, it.name, it.failures.toString(), it.implant, it.effect).row() }
     @TypeConverter fun stringToOrgans(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> OrganStatus(p[0], p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }) } }

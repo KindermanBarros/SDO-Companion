@@ -14,6 +14,11 @@ data class ItemPart(
     val pl: Int = 0,
 )
 
+data class ItemMaterialPart(
+    val name: String,
+    val material: ItemPart,
+)
+
 data class BuiltItem(
     val name: String,
     val category: String,
@@ -23,6 +28,8 @@ data class BuiltItem(
     val durability: Int,
     val region: String,
     val effect: String,
+    val pg: Int = 0,
+    val pl: Int = 0,
 ) {
     fun toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
         name = name,
@@ -35,6 +42,8 @@ data class BuiltItem(
             effect.takeIf(String::isNotBlank),
             creationCost?.takeIf { initialCreation }?.let { initialCreationMarker(it) },
         ).joinToString("\n"),
+        pg = pg,
+        pl = pl,
     )
 }
 
@@ -49,7 +58,12 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false) = InventoryIt
         summary.takeIf(String::isNotBlank),
         creationCost.toIntOrNull()?.takeIf { initialCreation }?.let(::initialCreationMarker),
     ).joinToString("\n"),
+    pg = protectionValue("PG"),
+    pl = protectionValue("PL"),
 )
+
+private fun CatalogEntry.protectionValue(label: String): Int =
+    Regex("(?:^|[;\\n]\\s*)$label\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull() ?: 0
 
 fun InventoryItem.initialCreationCost(): Int =
     Regex("\\[Criação inicial: (\\d+) PH]").find(effect)?.groupValues?.get(1)?.toIntOrNull() ?: 0

@@ -259,7 +259,7 @@ internal fun ProtectionSection(character: Character, enabled: Boolean, onChange:
     TechPanel(accent = AcidCyan) {
         SectionHeader("06", "Proteções")
         val formulas = linkedMapOf(
-            "Geral" to "10 + EQUIP./ARMADURA",
+            "Geral" to "10 + PG DOS EQUIPAMENTOS",
             "Esquiva" to "PG + AGI + REFLEXOS",
             "Postura" to "10 + CAR + LÁBIA",
             "Mental" to "10 + INT + SANIDADE",

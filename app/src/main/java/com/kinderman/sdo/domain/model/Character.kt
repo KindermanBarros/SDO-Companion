@@ -62,6 +62,8 @@ data class InventoryItem(
     val durability: String = "",
     val region: String = "",
     val effect: String = "",
+    val pg: Int = 0,
+    val pl: Int = 0,
 )
 
 data class BodyRegion(
@@ -73,6 +75,7 @@ data class BodyRegion(
     val equipment: String = "",
     val localProtection: Int = 0,
     val generalProtection: Int = 0,
+    val equippedItemIds: List<String> = emptyList(),
 )
 
 data class OrganStatus(
@@ -175,7 +178,7 @@ data class Character(
     val energyMaximum: Int get() = (energyBase + energy.adjustment).coerceAtLeast(0)
 
     fun protectionBase(name: String): Int = when (name) {
-        "Geral" -> 10
+        "Geral" -> 10 + equippedGeneralProtection
         "Esquiva" -> protectionTotal("Geral") + attributeValue("AGI") + skillValue("AGI", "Reflexos")
         "Postura" -> 10 + attributeValue("CAR") + skillValue("CAR", "Lábia")
         "Mental" -> 10 + attributeValue("INT") + skillValue("INT", "Sanidade")
@@ -187,6 +190,47 @@ data class Character(
         (protectionBase(name) + (protectionAdjustments[name] ?: 0)).coerceAtLeast(0)
 
     fun calculatedProtections(): Map<String, Int> = defaultProtectionNames.associateWith(::protectionTotal)
+
+    val equippedGeneralProtection: Int
+        get() = equippedItems().sumOf { it.pg }
+
+    fun localProtection(region: BodyRegion): Int =
+        region.localProtection + equippedItems(region).sumOf { it.pl }
+
+    fun equippedItems(region: BodyRegion): List<InventoryItem> =
+        inventory.filter { it.id in region.equippedItemIds }
+
+    fun equipItems(regionIndex: Int, itemIds: Set<String>): Character {
+        if (regionIndex !in bodyRegions.indices) return this
+        val validIds = inventory.map { it.id }.toSet()
+        val selectedIds = itemIds.filterTo(linkedSetOf()) { it in validIds }
+        val updatedRegions = bodyRegions.mapIndexed { index, region ->
+            if (index == regionIndex) region.copy(equippedItemIds = selectedIds.toList()) else region
+        }
+        val allEquippedIds = updatedRegions.flatMap { it.equippedItemIds }.toSet()
+        val previouslyAssignedIds = bodyRegions.flatMap { it.equippedItemIds }.toSet()
+        val affectedIds = previouslyAssignedIds + selectedIds
+        val updatedInventory = inventory.map { item ->
+            when {
+                item.id in allEquippedIds -> item.copy(state = "E")
+                item.id in affectedIds && item.state == "E" -> item.copy(state = "M")
+                else -> item
+            }
+        }
+        return copy(bodyRegions = updatedRegions, inventory = updatedInventory)
+    }
+
+    fun removeInventoryItem(itemId: String): Character = copy(
+        inventory = inventory.filterNot { it.id == itemId },
+        bodyRegions = bodyRegions.map { region ->
+            region.copy(equippedItemIds = region.equippedItemIds.filterNot { it == itemId })
+        },
+    )
+
+    private fun equippedItems(): List<InventoryItem> {
+        val equippedIds = bodyRegions.flatMap { it.equippedItemIds }.toSet()
+        return inventory.filter { it.id in equippedIds }
+    }
 
     private fun attributeValue(acronym: String): Int =
         attributes.firstOrNull { it.acronym == acronym }?.value ?: 0
