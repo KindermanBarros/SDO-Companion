@@ -51,10 +51,7 @@ internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (
             { HudTextField("Altura", character.height, it, enabled = enabled) { value -> onChange(character.copy(height = value)) } },
             { HudTextField("Idade", character.age, it, enabled = enabled) { value -> onChange(character.copy(age = value)) } },
         )
-        TwoFields(
-            { HudTextField("Sexo", character.sex, it, enabled = enabled) { value -> onChange(character.copy(sex = value)) } },
-            { HudTextField("Tamanho", character.size, it, enabled = enabled) { value -> onChange(character.copy(size = value)) } },
-        )
+        HudTextField("Sexo", character.sex, enabled = enabled) { value -> onChange(character.copy(sex = value)) }
         TwoFields(
             { IntegerField("Nível", character.level, enabled, it) { value -> onChange(character.copy(level = value.coerceAtLeast(1))) } },
             { IntegerField("Dinheiro (E$)", character.money, enabled, it) { value -> onChange(character.copy(money = value)) } },
