@@ -20,7 +20,15 @@ jobs:
           gradle-version: '8.9'
       - name: Restore Firebase config
         if: ${{ env.GOOGLE_SERVICES_JSON != '' }}
-        run: echo "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
+        shell: bash
+        run: |
+          if [[ "$GOOGLE_SERVICES_JSON" == \{* ]]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          else
+            printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
+          fi
+          jq -e '.project_info.project_id and .client[0].client_info.android_client_info.package_name' \
+            app/google-services.json > /dev/null
       - run: gradle lintDebug testDebugUnitTest assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
