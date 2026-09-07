@@ -2,144 +2,207 @@
 
 ## Direção
 
-O SDO Companion combina **Cyberpunk / Sci-Fi HUD**, **FUI operacional** e
-**Acid Graphics / Neo-Brutalismo Digital**. A interface deve parecer um artefato
-de campo: técnica, hostil, legível e deliberadamente imperfeita.
+O SDO Companion combina **Cyberpunk / Sci-Fi HUD**, **FUI operacional** e **Acid Graphics /
+Neo-Brutalismo Digital**. A interface deve parecer um artefato de campo: técnica, hostil, legível e
+deliberadamente imperfeita.
 
-A base é utilitária e monoespaçada. O contraste vem de títulos editoriais
-agressivos, cor ácida e sinais gráficos associados a telemetria, conformidade,
-arquivos classificados e alertas.
+A base é utilitária e monoespaçada sobre um canvas escuro e profundo. O contraste vem de títulos
+editoriais agressivos, brilho elétrico (Acid Cyan), alertas críticos em magenta e coral, e sinais
+gráficos associados a telemetria, conformidade, arquivos classificados e contenção de dados.
+
+---
 
 ## Princípios
 
-1. **Dados antes de decoração.** Todo detalhe visual deve organizar, identificar
-   estado ou reforçar hierarquia.
-2. **Contraste antagônico.** Tipografia expressiva convive com legendas técnicas,
-   números tabulares e componentes de terminal.
-3. **Geometria tensionada.** Cortes diagonais substituem cantos arredondados
-   convencionais; linhas e barras criam direção.
-4. **Ácido com disciplina.** Verde e laranja são sinais, não fundos decorativos.
-5. **Grunge controlado.** Ruído vem de grid, códigos, abreviações e repetição,
-   mantendo leitura e toque acessíveis.
+1. **Dados antes de decoração.** Todo detalhe visual deve organizar, identificar estado ou reforçar
+   hierarquia operacional.
+2. **Contraste antagônico.** Tipografia expressiva convive com legendas técnicas, números tabulares
+   e componentes de terminal de alta densidade.
+3. **Geometria tensionada.** Cortes diagonais (`CutCornerShape`) substituem cantos arredondados
+   convencionais; linhas guias e divisores criam direção vetorial.
+4. **Cromática funcional disciplinada.** O elétrico **Acid Cyan (`#30C0B7`)** lidera ações, seleções
+   e conexões ativas; o **Acid Magenta (`#EE227D`)** e o **Neon Coral (`#FD8083`)** comunicam dano,
+   risco e colapso psicológico.
+5. **HUD Grid estratificado.** O ruído visual é gerado por malhas milimetradas de duas densidades,
+   carimbos normativos, códigos de barra e índices seriais.
 
-## Paleta
+---
 
-| Token  | Hex       | Uso                                    |
-|--------|-----------|----------------------------------------|
-| Void   | `#090B0B` | fundo global                           |
-| Carbon | `#121515` | campos e células                       |
-| Panel  | `#191D1C` | painéis elevados                       |
-| Grid   | `#313936` | grid, divisores e bordas neutras       |
-| Acid   | `#D7FF38` | ação primária, seleção e identificação |
-| Signal | `#FF5A36` | risco, alterações locais e alertas     |
-| Cyan   | `#57E6DE` | sincronização, integridade e proteção  |
-| Ice    | `#DCE5DF` | texto principal                        |
-| Muted  | `#89938E` | metadados e texto secundário           |
+## Sistema de Cores (Paleta Operacional)
 
-Use no máximo uma cor de sinal dominante por painel. `Acid` identifica ações
-e estrutura; `Signal` nunca deve ser usado como confirmação positiva.
+### 1. Fundo de Tela e Superfícies Estruturais (Dark Canvas)
 
-## Tipografia
+Criam a escuridão profunda do terminal digital sem recorrer ao preto puro, garantindo altíssimo
+contraste com menor fadiga visual e suporte a hierarquias de contenção.
 
-- **Display:** serifada, preta e itálica, comprimida visualmente. É o espaço
-  reservado para a futura fonte licenciada de inspiração metal/black-metal.
-- **Interface:** monoespaçada em caixa alta.
-- **Telemetria:** monoespaçada, pequena e com tracking amplo.
-- Nomes de campos são diretos; metadados podem usar `//`, `.`, códigos e
-  índices: `PLAYER_FILE // LIVE`, `ID.A3F901`, `LV.04`.
-- Não usar a tipografia display em parágrafos ou valores críticos.
+| Token              | Hex       | Função e Aplicação                                                                    |
+|--------------------|-----------|---------------------------------------------------------------------------------------|
+| `Void`             | `#040D1B` | Fundo absoluto da ficha e canvas primário do terminal.                                |
+| `VoidDeep`         | `#061424` | Fundo secundário para variações de profundidade e contraste suave.                    |
+| `Panel`            | `#191B1C` | Fundo de cartões primários e blocos estruturais de dados.                             |
+| `ContainmentPanel` | `#1A060F` | Moldura da foto em pixel art e blocos de contenção de dados instáveis/perigosos.      |
+| `ArcanePanel`      | `#261E3C` | Painel especial de alta hierarquia (cartões de linhagem mística ou perícias arcanas). |
+| `MysticPanel`      | `#3B0855` | Destaque profundo para entidades transcendentes e grimórios.                          |
+| `Carbon`           | `#132B49` | Fundo interno de tabelas de atributos, inputs e áreas preenchíveis.                   |
+| `CarbonAlt`        | `#183451` | Variação de fundo para células ativas ou campos selecionados.                         |
 
-## Geometria e espaçamento
+---
+
+### 2. Malha Técnica, Divisores e Wireframes (HUD Grid)
+
+Estruturam a diagramação técnica, as linhas de mira e a malha vetorial do sistema.
+
+| Token              | Hex       | Função e Aplicação                                                                      |
+|--------------------|-----------|-----------------------------------------------------------------------------------------|
+| `Grid`             | `#383B3D` | Grade milimetrada de fundo (linhas menores/secundárias a cada 12 dp).                   |
+| `GridGuide`        | `#595F61` | Linhas guias principais da malha técnica (linhas a cada 48 dp).                         |
+| `WireframeNeutral` | `#7B8285` | Molduras neutras, barras inativas de código de barras e contornos de caixas de seleção. |
+| `WireframeLight`   | `#9BA3A8` | Ícones utilitários inativos e marcações técnicas auxiliares.                            |
+| `TechCutDark`      | `#274D7D` | Divisores de tabelas e contornos funcionais de células.                                 |
+| `TechCut`          | `#2C5784` | Setas de navegação (colunas de triângulos) e separadores de bloco.                      |
+| `TechCutCyan`      | `#498099` | Faixas diagonais de corte técnico em cabeçalhos de seção.                               |
+
+---
+
+### 3. Tipografia e Hierarquia de Leitura
+
+Estabelece a hierarquia entre brilho máximo (glow), dados funcionais e carimbos de auditoria.
+
+| Token              | Hex       | Função e Aplicação                                                                                |
+|--------------------|-----------|---------------------------------------------------------------------------------------------------|
+| `Ice` / `TextGlow` | `#FCFCFD` | Texto de primeiro plano com brilho máximo (nome do personagem, totais numéricos, valores vitais). |
+| `TextPrimary`      | `#EDEFF0` | Texto corrido de leitura primária e valores preenchidos em formulários.                           |
+| `LabelFunctional`  | `#CADCF2` | Rótulos funcionais em caixa alta (`RAÇA`, `OCUPAÇÃO`, `IDADE`, `SEXO`).                           |
+| `LabelLight`       | `#D8E6F6` | Variação iluminada de rótulos de identificação.                                                   |
+| `Muted`            | `#C2C9CC` | Metadados secundários e textos miúdos do HUD.                                                     |
+| `MetaStamp`        | `#D5D1E5` | Carimbos técnicos, códigos de auditoria e selos normativos (`CE//SDO`).                           |
+| `MetalType`        | `#B0A8CE` | Tipografia de estilo metal/acid (`GERAL`, `ESQUIVA`, `POSTURA`) — aspecto cromado frio.           |
+| `MetalDeep`        | `#8F82BA` | Sombra ou variação de baixa luz do estilo metal cromado.                                          |
+
+---
+
+### 4. Módulos de Sistema, Energia e Arcano (Tech Blues & Cyans)
+
+Cores elétricas e dinâmicas para nós ativos, telemetria vital e fluxos energéticos.
+
+| Token               | Hex       | Função e Aplicação                                                                                |
+|---------------------|-----------|---------------------------------------------------------------------------------------------------|
+| `AcidCyan` (`Acid`) | `#30C0B7` | Elemento elétrico de maior destaque: nós ativos, mira do HUD, conexões de rede e ações primárias. |
+| `EnergyBlue`        | `#5690DA` | Preenchimento de barras de energia, slots de magia/mana e destaques de seleção.                   |
+| `EnergyLight`       | `#5E9CDE` | Variação iluminada de energia e botões de ação secundária.                                        |
+| `AuraBlue`          | `#91B6E6` | Gradientes luminosos internos para barras de progresso e auras de perícias místicas.              |
+| `AuraLight`         | `#9CC1EA` | Pico luminoso de gradientes de barras arcanas.                                                    |
+| `StatHeader`        | `#3B6FB0` | Cabeçalhos operacionais dos blocos de estatísticas vitais (`SANIDADE`).                           |
+| `StatHeaderLight`   | `#407AB7` | Cabeçalhos de blocos vitais primários (`VIDA`, `DESTINO`).                                        |
+| `ArcanePassive`     | `#6E5BA2` | Indicadores de estados arcanos passivos ou esferas de atributos latentes.                         |
+| `ArcaneLatent`      | `#483B6D` | Fundo de receptáculos de poder arcano latente.                                                    |
+
+---
+
+### 5. Alertas, Dano e Tensão Psicológica (Acid Pinks & Corais)
+
+Gama de advertência, desgaste biológico, loucura e status negativos.
+
+| Token                    | Hex       | Função e Aplicação                                                                                    |
+|--------------------------|-----------|-------------------------------------------------------------------------------------------------------|
+| `AcidMagenta` (`Signal`) | `#EE227D` | Destaque agressivo para avisos críticos, valores de **Corrupção Divina**, efeitos negativos e ameaça. |
+| `NeonCoral`              | `#FD8083` | Marcador de perda iminente de postura, medidor de **Exaustão** e alertas de dano recente.             |
+| `PenaltyPink`            | `#D85E99` | Etiquetas de penalidade e subtotais de degradação.                                                    |
+| `StressPink`             | `#E59BBA` | Sub-barras de estresse mental e destaques intermediários de aflição.                                  |
+| `HostileHeader`          | `#852467` | Cabeçalhos de blocos hostis, status de insanidade e condições de penalidade grave.                    |
+| `InsanityPink`           | `#A84876` | Indicadores de surto ou colapso cognitivo iminente.                                                   |
+| `DamageTrack`            | `#773153` | Fundo vazio (trilha esgotada) de barras de dano acumulado ou sangramento/ferimento.                   |
+| `DamageTrackDeep`        | `#46192F` | Fundo profundo de marcadores de ferimento crítico.                                                    |
+| `HazardText`             | `#F2D1DD` | Contraste tipográfico sobre superfícies carmesim e rótulos de itens de risco extremo.                 |
+
+---
+
+## Mapeamento de Recursos Vitais
+
+| Recurso       | Cor Ativa / Valor             | Cor da Trilha / Fundo         | Semântica                                 |
+|---------------|-------------------------------|-------------------------------|-------------------------------------------|
+| **VIDA**      | `StatHeaderLight` (`#407AB7`) | `DamageTrack` (`#773153`)     | Integridade biológica monitorada          |
+| **SANIDADE**  | `StatHeader` (`#3B6FB0`)      | `DamageTrack` (`#773153`)     | Estabilidade psíquica / telemetria mental |
+| **ARCANO**    | `AuraBlue` (`#91B6E6`)        | `ArcaneLatent` (`#483B6D`)    | Receptáculo místico de alta intensidade   |
+| **ENERGIA**   | `EnergyBlue` (`#5690DA`)      | `TechCutDark` (`#274D7D`)     | Capacidade motora e reserva de ativação   |
+| **DESTINO**   | `AcidCyan` (`#30C0B7`)        | `TechCutDark` (`#274D7D`)     | Fio condutor e sorte operacional          |
+| **EXAUSTÃO**  | `NeonCoral` (`#FD8083`)       | `DamageTrack` (`#773153`)     | Degradação física e proximidade de falha  |
+| **CORRUPÇÃO** | `AcidMagenta` (`#EE227D`)     | `DamageTrackDeep` (`#46192F`) | Contaminação divina / anomalia letal      |
+
+---
+
+## Geometria e Espaçamento
 
 - Grid-base: **4 dp**.
 - Ritmo principal: 8, 12, 16 e 24 dp.
 - Área mínima de toque: **48 dp**.
-- Painéis: `CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp)`.
-- Campos: cortes menores, nunca pill-shaped.
-- Bordas: 1 dp; use 2 dp apenas em foco crítico.
-- O grid de fundo usa linhas menores a cada 12 dp e linhas principais a cada
-  48 dp.
+- Painéis principais: `CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp)`.
+- Cards de personagem: `CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp)`.
+- Células e inputs: `CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp)`.
+- Malha técnica de fundo:
+    - Linhas menores a cada 12 dp em `Grid` (`#383B3D`, alpha `0.16f`).
+    - Linhas mestras a cada 48 dp em `GridGuide` (`#595F61`, alpha `0.40f`).
 
-## Componentes
+---
+
+## Componentes do Design System
 
 ### HudBackground
 
-Canvas global preto com grid milimetrado. Não colocar outro grid dentro de
-cards; isso reduz a legibilidade.
+Canvas de fundo `Void` (`#040D1B`) com grade vetorial milimetrada em duas densidades (`Grid` e
+`GridGuide`). Cria a sensação tátil de um display CRT/OLED de campo.
 
 ### TechPanel
 
-Contêiner principal com fundo `Panel`, borda de sinal e cortes diagonais.
-Agrupa uma unidade semântica completa.
+Contêiner estrutural com fundo `Panel` (`#191B1C`, 96% opacidade), corte diagonal chanfrado e borda
+com a cor de acento do subsistema. Suporta acentos em `AcidCyan`, `HostileHeader`, `ArcanePanel` ou
+`TechCutDark`.
 
 ### SectionHeader
 
-Índice ácido + título + linha técnica com três cortes de alerta. Seções devem
-manter numeração estável dentro da ficha.
+Elemento composto por:
+
+1. Emblema chanfrado em `AcidCyan` com texto `Void`.
+2. Título em caixa alta em `Ice` (`#FCFCFD`).
+3. Linha vetorial de divisão em `TechCutCyan` (`#498099`) finalizada com três cortes de alerta
+   diagonal em `AcidMagenta` (`#EE227D`).
 
 ### TelemetryTag
 
-Estado curto, em caixa alta. Exemplos:
+Indicador de status compacto com borda técnica translúcida.
 
-- `SYNC_OK` em Cyan;
-- `LOCAL_DELTA` em Signal;
-- `PLAYER_ACCESS` em Acid.
+- Conexões e sincronização: `AcidCyan` (`SYNC_OK`, `PLAYER_ACCESS`).
+- Alertas e deltas locais: `AcidMagenta` / `NeonCoral` (`LOCAL_DELTA`, `AUTH_GATE`).
+- Metadados de nível: `NeonCoral` (`LV.01`).
+- Classes de controle: `MetalType` (`PROFILE.P`, `OVERRIDE.M`).
 
 ### Barcode
 
-Identificador gráfico derivado de um ID estável. É assinatura visual, não
-substitui o texto do identificador e não deve ser usado como QR code.
+Assinatura gráfica derivativa com barras neutras em `WireframeNeutral` (`#7B8285`) intercaladas com
+estrias de sinal em `AcidMagenta` (`#EE227D`).
 
 ### ComplianceMark
 
-Marca ficcional `CE//SDO`; comunica integridade do arquivo e reforça a FUI.
-Nunca imitar selos oficiais de segurança ou certificações reais.
+Carimbo técnico ficcional `CE//SDO` em `AcidCyan` acompanhado de legenda de conformidade ativa em
+`MetaStamp` (`#D5D1E5`).
 
 ### HudTextField
 
-Campo escuro, recorte técnico, borda Acid no foco. Rótulo sempre em caixa alta.
-Erros ficam abaixo do campo em Signal e devem explicar a correção.
+Campo de preenchimento estruturado:
 
-## Estados
+- Fundo: `Carbon` (`#132B49`).
+- Borda inativa: `TechCutDark` (`#274D7D`).
+- Borda ativa / cursor: `AcidCyan` (`#30C0B7`).
+- Rótulo inativo: `LabelFunctional` (`#CADCF2`).
+- Texto preenchido: `Ice` (`#FCFCFD`) e `TextPrimary` (`#EDEFF0`).
 
-| Estado          | Tratamento                      |
-|-----------------|---------------------------------|
-| normal          | Grid/Muted                      |
-| foco e ação     | Acid                            |
-| sincronizado    | Cyan + `SYNC_OK`                |
-| alteração local | Signal + `LOCAL_DELTA`          |
-| erro            | borda Signal + mensagem textual |
-| desabilitado    | Muted com contraste reduzido    |
+---
 
-Cor nunca é o único sinal: sempre combinar com texto, ícone ou padrão.
+## Implementação Técnica
 
-## Conteúdo e voz
+Tokens e componentes fundamentais estão localizados em:
 
-A linguagem é curta, operacional e em português. Termos ficcionais podem
-acompanhar um significado reconhecível:
-
-- `SALVAR // SINCRONIZAR`;
-- `ROOM_LOCAL → FIRESTORE_REMOTE`;
-- `MEMÓRIA DE CAMPO` para história;
-- `MATRIZ DE PROTEÇÃO` para defesas.
-
-Evite frases longas em caixa alta. Textos explicativos usam sentence case.
-
-## Acessibilidade
-
-- Contraste mínimo WCAG AA para informações essenciais.
-- Não reduzir textos operacionais abaixo de 11 sp.
-- Respeitar escala de fonte e rolagem vertical.
-- Ícones interativos precisam de descrição.
-- Animações futuras devem respeitar redução de movimento.
-- O estilo metal aparece somente em títulos; dados permanecem monoespaçados e
-  legíveis.
-
-## Implementação
-
-Tokens e componentes estão em
-`app/src/main/java/com/kinderman/sdo/ui/SdoDesignSystem.kt`.
-Não duplicar cores ou formas nas telas. Novos componentes devem ser construídos
-a partir de `HudBackground`, `TechPanel`, `SectionHeader`,
-`TelemetryTag`, `Barcode` e `HudTextField`.
+- [SdoDesignSystem.kt](file:///mnt/c/Users/Kinderman/Documents/Projects/SDO-Companion/app/src/main/java/com/kinderman/sdo/ui/SdoDesignSystem.kt)
+- Telas
+  consumidoras: [MainActivity.kt](file:///mnt/c/Users/Kinderman/Documents/Projects/SDO-Companion/app/src/main/java/com/kinderman/sdo/MainActivity.kt)
 

@@ -11,7 +11,9 @@ class SdoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         runCatching { FirebaseApp.initializeApp(this) }
-        val db = Room.databaseBuilder(this, AppDatabase::class.java, "sdo.db").fallbackToDestructiveMigration().build()
+        val db = Room.databaseBuilder(this, AppDatabase::class.java, "sdo.db")
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
         repository = CharacterRepository(db.characterDao())
     }
 }

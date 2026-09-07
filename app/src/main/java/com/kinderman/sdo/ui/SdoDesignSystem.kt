@@ -39,28 +39,75 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-val Void = Color(0xFF090B0B)
-val Carbon = Color(0xFF121515)
-val Panel = Color(0xFF191D1C)
-val Grid = Color(0xFF313936)
-val Acid = Color(0xFFD7FF38)
-val Signal = Color(0xFFFF5A36)
-val Ice = Color(0xFFDCE5DF)
-val Muted = Color(0xFF89938E)
-val Cyan = Color(0xFF57E6DE)
+// --- Fundo de Tela e Superfícies Estruturais (Dark Canvas) ---
+val Void = Color(0xFF040D1B)
+val VoidDeep = Color(0xFF061424)
+val Panel = Color(0xFF191B1C)
+val ContainmentPanel = Color(0xFF1A060F)
+val ArcanePanel = Color(0xFF261E3C)
+val MysticPanel = Color(0xFF3B0855)
+val Carbon = Color(0xFF132B49)
+val CarbonAlt = Color(0xFF183451)
+
+// --- Malha Técnica, Divisores e Wireframes (HUD Grid) ---
+val Grid = Color(0xFF383B3D)
+val GridGuide = Color(0xFF595F61)
+val WireframeNeutral = Color(0xFF7B8285)
+val WireframeLight = Color(0xFF9BA3A8)
+val TechCutDark = Color(0xFF274D7D)
+val TechCut = Color(0xFF2C5784)
+val TechCutCyan = Color(0xFF498099)
+
+// --- Tipografia e Hierarquia de Leitura ---
+val Ice = Color(0xFFFCFCFD)
+val TextPrimary = Color(0xFFEDEFF0)
+val LabelFunctional = Color(0xFFCADCF2)
+val LabelLight = Color(0xFFD8E6F6)
+val Muted = Color(0xFFC2C9CC)
+val MetaStamp = Color(0xFFD5D1E5)
+val MetalType = Color(0xFFB0A8CE)
+val MetalDeep = Color(0xFF8F82BA)
+
+// --- Módulos de Sistema, Energia e Arcano (Tech Blues & Cyans) ---
+val AcidCyan = Color(0xFF30C0B7)
+val Acid = AcidCyan
+val Cyan = AcidCyan
+val EnergyBlue = Color(0xFF5690DA)
+val EnergyLight = Color(0xFF5E9CDE)
+val AuraBlue = Color(0xFF91B6E6)
+val AuraLight = Color(0xFF9CC1EA)
+val StatHeader = Color(0xFF3B6FB0)
+val StatHeaderLight = Color(0xFF407AB7)
+val ArcanePassive = Color(0xFF6E5BA2)
+val ArcaneLatent = Color(0xFF483B6D)
+
+// --- Alertas, Dano e Tensão Psicológica (Acid Pinks & Corais) ---
+val AcidMagenta = Color(0xFFEE227D)
+val Signal = AcidMagenta
+val NeonCoral = Color(0xFFFD8083)
+val PenaltyPink = Color(0xFFD85E99)
+val StressPink = Color(0xFFE59BBA)
+val HostileHeader = Color(0xFF852467)
+val InsanityPink = Color(0xFFA84876)
+val DamageTrack = Color(0xFF773153)
+val DamageTrackDeep = Color(0xFF46192F)
+val HazardText = Color(0xFFF2D1DD)
 
 private val hudColors = darkColorScheme(
     primary = Acid,
     onPrimary = Void,
-    secondary = Signal,
+    secondary = EnergyBlue,
     onSecondary = Void,
+    tertiary = Signal,
+    onTertiary = Void,
     background = Void,
     onBackground = Ice,
     surface = Panel,
     onSurface = Ice,
     surfaceVariant = Carbon,
-    onSurfaceVariant = Muted,
+    onSurfaceVariant = LabelFunctional,
     error = Signal,
+    onError = Void,
 )
 
 private val hudTypography = Typography(
@@ -119,7 +166,9 @@ fun HudBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(modifier.fillMaxSize().background(Void)) {
+    Box(modifier
+        .fillMaxSize()
+        .background(Void)) {
         Canvas(Modifier.fillMaxSize()) {
             val minor = 12.dp.toPx()
             val major = minor * 4
@@ -157,11 +206,13 @@ fun TechPanel(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth().border(
-            width = 1.dp,
-            color = accent.copy(alpha = 0.72f),
-            shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
-        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = accent.copy(alpha = 0.72f),
+                shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
+            ),
         shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
         colors = CardDefaults.cardColors(containerColor = Panel.copy(alpha = 0.96f)),
     ) {
@@ -194,11 +245,28 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Canvas(Modifier.weight(1f).height(9.dp)) {
+        Canvas(Modifier
+            .weight(1f)
+            .height(9.dp)) {
             drawLine(Acid, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
-            drawLine(Signal, Offset(size.width * .72f, 0f), Offset(size.width * .64f, size.height), 3f)
-            drawLine(Signal, Offset(size.width * .84f, 0f), Offset(size.width * .76f, size.height), 3f)
-            drawLine(Signal, Offset(size.width * .96f, 0f), Offset(size.width * .88f, size.height), 3f)
+            drawLine(
+                Signal,
+                Offset(size.width * .72f, 0f),
+                Offset(size.width * .64f, size.height),
+                3f
+            )
+            drawLine(
+                Signal,
+                Offset(size.width * .84f, 0f),
+                Offset(size.width * .76f, size.height),
+                3f
+            )
+            drawLine(
+                Signal,
+                Offset(size.width * .96f, 0f),
+                Offset(size.width * .88f, size.height),
+                3f
+            )
         }
     }
 }
@@ -209,13 +277,17 @@ fun TelemetryTag(text: String, color: Color = Acid) {
         text = text.uppercase(),
         color = color,
         style = MaterialTheme.typography.labelSmall,
-        modifier = Modifier.border(1.dp, color.copy(alpha = .65f)).padding(horizontal = 7.dp, vertical = 4.dp),
+        modifier = Modifier
+            .border(1.dp, color.copy(alpha = .65f))
+            .padding(horizontal = 7.dp, vertical = 4.dp),
     )
 }
 
 @Composable
 fun Barcode(seed: String, modifier: Modifier = Modifier) {
-    Canvas(modifier.fillMaxWidth().height(28.dp)) {
+    Canvas(modifier
+        .fillMaxWidth()
+        .height(28.dp)) {
         val safeSeed = seed.ifEmpty { "SDO" }
         var cursor = 0f
         var index = 0

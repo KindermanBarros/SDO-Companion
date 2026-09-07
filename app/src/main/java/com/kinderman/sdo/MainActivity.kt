@@ -5,15 +5,54 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,11 +61,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
-import com.kinderman.sdo.data.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kinderman.sdo.data.AttributeValue
+import com.kinderman.sdo.data.AuthRepository
+import com.kinderman.sdo.data.CharacterEntity
+import com.kinderman.sdo.data.CharacterRepository
+import com.kinderman.sdo.data.ResourceValue
 import com.kinderman.sdo.ui.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -36,12 +85,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModel(private val repo: CharacterRepository) : ViewModel() {
     private val uid = MutableStateFlow("demo-player")
     private val master = MutableStateFlow(false)
     val isMaster = master.asStateFlow()
-    val characters = combine(uid, master) { user, isMaster -> user to isMaster }
-        .flatMapLatest { repo.observe(it.first, it.second) }
+    val characters = combine(
+        uid,
+        master
+    ) { user, isMaster -> user to isMaster }.flatMapLatest { repo.observe(it.first, it.second) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun setSession(userId: String, isMaster: Boolean) {
@@ -142,7 +194,9 @@ private fun LoginScreen(
 ) {
     HudBackground {
         Column(
-            Modifier.align(Alignment.Center).padding(22.dp),
+            Modifier
+                .align(Alignment.Center)
+                .padding(22.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -164,21 +218,34 @@ private fun LoginScreen(
                 )
                 vm.state.error?.let {
                     Box(
-                        Modifier.fillMaxWidth().border(1.dp, Signal)
-                            .background(Signal.copy(alpha = .12f)).padding(10.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Signal)
+                            .background(Signal.copy(alpha = .12f))
+                            .padding(10.dp),
                     ) {
-                        Text("ERR_AUTH // $it", color = Signal, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            "ERR_AUTH // $it",
+                            color = Signal,
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
                 Button(
                     onClick = { vm.submitGoogle(activity) },
-                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
                     enabled = !vm.state.loading,
                     shape = CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Acid, contentColor = Void
+                    ),
                 ) {
                     if (vm.state.loading) {
-                        CircularProgressIndicator(Modifier.size(22.dp), color = Void, strokeWidth = 2.dp)
+                        CircularProgressIndicator(
+                            Modifier.size(22.dp), color = Void, strokeWidth = 2.dp
+                        )
                     } else {
                         Icon(Icons.Default.AccountCircle, null)
                         Spacer(Modifier.size(9.dp))
@@ -220,14 +287,20 @@ private fun Dashboard(
             },
         ) { padding ->
             LazyColumn(
-                Modifier.padding(padding).fillMaxSize(),
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(18.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         TelemetryTag(if (master) "MASTER_ACCESS" else "PLAYER_ACCESS")
-                        IconButton(onLogout) { Icon(Icons.Default.Logout, "Sair", tint = Signal) }
+                        IconButton(onLogout) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Logout, "Sair", tint = Signal
+                            )
+                        }
                     }
                     Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
                     Text(
@@ -235,7 +308,9 @@ private fun Dashboard(
                         style = MaterialTheme.typography.headlineLarge,
                     )
                     Text(
-                        "LOCAL_CACHE // FIREBASE_SYNC // ${characters.size.toString().padStart(2, '0')} REGISTROS",
+                        "LOCAL_CACHE // FIREBASE_SYNC // ${
+                            characters.size.toString().padStart(2, '0')
+                        } REGISTROS",
                         color = Muted,
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -265,11 +340,13 @@ private fun CharacterAccessCard(
 ) {
     Card(
         onClick = onOpen,
-        modifier = Modifier.fillMaxWidth().border(
-            1.dp,
-            if (character.dirty) Signal else Grid,
-            CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
-        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                if (character.dirty) Signal else TechCutDark,
+                CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
+            ),
         shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
         colors = CardDefaults.cardColors(containerColor = Panel.copy(alpha = .96f)),
     ) {
@@ -278,12 +355,13 @@ private fun CharacterAccessCard(
                 TelemetryTag("ID.${character.id.take(6)}")
                 TelemetryTag(
                     if (character.dirty) "LOCAL_DELTA" else "SYNC_OK",
-                    if (character.dirty) Signal else Cyan,
+                    if (character.dirty) Signal else AcidCyan,
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(54.dp)
+                    Modifier
+                        .size(54.dp)
                         .background(Acid, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -295,11 +373,14 @@ private fun CharacterAccessCard(
                 }
                 Spacer(Modifier.size(13.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(character.name.uppercase(), style = MaterialTheme.typography.titleLarge)
+                    Text(character.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleLarge)
                     Text(
-                        listOf(character.race, character.occupation, "LV.${character.level}")
-                            .filter { it.isNotBlank() }.joinToString(" // "),
-                        color = Muted,
+                        listOf(
+                            character.race,
+                            character.occupation,
+                            "LV.${character.level}"
+                        ).filter { it.isNotBlank() }.joinToString(" // "),
+                        color = LabelFunctional,
                         style = MaterialTheme.typography.labelSmall,
                     )
                 }
@@ -331,7 +412,10 @@ private fun CharacterSheet(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(current.name.uppercase(), style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                current.name.uppercase(),
+                                style = MaterialTheme.typography.titleMedium
+                            )
                             Text(
                                 if (master) "MASTER_READWRITE // LIVE" else "PLAYER_FILE // LIVE",
                                 color = Acid,
@@ -340,10 +424,14 @@ private fun CharacterSheet(
                         }
                     },
                     navigationIcon = {
-                        IconButton(back) { Icon(Icons.Default.ArrowBack, "Voltar") }
+                        IconButton(back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
                     },
                     actions = {
-                        IconButton({ save(current) }) { Icon(Icons.Default.Save, "Salvar", tint = Acid) }
+                        IconButton({ save(current) }) {
+                            Icon(
+                                Icons.Default.Save, "Salvar", tint = Acid
+                            )
+                        }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Void,
@@ -354,7 +442,9 @@ private fun CharacterSheet(
             },
         ) { padding ->
             LazyColumn(
-                Modifier.padding(padding).fillMaxSize(),
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(14.dp),
                 verticalArrangement = Arrangement.spacedBy(13.dp),
             ) {
@@ -362,7 +452,9 @@ private fun CharacterSheet(
                 item {
                     TechPanel {
                         SectionHeader("01", "Identidade")
-                        HudTextField("Nome operacional", current.name) { current = current.copy(name = it) }
+                        HudTextField("Nome operacional", current.name) {
+                            current = current.copy(name = it)
+                        }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             HudTextField("Raça", current.race, Modifier.weight(1f)) {
                                 current = current.copy(race = it)
@@ -420,9 +512,13 @@ private fun CharacterSheet(
                 item {
                     Button(
                         onClick = { save(current) },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                         shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Acid, contentColor = Void
+                        ),
                     ) {
                         Icon(Icons.Default.CloudUpload, null)
                         Spacer(Modifier.size(8.dp))
@@ -457,8 +553,8 @@ private fun SheetHero(character: CharacterEntity, master: Boolean) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ComplianceMark()
             Column(horizontalAlignment = Alignment.End) {
-                Icon(Icons.Default.CloudDone, null, tint = Cyan)
-                Text("CACHE PROTEGIDO", color = Cyan, style = MaterialTheme.typography.labelSmall)
+                Icon(Icons.Default.CloudDone, null, tint = AcidCyan)
+                Text("CACHE PROTEGIDO", color = AcidCyan, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
@@ -467,13 +563,13 @@ private fun SheetHero(character: CharacterEntity, master: Boolean) {
 @Composable
 private fun ResourceGrid(character: CharacterEntity) {
     val entries = listOf(
-        Triple("VIDA", character.life, Signal),
-        Triple("SANIDADE", character.sanity, Cyan),
-        Triple("ARCANO", character.arcane, Acid),
-        Triple("ENERGIA", character.energy, Acid),
-        Triple("DESTINO", character.destiny, Cyan),
-        Triple("EXAUSTÃO", character.exhaustion, Signal),
-        Triple("CORRUPÇÃO", character.corruption, Signal),
+        Triple("VIDA", character.life, StatHeaderLight),
+        Triple("SANIDADE", character.sanity, StatHeader),
+        Triple("ARCANO", character.arcane, AuraBlue),
+        Triple("ENERGIA", character.energy, EnergyBlue),
+        Triple("DESTINO", character.destiny, AcidCyan),
+        Triple("EXAUSTÃO", character.exhaustion, NeonCoral),
+        Triple("CORRUPÇÃO", character.corruption, AcidMagenta),
     )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         entries.chunked(2).forEach { row ->
@@ -497,31 +593,43 @@ private fun ResourceCell(
     val progress = if (value.maximum > 0) {
         (value.current.toFloat() / value.maximum).coerceIn(0f, 1f)
     } else 0f
+    val trackColor = when (name) {
+        "CORRUPÇÃO", "EXAUSTÃO", "VIDA" -> DamageTrack
+        else -> TechCutDark
+    }
     Column(
-        modifier.border(1.dp, color.copy(alpha = .72f), CutCornerShape(topEnd = 13.dp))
-            .background(Carbon).padding(11.dp),
+        modifier
+            .border(1.dp, color.copy(alpha = .72f), CutCornerShape(topEnd = 13.dp))
+            .background(Carbon)
+            .padding(11.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(name, color = color, style = MaterialTheme.typography.labelSmall)
         Text(
-            "${value.current.toString().padStart(2, '0')} / ${value.maximum.toString().padStart(2, '0')}",
+            "${value.current.toString().padStart(2, '0')} / ${
+                value.maximum.toString().padStart(2, '0')
+            }",
+            color = Ice,
             style = MaterialTheme.typography.titleLarge,
         )
         LinearProgressIndicator(
             progress = { progress },
-            modifier = Modifier.fillMaxWidth().height(3.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3.dp),
             color = color,
-            trackColor = Grid,
+            trackColor = trackColor,
         )
     }
 }
 
 @Composable
 private fun AttributeCard(attribute: AttributeValue) {
-    TechPanel(accent = Grid) {
+    TechPanel(accent = TechCutDark) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                Modifier.size(56.dp)
+                Modifier
+                    .size(56.dp)
                     .background(Acid, CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp)),
                 contentAlignment = Alignment.Center,
             ) {
@@ -529,25 +637,28 @@ private fun AttributeCard(attribute: AttributeValue) {
             }
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(attribute.name.uppercase(), style = MaterialTheme.typography.titleLarge)
+                Text(attribute.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleLarge)
                 Text(
-                    "BASE.${attribute.value.toString().padStart(2, '0')} // MOD.${signed(attribute.modifier)}",
+                    "BASE.${
+                        attribute.value.toString().padStart(2, '0')
+                    } // MOD.${signed(attribute.modifier)}",
                     color = Muted,
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
-            TelemetryTag(signed(attribute.modifier), if (attribute.modifier >= 0) Cyan else Signal)
+            TelemetryTag(signed(attribute.modifier), if (attribute.modifier >= 0) AcidCyan else NeonCoral)
         }
-        HorizontalDivider(color = Grid)
+        HorizontalDivider(color = TechCutDark)
         attribute.skills.forEachIndexed { index, skill ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     "${(index + 1).toString().padStart(2, '0')}  ${skill.name.uppercase()}",
+                    color = LabelFunctional,
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Text(
                     "${skill.value.toString().padStart(2, '0')} // ${signed(skill.modifier)}",
-                    color = if (skill.modifier >= 0) Acid else Signal,
+                    color = if (skill.modifier >= 0) AcidCyan else NeonCoral,
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
@@ -558,12 +669,19 @@ private fun AttributeCard(attribute: AttributeValue) {
 @Composable
 private fun ProtectionCell(name: String, value: Int, modifier: Modifier = Modifier) {
     Row(
-        modifier.background(Carbon).border(1.dp, Grid).padding(10.dp),
+        modifier
+            .background(Carbon)
+            .border(1.dp, TechCutDark)
+            .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(name.uppercase(), color = Muted, style = MaterialTheme.typography.labelSmall)
-        Text(value.toString().padStart(2, '0'), color = Cyan, style = MaterialTheme.typography.titleLarge)
+        Text(name.uppercase(), color = LabelFunctional, style = MaterialTheme.typography.labelSmall)
+        Text(
+            value.toString().padStart(2, '0'),
+            color = AcidCyan,
+            style = MaterialTheme.typography.titleLarge
+        )
     }
 }
 
