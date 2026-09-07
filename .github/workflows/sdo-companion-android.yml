@@ -28,7 +28,7 @@ jobs:
         if: ${{ env.GOOGLE_SERVICES_JSON != '' }}
         shell: bash
         run: |
-          if [[ "$GOOGLE_SERVICES_JSON" == \{* ]]; then
+          if printf '%s' "$GOOGLE_SERVICES_JSON" | jq -e . > /dev/null 2>&1; then
             printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
           else
             printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
