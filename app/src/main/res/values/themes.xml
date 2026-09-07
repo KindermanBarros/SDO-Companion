@@ -1,0 +1,1 @@
+<resources><style name="Theme.SDO" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#BE8A4A</item><item name="android:windowLightStatusBar">false</item><item name="android:statusBarColor">#171411</item></style></resources>

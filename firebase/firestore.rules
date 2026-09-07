@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMaster() { return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MASTER'; }
+    match /characters/{characterId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isMaster());
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if signedIn() && (resource.data.ownerId == request.auth.uid || isMaster());
+    }
+    match /users/{uid} { allow read: if signedIn() && (uid == request.auth.uid || isMaster()); allow create: if signedIn() && uid == request.auth.uid && request.resource.data.role == 'PLAYER'; allow update: if isMaster(); }
+  }
+}

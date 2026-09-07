@@ -27,7 +27,7 @@ Aplicativo Android offline-first para jogadores e mestre da campanha. A interfac
 
 ## Executar
 
-Abra `sdo-app` no Android Studio, sincronize o Gradle e rode o módulo `app`. Sem `google-services.json`, o app continua utilizável localmente com Room.
+Abra a raiz do repositório no Android Studio, sincronize o Gradle e rode o módulo `app`. Sem `google-services.json`, o app continua utilizável localmente com Room.
 
 ## Próximas fatias
 
