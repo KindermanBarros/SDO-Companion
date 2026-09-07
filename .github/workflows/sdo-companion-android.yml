@@ -24,7 +24,7 @@ jobs:
       SDO_KEYSTORE_PASSWORD: ${{ secrets.SDO_KEYSTORE_PASSWORD }}
       SDO_KEY_ALIAS: ${{ secrets.SDO_KEY_ALIAS }}
       SDO_KEY_PASSWORD: ${{ secrets.SDO_KEY_PASSWORD }}
-      SDO_KEYSTORE_FILE: ${{ runner.temp }}/sdo-companion-release.jks
+      SDO_KEYSTORE_FILE: ${{ github.workspace }}/app/sdo-companion-release.jks
     steps:
       - name: Checkout full history
         uses: actions/checkout@v6
