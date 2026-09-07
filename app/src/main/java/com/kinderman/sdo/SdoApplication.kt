@@ -7,14 +7,23 @@ import com.kinderman.sdo.data.auth.FirebaseAuthRepository
 import com.kinderman.sdo.data.local.AppDatabase
 import com.kinderman.sdo.data.repository.OfflineFirstCharacterRepository
 import com.kinderman.sdo.data.repository.OfflineFirstOwnerRepository
+import com.kinderman.sdo.data.repository.LocalCatalogRepository
 import com.kinderman.sdo.domain.repository.AuthRepository
+import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class SdoApplication : Application() {
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     lateinit var characterRepository: CharacterRepository
     lateinit var authRepository: AuthRepository
     lateinit var ownerRepository: OwnerRepository
+    lateinit var catalogRepository: CatalogRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -27,10 +36,15 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_4_5,
                 AppDatabase.MIGRATION_5_6,
                 AppDatabase.MIGRATION_6_7,
+                AppDatabase.MIGRATION_7_8,
             )
             .build()
         characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao())
         ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
+        catalogRepository = LocalCatalogRepository(db.catalogDao())
         authRepository = FirebaseAuthRepository()
+        applicationScope.launch {
+            catalogRepository.refreshBundledCatalog()
+        }
     }
 }

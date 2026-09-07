@@ -6,11 +6,12 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [CharacterRecord::class, OwnerRecord::class], version = 7, exportSchema = false)
+@Database(entities = [CharacterRecord::class, OwnerRecord::class, CatalogEntryRecord::class], version = 8, exportSchema = false)
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
     abstract fun ownerDao(): OwnerDao
+    abstract fun catalogDao(): CatalogDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -73,6 +74,28 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN lastSyncedAt INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS catalog_entries (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        kind TEXT NOT NULL,
+                        name TEXT NOT NULL,
+                        groupName TEXT NOT NULL,
+                        summary TEXT NOT NULL,
+                        cost TEXT NOT NULL,
+                        action TEXT NOT NULL,
+                        range TEXT NOT NULL,
+                        duration TEXT NOT NULL,
+                        source TEXT NOT NULL,
+                        catalogVersion INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
             }
         }
     }

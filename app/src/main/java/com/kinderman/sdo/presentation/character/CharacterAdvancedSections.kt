@@ -10,9 +10,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -31,10 +37,14 @@ import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
-internal fun PathSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
+    var selecting by remember { mutableStateOf(false) }
     TechPanel(accent = Signal) {
         SectionHeader("07", "Caminho")
-        HudTextField("Nome do Caminho", character.pathName, enabled = enabled) { onChange(character.copy(pathName = it)) }
+        HudTextField("Nome do Caminho", character.pathName, enabled = enabled) {
+            onChange(character.copy(pathName = it))
+        }
+        AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
         HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
         Text("PALAVRAS-CHAVE // 3", color = LabelFunctional, style = MaterialTheme.typography.labelLarge)
         character.pathKeywords.forEachIndexed { index, keyword ->
@@ -45,10 +55,15 @@ internal fun PathSection(character: Character, enabled: Boolean, onChange: (Char
             HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) { onChange(character.copy(pathPillars = character.pathPillars.replace(index, it))) }
         }
     }
+    if (selecting) CatalogPickerDialog("SELECIONAR CAMINHO", catalog, { selecting = false }) { entry ->
+        onChange(character.copy(pathName = entry.name, pathMotto = character.pathMotto.ifBlank { entry.summary }))
+        selecting = false
+    }
 }
 
 @Composable
-internal fun PowerSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun PowerSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
+    var selecting by remember { mutableStateOf(false) }
     TechPanel(accent = Acid) {
         SectionHeader("08", "Poderes")
         Text("REGISTROS // ${character.powers.size}", color = Acid, style = MaterialTheme.typography.labelLarge)
@@ -58,7 +73,20 @@ internal fun PowerSection(character: Character, enabled: Boolean, onChange: (Cha
                 onValue = { onChange(character.copy(powers = character.powers.replace(index, it))) },
             )
         }
-        AddButton("Adicionar poder", enabled) { onChange(character.copy(powers = character.powers + Power())) }
+        AddButton("Selecionar poder do catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
+        AddButton("Adicionar poder manualmente", enabled) { onChange(character.copy(powers = character.powers + Power())) }
+    }
+    if (selecting) CatalogPickerDialog("SELECIONAR PODER", catalog, { selecting = false }) { entry ->
+        onChange(character.copy(powers = character.powers + Power(
+            name = entry.name,
+            origin = listOf(entry.group, entry.source).filter(String::isNotBlank).joinToString(" — "),
+            cost = entry.cost,
+            action = entry.action,
+            range = entry.range,
+            duration = entry.duration,
+            effect = entry.summary,
+        )))
+        selecting = false
     }
 }
 
@@ -159,7 +187,8 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
 }
 
 @Composable
-internal fun MysticSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
+    var selecting by remember { mutableStateOf(false) }
     TechPanel(accent = AcidCyan) {
         SectionHeader("12", "Magias, runas e cinzas")
         character.mysticAbilities.forEachIndexed { index, ability ->
@@ -168,7 +197,25 @@ internal fun MysticSection(character: Character, enabled: Boolean, onChange: (Ch
                 onValue = { onChange(character.copy(mysticAbilities = character.mysticAbilities.replace(index, it))) },
             )
         }
-        AddButton("Adicionar magia, runa ou cinza", enabled) { onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility())) }
+        AddButton("Selecionar magia, cinza ou runa", enabled && catalog.isNotEmpty()) { selecting = true }
+        AddButton("Adicionar efeito manualmente", enabled) { onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility())) }
+    }
+    if (selecting) CatalogPickerDialog("SELECIONAR EFEITO MÍSTICO", catalog, { selecting = false }) { entry ->
+        onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility(
+            type = when (entry.kind) {
+                CatalogKind.MAGIC -> "Magia"
+                CatalogKind.ASH -> "Cinza"
+                CatalogKind.RUNE -> "Runa"
+                else -> entry.kind.name
+            },
+            name = entry.name,
+            cost = entry.cost,
+            action = entry.action,
+            range = entry.range,
+            duration = entry.duration,
+            effect = entry.summary,
+        )))
+        selecting = false
     }
 }
 

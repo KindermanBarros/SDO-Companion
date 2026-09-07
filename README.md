@@ -13,6 +13,9 @@ As regras visuais, tokens e componentes estão documentados no
 - perfil Jogador/Mestre carregado do Firestore;
 - ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
 - referência arcana canônica distribuída entre `Magia.md`, `Cinzas.md`, `Runas.md`, `Regras Arcanas Expandidas.md` e os catálogos de 50 exemplos;
+- catálogo local pesquisável com Caminhos e 50 exemplos de cada tipo: Poderes Mágicos, Magias, Cinzas e Runas;
+- seleção pelo catálogo é opcional: ela apenas preenche uma nova entrada, que continua modular e totalmente editável; entradas manuais continuam disponíveis;
+- o catálogo é atualizado pelo próprio APK no Room, sem depender nem alterar a estrutura sincronizada no Firebase;
 - Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
@@ -41,13 +44,14 @@ O código segue Clean Architecture em camadas e separa regras de negócio de And
 
 ```text
 domain/
+  catalog/     conteúdo versionado do catálogo distribuído com o app
   model/       modelos canônicos da ficha
   policy/      autorização de leitura, edição, bloqueio e exclusão
   repository/  contratos de dados e autenticação
   usecase/     operações da aplicação
 data/
   auth/        Google Sign-In e perfil Firebase
-  local/       Room, DAO, conversores e migrações
+  local/       Room, DAO, catálogo local, conversores e migrações
   repository/  sincronização offline-first de fichas e perfis com Firestore
 presentation/
   login/ dashboard/ character/  telas e estado de UI

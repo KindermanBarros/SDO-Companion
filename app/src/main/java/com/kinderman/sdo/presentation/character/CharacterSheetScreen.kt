@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
+import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.ui.Acid
@@ -55,6 +56,7 @@ import com.kinderman.sdo.ui.Void
 fun CharacterSheetScreen(
     character: Character?,
     session: UserSession?,
+    catalog: List<CatalogEntry>,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onSave: (Character) -> Unit,
@@ -131,6 +133,7 @@ fun CharacterSheetScreen(
             CharacterSheetPager(
                 character = current,
                 session = session,
+                catalog = catalog,
                 editable = editable,
                 onChange = { current = it },
                 modifier = Modifier.padding(padding).fillMaxSize(),

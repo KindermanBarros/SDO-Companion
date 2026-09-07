@@ -25,7 +25,7 @@ import com.kinderman.sdo.ui.CyberLoadingScreen
 fun SdoApp(activity: MainActivity) {
     val application = LocalContext.current.applicationContext as SdoApplication
     val appViewModel: AppViewModel = viewModel(
-        factory = AppViewModelFactory(application.characterRepository, application.ownerRepository),
+        factory = AppViewModelFactory(application.characterRepository, application.ownerRepository, application.catalogRepository),
     )
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
     val authenticatedSession by authViewModel.session.collectAsStateWithLifecycle()
@@ -35,6 +35,7 @@ fun SdoApp(activity: MainActivity) {
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
+    val catalog by appViewModel.catalog.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -90,6 +91,7 @@ fun SdoApp(activity: MainActivity) {
         else -> CharacterSheetScreen(
             character = characters.firstOrNull { it.id == selectedId },
             session = appSession,
+            catalog = catalog,
             snackbarHost = { SnackbarHost(snackbar) },
             onBack = { selectedId = null },
             onSave = appViewModel::save,

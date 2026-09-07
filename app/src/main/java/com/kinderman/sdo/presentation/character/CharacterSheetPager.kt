@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Ice
@@ -43,6 +45,7 @@ internal enum class SheetPage(val code: String, val label: String) {
 internal fun CharacterSheetPager(
     character: Character,
     session: UserSession,
+    catalog: List<CatalogEntry>,
     editable: Boolean,
     onChange: (Character) -> Unit,
     modifier: Modifier = Modifier,
@@ -95,6 +98,7 @@ internal fun CharacterSheetPager(
                 page = pages[pageIndex],
                 character = character,
                 session = session,
+                catalog = catalog,
                 editable = editable,
                 onChange = onChange,
                 scrollState = pageScrollStates[pageIndex],
@@ -108,6 +112,7 @@ private fun SheetPageContent(
     page: SheetPage,
     character: Character,
     session: UserSession,
+    catalog: List<CatalogEntry>,
     editable: Boolean,
     onChange: (Character) -> Unit,
     scrollState: LazyListState,
@@ -132,9 +137,9 @@ private fun SheetPageContent(
                 item("protection") { ProtectionSection(character, editable, onChange) }
             }
 
-            SheetPage.PATH -> item("path") { PathSection(character, editable, onChange) }
+            SheetPage.PATH -> item("path") { PathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, editable, onChange) }
 
-            SheetPage.POWERS -> item("powers") { PowerSection(character, editable, onChange) }
+            SheetPage.POWERS -> item("powers") { PowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, editable, onChange) }
 
             SheetPage.BODY -> {
                 item("inventory") { InventorySection(character, editable, onChange) }
@@ -142,7 +147,7 @@ private fun SheetPageContent(
                 item("organs") { OrganSection(character, editable, onChange) }
             }
 
-            SheetPage.MYSTIC -> item("mystic") { MysticSection(character, editable, onChange) }
+            SheetPage.MYSTIC -> item("mystic") { MysticSection(character, catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE }, editable, onChange) }
 
             SheetPage.RECORD -> {
                 item("conditions") { ConditionSection(character, editable, onChange) }

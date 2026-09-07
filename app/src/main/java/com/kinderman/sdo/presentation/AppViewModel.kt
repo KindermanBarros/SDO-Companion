@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
+import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.UserProfile
@@ -35,6 +36,7 @@ data class CharacterLoadState(
 class AppViewModel(
     private val repository: CharacterRepository,
     private val ownerRepository: OwnerRepository,
+    catalogRepository: CatalogRepository,
 ) : ViewModel() {
     private val saveCharacter = SaveCharacter(repository)
     private val deleteCharacter = DeleteCharacter(repository)
@@ -52,6 +54,8 @@ class AppViewModel(
     val message = _message.asStateFlow()
     val loadState = _loadState.asStateFlow()
     val conflicts = _conflicts.asStateFlow()
+    val catalog = catalogRepository.observe()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val characters = currentSession.flatMapLatest { session ->
         session?.let(repository::observe) ?: flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
