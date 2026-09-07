@@ -4,10 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,95 +17,554 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
 import com.kinderman.sdo.data.*
+import com.kinderman.sdo.ui.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-private val Ink = Color(0xFF171411); private val Paper = Color(0xFFF3EBDD); private val Gold = Color(0xFFB98745); private val Wine = Color(0xFF702F35)
-
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { SdoTheme { SdoApp(this) } } }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent { SdoTheme { SdoApp(this) } }
+    }
 }
-
-@Composable fun SdoTheme(content: @Composable () -> Unit) = MaterialTheme(colorScheme = lightColorScheme(primary = Wine, secondary = Gold, background = Paper, surface = Color(0xFFFFF9EE), onBackground = Ink), typography = Typography(headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold), titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold)), content = content)
 
 class AppViewModel(private val repo: CharacterRepository) : ViewModel() {
-    private val _uid = MutableStateFlow("demo-player")
-    private val _master = MutableStateFlow(false)
-    val isMaster = _master.asStateFlow()
-    val characters = combine(_uid, _master) { u, m -> u to m }.flatMapLatest { repo.observe(it.first, it.second) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    fun setSession(uid: String, master: Boolean) { _master.value = master; _uid.value = uid; viewModelScope.launch { repo.sync(uid, master) } }
-    fun add() = viewModelScope.launch { repo.save(CharacterEntity(ownerId = _uid.value)) }
-    fun save(c: CharacterEntity) = viewModelScope.launch { repo.save(c) }
+    private val uid = MutableStateFlow("demo-player")
+    private val master = MutableStateFlow(false)
+    val isMaster = master.asStateFlow()
+    val characters = combine(uid, master) { user, isMaster -> user to isMaster }
+        .flatMapLatest { repo.observe(it.first, it.second) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun setSession(userId: String, isMaster: Boolean) {
+        uid.value = userId
+        master.value = isMaster
+        viewModelScope.launch { repo.sync(userId, isMaster) }
+    }
+
+    fun add() = viewModelScope.launch { repo.save(CharacterEntity(ownerId = uid.value)) }
+    fun save(character: CharacterEntity) = viewModelScope.launch { repo.save(character) }
 }
 
-data class AuthUiState(val loading:Boolean=false,val error:String?=null)
+data class AuthUiState(val loading: Boolean = false, val error: String? = null)
+
 class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
-    val session = auth.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-    var state by mutableStateOf(AuthUiState()); private set
+    val session = auth.session.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        null,
+    )
+    var state by mutableStateOf(AuthUiState())
+        private set
     val configured get() = auth.configured
-    fun submitGoogle(activity: android.app.Activity)=viewModelScope.launch { state=AuthUiState(true); state=runCatching { auth.loginWithGoogle(activity) }.fold({AuthUiState()},{AuthUiState(error=it.localizedMessage ?: "Não foi possível entrar com Google")}) }
-    fun logout()=auth.logout()
-    suspend fun master(uid:String)=runCatching { auth.isMaster(uid) }.getOrDefault(false)
+
+    fun submitGoogle(activity: MainActivity) = viewModelScope.launch {
+        state = AuthUiState(loading = true)
+        state = runCatching { auth.loginWithGoogle(activity) }.fold(
+            onSuccess = { AuthUiState() },
+            onFailure = {
+                AuthUiState(
+                    error = it.localizedMessage
+                        ?: "Falha no protocolo de autenticação. Tente novamente.",
+                )
+            },
+        )
+    }
+
+    fun logout() = auth.logout()
+    suspend fun master(uid: String) = runCatching { auth.isMaster(uid) }.getOrDefault(false)
 }
 
-@Composable fun SdoApp(activity: MainActivity) {
+@Composable
+fun SdoApp(activity: MainActivity) {
     val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as SdoApplication
-    val vm: AppViewModel = viewModel(factory = object: ViewModelProvider.Factory { override fun <T: ViewModel> create(modelClass: Class<T>): T = AppViewModel(app.repository) as T })
-    val authVm: AuthViewModel = viewModel(factory = object: ViewModelProvider.Factory { override fun <T: ViewModel> create(modelClass: Class<T>): T = AuthViewModel(AuthRepository()) as T })
+    val vm: AppViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            AppViewModel(app.repository) as T
+    })
+    val authVm: AuthViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            AuthViewModel(AuthRepository()) as T
+    })
     val user by authVm.session.collectAsStateWithLifecycle()
     var demo by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(user?.uid, demo) { if(demo) vm.setSession("demo-player", false) else user?.let { vm.setSession(it.uid, authVm.master(it.uid)) } }
-    if(user==null && !demo) { LoginScreen(activity, authVm, allowDemo=!authVm.configured){demo=true}; return }
+
+    LaunchedEffect(user?.uid, demo) {
+        if (demo) vm.setSession("demo-player", false)
+        else user?.let { vm.setSession(it.uid, authVm.master(it.uid)) }
+    }
+
+    if (user == null && !demo) {
+        LoginScreen(activity, authVm, allowDemo = !authVm.configured) { demo = true }
+        return
+    }
+
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
-    val chars by vm.characters.collectAsStateWithLifecycle(); val master by vm.isMaster.collectAsStateWithLifecycle()
-    if (selected == null) Dashboard(chars, master, vm::add) { selected = it }
-    else CharacterSheet(chars.firstOrNull { it.id == selected }, master, { selected = null }, vm::save)
+    val characters by vm.characters.collectAsStateWithLifecycle()
+    val isMaster by vm.isMaster.collectAsStateWithLifecycle()
+    if (selected == null) {
+        Dashboard(
+            characters = characters,
+            master = isMaster,
+            onAdd = vm::add,
+            onOpen = { selected = it },
+            onLogout = {
+                demo = false
+                authVm.logout()
+            },
+        )
+    } else {
+        CharacterSheet(
+            character = characters.firstOrNull { it.id == selected },
+            master = isMaster,
+            back = { selected = null },
+            save = vm::save,
+        )
+    }
 }
 
-@Composable fun LoginScreen(activity: MainActivity,vm:AuthViewModel,allowDemo:Boolean,onDemo:()->Unit){Box(Modifier.fillMaxSize().background(Ink).padding(24.dp),contentAlignment=Alignment.Center){Card(shape=RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Paper)){Column(Modifier.padding(24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){Text("SDO",color=Gold,fontWeight=FontWeight.Bold);Text("COMPANION",style=MaterialTheme.typography.headlineLarge);Text("Entre com sua conta Google para abrir suas histórias e sincronizar suas fichas.");vm.state.error?.let{Text(it,color=MaterialTheme.colorScheme.error)};Button({vm.submitGoogle(activity)},Modifier.fillMaxWidth(),enabled=!vm.state.loading){if(vm.state.loading)CircularProgressIndicator(Modifier.size(20.dp),strokeWidth=2.dp)else{Icon(Icons.Default.AccountCircle,null);Spacer(Modifier.width(8.dp));Text("Entrar com Google")}};if(allowDemo){HorizontalDivider();OutlinedButton(onDemo,Modifier.fillMaxWidth()){Text("Usar modo local de demonstração")}}}}}
+@Composable
+private fun LoginScreen(
+    activity: MainActivity,
+    vm: AuthViewModel,
+    allowDemo: Boolean,
+    onDemo: () -> Unit,
+) {
+    HudBackground {
+        Column(
+            Modifier.align(Alignment.Center).padding(22.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TelemetryTag("SYS.26 // ONLINE")
+                TelemetryTag("AUTH_GATE", Signal)
+            }
+            TechPanel(accent = Acid) {
+                Text("SOLIDÃO DOS", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("OPRIMIDOS", style = MaterialTheme.typography.displayLarge)
+                Text(
+                    "COMPANION // TERMINAL DE PERSONAGEM",
+                    color = Muted,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Barcode("SDO-COMPANION-AUTH")
+                Text(
+                    "IDENTIFIQUE-SE PARA ACESSAR ARQUIVOS LOCAIS E SINCRONIZAR A TELEMETRIA DA FICHA.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                vm.state.error?.let {
+                    Box(
+                        Modifier.fillMaxWidth().border(1.dp, Signal)
+                            .background(Signal.copy(alpha = .12f)).padding(10.dp),
+                    ) {
+                        Text("ERR_AUTH // $it", color = Signal, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+                Button(
+                    onClick = { vm.submitGoogle(activity) },
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    enabled = !vm.state.loading,
+                    shape = CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+                ) {
+                    if (vm.state.loading) {
+                        CircularProgressIndicator(Modifier.size(22.dp), color = Void, strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.AccountCircle, null)
+                        Spacer(Modifier.size(9.dp))
+                        Text("INICIAR COM GOOGLE", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+                if (allowDemo) {
+                    HorizontalDivider(color = Grid)
+                    OutlinedButton(
+                        onClick = onDemo,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+                    ) { Text("MODO LOCAL // OFFLINE") }
+                }
+                ComplianceMark()
+            }
+        }
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable fun Dashboard(chars: List<CharacterEntity>, master: Boolean, onAdd: ()->Unit, onOpen:(String)->Unit) {
-    Scaffold(containerColor = Paper, floatingActionButton = { FloatingActionButton(onClick=onAdd, containerColor=Wine, contentColor=Color.White){ Icon(Icons.Default.Add,"Criar personagem") } }) { pad ->
-        LazyColumn(Modifier.padding(pad).fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            item { Text("SDO COMPANION", color=Gold, style=MaterialTheme.typography.labelLarge); Text(if(master) "Painel da Mestre" else "Suas histórias", style=MaterialTheme.typography.headlineLarge); Text("Fichas sincronizadas, disponíveis mesmo quando o mundo fica sem sinal.") }
-            item { AssistChip(onClick={}, label={Text(if(master) "Acesso de Mestre" else "Acesso de Jogador")}, leadingIcon={Icon(if(master) Icons.Default.AdminPanelSettings else Icons.Default.Person,null)}) }
-            if(chars.isEmpty()) item { ParchmentCard { Text("Nenhuma ficha por aqui", style=MaterialTheme.typography.titleLarge); Text("Crie o primeiro personagem no botão +.") } }
-            items(chars, key={it.id}) { c -> ParchmentCard(onClick={onOpen(c.id)}) { Row(verticalAlignment=Alignment.CenterVertically){ Box(Modifier.size(52.dp).background(Wine, RoundedCornerShape(14.dp)), contentAlignment=Alignment.Center){Text(c.name.take(1),color=Color.White,style=MaterialTheme.typography.headlineSmall)}; Spacer(Modifier.width(14.dp)); Column(Modifier.weight(1f)){Text(c.name,style=MaterialTheme.typography.titleLarge);Text(listOf(c.race,c.occupation,"Nível ${c.level}").filter{it.isNotBlank()}.joinToString(" • "))}; Icon(Icons.Default.ChevronRight,null) } } }
+@Composable
+private fun Dashboard(
+    characters: List<CharacterEntity>,
+    master: Boolean,
+    onAdd: () -> Unit,
+    onOpen: (String) -> Unit,
+    onLogout: () -> Unit,
+) {
+    HudBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = onAdd,
+                    containerColor = Acid,
+                    contentColor = Void,
+                    shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
+                ) { Icon(Icons.Default.Add, "Criar personagem") }
+            },
+        ) { padding ->
+            LazyColumn(
+                Modifier.padding(padding).fillMaxSize(),
+                contentPadding = PaddingValues(18.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                item {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        TelemetryTag(if (master) "MASTER_ACCESS" else "PLAYER_ACCESS")
+                        IconButton(onLogout) { Icon(Icons.Default.Logout, "Sair", tint = Signal) }
+                    }
+                    Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        if (master) "PAINEL DA MESTRE" else "ARQUIVOS DE CAMPO",
+                        style = MaterialTheme.typography.headlineLarge,
+                    )
+                    Text(
+                        "LOCAL_CACHE // FIREBASE_SYNC // ${characters.size.toString().padStart(2, '0')} REGISTROS",
+                        color = Muted,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+                if (characters.isEmpty()) {
+                    item {
+                        TechPanel(accent = Signal) {
+                            SectionHeader("00", "Nenhum sinal detectado")
+                            Text("Crie o primeiro personagem no comando +.")
+                            Barcode("EMPTY-SDO-ARCHIVE")
+                        }
+                    }
+                }
+                items(characters, key = { it.id }) { character ->
+                    CharacterAccessCard(character, master) { onOpen(character.id) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CharacterAccessCard(
+    character: CharacterEntity,
+    master: Boolean,
+    onOpen: () -> Unit,
+) {
+    Card(
+        onClick = onOpen,
+        modifier = Modifier.fillMaxWidth().border(
+            1.dp,
+            if (character.dirty) Signal else Grid,
+            CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
+        ),
+        shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = Panel.copy(alpha = .96f)),
+    ) {
+        Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TelemetryTag("ID.${character.id.take(6)}")
+                TelemetryTag(
+                    if (character.dirty) "LOCAL_DELTA" else "SYNC_OK",
+                    if (character.dirty) Signal else Cyan,
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(54.dp)
+                        .background(Acid, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        character.name.take(2).uppercase(),
+                        color = Void,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+                Spacer(Modifier.size(13.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(character.name.uppercase(), style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        listOf(character.race, character.occupation, "LV.${character.level}")
+                            .filter { it.isNotBlank() }.joinToString(" // "),
+                        color = Muted,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+                Icon(
+                    if (master) Icons.Default.AdminPanelSettings else Icons.Default.ChevronRight,
+                    null,
+                    tint = Acid,
+                )
+            }
+            Barcode(character.id)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun CharacterSheet(character: CharacterEntity?, master:Boolean, back:()->Unit, save:(CharacterEntity)->Unit) {
-    if(character==null) return
-    var c by remember(character.id, character.updatedAt) { mutableStateOf(character) }
-    Scaffold(containerColor=Paper, topBar={TopAppBar(title={Column{Text(c.name);Text(if(master) "Visão da Mestre" else "Sua ficha",style=MaterialTheme.typography.labelSmall)}},navigationIcon={IconButton(back){Icon(Icons.Default.ArrowBack,"Voltar")}},actions={IconButton({save(c)}){Icon(Icons.Default.Save,"Salvar")}},colors=TopAppBarDefaults.topAppBarColors(containerColor=Ink,titleContentColor=Color.White,navigationIconContentColor=Color.White,actionIconContentColor=Gold))}){pad->
-        LazyColumn(Modifier.padding(pad).fillMaxSize(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
-            item { ParchmentCard { Text("IDENTIDADE",color=Gold,fontWeight=FontWeight.Bold); SheetField("Nome",c.name){c=c.copy(name=it)}; Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){Box(Modifier.weight(1f)){SheetField("Raça",c.race){c=c.copy(race=it)}};Box(Modifier.weight(1f)){SheetField("Sub-raça",c.subRace){c=c.copy(subRace=it)}}}; SheetField("Ocupação",c.occupation){c=c.copy(occupation=it)} } }
-            item { SectionTitle("Recursos"); ResourceGrid(c){c=it} }
-            item { SectionTitle("Atributos & conhecimentos") }
-            items(c.attributes.indices.toList()) { index -> AttributeCard(c.attributes[index]) { a -> c=c.copy(attributes=c.attributes.toMutableList().also{it[index]=a}) } }
-            item { ParchmentCard { SectionTitle("Proteções"); c.protections.forEach{(name,value)->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(name);Text(value.toString(),fontWeight=FontWeight.Bold,color=Wine)}} } }
-            item { ParchmentCard { SectionTitle("Caminho"); SheetField("Nome do caminho",c.pathName){c=c.copy(pathName=it)}; SheetField("Lema",c.pathMotto){c=c.copy(pathMotto=it)} } }
-            item { ParchmentCard { SectionTitle("História"); SheetField("De onde veio seu personagem?",c.story,true){c=c.copy(story=it)}; SectionTitle("Anotações"); SheetField("Anotações da mesa",c.notes,true){c=c.copy(notes=it)} } }
-            item { Button({save(c)},Modifier.fillMaxWidth()){Icon(Icons.Default.CloudUpload,null);Spacer(Modifier.width(8.dp));Text("Salvar e sincronizar")}; Text("A cópia local é salva primeiro; a nuvem sincroniza quando houver conexão.",style=MaterialTheme.typography.bodySmall) }
+@Composable
+private fun CharacterSheet(
+    character: CharacterEntity?,
+    master: Boolean,
+    back: () -> Unit,
+    save: (CharacterEntity) -> Unit,
+) {
+    if (character == null) return
+    var current by remember(character.id, character.updatedAt) { mutableStateOf(character) }
+    HudBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Column {
+                            Text(current.name.uppercase(), style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                if (master) "MASTER_READWRITE // LIVE" else "PLAYER_FILE // LIVE",
+                                color = Acid,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(back) { Icon(Icons.Default.ArrowBack, "Voltar") }
+                    },
+                    actions = {
+                        IconButton({ save(current) }) { Icon(Icons.Default.Save, "Salvar", tint = Acid) }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Void,
+                        titleContentColor = Ice,
+                        navigationIconContentColor = Ice,
+                    ),
+                )
+            },
+        ) { padding ->
+            LazyColumn(
+                Modifier.padding(padding).fillMaxSize(),
+                contentPadding = PaddingValues(14.dp),
+                verticalArrangement = Arrangement.spacedBy(13.dp),
+            ) {
+                item { SheetHero(current, master) }
+                item {
+                    TechPanel {
+                        SectionHeader("01", "Identidade")
+                        HudTextField("Nome operacional", current.name) { current = current.copy(name = it) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            HudTextField("Raça", current.race, Modifier.weight(1f)) {
+                                current = current.copy(race = it)
+                            }
+                            HudTextField("Sub-raça", current.subRace, Modifier.weight(1f)) {
+                                current = current.copy(subRace = it)
+                            }
+                        }
+                        HudTextField("Ocupação", current.occupation) {
+                            current = current.copy(occupation = it)
+                        }
+                    }
+                }
+                item {
+                    SectionHeader("02", "Telemetria vital")
+                    ResourceGrid(current)
+                }
+                item { SectionHeader("03", "Atributos e conhecimentos") }
+                items(current.attributes, key = { it.acronym }) { AttributeCard(it) }
+                item {
+                    TechPanel(accent = Cyan) {
+                        SectionHeader("04", "Matriz de proteção")
+                        current.protections.entries.chunked(2).forEach { row ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                row.forEach { (name, value) ->
+                                    ProtectionCell(name, value, Modifier.weight(1f))
+                                }
+                                if (row.size == 1) Spacer(Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+                item {
+                    TechPanel(accent = Signal) {
+                        SectionHeader("05", "Caminho")
+                        HudTextField("Designação", current.pathName) {
+                            current = current.copy(pathName = it)
+                        }
+                        HudTextField("Lema / diretiva", current.pathMotto) {
+                            current = current.copy(pathMotto = it)
+                        }
+                    }
+                }
+                item {
+                    TechPanel {
+                        SectionHeader("06", "Memória de campo")
+                        HudTextField("Origem do personagem", current.story, multiline = true) {
+                            current = current.copy(story = it)
+                        }
+                        HudTextField("Anotações da mesa", current.notes, multiline = true) {
+                            current = current.copy(notes = it)
+                        }
+                    }
+                }
+                item {
+                    Button(
+                        onClick = { save(current) },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+                    ) {
+                        Icon(Icons.Default.CloudUpload, null)
+                        Spacer(Modifier.size(8.dp))
+                        Text("SALVAR // SINCRONIZAR", style = MaterialTheme.typography.labelLarge)
+                    }
+                    Text(
+                        "ROOM_LOCAL → FIRESTORE_REMOTE // FAILSAFE ATIVO",
+                        color = Muted,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                }
+            }
         }
     }
 }
 
-@Composable private fun ResourceGrid(c:CharacterEntity,onChange:(CharacterEntity)->Unit){ val entries=listOf("Vida" to c.life,"Sanidade" to c.sanity,"Arcano" to c.arcane,"Energia" to c.energy,"Destino" to c.destiny,"Exaustão" to c.exhaustion,"Corrupção" to c.corruption); Column(verticalArrangement=Arrangement.spacedBy(8.dp)){entries.chunked(2).forEach{row->Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){row.forEach{(n,v)->Card(Modifier.weight(1f),colors=CardDefaults.cardColors(containerColor=if(n=="Vida") Wine else Color(0xFFFFF9EE))){Column(Modifier.padding(12.dp)){Text(n,color=if(n=="Vida") Color.White else Gold);Text("${v.current} / ${v.maximum}",style=MaterialTheme.typography.titleLarge,color=if(n=="Vida") Color.White else Ink)}}};if(row.size==1)Spacer(Modifier.weight(1f))}}}}
-@Composable private fun AttributeCard(a:AttributeValue,onChange:(AttributeValue)->Unit)=ParchmentCard{Row(verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(48.dp).background(Ink,RoundedCornerShape(12.dp)),contentAlignment=Alignment.Center){Text(a.acronym,color=Gold,fontWeight=FontWeight.Bold)};Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(a.name,style=MaterialTheme.typography.titleLarge);Text("Valor ${a.value}  •  Mod ${a.modifier}")}};HorizontalDivider(Modifier.padding(vertical=10.dp));a.skills.forEach{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(it.name);Text("${it.value}  ${if(it.modifier>=0) "+" else ""}${it.modifier}",fontWeight=FontWeight.SemiBold)}}}
-@Composable private fun SheetField(label:String,value:String,multiline:Boolean=false,onValue:(String)->Unit){OutlinedTextField(value,onValue,Modifier.fillMaxWidth().padding(top=6.dp),label={Text(label)},minLines=if(multiline)3 else 1)}
-@Composable private fun SectionTitle(text:String)=Text(text.uppercase(),color=Gold,fontWeight=FontWeight.Bold,style=MaterialTheme.typography.labelLarge)
-@Composable private fun ParchmentCard(onClick:(()->Unit)?=null,content:@Composable ColumnScope.()->Unit){if(onClick==null)Card(Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color(0xFFFFF9EE))){Column(Modifier.padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp),content=content)}else Card(onClick,Modifier.fillMaxWidth(),shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color(0xFFFFF9EE))){Column(Modifier.padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp),content=content)}}
+@Composable
+private fun SheetHero(character: CharacterEntity, master: Boolean) {
+    TechPanel(accent = Signal) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            TelemetryTag(if (master) "OVERRIDE.M" else "PROFILE.P")
+            TelemetryTag("LV.${character.level}", Signal)
+        }
+        Text("ARQUIVO", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text(
+            character.name.uppercase(),
+            style = MaterialTheme.typography.headlineLarge,
+            fontStyle = FontStyle.Italic,
+        )
+        Barcode("${character.id}-${character.name}")
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            ComplianceMark()
+            Column(horizontalAlignment = Alignment.End) {
+                Icon(Icons.Default.CloudDone, null, tint = Cyan)
+                Text("CACHE PROTEGIDO", color = Cyan, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResourceGrid(character: CharacterEntity) {
+    val entries = listOf(
+        Triple("VIDA", character.life, Signal),
+        Triple("SANIDADE", character.sanity, Cyan),
+        Triple("ARCANO", character.arcane, Acid),
+        Triple("ENERGIA", character.energy, Acid),
+        Triple("DESTINO", character.destiny, Cyan),
+        Triple("EXAUSTÃO", character.exhaustion, Signal),
+        Triple("CORRUPÇÃO", character.corruption, Signal),
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        entries.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { (name, value, color) ->
+                    ResourceCell(name, value, color, Modifier.weight(1f))
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResourceCell(
+    name: String,
+    value: ResourceValue,
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
+    val progress = if (value.maximum > 0) {
+        (value.current.toFloat() / value.maximum).coerceIn(0f, 1f)
+    } else 0f
+    Column(
+        modifier.border(1.dp, color.copy(alpha = .72f), CutCornerShape(topEnd = 13.dp))
+            .background(Carbon).padding(11.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(name, color = color, style = MaterialTheme.typography.labelSmall)
+        Text(
+            "${value.current.toString().padStart(2, '0')} / ${value.maximum.toString().padStart(2, '0')}",
+            style = MaterialTheme.typography.titleLarge,
+        )
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxWidth().height(3.dp),
+            color = color,
+            trackColor = Grid,
+        )
+    }
+}
+
+@Composable
+private fun AttributeCard(attribute: AttributeValue) {
+    TechPanel(accent = Grid) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(56.dp)
+                    .background(Acid, CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(attribute.acronym, color = Void, style = MaterialTheme.typography.titleLarge)
+            }
+            Spacer(Modifier.size(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(attribute.name.uppercase(), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    "BASE.${attribute.value.toString().padStart(2, '0')} // MOD.${signed(attribute.modifier)}",
+                    color = Muted,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+            TelemetryTag(signed(attribute.modifier), if (attribute.modifier >= 0) Cyan else Signal)
+        }
+        HorizontalDivider(color = Grid)
+        attribute.skills.forEachIndexed { index, skill ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    "${(index + 1).toString().padStart(2, '0')}  ${skill.name.uppercase()}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    "${skill.value.toString().padStart(2, '0')} // ${signed(skill.modifier)}",
+                    color = if (skill.modifier >= 0) Acid else Signal,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProtectionCell(name: String, value: Int, modifier: Modifier = Modifier) {
+    Row(
+        modifier.background(Carbon).border(1.dp, Grid).padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(name.uppercase(), color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text(value.toString().padStart(2, '0'), color = Cyan, style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+private fun signed(value: Int) = if (value >= 0) "+$value" else value.toString()
