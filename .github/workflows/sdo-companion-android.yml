@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      SDO_KEYSTORE_BASE64: ${{ secrets.SDO_KEYSTORE_BASE64 }}
+      SDO_KEYSTORE_PASSWORD: ${{ secrets.SDO_KEYSTORE_PASSWORD }}
+      SDO_KEY_ALIAS: ${{ secrets.SDO_KEY_ALIAS }}
+      SDO_KEY_PASSWORD: ${{ secrets.SDO_KEY_PASSWORD }}
+      SDO_KEYSTORE_FILE: ${{ github.workspace }}/app/sdo-companion-release.jks
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -30,8 +35,16 @@ jobs:
           fi
           jq -e '.project_info.project_id and .client[0].client_info.android_client_info.package_name' \
             app/google-services.json > /dev/null
-      - run: gradle lintDebug testDebugUnitTest assembleDebug --stacktrace
+      - name: Restore signing keystore
+        shell: bash
+        run: |
+          test -n "$SDO_KEYSTORE_BASE64"
+          test -n "$SDO_KEYSTORE_PASSWORD"
+          test -n "$SDO_KEY_ALIAS"
+          test -n "$SDO_KEY_PASSWORD"
+          printf '%s' "$SDO_KEYSTORE_BASE64" | base64 --decode > "$SDO_KEYSTORE_FILE"
+      - run: gradle lintRelease testDebugUnitTest assembleRelease --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: sdo-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: sdo-companion-release-apk
+          path: app/build/outputs/apk/release/app-release.apk

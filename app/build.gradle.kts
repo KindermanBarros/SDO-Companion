@@ -8,6 +8,11 @@ plugins {
 if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
 
 android {
+    val signingStoreFile = providers.environmentVariable("SDO_KEYSTORE_FILE").orNull
+    val signingStorePassword = providers.environmentVariable("SDO_KEYSTORE_PASSWORD").orNull
+    val signingKeyAlias = providers.environmentVariable("SDO_KEY_ALIAS").orNull
+    val signingKeyPassword = providers.environmentVariable("SDO_KEY_PASSWORD").orNull
+
     namespace = "com.kinderman.sdo"
     compileSdk = 35
     defaultConfig {
@@ -22,6 +27,29 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+
+    signingConfigs {
+        if (
+            signingStoreFile != null &&
+            signingStorePassword != null &&
+            signingKeyAlias != null &&
+            signingKeyPassword != null
+        ) {
+            create("release") {
+                storeFile = file(signingStoreFile)
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
 }
 
 dependencies {

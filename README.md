@@ -11,7 +11,7 @@ Aplicativo Android offline-first para jogadores e mestre da campanha. A interfac
 - persistência local com Room;
 - sincronização com Cloud Firestore;
 - regras: jogador acessa a própria ficha; mestre acessa todas;
-- CI com lint, testes, APK de debug e artifact no GitHub Actions.
+- CI com lint, testes e APK de release assinado como artifact no GitHub Actions.
 
 ## Configuração Firebase
 
@@ -20,7 +20,11 @@ Aplicativo Android offline-first para jogadores e mestre da campanha. A interfac
 3. Baixe `google-services.json` em `app/google-services.json` (o arquivo é ignorado pelo Git).
 4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`.
 5. Crie `users/{uid}` com `role: "MASTER"` apenas para a conta da mestre. Contas comuns devem usar `PLAYER`.
-6. No GitHub, salve o conteúdo base64 do JSON no secret `GOOGLE_SERVICES_JSON`.
+6. No GitHub, salve o JSON puro ou em Base64 no secret `GOOGLE_SERVICES_JSON`.
+7. Configure os secrets de assinatura `SDO_KEYSTORE_BASE64`,
+   `SDO_KEYSTORE_PASSWORD`, `SDO_KEY_ALIAS` e `SDO_KEY_PASSWORD`.
+
+O keystore de release é exclusivo do SDO Companion e nunca deve ser commitado.
 
 > Sem configuração Firebase, o app oferece um modo local de demonstração. Em builds configurados, a role vem exclusivamente de `users/{uid}.role`; as regras impedem que um jogador se promova.
 
