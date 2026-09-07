@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -63,6 +64,7 @@ data class CharacterRecord(
     val mysticAbilities: List<MysticAbility> = emptyList(),
     val conditions: List<ConditionEffect> = emptyList(),
     val isLocked: Boolean = false,
+    val lockType: String = "NONE",
     val lockedBy: String = "",
     val lockedAt: Long? = null,
     val deleted: Boolean = false,
@@ -110,7 +112,11 @@ fun CharacterRecord.toDomain() = Character(
     conditions = conditions,
     story = story,
     notes = notes,
-    isLocked = isLocked,
+    lockType = if (lockType == "NONE" && isLocked) {
+        CharacterLock.HISTORIAN
+    } else {
+        runCatching { CharacterLock.valueOf(lockType) }.getOrDefault(CharacterLock.NONE)
+    },
     lockedBy = lockedBy,
     lockedAt = lockedAt,
     updatedAt = updatedAt,
@@ -163,6 +169,7 @@ fun Character.toRecord() = CharacterRecord(
     mysticAbilities = mysticAbilities,
     conditions = conditions,
     isLocked = isLocked,
+    lockType = lockType.name,
     lockedBy = lockedBy,
     lockedAt = lockedAt,
     deleted = deleted,

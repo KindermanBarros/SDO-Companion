@@ -189,7 +189,7 @@ Se o ornamento competir com o nome, valor ou ação, reduza sua opacidade ou rem
 - Texto normal deve buscar contraste mínimo de 4,5:1; texto grande, 3:1.
 - Estado nunca depende somente de cor: usar texto (`LOCKED`, `SYNC_OK`), ícone e cor em conjunto.
 - Área interativa mínima de 48 dp.
-- Campos desabilitados continuam legíveis e explicam o estado `FICHA TRANCADA`.
+- Bloqueio afeta exclusão, não edição: os campos permanecem editáveis e o tipo do bloqueio fica explícito.
 - Magenta sobre `Void` pode ser usado como texto em opacidade total; não reduzir sua opacidade em
   mensagens críticas.
 - `StatHeader`, `StatHeaderLight` e `EnergyBlue` não devem ser usados como texto pequeno sobre
@@ -203,8 +203,13 @@ Se o ornamento competir com o nome, valor ou ação, reduza sua opacidade ou rem
 | Foco | `AcidCyan` | `Ice` | cursor cyan |
 | Sincronizando | `EnergyBlue` | `Ice` | `LOCAL_DELTA` |
 | Sincronizado | `AcidCyan` | `Ice` | `SYNC_OK` |
-| Trancado | `AcidMagenta` | legível, não editável | cadeado + `LOCKED` |
+| Bloqueio pessoal | `AcidMagenta` | editável | cadeado + `LOCK.P` |
+| Bloqueio do historiador | `AcidMagenta` | editável | cadeado + `LOCK.H` |
 | Erro/destrutivo | `AcidMagenta` | `HazardText` | mensagem explícita |
+
+`LOCK.P` impede o próprio jogador de excluir a ficha e pode ser removido pelo dono. `LOCK.H`
+impede exclusão por jogadores e só pode ser alterado pelo historiador. O historiador mantém a ação
+de exclusão nos dois estados.
 
 ## Layout Responsivo
 

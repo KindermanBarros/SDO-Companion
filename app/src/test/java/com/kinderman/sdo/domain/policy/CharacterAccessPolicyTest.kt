@@ -1,6 +1,7 @@
 package com.kinderman.sdo.domain.policy
 
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
 import org.junit.Assert.assertFalse
@@ -18,18 +19,24 @@ class CharacterAccessPolicyTest {
         assertTrue(CharacterAccessPolicy.canDelete(player, character))
     }
 
-    @Test fun lockedCharacterIsReadOnlyForOwner() {
-        val character = Character(ownerId = player.uid, isLocked = true)
-        assertFalse(CharacterAccessPolicy.canEdit(player, character))
+    @Test fun lockedOwnerCanEditButCannotDelete() {
+        val character = Character(ownerId = player.uid, lockType = CharacterLock.PLAYER)
+        assertTrue(CharacterAccessPolicy.canEdit(player, character))
         assertFalse(CharacterAccessPolicy.canDelete(player, character))
+        assertTrue(CharacterAccessPolicy.canChangePlayerLock(player, character))
     }
 
     @Test fun masterCanManageAnyCharacterEvenWhenLocked() {
-        val character = Character(ownerId = player.uid, isLocked = true)
+        val character = Character(ownerId = player.uid, lockType = CharacterLock.HISTORIAN)
         assertTrue(CharacterAccessPolicy.canRead(master, character))
         assertTrue(CharacterAccessPolicy.canEdit(master, character))
         assertTrue(CharacterAccessPolicy.canDelete(master, character))
-        assertTrue(CharacterAccessPolicy.canChangeLock(master))
+        assertTrue(CharacterAccessPolicy.canChangeHistorianLock(master))
+    }
+
+    @Test fun historianLockCannotBeChangedByOwner() {
+        val character = Character(ownerId = player.uid, lockType = CharacterLock.HISTORIAN)
+        assertFalse(CharacterAccessPolicy.canChangePlayerLock(player, character))
     }
 
     @Test fun otherPlayerCannotAccessCharacter() {

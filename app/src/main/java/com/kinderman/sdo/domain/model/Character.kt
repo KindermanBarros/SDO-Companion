@@ -4,6 +4,8 @@ import java.util.UUID
 
 enum class UserRole { PLAYER, MASTER }
 
+enum class CharacterLock { NONE, PLAYER, HISTORIAN }
+
 data class UserSession(
     val uid: String,
     val email: String,
@@ -138,13 +140,14 @@ data class Character(
     val conditions: List<ConditionEffect> = emptyList(),
     val story: String = "",
     val notes: String = "",
-    val isLocked: Boolean = false,
+    val lockType: CharacterLock = CharacterLock.NONE,
     val lockedBy: String = "",
     val lockedAt: Long? = null,
     val updatedAt: Long = System.currentTimeMillis(),
     val dirty: Boolean = true,
     val deleted: Boolean = false,
 ) {
+    val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.load }
     val maximumLoad: Int get() = 2 + (attributes.firstOrNull { it.acronym == "FOR" }?.value ?: 0) + containerCapacity
 }

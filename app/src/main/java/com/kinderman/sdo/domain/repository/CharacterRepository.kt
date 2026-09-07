@@ -9,7 +9,8 @@ interface CharacterRepository {
     fun observeOne(id: String): Flow<Character?>
     suspend fun create(session: UserSession): Character
     suspend fun save(session: UserSession, character: Character)
-    suspend fun setLocked(session: UserSession, character: Character, locked: Boolean)
+    suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean)
+    suspend fun setHistorianLocked(session: UserSession, character: Character, locked: Boolean)
     suspend fun delete(session: UserSession, character: Character)
     suspend fun sync(session: UserSession)
 }

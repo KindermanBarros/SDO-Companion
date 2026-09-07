@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
@@ -117,7 +118,12 @@ private fun CharacterAccessCard(character: Character, master: Boolean, onOpen: (
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 TelemetryTag("ID.${character.id.take(6)}")
                 TelemetryTag(
-                    when { character.isLocked -> "LOCKED"; character.dirty -> "LOCAL_DELTA"; else -> "SYNC_OK" },
+                    when {
+                        character.lockType == CharacterLock.HISTORIAN -> "LOCK.H"
+                        character.lockType == CharacterLock.PLAYER -> "LOCK.P"
+                        character.dirty -> "LOCAL_DELTA"
+                        else -> "SYNC_OK"
+                    },
                     when { character.isLocked -> Signal; character.dirty -> Acid; else -> AcidCyan },
                 )
             }

@@ -17,8 +17,9 @@ As regras visuais, tokens e componentes estão documentados no
 - persistência local com Room;
 - sincronização com Cloud Firestore;
 - exclusão offline-first com sincronização da remoção;
-- jogador edita e remove as próprias fichas enquanto estiverem destrancadas;
-- a Mestre/Historiador acessa, edita, tranca, destranca e remove qualquer ficha;
+- jogador edita as próprias fichas e pode ativar um bloqueio pessoal para impedir a própria exclusão;
+- a Mestre/Historiador acessa e edita todas as fichas, aplica/remove o bloqueio de historiador e pode excluir qualquer personagem;
+- bloqueios pessoais podem ser removidos pelo dono; bloqueios de historiador somente pelo historiador;
 - CI com lint, testes e APK de release assinado como artifact no GitHub Actions.
 
 ## Arquitetura
@@ -48,11 +49,11 @@ novamente no repositório e, como última barreira, em `firebase/firestore.rules
 1. Crie um projeto no Firebase e um app Android com package `com.kinderman.sdo`.
 2. Ative Authentication > Google e Cloud Firestore.
 3. Baixe `google-services.json` em `app/google-services.json` (o arquivo é ignorado pelo Git).
-4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`.
-5. Publique `firebase/firestore.rules`. O primeiro login verificado de `kindbarros@gmail.com` cria ou
+4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`. O primeiro login
+   verificado de `kindbarros@gmail.com` cria ou
    corrige automaticamente o perfil para `role: "MASTER"`. As outras contas recebem `PLAYER`.
-6. No GitHub, salve o JSON puro ou em Base64 no secret `GOOGLE_SERVICES_JSON`.
-7. Configure os secrets de assinatura `SDO_KEYSTORE_BASE64`,
+5. No GitHub, salve o JSON puro ou em Base64 no secret `GOOGLE_SERVICES_JSON`.
+6. Configure os secrets de assinatura `SDO_KEYSTORE_BASE64`,
    `SDO_KEYSTORE_PASSWORD`, `SDO_KEY_ALIAS` e `SDO_KEY_PASSWORD`.
 
 O keystore de release é exclusivo do SDO Companion e nunca deve ser commitado.

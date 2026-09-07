@@ -7,6 +7,7 @@ import com.kinderman.sdo.data.local.CharacterRecord
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
@@ -26,16 +27,30 @@ class OfflineFirstCharacterRepository(
         Character(ownerId = session.uid).also { dao.upsert(it.toRecord()) }
 
     override suspend fun save(session: UserSession, character: Character) {
-        check(CharacterAccessPolicy.canEdit(session, character)) { "Esta ficha está trancada para edição." }
+        check(CharacterAccessPolicy.canEdit(session, character)) { "Você não pode editar esta ficha." }
         dao.upsert(character.copy(updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
-    override suspend fun setLocked(session: UserSession, character: Character, locked: Boolean) {
-        check(CharacterAccessPolicy.canChangeLock(session)) { "Somente a mestre pode trancar fichas." }
+    override suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) {
+        check(CharacterAccessPolicy.canChangePlayerLock(session, character)) {
+            "O bloqueio do jogador só pode ser alterado pelo dono e não substitui o bloqueio do historiador."
+        }
+        saveLock(character, if (locked) CharacterLock.PLAYER else CharacterLock.NONE, session.uid)
+    }
+
+    override suspend fun setHistorianLocked(session: UserSession, character: Character, locked: Boolean) {
+        check(CharacterAccessPolicy.canChangeHistorianLock(session)) {
+            "Somente o historiador pode alterar o bloqueio real."
+        }
+        saveLock(character, if (locked) CharacterLock.HISTORIAN else CharacterLock.NONE, session.uid)
+    }
+
+    private suspend fun saveLock(character: Character, lockType: CharacterLock, actorId: String) {
+        val locked = lockType != CharacterLock.NONE
         dao.upsert(
             character.copy(
-                isLocked = locked,
-                lockedBy = if (locked) session.uid else "",
+                lockType = lockType,
+                lockedBy = if (locked) actorId else "",
                 lockedAt = if (locked) System.currentTimeMillis() else null,
                 updatedAt = System.currentTimeMillis(),
                 dirty = true,

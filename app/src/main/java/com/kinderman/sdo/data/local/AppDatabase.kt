@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [CharacterRecord::class], version = 2, exportSchema = false)
+@Database(entities = [CharacterRecord::class], version = 3, exportSchema = false)
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
@@ -32,6 +32,13 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE characters ADD COLUMN lockedBy TEXT NOT NULL DEFAULT ''")
                 db.execSQL("ALTER TABLE characters ADD COLUMN lockedAt INTEGER DEFAULT NULL")
                 db.execSQL("ALTER TABLE characters ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE characters ADD COLUMN lockType TEXT NOT NULL DEFAULT 'NONE'")
+                db.execSQL("UPDATE characters SET lockType = 'HISTORIAN' WHERE isLocked = 1")
             }
         }
     }

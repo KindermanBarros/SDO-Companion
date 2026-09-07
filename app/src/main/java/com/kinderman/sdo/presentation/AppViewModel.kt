@@ -8,7 +8,8 @@ import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.usecase.DeleteCharacter
 import com.kinderman.sdo.domain.usecase.SaveCharacter
-import com.kinderman.sdo.domain.usecase.SetCharacterLock
+import com.kinderman.sdo.domain.usecase.SetHistorianLock
+import com.kinderman.sdo.domain.usecase.SetPlayerLock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +23,8 @@ import kotlinx.coroutines.launch
 class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
     private val saveCharacter = SaveCharacter(repository)
     private val deleteCharacter = DeleteCharacter(repository)
-    private val setCharacterLock = SetCharacterLock(repository)
+    private val setPlayerLock = SetPlayerLock(repository)
+    private val setHistorianLock = SetHistorianLock(repository)
     private val currentSession = MutableStateFlow<UserSession?>(null)
     private val _message = MutableStateFlow<String?>(null)
 
@@ -48,9 +50,13 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
 
     fun save(character: Character) = runAction("Ficha salva") { session -> saveCharacter(session, character) }
 
-    fun setLocked(character: Character, locked: Boolean) = runAction(
-        if (locked) "Ficha trancada" else "Ficha destrancada",
-    ) { session -> setCharacterLock(session, character, locked) }
+    fun setPlayerLocked(character: Character, locked: Boolean) = runAction(
+        if (locked) "Bloqueio pessoal ativado" else "Bloqueio pessoal removido",
+    ) { session -> setPlayerLock(session, character, locked) }
+
+    fun setHistorianLocked(character: Character, locked: Boolean) = runAction(
+        if (locked) "Bloqueio do historiador ativado" else "Bloqueio do historiador removido",
+    ) { session -> setHistorianLock(session, character, locked) }
 
     fun delete(character: Character) = runAction("Personagem removido") { session -> deleteCharacter(session, character) }
 

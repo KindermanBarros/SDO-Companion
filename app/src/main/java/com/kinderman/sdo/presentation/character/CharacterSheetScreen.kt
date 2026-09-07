@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.ui.Acid
@@ -63,7 +64,8 @@ fun CharacterSheetScreen(
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onSave: (Character) -> Unit,
-    onLock: (Character, Boolean) -> Unit,
+    onPlayerLock: (Character, Boolean) -> Unit,
+    onHistorianLock: (Character, Boolean) -> Unit,
     onDelete: (Character) -> Unit,
 ) {
     if (character == null || session == null) return
@@ -71,6 +73,7 @@ fun CharacterSheetScreen(
     var confirmDelete by remember { mutableStateOf(false) }
     val editable = CharacterAccessPolicy.canEdit(session, current)
     val canDelete = CharacterAccessPolicy.canDelete(session, current)
+    val canChangePlayerLock = CharacterAccessPolicy.canChangePlayerLock(session, current)
 
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
@@ -92,7 +95,12 @@ fun CharacterSheetScreen(
                         Column {
                             Text(current.name.uppercase(), style = MaterialTheme.typography.titleMedium)
                             Text(
-                                when { session.isMaster -> "HISTORIAN_OVERRIDE"; current.isLocked -> "PLAYER_FILE // READ_ONLY"; else -> "PLAYER_FILE // EDIT" },
+                                when {
+                                    session.isMaster -> "HISTORIAN_OVERRIDE"
+                                    current.lockType == CharacterLock.HISTORIAN -> "PLAYER_FILE // HISTORIAN_LOCK"
+                                    current.lockType == CharacterLock.PLAYER -> "PLAYER_FILE // PERSONAL_LOCK"
+                                    else -> "PLAYER_FILE // EDIT"
+                                },
                                 color = if (current.isLocked) Signal else Acid,
                                 style = MaterialTheme.typography.labelSmall,
                             )
@@ -100,8 +108,22 @@ fun CharacterSheetScreen(
                     },
                     navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
-                        if (session.isMaster) IconButton({ onLock(current, !current.isLocked) }) {
-                            Icon(if (current.isLocked) Icons.Default.LockOpen else Icons.Default.Lock, if (current.isLocked) "Destrancar" else "Trancar", tint = if (current.isLocked) Acid else Signal)
+                        if (session.isMaster) IconButton({
+                            onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
+                        }) {
+                            Icon(
+                                if (current.lockType == CharacterLock.HISTORIAN) Icons.Default.LockOpen else Icons.Default.Lock,
+                                if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador",
+                                tint = if (current.lockType == CharacterLock.HISTORIAN) Acid else Signal,
+                            )
+                        } else if (canChangePlayerLock) IconButton({
+                            onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
+                        }) {
+                            Icon(
+                                if (current.lockType == CharacterLock.PLAYER) Icons.Default.LockOpen else Icons.Default.Lock,
+                                if (current.lockType == CharacterLock.PLAYER) "Remover meu bloqueio" else "Impedir que eu apague esta ficha",
+                                tint = if (current.lockType == CharacterLock.PLAYER) Acid else Signal,
+                            )
                         }
                         if (canDelete) IconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = Signal) }
                         if (editable) IconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = Acid) }
@@ -152,7 +174,14 @@ private fun SheetHero(character: Character, session: UserSession) {
     TechPanel(accent = if (character.isLocked) Signal else Acid) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isMaster) "OVERRIDE.M" else "PROFILE.P")
-            TelemetryTag(if (character.isLocked) "LOCKED" else "LV.${character.level}", if (character.isLocked) Signal else Acid)
+            TelemetryTag(
+                when (character.lockType) {
+                    CharacterLock.HISTORIAN -> "LOCK.H"
+                    CharacterLock.PLAYER -> "LOCK.P"
+                    CharacterLock.NONE -> "LV.${character.level}"
+                },
+                if (character.isLocked) Signal else Acid,
+            )
         }
         Text("ARQUIVO", color = Acid, style = MaterialTheme.typography.labelLarge)
         Text(character.name.uppercase(), style = MaterialTheme.typography.headlineLarge, fontStyle = FontStyle.Italic, color = Ice)
@@ -161,7 +190,15 @@ private fun SheetHero(character: Character, session: UserSession) {
             ComplianceMark()
             Column(horizontalAlignment = Alignment.End) {
                 Icon(if (character.isLocked) Icons.Default.Lock else Icons.Default.CloudDone, null, tint = if (character.isLocked) Signal else AcidCyan)
-                Text(if (character.isLocked) "CONTROLE DO HISTORIADOR" else "CACHE PROTEGIDO", color = if (character.isLocked) Signal else AcidCyan, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    when (character.lockType) {
+                        CharacterLock.HISTORIAN -> "EXCLUSÃO: SOMENTE HISTORIADOR"
+                        CharacterLock.PLAYER -> "EXCLUSÃO: BLOQUEIO PESSOAL"
+                        CharacterLock.NONE -> "CACHE PROTEGIDO"
+                    },
+                    color = if (character.isLocked) Signal else AcidCyan,
+                    style = MaterialTheme.typography.labelSmall,
+                )
             }
         }
     }

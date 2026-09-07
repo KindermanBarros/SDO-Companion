@@ -12,7 +12,12 @@ class DeleteCharacter(private val repository: CharacterRepository) {
     suspend operator fun invoke(session: UserSession, character: Character) = repository.delete(session, character)
 }
 
-class SetCharacterLock(private val repository: CharacterRepository) {
+class SetPlayerLock(private val repository: CharacterRepository) {
     suspend operator fun invoke(session: UserSession, character: Character, locked: Boolean) =
-        repository.setLocked(session, character, locked)
+        repository.setPlayerLocked(session, character, locked)
+}
+
+class SetHistorianLock(private val repository: CharacterRepository) {
+    suspend operator fun invoke(session: UserSession, character: Character, locked: Boolean) =
+        repository.setHistorianLocked(session, character, locked)
 }
