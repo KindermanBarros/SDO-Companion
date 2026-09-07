@@ -1,9 +1,9 @@
 package com.kinderman.sdo.data
 
-import android.content.Context
+import android.app.Activity
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -24,13 +24,12 @@ class AuthRepository {
         auth.addAuthStateListener(listener)
         awaitClose { auth.removeAuthStateListener(listener) }
     }
-    suspend fun loginWithGoogle(context: Context) = run {
+    suspend fun loginWithGoogle(context: Activity) = run {
         val resourceId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
         require(resourceId != 0) { "Configuração do Google Login não encontrada." }
-        val option = GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(false)
-            .setServerClientId(context.getString(resourceId))
-            .setAutoSelectEnabled(true)
+        val option = GetSignInWithGoogleOption.Builder(
+            context.getString(resourceId)
+        )
             .build()
         val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
         val credential = CredentialManager.create(context).getCredential(context, request).credential

@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 private val Ink = Color(0xFF171411); private val Paper = Color(0xFFF3EBDD); private val Gold = Color(0xFFB98745); private val Wine = Color(0xFF702F35)
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { SdoTheme { SdoApp() } } }
+    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { SdoTheme { SdoApp(this) } } }
 }
 
 @Composable fun SdoTheme(content: @Composable () -> Unit) = MaterialTheme(colorScheme = lightColorScheme(primary = Wine, secondary = Gold, background = Paper, surface = Color(0xFFFFF9EE), onBackground = Ink), typography = Typography(headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold), titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold)), content = content)
@@ -51,26 +51,26 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
     val session = auth.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
     var state by mutableStateOf(AuthUiState()); private set
     val configured get() = auth.configured
-    fun submitGoogle(context: android.content.Context)=viewModelScope.launch { state=AuthUiState(true); state=runCatching { auth.loginWithGoogle(context) }.fold({AuthUiState()},{AuthUiState(error=it.localizedMessage ?: "Não foi possível entrar com Google")}) }
+    fun submitGoogle(activity: android.app.Activity)=viewModelScope.launch { state=AuthUiState(true); state=runCatching { auth.loginWithGoogle(activity) }.fold({AuthUiState()},{AuthUiState(error=it.localizedMessage ?: "Não foi possível entrar com Google")}) }
     fun logout()=auth.logout()
     suspend fun master(uid:String)=runCatching { auth.isMaster(uid) }.getOrDefault(false)
 }
 
-@Composable fun SdoApp() {
+@Composable fun SdoApp(activity: MainActivity) {
     val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as SdoApplication
     val vm: AppViewModel = viewModel(factory = object: ViewModelProvider.Factory { override fun <T: ViewModel> create(modelClass: Class<T>): T = AppViewModel(app.repository) as T })
     val authVm: AuthViewModel = viewModel(factory = object: ViewModelProvider.Factory { override fun <T: ViewModel> create(modelClass: Class<T>): T = AuthViewModel(AuthRepository()) as T })
     val user by authVm.session.collectAsStateWithLifecycle()
     var demo by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(user?.uid, demo) { if(demo) vm.setSession("demo-player", false) else user?.let { vm.setSession(it.uid, authVm.master(it.uid)) } }
-    if(user==null && !demo) { LoginScreen(authVm, allowDemo=!authVm.configured){demo=true}; return }
+    if(user==null && !demo) { LoginScreen(activity, authVm, allowDemo=!authVm.configured){demo=true}; return }
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
     val chars by vm.characters.collectAsStateWithLifecycle(); val master by vm.isMaster.collectAsStateWithLifecycle()
     if (selected == null) Dashboard(chars, master, vm::add) { selected = it }
     else CharacterSheet(chars.firstOrNull { it.id == selected }, master, { selected = null }, vm::save)
 }
 
-@Composable fun LoginScreen(vm:AuthViewModel,allowDemo:Boolean,onDemo:()->Unit){val context=androidx.compose.ui.platform.LocalContext.current;Box(Modifier.fillMaxSize().background(Ink).padding(24.dp),contentAlignment=Alignment.Center){Card(shape=RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Paper)){Column(Modifier.padding(24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){Text("SDO",color=Gold,fontWeight=FontWeight.Bold);Text("COMPANION",style=MaterialTheme.typography.headlineLarge);Text("Entre com sua conta Google para abrir suas histórias e sincronizar suas fichas.");vm.state.error?.let{Text(it,color=MaterialTheme.colorScheme.error)};Button({vm.submitGoogle(context)},Modifier.fillMaxWidth(),enabled=!vm.state.loading){if(vm.state.loading)CircularProgressIndicator(Modifier.size(20.dp),strokeWidth=2.dp)else{Icon(Icons.Default.AccountCircle,null);Spacer(Modifier.width(8.dp));Text("Entrar com Google")}};if(allowDemo){HorizontalDivider();OutlinedButton(onDemo,Modifier.fillMaxWidth()){Text("Usar modo local de demonstração")}}}}}
+@Composable fun LoginScreen(activity: MainActivity,vm:AuthViewModel,allowDemo:Boolean,onDemo:()->Unit){Box(Modifier.fillMaxSize().background(Ink).padding(24.dp),contentAlignment=Alignment.Center){Card(shape=RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Paper)){Column(Modifier.padding(24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){Text("SDO",color=Gold,fontWeight=FontWeight.Bold);Text("COMPANION",style=MaterialTheme.typography.headlineLarge);Text("Entre com sua conta Google para abrir suas histórias e sincronizar suas fichas.");vm.state.error?.let{Text(it,color=MaterialTheme.colorScheme.error)};Button({vm.submitGoogle(activity)},Modifier.fillMaxWidth(),enabled=!vm.state.loading){if(vm.state.loading)CircularProgressIndicator(Modifier.size(20.dp),strokeWidth=2.dp)else{Icon(Icons.Default.AccountCircle,null);Spacer(Modifier.width(8.dp));Text("Entrar com Google")}};if(allowDemo){HorizontalDivider();OutlinedButton(onDemo,Modifier.fillMaxWidth()){Text("Usar modo local de demonstração")}}}}}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
