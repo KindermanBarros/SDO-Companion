@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,18 +68,104 @@ internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (
 internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = Acid) {
         SectionHeader("02", "Recursos")
-        ResourceEditor("VIDA", character.life, StatHeaderLight, enabled) { onChange(character.copy(life = it)) }
-        ResourceEditor("SANIDADE", character.sanity, StatHeader, enabled) { onChange(character.copy(sanity = it)) }
-        ResourceEditor("ARCANO", character.arcane, AuraBlue, enabled) { onChange(character.copy(arcane = it)) }
-        ResourceEditor("ENERGIA", character.energy, EnergyBlue, enabled) { onChange(character.copy(energy = it)) }
-        ResourceEditor("DESTINO", character.destiny, AcidCyan, enabled) { onChange(character.copy(destiny = it)) }
-        ResourceEditor("EXAUSTÃO", character.exhaustion, NeonCoral, enabled) { onChange(character.copy(exhaustion = it)) }
-        ResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption, AcidMagenta, enabled) { onChange(character.copy(corruption = it)) }
+        CalculatedResourceEditor(
+            label = "VIDA",
+            formula = "10 + VITALIDADE",
+            resource = character.life,
+            base = character.lifeBase,
+            maximum = character.lifeMaximum,
+            accent = StatHeaderLight,
+            enabled = enabled,
+        ) { onChange(character.copy(life = it)) }
+        CalculatedResourceEditor(
+            label = "SANIDADE",
+            formula = "10 + SANIDADE",
+            resource = character.sanity,
+            base = character.sanityBase,
+            maximum = character.sanityMaximum,
+            accent = StatHeader,
+            enabled = enabled,
+        ) { onChange(character.copy(sanity = it)) }
+        CalculatedResourceEditor(
+            label = "ARCANO",
+            formula = "POD + ARCANO",
+            resource = character.arcane,
+            base = character.arcaneBase,
+            maximum = character.arcaneMaximum,
+            accent = AuraBlue,
+            enabled = enabled,
+        ) { onChange(character.copy(arcane = it)) }
+        CalculatedResourceEditor(
+            label = "ENERGIA",
+            formula = "VIG + ENERGIA",
+            resource = character.energy,
+            base = character.energyBase,
+            maximum = character.energyMaximum,
+            accent = EnergyBlue,
+            enabled = enabled,
+        ) { onChange(character.copy(energy = it)) }
+        ManualResourceEditor("DESTINO", character.destiny, AcidCyan, enabled) { onChange(character.copy(destiny = it)) }
+        ManualResourceEditor("EXAUSTÃO", character.exhaustion, NeonCoral, enabled) { onChange(character.copy(exhaustion = it)) }
+        ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption, AcidMagenta, enabled) { onChange(character.copy(corruption = it)) }
     }
 }
 
 @Composable
-private fun ResourceEditor(label: String, resource: ResourceValue, accent: Color, enabled: Boolean, onValue: (ResourceValue) -> Unit) {
+private fun CalculatedResourceEditor(
+    label: String,
+    formula: String,
+    resource: ResourceValue,
+    base: Int,
+    maximum: Int,
+    accent: Color,
+    enabled: Boolean,
+    onValue: (ResourceValue) -> Unit,
+) {
+    Column(
+        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(Carbon).padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, color = Ice, style = MaterialTheme.typography.labelLarge)
+            Text("MÁXIMO $maximum", color = accent, style = MaterialTheme.typography.titleLarge)
+        }
+        Text("CÁLCULO // $formula = $base", color = LabelFunctional, style = MaterialTheme.typography.labelSmall)
+        IntegerField("Atual", resource.current, enabled) { value ->
+            onValue(resource.copy(current = value.coerceAtLeast(0)))
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            IconButton(
+                enabled = enabled && resource.adjustment > -base,
+                onClick = { onValue(resource.copy(adjustment = resource.adjustment - 1)) },
+            ) {
+                Icon(Icons.Default.Remove, "Diminuir ajuste de $label", tint = accent)
+            }
+            IntegerField(
+                label = "Ajuste (+/-)",
+                value = resource.adjustment,
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+            ) { value ->
+                onValue(resource.copy(adjustment = value.coerceAtLeast(-base)))
+            }
+            IconButton(
+                enabled = enabled,
+                onClick = { onValue(resource.copy(adjustment = resource.adjustment + 1)) },
+            ) {
+                Icon(Icons.Default.Add, "Aumentar ajuste de $label", tint = accent)
+            }
+        }
+        val adjustmentLabel = if (resource.adjustment >= 0) "+${resource.adjustment}" else resource.adjustment.toString()
+        Text(
+            "BASE $base // AJUSTE $adjustmentLabel // TOTAL $maximum",
+            color = accent,
+            style = MaterialTheme.typography.labelSmall,
+        )
+    }
+}
+
+@Composable
+private fun ManualResourceEditor(label: String, resource: ResourceValue, accent: Color, enabled: Boolean, onValue: (ResourceValue) -> Unit) {
     Column(
         Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(Carbon).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),

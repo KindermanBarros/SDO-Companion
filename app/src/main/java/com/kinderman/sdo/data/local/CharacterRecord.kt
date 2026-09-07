@@ -11,6 +11,7 @@ import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
+import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
@@ -48,6 +49,7 @@ data class CharacterRecord(
     val inventory: List<InventoryItem> = emptyList(),
     val story: String = "",
     val notes: String = "",
+    val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
     val dirty: Boolean = false,
     val height: String = "",
@@ -118,6 +120,17 @@ fun CharacterRecord.toDomain() = Character(
     conditions = conditions,
     story = story,
     notes = notes,
+    personalNotes = personalNotes.ifEmpty {
+        notes.takeIf(String::isNotBlank)?.let { legacyText ->
+            listOf(
+                PersonalNote(
+                    id = "legacy-$id",
+                    title = "Registro Pessoal 1",
+                    text = legacyText,
+                ),
+            )
+        }.orEmpty()
+    },
     lockType = if (lockType == "NONE" && isLocked) {
         CharacterLock.HISTORIAN
     } else {
@@ -141,10 +154,10 @@ fun Character.toRecord() = CharacterRecord(
     age = age,
     level = level,
     money = money,
-    life = life,
-    sanity = sanity,
-    arcane = arcane,
-    energy = energy,
+    life = life.copy(maximum = lifeMaximum),
+    sanity = sanity.copy(maximum = sanityMaximum),
+    arcane = arcane.copy(maximum = arcaneMaximum),
+    energy = energy.copy(maximum = energyMaximum),
     destiny = destiny,
     exhaustion = exhaustion,
     corruption = corruption,
@@ -157,7 +170,8 @@ fun Character.toRecord() = CharacterRecord(
     powers = powers,
     inventory = inventory,
     story = story,
-    notes = notes,
+    notes = "",
+    personalNotes = personalNotes,
     updatedAt = updatedAt,
     dirty = dirty,
     height = height,
