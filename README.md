@@ -1,6 +1,11 @@
 # SDO Companion
 
-Aplicativo Android offline-first para jogadores e mestre da campanha. A interface usa papel, tinta, vinho e dourado para aproximar a ficha digital da linguagem editorial de uma ficha criada no Canva, sem sacrificar acessibilidade ou adaptação a telas pequenas.
+Aplicativo Android offline-first para jogadores e mestre da campanha. A interface
+combina Cyberpunk, Sci-Fi HUD e Acid Graphics em uma FUI operacional com grid
+técnico, telemetria e geometria neo-brutalista.
+
+As regras visuais, tokens e componentes estão documentados no
+[`DESIGN_GUIDE.md`](DESIGN_GUIDE.md).
 
 ## MVP
 
