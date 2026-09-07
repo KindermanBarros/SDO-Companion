@@ -131,6 +131,7 @@ data class Character(
     val corruption: ResourceValue = ResourceValue(0, 100),
     val attributes: List<AttributeValue> = defaultAttributes(),
     val protections: Map<String, Int> = defaultProtections(),
+    val protectionAdjustments: Map<String, Int> = defaultProtectionAdjustments(),
     val positiveTraits: List<String> = listOf(""),
     val negativeTraits: List<String> = listOf(""),
     val learnedKnowledges: List<SpecialKnowledge> = emptyList(),
@@ -172,6 +173,20 @@ data class Character(
     val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment).coerceAtLeast(0)
     val energyMaximum: Int get() = (energyBase + energy.adjustment).coerceAtLeast(0)
 
+    fun protectionBase(name: String): Int = when (name) {
+        "Geral" -> 10
+        "Esquiva" -> protectionTotal("Geral") + attributeValue("AGI") + skillValue("AGI", "Reflexos")
+        "Postura" -> 10 + attributeValue("CAR") + skillValue("CAR", "Lábia")
+        "Mental" -> 10 + attributeValue("INT") + skillValue("INT", "Sanidade")
+        "Arcana" -> 10 + attributeValue("POD") + skillValue("POD", "Arcano")
+        else -> 0
+    }
+
+    fun protectionTotal(name: String): Int =
+        (protectionBase(name) + (protectionAdjustments[name] ?: 0)).coerceAtLeast(0)
+
+    fun calculatedProtections(): Map<String, Int> = defaultProtectionNames.associateWith(::protectionTotal)
+
     private fun attributeValue(acronym: String): Int =
         attributes.firstOrNull { it.acronym == acronym }?.value ?: 0
 
@@ -205,6 +220,10 @@ fun defaultAttributes() = listOf(
 )
 
 fun defaultProtections() = linkedMapOf("Geral" to 10, "Esquiva" to 10, "Postura" to 10, "Mental" to 10, "Arcana" to 10)
+
+val defaultProtectionNames = listOf("Geral", "Esquiva", "Postura", "Mental", "Arcana")
+
+fun defaultProtectionAdjustments() = defaultProtectionNames.associateWith { 0 }
 
 fun defaultBodyRegions() = listOf(
     "Cabeça", "Braço esquerdo", "Braço direito", "Torso", "Mão esquerda",

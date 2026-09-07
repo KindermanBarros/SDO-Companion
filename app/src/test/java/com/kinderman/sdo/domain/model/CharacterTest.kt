@@ -79,4 +79,44 @@ class CharacterTest {
 
         assertEquals("Registro Pessoal 5", nextPersonalNoteTitle(notes))
     }
+
+    @Test fun protectionsUseCanonicalFormulasAndManualAdjustments() {
+        val attributes = defaultAttributes().map { attribute ->
+            when (attribute.acronym) {
+                "AGI" -> attribute.copy(
+                    value = 2,
+                    skills = attribute.skills.map { if (it.name == "Reflexos") it.copy(value = 3) else it },
+                )
+                "CAR" -> attribute.copy(
+                    value = 4,
+                    skills = attribute.skills.map { if (it.name == "Lábia") it.copy(value = 2) else it },
+                )
+                "INT" -> attribute.copy(
+                    value = 5,
+                    skills = attribute.skills.map { if (it.name == "Sanidade") it.copy(value = 4) else it },
+                )
+                "POD" -> attribute.copy(
+                    value = 3,
+                    skills = attribute.skills.map { if (it.name == "Arcano") it.copy(value = 1) else it },
+                )
+                else -> attribute
+            }
+        }
+        val character = Character(
+            attributes = attributes,
+            protectionAdjustments = mapOf(
+                "Geral" to 6,
+                "Esquiva" to 1,
+                "Postura" to -1,
+                "Mental" to 2,
+                "Arcana" to 0,
+            ),
+        )
+
+        assertEquals(16, character.protectionTotal("Geral"))
+        assertEquals(22, character.protectionTotal("Esquiva"))
+        assertEquals(15, character.protectionTotal("Postura"))
+        assertEquals(21, character.protectionTotal("Mental"))
+        assertEquals(14, character.protectionTotal("Arcana"))
+    }
 }

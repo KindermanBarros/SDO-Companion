@@ -18,6 +18,7 @@ import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.defaultAttributes
 import com.kinderman.sdo.domain.model.defaultBodyRegions
 import com.kinderman.sdo.domain.model.defaultOrgans
+import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
 import com.kinderman.sdo.domain.model.defaultProtections
 
 @Entity(tableName = "characters")
@@ -41,6 +42,7 @@ data class CharacterRecord(
     val corruption: ResourceValue = ResourceValue(0, 100),
     val attributes: List<AttributeValue> = defaultAttributes(),
     val protections: Map<String, Int> = defaultProtections(),
+    val protectionAdjustments: Map<String, Int> = emptyMap(),
     val positiveTraits: List<String> = emptyList(),
     val negativeTraits: List<String> = emptyList(),
     val pathName: String = "",
@@ -101,6 +103,11 @@ fun CharacterRecord.toDomain() = Character(
     corruption = corruption,
     attributes = attributes.ifEmpty { defaultAttributes() },
     protections = protections.ifEmpty { defaultProtections() },
+    protectionAdjustments = resolveProtectionAdjustments(
+        attributes = attributes.ifEmpty { defaultAttributes() },
+        storedProtections = protections.ifEmpty { defaultProtections() },
+        storedAdjustments = protectionAdjustments,
+    ),
     positiveTraits = positiveTraits.ifEmpty { listOf("") },
     negativeTraits = negativeTraits.ifEmpty { listOf("") },
     learnedKnowledges = learnedKnowledges,
@@ -162,7 +169,8 @@ fun Character.toRecord() = CharacterRecord(
     exhaustion = exhaustion,
     corruption = corruption,
     attributes = attributes,
-    protections = protections,
+    protections = calculatedProtections(),
+    protectionAdjustments = protectionAdjustments,
     positiveTraits = positiveTraits,
     negativeTraits = negativeTraits,
     pathName = pathName,
@@ -194,3 +202,34 @@ fun Character.toRecord() = CharacterRecord(
     lockedAt = lockedAt,
     deleted = deleted,
 )
+
+private fun resolveProtectionAdjustments(
+    attributes: List<AttributeValue>,
+    storedProtections: Map<String, Int>,
+    storedAdjustments: Map<String, Int>,
+): Map<String, Int> {
+    if (storedAdjustments.isNotEmpty()) {
+        return defaultProtectionAdjustments() + storedAdjustments
+    }
+    if (storedProtections == defaultProtections()) {
+        return defaultProtectionAdjustments()
+    }
+
+    fun attribute(acronym: String): Int = attributes.firstOrNull { it.acronym == acronym }?.value ?: 0
+    fun skill(attributeAcronym: String, name: String): Int = attributes
+        .firstOrNull { it.acronym == attributeAcronym }
+        ?.skills
+        ?.firstOrNull { it.name == name }
+        ?.value
+        ?: 0
+
+    val generalTotal = storedProtections["Geral"] ?: 10
+    val bases = linkedMapOf(
+        "Geral" to 10,
+        "Esquiva" to (generalTotal + attribute("AGI") + skill("AGI", "Reflexos")),
+        "Postura" to (10 + attribute("CAR") + skill("CAR", "Lábia")),
+        "Mental" to (10 + attribute("INT") + skill("INT", "Sanidade")),
+        "Arcana" to (10 + attribute("POD") + skill("POD", "Arcano")),
+    )
+    return bases.mapValues { (name, base) -> (storedProtections[name] ?: base) - base }
+}

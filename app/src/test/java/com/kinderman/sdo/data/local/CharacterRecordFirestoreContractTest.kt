@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.local
 
 import com.google.firebase.firestore.PropertyName
+import com.kinderman.sdo.domain.model.defaultAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -40,5 +41,45 @@ class CharacterRecordFirestoreContractTest {
         assertEquals(12, resource.maximum)
         assertEquals(0, resource.adjustment)
         assertTrue(CharacterConverters().resourceToString(resource).endsWith("|0"))
+    }
+
+    @Test
+    fun defaultLegacyProtectionsAdoptAutomaticCalculations() {
+        val attributes = defaultAttributes().map { attribute ->
+            if (attribute.acronym == "AGI") attribute.copy(value = 2) else attribute
+        }
+        val character = CharacterRecord(attributes = attributes).toDomain()
+
+        assertEquals(0, character.protectionAdjustments.getValue("Esquiva"))
+        assertEquals(12, character.protectionTotal("Esquiva"))
+    }
+
+    @Test
+    fun customizedLegacyProtectionTotalsArePreservedAsAdjustments() {
+        val attributes = defaultAttributes().map { attribute ->
+            if (attribute.acronym == "AGI") {
+                attribute.copy(
+                    value = 2,
+                    skills = attribute.skills.map { if (it.name == "Reflexos") it.copy(value = 2) else it },
+                )
+            } else {
+                attribute
+            }
+        }
+        val character = CharacterRecord(
+            attributes = attributes,
+            protections = linkedMapOf(
+                "Geral" to 19,
+                "Esquiva" to 23,
+                "Postura" to 10,
+                "Mental" to 10,
+                "Arcana" to 10,
+            ),
+        ).toDomain()
+
+        assertEquals(9, character.protectionAdjustments.getValue("Geral"))
+        assertEquals(0, character.protectionAdjustments.getValue("Esquiva"))
+        assertEquals(23, character.protectionTotal("Esquiva"))
+        assertEquals(character.calculatedProtections(), character.toRecord().protections)
     }
 }
