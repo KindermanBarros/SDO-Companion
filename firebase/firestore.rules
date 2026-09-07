@@ -1,13 +1,67 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function isMaster() { return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MASTER'; }
-    match /characters/{characterId} {
-      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isMaster());
-      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if signedIn() && (resource.data.ownerId == request.auth.uid || isMaster());
+    function signedIn() {
+      return request.auth != null;
     }
-    match /users/{uid} { allow read: if signedIn() && (uid == request.auth.uid || isMaster()); allow create: if signedIn() && uid == request.auth.uid && request.resource.data.role == 'PLAYER'; allow update: if isMaster(); }
+
+    function isBootstrapHistorian() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'kindbarros@gmail.com';
+    }
+
+    function hasMasterProfile() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MASTER';
+    }
+
+    function isHistorian() {
+      return isBootstrapHistorian() || hasMasterProfile();
+    }
+
+    function ownsExistingCharacter() {
+      return signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /characters/{characterId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isHistorian());
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.isLocked == false;
+
+      allow update: if isHistorian() || (
+        ownsExistingCharacter()
+        && resource.data.isLocked == false
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.isLocked == resource.data.isLocked
+        && request.resource.data.lockedBy == resource.data.lockedBy
+        && request.resource.data.lockedAt == resource.data.lockedAt
+      );
+
+      allow delete: if isHistorian() || (ownsExistingCharacter() && resource.data.isLocked == false);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (uid == request.auth.uid || isHistorian());
+
+      allow create: if signedIn()
+        && uid == request.auth.uid
+        && (
+          (isBootstrapHistorian() && request.resource.data.role == 'MASTER')
+          || (!isBootstrapHistorian() && request.resource.data.role == 'PLAYER')
+        );
+
+      allow update: if isHistorian() || (
+        signedIn()
+        && uid == request.auth.uid
+        && resource.data.role == 'PLAYER'
+        && request.resource.data.role == resource.data.role
+      );
+
+      allow delete: if isHistorian();
+    }
   }
 }

@@ -139,9 +139,9 @@ private val hudTypography = Typography(
         fontSize = 14.sp,
         letterSpacing = 1.sp,
     ),
-    bodyLarge = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 15.sp),
-    bodyMedium = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp),
-    bodySmall = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp),
+    bodyLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, lineHeight = 23.sp),
+    bodyMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 20.sp),
+    bodySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, lineHeight = 17.sp),
     labelLarge = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
@@ -151,8 +151,8 @@ private val hudTypography = Typography(
     labelSmall = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
-        fontSize = 9.sp,
-        letterSpacing = 1.2.sp,
+        fontSize = 11.sp,
+        letterSpacing = 1.sp,
     ),
 )
 
@@ -176,7 +176,7 @@ fun HudBackground(
             while (x <= size.width) {
                 val isMajor = (x % major) < 0.5f
                 drawLine(
-                    color = Grid.copy(alpha = if (isMajor) 0.42f else 0.16f),
+                    color = (if (isMajor) GridGuide else Grid).copy(alpha = if (isMajor) 0.40f else 0.16f),
                     start = Offset(x, 0f),
                     end = Offset(x, size.height),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -187,7 +187,7 @@ fun HudBackground(
             while (y <= size.height) {
                 val isMajor = (y % major) < 0.5f
                 drawLine(
-                    color = Grid.copy(alpha = if (isMajor) 0.42f else 0.16f),
+                    color = (if (isMajor) GridGuide else Grid).copy(alpha = if (isMajor) 0.40f else 0.16f),
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -248,7 +248,7 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
         Canvas(Modifier
             .weight(1f)
             .height(9.dp)) {
-            drawLine(Acid, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
+            drawLine(TechCutCyan, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
             drawLine(
                 Signal,
                 Offset(size.width * .72f, 0f),
@@ -295,7 +295,7 @@ fun Barcode(seed: String, modifier: Modifier = Modifier) {
             val code = safeSeed[index % safeSeed.length].code
             val width = ((code % 4) + 1) * 1.2.dp.toPx()
             drawRect(
-                color = if (index % 7 == 0) Signal else Ice,
+                color = if (index % 7 == 0) Signal else WireframeNeutral,
                 topLeft = Offset(cursor, 0f),
                 size = androidx.compose.ui.geometry.Size(width, size.height),
             )
@@ -320,7 +320,7 @@ fun ComplianceMark(modifier: Modifier = Modifier) {
         Spacer(Modifier.size(6.dp))
         Column {
             Text("CE//SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
-            Text("CONFORMIDADE ATIVA", color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text("CONFORMIDADE ATIVA", color = MetaStamp, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -331,6 +331,7 @@ fun HudTextField(
     value: String,
     modifier: Modifier = Modifier,
     multiline: Boolean = false,
+    enabled: Boolean = true,
     onValue: (String) -> Unit,
 ) {
     OutlinedTextField(
@@ -339,12 +340,13 @@ fun HudTextField(
         modifier = modifier.fillMaxWidth(),
         label = { Text(label.uppercase()) },
         minLines = if (multiline) 4 else 1,
+        enabled = enabled,
         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Acid,
-            unfocusedBorderColor = Grid,
+            unfocusedBorderColor = TechCutDark,
             focusedLabelColor = Acid,
-            unfocusedLabelColor = Muted,
+            unfocusedLabelColor = LabelFunctional,
             focusedContainerColor = Carbon,
             unfocusedContainerColor = Carbon,
             cursorColor = Acid,
