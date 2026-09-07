@@ -115,17 +115,21 @@ val TechInterfaceFont = FontFamily(
     Font(R.font.oxanium_variable, weight = FontWeight.Normal),
 )
 
+val RawDisplayFont = FontFamily(
+    Font(R.font.mb_forever_raw, weight = FontWeight.Normal),
+)
+
 private val hudTypography = Typography(
     displayLarge = TextStyle(
-        fontFamily = TechInterfaceFont,
-        fontWeight = FontWeight.Bold,
+        fontFamily = RawDisplayFont,
+        fontWeight = FontWeight.Normal,
         fontSize = 42.sp,
         lineHeight = 50.sp,
         letterSpacing = 0.sp,
     ),
     headlineLarge = TextStyle(
-        fontFamily = TechInterfaceFont,
-        fontWeight = FontWeight.Bold,
+        fontFamily = RawDisplayFont,
+        fontWeight = FontWeight.Normal,
         fontSize = 34.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp,

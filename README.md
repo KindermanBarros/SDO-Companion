@@ -14,6 +14,8 @@ As regras visuais, tokens e componentes estão documentados no
 - ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
+- navegação paginada em seis módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
+- tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
 - persistência local com Room;
 - sincronização com Cloud Firestore;
 - exclusão offline-first com sincronização da remoção;
@@ -57,6 +59,8 @@ novamente no repositório e, como última barreira, em `firebase/firestore.rules
    `SDO_KEYSTORE_PASSWORD`, `SDO_KEY_ALIAS` e `SDO_KEY_PASSWORD`.
 
 O keystore de release é exclusivo do SDO Companion e nunca deve ser commitado.
+
+As licenças das fontes distribuídas no APK estão em [`licenses/fonts`](licenses/fonts).
 
 > Sem configuração Firebase, o app oferece um modo local de demonstração. A autorização remota usa
 > o e-mail verificado da conta bootstrap e `users/{uid}.role`; jogadores não podem se promover.

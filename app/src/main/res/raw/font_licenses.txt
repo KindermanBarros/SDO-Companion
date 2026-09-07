@@ -1,5 +1,10 @@
 FONT LICENSE NOTICES
 
+MB Forever Raw
+Copyright 2012 ModBlackmoon (modblackmoon.narod.ru)
+License: Free for personal and commercial use. No modify. Do not claim as your own.
+The original readme is included at licenses/fonts/MB-ForeverRaw-Readme.txt.
+
 Oxanium
 Copyright 2019 The Oxanium Project Authors (https://github.com/sevmeyer/oxanium)
 License: SIL Open Font License, Version 1.1

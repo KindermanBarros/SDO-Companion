@@ -165,10 +165,14 @@ quando a combinação do token com o fundo não alcançar contraste suficiente.
 
 ## Tipografia
 
-- **Display:** serifada pesada/itálica apenas em nomes e títulos curtos. Quando uma fonte acid/metal
-  licenciada for adicionada, ela deve ficar empacotada no app e possuir fallback documentado.
-- **Interface:** monoespaçada para telemetria, códigos, números e labels curtos.
-- **Leitura:** sans-serif para história, efeitos, descrições e textos multilinha.
+- **Assinatura black metal — MB Forever Raw:** lettering ornamental espinhoso usado apenas em
+  títulos fixos, grandes e em caixa alta. Nunca aplicar a campos, parágrafos, números críticos ou
+  nomes de personagens; a baixa legibilidade é intencional e funciona como imagem de marca.
+- **Interface — Oxanium:** sans quadrada e futurista usada em títulos funcionais, campos, botões e
+  leitura. Sua construção geométrica faz a ponte entre o logo orgânico e a grade técnica.
+- **Telemetria:** fallback monoespaçado do sistema para códigos, IDs, números e labels curtos.
+- As fontes ficam empacotadas no APK. Oxanium usa SIL OFL 1.1; MB Forever Raw permite uso pessoal
+  e comercial, sem modificação. Avisos completos e o `ReadMe` original ficam em `licenses/fonts/`.
 - Corpo mínimo: 12 sp; texto corrente recomendado: 14–16 sp; labels operacionais: mínimo 11 sp.
 - Caixa alta é reservada a comandos, status e títulos; não usar em parágrafos.
 
@@ -217,7 +221,19 @@ de exclusão nos dois estados.
 - Larguras maiores: conteúdo central limitado e painéis em duas colunas quando não quebrar a ordem
   canônica da ficha.
 - Listas longas usam blocos repetíveis com ação de remoção no cabeçalho.
-- A ordem das 13 seções segue o modelo canônico e não deve variar entre tamanhos de tela.
+- A ficha usa seis páginas com swipe, abas roláveis, contador e controles anterior/próxima.
+- Somente a página atual e páginas adjacentes entram na composição; cada página usa sua própria
+  `LazyColumn`, evitando medir as 13 seções simultaneamente.
+- A ordem das 13 seções segue o modelo canônico e não deve variar entre tamanhos de tela:
+
+| Página | Seções canônicas |
+| --- | --- |
+| Perfil | 01 Identidade, 02 Recursos, 03 Traços |
+| Aptidões | 04 Atributos, 05 Conhecimentos Especiais, 06 Proteções |
+| Caminho | 07 Caminho e Poderes |
+| Corpo | 08 Inventário, 09 Corpo, 10 Órgãos |
+| Místico | 11 Magias, Runas e Cinzas |
+| Registro | 12 Condições, 13 História e Notas |
 
 ---
 
