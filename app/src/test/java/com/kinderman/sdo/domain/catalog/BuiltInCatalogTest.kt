@@ -7,11 +7,14 @@ import org.junit.Test
 
 class BuiltInCatalogTest {
     @Test fun containsAllPublishedExamplesAndPaths() {
-        assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER })
+        assertEquals(100, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER })
+        assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes Mágicos" })
+        assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes de Profissão e Conhecimento" })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.MAGIC })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.ASH })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.RUNE })
         assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.PATH } >= 18)
+        assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.ITEM } >= 60)
     }
 
     @Test fun idsAreStableAndUnique() {

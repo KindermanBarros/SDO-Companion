@@ -142,7 +142,7 @@ private fun SheetPageContent(
             SheetPage.POWERS -> item("powers") { PowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, editable, onChange) }
 
             SheetPage.BODY -> {
-                item("inventory") { InventorySection(character, editable, onChange) }
+                item("inventory") { InventorySection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange) }
                 item("body") { BodySection(character, editable, onChange) }
                 item("organs") { OrganSection(character, editable, onChange) }
             }

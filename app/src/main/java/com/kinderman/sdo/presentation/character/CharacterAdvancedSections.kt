@@ -21,6 +21,8 @@ import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.initialCreationCost
+import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.ui.Acid
@@ -113,11 +115,15 @@ private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: ()
 }
 
 @Composable
-internal fun InventorySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun InventorySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
+    var dialog by remember { mutableStateOf<String?>(null) }
+    val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
+    val remainingHeritage = (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0)
     TechPanel {
         SectionHeader("09", "Inventário")
         Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) Signal else AcidCyan, style = MaterialTheme.typography.titleLarge)
         Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = Muted, style = MaterialTheme.typography.bodySmall)
+        Text("CRIAÇÃO INICIAL // $remainingHeritage / 20 PH RESTANTES", color = if (remainingHeritage > 0) Acid else Signal, style = MaterialTheme.typography.labelLarge)
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
         character.inventory.forEachIndexed { index, item ->
             InventoryEditor(index, item, enabled,
@@ -125,7 +131,24 @@ internal fun InventorySection(character: Character, enabled: Boolean, onChange: 
                 onValue = { onChange(character.copy(inventory = character.inventory.replace(index, it))) },
             )
         }
-        AddButton("Adicionar item", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
+        AddButton("Construtor de itens por pontos", enabled) { dialog = "builder" }
+        AddButton("Loja inicial // Pontos de Herança", enabled && catalog.isNotEmpty()) { dialog = "initial" }
+        AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
+        AddButton("Adicionar item manualmente", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
+    }
+    when (dialog) {
+        "builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
+            onChange(character.copy(inventory = character.inventory + item))
+            dialog = null
+        }
+        "initial" -> ItemCatalogDialog("LOJA INICIAL", catalog, remainingHeritage, { dialog = null }) { item ->
+            onChange(character.copy(inventory = character.inventory + item))
+            dialog = null
+        }
+        "catalog" -> ItemCatalogDialog("CATÁLOGO DE ITENS", catalog, null, { dialog = null }) { item ->
+            onChange(character.copy(inventory = character.inventory + item))
+            dialog = null
+        }
     }
 }
 

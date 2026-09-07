@@ -18,6 +18,11 @@ data class CatalogEntryRecord(
     val duration: String,
     val source: String,
     val catalogVersion: Int,
+    val creationCost: String,
+    val price: Int,
+    val load: Int,
+    val durability: String,
+    val region: String,
 ) {
     fun toDomain() = CatalogEntry(
         id = id,
@@ -31,10 +36,15 @@ data class CatalogEntryRecord(
         duration = duration,
         source = source,
         version = catalogVersion,
+        creationCost = creationCost,
+        price = price,
+        load = load,
+        durability = durability,
+        region = region,
     )
 }
 
 fun CatalogEntry.toRecord() = CatalogEntryRecord(
     id, kind.name, name, group, summary, cost, action, range, duration, source, version,
+    creationCost, price, load, durability, region,
 )
-

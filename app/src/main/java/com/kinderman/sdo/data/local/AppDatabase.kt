@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [CharacterRecord::class, OwnerRecord::class, CatalogEntryRecord::class], version = 8, exportSchema = false)
+@Database(entities = [CharacterRecord::class, OwnerRecord::class, CatalogEntryRecord::class], version = 9, exportSchema = false)
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
@@ -96,6 +96,16 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                     """.trimIndent(),
                 )
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN creationCost TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN price INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN load INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN durability TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN region TEXT NOT NULL DEFAULT ''")
             }
         }
     }

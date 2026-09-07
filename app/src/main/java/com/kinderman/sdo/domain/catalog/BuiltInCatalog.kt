@@ -91,6 +91,59 @@ object BuiltInCatalog {
         cicatriz_onirica|Cicatriz Onírica|Histórico|Receba +2 PA contra Manifestos Oníricos.
     """)
 
+    private val professionPowers = rows(CatalogKind.POWER, "50 Exemplos de Poderes de Profissão e Conhecimento", """
+        prof_olho_ferreiro|Olho de Ferreiro|Profissão: Ferreiro / Ofício|Identifica defeitos, reparos e qualidade; uma vez por cena, +4 para avaliar, reparar ou modificar metal.
+        prof_reforco_emergencia|Reforço de Emergência|Profissão: Ferreiro ou Armeiro / Ofício|2 PE e Ação Completa tornam um equipamento danificado funcional até o fim da cena.
+        prof_ferramenta_certa|Ferramenta Certa|Profissão: Artesão ou Mecânico / Ofício|Uma vez por cena, declare possuir uma ferramenta pequena e comum plausível para o ofício.
+        prof_mao_carpinteiro|Mão de Carpinteiro|Profissão: Carpinteiro / Ofício|+2 para construir, reparar, desmontar ou avaliar madeira; identifica um ponto estrutural relevante por cena.
+        prof_pedra_sobre_pedra|Pedra Sobre Pedra|Profissão: Pedreiro ou Construtor / Ofício|+2 para avaliar estruturas de pedra; identifica rachadura, passagem ou risco estrutural por cena.
+        prof_costura_campo|Costura de Campo|Profissão: Alfaiate ou Costureiro / Ofício|1 PE e uma ação reparam tecido ou couro leve para uso normal durante a cena.
+        prof_maos_joalheiro|Mãos de Joalheiro|Profissão: Joalheiro ou Lapidador / Ofício|+4 para avaliar gemas, metais preciosos e trabalhos delicados; reconhece falsificação grosseira.
+        prof_tranca_familiar|Tranca Familiar|Profissão: Chaveiro ou Serralheiro / Ofício|1 PE concede +4 ao trabalhar em fechadura, algema ou trava mecânica.
+        prof_no_marinheiro|Nó de Marinheiro|Profissão: Marinheiro ou Cordoeiro / Ofício|+4 para amarrar, prender, içar ou improvisar estruturas com cordas.
+        prof_remendo_sapateiro|Remendo de Sapateiro|Profissão: Sapateiro ou Coureiro / Ofício|Durante descanso, repara desgaste comum em couro; por cena, +2 Movimento quando o equipamento resolver o problema.
+        prof_memoria_arquivista|Memória de Arquivista|Profissão: Arquivista ou Bibliotecário / Conhecimento|Uma vez por cena, +4 para recordar informação plausível de registros, livros ou documentos.
+        prof_leitura_dinamica|Leitura Dinâmica|Profissão: Escriba ou Estudioso / Conhecimento|Com uma ação, identifica tema, estrutura, nomes e trechos relevantes de um texto extenso.
+        prof_citacao_precisa|Citação Precisa|Profissão: Pesquisador ou Professor / Conhecimento|1 PE concede +2 em Conhecimento treinado; com referência imediata, o bônus é +4.
+        prof_didatica|Didática|Profissão: Professor ou Tutor / Conhecimento|Ao Ajudar em Conhecimento ou ofício dominado, concede +4 em vez de +2.
+        prof_codigo_legado|Código Legado|Profissão: Programador / Tecnologia|+2 para compreender código alheio; 1 PE ignora penalidade simples de legado ou incompatibilidade.
+        prof_depuracao|Depuração|Profissão: Programador ou Engenheiro de Sistemas / Tecnologia|Após falhar ao programar, reparar ou configurar, 2 PE permitem repetir o teste.
+        prof_automacao_improvisada|Automação Improvisada|Profissão: Programador ou Tecnomago / Tecnologia|2 PE e Ação Completa automatizam tarefa repetitiva simples até o fim da cena.
+        prof_criptografo|Criptógrafo|Profissão: Escriba, Espião ou Programador / Conhecimento|+4 para reconhecer, criar ou quebrar cifras simples; identifica códigos amadores com tempo.
+        prof_cartografia_mental|Cartografia Mental|Profissão: Cartógrafo / Conhecimento|Reconstrói de memória áreas percorridas e recebe +4 para não se perder onde já explorou.
+        prof_contabilidade|Contabilidade|Profissão: Contador, Administrador ou Mercador / Conhecimento|+4 para encontrar inconsistências em registros financeiros, inventários, salários e impostos.
+        prof_comida_verdade|Comida de Verdade|Profissão: Cozinheiro / Conhecimento|No descanso, prepara refeição para até 5 criaturas; cada uma remove +1 Exaustão na próxima recuperação.
+        prof_aproveitar_tudo|Aproveitar Tudo|Profissão: Cozinheiro ou Açougueiro / Conhecimento|Recursos para três refeições alimentam quatro sem reduzir a qualidade.
+        prof_paladar_treinado|Paladar Treinado|Profissão: Cozinheiro ou Provador / Conhecimento|+4 para identificar ingredientes, deterioração e alterações; detecta veneno evidente sem teste.
+        prof_primeiros_socorros|Primeiros Socorros|Profissão: Curandeiro ou Médico de Campo / Conhecimento|Uma vez por cena, 1 PE concede +4 ao estabilizar uma criatura ferida.
+        prof_diagnostico|Diagnóstico|Profissão: Médico ou Curandeiro / Conhecimento|Exame identifica sinais evidentes; uma vez por cena, +4 para diagnosticar condição específica.
+        prof_dose_correta|Dose Correta|Profissão: Boticário ou Apotecário / Conhecimento|1 PE reduz em 2 penalidade de dosagem, aplicação ou condições improvisadas.
+        prof_anfitriao|Anfitrião Experiente|Profissão: Estalajadeiro ou Hospedeiro / Social|+2 para acalmar conflitos e lidar com hóspedes; concede +2 ao próximo teste social de aliado.
+        prof_ouvido_taverna|Ouvido de Taverna|Profissão: Taverneiro ou Garçom / Social|Uma vez por sessão, após circular em local movimentado, obtém um rumor local plausível.
+        prof_cervejeiro|Cervejeiro|Profissão: Cervejeiro ou Vinicultor / Ofício|+4 para produzir, avaliar ou identificar fermentados; percebe adulteração evidente.
+        prof_acougueiro|Açougueiro|Profissão: Açougueiro / Conhecimento|+2 para identificar cortes, ossos, musculatura e anatomia prática conhecida.
+        prof_previsao_tempo|Previsão do Tempo|Profissão: Fazendeiro, Marinheiro ou Pastor / Conhecimento|Após observar o ambiente, pergunta uma vez por dia a tendência natural do clima nas próximas horas.
+        prof_mao_fazendeiro|Mão de Fazendeiro|Profissão: Agricultor / Conhecimento|+4 para reconhecer plantações, solo, pragas comuns e ferramentas agrícolas.
+        prof_tratador_animais|Tratador de Animais|Profissão: Pastor ou Cavalariço / Conhecimento|+4 para acalmar, conduzir ou cuidar de animais domésticos ou treinados.
+        prof_cavaleiro_estrada|Cavaleiro de Estrada|Profissão: Cavalariço ou Mensageiro / Movimento|+2 para controlar montaria; 1 PE ignora penalidade pequena de terreno em manobra montada.
+        prof_pescador|Pescador|Profissão: Pescador / Conhecimento|+4 para pescar, usar redes, reconhecer águas produtivas ou lidar com barco pequeno.
+        prof_rastreador|Rastreador|Profissão: Caçador ou Batedor / Conhecimento|Uma vez por cena, +4 ao examinar rastros, pegadas ou sinais de passagem.
+        prof_cacador_paciente|Caçador Paciente|Profissão: Caçador / Combate|Após observar oculto ou imóvel por um turno, 2 PE concedem +2 no ataque contra o alvo.
+        prof_lenhador|Lenhador|Profissão: Lenhador / Conhecimento|+4 para derrubar árvores, usar machado como ferramenta ou cruzar vegetação densa.
+        prof_minerador|Minerador|Profissão: Minerador / Conhecimento|+4 para reconhecer minérios, estabilidade, escavação e perigos de minas.
+        prof_guia_caravana|Guia de Caravana|Profissão: Guia ou Caravanista / Conhecimento|+2 para escolher rotas e organizar marcha; permite repetir um teste coletivo de viagem por dia.
+        prof_guarda_atento|Guarda Atento|Profissão: Guarda ou Vigia / Conhecimento|Enquanto de guarda, +4 em Sentidos contra aproximações, invasões e comportamento suspeito.
+        prof_postura_brigao|Postura de Brigão|Profissão: Lutador, Segurança ou Taverneiro / Combate|Uma vez por turno, 1 PE concede +2 em um ataque desarmado.
+        prof_aguentar_tranco|Aguentar o Tranco|Profissão: Carregador, Mineiro ou Trabalhador Braçal / Conhecimento|Uma vez por cena, 2 PE permitem rerrolar um teste falho de esforço físico.
+        prof_trabalho_equipe|Trabalho em Equipe|Profissão: Soldado, Operário ou Marinheiro / Conhecimento|Em tarefa física cooperativa, sua ação Ajuda concede +4 em vez de +2.
+        prof_porteiro|Porteiro|Profissão: Segurança ou Guarda de Portão / Conhecimento|+4 para perceber contradições em justificativas de entrada, documentos ou histórias improvisadas.
+        prof_mao_pesada|Mão Pesada|Profissão: Ferreiro, Lenhador ou Trabalhador Braçal / Combate|Uma vez por turno, ao usar ferramenta pesada como arma improvisada, 2 PE causam +1d6 de dano físico em um acerto.
+        prof_pechincha|Pechincha|Profissão: Mercador / Social|Uma vez por cena, 1 PE concede +4 ao negociar preço, pagamento ou troca.
+        prof_avaliacao_mercado|Avaliação de Mercado|Profissão: Mercador ou Leiloeiro / Conhecimento|Estima faixa de valor e recebe +4 para reconhecer falsificação, abuso de preço ou qualidade incomum.
+        prof_repertorio_bardo|Repertório de Bardo|Profissão: Músico, Bardo ou Artista / Social|Após uma ação de performance, concede +2 ao próximo teste social de um aliado contra quem assistiu.
+        prof_conversa_barbeiro|Conversa de Barbeiro|Profissão: Barbeiro, Cabeleireiro ou Prestador de Serviços / Social|Uma vez por sessão durante o serviço, obtém de uma pessoa uma informação cotidiana, rumor ou relação social que ela revelaria casualmente.
+    """)
+
     private val magic = rows(CatalogKind.MAGIC, "50 Exemplos de Magias", """
         faisca_condutora|Faísca Condutora|Electromancia 1|1d6 + POD elétrico; desregula mecanismo simples.|2 PM|1 ação|3 m|instantânea
         impulso_acelerado|Impulso Acelerado|Electromancia 2|Movimento +5 m e +2 na próxima Iniciativa ou Reflexos.|3 PM|1 ação|pessoal|1 cena
@@ -250,5 +303,5 @@ object BuiltInCatalog {
         portal_oficina|Portal de Oficina|Nível 3 / Espaço|Abre passagem entre arcos pareados.
     """)
 
-    val entries: List<CatalogEntry> = paths + powers + magic + ashes + runes
+    val entries: List<CatalogEntry> = paths + powers + professionPowers + magic + ashes + runes + ItemCreationRules.catalog
 }

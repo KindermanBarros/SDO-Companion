@@ -13,9 +13,11 @@ As regras visuais, tokens e componentes estão documentados no
 - perfil Jogador/Mestre carregado do Firestore;
 - ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
 - referência arcana canônica distribuída entre `Magia.md`, `Cinzas.md`, `Runas.md`, `Regras Arcanas Expandidas.md` e os catálogos de 50 exemplos;
-- catálogo local pesquisável com Caminhos e 50 exemplos de cada tipo: Poderes Mágicos, Magias, Cinzas e Runas;
+- catálogo local pesquisável com Caminhos, 50 Poderes Mágicos, 50 Poderes de Profissão/Conhecimento e 50 exemplos de cada tipo: Magias, Cinzas e Runas;
 - seleção pelo catálogo é opcional: ela apenas preenche uma nova entrada, que continua modular e totalmente editável; entradas manuais continuam disponíveis;
 - o catálogo é atualizado pelo próprio APK no Room, sem depender nem alterar a estrutura sincronizada no Firebase;
+- inventário com construtor canônico de armas, armaduras e acessórios, cálculo de Tipo + Material + Modificações + espaços, preço em E$ e complexidade;
+- loja inicial controlada pelos 20 Pontos de Herança, catálogo de itens para aquisições posteriores e criação manual livre;
 - Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
