@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CutCornerShape
@@ -259,13 +258,82 @@ private fun KnowledgeList(title: String, values: List<SpecialKnowledge>, enabled
 internal fun ProtectionSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = AcidCyan) {
         SectionHeader("06", "Proteções")
-        character.protections.entries.chunked(2).forEach { row ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEach { (name, value) ->
-                    IntegerField(name, value, enabled, Modifier.weight(1f)) { updated -> onChange(character.copy(protections = character.protections + (name to updated))) }
-                }
-                if (row.size == 1) Spacer(Modifier.weight(1f))
+        val formulas = linkedMapOf(
+            "Geral" to "10 + EQUIP./ARMADURA",
+            "Esquiva" to "PG + AGI + REFLEXOS",
+            "Postura" to "10 + CAR + LÁBIA",
+            "Mental" to "10 + INT + SANIDADE",
+            "Arcana" to "10 + POD + ARCANO",
+        )
+        formulas.forEach { (name, formula) ->
+            ProtectionEditor(
+                name = name,
+                formula = formula,
+                base = character.protectionBase(name),
+                adjustment = character.protectionAdjustments[name] ?: 0,
+                total = character.protectionTotal(name),
+                enabled = enabled,
+            ) { updatedAdjustment ->
+                onChange(
+                    character.copy(
+                        protectionAdjustments = character.protectionAdjustments + (name to updatedAdjustment),
+                    ),
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun ProtectionEditor(
+    name: String,
+    formula: String,
+    base: Int,
+    adjustment: Int,
+    total: Int,
+    enabled: Boolean,
+    onAdjustment: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, AcidCyan, CutCornerShape(topEnd = 12.dp))
+            .background(Carbon)
+            .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(name.uppercase(), color = Ice, style = MaterialTheme.typography.labelLarge)
+            Text("TOTAL $total", color = AcidCyan, style = MaterialTheme.typography.titleLarge)
+        }
+        Text("CÁLCULO // $formula = $base", color = LabelFunctional, style = MaterialTheme.typography.labelSmall)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            IconButton(
+                enabled = enabled && adjustment > -base,
+                onClick = { onAdjustment(adjustment - 1) },
+            ) {
+                Icon(Icons.Default.Remove, "Diminuir ajuste de $name", tint = AcidCyan)
+            }
+            IntegerField(
+                label = "Ajuste (+/-)",
+                value = adjustment,
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+            ) { value ->
+                onAdjustment(value.coerceAtLeast(-base))
+            }
+            IconButton(
+                enabled = enabled,
+                onClick = { onAdjustment(adjustment + 1) },
+            ) {
+                Icon(Icons.Default.Add, "Aumentar ajuste de $name", tint = AcidCyan)
+            }
+        }
+        val adjustmentLabel = if (adjustment >= 0) "+$adjustment" else adjustment.toString()
+        Text(
+            "BASE $base // AJUSTE $adjustmentLabel // TOTAL $total",
+            color = AcidCyan,
+            style = MaterialTheme.typography.labelSmall,
+        )
     }
 }

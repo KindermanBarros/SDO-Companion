@@ -16,6 +16,8 @@ As regras visuais, tokens e componentes estão documentados no
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
 - Vida, Sanidade, Arcano e Energia calculados automaticamente a partir dos atributos e conhecimentos,
   com ajuste manual positivo ou negativo;
+- Proteções Geral, Esquiva, Postura, Mental e Arcana calculadas automaticamente pelas regras
+  canônicas, também com ajuste manual positivo ou negativo;
 - anotações em uma aba própria, organizadas como registros pessoais com título e texto;
 - navegação paginada em sete módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
 - tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
