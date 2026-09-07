@@ -33,7 +33,8 @@ jobs:
           else
             printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
           fi
-          jq -e '.project_info.project_id and .client[0].client_info.android_client_info.package_name' \
+          jq -e '.project_info.project_id == "sdo-companion" and
+            .client[0].client_info.android_client_info.package_name == "com.kinderman.sdo"' \
             app/google-services.json > /dev/null
       - name: Restore signing keystore
         shell: bash
