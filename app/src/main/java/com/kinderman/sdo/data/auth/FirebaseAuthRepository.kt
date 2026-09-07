@@ -81,6 +81,9 @@ class FirebaseAuthRepository : AuthRepository {
     override fun logout() = auth.signOut()
 
     private suspend fun loadSession(uid: String, email: String?, displayName: String?): UserSession {
+        // On process restore FirebaseAuth can expose the cached user before refreshing its ID
+        // token. Wait for a usable token before allowing Firestore synchronization to start.
+        auth.currentUser?.takeIf { it.uid == uid }?.getIdToken(false)?.await()
         val storedRole = runCatching {
             Firebase.firestore.collection("users").document(uid).get().await().getString("role")
         }.getOrNull()

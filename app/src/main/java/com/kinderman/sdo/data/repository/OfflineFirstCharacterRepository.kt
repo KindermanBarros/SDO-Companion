@@ -81,7 +81,11 @@ class OfflineFirstCharacterRepository(
         }
         val remoteById = remoteRecords.associateBy(CharacterRecord::id)
         val remoteIds = remoteRecords.mapTo(mutableSetOf()) { it.id }
-        val dirtyRecords = dao.dirty().filter { session.isMaster || it.ownerId == session.uid }
+        val dirtyRecords = dao.dirty().filter { record ->
+            record.ownerId == session.uid || (
+                session.isMaster && (record.id in remoteIds || record.deleted)
+            )
+        }
         val dirtyIds = dirtyRecords.mapTo(mutableSetOf(), CharacterRecord::id)
 
         remoteRecords
