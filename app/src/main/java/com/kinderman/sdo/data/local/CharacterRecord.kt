@@ -2,6 +2,7 @@ package com.kinderman.sdo.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.firebase.firestore.PropertyName
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.Character
@@ -63,6 +64,11 @@ data class CharacterRecord(
     val organs: List<OrganStatus> = emptyList(),
     val mysticAbilities: List<MysticAbility> = emptyList(),
     val conditions: List<ConditionEffect> = emptyList(),
+    // Kotlin compiles Boolean properties prefixed with `is` to an `isLocked()`
+    // JavaBean getter. Firestore would otherwise infer the wire name `locked`,
+    // while the security rules intentionally validate `isLocked`.
+    @get:PropertyName("isLocked")
+    @field:PropertyName("isLocked")
     val isLocked: Boolean = false,
     val lockType: String = "NONE",
     val lockedBy: String = "",

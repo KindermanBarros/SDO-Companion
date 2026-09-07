@@ -28,13 +28,25 @@ service cloud.firestore {
     function existingLockType() {
       return resource.data.get(
         'lockType',
-        resource.data.get('isLocked', false) == true ? 'HISTORIAN' : 'NONE'
+        resource.data.get('isLocked', resource.data.get('locked', false)) == true
+          ? 'HISTORIAN'
+          : 'NONE'
+      );
+    }
+
+    // v0.10.0 was serialized through JavaBean conventions, which can expose
+    // Kotlin's `isLocked` property as `locked`. Accept the legacy wire name
+    // while newer clients migrate to the canonical `isLocked` field.
+    function requestedIsLocked() {
+      return request.resource.data.get(
+        'isLocked',
+        request.resource.data.get('locked', false)
       );
     }
 
     function keepsLockState() {
       return request.resource.data.lockType == existingLockType()
-        && request.resource.data.isLocked == (existingLockType() != 'NONE')
+        && requestedIsLocked() == (existingLockType() != 'NONE')
         && request.resource.data.lockedBy == resource.data.lockedBy
         && request.resource.data.get('lockedAt', null) == resource.data.get('lockedAt', null);
     }
@@ -43,13 +55,13 @@ service cloud.firestore {
       return keepsLockState() || (
         existingLockType() == 'NONE'
         && request.resource.data.lockType == 'PLAYER'
-        && request.resource.data.isLocked == true
+        && requestedIsLocked() == true
         && request.resource.data.lockedBy == request.auth.uid
         && request.resource.data.get('lockedAt', null) != null
       ) || (
         existingLockType() == 'PLAYER'
         && request.resource.data.lockType == 'NONE'
-        && request.resource.data.isLocked == false
+        && requestedIsLocked() == false
         && request.resource.data.lockedBy == ''
         && request.resource.data.get('lockedAt', null) == null
       );
@@ -58,12 +70,12 @@ service cloud.firestore {
     function validHistorianLockTransition() {
       return keepsLockState() || (
         request.resource.data.lockType == 'HISTORIAN'
-        && request.resource.data.isLocked == true
+        && requestedIsLocked() == true
         && request.resource.data.lockedBy == request.auth.uid
         && request.resource.data.get('lockedAt', null) != null
       ) || (
         request.resource.data.lockType == 'NONE'
-        && request.resource.data.isLocked == false
+        && requestedIsLocked() == false
         && request.resource.data.lockedBy == ''
         && request.resource.data.get('lockedAt', null) == null
       );
@@ -83,7 +95,7 @@ service cloud.firestore {
           )
         )
         && request.resource.data.lockType == 'NONE'
-        && request.resource.data.isLocked == false
+        && requestedIsLocked() == false
         && request.resource.data.lockedBy == ''
         && request.resource.data.get('lockedAt', null) == null
         && request.resource.data.deleted == false;
