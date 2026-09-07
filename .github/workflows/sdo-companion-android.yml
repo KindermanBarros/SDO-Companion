@@ -27,7 +27,7 @@ jobs:
       SDO_KEYSTORE_FILE: ${{ github.workspace }}/app/sdo-companion-release.jks
     steps:
       - name: Checkout full history
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
