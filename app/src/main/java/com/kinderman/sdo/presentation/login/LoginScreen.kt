@@ -32,11 +32,11 @@ import com.kinderman.sdo.ui.Barcode
 import com.kinderman.sdo.ui.ComplianceMark
 import com.kinderman.sdo.ui.Grid
 import com.kinderman.sdo.ui.HudBackground
+import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
-import com.kinderman.sdo.ui.Void
 
 @Composable
 fun LoginScreen(
@@ -60,10 +60,10 @@ fun LoginScreen(
             }
             TechPanel(accent = Acid) {
                 Text("SOLIDÃO DOS", color = Acid, style = MaterialTheme.typography.labelLarge)
-                Text("OPRIMIDOS", style = MaterialTheme.typography.displayLarge)
+                Text("OPRIMIDOS", color = Ice, style = MaterialTheme.typography.displayLarge)
                 Text("COMPANION // TERMINAL DE PERSONAGEM", color = Muted, style = MaterialTheme.typography.labelSmall)
                 Barcode("SDO-COMPANION-AUTH")
-                Text("Identifique-se para acessar arquivos locais e sincronizar a ficha.")
+                Text("Identifique-se para acessar arquivos locais e sincronizar a ficha.", color = Ice)
                 state.error?.let {
                     Box(Modifier.fillMaxWidth().border(1.dp, Signal).background(Signal.copy(alpha = .12f)).padding(10.dp)) {
                         Text("ERR_AUTH // $it", color = Signal, style = MaterialTheme.typography.bodySmall)
@@ -74,9 +74,9 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     enabled = !state.loading,
                     shape = CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+                    colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Ice),
                 ) {
-                    if (state.loading) CircularProgressIndicator(Modifier.size(22.dp), color = Void, strokeWidth = 2.dp)
+                    if (state.loading) CircularProgressIndicator(Modifier.size(22.dp), color = Ice, strokeWidth = 2.dp)
                     else {
                         Icon(Icons.Default.AccountCircle, null)
                         Spacer(Modifier.size(9.dp))
@@ -85,7 +85,12 @@ fun LoginScreen(
                 }
                 if (allowDemo) {
                     HorizontalDivider(color = Grid)
-                    OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth(), shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)) {
+                    OutlinedButton(
+                        onClick = onDemo,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Ice),
+                    ) {
                         Text("MODO LOCAL // OFFLINE")
                     }
                 }
