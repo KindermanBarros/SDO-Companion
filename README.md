@@ -24,18 +24,21 @@ As regras visuais, tokens e componentes estão documentados no
 2. Ative Authentication > Google e Cloud Firestore.
 3. Baixe `google-services.json` em `app/google-services.json` (o arquivo é ignorado pelo Git).
 4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`.
-5. Crie `users/{uid}` com `role: "MASTER"` apenas para a conta da mestre. Contas comuns devem usar `PLAYER`.
+5. Crie `users/{uid}` com `role: "MASTER"` apenas para a conta da mestre. Contas comuns devem usar
+   `PLAYER`.
 6. No GitHub, salve o JSON puro ou em Base64 no secret `GOOGLE_SERVICES_JSON`.
 7. Configure os secrets de assinatura `SDO_KEYSTORE_BASE64`,
    `SDO_KEYSTORE_PASSWORD`, `SDO_KEY_ALIAS` e `SDO_KEY_PASSWORD`.
 
 O keystore de release é exclusivo do SDO Companion e nunca deve ser commitado.
 
-> Sem configuração Firebase, o app oferece um modo local de demonstração. Em builds configurados, a role vem exclusivamente de `users/{uid}.role`; as regras impedem que um jogador se promova.
+> Sem configuração Firebase, o app oferece um modo local de demonstração. Em builds configurados, a
+> role vem exclusivamente de `users/{uid}.role`; as regras impedem que um jogador se promova.
 
 ## Executar
 
-Abra a raiz do repositório no Android Studio, sincronize o Gradle e rode o módulo `app`. Sem `google-services.json`, o app continua utilizável localmente com Room.
+Abra a raiz do repositório no Android Studio, sincronize o Gradle e rode o módulo `app`. Sem
+`google-services.json`, o app continua utilizável localmente com Room.
 
 ## Próximas fatias
 

@@ -24,17 +24,17 @@ arquivos classificados e alertas.
 
 ## Paleta
 
-| Token | Hex | Uso |
-| --- | --- | --- |
-| Void | `#090B0B` | fundo global |
-| Carbon | `#121515` | campos e células |
-| Panel | `#191D1C` | painéis elevados |
-| Grid | `#313936` | grid, divisores e bordas neutras |
-| Acid | `#D7FF38` | ação primária, seleção e identificação |
-| Signal | `#FF5A36` | risco, alterações locais e alertas |
-| Cyan | `#57E6DE` | sincronização, integridade e proteção |
-| Ice | `#DCE5DF` | texto principal |
-| Muted | `#89938E` | metadados e texto secundário |
+| Token  | Hex       | Uso                                    |
+|--------|-----------|----------------------------------------|
+| Void   | `#090B0B` | fundo global                           |
+| Carbon | `#121515` | campos e células                       |
+| Panel  | `#191D1C` | painéis elevados                       |
+| Grid   | `#313936` | grid, divisores e bordas neutras       |
+| Acid   | `#D7FF38` | ação primária, seleção e identificação |
+| Signal | `#FF5A36` | risco, alterações locais e alertas     |
+| Cyan   | `#57E6DE` | sincronização, integridade e proteção  |
+| Ice    | `#DCE5DF` | texto principal                        |
+| Muted  | `#89938E` | metadados e texto secundário           |
 
 Use no máximo uma cor de sinal dominante por painel. `Acid` identifica ações
 e estrutura; `Signal` nunca deve ser usado como confirmação positiva.
@@ -102,14 +102,14 @@ Erros ficam abaixo do campo em Signal e devem explicar a correção.
 
 ## Estados
 
-| Estado | Tratamento |
-| --- | --- |
-| normal | Grid/Muted |
-| foco e ação | Acid |
-| sincronizado | Cyan + `SYNC_OK` |
-| alteração local | Signal + `LOCAL_DELTA` |
-| erro | borda Signal + mensagem textual |
-| desabilitado | Muted com contraste reduzido |
+| Estado          | Tratamento                      |
+|-----------------|---------------------------------|
+| normal          | Grid/Muted                      |
+| foco e ação     | Acid                            |
+| sincronizado    | Cyan + `SYNC_OK`                |
+| alteração local | Signal + `LOCAL_DELTA`          |
+| erro            | borda Signal + mensagem textual |
+| desabilitado    | Muted com contraste reduzido    |
 
 Cor nunca é o único sinal: sempre combinar com texto, ícone ou padrão.
 
