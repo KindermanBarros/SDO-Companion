@@ -68,7 +68,33 @@ import com.kinderman.sdo.data.AuthRepository
 import com.kinderman.sdo.data.CharacterEntity
 import com.kinderman.sdo.data.CharacterRepository
 import com.kinderman.sdo.data.ResourceValue
-import com.kinderman.sdo.ui.*
+import com.kinderman.sdo.ui.Acid
+import com.kinderman.sdo.ui.AcidCyan
+import com.kinderman.sdo.ui.AcidMagenta
+import com.kinderman.sdo.ui.AuraBlue
+import com.kinderman.sdo.ui.Barcode
+import com.kinderman.sdo.ui.Carbon
+import com.kinderman.sdo.ui.ComplianceMark
+import com.kinderman.sdo.ui.Cyan
+import com.kinderman.sdo.ui.DamageTrack
+import com.kinderman.sdo.ui.EnergyBlue
+import com.kinderman.sdo.ui.Grid
+import com.kinderman.sdo.ui.HudBackground
+import com.kinderman.sdo.ui.HudTextField
+import com.kinderman.sdo.ui.Ice
+import com.kinderman.sdo.ui.LabelFunctional
+import com.kinderman.sdo.ui.Muted
+import com.kinderman.sdo.ui.NeonCoral
+import com.kinderman.sdo.ui.Panel
+import com.kinderman.sdo.ui.SdoTheme
+import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.Signal
+import com.kinderman.sdo.ui.StatHeader
+import com.kinderman.sdo.ui.StatHeaderLight
+import com.kinderman.sdo.ui.TechCutDark
+import com.kinderman.sdo.ui.TechPanel
+import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.Void
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -306,6 +332,7 @@ private fun Dashboard(
                     Text(
                         if (master) "PAINEL DA MESTRE" else "ARQUIVOS DE CAMPO",
                         style = MaterialTheme.typography.headlineLarge,
+                        color = Ice
                     )
                     Text(
                         "LOCAL_CACHE // FIREBASE_SYNC // ${
@@ -373,7 +400,11 @@ private fun CharacterAccessCard(
                 }
                 Spacer(Modifier.size(13.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(character.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        character.name.uppercase(),
+                        color = Ice,
+                        style = MaterialTheme.typography.titleLarge
+                    )
                     Text(
                         listOf(
                             character.race,
@@ -548,13 +579,18 @@ private fun SheetHero(character: CharacterEntity, master: Boolean) {
             character.name.uppercase(),
             style = MaterialTheme.typography.headlineLarge,
             fontStyle = FontStyle.Italic,
+            color = Ice
         )
         Barcode("${character.id}-${character.name}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ComplianceMark()
             Column(horizontalAlignment = Alignment.End) {
                 Icon(Icons.Default.CloudDone, null, tint = AcidCyan)
-                Text("CACHE PROTEGIDO", color = AcidCyan, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    "CACHE PROTEGIDO",
+                    color = AcidCyan,
+                    style = MaterialTheme.typography.labelSmall
+                )
             }
         }
     }
@@ -637,7 +673,11 @@ private fun AttributeCard(attribute: AttributeValue) {
             }
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(attribute.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    attribute.name.uppercase(),
+                    color = Ice,
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Text(
                     "BASE.${
                         attribute.value.toString().padStart(2, '0')
@@ -646,7 +686,10 @@ private fun AttributeCard(attribute: AttributeValue) {
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
-            TelemetryTag(signed(attribute.modifier), if (attribute.modifier >= 0) AcidCyan else NeonCoral)
+            TelemetryTag(
+                signed(attribute.modifier),
+                if (attribute.modifier >= 0) AcidCyan else NeonCoral
+            )
         }
         HorizontalDivider(color = TechCutDark)
         attribute.skills.forEachIndexed { index, skill ->
