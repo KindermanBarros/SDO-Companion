@@ -215,6 +215,29 @@ Se o ornamento competir com o nome, valor ou ação, reduza sua opacidade ou rem
 impede exclusão por jogadores e só pode ser alterado pelo historiador. O historiador mantém a ação
 de exclusão nos dois estados.
 
+## Motion Design
+
+Movimento comunica mudança de estado; não é decoração contínua fora de processos ativos.
+
+| Token | Duração | Uso |
+| --- | ---: | --- |
+| `RESPONSE` | 180 ms | foco, seleção e resposta direta ao toque |
+| `TRANSITION` | 300 ms | entrada/saída de painéis e mudança de estado |
+| `SIGNAL_PULSE` | 700 ms | pulso reversível de atividade |
+| `TELEMETRY_SCAN` | 1100 ms | varredura linear de progresso indeterminado |
+
+- Autenticação inicial, autenticação Google e carga inicial de personagens usam tela dedicada;
+  sincronizações posteriores usam o indicador dentro do painel, preservando o contexto.
+- Processos sem progresso mensurável usam animação indeterminada e sempre exibem uma descrição
+  textual específica. Nunca simular porcentagem.
+- A varredura mantém velocidade linear; o pulso usa aceleração/desaceleração suave. Não misturar
+  mais de dois ritmos no mesmo componente.
+- Evitar deslocar conteúdo já legível. A animação fica contida no indicador e não bloqueia leitores
+  de tela: o componente publica semântica de progresso e descrição do processo.
+- Não usar flashes, strobe, tremor ou alternância rápida de alto contraste. As animações Compose
+  acompanham a escala de animação configurada pelo sistema.
+- Ao concluir, trocar o estado imediatamente; não impor duração mínima artificial ao loading.
+
 ## Layout Responsivo
 
 - Telefones compactos: uma coluna; pares somente para campos curtos.
@@ -258,6 +281,12 @@ Elemento composto por:
 2. Título em caixa alta em `Ice` (`#FCFCFD`).
 3. Linha vetorial de divisão em `TechCutCyan` (`#498099`) finalizada com três cortes de alerta
    diagonal em `AcidMagenta` (`#EE227D`).
+
+### CyberLoadingIndicator
+
+Indicador indeterminado formado por 15 segmentos de telemetria, scanner horizontal e pulso de
+sinal. Usa `AcidCyan` como energia, `AcidMagenta` somente nos marcos de alerta e texto funcional
+em Oxanium/monoespaçada. Possui variantes de autenticação e carregamento de personagens.
 
 ### TelemetryTag
 

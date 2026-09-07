@@ -41,6 +41,7 @@ import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.Barcode
+import com.kinderman.sdo.ui.CyberLoadingIndicator
 import com.kinderman.sdo.ui.HudBackground
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.LabelFunctional
@@ -57,6 +58,7 @@ import com.kinderman.sdo.ui.Void
 fun DashboardScreen(
     characters: List<Character>,
     session: UserSession?,
+    syncing: Boolean,
     snackbarHost: @Composable () -> Unit,
     onAdd: () -> Unit,
     onOpen: (String) -> Unit,
@@ -83,13 +85,22 @@ fun DashboardScreen(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         TelemetryTag(if (master) "HISTORIAN_ACCESS" else "PLAYER_ACCESS")
                         Row {
-                            IconButton(onSync) { Icon(Icons.Default.Sync, "Sincronizar", tint = Acid) }
+                            IconButton(onClick = onSync, enabled = !syncing) {
+                                Icon(Icons.Default.Sync, "Sincronizar", tint = Acid)
+                            }
                             IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = Signal) }
                         }
                     }
                     Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
                     Text(if (master) "PAINEL DA MESTRE" else "ARQUIVOS DE CAMPO", style = MaterialTheme.typography.headlineLarge, color = Ice)
                     Text("LOCAL_CACHE // FIREBASE_SYNC // ${characters.size.toString().padStart(2, '0')} REGISTROS", color = Muted, style = MaterialTheme.typography.labelSmall)
+                }
+                if (syncing) item("sync-loading") {
+                    TechPanel(accent = Acid) {
+                        TelemetryTag("DATA.13 // SYNC")
+                        CyberLoadingIndicator("Sincronizando personagens")
+                        Text("CONCILIANDO CACHE LOCAL E FIREBASE", color = Muted, style = MaterialTheme.typography.labelSmall)
+                    }
                 }
                 if (characters.isEmpty()) item {
                     TechPanel(accent = Signal) {

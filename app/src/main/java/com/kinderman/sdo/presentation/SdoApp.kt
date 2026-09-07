@@ -17,6 +17,8 @@ import com.kinderman.sdo.SdoApplication
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
 import com.kinderman.sdo.presentation.login.LoginScreen
+import com.kinderman.sdo.ui.CyberLoadingMode
+import com.kinderman.sdo.ui.CyberLoadingScreen
 
 @Composable
 fun SdoApp(activity: MainActivity) {
@@ -26,6 +28,7 @@ fun SdoApp(activity: MainActivity) {
     val authenticatedSession by authViewModel.session.collectAsStateWithLifecycle()
     val appSession by appViewModel.session.collectAsStateWithLifecycle()
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
+    val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
@@ -46,6 +49,10 @@ fun SdoApp(activity: MainActivity) {
     }
 
     when {
+        authViewModel.state.initializing -> CyberLoadingScreen(CyberLoadingMode.AUTH_BOOT)
+
+        authViewModel.state.loading -> CyberLoadingScreen(CyberLoadingMode.GOOGLE_AUTH)
+
         authenticatedSession == null && !demo -> LoginScreen(
             activity = activity,
             state = authViewModel.state,
@@ -54,9 +61,13 @@ fun SdoApp(activity: MainActivity) {
             onDemo = { demo = true },
         )
 
+        appSession == null || characterLoadState.initialLoading ->
+            CyberLoadingScreen(CyberLoadingMode.CHARACTERS)
+
         selectedId == null -> DashboardScreen(
             characters = characters,
             session = appSession,
+            syncing = characterLoadState.syncing,
             snackbarHost = { SnackbarHost(snackbar) },
             onAdd = appViewModel::add,
             onOpen = { selectedId = it },

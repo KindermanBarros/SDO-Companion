@@ -119,6 +119,13 @@ val RawDisplayFont = FontFamily(
     Font(R.font.mb_forever_raw, weight = FontWeight.Normal),
 )
 
+object SdoMotionTokens {
+    const val RESPONSE = 180
+    const val TRANSITION = 300
+    const val SIGNAL_PULSE = 700
+    const val TELEMETRY_SCAN = 1_100
+}
+
 private val hudTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = RawDisplayFont,

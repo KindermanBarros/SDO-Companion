@@ -18,6 +18,7 @@ As regras visuais, tokens e componentes estão documentados no
 - tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
 - persistência local com Room;
 - sincronização com Cloud Firestore;
+- loadings cibernéticos distintos para autenticação e sincronização de personagens;
 - exclusão offline-first com sincronização da remoção;
 - jogador edita as próprias fichas e pode ativar um bloqueio pessoal para impedir a própria exclusão;
 - a Mestre/Historiador acessa e edita todas as fichas, aplica/remove o bloqueio de historiador e pode excluir qualquer personagem;
