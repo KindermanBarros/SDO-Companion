@@ -3,24 +3,13 @@ package com.kinderman.sdo.presentation.character
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -37,7 +26,6 @@ import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.Void
-import com.kinderman.sdo.ui.VoidDeep
 import kotlinx.coroutines.launch
 
 internal enum class SheetPage(val code: String, val label: String) {
@@ -55,7 +43,6 @@ internal fun CharacterSheetPager(
     session: UserSession,
     editable: Boolean,
     onChange: (Character) -> Unit,
-    onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val pages = SheetPage.entries
@@ -108,40 +95,6 @@ internal fun CharacterSheetPager(
                 onChange = onChange,
                 scrollState = pageScrollStates[pageIndex],
             )
-        }
-
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            IconButton(
-                enabled = pagerState.currentPage > 0,
-                onClick = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } },
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Página anterior")
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("${(pagerState.currentPage + 1).toString().padStart(2, '0')} / ${pages.size.toString().padStart(2, '0')}", color = Acid, style = MaterialTheme.typography.labelLarge)
-                Text(pages[pagerState.currentPage].label, color = Muted, style = MaterialTheme.typography.labelSmall)
-            }
-            Button(
-                onClick = onSave,
-                enabled = editable,
-                colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = VoidDeep),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
-            ) {
-                Icon(Icons.Default.Save, null)
-                Text(" SALVAR", style = MaterialTheme.typography.labelLarge)
-            }
-            IconButton(
-                enabled = pagerState.currentPage < pages.lastIndex,
-                onClick = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } },
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, "Próxima página")
-            }
         }
     }
 }

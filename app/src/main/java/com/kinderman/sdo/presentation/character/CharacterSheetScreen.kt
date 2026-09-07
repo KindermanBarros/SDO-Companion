@@ -1,5 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,6 +69,8 @@ fun CharacterSheetScreen(
     val canDelete = CharacterAccessPolicy.canDelete(session, current)
     val canChangePlayerLock = CharacterAccessPolicy.canChangePlayerLock(session, current)
 
+    BackHandler(onBack = onBack)
+
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
         title = { Text("REMOVER PERSONAGEM") },
@@ -130,7 +133,6 @@ fun CharacterSheetScreen(
                 session = session,
                 editable = editable,
                 onChange = { current = it },
-                onSave = { onSave(current) },
                 modifier = Modifier.padding(padding).fillMaxSize(),
             )
         }
