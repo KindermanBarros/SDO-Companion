@@ -3,6 +3,7 @@ package com.kinderman.sdo.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.UserProfile
@@ -43,12 +44,14 @@ class AppViewModel(
     private val currentSession = MutableStateFlow<UserSession?>(null)
     private val _message = MutableStateFlow<String?>(null)
     private val _loadState = MutableStateFlow(CharacterLoadState())
+    private val _conflicts = MutableStateFlow<List<CharacterSyncConflict>>(emptyList())
     private var syncJob: Job? = null
     private var syncRequested = false
 
     val session = currentSession.asStateFlow()
     val message = _message.asStateFlow()
     val loadState = _loadState.asStateFlow()
+    val conflicts = _conflicts.asStateFlow()
     val characters = currentSession.flatMapLatest { session ->
         session?.let(repository::observe) ?: flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -61,6 +64,7 @@ class AppViewModel(
         syncJob?.cancel()
         syncJob = null
         syncRequested = false
+        _conflicts.value = emptyList()
         currentSession.value = session
         startSync(initial = true)
     }
@@ -73,6 +77,7 @@ class AppViewModel(
         syncRequested = false
         currentSession.value = null
         _message.value = null
+        _conflicts.value = emptyList()
         _loadState.value = CharacterLoadState()
     }
 
@@ -98,6 +103,21 @@ class AppViewModel(
 
     fun sync() = startSync(initial = false)
 
+    fun resolveConflict(conflict: CharacterSyncConflict, remoteFieldIds: Set<String>) {
+        val session = currentSession.value ?: return
+        viewModelScope.launch {
+            runCatching { repository.resolveConflict(session, conflict, remoteFieldIds) }
+                .onSuccess {
+                    _conflicts.value = _conflicts.value.filterNot {
+                        it.local.id == conflict.local.id && it.remoteUpdatedAt == conflict.remoteUpdatedAt
+                    }
+                    _message.value = "Conflito resolvido"
+                    if (_conflicts.value.isEmpty()) startSync(initial = false)
+                }
+                .onFailure { _message.value = userMessage(it, "Falha ao resolver conflito") }
+        }
+    }
+
     private fun runAction(success: String? = null, action: suspend (UserSession) -> Unit) {
         val session = currentSession.value ?: return
         viewModelScope.launch {
@@ -120,7 +140,7 @@ class AppViewModel(
             _loadState.value = CharacterLoadState(initialLoading = initial, syncing = true)
             try {
                 ownerRepository.sync(session)
-                repository.sync(session)
+                _conflicts.value = repository.sync(session)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Throwable) {

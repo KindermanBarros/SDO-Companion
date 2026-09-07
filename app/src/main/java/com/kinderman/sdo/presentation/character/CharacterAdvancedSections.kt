@@ -44,14 +44,21 @@ internal fun PathSection(character: Character, enabled: Boolean, onChange: (Char
         character.pathPillars.forEachIndexed { index, pillar ->
             HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) { onChange(character.copy(pathPillars = character.pathPillars.replace(index, it))) }
         }
-        Text("PODERES // ${character.powers.size}/4", color = Acid, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+@Composable
+internal fun PowerSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    TechPanel(accent = Acid) {
+        SectionHeader("08", "Poderes")
+        Text("REGISTROS // ${character.powers.size}", color = Acid, style = MaterialTheme.typography.labelLarge)
         character.powers.forEachIndexed { index, power ->
             PowerEditor(index, power, enabled,
                 onRemove = { onChange(character.copy(powers = character.powers.filterIndexed { itemIndex, _ -> itemIndex != index })) },
                 onValue = { onChange(character.copy(powers = character.powers.replace(index, it))) },
             )
         }
-        AddButton("Adicionar poder", enabled && character.powers.size < 4) { onChange(character.copy(powers = character.powers + Power())) }
+        AddButton("Adicionar poder", enabled) { onChange(character.copy(powers = character.powers + Power())) }
     }
 }
 
@@ -80,7 +87,7 @@ private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: ()
 @Composable
 internal fun InventorySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
-        SectionHeader("08", "Inventário")
+        SectionHeader("09", "Inventário")
         Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) Signal else AcidCyan, style = MaterialTheme.typography.titleLarge)
         Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = Muted, style = MaterialTheme.typography.bodySmall)
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
@@ -117,7 +124,7 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
 @Composable
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = Signal) {
-        SectionHeader("09", "Corpo e armadura")
+        SectionHeader("10", "Corpo e armadura")
         HudTextField("Limitação de Agilidade", character.agilityLimit, enabled = enabled) { onChange(character.copy(agilityLimit = it)) }
         character.bodyRegions.forEachIndexed { index, region ->
             Column(Modifier.fillMaxWidth().background(Carbon).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -138,7 +145,7 @@ internal fun BodySection(character: Character, enabled: Boolean, onChange: (Char
 @Composable
 internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = Signal) {
-        SectionHeader("10", "Órgãos")
+        SectionHeader("11", "Órgãos")
         character.organs.forEachIndexed { index, organ ->
             Column(Modifier.fillMaxWidth().background(Carbon).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 HudTextField("Órgão", organ.name, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(name = it)))) }
@@ -154,7 +161,7 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
 @Composable
 internal fun MysticSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = AcidCyan) {
-        SectionHeader("11", "Magias, runas e cinzas")
+        SectionHeader("12", "Magias, runas e cinzas")
         character.mysticAbilities.forEachIndexed { index, ability ->
             MysticEditor(index, ability, enabled,
                 onRemove = { onChange(character.copy(mysticAbilities = character.mysticAbilities.filterIndexed { itemIndex, _ -> itemIndex != index })) },
@@ -191,7 +198,7 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
 @Composable
 internal fun ConditionSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = Signal) {
-        SectionHeader("12", "Condições")
+        SectionHeader("13", "Condições")
         character.conditions.forEachIndexed { index, condition ->
             ConditionEditor(index, condition, enabled,
                 onRemove = { onChange(character.copy(conditions = character.conditions.filterIndexed { itemIndex, _ -> itemIndex != index })) },
@@ -221,7 +228,7 @@ private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boo
 @Composable
 internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
-        SectionHeader("13", "História")
+        SectionHeader("14", "História")
         HudTextField("História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
     }
 }

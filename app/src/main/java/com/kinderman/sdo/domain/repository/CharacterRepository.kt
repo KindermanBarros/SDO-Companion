@@ -1,6 +1,7 @@
 package com.kinderman.sdo.domain.repository
 
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
@@ -14,5 +15,10 @@ interface CharacterRepository {
     suspend fun setHistorianLocked(session: UserSession, character: Character, locked: Boolean)
     suspend fun transferOwnership(session: UserSession, character: Character, owner: UserProfile)
     suspend fun delete(session: UserSession, character: Character)
-    suspend fun sync(session: UserSession)
+    suspend fun sync(session: UserSession): List<CharacterSyncConflict>
+    suspend fun resolveConflict(
+        session: UserSession,
+        conflict: CharacterSyncConflict,
+        remoteFieldIds: Set<String>,
+    )
 }

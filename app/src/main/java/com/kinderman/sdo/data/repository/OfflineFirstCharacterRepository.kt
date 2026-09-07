@@ -9,8 +9,11 @@ import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
+import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.UserProfile
+import com.kinderman.sdo.domain.model.characterConflictFields
+import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
@@ -88,9 +91,10 @@ class OfflineFirstCharacterRepository(
         dao.upsert(character.copy(deleted = true, updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
-    override suspend fun sync(session: UserSession) = syncMutex.withLock {
-        val store = runCatching { Firebase.firestore }.getOrNull() ?: return@withLock
+    override suspend fun sync(session: UserSession): List<CharacterSyncConflict> = syncMutex.withLock {
+        val store = runCatching { Firebase.firestore }.getOrNull() ?: return@withLock emptyList()
         val collection = store.collection("characters")
+        val conflicts = mutableListOf<CharacterSyncConflict>()
 
         val snapshot = if (session.isMaster) {
             collection.get().await()
@@ -114,7 +118,15 @@ class OfflineFirstCharacterRepository(
 
         remoteRecords
             .filter { it.id !in dirtyIds }
-            .forEach { dao.upsert(it.copy(dirty = false, deleted = false)) }
+            .forEach { remote ->
+                dao.upsert(
+                    remote.copy(
+                        dirty = false,
+                        lastSyncedAt = remote.updatedAt,
+                        deleted = false,
+                    ),
+                )
+            }
         dao.visible(session.uid, session.isMaster)
             .filter { !it.dirty && it.id !in remoteIds && it.id !in dirtyIds }
             .forEach { dao.purge(it.id) }
@@ -133,14 +145,66 @@ class OfflineFirstCharacterRepository(
                     } catch (error: Throwable) {
                         // Restaura o estado autoritativo (por exemplo, um lock aplicado remotamente)
                         // para que a mesma exclusão rejeitada não seja repetida a cada abertura.
-                        dao.upsert(remote.copy(dirty = false, deleted = false))
+                        dao.upsert(
+                            remote.copy(
+                                dirty = false,
+                                lastSyncedAt = remote.updatedAt,
+                                deleted = false,
+                            ),
+                        )
                         throw error
                     }
                 }
             } else {
+                val remote = remoteById[record.id]
+                if (remote != null && remote.updatedAt > record.lastSyncedAt) {
+                    val localCharacter = record.toDomain()
+                    val remoteCharacter = remote.toDomain()
+                    val fields = characterConflictFields(localCharacter, remoteCharacter)
+                    if (fields.isNotEmpty()) {
+                        conflicts += CharacterSyncConflict(
+                            local = localCharacter,
+                            remote = remoteCharacter,
+                            remoteUpdatedAt = remote.updatedAt,
+                            fields = fields,
+                        )
+                        return@forEach
+                    }
+                }
                 collection.document(record.id).set(record.copy(dirty = false)).await()
-                dao.markSynced(record.id)
+                dao.markSynced(record.id, record.updatedAt)
             }
         }
+        conflicts
+    }
+
+    override suspend fun resolveConflict(
+        session: UserSession,
+        conflict: CharacterSyncConflict,
+        remoteFieldIds: Set<String>,
+    ) = syncMutex.withLock {
+        val merged = mergeCharacterConflict(conflict.local, conflict.remote, remoteFieldIds)
+        if (characterConflictFields(merged, conflict.remote).isEmpty()) {
+            dao.upsert(
+                conflict.remote.copy(
+                    dirty = false,
+                    lastSyncedAt = conflict.remoteUpdatedAt,
+                    deleted = false,
+                ).toRecord(),
+            )
+            return@withLock
+        }
+
+        check(CharacterAccessPolicy.canEdit(session, conflict.remote)) {
+            "A versão online está bloqueada. Para continuar, escolha todos os valores online."
+        }
+        dao.upsert(
+            merged.copy(
+                updatedAt = System.currentTimeMillis(),
+                dirty = true,
+                lastSyncedAt = conflict.remoteUpdatedAt,
+                deleted = false,
+            ).toRecord(),
+        )
     }
 }

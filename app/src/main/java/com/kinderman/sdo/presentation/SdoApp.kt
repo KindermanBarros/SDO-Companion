@@ -17,6 +17,7 @@ import com.kinderman.sdo.SdoApplication
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
 import com.kinderman.sdo.presentation.login.LoginScreen
+import com.kinderman.sdo.presentation.sync.CharacterConflictDialog
 import com.kinderman.sdo.ui.CyberLoadingMode
 import com.kinderman.sdo.ui.CyberLoadingScreen
 
@@ -32,6 +33,7 @@ fun SdoApp(activity: MainActivity) {
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
     val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
+    val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
@@ -97,6 +99,13 @@ fun SdoApp(activity: MainActivity) {
                 appViewModel.delete(it)
                 selectedId = null
             },
+        )
+    }
+
+    conflicts.firstOrNull()?.let { conflict ->
+        CharacterConflictDialog(
+            conflict = conflict,
+            onResolve = { remoteFieldIds -> appViewModel.resolveConflict(conflict, remoteFieldIds) },
         )
     }
 }
