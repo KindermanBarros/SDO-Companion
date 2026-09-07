@@ -12,6 +12,8 @@ As regras visuais, tokens e componentes estão documentados no
 - login único com Google via Firebase Authentication e Credential Manager;
 - perfil Jogador/Mestre carregado do Firestore;
 - ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
+- referência arcana canônica distribuída entre `Magia.md`, `Cinzas.md`, `Runas.md`, `Regras Arcanas Expandidas.md` e os catálogos de 50 exemplos;
+- Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
 - Vida, Sanidade, Arcano e Energia calculados automaticamente a partir dos atributos e conhecimentos,
@@ -88,4 +90,5 @@ majors permanecem isoladas para revisão e devem passar por lint, testes e build
 
 1. campanhas e convites por código;
 2. resolução explícita de conflitos de edição;
-3. testes instrumentados do Room, regras do Firestore e Compose UI.
+3. testes instrumentados do Room, regras do Firestore e Compose UI;
+4. representar na ficha e na persistência a fonte, os pré-requisitos e a condição de perda dos Poderes.
