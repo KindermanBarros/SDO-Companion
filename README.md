@@ -19,7 +19,9 @@ As regras visuais, tokens e componentes estão documentados no
 - Proteções Geral, Esquiva, Postura, Mental e Arcana calculadas automaticamente pelas regras
   canônicas, também com ajuste manual positivo ou negativo;
 - anotações em uma aba própria, organizadas como registros pessoais com título e texto;
-- navegação paginada em sete módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
+- Caminho e Poderes em abas independentes, sem limite de quantidade para os poderes;
+- navegação paginada em oito módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
+- resolução de conflitos por campo quando a ficha local e a online foram alteradas desde a última sincronização;
 - tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
 - persistência local com Room;
 - sincronização com Cloud Firestore;

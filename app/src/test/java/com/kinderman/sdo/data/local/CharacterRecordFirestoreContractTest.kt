@@ -1,5 +1,6 @@
 package com.kinderman.sdo.data.local
 
+import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.PropertyName
 import com.kinderman.sdo.domain.model.defaultAttributes
 import org.junit.Assert.assertEquals
@@ -8,6 +9,21 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterRecordFirestoreContractTest {
+    @Test
+    fun lastSyncedRevisionStaysOnlyInTheLocalDatabase() {
+        val getterAnnotation = CharacterRecord::class.java
+            .getDeclaredMethod("getLastSyncedAt")
+            .getAnnotation(Exclude::class.java)
+        val fieldAnnotation = CharacterRecord::class.java
+            .getDeclaredField("lastSyncedAt")
+            .getAnnotation(Exclude::class.java)
+
+        assertNotNull(getterAnnotation)
+        assertNotNull(fieldAnnotation)
+        assertEquals(456L, CharacterRecord(lastSyncedAt = 456L).toDomain().lastSyncedAt)
+        assertEquals(456L, CharacterRecord(lastSyncedAt = 456L).toDomain().toRecord().lastSyncedAt)
+    }
+
     @Test
     fun isLockedKeepsTheSecurityRulesFieldName() {
         val getterAnnotation = CharacterRecord::class.java

@@ -2,6 +2,7 @@ package com.kinderman.sdo.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.PropertyName
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.BodyRegion
@@ -54,6 +55,9 @@ data class CharacterRecord(
     val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
     val dirty: Boolean = false,
+    @get:Exclude
+    @field:Exclude
+    val lastSyncedAt: Long = 0,
     val height: String = "",
     val sex: String = "",
     val size: String = "",
@@ -147,6 +151,7 @@ fun CharacterRecord.toDomain() = Character(
     lockedAt = lockedAt,
     updatedAt = updatedAt,
     dirty = dirty,
+    lastSyncedAt = lastSyncedAt,
     deleted = deleted,
 )
 
@@ -182,6 +187,7 @@ fun Character.toRecord() = CharacterRecord(
     personalNotes = personalNotes,
     updatedAt = updatedAt,
     dirty = dirty,
+    lastSyncedAt = lastSyncedAt,
     height = height,
     sex = sex,
     size = size,

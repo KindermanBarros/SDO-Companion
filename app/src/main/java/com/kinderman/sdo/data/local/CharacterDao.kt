@@ -21,8 +21,8 @@ interface CharacterDao {
 
     @Upsert suspend fun upsert(character: CharacterRecord)
 
-    @Query("UPDATE characters SET dirty = 0 WHERE id = :id")
-    suspend fun markSynced(id: String)
+    @Query("UPDATE characters SET dirty = 0, lastSyncedAt = :remoteUpdatedAt WHERE id = :id")
+    suspend fun markSynced(id: String, remoteUpdatedAt: Long)
 
     @Query("DELETE FROM characters WHERE id = :id")
     suspend fun purge(id: String)

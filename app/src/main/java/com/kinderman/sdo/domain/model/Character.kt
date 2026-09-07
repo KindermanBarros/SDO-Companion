@@ -157,6 +157,7 @@ data class Character(
     val lockedAt: Long? = null,
     val updatedAt: Long = System.currentTimeMillis(),
     val dirty: Boolean = true,
+    val lastSyncedAt: Long = 0,
     val deleted: Boolean = false,
 ) {
     val isLocked: Boolean get() = lockType != CharacterLock.NONE

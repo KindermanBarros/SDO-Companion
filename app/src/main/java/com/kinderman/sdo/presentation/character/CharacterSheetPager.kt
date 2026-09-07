@@ -32,10 +32,11 @@ internal enum class SheetPage(val code: String, val label: String) {
     PROFILE("01—03", "PERFIL"),
     APTITUDES("04—06", "APTIDÕES"),
     PATH("07", "CAMINHO"),
-    BODY("08—10", "CORPO"),
-    MYSTIC("11", "MÍSTICO"),
-    RECORD("12—13", "REGISTRO"),
-    NOTES("14", "ANOTAÇÕES"),
+    POWERS("08", "PODERES"),
+    BODY("09—11", "CORPO"),
+    MYSTIC("12", "MÍSTICO"),
+    RECORD("13—14", "REGISTRO"),
+    NOTES("15", "ANOTAÇÕES"),
 }
 
 @Composable
@@ -49,6 +50,7 @@ internal fun CharacterSheetPager(
     val pages = SheetPage.entries
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val pageScrollStates = listOf(
+        rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
@@ -131,6 +133,8 @@ private fun SheetPageContent(
             }
 
             SheetPage.PATH -> item("path") { PathSection(character, editable, onChange) }
+
+            SheetPage.POWERS -> item("powers") { PowerSection(character, editable, onChange) }
 
             SheetPage.BODY -> {
                 item("inventory") { InventorySection(character, editable, onChange) }
