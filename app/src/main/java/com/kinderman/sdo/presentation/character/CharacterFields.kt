@@ -15,6 +15,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.ui.Acid
@@ -29,9 +33,24 @@ internal fun IntegerField(
     enabled: Boolean,
     modifier: Modifier = Modifier,
     onValue: (Int) -> Unit,
-) = HudTextField(label, value.toString(), modifier = modifier, enabled = enabled) { raw ->
-    val normalized = raw.filterIndexed { index, character -> character.isDigit() || (index == 0 && character == '-') }
-    onValue(normalized.toIntOrNull() ?: 0)
+) {
+    var input by remember(value) { mutableStateOf(value.takeUnless { it == 0 }?.toString().orEmpty()) }
+    HudTextField(
+        label = label,
+        value = input,
+        modifier = modifier,
+        placeholder = "0",
+        enabled = enabled,
+    ) { raw ->
+        val normalized = raw.filterIndexed { index, character ->
+            character.isDigit() || (index == 0 && character == '-')
+        }
+        input = normalized
+        when {
+            normalized.isEmpty() -> onValue(0)
+            normalized != "-" -> normalized.toIntOrNull()?.let(onValue)
+        }
+    }
 }
 
 @Composable

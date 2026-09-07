@@ -345,6 +345,7 @@ fun HudTextField(
     value: String,
     modifier: Modifier = Modifier,
     multiline: Boolean = false,
+    placeholder: String? = null,
     enabled: Boolean = true,
     onValue: (String) -> Unit,
 ) {
@@ -353,6 +354,7 @@ fun HudTextField(
         onValueChange = onValue,
         modifier = modifier.fillMaxWidth(),
         label = { Text(label.uppercase()) },
+        placeholder = placeholder?.let { hint -> { Text(hint, color = Muted) } },
         minLines = if (multiline) 4 else 1,
         enabled = enabled,
         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp),
