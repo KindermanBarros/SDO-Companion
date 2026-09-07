@@ -98,4 +98,14 @@ class CharacterRecordFirestoreContractTest {
         assertEquals(23, character.protectionTotal("Esquiva"))
         assertEquals(character.calculatedProtections(), character.toRecord().protections)
     }
+
+    @Test
+    fun convertersPreserveEquipmentProtectionAndBodyAssignments() {
+        val converters = CharacterConverters()
+        val item = com.kinderman.sdo.domain.model.InventoryItem(id = "armor-1", pg = 4, pl = 3)
+        val region = com.kinderman.sdo.domain.model.BodyRegion(name = "Braço", equippedItemIds = listOf(item.id))
+
+        assertEquals(item, converters.stringToInventory(converters.inventoryToString(listOf(item))).single())
+        assertEquals(region, converters.stringToBody(converters.bodyToString(listOf(region))).single())
+    }
 }

@@ -4,6 +4,7 @@ import com.kinderman.sdo.domain.model.BuiltItem
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ItemPart
+import com.kinderman.sdo.domain.model.ItemMaterialPart
 
 object ItemCreationRules {
     const val HERITAGE_BUDGET = 20
@@ -120,16 +121,38 @@ object ItemCreationRules {
         gemSlots: Int,
         technologySlots: Int,
         customName: String = "",
+    ): BuiltItem = build(
+        base = base,
+        parts = listOf(ItemMaterialPart("Parte principal", material)),
+        modifications = modifications,
+        gemSlots = gemSlots,
+        technologySlots = technologySlots,
+        customName = customName,
+    )
+
+    fun build(
+        base: ItemPart,
+        parts: List<ItemMaterialPart>,
+        modifications: List<ItemPart>,
+        gemSlots: Int,
+        technologySlots: Int,
+        customName: String = "",
     ): BuiltItem {
-        val numericCosts = listOf(base.creationCost, material.creationCost) + modifications.map { it.creationCost }
+        require(parts.isNotEmpty()) { "Um item precisa de pelo menos uma parte material." }
+        val materials = parts.map { it.material }
+        val numericCosts = listOf(base.creationCost) + materials.map { it.creationCost } + modifications.map { it.creationCost }
         val creationCost = if (numericCosts.any { it == null }) null else numericCosts.filterNotNull().sum() + gemSlots + technologySlots * 2
-        val pg = base.pg + material.pg + modifications.sumOf { it.pg }
-        val pl = base.pl + material.pl + modifications.sumOf { it.pl }
+        val pg = base.pg + materials.sumOf { it.pg } + modifications.sumOf { it.pg }
+        val pl = base.pl + materials.sumOf { it.pl } + modifications.sumOf { it.pl }
         val details = buildList {
-            add("Material: ${material.name}; Qualidade: Comum.")
+            add("Composição por partes:")
+            parts.forEach { part -> add("• ${part.name}: ${part.material.name}.") }
+            add("Qualidade: Comum.")
             if (pg > 0 || pl > 0) add("PG $pg; PL $pl.")
             add(base.effect)
-            add(material.effect)
+            parts.forEach { part ->
+                if (part.material.effect.isNotBlank()) add("${part.name}: ${part.material.effect}")
+            }
             modifications.forEach { add("${it.name}: ${it.effect}") }
             if (gemSlots > 0) add("Espaços de Gema: $gemSlots.")
             if (technologySlots > 0) add("Espaços de Tecnologia: $technologySlots.")
@@ -137,14 +160,18 @@ object ItemCreationRules {
             if (creationCost == null) add("Custo da Criação: #; exige permissão do Historiador.")
         }.filter(String::isNotBlank).joinToString("\n")
         return BuiltItem(
-            name = customName.ifBlank { "${base.name} de ${material.name}" },
+            name = customName.ifBlank {
+                if (parts.size == 1) "${base.name} de ${parts.first().material.name}" else base.name
+            },
             category = base.group,
             creationCost = creationCost,
-            price = base.price + material.price + modifications.sumOf { it.price } + gemSlots * 20 + technologySlots * 45,
-            load = (base.load + material.load + modifications.sumOf { it.load }).coerceAtLeast(1),
-            durability = material.durability,
+            price = base.price + materials.sumOf { it.price } + modifications.sumOf { it.price } + gemSlots * 20 + technologySlots * 45,
+            load = (base.load + materials.sumOf { it.load } + modifications.sumOf { it.load }).coerceAtLeast(1),
+            durability = materials.map { it.durability }.minOrNull() ?: 0,
             region = base.region,
             effect = details,
+            pg = pg,
+            pl = pl,
         )
     }
 

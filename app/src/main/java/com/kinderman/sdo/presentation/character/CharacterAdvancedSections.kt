@@ -127,7 +127,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
         character.inventory.forEachIndexed { index, item ->
             InventoryEditor(index, item, enabled,
-                onRemove = { onChange(character.copy(inventory = character.inventory.filterIndexed { itemIndex, _ -> itemIndex != index })) },
+                onRemove = { onChange(character.removeInventoryItem(item.id)) },
                 onValue = { onChange(character.copy(inventory = character.inventory.replace(index, it))) },
             )
         }
@@ -168,12 +168,17 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             { HudTextField("Durabilidade", item.durability, it, enabled = enabled) { value -> onValue(item.copy(durability = value)) } },
             { HudTextField("Região", item.region, it, enabled = enabled) { value -> onValue(item.copy(region = value)) } },
         )
+        TwoFields(
+            { IntegerField("PG", item.pg, enabled, it) { value -> onValue(item.copy(pg = value.coerceAtLeast(0))) } },
+            { IntegerField("PL", item.pl, enabled, it) { value -> onValue(item.copy(pl = value.coerceAtLeast(0))) } },
+        )
         HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { onValue(item.copy(effect = it)) }
     }
 }
 
 @Composable
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    var equipmentRegionIndex by remember { mutableStateOf<Int?>(null) }
     TechPanel(accent = Signal) {
         SectionHeader("10", "Corpo e armadura")
         HudTextField("Limitação de Agilidade", character.agilityLimit, enabled = enabled) { onChange(character.copy(agilityLimit = it)) }
@@ -182,13 +187,32 @@ internal fun BodySection(character: Character, enabled: Boolean, onChange: (Char
                 Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = Ice, style = MaterialTheme.typography.titleMedium)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     IntegerField("Falhas", region.failures, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(failures = value.coerceIn(0, 4))))) }
-                    IntegerField("PL", region.localProtection, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(localProtection = value.coerceAtLeast(0))))) }
-                    IntegerField("PG", region.generalProtection, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(generalProtection = value.coerceAtLeast(0))))) }
+                    IntegerField("Ajuste PL", region.localProtection, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(localProtection = value.coerceAtLeast(0))))) }
                 }
+                Text(
+                    "PL TOTAL ${character.localProtection(region)} // PG DO PERSONAGEM +${character.equippedGeneralProtection}",
+                    color = Acid,
+                    style = MaterialTheme.typography.labelLarge,
+                )
                 HudTextField("Danos", region.damage, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(damage = it)))) }
                 HudTextField("Implantes", region.implants, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(implants = it)))) }
-                HudTextField("Equipamentos", region.equipment, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(equipment = it)))) }
+                val equippedNames = character.equippedItems(region).joinToString { it.name.ifBlank { "Item sem nome" } }
+                Text("EQUIPAMENTOS // ${equippedNames.ifBlank { "NENHUM" }}", color = if (equippedNames.isBlank()) Muted else Ice)
+                AddButton("Selecionar equipamentos do inventário", enabled) { equipmentRegionIndex = index }
+                HudTextField("Observações de equipamento", region.equipment, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(equipment = it)))) }
             }
+        }
+    }
+    equipmentRegionIndex?.let { index ->
+        val region = character.bodyRegions[index]
+        EquipmentPickerDialog(
+            regionName = region.name,
+            inventory = character.inventory,
+            selectedIds = region.equippedItemIds.toSet(),
+            onDismiss = { equipmentRegionIndex = null },
+        ) { selectedIds ->
+            onChange(character.equipItems(index, selectedIds))
+            equipmentRegionIndex = null
         }
     }
 }

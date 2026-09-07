@@ -27,6 +27,7 @@ import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemPart
+import com.kinderman.sdo.domain.model.ItemMaterialPart
 import com.kinderman.sdo.domain.model.toInventoryItem
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
@@ -96,12 +97,15 @@ internal fun ItemBuilderDialog(
 ) {
     var weapon by remember { mutableStateOf(true) }
     var base by remember { mutableStateOf(ItemCreationRules.weaponBases.first()) }
-    var material by remember { mutableStateOf(ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }) }
+    var parts by remember {
+        mutableStateOf(listOf(ItemMaterialPart("Parte principal", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" })))
+    }
     var modifications by remember { mutableStateOf(emptyList<ItemPart>()) }
     var gemSlots by remember { mutableIntStateOf(0) }
     var technologySlots by remember { mutableIntStateOf(0) }
     var customName by remember { mutableStateOf("") }
     var picker by remember { mutableStateOf<String?>(null) }
+    var materialPartIndex by remember { mutableIntStateOf(-1) }
     val availableBases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
     val availableMaterials = when {
         weapon -> ItemCreationRules.weaponMaterials
@@ -109,7 +113,7 @@ internal fun ItemBuilderDialog(
         else -> ItemCreationRules.armorMaterials
     }
     val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
-    val built = ItemCreationRules.build(base, material, modifications, gemSlots, technologySlots, customName)
+    val built = ItemCreationRules.build(base, parts, modifications, gemSlots, technologySlots, customName)
     val allowed = built.creationCost != null && built.creationCost <= remainingHeritage
 
     AlertDialog(
@@ -125,19 +129,39 @@ internal fun ItemBuilderDialog(
                     TextButton(onClick = {
                         weapon = true
                         base = ItemCreationRules.weaponBases.first()
-                        material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
+                        parts = listOf(ItemMaterialPart("Parte principal", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }))
                         modifications = emptyList()
                     }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
                     TextButton(onClick = {
                         weapon = false
                         base = ItemCreationRules.armorBases.first()
-                        material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
+                        parts = listOf(ItemMaterialPart("Parte principal", ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }))
                         modifications = emptyList()
                     }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
                 }
                 HudTextField("Nome personalizado (opcional)", customName) { customName = it }
                 TextButton(onClick = { picker = "base" }, modifier = Modifier.fillMaxWidth()) { Text("TIPO // ${base.name}") }
-                TextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
+                Text("PARTES E MATERIAIS", color = Acid, style = MaterialTheme.typography.labelLarge)
+                parts.forEachIndexed { index, part ->
+                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        HudTextField("Nome da parte ${index + 1}", part.name) { value ->
+                            parts = parts.toMutableList().also { it[index] = part.copy(name = value) }
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            TextButton(onClick = {
+                                materialPartIndex = index
+                                picker = "material"
+                            }) { Text("MATERIAL // ${part.material.name}") }
+                            if (parts.size > 1) TextButton(onClick = {
+                                parts = parts.toMutableList().also { it.removeAt(index) }
+                            }) { Text("REMOVER", color = Signal) }
+                        }
+                    }
+                }
+                TextButton(onClick = {
+                    val defaultMaterial = availableMaterials.firstOrNull() ?: return@TextButton
+                    parts = parts + ItemMaterialPart("Parte ${parts.size + 1}", defaultMaterial)
+                }, modifier = Modifier.fillMaxWidth()) { Text("+ ADICIONAR PARTE") }
                 Text("MODIFICAÇÕES", color = Acid, style = MaterialTheme.typography.labelLarge)
                 availableModifications.forEach { modification ->
                     val checked = modification in modifications
@@ -178,9 +202,17 @@ internal fun ItemBuilderDialog(
     ) { part ->
         if (picker == "base") {
             base = part
-            if (!weapon && part.id == "gibao") material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
-        } else material = part
+            if (!weapon && part.id == "gibao") {
+                val organic = ItemCreationRules.armorMaterials.first { it.id == "organico" }
+                parts = parts.map { it.copy(material = organic) }
+            }
+        } else if (materialPartIndex in parts.indices) {
+            parts = parts.toMutableList().also { list ->
+                list[materialPartIndex] = list[materialPartIndex].copy(material = part)
+            }
+        }
         picker = null
+        materialPartIndex = -1
     }
 }
 
@@ -216,4 +248,47 @@ private fun toggleModification(current: List<ItemPart>, item: ItemPart): List<It
     }
     if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
     return next
+}
+
+@Composable
+internal fun EquipmentPickerDialog(
+    regionName: String,
+    inventory: List<InventoryItem>,
+    selectedIds: Set<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (Set<String>) -> Unit,
+) {
+    var selected by remember(selectedIds) { mutableStateOf(selectedIds) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("EQUIPAR // ${regionName.uppercase()}") },
+        text = {
+            Column(Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
+                if (inventory.isEmpty()) Text("Nenhum item pronto no inventário.", color = Muted)
+                inventory.forEach { item ->
+                    val checked = item.id in selected
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            selected = if (checked) selected - item.id else selected + item.id
+                        }.padding(vertical = 6.dp),
+                    ) {
+                        Checkbox(checked, onCheckedChange = {
+                            selected = if (checked) selected - item.id else selected + item.id
+                        })
+                        Column(Modifier.padding(top = 8.dp)) {
+                            Text(item.name.ifBlank { "Item sem nome" }, color = Ice)
+                            Text(
+                                "PG ${item.pg} // PL ${item.pl}${item.region.takeIf(String::isNotBlank)?.let { " // $it" }.orEmpty()}",
+                                color = Acid,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                    HorizontalDivider(color = TechCutDark)
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onConfirm(selected) }) { Text("APLICAR") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
 }

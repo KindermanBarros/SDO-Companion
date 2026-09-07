@@ -119,4 +119,37 @@ class CharacterTest {
         assertEquals(21, character.protectionTotal("Mental"))
         assertEquals(14, character.protectionTotal("Arcana"))
     }
+
+    @Test fun equippedArmorAddsPgToCharacterAndPlToSelectedBodyRegion() {
+        val armor = InventoryItem(id = "armor-1", name = "Braçadeira", pg = 3, pl = 2)
+        val initial = Character(inventory = listOf(armor))
+        val equipped = initial.equipItems(regionIndex = 1, itemIds = setOf(armor.id))
+
+        assertEquals("E", equipped.inventory.single().state)
+        assertEquals(13, equipped.protectionBase("Geral"))
+        assertEquals(2, equipped.localProtection(equipped.bodyRegions[1]))
+        assertEquals(0, equipped.localProtection(equipped.bodyRegions[2]))
+    }
+
+    @Test fun theSameEquipmentContributesPgOnlyOnceAcrossMultipleRegions() {
+        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2)
+        val character = Character(inventory = listOf(armor))
+            .equipItems(1, setOf(armor.id))
+            .equipItems(2, setOf(armor.id))
+
+        assertEquals(13, character.protectionBase("Geral"))
+        assertEquals(2, character.localProtection(character.bodyRegions[1]))
+        assertEquals(2, character.localProtection(character.bodyRegions[2]))
+    }
+
+    @Test fun removingAnEquippedItemAlsoClearsBodyReferences() {
+        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2)
+        val character = Character(inventory = listOf(armor))
+            .equipItems(1, setOf(armor.id))
+            .removeInventoryItem(armor.id)
+
+        assertEquals(0, character.inventory.size)
+        assertEquals(emptyList<String>(), character.bodyRegions[1].equippedItemIds)
+        assertEquals(10, character.protectionBase("Geral"))
+    }
 }
