@@ -1,0 +1,6 @@
+FONT LICENSE NOTICES
+
+Oxanium
+Copyright 2019 The Oxanium Project Authors (https://github.com/sevmeyer/oxanium)
+License: SIL Open Font License, Version 1.1
+Full license included in licenses/fonts/OFL-Oxanium.txt in the source distribution.

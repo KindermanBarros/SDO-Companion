@@ -33,11 +33,12 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kinderman.sdo.R
 
 // --- Fundo de Tela e Superfícies Estruturais (Dark Canvas) ---
 val Void = Color(0xFF040D1B)
@@ -110,38 +111,40 @@ private val hudColors = darkColorScheme(
     onError = Void,
 )
 
+val TechInterfaceFont = FontFamily(
+    Font(R.font.oxanium_variable, weight = FontWeight.Normal),
+)
+
 private val hudTypography = Typography(
     displayLarge = TextStyle(
-        fontFamily = FontFamily.Serif,
-        fontWeight = FontWeight.Black,
-        fontStyle = FontStyle.Italic,
+        fontFamily = TechInterfaceFont,
+        fontWeight = FontWeight.Bold,
         fontSize = 42.sp,
-        lineHeight = 38.sp,
-        letterSpacing = (-1.5).sp,
+        lineHeight = 50.sp,
+        letterSpacing = 0.sp,
     ),
     headlineLarge = TextStyle(
-        fontFamily = FontFamily.Serif,
-        fontWeight = FontWeight.Black,
-        fontStyle = FontStyle.Italic,
-        fontSize = 30.sp,
-        lineHeight = 29.sp,
-        letterSpacing = (-0.8).sp,
+        fontFamily = TechInterfaceFont,
+        fontWeight = FontWeight.Bold,
+        fontSize = 34.sp,
+        lineHeight = 44.sp,
+        letterSpacing = 0.sp,
     ),
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Bold,
+        fontFamily = TechInterfaceFont,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         letterSpacing = 0.5.sp,
     ),
     titleMedium = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Bold,
+        fontFamily = TechInterfaceFont,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         letterSpacing = 1.sp,
     ),
-    bodyLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, lineHeight = 23.sp),
-    bodyMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 20.sp),
-    bodySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, lineHeight = 17.sp),
+    bodyLarge = TextStyle(fontFamily = TechInterfaceFont, fontSize = 16.sp, lineHeight = 23.sp),
+    bodyMedium = TextStyle(fontFamily = TechInterfaceFont, fontSize = 14.sp, lineHeight = 20.sp),
+    bodySmall = TextStyle(fontFamily = TechInterfaceFont, fontSize = 12.sp, lineHeight = 17.sp),
     labelLarge = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
