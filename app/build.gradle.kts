@@ -49,7 +49,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            optimization {
+                enable = true
+            }
             signingConfig = signingConfigs.findByName("release")
         }
     }
