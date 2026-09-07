@@ -7,6 +7,7 @@ import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
+import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SkillValue
@@ -19,8 +20,16 @@ private fun String.parts() = split(FIELD)
 private fun List<String>.row() = joinToString(FIELD)
 
 class CharacterConverters {
-    @TypeConverter fun resourceToString(value: ResourceValue) = "${value.current}|${value.maximum}"
-    @TypeConverter fun stringToResource(value: String) = value.split('|').let { ResourceValue(it.getOrNull(0)?.toIntOrNull() ?: 0, it.getOrNull(1)?.toIntOrNull() ?: 0) }
+    @TypeConverter fun resourceToString(value: ResourceValue) =
+        "${value.current}|${value.maximum}|${value.adjustment}"
+
+    @TypeConverter fun stringToResource(value: String) = value.split('|').let {
+        ResourceValue(
+            current = it.getOrNull(0)?.toIntOrNull() ?: 0,
+            maximum = it.getOrNull(1)?.toIntOrNull() ?: 0,
+            adjustment = it.getOrNull(2)?.toIntOrNull() ?: 0,
+        )
+    }
 
     @TypeConverter fun stringsToString(value: List<String>) = value.joinToString(FIELD)
     @TypeConverter fun stringToStrings(value: String) = if (value.isEmpty()) emptyList() else value.split(FIELD)
@@ -58,4 +67,18 @@ class CharacterConverters {
 
     @TypeConverter fun conditionsToString(value: List<ConditionEffect>) = value.joinToString(ROW) { listOf(it.id, it.name, it.intensity, it.duration, it.origin).row() }
     @TypeConverter fun stringToConditions(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> ConditionEffect(p[0], p.getOrElse(1) { "" }, p.getOrElse(2) { "" }, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }) } }
+
+    @TypeConverter fun personalNotesToString(value: List<PersonalNote>) =
+        value.joinToString(ROW) { listOf(it.id, it.title, it.text).row() }
+
+    @TypeConverter fun stringToPersonalNotes(value: String) =
+        if (value.isEmpty()) emptyList() else value.split(ROW).map { row ->
+            row.parts().let { fields ->
+                PersonalNote(
+                    id = fields.getOrElse(0) { "" },
+                    title = fields.getOrElse(1) { "" },
+                    text = fields.getOrElse(2) { "" },
+                )
+            }
+        }
 }

@@ -15,7 +15,11 @@ data class UserSession(
     val isMaster: Boolean get() = role == UserRole.MASTER
 }
 
-data class ResourceValue(val current: Int = 0, val maximum: Int = 0)
+data class ResourceValue(
+    val current: Int = 0,
+    val maximum: Int = 0,
+    val adjustment: Int = 0,
+)
 
 data class SkillValue(
     val name: String = "",
@@ -98,6 +102,12 @@ data class ConditionEffect(
     val origin: String = "",
 )
 
+data class PersonalNote(
+    val id: String = UUID.randomUUID().toString(),
+    val title: String = "",
+    val text: String = "",
+)
+
 data class Character(
     val id: String = UUID.randomUUID().toString(),
     val ownerId: String = "",
@@ -140,6 +150,7 @@ data class Character(
     val conditions: List<ConditionEffect> = emptyList(),
     val story: String = "",
     val notes: String = "",
+    val personalNotes: List<PersonalNote> = emptyList(),
     val lockType: CharacterLock = CharacterLock.NONE,
     val lockedBy: String = "",
     val lockedAt: Long? = null,
@@ -150,6 +161,38 @@ data class Character(
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.load }
     val maximumLoad: Int get() = 2 + (attributes.firstOrNull { it.acronym == "FOR" }?.value ?: 0) + containerCapacity
+
+    val lifeBase: Int get() = 10 + skillValue("VIG", "Vitalidade")
+    val sanityBase: Int get() = 10 + skillValue("INT", "Sanidade")
+    val arcaneBase: Int get() = attributeValue("POD") + skillValue("POD", "Arcano")
+    val energyBase: Int get() = attributeValue("VIG") + skillValue("VIG", "Energia")
+
+    val lifeMaximum: Int get() = (lifeBase + life.adjustment).coerceAtLeast(0)
+    val sanityMaximum: Int get() = (sanityBase + sanity.adjustment).coerceAtLeast(0)
+    val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment).coerceAtLeast(0)
+    val energyMaximum: Int get() = (energyBase + energy.adjustment).coerceAtLeast(0)
+
+    private fun attributeValue(acronym: String): Int =
+        attributes.firstOrNull { it.acronym == acronym }?.value ?: 0
+
+    private fun skillValue(attributeAcronym: String, skillName: String): Int =
+        attributes
+            .firstOrNull { it.acronym == attributeAcronym }
+            ?.skills
+            ?.firstOrNull { it.name == skillName }
+            ?.value
+            ?: 0
+}
+
+fun nextPersonalNoteTitle(notes: List<PersonalNote>): String {
+    val prefix = "Registro Pessoal "
+    val highestNumber = notes.maxOfOrNull { note ->
+        note.title.takeIf { it.startsWith(prefix) }
+            ?.removePrefix(prefix)
+            ?.toIntOrNull()
+            ?: 0
+    } ?: 0
+    return "$prefix${maxOf(notes.size, highestNumber) + 1}"
 }
 
 fun defaultAttributes() = listOf(

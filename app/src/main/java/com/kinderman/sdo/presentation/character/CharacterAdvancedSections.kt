@@ -221,8 +221,7 @@ private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boo
 @Composable
 internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
-        SectionHeader("13", "História e anotações")
+        SectionHeader("13", "História")
         HudTextField("História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
-        HudTextField("Anotações", character.notes, multiline = true, enabled = enabled) { onChange(character.copy(notes = it)) }
     }
 }

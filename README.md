@@ -14,7 +14,10 @@ As regras visuais, tokens e componentes estão documentados no
 - ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
-- navegação paginada em seis módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
+- Vida, Sanidade, Arcano e Energia calculados automaticamente a partir dos atributos e conhecimentos,
+  com ajuste manual positivo ou negativo;
+- anotações em uma aba própria, organizadas como registros pessoais com título e texto;
+- navegação paginada em sete módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
 - tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
 - persistência local com Room;
 - sincronização com Cloud Firestore;

@@ -35,6 +35,7 @@ internal enum class SheetPage(val code: String, val label: String) {
     BODY("08—10", "CORPO"),
     MYSTIC("11", "MÍSTICO"),
     RECORD("12—13", "REGISTRO"),
+    NOTES("14", "ANOTAÇÕES"),
 }
 
 @Composable
@@ -48,6 +49,7 @@ internal fun CharacterSheetPager(
     val pages = SheetPage.entries
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val pageScrollStates = listOf(
+        rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
@@ -142,6 +144,8 @@ private fun SheetPageContent(
                 item("conditions") { ConditionSection(character, editable, onChange) }
                 item("narrative") { NarrativeSection(character, editable, onChange) }
             }
+
+            SheetPage.NOTES -> item("notes") { NotesSection(character, editable, onChange) }
         }
     }
 }
