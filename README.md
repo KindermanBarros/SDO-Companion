@@ -4,20 +4,19 @@ Aplicativo Android offline-first para jogadores e mestre da campanha. A interfac
 
 ## MVP
 
-- login e cadastro por e-mail/senha com Firebase Authentication;
+- login único com Google via Firebase Authentication e Credential Manager;
 - perfil Jogador/Mestre carregado do Firestore;
 - ficha baseada em `90 - Modelos/Modelo de Ficha.md`;
 - identidade, recursos, atributos, conhecimentos, proteções, caminho, história e notas;
 - persistência local com Room;
 - sincronização com Cloud Firestore;
-- autenticação por e-mail/senha preparada em `AuthRepository`;
 - regras: jogador acessa a própria ficha; mestre acessa todas;
 - CI com lint, testes, APK de debug e artifact no GitHub Actions.
 
 ## Configuração Firebase
 
 1. Crie um projeto no Firebase e um app Android com package `com.kinderman.sdo`.
-2. Ative Authentication > Email/password e Cloud Firestore.
+2. Ative Authentication > Google e Cloud Firestore.
 3. Baixe `google-services.json` em `app/google-services.json` (o arquivo é ignorado pelo Git).
 4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`.
 5. Crie `users/{uid}` com `role: "MASTER"` apenas para a conta da mestre. Contas comuns devem usar `PLAYER`.

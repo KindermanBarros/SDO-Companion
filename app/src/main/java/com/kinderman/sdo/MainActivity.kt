@@ -41,7 +41,7 @@ class AppViewModel(private val repo: CharacterRepository) : ViewModel() {
     private val _master = MutableStateFlow(false)
     val isMaster = _master.asStateFlow()
     val characters = combine(_uid, _master) { u, m -> u to m }.flatMapLatest { repo.observe(it.first, it.second) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    fun chooseRole(master: Boolean) { _master.value = master; _uid.value = if(master) "demo-master" else "demo-player"; viewModelScope.launch { repo.sync(_uid.value, master) } }
+    fun setSession(uid: String, master: Boolean) { _master.value = master; _uid.value = uid; viewModelScope.launch { repo.sync(uid, master) } }
     fun add() = viewModelScope.launch { repo.save(CharacterEntity(ownerId = _uid.value)) }
     fun save(c: CharacterEntity) = viewModelScope.launch { repo.save(c) }
 }
@@ -51,7 +51,7 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
     val session = auth.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
     var state by mutableStateOf(AuthUiState()); private set
     val configured get() = auth.configured
-    fun submit(email:String,password:String,register:Boolean)=viewModelScope.launch { state=AuthUiState(true); state=runCatching { if(register) auth.register(email,password) else auth.login(email,password) }.fold({AuthUiState()},{AuthUiState(error=it.localizedMessage ?: "Não foi possível entrar")}) }
+    fun submitGoogle(context: android.content.Context)=viewModelScope.launch { state=AuthUiState(true); state=runCatching { auth.loginWithGoogle(context) }.fold({AuthUiState()},{AuthUiState(error=it.localizedMessage ?: "Não foi possível entrar com Google")}) }
     fun logout()=auth.logout()
     suspend fun master(uid:String)=runCatching { auth.isMaster(uid) }.getOrDefault(false)
 }
@@ -62,19 +62,19 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
     val authVm: AuthViewModel = viewModel(factory = object: ViewModelProvider.Factory { override fun <T: ViewModel> create(modelClass: Class<T>): T = AuthViewModel(AuthRepository()) as T })
     val user by authVm.session.collectAsStateWithLifecycle()
     var demo by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(user?.uid) { user?.let { vm.chooseRole(authVm.master(it.uid)) } }
+    LaunchedEffect(user?.uid, demo) { if(demo) vm.setSession("demo-player", false) else user?.let { vm.setSession(it.uid, authVm.master(it.uid)) } }
     if(user==null && !demo) { LoginScreen(authVm, allowDemo=!authVm.configured){demo=true}; return }
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
     val chars by vm.characters.collectAsStateWithLifecycle(); val master by vm.isMaster.collectAsStateWithLifecycle()
-    if (selected == null) Dashboard(chars, master, vm::chooseRole, vm::add) { selected = it }
+    if (selected == null) Dashboard(chars, master, vm::add) { selected = it }
     else CharacterSheet(chars.firstOrNull { it.id == selected }, master, { selected = null }, vm::save)
 }
 
-@Composable fun LoginScreen(vm:AuthViewModel,allowDemo:Boolean,onDemo:()->Unit){var email by rememberSaveable{mutableStateOf("")};var password by rememberSaveable{mutableStateOf("")};var register by rememberSaveable{mutableStateOf(false)};Box(Modifier.fillMaxSize().background(Ink).padding(24.dp),contentAlignment=Alignment.Center){Card(shape=RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Paper)){Column(Modifier.padding(24.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){Text("SDO",color=Gold,fontWeight=FontWeight.Bold);Text("COMPANION",style=MaterialTheme.typography.headlineLarge);Text(if(register)"Crie sua conta de jogador" else "Entre para abrir suas histórias");OutlinedTextField(email,{email=it},Modifier.fillMaxWidth(),label={Text("E-mail")},singleLine=true);OutlinedTextField(password,{password=it},Modifier.fillMaxWidth(),label={Text("Senha")},singleLine=true);vm.state.error?.let{Text(it,color=MaterialTheme.colorScheme.error)};Button({vm.submit(email,password,register)},Modifier.fillMaxWidth(),enabled=!vm.state.loading&&email.isNotBlank()&&password.length>=6){if(vm.state.loading)CircularProgressIndicator(Modifier.size(20.dp),strokeWidth=2.dp)else Text(if(register)"Criar conta" else "Entrar")};TextButton({register=!register},Modifier.align(Alignment.CenterHorizontally)){Text(if(register)"Já tenho conta" else "Criar conta de jogador")};if(allowDemo){HorizontalDivider();OutlinedButton(onDemo,Modifier.fillMaxWidth()){Text("Usar modo local de demonstração")}}}}}
+@Composable fun LoginScreen(vm:AuthViewModel,allowDemo:Boolean,onDemo:()->Unit){val context=androidx.compose.ui.platform.LocalContext.current;Box(Modifier.fillMaxSize().background(Ink).padding(24.dp),contentAlignment=Alignment.Center){Card(shape=RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Paper)){Column(Modifier.padding(24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){Text("SDO",color=Gold,fontWeight=FontWeight.Bold);Text("COMPANION",style=MaterialTheme.typography.headlineLarge);Text("Entre com sua conta Google para abrir suas histórias e sincronizar suas fichas.");vm.state.error?.let{Text(it,color=MaterialTheme.colorScheme.error)};Button({vm.submitGoogle(context)},Modifier.fillMaxWidth(),enabled=!vm.state.loading){if(vm.state.loading)CircularProgressIndicator(Modifier.size(20.dp),strokeWidth=2.dp)else{Icon(Icons.Default.AccountCircle,null);Spacer(Modifier.width(8.dp));Text("Entrar com Google")}};if(allowDemo){HorizontalDivider();OutlinedButton(onDemo,Modifier.fillMaxWidth()){Text("Usar modo local de demonstração")}}}}}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun Dashboard(chars: List<CharacterEntity>, master: Boolean, onRole: (Boolean)->Unit, onAdd: ()->Unit, onOpen:(String)->Unit) {
+@Composable fun Dashboard(chars: List<CharacterEntity>, master: Boolean, onAdd: ()->Unit, onOpen:(String)->Unit) {
     Scaffold(containerColor = Paper, floatingActionButton = { FloatingActionButton(onClick=onAdd, containerColor=Wine, contentColor=Color.White){ Icon(Icons.Default.Add,"Criar personagem") } }) { pad ->
         LazyColumn(Modifier.padding(pad).fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             item { Text("SDO COMPANION", color=Gold, style=MaterialTheme.typography.labelLarge); Text(if(master) "Painel da Mestre" else "Suas histórias", style=MaterialTheme.typography.headlineLarge); Text("Fichas sincronizadas, disponíveis mesmo quando o mundo fica sem sinal.") }

@@ -1,8 +1,15 @@
 package com.kinderman.sdo.data
 
+import android.content.Context
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -17,9 +24,24 @@ class AuthRepository {
         auth.addAuthStateListener(listener)
         awaitClose { auth.removeAuthStateListener(listener) }
     }
-    suspend fun login(email: String, password: String) = auth.signInWithEmailAndPassword(email, password).await().user
-    suspend fun register(email: String, password: String) = auth.createUserWithEmailAndPassword(email, password).await().user.also { user ->
-        user?.let { FirebaseFirestore.getInstance().collection("users").document(it.uid).set(mapOf("role" to "PLAYER", "email" to email)).await() }
+    suspend fun loginWithGoogle(context: Context) = run {
+        val resourceId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+        require(resourceId != 0) { "Configuração do Google Login não encontrada." }
+        val option = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(context.getString(resourceId))
+            .setAutoSelectEnabled(true)
+            .build()
+        val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
+        val credential = CredentialManager.create(context).getCredential(context, request).credential
+        val token = GoogleIdTokenCredential.createFrom(credential.data).idToken
+        auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await().user
+            ?.also { user ->
+                val profile = FirebaseFirestore.getInstance().collection("users").document(user.uid)
+                if (!profile.get().await().exists()) {
+                    profile.set(mapOf("role" to "PLAYER", "email" to user.email, "displayName" to user.displayName), SetOptions.merge()).await()
+                }
+            }
     }
     suspend fun isMaster(uid: String) = FirebaseFirestore.getInstance().collection("users").document(uid).get().await().getString("role") == "MASTER"
     fun logout() = runCatching { auth.signOut() }
