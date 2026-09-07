@@ -54,9 +54,7 @@ class FirebaseAuthRepository : AuthRepository {
     override suspend fun loginWithGoogle(activity: Activity): UserSession? {
         val resourceId = activity.resources.getIdentifier("default_web_client_id", "string", activity.packageName)
         require(resourceId != 0) { "Configuração do Google Login não encontrada." }
-        val option = GetSignInWithGoogleOption.Builder(activity.getString(resourceId))
-            .setAutoSelectEnabled(false)
-            .build()
+        val option = GetSignInWithGoogleOption.Builder(activity.getString(resourceId)).build()
         val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
         val credential = CredentialManager.create(activity).getCredential(activity, request).credential
         val token = GoogleIdTokenCredential.createFrom(credential.data).idToken
