@@ -44,7 +44,10 @@ class FirebaseAuthRepository : AuthRepository {
             if (user == null) {
                 trySend(null)
             } else {
-                launch { trySend(loadSession(user.uid, user.email, user.displayName)) }
+                launch {
+                    val session = loadSession(user.uid, user.email, user.displayName)
+                    if (auth.currentUser?.uid == user.uid) trySend(session)
+                }
             }
         }
         auth.addAuthStateListener(listener)

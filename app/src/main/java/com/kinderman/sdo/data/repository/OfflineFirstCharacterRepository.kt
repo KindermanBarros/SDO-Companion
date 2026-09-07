@@ -13,11 +13,15 @@ import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 
 class OfflineFirstCharacterRepository(
     private val dao: CharacterDao,
 ) : CharacterRepository {
+    private val syncMutex = Mutex()
+
     override fun observe(session: UserSession): Flow<List<Character>> =
         dao.observe(session.uid, session.isMaster).map { records -> records.map(CharacterRecord::toDomain) }
 
@@ -63,32 +67,52 @@ class OfflineFirstCharacterRepository(
         dao.upsert(character.copy(deleted = true, updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
-    override suspend fun sync(session: UserSession) {
-        val store = runCatching { Firebase.firestore }.getOrNull() ?: return
+    override suspend fun sync(session: UserSession) = syncMutex.withLock {
+        val store = runCatching { Firebase.firestore }.getOrNull() ?: return@withLock
         val collection = store.collection("characters")
-
-        dao.dirty()
-            .filter { session.isMaster || it.ownerId == session.uid }
-            .forEach { record ->
-                if (record.deleted) {
-                    collection.document(record.id).delete().await()
-                    dao.purge(record.id)
-                } else {
-                    collection.document(record.id).set(record.copy(dirty = false)).await()
-                    dao.markSynced(record.id)
-                }
-            }
 
         val snapshot = if (session.isMaster) {
             collection.get().await()
         } else {
             collection.whereEqualTo("ownerId", session.uid).get().await()
         }
-        val remoteRecords = snapshot.documents.mapNotNull { it.toObject(CharacterRecord::class.java) }
+        val remoteRecords = snapshot.documents.mapNotNull { document ->
+            document.toObject(CharacterRecord::class.java)?.copy(id = document.id)
+        }
+        val remoteById = remoteRecords.associateBy(CharacterRecord::id)
         val remoteIds = remoteRecords.mapTo(mutableSetOf()) { it.id }
-        remoteRecords.forEach { dao.upsert(it.copy(dirty = false, deleted = false)) }
+        val dirtyRecords = dao.dirty().filter { session.isMaster || it.ownerId == session.uid }
+        val dirtyIds = dirtyRecords.mapTo(mutableSetOf(), CharacterRecord::id)
+
+        remoteRecords
+            .filter { it.id !in dirtyIds }
+            .forEach { dao.upsert(it.copy(dirty = false, deleted = false)) }
         dao.visible(session.uid, session.isMaster)
-            .filter { !it.dirty && it.id !in remoteIds }
+            .filter { !it.dirty && it.id !in remoteIds && it.id !in dirtyIds }
             .forEach { dao.purge(it.id) }
+
+        dirtyRecords.forEach { record ->
+            if (record.deleted) {
+                val remote = remoteById[record.id]
+                if (remote == null) {
+                    // A exclusão já foi sincronizada por outro dispositivo. Não tente apagar
+                    // novamente: as regras não conseguem validar a posse de um documento ausente.
+                    dao.purge(record.id)
+                } else {
+                    try {
+                        collection.document(record.id).delete().await()
+                        dao.purge(record.id)
+                    } catch (error: Throwable) {
+                        // Restaura o estado autoritativo (por exemplo, um lock aplicado remotamente)
+                        // para que a mesma exclusão rejeitada não seja repetida a cada abertura.
+                        dao.upsert(remote.copy(dirty = false, deleted = false))
+                        throw error
+                    }
+                }
+            } else {
+                collection.document(record.id).set(record.copy(dirty = false)).await()
+                dao.markSynced(record.id)
+            }
+        }
     }
 }

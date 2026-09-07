@@ -10,7 +10,10 @@ import com.kinderman.sdo.domain.usecase.DeleteCharacter
 import com.kinderman.sdo.domain.usecase.SaveCharacter
 import com.kinderman.sdo.domain.usecase.SetHistorianLock
 import com.kinderman.sdo.domain.usecase.SetPlayerLock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+data class CharacterLoadState(
+    val initialLoading: Boolean = false,
+    val syncing: Boolean = false,
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
@@ -27,23 +35,32 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
     private val setHistorianLock = SetHistorianLock(repository)
     private val currentSession = MutableStateFlow<UserSession?>(null)
     private val _message = MutableStateFlow<String?>(null)
+    private val _loadState = MutableStateFlow(CharacterLoadState())
+    private var syncJob: Job? = null
 
     val session = currentSession.asStateFlow()
     val message = _message.asStateFlow()
+    val loadState = _loadState.asStateFlow()
     val characters = currentSession.flatMapLatest { session ->
         session?.let(repository::observe) ?: flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun setSession(session: UserSession) {
+        if (currentSession.value == session) return
+        syncJob?.cancel()
+        syncJob = null
         currentSession.value = session
-        sync()
+        startSync(initial = true)
     }
 
     fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.PLAYER))
 
     fun clearSession() {
+        syncJob?.cancel()
+        syncJob = null
         currentSession.value = null
         _message.value = null
+        _loadState.value = CharacterLoadState()
     }
 
     fun add() = runAction { session -> repository.create(session) }
@@ -62,7 +79,7 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
 
     fun dismissMessage() { _message.value = null }
 
-    fun sync() = runAction { session -> repository.sync(session) }
+    fun sync() = startSync(initial = false)
 
     private fun runAction(success: String? = null, action: suspend (UserSession) -> Unit) {
         val session = currentSession.value ?: return
@@ -70,9 +87,38 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
             runCatching { action(session) }
                 .onSuccess {
                     if (success != null) _message.value = success
-                    runCatching { repository.sync(session) }
+                    startSync(initial = false)
                 }
-                .onFailure { _message.value = it.localizedMessage ?: "Falha na operação" }
+                .onFailure { _message.value = userMessage(it, "Falha na operação") }
+        }
+    }
+
+    private fun startSync(initial: Boolean) {
+        val session = currentSession.value ?: return
+        if (syncJob?.isActive == true) return
+        syncJob = viewModelScope.launch {
+            _loadState.value = CharacterLoadState(initialLoading = initial, syncing = true)
+            try {
+                repository.sync(session)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Throwable) {
+                _message.value = userMessage(error, "Falha ao sincronizar personagens")
+            } finally {
+                if (syncJob === currentCoroutineContext()[Job]) {
+                    _loadState.value = CharacterLoadState()
+                    syncJob = null
+                }
+            }
+        }
+    }
+
+    private fun userMessage(error: Throwable, fallback: String): String {
+        val detail = error.localizedMessage.orEmpty()
+        return if (detail.contains("PERMISSION_DENIED", ignoreCase = true)) {
+            "A sessão não pôde acessar o Firebase. Entre novamente se o problema continuar."
+        } else {
+            detail.ifBlank { fallback }
         }
     }
 }

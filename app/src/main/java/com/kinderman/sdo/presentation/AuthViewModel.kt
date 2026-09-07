@@ -6,24 +6,49 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-data class AuthUiState(val loading: Boolean = false, val error: String? = null)
+data class AuthUiState(
+    val initializing: Boolean = true,
+    val loading: Boolean = false,
+    val error: String? = null,
+)
 
 class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
-    val session = repository.session.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    var state by mutableStateOf(AuthUiState())
+    private val currentSession = MutableStateFlow<UserSession?>(null)
+    val session = currentSession.asStateFlow()
+    var state by mutableStateOf(AuthUiState(initializing = repository.configured))
         private set
     val configured: Boolean get() = repository.configured
 
+    init {
+        viewModelScope.launch {
+            repository.session.collect { session ->
+                currentSession.value = session
+                state = state.copy(initializing = false, loading = false)
+            }
+        }
+    }
+
     fun login(activity: Activity) = viewModelScope.launch {
-        state = AuthUiState(loading = true)
+        if (state.loading) return@launch
+        state = AuthUiState(initializing = false, loading = true)
         state = runCatching { repository.loginWithGoogle(activity) }.fold(
-            onSuccess = { AuthUiState() },
-            onFailure = { AuthUiState(error = it.localizedMessage ?: "Falha no login com Google") },
+            onSuccess = { session ->
+                if (session != null) currentSession.value = session
+                AuthUiState(initializing = false)
+            },
+            onFailure = {
+                AuthUiState(
+                    initializing = false,
+                    error = it.localizedMessage ?: "Falha no login com Google",
+                )
+            },
         )
     }
 
