@@ -6,6 +6,4 @@ app/google-services.json
 *.jks
 *.keystore
 /.idea/
-/gradle/
-/gradlew
-/gradlew.bat
+
