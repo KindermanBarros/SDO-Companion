@@ -19,8 +19,8 @@ android {
         applicationId = "com.kinderman.sdo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = providers.gradleProperty("releaseCode").orNull?.toIntOrNull() ?: 1
+        versionName = providers.gradleProperty("releaseVersion").orNull ?: "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true; buildConfig = true }
