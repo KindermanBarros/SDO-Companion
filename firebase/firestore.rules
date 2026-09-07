@@ -73,7 +73,15 @@ service cloud.firestore {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isHistorian());
 
       allow create: if signedIn()
-        && request.resource.data.ownerId == request.auth.uid
+        && (
+          request.resource.data.ownerId == request.auth.uid
+          || (
+            isHistorian()
+            && exists(
+              /databases/$(database)/documents/users/$(request.resource.data.ownerId)
+            )
+          )
+        )
         && request.resource.data.lockType == 'NONE'
         && request.resource.data.isLocked == false
         && request.resource.data.lockedBy == ''
@@ -82,7 +90,9 @@ service cloud.firestore {
 
       allow update: if (
         isHistorian()
-        && request.resource.data.ownerId == resource.data.ownerId
+        && exists(
+          /databases/$(database)/documents/users/$(request.resource.data.ownerId)
+        )
         && validHistorianLockTransition()
       ) || (
         ownsExistingCharacter()

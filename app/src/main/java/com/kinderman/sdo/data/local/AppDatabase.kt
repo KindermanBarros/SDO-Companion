@@ -6,10 +6,11 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [CharacterRecord::class], version = 3, exportSchema = false)
+@Database(entities = [CharacterRecord::class, OwnerRecord::class], version = 4, exportSchema = false)
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
+    abstract fun ownerDao(): OwnerDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -39,6 +40,21 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN lockType TEXT NOT NULL DEFAULT 'NONE'")
                 db.execSQL("UPDATE characters SET lockType = 'HISTORIAN' WHERE isLocked = 1")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS owners (
+                        uid TEXT NOT NULL PRIMARY KEY,
+                        email TEXT NOT NULL,
+                        displayName TEXT NOT NULL,
+                        role TEXT NOT NULL
+                    )
+                    """.trimIndent(),
+                )
             }
         }
     }

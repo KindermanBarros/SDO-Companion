@@ -215,6 +215,11 @@ Se o ornamento competir com o nome, valor ou ação, reduza sua opacidade ou rem
 impede exclusão por jogadores e só pode ser alterado pelo historiador. O historiador mantém a ação
 de exclusão nos dois estados.
 
+O identificador `OWNER` no card é uma ação exclusiva do historiador. Ele mostra o primeiro nome da
+conta Google como informação primária e o UID truncado apenas como telemetria. Ao tocar, abre uma
+lista pesquisável de todos os perfis já registrados; a troca de owner exige confirmação pela
+seleção explícita de outra pessoa.
+
 ## Motion Design
 
 Movimento comunica mudança de estado; não é decoração contínua fora de processos ativos.
@@ -287,6 +292,12 @@ Elemento composto por:
 Indicador indeterminado formado por 15 segmentos de telemetria, scanner horizontal e pulso de
 sinal. Usa `AcidCyan` como energia, `AcidMagenta` somente nos marcos de alerta e texto funcional
 em Oxanium/monoespaçada. Possui variantes de autenticação e carregamento de personagens.
+
+### OwnerPickerDialog
+
+Painel modal do historiador para transferência de ficha. Mantém busca sempre visível, lista
+preguiçosa limitada à altura útil, primeiro nome em destaque, e-mail para desambiguação e UID como
+metadado. O owner atual recebe `OWNER.ATUAL`; resultados vazios usam `NO_SIGNAL`.
 
 ### TelemetryTag
 

@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import com.kinderman.sdo.domain.repository.OwnerRepository
 import com.kinderman.sdo.domain.usecase.DeleteCharacter
 import com.kinderman.sdo.domain.usecase.SaveCharacter
 import com.kinderman.sdo.domain.usecase.SetHistorianLock
 import com.kinderman.sdo.domain.usecase.SetPlayerLock
+import com.kinderman.sdo.domain.usecase.TransferCharacterOwner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -28,15 +31,20 @@ data class CharacterLoadState(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
+class AppViewModel(
+    private val repository: CharacterRepository,
+    private val ownerRepository: OwnerRepository,
+) : ViewModel() {
     private val saveCharacter = SaveCharacter(repository)
     private val deleteCharacter = DeleteCharacter(repository)
     private val setPlayerLock = SetPlayerLock(repository)
     private val setHistorianLock = SetHistorianLock(repository)
+    private val transferCharacterOwner = TransferCharacterOwner(repository)
     private val currentSession = MutableStateFlow<UserSession?>(null)
     private val _message = MutableStateFlow<String?>(null)
     private val _loadState = MutableStateFlow(CharacterLoadState())
     private var syncJob: Job? = null
+    private var syncRequested = false
 
     val session = currentSession.asStateFlow()
     val message = _message.asStateFlow()
@@ -44,11 +52,15 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
     val characters = currentSession.flatMapLatest { session ->
         session?.let(repository::observe) ?: flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val owners = currentSession.flatMapLatest { session ->
+        if (session?.isMaster == true) ownerRepository.observe() else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun setSession(session: UserSession) {
         if (currentSession.value == session) return
         syncJob?.cancel()
         syncJob = null
+        syncRequested = false
         currentSession.value = session
         startSync(initial = true)
     }
@@ -58,6 +70,7 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
     fun clearSession() {
         syncJob?.cancel()
         syncJob = null
+        syncRequested = false
         currentSession.value = null
         _message.value = null
         _loadState.value = CharacterLoadState()
@@ -74,6 +87,10 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
     fun setHistorianLocked(character: Character, locked: Boolean) = runAction(
         if (locked) "Bloqueio do historiador ativado" else "Bloqueio do historiador removido",
     ) { session -> setHistorianLock(session, character, locked) }
+
+    fun transferOwner(character: Character, owner: UserProfile) = runAction(
+        "Owner transferido para ${owner.firstName}",
+    ) { session -> transferCharacterOwner(session, character, owner) }
 
     fun delete(character: Character) = runAction("Personagem removido") { session -> deleteCharacter(session, character) }
 
@@ -95,10 +112,14 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
 
     private fun startSync(initial: Boolean) {
         val session = currentSession.value ?: return
-        if (syncJob?.isActive == true) return
+        if (syncJob?.isActive == true) {
+            syncRequested = true
+            return
+        }
         syncJob = viewModelScope.launch {
             _loadState.value = CharacterLoadState(initialLoading = initial, syncing = true)
             try {
+                ownerRepository.sync(session)
                 repository.sync(session)
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -108,6 +129,10 @@ class AppViewModel(private val repository: CharacterRepository) : ViewModel() {
                 if (syncJob === currentCoroutineContext()[Job]) {
                     _loadState.value = CharacterLoadState()
                     syncJob = null
+                    if (syncRequested) {
+                        syncRequested = false
+                        startSync(initial = false)
+                    }
                 }
             }
         }

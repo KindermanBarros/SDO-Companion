@@ -4,11 +4,13 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterRecord
+import com.kinderman.sdo.data.local.OwnerDao
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +21,7 @@ import kotlinx.coroutines.tasks.await
 
 class OfflineFirstCharacterRepository(
     private val dao: CharacterDao,
+    private val ownerDao: OwnerDao,
 ) : CharacterRepository {
     private val syncMutex = Mutex()
 
@@ -47,6 +50,24 @@ class OfflineFirstCharacterRepository(
             "Somente o historiador pode alterar o bloqueio real."
         }
         saveLock(character, if (locked) CharacterLock.HISTORIAN else CharacterLock.NONE, session.uid)
+    }
+
+    override suspend fun transferOwnership(
+        session: UserSession,
+        character: Character,
+        owner: UserProfile,
+    ) {
+        check(CharacterAccessPolicy.canTransferOwnership(session)) {
+            "Somente o historiador pode transferir uma ficha."
+        }
+        check(owner.uid.isNotBlank()) { "O novo owner é inválido." }
+        dao.upsert(
+            character.copy(
+                ownerId = owner.uid,
+                updatedAt = System.currentTimeMillis(),
+                dirty = true,
+            ).toRecord(),
+        )
     }
 
     private suspend fun saveLock(character: Character, lockType: CharacterLock, actorId: String) {
@@ -81,9 +102,12 @@ class OfflineFirstCharacterRepository(
         }
         val remoteById = remoteRecords.associateBy(CharacterRecord::id)
         val remoteIds = remoteRecords.mapTo(mutableSetOf()) { it.id }
+        val registeredOwnerIds = ownerDao.ids().toSet()
         val dirtyRecords = dao.dirty().filter { record ->
             record.ownerId == session.uid || (
-                session.isMaster && (record.id in remoteIds || record.deleted)
+                session.isMaster && (
+                    record.id in remoteIds || record.deleted || record.ownerId in registeredOwnerIds
+                )
             )
         }
         val dirtyIds = dirtyRecords.mapTo(mutableSetOf(), CharacterRecord::id)

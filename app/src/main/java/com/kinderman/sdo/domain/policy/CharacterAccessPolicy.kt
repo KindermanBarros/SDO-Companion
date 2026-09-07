@@ -18,4 +18,6 @@ object CharacterAccessPolicy {
         !session.isMaster && character.ownerId == session.uid && character.lockType != CharacterLock.HISTORIAN
 
     fun canChangeHistorianLock(session: UserSession): Boolean = session.isMaster
+
+    fun canTransferOwnership(session: UserSession): Boolean = session.isMaster
 }

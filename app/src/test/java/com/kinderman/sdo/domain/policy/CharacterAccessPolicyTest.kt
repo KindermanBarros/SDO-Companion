@@ -32,6 +32,7 @@ class CharacterAccessPolicyTest {
         assertTrue(CharacterAccessPolicy.canEdit(master, character))
         assertTrue(CharacterAccessPolicy.canDelete(master, character))
         assertTrue(CharacterAccessPolicy.canChangeHistorianLock(master))
+        assertTrue(CharacterAccessPolicy.canTransferOwnership(master))
     }
 
     @Test fun historianLockCannotBeChangedByOwner() {
@@ -44,5 +45,6 @@ class CharacterAccessPolicyTest {
         assertFalse(CharacterAccessPolicy.canRead(otherPlayer, character))
         assertFalse(CharacterAccessPolicy.canEdit(otherPlayer, character))
         assertFalse(CharacterAccessPolicy.canDelete(otherPlayer, character))
+        assertFalse(CharacterAccessPolicy.canTransferOwnership(otherPlayer))
     }
 }

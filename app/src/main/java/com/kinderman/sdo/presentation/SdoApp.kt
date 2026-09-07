@@ -23,11 +23,14 @@ import com.kinderman.sdo.ui.CyberLoadingScreen
 @Composable
 fun SdoApp(activity: MainActivity) {
     val application = LocalContext.current.applicationContext as SdoApplication
-    val appViewModel: AppViewModel = viewModel(factory = AppViewModelFactory(application.characterRepository))
+    val appViewModel: AppViewModel = viewModel(
+        factory = AppViewModelFactory(application.characterRepository, application.ownerRepository),
+    )
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
     val authenticatedSession by authViewModel.session.collectAsStateWithLifecycle()
     val appSession by appViewModel.session.collectAsStateWithLifecycle()
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
+    val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -66,11 +69,13 @@ fun SdoApp(activity: MainActivity) {
 
         selectedId == null -> DashboardScreen(
             characters = characters,
+            owners = owners,
             session = appSession,
             syncing = characterLoadState.syncing,
             snackbarHost = { SnackbarHost(snackbar) },
             onAdd = appViewModel::add,
             onOpen = { selectedId = it },
+            onOwnerTransfer = appViewModel::transferOwner,
             onSync = appViewModel::sync,
             onLogout = {
                 selectedId = null

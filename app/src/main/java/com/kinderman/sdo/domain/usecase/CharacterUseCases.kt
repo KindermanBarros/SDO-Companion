@@ -2,6 +2,7 @@ package com.kinderman.sdo.domain.usecase
 
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.repository.CharacterRepository
 
 class SaveCharacter(private val repository: CharacterRepository) {
@@ -20,4 +21,9 @@ class SetPlayerLock(private val repository: CharacterRepository) {
 class SetHistorianLock(private val repository: CharacterRepository) {
     suspend operator fun invoke(session: UserSession, character: Character, locked: Boolean) =
         repository.setHistorianLocked(session, character, locked)
+}
+
+class TransferCharacterOwner(private val repository: CharacterRepository) {
+    suspend operator fun invoke(session: UserSession, character: Character, owner: UserProfile) =
+        repository.transferOwnership(session, character, owner)
 }

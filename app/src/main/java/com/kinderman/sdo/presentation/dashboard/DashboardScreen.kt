@@ -31,6 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.Barcode
@@ -57,15 +62,19 @@ import com.kinderman.sdo.ui.Void
 @Composable
 fun DashboardScreen(
     characters: List<Character>,
+    owners: List<UserProfile>,
     session: UserSession?,
     syncing: Boolean,
     snackbarHost: @Composable () -> Unit,
     onAdd: () -> Unit,
     onOpen: (String) -> Unit,
+    onOwnerTransfer: (Character, UserProfile) -> Unit,
     onSync: () -> Unit,
     onLogout: () -> Unit,
 ) {
     val master = session?.isMaster == true
+    val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
+    var ownerTarget by remember { mutableStateOf<Character?>(null) }
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
@@ -110,15 +119,38 @@ fun DashboardScreen(
                     }
                 }
                 items(characters, key = Character::id) { character ->
-                    CharacterAccessCard(character, master) { onOpen(character.id) }
+                    CharacterAccessCard(
+                        character = character,
+                        master = master,
+                        owner = ownersById[character.ownerId],
+                        onOpen = { onOpen(character.id) },
+                        onOwnerClick = { ownerTarget = character },
+                    )
                 }
             }
+        }
+        ownerTarget?.let { character ->
+            OwnerPickerDialog(
+                character = character,
+                owners = owners,
+                onDismiss = { ownerTarget = null },
+                onSelect = { owner ->
+                    ownerTarget = null
+                    onOwnerTransfer(character, owner)
+                },
+            )
         }
     }
 }
 
 @Composable
-private fun CharacterAccessCard(character: Character, master: Boolean, onOpen: () -> Unit) {
+private fun CharacterAccessCard(
+    character: Character,
+    master: Boolean,
+    owner: UserProfile?,
+    onOpen: () -> Unit,
+    onOwnerClick: () -> Unit,
+) {
     Card(
         onClick = onOpen,
         modifier = Modifier.fillMaxWidth().border(1.dp, when { character.isLocked -> Signal; character.dirty -> Acid; else -> TechCutDark }, CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp)),
@@ -146,7 +178,25 @@ private fun CharacterAccessCard(character: Character, master: Boolean, onOpen: (
                 Column(Modifier.weight(1f)) {
                     Text(character.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleLarge)
                     Text(listOf(character.race, character.occupation, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "), color = LabelFunctional, style = MaterialTheme.typography.labelSmall)
-                    if (master) Text("OWNER.${character.ownerId.take(8)}", color = Muted, style = MaterialTheme.typography.labelSmall)
+                    if (master) {
+                        androidx.compose.material3.TextButton(
+                            onClick = onOwnerClick,
+                            contentPadding = PaddingValues(0.dp),
+                        ) {
+                            Column(horizontalAlignment = Alignment.Start) {
+                                Text(
+                                    "OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}",
+                                    color = Acid,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                                Text(
+                                    "UID.${character.ownerId.take(8)}",
+                                    color = Muted,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        }
+                    }
                 }
                 Icon(when { character.isLocked -> Icons.Default.Lock; master -> Icons.Default.AdminPanelSettings; else -> Icons.Default.ChevronRight }, null, tint = if (character.isLocked) Signal else Acid)
             }

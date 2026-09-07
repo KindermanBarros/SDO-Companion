@@ -22,6 +22,7 @@ As regras visuais, tokens e componentes estão documentados no
 - exclusão offline-first com sincronização da remoção;
 - jogador edita as próprias fichas e pode ativar um bloqueio pessoal para impedir a própria exclusão;
 - a Mestre/Historiador acessa e edita todas as fichas, aplica/remove o bloqueio de historiador e pode excluir qualquer personagem;
+- o historiador transfere fichas por um seletor de owner pesquisável, alimentado pelos perfis Google já registrados;
 - bloqueios pessoais podem ser removidos pelo dono; bloqueios de historiador somente pelo historiador;
 - CI com lint, testes e APK de release assinado como artifact no GitHub Actions.
 
@@ -38,7 +39,7 @@ domain/
 data/
   auth/        Google Sign-In e perfil Firebase
   local/       Room, DAO, conversores e migrações
-  repository/  sincronização offline-first com Firestore
+  repository/  sincronização offline-first de fichas e perfis com Firestore
 presentation/
   login/ dashboard/ character/  telas e estado de UI
 ui/            tokens e componentes do design system
