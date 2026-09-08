@@ -19,6 +19,9 @@ import com.kinderman.sdo.domain.model.ItemBonus
 import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ModifierSourceType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.agilityLimitBreakdown
+import com.kinderman.sdo.domain.model.generalProtectionBreakdown
+import com.kinderman.sdo.domain.model.localProtectionBreakdown
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
 import com.kinderman.sdo.ui.Ice
@@ -165,8 +168,20 @@ internal fun CalculatedValuesAuditSection(character: Character) {
         }
 
         Text("PROTEÇÕES", color = Acid, style = MaterialTheme.typography.labelLarge)
-        listOf("Geral", "Esquiva", "Postura", "Mental", "Arcana").forEach { name ->
+        CalculationLine("PG / Geral", "10 + PG dos itens equipados + ajuste", character.generalProtectionBreakdown())
+        listOf("Esquiva", "Postura", "Mental", "Arcana").forEach { name ->
             CalculationLine(name, "Fórmula da proteção + ajuste", character.protectionCalculation(name))
+        }
+        character.bodyRegions.forEach { region ->
+            CalculationLine("PL — ${region.name}", "PL base regional + itens equipados", character.localProtectionBreakdown(region))
+        }
+        val agilityLimit = character.agilityLimitBreakdown()
+        Column(Modifier.fillMaxWidth().background(Carbon).padding(7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("LA // ${agilityLimit.total ?: "—"}", color = Ice, style = MaterialTheme.typography.labelLarge)
+            Text("REGRA // menor LA entre itens equipados", color = Muted, style = MaterialTheme.typography.labelSmall)
+            agilityLimit.contributions.forEach { source ->
+                Text("Item: LA ${source.value} — ${source.label}", color = Acid, style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }
