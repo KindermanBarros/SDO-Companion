@@ -59,7 +59,7 @@ internal fun RacePickerDialog(
     var basePowers by remember { mutableStateOf(initialBasePowers.toSet()) }
     var subRacePower by remember { mutableStateOf(initialSubRacePower) }
     val needsReplacement = subRace != null
-    val valid = basePowers.size == if (needsReplacement) 1 else 2 && (!needsReplacement || subRacePower != null)
+    val valid = basePowers.size == (if (needsReplacement) 1 else 2) && (!needsReplacement || subRacePower != null)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -104,7 +104,7 @@ internal fun RacePickerDialog(
                 Text(if (needsReplacement) "MANTENHA 1 PODER RACIAL" else "PODERES RACIAIS", color = Acid, style = MaterialTheme.typography.labelLarge)
                 race.powers.forEach { power -> PowerChoice(power, power in basePowers) { checked ->
                     basePowers = if (checked) {
-                        if (needsReplacement) setOf(power) else (basePowers + power).takeLast(2).toSet()
+                        if (needsReplacement) setOf(power) else basePowers + power
                     } else basePowers - power
                 } }
                 subRace?.let { selected ->
