@@ -131,19 +131,24 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
                 onValue = { onChange(character.copy(inventory = character.inventory.replace(index, it))) },
             )
         }
-        AddButton("Construtor de itens por pontos", enabled) { dialog = "builder" }
         AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
-        AddButton("Loja inicial // Pontos de Herança", enabled && catalog.isNotEmpty()) { dialog = "initial" }
+        AddButton("Loja inicial // comprar ou construir com PH", enabled && catalog.isNotEmpty()) { dialog = "initial" }
         AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
         AddButton("Adicionar item manualmente", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
     }
     when (dialog) {
         "glossary" -> EquipmentGlossaryDialog { dialog = null }
+        "initial" -> InitialShopDialog(
+            remainingHeritage = remainingHeritage,
+            onDismiss = { dialog = null },
+            onCatalog = { dialog = "initial_catalog" },
+            onBuilder = { dialog = "builder" },
+        )
         "builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
             onChange(character.copy(inventory = character.inventory + item))
             dialog = null
         }
-        "initial" -> ItemCatalogDialog("LOJA INICIAL", catalog, remainingHeritage, { dialog = null }) { item ->
+        "initial_catalog" -> ItemCatalogDialog("LOJA INICIAL // ITENS PRONTOS", catalog, remainingHeritage, { dialog = "initial" }) { item ->
             onChange(character.copy(inventory = character.inventory + item))
             dialog = null
         }
