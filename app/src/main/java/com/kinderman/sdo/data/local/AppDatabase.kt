@@ -6,12 +6,24 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [CharacterRecord::class, OwnerRecord::class, CatalogEntryRecord::class], version = 11, exportSchema = false)
+@Database(
+    entities = [
+        CharacterRecord::class,
+        OwnerRecord::class,
+        CatalogEntryRecord::class,
+        CampaignRecord::class,
+        CampaignMemberRecord::class,
+        CampaignInviteRecord::class,
+    ],
+    version = 12,
+    exportSchema = false,
+)
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
     abstract fun ownerDao(): OwnerDao
     abstract fun catalogDao(): CatalogDao
+    abstract fun campaignDao(): CampaignDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -124,6 +136,67 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE catalog_entries ADD COLUMN ruleReference TEXT NOT NULL DEFAULT ''")
                 db.execSQL("ALTER TABLE catalog_entries ADD COLUMN keywords TEXT NOT NULL DEFAULT ''")
                 db.execSQL("ALTER TABLE catalog_entries ADD COLUMN repeatable INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // "default" represented the absence of a real campaign in legacy builds.
+                db.execSQL("UPDATE characters SET campaignId = '' WHERE campaignId = 'default'")
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS campaigns (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        ownerId TEXT NOT NULL,
+                        state TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        archivedAt INTEGER DEFAULT NULL,
+                        allowPlayerCharacterCreation INTEGER NOT NULL,
+                        dirty INTEGER NOT NULL,
+                        lastSyncedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS campaign_members (
+                        campaignId TEXT NOT NULL,
+                        userId TEXT NOT NULL,
+                        role TEXT NOT NULL,
+                        state TEXT NOT NULL,
+                        joinedAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        characterIds TEXT NOT NULL,
+                        joinedByInviteId TEXT NOT NULL,
+                        dirty INTEGER NOT NULL,
+                        lastSyncedAt INTEGER NOT NULL,
+                        PRIMARY KEY(campaignId, userId)
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_members_userId ON campaign_members(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_members_campaignId ON campaign_members(campaignId)")
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS campaign_invites (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        campaignId TEXT NOT NULL,
+                        code TEXT NOT NULL,
+                        createdBy TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        expiresAt INTEGER DEFAULT NULL,
+                        revokedAt INTEGER DEFAULT NULL,
+                        generation INTEGER NOT NULL,
+                        dirty INTEGER NOT NULL,
+                        lastSyncedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_campaign_invites_code ON campaign_invites(code)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_invites_campaignId ON campaign_invites(campaignId)")
             }
         }
     }
