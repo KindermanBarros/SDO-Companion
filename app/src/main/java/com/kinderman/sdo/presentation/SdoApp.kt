@@ -95,6 +95,7 @@ fun SdoApp(activity: MainActivity) {
             snackbarHost = { SnackbarHost(snackbar) },
             onBack = { selectedId = null },
             onSave = appViewModel::save,
+            onAutosave = appViewModel::autosave,
             onPlayerLock = appViewModel::setPlayerLocked,
             onHistorianLock = appViewModel::setHistorianLocked,
             onDelete = {
