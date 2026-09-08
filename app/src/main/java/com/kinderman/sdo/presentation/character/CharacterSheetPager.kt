@@ -141,6 +141,7 @@ private fun SheetPageContent(
                 item("attributes") { AttributeSection(character, editable, onChange) }
                 item("knowledge") { PhaseOneKnowledgeSection(character, catalog, editable, onChange) }
                 item("protection") { ProtectionSection(character, editable, onChange) }
+                item("calculation-audit") { CalculatedValuesAuditSection(character) }
             }
 
             SheetPage.PATH -> item("path") {
@@ -153,7 +154,7 @@ private fun SheetPageContent(
 
             SheetPage.BODY -> {
                 item("inventory") {
-                    PhaseOneInventorySection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange)
+                    PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange)
                 }
                 item("body") { BodySection(character, editable, onChange) }
                 itemsIndexed(
