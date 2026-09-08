@@ -139,16 +139,22 @@ private fun SheetPageContent(
 
             SheetPage.APTITUDES -> {
                 item("attributes") { AttributeSection(character, editable, onChange) }
-                item("knowledge") { SpecialKnowledgeSection(character, editable, onChange) }
+                item("knowledge") { PhaseOneKnowledgeSection(character, catalog, editable, onChange) }
                 item("protection") { ProtectionSection(character, editable, onChange) }
             }
 
-            SheetPage.PATH -> item("path") { PathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, editable, onChange) }
+            SheetPage.PATH -> item("path") {
+                PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, editable, onChange)
+            }
 
-            SheetPage.POWERS -> item("powers") { PowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, editable, onChange) }
+            SheetPage.POWERS -> item("powers") {
+                PhaseOnePowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, editable, onChange)
+            }
 
             SheetPage.BODY -> {
-                item("inventory") { InventorySection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange) }
+                item("inventory") {
+                    PhaseOneInventorySection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange)
+                }
                 item("body") { BodySection(character, editable, onChange) }
                 itemsIndexed(
                     items = character.bodyRegions,
@@ -165,7 +171,9 @@ private fun SheetPageContent(
                 item("organs") { OrganSection(character, editable, onChange) }
             }
 
-            SheetPage.MYSTIC -> item("mystic") { MysticSection(character, catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE }, editable, onChange) }
+            SheetPage.MYSTIC -> item("mystic") {
+                MysticSection(character, catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE }, editable, onChange)
+            }
 
             SheetPage.RECORD -> {
                 item("conditions") { ConditionSection(character, editable, onChange) }
