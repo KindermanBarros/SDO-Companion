@@ -60,6 +60,7 @@ fun CharacterSheetScreen(
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onSave: (Character) -> Unit,
+    onAutosave: (Character) -> Unit,
     onPlayerLock: (Character, Boolean) -> Unit,
     onHistorianLock: (Character, Boolean) -> Unit,
     onDelete: (Character) -> Unit,
@@ -135,7 +136,10 @@ fun CharacterSheetScreen(
                 session = session,
                 catalog = catalog,
                 editable = editable,
-                onChange = { current = it },
+                onChange = {
+                    current = it
+                    onAutosave(it)
+                },
                 modifier = Modifier.padding(padding).fillMaxSize(),
             )
         }

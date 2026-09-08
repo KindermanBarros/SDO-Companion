@@ -152,4 +152,17 @@ class CharacterTest {
         assertEquals(emptyList<String>(), character.bodyRegions[1].equippedItemIds)
         assertEquals(10, character.protectionBase("Geral"))
     }
+
+    @Test fun equipmentCanBeAssignedToBothFeetAndEveryBodyRegion() {
+        val item = InventoryItem(id = "boots-1", name = "Botas", pg = 1, pl = 2, region = "pés")
+        val character = defaultBodyRegions().indices.fold(Character(inventory = listOf(item))) { current, index ->
+            current.equipItems(index, setOf(item.id))
+        }
+
+        assertEquals(listOf(item.id), character.bodyRegions[8].equippedItemIds)
+        assertEquals(listOf(item.id), character.bodyRegions[9].equippedItemIds)
+        assertEquals(2, character.localProtection(character.bodyRegions[8]))
+        assertEquals(2, character.localProtection(character.bodyRegions[9]))
+        assertEquals(11, character.protectionBase("Geral"))
+    }
 }
