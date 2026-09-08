@@ -17,8 +17,60 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MASTER';
     }
 
+    // Global historian status is retained only for user-profile administration.
+    // Campaign and character access is intentionally scoped below by ownership/membership.
     function isHistorian() {
       return isBootstrapHistorian() || hasMasterProfile();
+    }
+
+    function memberPath(campaignId, uid) {
+      return /databases/$(database)/documents/campaignMembers/$(campaignId + '::' + uid);
+    }
+
+    function campaignPath(campaignId) {
+      return /databases/$(database)/documents/campaigns/$(campaignId);
+    }
+
+    function invitePath(inviteId) {
+      return /databases/$(database)/documents/campaignInvites/$(inviteId);
+    }
+
+    function hasCampaign(campaignId) {
+      return campaignId != '' && campaignId != 'default' && exists(campaignPath(campaignId));
+    }
+
+    function campaignIsActive(campaignId) {
+      return hasCampaign(campaignId)
+        && get(campaignPath(campaignId)).data.state == 'ACTIVE';
+    }
+
+    function isCampaignOwner(campaignId) {
+      return signedIn()
+        && hasCampaign(campaignId)
+        && get(campaignPath(campaignId)).data.ownerId == request.auth.uid;
+    }
+
+    function isActiveMemberFor(campaignId, uid) {
+      return campaignId != ''
+        && campaignId != 'default'
+        && exists(memberPath(campaignId, uid))
+        && get(memberPath(campaignId, uid)).data.state == 'ACTIVE';
+    }
+
+    function isActiveMember(campaignId) {
+      return signedIn() && isActiveMemberFor(campaignId, request.auth.uid);
+    }
+
+    function canReadCampaign(campaignId) {
+      return signedIn() && (isCampaignOwner(campaignId) || isActiveMember(campaignId));
+    }
+
+    function normalizedCampaignId(data) {
+      return data.get('campaignId', '') == 'default' ? '' : data.get('campaignId', '');
+    }
+
+    function noCampaign(data) {
+      return normalizedCampaignId(data) == '';
     }
 
     function ownsExistingCharacter() {
@@ -34,9 +86,6 @@ service cloud.firestore {
       );
     }
 
-    // v0.10.0 was serialized through JavaBean conventions, which can expose
-    // Kotlin's `isLocked` property as `locked`. Accept the legacy wire name
-    // while newer clients migrate to the canonical `isLocked` field.
     function requestedIsLocked() {
       return request.resource.data.get(
         'isLocked',
@@ -67,53 +116,205 @@ service cloud.firestore {
       );
     }
 
-    function validHistorianLockTransition() {
+    function validCampaignMasterLockTransition(campaignId) {
       return keepsLockState() || (
-        request.resource.data.lockType == 'HISTORIAN'
+        isCampaignOwner(campaignId)
+        && request.resource.data.lockType == 'HISTORIAN'
         && requestedIsLocked() == true
         && request.resource.data.lockedBy == request.auth.uid
         && request.resource.data.get('lockedAt', null) != null
       ) || (
-        request.resource.data.lockType == 'NONE'
+        isCampaignOwner(campaignId)
+        && request.resource.data.lockType == 'NONE'
         && requestedIsLocked() == false
         && request.resource.data.lockedBy == ''
         && request.resource.data.get('lockedAt', null) == null
       );
     }
 
-    match /characters/{characterId} {
-      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isHistorian());
+    function validCharacterCampaignTarget() {
+      let nextCampaign = normalizedCampaignId(request.resource.data);
+      return nextCampaign == '' || (
+        campaignIsActive(nextCampaign)
+        && (isCampaignOwner(nextCampaign) || isActiveMember(nextCampaign))
+      );
+    }
+
+    function campaignCharacterWritable() {
+      let existingCampaign = normalizedCampaignId(resource.data);
+      return existingCampaign != ''
+        && campaignIsActive(existingCampaign)
+        && isCampaignOwner(existingCampaign);
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if canReadCampaign(campaignId);
 
       allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.state == 'ACTIVE'
+        && request.resource.data.get('archivedAt', null) == null;
+
+      allow update: if signedIn()
+        && resource.data.ownerId == request.auth.uid
         && (
-          request.resource.data.ownerId == request.auth.uid
+          request.resource.data.ownerId == resource.data.ownerId
           || (
-            isHistorian()
-            && exists(
-              /databases/$(database)/documents/users/$(request.resource.data.ownerId)
-            )
+            resource.data.state == 'ACTIVE'
+            && request.resource.data.state == 'ACTIVE'
+            && request.resource.data.ownerId != request.auth.uid
+            && isActiveMemberFor(campaignId, request.resource.data.ownerId)
+            && get(memberPath(campaignId, request.resource.data.ownerId)).data.role == 'MASTER'
           )
         )
+        && (
+          resource.data.state == 'ACTIVE'
+          || (
+            resource.data.state == 'ARCHIVED'
+            && request.resource.data.state == 'ACTIVE'
+            && request.resource.data.ownerId == resource.data.ownerId
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    match /campaignMembers/{membershipId} {
+      allow read: if signedIn() && (
+        resource.data.userId == request.auth.uid
+        || canReadCampaign(resource.data.campaignId)
+      );
+
+      allow create: if signedIn() && (
+        (
+          request.resource.data.userId == request.auth.uid
+          && request.resource.data.role == 'MASTER'
+          && request.resource.data.state == 'ACTIVE'
+          && request.resource.data.joinedByInviteId == ''
+          && campaignIsActive(request.resource.data.campaignId)
+          && isCampaignOwner(request.resource.data.campaignId)
+        )
+        || (
+          request.resource.data.userId == request.auth.uid
+          && request.resource.data.role == 'PLAYER'
+          && request.resource.data.state == 'ACTIVE'
+          && request.resource.data.joinedByInviteId != ''
+          && exists(invitePath(request.resource.data.joinedByInviteId))
+          && get(invitePath(request.resource.data.joinedByInviteId)).data.campaignId == request.resource.data.campaignId
+          && get(invitePath(request.resource.data.joinedByInviteId)).data.get('revokedAt', null) == null
+          && (
+            get(invitePath(request.resource.data.joinedByInviteId)).data.get('expiresAt', null) == null
+            || get(invitePath(request.resource.data.joinedByInviteId)).data.expiresAt > request.time.toMillis()
+          )
+          && campaignIsActive(request.resource.data.campaignId)
+        )
+      );
+
+      allow update: if signedIn() && request.resource.data.campaignId == resource.data.campaignId
+        && request.resource.data.userId == resource.data.userId
+        && campaignIsActive(resource.data.campaignId)
+        && (
+          isCampaignOwner(resource.data.campaignId)
+          || (
+            resource.data.userId == request.auth.uid
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.joinedAt == resource.data.joinedAt
+            && request.resource.data.joinedByInviteId == resource.data.joinedByInviteId
+            && request.resource.data.state == 'LEFT'
+            && request.resource.data.characterIds.size() == 0
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    match /campaignInvites/{inviteId} {
+      allow get: if signedIn() && (
+        isCampaignOwner(resource.data.campaignId)
+        || (
+          resource.data.get('revokedAt', null) == null
+          && (
+            resource.data.get('expiresAt', null) == null
+            || resource.data.expiresAt > request.time.toMillis()
+          )
+          && campaignIsActive(resource.data.campaignId)
+        )
+      );
+
+      allow list: if signedIn() && isCampaignOwner(resource.data.campaignId);
+
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.code == inviteId
+        && request.resource.data.campaignId != ''
+        && campaignIsActive(request.resource.data.campaignId)
+        && isCampaignOwner(request.resource.data.campaignId)
+        && request.resource.data.get('revokedAt', null) == null;
+
+      allow update: if signedIn()
+        && isCampaignOwner(resource.data.campaignId)
+        && campaignIsActive(resource.data.campaignId)
+        && request.resource.data.campaignId == resource.data.campaignId
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if false;
+    }
+
+    match /characters/{characterId} {
+      allow read: if signedIn() && (
+        resource.data.ownerId == request.auth.uid
+        || (
+          normalizedCampaignId(resource.data) != ''
+          && canReadCampaign(normalizedCampaignId(resource.data))
+        )
+      );
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && validCharacterCampaignTarget()
         && request.resource.data.lockType == 'NONE'
         && requestedIsLocked() == false
         && request.resource.data.lockedBy == ''
         && request.resource.data.get('lockedAt', null) == null
         && request.resource.data.deleted == false;
 
-      allow update: if (
-        isHistorian()
-        && exists(
-          /databases/$(database)/documents/users/$(request.resource.data.ownerId)
-        )
-        && validHistorianLockTransition()
-      ) || (
-        ownsExistingCharacter()
-        && request.resource.data.ownerId == resource.data.ownerId
-        && request.resource.data.deleted == resource.data.get('deleted', false)
-        && validPlayerLockTransition()
-      );
+      allow update: if signedIn()
+        && (
+          (
+            ownsExistingCharacter()
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.deleted == resource.data.get('deleted', false)
+            && validPlayerLockTransition()
+            && validCharacterCampaignTarget()
+            && (
+              noCampaign(resource.data)
+              || campaignIsActive(normalizedCampaignId(resource.data))
+            )
+          )
+          || (
+            campaignCharacterWritable()
+            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
+            && (
+              normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
+              || normalizedCampaignId(request.resource.data) == ''
+            )
+            && validCampaignMasterLockTransition(normalizedCampaignId(resource.data))
+          )
+        );
 
-      allow delete: if isHistorian() || (ownsExistingCharacter() && existingLockType() == 'NONE');
+      allow delete: if signedIn() && (
+        (
+          ownsExistingCharacter()
+          && existingLockType() == 'NONE'
+          && (
+            noCampaign(resource.data)
+            || campaignIsActive(normalizedCampaignId(resource.data))
+          )
+        )
+        || campaignCharacterWritable()
+      );
     }
 
     match /users/{uid} {
