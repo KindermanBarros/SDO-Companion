@@ -331,7 +331,7 @@ test('administrator can list every character and manage records from other accou
     revokedAt: null,
     generation: 1,
   }));
-  await assertSucceeds(updateDoc(doc(adminDb, 'campaignInvites', ids.invite), {
+  await assertFails(updateDoc(doc(adminDb, 'campaignInvites', ids.invite), {
     revokedAt: 2,
   }));
   await assertSucceeds(updateDoc(doc(adminDb, 'characters', ids.character), {
