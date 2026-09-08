@@ -71,8 +71,7 @@ class OfflineFirstCampaignRepository(
 
     override suspend fun update(session: UserSession, campaign: Campaign) {
         requireOwner(session, campaign)
-        val existing = requireCampaign(campaign.id)
-        check(!existing.isArchived) { "Campanhas arquivadas são somente leitura." }
+        val existing = requireActiveCampaign(campaign.id)
         dao.upsertCampaign(
             campaign.copy(
                 ownerId = existing.ownerId,
@@ -115,7 +114,7 @@ class OfflineFirstCampaignRepository(
     }
 
     override suspend fun leave(session: UserSession, campaign: Campaign) {
-        val existing = requireCampaign(campaign.id)
+        val existing = requireActiveCampaign(campaign.id)
         check(existing.ownerId != session.uid) { "Transfira a responsabilidade da campanha antes de sair." }
         val member = dao.member(existing.id, session.uid)?.toDomain()
             ?: error("Você não participa desta campanha.")
@@ -168,22 +167,21 @@ class OfflineFirstCampaignRepository(
     }
 
     override suspend fun revokeInvite(session: UserSession, invite: CampaignInvite) {
-        val campaign = requireCampaign(invite.campaignId)
+        val campaign = requireActiveCampaign(invite.campaignId)
         requireOwner(session, campaign)
         dao.upsertInvite(invite.copy(revokedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
     override suspend fun regenerateInvite(session: UserSession, invite: CampaignInvite): CampaignInvite {
-        val campaign = requireCampaign(invite.campaignId)
+        val campaign = requireActiveCampaign(invite.campaignId)
         requireOwner(session, campaign)
-        val existing = requireActiveCampaign(campaign.id)
         revokeInvite(session, invite)
         val code = generateCode()
         return CampaignInvite(
             id = code,
-            campaignId = existing.id,
-            campaignName = existing.name,
-            campaignDescription = existing.description,
+            campaignId = campaign.id,
+            campaignName = campaign.name,
+            campaignDescription = campaign.description,
             code = code,
             createdBy = session.uid,
             createdAt = System.currentTimeMillis(),
@@ -267,7 +265,7 @@ class OfflineFirstCampaignRepository(
     override suspend fun unlinkCharacter(session: UserSession, character: Character): Character {
         val campaignId = normalizeCampaignId(character.campaignId)
         if (campaignId.isBlank()) return character.copy(campaignId = "")
-        val campaign = requireCampaign(campaignId)
+        val campaign = requireActiveCampaign(campaignId)
         check(character.ownerId == session.uid || campaign.ownerId == session.uid) {
             "Você não pode remover esta ficha da campanha."
         }
