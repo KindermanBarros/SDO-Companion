@@ -26,6 +26,7 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("name", "Nome", local.name, remote.name, ::textSummary)
     changed("race", "Raça", local.race, remote.race, ::textSummary)
     changed("subRace", "Sub-raça", local.subRace, remote.subRace, ::textSummary)
+    changed("raceAttribute", "Atributo racial", local.raceAttribute, remote.raceAttribute, ::textSummary)
     changed("occupation", "Ocupação", local.occupation, remote.occupation, ::textSummary)
     changed("height", "Altura", local.height, remote.height, ::textSummary)
     changed("age", "Idade", local.age, remote.age, ::textSummary)
@@ -90,6 +91,7 @@ fun mergeCharacterConflict(
         name = selected("name", local.name, remote.name),
         race = selected("race", local.race, remote.race),
         subRace = selected("subRace", local.subRace, remote.subRace),
+        raceAttribute = selected("raceAttribute", local.raceAttribute, remote.raceAttribute),
         occupation = selected("occupation", local.occupation, remote.occupation),
         height = selected("height", local.height, remote.height),
         age = selected("age", local.age, remote.age),

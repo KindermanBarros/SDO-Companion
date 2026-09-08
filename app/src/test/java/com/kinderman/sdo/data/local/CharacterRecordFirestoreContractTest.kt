@@ -108,4 +108,12 @@ class CharacterRecordFirestoreContractTest {
         assertEquals(item, converters.stringToInventory(converters.inventoryToString(listOf(item))).single())
         assertEquals(region, converters.stringToBody(converters.bodyToString(listOf(region))).single())
     }
+
+    @Test
+    fun raceSelectionMetadataSurvivesLocalAndFirestoreMapping() {
+        val record = CharacterRecord(race = "Humanos", subRace = "Oráculo", raceAttribute = "AGI")
+
+        assertEquals("AGI", record.toDomain().raceAttribute)
+        assertEquals("AGI", record.toDomain().toRecord().raceAttribute)
+    }
 }

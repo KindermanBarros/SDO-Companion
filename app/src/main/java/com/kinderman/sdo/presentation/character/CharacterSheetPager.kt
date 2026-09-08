@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -15,7 +16,11 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -117,6 +122,7 @@ private fun SheetPageContent(
     onChange: (Character) -> Unit,
     scrollState: LazyListState,
 ) {
+    var equipmentRegionIndex by remember(character.id) { mutableStateOf<Int?>(null) }
     LazyColumn(
         Modifier.fillMaxSize(),
         state = scrollState,
@@ -144,6 +150,18 @@ private fun SheetPageContent(
             SheetPage.BODY -> {
                 item("inventory") { InventorySection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange) }
                 item("body") { BodySection(character, editable, onChange) }
+                itemsIndexed(
+                    items = character.bodyRegions,
+                    key = { index, region -> "body-${region.roll}-${region.name}-$index" },
+                ) { index, _ ->
+                    BodyRegionSection(
+                        character = character,
+                        index = index,
+                        enabled = editable,
+                        onChange = onChange,
+                        onSelectEquipment = { equipmentRegionIndex = index },
+                    )
+                }
                 item("organs") { OrganSection(character, editable, onChange) }
             }
 
@@ -155,6 +173,20 @@ private fun SheetPageContent(
             }
 
             SheetPage.NOTES -> item("notes") { NotesSection(character, editable, onChange) }
+        }
+    }
+    if (page == SheetPage.BODY) equipmentRegionIndex?.let { index ->
+        val region = character.bodyRegions.getOrNull(index)
+        if (region != null) {
+            EquipmentPickerDialog(
+                regionName = region.name,
+                inventory = character.inventory,
+                selectedIds = region.equippedItemIds.toSet(),
+                onDismiss = { equipmentRegionIndex = null },
+            ) { selectedIds ->
+                onChange(character.equipItems(index, selectedIds))
+                equipmentRegionIndex = null
+            }
         }
     }
 }
