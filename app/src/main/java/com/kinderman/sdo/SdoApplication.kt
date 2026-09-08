@@ -5,10 +5,12 @@ import androidx.room.Room
 import com.google.firebase.FirebaseApp
 import com.kinderman.sdo.data.auth.FirebaseAuthRepository
 import com.kinderman.sdo.data.local.AppDatabase
+import com.kinderman.sdo.data.repository.LocalCatalogRepository
+import com.kinderman.sdo.data.repository.OfflineFirstCampaignRepository
 import com.kinderman.sdo.data.repository.OfflineFirstCharacterRepository
 import com.kinderman.sdo.data.repository.OfflineFirstOwnerRepository
-import com.kinderman.sdo.data.repository.LocalCatalogRepository
 import com.kinderman.sdo.domain.repository.AuthRepository
+import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
@@ -24,6 +26,7 @@ class SdoApplication : Application() {
     lateinit var authRepository: AuthRepository
     lateinit var ownerRepository: OwnerRepository
     lateinit var catalogRepository: CatalogRepository
+    lateinit var campaignRepository: CampaignRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -40,11 +43,13 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_8_9,
                 AppDatabase.MIGRATION_9_10,
                 AppDatabase.MIGRATION_10_11,
+                AppDatabase.MIGRATION_11_12,
             )
             .build()
         characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao())
         ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
+        campaignRepository = OfflineFirstCampaignRepository(db.campaignDao())
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {
             catalogRepository.refreshBundledCatalog()
