@@ -64,6 +64,10 @@ data class InventoryItem(
     val effect: String = "",
     val pg: Int = 0,
     val pl: Int = 0,
+    val category: String = "",
+    val agilityLimit: Int? = null,
+    val quality: String = "Comum",
+    val bonuses: List<ItemBonus> = emptyList(),
 )
 
 data class BodyRegion(
@@ -166,7 +170,7 @@ data class Character(
 ) {
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.load }
-    val maximumLoad: Int get() = 2 + (attributes.firstOrNull { it.acronym == "FOR" }?.value ?: 0) + containerCapacity
+    val maximumLoad: Int get() = 2 + attributeValue("FOR") + containerCapacity
 
     val lifeBase: Int get() = 10 + skillValue("VIG", "Vitalidade")
     val sanityBase: Int get() = 10 + skillValue("INT", "Sanidade")
@@ -195,6 +199,9 @@ data class Character(
     val equippedGeneralProtection: Int
         get() = equippedItems().sumOf { it.pg }
 
+    val equippedAgilityLimit: Int?
+        get() = equippedItems().mapNotNull { it.agilityLimit }.minOrNull()
+
     fun localProtection(region: BodyRegion): Int =
         region.localProtection + equippedItems(region).sumOf { it.pl }
 
@@ -203,8 +210,14 @@ data class Character(
 
     fun equipItems(regionIndex: Int, itemIds: Set<String>): Character {
         if (regionIndex !in bodyRegions.indices) return this
-        val validIds = inventory.map { it.id }.toSet()
-        val selectedIds = itemIds.filterTo(linkedSetOf()) { it in validIds }
+        val regionName = bodyRegions[regionIndex].name
+        val candidates = inventory.filter { it.id in itemIds && it.matchesRegion(regionName) }
+        val armor = candidates.filter { it.category.equals("Armadura", true) }.takeLast(1)
+        val accessories = candidates.filter { it.category.equals("Acessório", true) }.takeLast(1)
+        val other = candidates.filterNot {
+            it.category.equals("Armadura", true) || it.category.equals("Acessório", true)
+        }
+        val selectedIds = (other + armor + accessories).mapTo(linkedSetOf()) { it.id }
         val updatedRegions = bodyRegions.mapIndexed { index, region ->
             if (index == regionIndex) region.copy(equippedItemIds = selectedIds.toList()) else region
         }
@@ -233,17 +246,52 @@ data class Character(
         return inventory.filter { it.id in equippedIds }
     }
 
-    private fun attributeValue(acronym: String): Int =
-        attributes.firstOrNull { it.acronym == acronym }?.value ?: 0
+    fun acquiredKnowledgeValue(name: String): Int =
+        (learnedKnowledges + arcaneKnowledges + battleTechniques)
+            .filter { it.name.equals(name, true) }
+            .sumOf { it.value } + equippedBonus(ItemBonusType.ACQUIRED_KNOWLEDGE, name)
 
-    private fun skillValue(attributeAcronym: String, skillName: String): Int =
+    fun attributeTotal(acronym: String): Int =
+        (attributes.firstOrNull { it.acronym == acronym }?.value ?: 0) +
+            equippedBonus(ItemBonusType.ATTRIBUTE, acronym)
+
+    fun basicKnowledgeTotal(attributeAcronym: String, skillName: String): Int =
         attributes
             .firstOrNull { it.acronym == attributeAcronym }
             ?.skills
             ?.firstOrNull { it.name == skillName }
-            ?.value
-            ?: 0
+            ?.value.orZero() + equippedBonus(ItemBonusType.BASIC_KNOWLEDGE, skillName)
+
+    private fun attributeValue(acronym: String): Int = attributeTotal(acronym)
+
+    private fun skillValue(attributeAcronym: String, skillName: String): Int = basicKnowledgeTotal(attributeAcronym, skillName)
+
+    private fun equippedBonus(type: ItemBonusType, target: String): Int = equippedItems()
+        .flatMap { it.bonuses }
+        .filter { it.type == type && it.target.equals(target, true) }
+        .sumOf { it.value }
 }
+
+private fun Int?.orZero() = this ?: 0
+
+fun InventoryItem.matchesRegion(bodyRegionName: String): Boolean {
+    if (region.isBlank()) return false
+    val itemRegion = region.normalizedEquipmentRegion()
+    val bodyRegion = bodyRegionName.normalizedEquipmentRegion()
+    return when {
+        bodyRegion.startsWith("pe ") || bodyRegion == "pe" -> "pe" in itemRegion
+        bodyRegion.startsWith("mao ") || bodyRegion == "mao" -> "mao" in itemRegion
+        bodyRegion.startsWith("braco ") || bodyRegion == "braco" -> "braco" in itemRegion
+        bodyRegion.startsWith("perna ") || bodyRegion == "perna" -> "perna" in itemRegion
+        else -> bodyRegion in itemRegion || itemRegion in bodyRegion
+    }
+}
+
+private fun String.normalizedEquipmentRegion(): String = lowercase()
+    .replace('á', 'a').replace('à', 'a').replace('â', 'a').replace('ã', 'a')
+    .replace('é', 'e').replace('ê', 'e').replace('í', 'i')
+    .replace('ó', 'o').replace('ô', 'o').replace('õ', 'o').replace('ú', 'u').replace('ç', 'c')
+    .replace(Regex("\\b(pes|maos|bracos|pernas)\\b")) { it.value.dropLast(1) }
 
 fun nextPersonalNoteTitle(notes: List<PersonalNote>): String {
     val prefix = "Registro Pessoal "
@@ -272,9 +320,18 @@ val defaultProtectionNames = listOf("Geral", "Esquiva", "Postura", "Mental", "Ar
 fun defaultProtectionAdjustments() = defaultProtectionNames.associateWith { 0 }
 
 fun defaultBodyRegions() = listOf(
-    "Cabeça", "Braço esquerdo", "Braço direito", "Torso", "Mão esquerda",
-    "Mão direita", "Perna esquerda", "Perna direita", "Pé esquerdo", "Pé direito",
+    "Cabeça", "Torso", "Braço direito", "Braço esquerdo", "Mão direita",
+    "Mão esquerda", "Perna direita", "Perna esquerda", "Pé direito", "Pé esquerdo",
 ).mapIndexed { index, name -> BodyRegion(roll = index + 1, name = name) }
+
+fun normalizeBodyRegions(regions: List<BodyRegion>): List<BodyRegion> {
+    if (regions.isEmpty()) return defaultBodyRegions()
+    return defaultBodyRegions().map { canonical ->
+        regions.firstOrNull { it.name.equals(canonical.name, true) }
+            ?.copy(roll = canonical.roll, name = canonical.name)
+            ?: canonical
+    }
+}
 
 fun defaultOrgans() = listOf(
     "Cérebro", "Coração ou núcleo", "Pulmões ou sistema respiratório", "Fígado ou filtro", "Outro",
