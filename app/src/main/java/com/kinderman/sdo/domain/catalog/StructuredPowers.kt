@@ -70,8 +70,9 @@ private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
     val duration = extractDuration(normalized)
     val activation = extractActivation(normalized)
     val deactivation = extractDeactivation(normalized)
+    val enhancementStart = Regex("(?im)^Aprimoramento\\s*[—-]").find(normalized)?.range?.first ?: normalized.length
     val mainEffect = normalized
-        .substringBefore(Regex("(?im)^Aprimoramento\\s*[—-]"))
+        .substring(0, enhancementStart)
         .lines()
         .filterNot { line ->
             line.startsWith("Origem:", true) || line.startsWith("Categoria:", true)
