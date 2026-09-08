@@ -22,6 +22,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -90,6 +93,9 @@ fun DashboardScreen(
     onAcceptInvite: (String, Character?, Boolean) -> Unit,
     onDismissInvitePreview: () -> Unit,
     onSync: () -> Unit,
+    onOpenSession: () -> Unit,
+    onOpenHistorian: () -> Unit,
+    onOpenSettings: () -> Unit,
     onLogout: () -> Unit,
 ) {
     val admin = session?.isAdmin == true
@@ -189,6 +195,27 @@ fun DashboardScreen(
                                 ),
                             ) {
                                 Text(target.label, color = if (section == target) Acid else Muted)
+                            }
+                        }
+                    }
+                    TechPanel(accent = AcidCyan) {
+                        TelemetryTag("QUICK_ACCESS")
+                        Text("CENTRAL DE OPERAÇÕES", color = Ice, style = MaterialTheme.typography.titleMedium)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            TextButton(onClick = onOpenSession, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Default.PlayCircle, null)
+                                Text(" SESSÃO")
+                            }
+                            if (admin || activeCampaigns.any { campaign ->
+                                    campaign.ownerId == uid || rolesByCampaign[campaign.id] == CampaignRole.HISTORIAN
+                                }
+                            ) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Default.Visibility, null)
+                                Text(" MESTRE")
+                            }
+                            TextButton(onClick = onOpenSettings, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Default.Palette, null)
+                                Text(" TEMA")
                             }
                         }
                     }

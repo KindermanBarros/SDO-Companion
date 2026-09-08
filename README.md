@@ -41,6 +41,10 @@ As regras visuais, tokens e componentes estão documentados no
 - salvamento local automático a cada alteração; sincronização remota acionada separadamente;
 - sincronização com Cloud Firestore;
 - loadings cibernéticos distintos para autenticação e sincronização de personagens;
+- central de operações com fundações navegáveis para Modo Sessão, Painel do Historiador e Aparência;
+- Modo Sessão compacto com recursos rápidos, proteções, condições, habilidades e prévia confirmável de dano/cura;
+- Painel do Historiador agrupado por campanha, com alertas operacionais e consulta ao catálogo local;
+- temas Neon, Alto contraste e Arcano, escala de texto e densidade persistidos somente no aparelho;
 - exclusão offline-first com sincronização da remoção;
 - jogador edita as próprias fichas e pode ativar um bloqueio pessoal para impedir a própria exclusão;
 - a Mestre/Historiador acessa e edita todas as fichas, aplica/remove o bloqueio de historiador e pode excluir qualquer personagem;
@@ -70,6 +74,9 @@ ui/            tokens e componentes do design system
 
 As telas dependem dos contratos do domínio. Regras de autorização são aplicadas no domínio,
 novamente no repositório e, como última barreira, em `firebase/firestore.rules`.
+
+Os fluxos e limites da fundação de UX das issues abertas estão documentados em
+[`docs/UX_ISSUES_17_19.md`](docs/UX_ISSUES_17_19.md).
 
 ## Configuração Firebase
 

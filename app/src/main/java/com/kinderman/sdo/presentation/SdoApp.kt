@@ -18,13 +18,24 @@ import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
+import com.kinderman.sdo.presentation.historian.HistorianDashboardScreen
 import com.kinderman.sdo.presentation.login.LoginScreen
+import com.kinderman.sdo.presentation.session.SessionModeScreen
+import com.kinderman.sdo.presentation.settings.SettingsScreen
 import com.kinderman.sdo.presentation.sync.CharacterConflictDialog
 import com.kinderman.sdo.ui.CyberLoadingMode
 import com.kinderman.sdo.ui.CyberLoadingScreen
+import com.kinderman.sdo.ui.SdoContentDensity
+import com.kinderman.sdo.ui.SdoPreferences
+
+private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, SETTINGS }
 
 @Composable
-fun SdoApp(activity: MainActivity) {
+fun SdoApp(
+    activity: MainActivity,
+    preferences: SdoPreferences,
+    onPreferencesChange: (SdoPreferences) -> Unit,
+) {
     val application = LocalContext.current.applicationContext as SdoApplication
     val appViewModel: AppViewModel = viewModel(
         factory = AppViewModelFactory(
@@ -49,6 +60,7 @@ fun SdoApp(activity: MainActivity) {
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var surface by rememberSaveable { mutableStateOf(AppSurface.DASHBOARD) }
 
     LaunchedEffect(authenticatedSession, demo) {
         when {
@@ -80,35 +92,6 @@ fun SdoApp(activity: MainActivity) {
         appSession == null || characterLoadState.initialLoading ->
             CyberLoadingScreen(CyberLoadingMode.CHARACTERS)
 
-        selectedId == null -> DashboardScreen(
-            characters = characters,
-            campaigns = campaigns,
-            memberships = memberships,
-            owners = owners,
-            session = appSession,
-            syncing = characterLoadState.syncing,
-            invitePreview = invitePreview,
-            snackbarHost = { SnackbarHost(snackbar) },
-            onAdd = appViewModel::add,
-            onAddToCampaign = appViewModel::addToCampaign,
-            onOpen = { selectedId = it },
-            onOwnerTransfer = appViewModel::transferOwner,
-            onCreateCampaign = appViewModel::createCampaign,
-            onArchiveCampaign = appViewModel::archiveCampaign,
-            onLeaveCampaign = appViewModel::leaveCampaign,
-            onCreateInvite = appViewModel::createCampaignInvite,
-            onPreviewInvite = appViewModel::previewCampaignInvite,
-            onAcceptInvite = appViewModel::acceptCampaignInvite,
-            onDismissInvitePreview = appViewModel::dismissInvitePreview,
-            onSync = appViewModel::sync,
-            onLogout = {
-                selectedId = null
-                demo = false
-                authViewModel.logout()
-                appViewModel.clearSession()
-            },
-        )
-
         else -> {
             val selectedCharacter = characters.firstOrNull { it.id == selectedId }
             val selectedCampaignId = normalizeCampaignId(selectedCharacter?.campaignId.orEmpty())
@@ -118,24 +101,113 @@ fun SdoApp(activity: MainActivity) {
             val isCampaignHistorian = appSession?.isAdmin == true ||
                 selectedCampaign?.ownerId == appSession?.uid || membership?.role == CampaignRole.HISTORIAN
             val isCampaignResponsible = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
-            CharacterSheetScreen(
-                character = selectedCharacter,
-                session = appSession,
-                catalog = catalog,
-                readOnly = archived,
-                isCampaignHistorian = isCampaignHistorian,
-                isCampaignResponsible = isCampaignResponsible,
-                snackbarHost = { SnackbarHost(snackbar) },
-                onBack = { selectedId = null },
-                onSave = appViewModel::save,
-                onAutosave = appViewModel::autosave,
-                onPlayerLock = appViewModel::setPlayerLocked,
-                onHistorianLock = appViewModel::setHistorianLocked,
-                onDelete = {
-                    appViewModel.delete(it)
-                    selectedId = null
-                },
-            )
+            when (surface) {
+                AppSurface.DASHBOARD -> DashboardScreen(
+                    characters = characters,
+                    campaigns = campaigns,
+                    memberships = memberships,
+                    owners = owners,
+                    session = appSession,
+                    syncing = characterLoadState.syncing,
+                    invitePreview = invitePreview,
+                    snackbarHost = { SnackbarHost(snackbar) },
+                    onAdd = appViewModel::add,
+                    onAddToCampaign = appViewModel::addToCampaign,
+                    onOpen = {
+                        selectedId = it
+                        surface = AppSurface.SHEET
+                    },
+                    onOwnerTransfer = appViewModel::transferOwner,
+                    onCreateCampaign = appViewModel::createCampaign,
+                    onArchiveCampaign = appViewModel::archiveCampaign,
+                    onLeaveCampaign = appViewModel::leaveCampaign,
+                    onCreateInvite = appViewModel::createCampaignInvite,
+                    onPreviewInvite = appViewModel::previewCampaignInvite,
+                    onAcceptInvite = appViewModel::acceptCampaignInvite,
+                    onDismissInvitePreview = appViewModel::dismissInvitePreview,
+                    onSync = appViewModel::sync,
+                    onOpenSession = {
+                        selectedId = null
+                        surface = AppSurface.SESSION
+                    },
+                    onOpenHistorian = { surface = AppSurface.HISTORIAN },
+                    onOpenSettings = { surface = AppSurface.SETTINGS },
+                    onLogout = {
+                        selectedId = null
+                        surface = AppSurface.DASHBOARD
+                        demo = false
+                        authViewModel.logout()
+                        appViewModel.clearSession()
+                    },
+                )
+
+                AppSurface.SHEET -> CharacterSheetScreen(
+                    character = selectedCharacter,
+                    session = appSession,
+                    catalog = catalog,
+                    readOnly = archived,
+                    isCampaignHistorian = isCampaignHistorian,
+                    isCampaignResponsible = isCampaignResponsible,
+                    snackbarHost = { SnackbarHost(snackbar) },
+                    onBack = {
+                        selectedId = null
+                        surface = AppSurface.DASHBOARD
+                    },
+                    onOpenSession = {
+                        selectedId = it
+                        surface = AppSurface.SESSION
+                    },
+                    onSave = appViewModel::save,
+                    onAutosave = appViewModel::autosave,
+                    onPlayerLock = appViewModel::setPlayerLocked,
+                    onHistorianLock = appViewModel::setHistorianLocked,
+                    onDelete = {
+                        appViewModel.delete(it)
+                        selectedId = null
+                        surface = AppSurface.DASHBOARD
+                    },
+                )
+
+                AppSurface.SESSION -> SessionModeScreen(
+                    characters = characters,
+                    selectedId = selectedId,
+                    compact = preferences.density == SdoContentDensity.COMPACT,
+                    readOnly = archived,
+                    onSelect = { selectedId = it },
+                    onOpenSheet = {
+                        selectedId = it
+                        surface = AppSurface.SHEET
+                    },
+                    onChange = appViewModel::autosave,
+                    onBack = {
+                        selectedId = null
+                        surface = AppSurface.DASHBOARD
+                    },
+                )
+
+                AppSurface.HISTORIAN -> HistorianDashboardScreen(
+                    session = appSession!!,
+                    campaigns = campaigns,
+                    memberships = memberships,
+                    characters = characters,
+                    catalog = catalog,
+                    onOpenSession = {
+                        selectedId = it
+                        surface = AppSurface.SESSION
+                    },
+                    onOpenSheet = {
+                        selectedId = it
+                        surface = AppSurface.SHEET
+                    },
+                    onBack = { surface = AppSurface.DASHBOARD },
+                )
+
+                AppSurface.SETTINGS -> SettingsScreen(
+                    preferences = preferences,
+                    onPreferencesChange = onPreferencesChange,
+                    onBack = { surface = AppSurface.DASHBOARD },
+                )
+            }
         }
     }
 

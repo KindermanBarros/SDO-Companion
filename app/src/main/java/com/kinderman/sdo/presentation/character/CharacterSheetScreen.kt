@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +63,7 @@ fun CharacterSheetScreen(
     isCampaignResponsible: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
+    onOpenSession: (String) -> Unit,
     onSave: (Character) -> Unit,
     onAutosave: (Character) -> Unit,
     onPlayerLock: (Character, Boolean) -> Unit,
@@ -113,6 +115,9 @@ fun CharacterSheetScreen(
                     },
                     navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
+                        IconButton({ onOpenSession(current.id) }) {
+                            Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = AcidCyan)
+                        }
                         if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) IconButton({
                             onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
                         }) {

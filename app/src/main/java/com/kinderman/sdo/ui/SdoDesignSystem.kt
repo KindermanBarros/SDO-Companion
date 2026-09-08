@@ -111,6 +111,40 @@ private val hudColors = darkColorScheme(
     onError = Void,
 )
 
+private val highContrastColors = darkColorScheme(
+    primary = Color(0xFF63FFF1),
+    onPrimary = Color.Black,
+    secondary = Color(0xFFA9CBFF),
+    onSecondary = Color.Black,
+    tertiary = Color(0xFFFF70AE),
+    onTertiary = Color.Black,
+    background = Color.Black,
+    onBackground = Color.White,
+    surface = Color(0xFF101214),
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF162B45),
+    onSurfaceVariant = Color.White,
+    error = Color(0xFFFF70AE),
+    onError = Color.Black,
+)
+
+private val arcaneColors = darkColorScheme(
+    primary = Color(0xFFBCA8FF),
+    onPrimary = Color(0xFF100624),
+    secondary = Color(0xFF69E6DC),
+    onSecondary = Color(0xFF061B1B),
+    tertiary = Color(0xFFFF8DBD),
+    onTertiary = Color(0xFF2B0014),
+    background = Color(0xFF0D0719),
+    onBackground = Color(0xFFF8F2FF),
+    surface = Color(0xFF21172F),
+    onSurface = Color(0xFFF8F2FF),
+    surfaceVariant = Color(0xFF33244B),
+    onSurfaceVariant = Color(0xFFE5D9FF),
+    error = Color(0xFFFF8DBD),
+    onError = Color(0xFF2B0014),
+)
+
 val TechInterfaceFont = FontFamily(
     Font(R.font.oxanium_variable, weight = FontWeight.Normal),
 )
@@ -126,53 +160,65 @@ object SdoMotionTokens {
     const val TELEMETRY_SCAN = 1_100
 }
 
-private val hudTypography = Typography(
+private fun hudTypography(scale: Float) = Typography(
     displayLarge = TextStyle(
         fontFamily = RawDisplayFont,
         fontWeight = FontWeight.Normal,
-        fontSize = 42.sp,
-        lineHeight = 50.sp,
+        fontSize = (42 * scale).sp,
+        lineHeight = (50 * scale).sp,
         letterSpacing = 0.sp,
     ),
     headlineLarge = TextStyle(
         fontFamily = RawDisplayFont,
         fontWeight = FontWeight.Normal,
-        fontSize = 34.sp,
-        lineHeight = 44.sp,
+        fontSize = (34 * scale).sp,
+        lineHeight = (44 * scale).sp,
         letterSpacing = 0.sp,
     ),
     titleLarge = TextStyle(
         fontFamily = TechInterfaceFont,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp,
+        fontSize = (18 * scale).sp,
         letterSpacing = 0.5.sp,
     ),
     titleMedium = TextStyle(
         fontFamily = TechInterfaceFont,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
+        fontSize = (14 * scale).sp,
         letterSpacing = 1.sp,
     ),
-    bodyLarge = TextStyle(fontFamily = TechInterfaceFont, fontSize = 16.sp, lineHeight = 23.sp),
-    bodyMedium = TextStyle(fontFamily = TechInterfaceFont, fontSize = 14.sp, lineHeight = 20.sp),
-    bodySmall = TextStyle(fontFamily = TechInterfaceFont, fontSize = 12.sp, lineHeight = 17.sp),
+    bodyLarge = TextStyle(fontFamily = TechInterfaceFont, fontSize = (16 * scale).sp, lineHeight = (23 * scale).sp),
+    bodyMedium = TextStyle(fontFamily = TechInterfaceFont, fontSize = (14 * scale).sp, lineHeight = (20 * scale).sp),
+    bodySmall = TextStyle(fontFamily = TechInterfaceFont, fontSize = (12 * scale).sp, lineHeight = (17 * scale).sp),
     labelLarge = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
-        fontSize = 12.sp,
+        fontSize = (12 * scale).sp,
         letterSpacing = 1.8.sp,
     ),
     labelSmall = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
-        fontSize = 11.sp,
+        fontSize = (11 * scale).sp,
         letterSpacing = 1.sp,
     ),
 )
 
 @Composable
-fun SdoTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = hudColors, typography = hudTypography, content = content)
+fun SdoTheme(
+    preferences: SdoPreferences = SdoPreferences(),
+    content: @Composable () -> Unit,
+) {
+    val colors = when (preferences.theme) {
+        SdoThemeVariant.NEON -> hudColors
+        SdoThemeVariant.HIGH_CONTRAST -> highContrastColors
+        SdoThemeVariant.ARCANE -> arcaneColors
+    }
+    MaterialTheme(
+        colorScheme = colors,
+        typography = hudTypography(preferences.fontScale.multiplier),
+        content = content,
+    )
 }
 
 @Composable
@@ -182,7 +228,7 @@ fun HudBackground(
 ) {
     Box(modifier
         .fillMaxSize()
-        .background(Void)) {
+        .background(MaterialTheme.colorScheme.background)) {
         Canvas(Modifier.fillMaxSize()) {
             val minor = 12.dp.toPx()
             val major = minor * 4
@@ -228,7 +274,7 @@ fun TechPanel(
                 shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
             ),
         shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
-        colors = CardDefaults.cardColors(containerColor = Panel.copy(alpha = 0.96f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
