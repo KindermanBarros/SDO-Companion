@@ -121,7 +121,7 @@ class CharacterTest {
     }
 
     @Test fun equippedArmorAddsPgToCharacterAndPlToSelectedBodyRegion() {
-        val armor = InventoryItem(id = "armor-1", name = "Braçadeira", pg = 3, pl = 2)
+        val armor = InventoryItem(id = "armor-1", name = "Peitoral", pg = 3, pl = 2, region = "torso", category = "Armadura")
         val initial = Character(inventory = listOf(armor))
         val equipped = initial.equipItems(regionIndex = 1, itemIds = setOf(armor.id))
 
@@ -132,18 +132,18 @@ class CharacterTest {
     }
 
     @Test fun theSameEquipmentContributesPgOnlyOnceAcrossMultipleRegions() {
-        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2)
+        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2, region = "braços", category = "Armadura")
         val character = Character(inventory = listOf(armor))
-            .equipItems(1, setOf(armor.id))
             .equipItems(2, setOf(armor.id))
+            .equipItems(3, setOf(armor.id))
 
         assertEquals(13, character.protectionBase("Geral"))
-        assertEquals(2, character.localProtection(character.bodyRegions[1]))
         assertEquals(2, character.localProtection(character.bodyRegions[2]))
+        assertEquals(2, character.localProtection(character.bodyRegions[3]))
     }
 
     @Test fun removingAnEquippedItemAlsoClearsBodyReferences() {
-        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2)
+        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2, region = "torso", category = "Armadura")
         val character = Character(inventory = listOf(armor))
             .equipItems(1, setOf(armor.id))
             .removeInventoryItem(armor.id)
@@ -164,5 +164,49 @@ class CharacterTest {
         assertEquals(2, character.localProtection(character.bodyRegions[8]))
         assertEquals(2, character.localProtection(character.bodyRegions[9]))
         assertEquals(11, character.protectionBase("Geral"))
+    }
+
+    @Test fun onlyOneArmorCanOccupyTheSameBodyRegion() {
+        val first = InventoryItem(id = "a", region = "torso", category = "Armadura", pg = 1)
+        val second = InventoryItem(id = "b", region = "torso", category = "Armadura", pg = 2)
+        val character = Character(inventory = listOf(first, second)).equipItems(1, setOf(first.id, second.id))
+
+        assertEquals(listOf(second.id), character.bodyRegions[1].equippedItemIds)
+        assertEquals(12, character.protectionBase("Geral"))
+    }
+
+    @Test fun equippedBonusesAffectAttributesBasicAndAcquiredKnowledges() {
+        val item = InventoryItem(
+            id = "bonus", region = "torso", category = "Acessório",
+            bonuses = listOf(
+                ItemBonus(ItemBonusType.ATTRIBUTE, "FOR", 2),
+                ItemBonus(ItemBonusType.BASIC_KNOWLEDGE, "Vitalidade", 3),
+                ItemBonus(ItemBonusType.ACQUIRED_KNOWLEDGE, "Ferreiro", 1),
+            ),
+        )
+        val character = Character(
+            inventory = listOf(item),
+            learnedKnowledges = listOf(SpecialKnowledge(name = "Ferreiro", value = 2)),
+        ).equipItems(1, setOf(item.id))
+
+        assertEquals(4, character.maximumLoad)
+        assertEquals(13, character.lifeBase)
+        assertEquals(3, character.acquiredKnowledgeValue("Ferreiro"))
+    }
+
+    @Test fun legacyBodyOrderIsNormalizedWithoutLosingAssignments() {
+        val legacy = listOf(
+            BodyRegion(1, "Cabeça"), BodyRegion(2, "Braço esquerdo", equippedItemIds = listOf("brace")),
+            BodyRegion(3, "Braço direito"), BodyRegion(4, "Torso", damage = "ferido"),
+            BodyRegion(5, "Mão esquerda"), BodyRegion(6, "Mão direita"),
+            BodyRegion(7, "Perna esquerda"), BodyRegion(8, "Perna direita"),
+            BodyRegion(9, "Pé esquerdo"), BodyRegion(10, "Pé direito"),
+        )
+        val normalized = normalizeBodyRegions(legacy)
+
+        assertEquals("Torso", normalized[1].name)
+        assertEquals("ferido", normalized[1].damage)
+        assertEquals(listOf("brace"), normalized[3].equippedItemIds)
+        assertEquals((1..10).toList(), normalized.map { it.roll })
     }
 }
