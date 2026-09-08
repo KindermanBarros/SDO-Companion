@@ -19,14 +19,11 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-object MasterAccount {
+object AdministratorAccount {
     const val EMAIL = "kindbarros@gmail.com"
 
-    fun roleFor(email: String?, storedRole: String?): UserRole = when {
-        email.equals(EMAIL, ignoreCase = true) -> UserRole.MASTER
-        storedRole == UserRole.MASTER.name -> UserRole.MASTER
-        else -> UserRole.PLAYER
-    }
+    fun roleFor(email: String?, emailVerified: Boolean): UserRole =
+        if (emailVerified && email.equals(EMAIL, ignoreCase = true)) UserRole.ADMIN else UserRole.USER
 }
 
 class FirebaseAuthRepository : AuthRepository {
@@ -45,7 +42,7 @@ class FirebaseAuthRepository : AuthRepository {
                 trySend(null)
             } else {
                 launch {
-                    val session = loadSession(user.uid, user.email, user.displayName)
+                    val session = loadSession(user.uid, user.email, user.displayName, user.isEmailVerified)
                     if (auth.currentUser?.uid == user.uid) trySend(session)
                 }
             }
@@ -65,11 +62,9 @@ class FirebaseAuthRepository : AuthRepository {
             ?: return null
 
         val profile = Firebase.firestore.collection("users").document(user.uid)
-        val storedRole = profile.get().await().getString("role")
-        val role = MasterAccount.roleFor(user.email, storedRole)
+        val role = AdministratorAccount.roleFor(user.email, user.isEmailVerified)
         profile.set(
             mapOf(
-                "role" to role.name,
                 "email" to user.email,
                 "displayName" to user.displayName,
             ),
@@ -80,13 +75,19 @@ class FirebaseAuthRepository : AuthRepository {
 
     override fun logout() = auth.signOut()
 
-    private suspend fun loadSession(uid: String, email: String?, displayName: String?): UserSession {
-        // On process restore FirebaseAuth can expose the cached user before refreshing its ID
-        // token. Wait for a usable token before allowing Firestore synchronization to start.
-        auth.currentUser?.takeIf { it.uid == uid }?.getIdToken(false)?.await()
-        val storedRole = runCatching {
-            Firebase.firestore.collection("users").document(uid).get().await().getString("role")
-        }.getOrNull()
-        return UserSession(uid, email.orEmpty(), displayName.orEmpty(), MasterAccount.roleFor(email, storedRole))
+    private suspend fun loadSession(uid: String, email: String?, displayName: String?, emailVerified: Boolean): UserSession {
+        // Refresh when possible, but never block the offline cache behind an auth/network call.
+        val currentUser = auth.currentUser?.takeIf { it.uid == uid }
+        runCatching {
+            currentUser?.reload()?.await()
+            currentUser?.getIdToken(false)?.await()
+        }
+        val verified = auth.currentUser?.takeIf { it.uid == uid }?.isEmailVerified ?: emailVerified
+        return UserSession(
+            uid,
+            email.orEmpty(),
+            displayName.orEmpty(),
+            AdministratorAccount.roleFor(email, verified),
+        )
     }
 }

@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
+import com.kinderman.sdo.domain.model.CampaignMember
+import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.UserProfile
@@ -69,6 +71,7 @@ import com.kinderman.sdo.ui.Void
 fun DashboardScreen(
     characters: List<Character>,
     campaigns: List<Campaign>,
+    memberships: List<CampaignMember>,
     owners: List<UserProfile>,
     session: UserSession?,
     syncing: Boolean,
@@ -88,9 +91,10 @@ fun DashboardScreen(
     onSync: () -> Unit,
     onLogout: () -> Unit,
 ) {
-    val master = session?.isMaster == true
+    val admin = session?.isAdmin == true
     val uid = session?.uid.orEmpty()
     val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
+    val rolesByCampaign = remember(memberships) { memberships.associateBy({ it.campaignId }, { it.role }) }
     val activeCampaigns = campaigns.filterNot(Campaign::isArchived)
     val archivedCampaigns = campaigns.filter(Campaign::isArchived)
     val standalone = characters.filter { normalizeCampaignId(it.campaignId).isBlank() }
@@ -118,14 +122,14 @@ fun DashboardScreen(
             ) {
                 item {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        TelemetryTag(if (master) "HISTORIAN_ACCESS" else "PLAYER_ACCESS")
+                        TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
                             IconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = Acid) }
                             IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = Signal) }
                         }
                     }
                     Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
-                    Text(if (master) "PAINEL DA MESTRE" else "ARQUIVOS DE CAMPO", style = MaterialTheme.typography.headlineLarge, color = Ice)
+                    Text(if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS", style = MaterialTheme.typography.headlineLarge, color = Ice)
                     Text("${activeCampaigns.size} CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA", color = Muted, style = MaterialTheme.typography.labelSmall)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
@@ -154,6 +158,7 @@ fun DashboardScreen(
                         CampaignPanel(
                             campaign = campaign,
                             owner = campaign.ownerId == uid,
+                            role = rolesByCampaign[campaign.id],
                             archived = false,
                             onAdd = { onAddToCampaign(campaign) },
                             onInvite = { onCreateInvite(campaign) },
@@ -168,7 +173,7 @@ fun DashboardScreen(
                     ) { character ->
                         CharacterAccessCard(
                             character = character,
-                            master = master,
+                            master = admin,
                             owner = ownersById[character.ownerId],
                             onOpen = { onOpen(character.id) },
                             onOwnerClick = { ownerTarget = character },
@@ -186,7 +191,7 @@ fun DashboardScreen(
                     items(standalone, key = { "standalone:${it.id}" }) { character ->
                         CharacterAccessCard(
                             character = character,
-                            master = master,
+                            master = admin,
                             owner = ownersById[character.ownerId],
                             onOpen = { onOpen(character.id) },
                             onOwnerClick = { ownerTarget = character },
@@ -201,6 +206,7 @@ fun DashboardScreen(
                             CampaignPanel(
                                 campaign = campaign,
                                 owner = campaign.ownerId == uid,
+                                role = rolesByCampaign[campaign.id],
                                 archived = true,
                                 onAdd = {},
                                 onInvite = {},
@@ -215,7 +221,7 @@ fun DashboardScreen(
                         ) { character ->
                             CharacterAccessCard(
                                 character = character,
-                                master = master,
+                                master = admin,
                                 owner = ownersById[character.ownerId],
                                 onOpen = { onOpen(character.id) },
                                 onOwnerClick = { ownerTarget = character },
@@ -270,6 +276,7 @@ fun DashboardScreen(
 private fun CampaignPanel(
     campaign: Campaign,
     owner: Boolean,
+    role: CampaignRole?,
     archived: Boolean,
     onAdd: () -> Unit,
     onInvite: () -> Unit,
@@ -282,7 +289,13 @@ private fun CampaignPanel(
         if (campaign.description.isNotBlank()) Text(campaign.description, color = Muted)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) Muted else AcidCyan)
-            TelemetryTag(if (owner) "MESTRE" else "MEMBRO")
+            TelemetryTag(
+                when {
+                    owner -> "RESPONSÁVEL // HISTORIAN"
+                    role == CampaignRole.HISTORIAN -> "HISTORIAN"
+                    else -> "PLAYER"
+                },
+            )
         }
         if (!archived) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {

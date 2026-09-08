@@ -44,9 +44,10 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_9_10,
                 AppDatabase.MIGRATION_10_11,
                 AppDatabase.MIGRATION_11_12,
+                AppDatabase.MIGRATION_12_13,
             )
             .build()
-        characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao())
+        characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao())
         ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
         campaignRepository = OfflineFirstCampaignRepository(db.campaignDao(), db.characterDao())

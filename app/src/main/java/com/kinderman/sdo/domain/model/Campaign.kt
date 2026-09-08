@@ -3,7 +3,7 @@ package com.kinderman.sdo.domain.model
 import java.util.UUID
 
 enum class CampaignState { ACTIVE, ARCHIVED }
-enum class CampaignRole { MASTER, PLAYER }
+enum class CampaignRole { HISTORIAN, PLAYER }
 enum class CampaignMemberState { ACTIVE, LEFT, REMOVED }
 
 data class CampaignSettings(

@@ -9,9 +9,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterAccessPolicyTest {
-    private val player = UserSession("player-1", "player@example.com", "Player", UserRole.PLAYER)
-    private val otherPlayer = UserSession("player-2", "other@example.com", "Other", UserRole.PLAYER)
-    private val master = UserSession("master", "kindbarros@gmail.com", "Historiador", UserRole.MASTER)
+    private val player = UserSession("player-1", "player@example.com", "Player", UserRole.USER)
+    private val otherPlayer = UserSession("player-2", "other@example.com", "Other", UserRole.USER)
+    private val admin = UserSession("admin", "kindbarros@gmail.com", "Admin", UserRole.ADMIN)
 
     @Test fun ownerCanEditAndDeleteUnlockedCharacter() {
         val character = Character(ownerId = player.uid)
@@ -26,13 +26,13 @@ class CharacterAccessPolicyTest {
         assertTrue(CharacterAccessPolicy.canChangePlayerLock(player, character))
     }
 
-    @Test fun masterCanManageAnyCharacterEvenWhenLocked() {
+    @Test fun administratorCanManageAnyCharacterEvenWhenLocked() {
         val character = Character(ownerId = player.uid, lockType = CharacterLock.HISTORIAN)
-        assertTrue(CharacterAccessPolicy.canRead(master, character))
-        assertTrue(CharacterAccessPolicy.canEdit(master, character))
-        assertTrue(CharacterAccessPolicy.canDelete(master, character))
-        assertTrue(CharacterAccessPolicy.canChangeHistorianLock(master))
-        assertTrue(CharacterAccessPolicy.canTransferOwnership(master))
+        assertTrue(CharacterAccessPolicy.canRead(admin, character))
+        assertTrue(CharacterAccessPolicy.canEdit(admin, character))
+        assertTrue(CharacterAccessPolicy.canDelete(admin, character))
+        assertTrue(CharacterAccessPolicy.canChangeHistorianLock(admin))
+        assertTrue(CharacterAccessPolicy.canTransferOwnership(admin))
     }
 
     @Test fun historianLockCannotBeChangedByOwner() {
@@ -46,5 +46,15 @@ class CharacterAccessPolicyTest {
         assertFalse(CharacterAccessPolicy.canEdit(otherPlayer, character))
         assertFalse(CharacterAccessPolicy.canDelete(otherPlayer, character))
         assertFalse(CharacterAccessPolicy.canTransferOwnership(otherPlayer))
+    }
+
+    @Test fun campaignHistorianCanManageLinkedCharacterButNotTransferOwnership() {
+        val character = Character(ownerId = otherPlayer.uid, campaignId = "campaign")
+        assertTrue(CharacterAccessPolicy.canRead(player, character, isCampaignHistorian = true))
+        assertTrue(CharacterAccessPolicy.canEdit(player, character, isCampaignHistorian = true))
+        assertTrue(CharacterAccessPolicy.canDelete(player, character, isCampaignHistorian = true))
+        assertTrue(CharacterAccessPolicy.canChangeHistorianLock(player, isCampaignHistorian = true))
+        assertFalse(CharacterAccessPolicy.canTransferOwnership(player, isCampaignResponsible = false))
+        assertTrue(CharacterAccessPolicy.canTransferOwnership(player, isCampaignResponsible = true))
     }
 }

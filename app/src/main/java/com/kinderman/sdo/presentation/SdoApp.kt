@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.MainActivity
 import com.kinderman.sdo.SdoApplication
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
 import com.kinderman.sdo.presentation.login.LoginScreen
@@ -38,6 +39,7 @@ fun SdoApp(activity: MainActivity) {
     val appSession by appViewModel.session.collectAsStateWithLifecycle()
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
     val campaigns by appViewModel.campaigns.collectAsStateWithLifecycle()
+    val memberships by appViewModel.memberships.collectAsStateWithLifecycle()
     val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
@@ -81,6 +83,7 @@ fun SdoApp(activity: MainActivity) {
         selectedId == null -> DashboardScreen(
             characters = characters,
             campaigns = campaigns,
+            memberships = memberships,
             owners = owners,
             session = appSession,
             syncing = characterLoadState.syncing,
@@ -110,11 +113,18 @@ fun SdoApp(activity: MainActivity) {
             val selectedCharacter = characters.firstOrNull { it.id == selectedId }
             val selectedCampaignId = normalizeCampaignId(selectedCharacter?.campaignId.orEmpty())
             val archived = campaigns.firstOrNull { it.id == selectedCampaignId }?.isArchived == true
+            val selectedCampaign = campaigns.firstOrNull { it.id == selectedCampaignId }
+            val membership = memberships.firstOrNull { it.campaignId == selectedCampaignId }
+            val isCampaignHistorian = appSession?.isAdmin == true ||
+                selectedCampaign?.ownerId == appSession?.uid || membership?.role == CampaignRole.HISTORIAN
+            val isCampaignResponsible = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
             CharacterSheetScreen(
                 character = selectedCharacter,
                 session = appSession,
                 catalog = catalog,
                 readOnly = archived,
+                isCampaignHistorian = isCampaignHistorian,
+                isCampaignResponsible = isCampaignResponsible,
                 snackbarHost = { SnackbarHost(snackbar) },
                 onBack = { selectedId = null },
                 onSave = appViewModel::save,

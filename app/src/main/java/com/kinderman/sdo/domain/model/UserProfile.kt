@@ -4,7 +4,7 @@ data class UserProfile(
     val uid: String,
     val email: String,
     val displayName: String,
-    val role: UserRole,
+    val role: UserRole = UserRole.USER,
 ) {
     val firstName: String
         get() = displayName.trim().substringBefore(' ').ifBlank {

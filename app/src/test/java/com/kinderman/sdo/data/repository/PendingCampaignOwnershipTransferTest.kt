@@ -12,7 +12,7 @@ class PendingCampaignOwnershipTransferTest {
     @Test
     fun `matching master promotion marks a pending ownership transfer`() {
         val campaign = campaign()
-        val target = member(userId = "new-owner", role = CampaignRole.MASTER, updatedAt = 200L)
+        val target = member(userId = "new-owner", role = CampaignRole.HISTORIAN, updatedAt = 200L)
 
         assertEquals(target, pendingOwnershipTransfer(campaign, listOf(target)))
     }
@@ -20,9 +20,9 @@ class PendingCampaignOwnershipTransferTest {
     @Test
     fun `unrelated dirty member does not mark a transfer`() {
         val campaign = campaign()
-        val stalePromotion = member(userId = "new-owner", role = CampaignRole.MASTER, updatedAt = 199L)
+        val stalePromotion = member(userId = "new-owner", role = CampaignRole.HISTORIAN, updatedAt = 199L)
         val ordinaryPlayer = member(userId = "player", role = CampaignRole.PLAYER, updatedAt = 200L)
-        val currentOwner = member(userId = "old-owner", role = CampaignRole.MASTER, updatedAt = 200L)
+        val currentOwner = member(userId = "old-owner", role = CampaignRole.HISTORIAN, updatedAt = 200L)
 
         assertNull(
             pendingOwnershipTransfer(

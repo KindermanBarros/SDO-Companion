@@ -5,22 +5,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isBootstrapHistorian() {
+    function isAdministrator() {
       return signedIn()
         && request.auth.token.email_verified == true
         && request.auth.token.email == 'kindbarros@gmail.com';
-    }
-
-    function hasMasterProfile() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MASTER';
-    }
-
-    // Global historian status is retained only for user-profile administration.
-    // Campaign and character access is intentionally scoped below by ownership/membership.
-    function isHistorian() {
-      return isBootstrapHistorian() || hasMasterProfile();
     }
 
     function memberPath(campaignId, uid) {
@@ -50,6 +38,10 @@ service cloud.firestore {
         && get(campaignPath(campaignId)).data.ownerId == request.auth.uid;
     }
 
+    function isCampaignResponsible(campaignId) {
+      return isAdministrator() || isCampaignOwner(campaignId);
+    }
+
     function isActiveMemberFor(campaignId, uid) {
       return campaignId != ''
         && campaignId != 'default'
@@ -61,8 +53,21 @@ service cloud.firestore {
       return signedIn() && isActiveMemberFor(campaignId, request.auth.uid);
     }
 
+    function hasHistorianRole(campaignId, uid) {
+      return isActiveMemberFor(campaignId, uid)
+        && (
+          get(memberPath(campaignId, uid)).data.role == 'HISTORIAN'
+          || get(memberPath(campaignId, uid)).data.role == 'MASTER'
+        );
+    }
+
+    function isCampaignHistorian(campaignId) {
+      return isAdministrator() || isCampaignOwner(campaignId)
+        || (signedIn() && hasHistorianRole(campaignId, request.auth.uid));
+    }
+
     function canReadCampaign(campaignId) {
-      return signedIn() && (isCampaignOwner(campaignId) || isActiveMember(campaignId));
+      return signedIn() && (isAdministrator() || isCampaignOwner(campaignId) || isActiveMember(campaignId));
     }
 
     function normalizedCampaignId(data) {
@@ -116,15 +121,15 @@ service cloud.firestore {
       );
     }
 
-    function validCampaignMasterLockTransition(campaignId) {
+    function validCampaignHistorianLockTransition(campaignId) {
       return keepsLockState() || (
-        isCampaignOwner(campaignId)
+        isCampaignHistorian(campaignId)
         && request.resource.data.lockType == 'HISTORIAN'
         && requestedIsLocked() == true
         && request.resource.data.lockedBy == request.auth.uid
         && request.resource.data.get('lockedAt', null) != null
       ) || (
-        isCampaignOwner(campaignId)
+        isCampaignHistorian(campaignId)
         && request.resource.data.lockType == 'NONE'
         && requestedIsLocked() == false
         && request.resource.data.lockedBy == ''
@@ -144,11 +149,16 @@ service cloud.firestore {
       let existingCampaign = normalizedCampaignId(resource.data);
       return existingCampaign != ''
         && campaignIsActive(existingCampaign)
-        && isCampaignOwner(existingCampaign);
+        && isCampaignHistorian(existingCampaign);
     }
 
     match /campaigns/{campaignId} {
-      allow read: if canReadCampaign(campaignId);
+      // Using resource.data.ownerId makes ownerId-filtered list queries provable by rules.
+      allow read: if signedIn() && (
+        isAdministrator()
+        || resource.data.ownerId == request.auth.uid
+        || isActiveMember(campaignId)
+      );
 
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
@@ -156,7 +166,7 @@ service cloud.firestore {
         && request.resource.data.get('archivedAt', null) == null;
 
       allow update: if signedIn()
-        && resource.data.ownerId == request.auth.uid
+        && isCampaignResponsible(campaignId)
         && (
           request.resource.data.ownerId == resource.data.ownerId
           || (
@@ -164,7 +174,10 @@ service cloud.firestore {
             && request.resource.data.state == 'ACTIVE'
             && request.resource.data.ownerId != request.auth.uid
             && isActiveMemberFor(campaignId, request.resource.data.ownerId)
-            && get(memberPath(campaignId, request.resource.data.ownerId)).data.role == 'MASTER'
+            && (
+              getAfter(memberPath(campaignId, request.resource.data.ownerId)).data.role == 'HISTORIAN'
+              || getAfter(memberPath(campaignId, request.resource.data.ownerId)).data.role == 'MASTER'
+            )
           )
         )
         && (
@@ -188,7 +201,7 @@ service cloud.firestore {
       allow create: if signedIn() && (
         (
           request.resource.data.userId == request.auth.uid
-          && request.resource.data.role == 'MASTER'
+          && request.resource.data.role == 'HISTORIAN'
           && request.resource.data.state == 'ACTIVE'
           && request.resource.data.joinedByInviteId == ''
           && campaignIsActive(request.resource.data.campaignId)
@@ -214,7 +227,7 @@ service cloud.firestore {
         && request.resource.data.userId == resource.data.userId
         && campaignIsActive(resource.data.campaignId)
         && (
-          isCampaignOwner(resource.data.campaignId)
+          isCampaignResponsible(resource.data.campaignId)
           || (
             resource.data.userId == request.auth.uid
             && request.resource.data.role == resource.data.role
@@ -230,7 +243,7 @@ service cloud.firestore {
 
     match /campaignInvites/{inviteId} {
       allow get: if signedIn() && (
-        isCampaignOwner(resource.data.campaignId)
+        isCampaignResponsible(resource.data.campaignId)
         || (
           resource.data.get('revokedAt', null) == null
           && (
@@ -264,7 +277,8 @@ service cloud.firestore {
 
     match /characters/{characterId} {
       allow read: if signedIn() && (
-        resource.data.ownerId == request.auth.uid
+        isAdministrator()
+        || resource.data.ownerId == request.auth.uid
         || (
           normalizedCampaignId(resource.data) != ''
           && canReadCampaign(normalizedCampaignId(resource.data))
@@ -300,7 +314,7 @@ service cloud.firestore {
               normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
               || normalizedCampaignId(request.resource.data) == ''
             )
-            && validCampaignMasterLockTransition(normalizedCampaignId(resource.data))
+            && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
           )
         );
 
@@ -318,23 +332,21 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read: if signedIn() && (uid == request.auth.uid || isHistorian());
+      allow read: if signedIn() && (uid == request.auth.uid || isAdministrator());
 
       allow create: if signedIn()
         && uid == request.auth.uid
-        && (
-          (isBootstrapHistorian() && request.resource.data.role == 'MASTER')
-          || (!isBootstrapHistorian() && request.resource.data.role == 'PLAYER')
-        );
+        && request.resource.data.get('role', 'USER') == 'USER';
 
-      allow update: if isHistorian() || (
-        signedIn()
-        && uid == request.auth.uid
-        && resource.data.role == 'PLAYER'
-        && request.resource.data.role == resource.data.role
+      allow update: if signedIn() && (
+        isAdministrator()
+        || (
+          uid == request.auth.uid
+          && request.resource.data.get('role', 'USER') == resource.data.get('role', 'USER')
+        )
       );
 
-      allow delete: if isHistorian();
+      allow delete: if isAdministrator();
     }
   }
 }

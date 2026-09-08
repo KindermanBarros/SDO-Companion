@@ -19,7 +19,7 @@ class OfflineFirstOwnerRepository(
         dao.observe().map { records -> records.map(OwnerRecord::toDomain) }
 
     override suspend fun sync(session: UserSession) {
-        if (!session.isMaster) return
+        if (!session.isAdmin) return
         val store = runCatching { Firebase.firestore }.getOrNull() ?: return
         val owners = store.collection("users").get().await().documents.map { document ->
             OwnerRecord(

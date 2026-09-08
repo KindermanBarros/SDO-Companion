@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignMemberRecord::class,
         CampaignInviteRecord::class,
     ],
-    version = 12,
+    version = 13,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -198,6 +198,14 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_campaign_invites_code ON campaign_invites(code)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_invites_campaignId ON campaign_invites(campaignId)")
+            }
+        }
+
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("UPDATE characters SET campaignId = '' WHERE campaignId = 'default'")
+                db.execSQL("UPDATE campaign_members SET role = 'HISTORIAN' WHERE role = 'MASTER'")
+                db.execSQL("UPDATE owners SET role = 'USER'")
             }
         }
     }

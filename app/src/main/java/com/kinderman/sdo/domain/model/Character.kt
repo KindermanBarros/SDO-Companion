@@ -2,7 +2,7 @@ package com.kinderman.sdo.domain.model
 
 import java.util.UUID
 
-enum class UserRole { PLAYER, MASTER }
+enum class UserRole { USER, ADMIN, PLAYER, MASTER }
 
 enum class CharacterLock { NONE, PLAYER, HISTORIAN }
 
@@ -22,7 +22,7 @@ data class UserSession(
     val displayName: String,
     val role: UserRole,
 ) {
-    val isMaster: Boolean get() = role == UserRole.MASTER
+    val isAdmin: Boolean get() = role == UserRole.ADMIN
 }
 
 data class ResourceValue(

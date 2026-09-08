@@ -20,6 +20,9 @@ interface CampaignDao {
     @Query("SELECT * FROM campaign_members WHERE campaignId = :campaignId ORDER BY joinedAt ASC")
     fun observeMembers(campaignId: String): Flow<List<CampaignMemberRecord>>
 
+    @Query("SELECT * FROM campaign_members WHERE userId = :userId AND state = 'ACTIVE'")
+    fun observeMemberships(userId: String): Flow<List<CampaignMemberRecord>>
+
     @Query("SELECT * FROM campaign_invites WHERE campaignId = :campaignId ORDER BY createdAt DESC")
     fun observeInvites(campaignId: String): Flow<List<CampaignInviteRecord>>
 
@@ -46,6 +49,9 @@ interface CampaignDao {
 
     @Query("SELECT * FROM campaign_members")
     suspend fun allMembers(): List<CampaignMemberRecord>
+
+    @Query("SELECT * FROM campaigns WHERE ownerId = :userId")
+    suspend fun ownedCampaigns(userId: String): List<CampaignRecord>
 
     @Query("SELECT * FROM campaign_invites")
     suspend fun allInvites(): List<CampaignInviteRecord>
