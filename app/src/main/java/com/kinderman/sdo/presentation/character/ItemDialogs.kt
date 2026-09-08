@@ -38,6 +38,28 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechCutDark
 
 @Composable
+internal fun InitialShopDialog(
+    remainingHeritage: Int,
+    onDismiss: () -> Unit,
+    onCatalog: () -> Unit,
+    onBuilder: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("LOJA INICIAL // $remainingHeritage PH") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = Muted)
+                TextButton(onClick = onCatalog, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
+                TextButton(onClick = onBuilder, modifier = Modifier.fillMaxWidth()) { Text("CONSTRUIR ITEM COM PH") }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+    )
+}
+
+@Composable
 internal fun ItemCatalogDialog(
     title: String,
     entries: List<CatalogEntry>,
@@ -46,6 +68,7 @@ internal fun ItemCatalogDialog(
     onSelect: (InventoryItem) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
+    var pendingOverride by remember { mutableStateOf<CatalogEntry?>(null) }
     val filtered = remember(entries, query) {
         val needle = query.trim()
         entries.filter { entry ->
@@ -66,9 +89,14 @@ internal fun ItemCatalogDialog(
                     filtered.forEach { entry ->
                         val numericCost = entry.creationCost.toIntOrNull()
                         val allowed = remainingHeritage == null || numericCost != null && numericCost <= remainingHeritage
+                        val overBudget = remainingHeritage != null && numericCost != null && numericCost > remainingHeritage
                         Column(
-                            Modifier.fillMaxWidth().clickable(enabled = allowed) {
-                                onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
+                            Modifier.fillMaxWidth().clickable(enabled = !overBudget) {
+                                if (allowed) {
+                                    onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
+                                } else {
+                                    pendingOverride = entry
+                                }
                             }.padding(vertical = 9.dp),
                             verticalArrangement = Arrangement.spacedBy(3.dp),
                         ) {
@@ -88,6 +116,15 @@ internal fun ItemCatalogDialog(
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
+    pendingOverride?.let { entry ->
+        AssistedItemValidationDialog(
+            message = "Este item tem custo # e exige uma decisão do Historiador. Deseja adicioná-lo mesmo assim?",
+            onDismiss = { pendingOverride = null },
+        ) {
+            onSelect(entry.toInventoryItem(initialCreation = true))
+            pendingOverride = null
+        }
+    }
 }
 
 @Composable
@@ -107,6 +144,7 @@ internal fun ItemBuilderDialog(
     var customName by remember { mutableStateOf("") }
     var picker by remember { mutableStateOf<String?>(null) }
     var materialPartIndex by remember { mutableIntStateOf(-1) }
+    var confirmOverride by remember { mutableStateOf(false) }
     val availableBases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
     val availableMaterials = when {
         weapon -> ItemCreationRules.weaponMaterials
@@ -116,6 +154,7 @@ internal fun ItemBuilderDialog(
     val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
     val built = ItemCreationRules.build(base, parts, modifications, gemSlots, technologySlots, customName)
     val allowed = built.creationCost != null && built.creationCost <= remainingHeritage
+    val overBudget = built.creationCost != null && built.creationCost > remainingHeritage
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -192,7 +231,17 @@ internal fun ItemBuilderDialog(
                 )
             }
         },
-        confirmButton = { TextButton(onClick = { onAdd(built.toInventoryItem(initialCreation = true)) }, enabled = allowed) { Text("ADICIONAR") } },
+        confirmButton = {
+            TextButton(onClick = {
+                if (allowed) onAdd(built.toInventoryItem(initialCreation = true)) else confirmOverride = true
+            }, enabled = !overBudget) {
+                Text(when {
+                    allowed -> "ADICIONAR"
+                    overBudget -> "SALDO INSUFICIENTE"
+                    else -> "REVISAR E ADICIONAR"
+                })
+            }
+        },
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 
@@ -215,6 +264,24 @@ internal fun ItemBuilderDialog(
         picker = null
         materialPartIndex = -1
     }
+    if (confirmOverride) AssistedItemValidationDialog(
+        message = "A composição contém custo # e exige uma decisão do Historiador. Deseja adicioná-la mesmo assim?",
+        onDismiss = { confirmOverride = false },
+    ) {
+        onAdd(built.toInventoryItem(initialCreation = true))
+        confirmOverride = false
+    }
+}
+
+@Composable
+private fun AssistedItemValidationDialog(message: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("VALIDAÇÃO ASSISTIDA") },
+        text = { Text(message, color = Muted) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("ADICIONAR MESMO ASSIM", color = Signal) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("VOLTAR") } },
+    )
 }
 
 @Composable
@@ -294,27 +361,31 @@ internal fun EquipmentPickerDialog(
     onConfirm: (Set<String>) -> Unit,
 ) {
     var selected by remember(selectedIds) { mutableStateOf(selectedIds) }
+    val orderedInventory = remember(inventory, regionName) {
+        inventory.sortedByDescending { it.matchesEquipmentRegion(regionName) }
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("EQUIPAR // ${regionName.uppercase()}") },
         text = {
             Column(Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
                 if (inventory.isEmpty()) Text("Nenhum item pronto no inventário.", color = Muted)
-                inventory.forEach { item ->
+                orderedInventory.forEach { item ->
                     val checked = item.id in selected
+                    val compatible = item.matchesEquipmentRegion(regionName)
                     Row(
                         Modifier.fillMaxWidth().clickable {
-                            selected = if (checked) selected - item.id else selected + item.id
+                            selected = selected.toggle(item.id)
                         }.padding(vertical = 6.dp),
                     ) {
-                        Checkbox(checked, onCheckedChange = {
-                            selected = if (checked) selected - item.id else selected + item.id
+                        Checkbox(checked, onCheckedChange = { value ->
+                            selected = if (value) selected + item.id else selected - item.id
                         })
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(item.name.ifBlank { "Item sem nome" }, color = Ice)
                             Text(
-                                "PG ${item.pg} // PL ${item.pl}${item.region.takeIf(String::isNotBlank)?.let { " // $it" }.orEmpty()}",
-                                color = Acid,
+                                "PG ${item.pg} // PL ${item.pl}${item.region.takeIf(String::isNotBlank)?.let { " // $it" }.orEmpty()}${if (compatible) " // COMPATÍVEL" else ""}",
+                                color = if (compatible) Acid else Muted,
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         }
@@ -327,3 +398,25 @@ internal fun EquipmentPickerDialog(
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
+
+internal fun InventoryItem.matchesEquipmentRegion(bodyRegionName: String): Boolean {
+    if (region.isBlank()) return false
+    val itemRegion = region.normalizedRegion()
+    val bodyRegion = bodyRegionName.normalizedRegion()
+    return when {
+        bodyRegion.startsWith("pe ") || bodyRegion == "pe" -> "pe" in itemRegion
+        bodyRegion.startsWith("mao ") || bodyRegion == "mao" -> "mao" in itemRegion
+        bodyRegion.startsWith("braco ") || bodyRegion == "braco" -> "braco" in itemRegion
+        bodyRegion.startsWith("perna ") || bodyRegion == "perna" -> "perna" in itemRegion
+        else -> bodyRegion in itemRegion || itemRegion in bodyRegion
+    }
+}
+
+private fun String.normalizedRegion(): String = lowercase()
+    .replace('á', 'a').replace('à', 'a').replace('â', 'a').replace('ã', 'a')
+    .replace('é', 'e').replace('ê', 'e')
+    .replace('í', 'i').replace('ó', 'o').replace('ô', 'o').replace('õ', 'o')
+    .replace('ú', 'u').replace('ç', 'c')
+    .replace(Regex("\\b(pes|maos|bracos|pernas)\\b")) { match -> match.value.dropLast(1) }
+
+private fun Set<String>.toggle(value: String): Set<String> = if (value in this) this - value else this + value
