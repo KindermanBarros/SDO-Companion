@@ -13,9 +13,12 @@ O ambiente `firebase-production` usa, na ordem, o primeiro secret disponível en
 
 1. `FIREBASE_SERVICE_ACCOUNT_SDO_COMPANION`
 2. `FIREBASE_SERVICE_ACCOUNT`
-3. `GOOGLE_APPLICATION_CREDENTIALS_JSON`
+3. `FIREBASE_SERVICE_ACCOUNT_KEY`
+4. `GCP_SA_KEY`
+5. `GOOGLE_APPLICATION_CREDENTIALS_JSON`
 
 O valor deve ser o JSON integral de uma conta de serviço autorizada a publicar regras e índices no projeto.
+Como compatibilidade com configurações antigas, o workflow também aceita `FIREBASE_TOKEN`.
 
 ## Rollback
 
