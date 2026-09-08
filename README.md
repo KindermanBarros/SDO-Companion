@@ -17,10 +17,12 @@ As regras visuais, tokens e componentes estão documentados no
 - seleção pelo catálogo é opcional: ela apenas preenche uma nova entrada, que continua modular e totalmente editável; entradas manuais continuam disponíveis;
 - o catálogo é atualizado pelo próprio APK no Room, sem depender nem alterar a estrutura sincronizada no Firebase;
 - inventário com construtor canônico de armas, armaduras e acessórios, composição parte a parte com um material por parte, cálculo de Tipo + Materiais + Modificações + espaços, preço em E$ e complexidade;
+- glossário pesquisável de itens e materiais, incluindo P.G., P.L., LA, propriedades de armas, tecnologia, passo/categoria de dado, Qualidade e Durabilidade;
 - loja inicial controlada pelos 20 Pontos de Herança, catálogo de itens para aquisições posteriores e criação manual livre;
 - Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
+- Magias, Runas e Cinzas aceitam expansão contínua por novos exemplos; os procedimentos completos permanecem em `Regras Arcanas Expandidas.md`;
 - Vida, Sanidade, Arcano e Energia calculados automaticamente a partir dos atributos e conhecimentos,
   com ajuste manual positivo ou negativo;
 - Proteções Geral, Esquiva, Postura, Mental e Arcana calculadas automaticamente pelas regras
