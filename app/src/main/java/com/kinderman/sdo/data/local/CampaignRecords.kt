@@ -51,6 +51,8 @@ data class CampaignMemberRecord(
 data class CampaignInviteRecord(
     @androidx.room.PrimaryKey val id: String = "",
     val campaignId: String = "",
+    val campaignName: String = "",
+    val campaignDescription: String = "",
     val code: String = "",
     val createdBy: String = "",
     val createdAt: Long = 0,
@@ -118,6 +120,8 @@ fun CampaignMember.toRecord() = CampaignMemberRecord(
 fun CampaignInviteRecord.toDomain() = CampaignInvite(
     id = id,
     campaignId = campaignId,
+    campaignName = campaignName,
+    campaignDescription = campaignDescription,
     code = code,
     createdBy = createdBy,
     createdAt = createdAt,
@@ -131,6 +135,8 @@ fun CampaignInviteRecord.toDomain() = CampaignInvite(
 fun CampaignInvite.toRecord() = CampaignInviteRecord(
     id = id,
     campaignId = campaignId,
+    campaignName = campaignName,
+    campaignDescription = campaignDescription,
     code = code,
     createdBy = createdBy,
     createdAt = createdAt,
