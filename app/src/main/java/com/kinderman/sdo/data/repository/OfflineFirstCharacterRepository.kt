@@ -10,10 +10,11 @@ import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
-import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.UserProfile
+import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.characterConflictFields
 import com.kinderman.sdo.domain.model.mergeCharacterConflict
+import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
@@ -29,16 +30,22 @@ class OfflineFirstCharacterRepository(
     private val syncMutex = Mutex()
 
     override fun observe(session: UserSession): Flow<List<Character>> =
-        dao.observe(session.uid, session.isMaster).map { records -> records.map(CharacterRecord::toDomain) }
+        dao.observe(session.uid).map { records -> records.map(CharacterRecord::toDomain) }
 
     override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { it?.toDomain() }
 
     override suspend fun create(session: UserSession): Character =
-        Character(ownerId = session.uid).also { dao.upsert(it.toRecord()) }
+        Character(ownerId = session.uid, campaignId = "").also { dao.upsert(it.toRecord()) }
 
     override suspend fun save(session: UserSession, character: Character) {
         check(CharacterAccessPolicy.canEdit(session, character)) { "Você não pode editar esta ficha." }
-        dao.upsert(character.copy(updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
+        dao.upsert(
+            character.copy(
+                campaignId = normalizeCampaignId(character.campaignId),
+                updatedAt = System.currentTimeMillis(),
+                dirty = true,
+            ).toRecord(),
+        )
     }
 
     override suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) {
@@ -55,11 +62,7 @@ class OfflineFirstCharacterRepository(
         saveLock(character, if (locked) CharacterLock.HISTORIAN else CharacterLock.NONE, session.uid)
     }
 
-    override suspend fun transferOwnership(
-        session: UserSession,
-        character: Character,
-        owner: UserProfile,
-    ) {
+    override suspend fun transferOwnership(session: UserSession, character: Character, owner: UserProfile) {
         check(CharacterAccessPolicy.canTransferOwnership(session)) {
             "Somente o historiador pode transferir uma ficha."
         }
@@ -94,40 +97,49 @@ class OfflineFirstCharacterRepository(
     override suspend fun sync(session: UserSession): List<CharacterSyncConflict> = syncMutex.withLock {
         val store = runCatching { Firebase.firestore }.getOrNull() ?: return@withLock emptyList()
         val collection = store.collection("characters")
+        val campaigns = store.collection("campaigns")
+        val members = store.collection("campaignMembers")
         val conflicts = mutableListOf<CharacterSyncConflict>()
 
-        val snapshot = if (session.isMaster) {
-            collection.get().await()
-        } else {
-            collection.whereEqualTo("ownerId", session.uid).get().await()
+        val memberCampaignIds = members.whereEqualTo("userId", session.uid).get().await().documents
+            .mapNotNull { document ->
+                val campaignId = document.getString("campaignId").orEmpty()
+                val state = document.getString("state").orEmpty()
+                campaignId.takeIf { it.isNotBlank() && state == "ACTIVE" }
+            }
+            .toMutableSet()
+        val ownedCampaignIds = campaigns.whereEqualTo("ownerId", session.uid).get().await().documents
+            .mapTo(mutableSetOf()) { it.id }
+        val authorizedCampaignIds = (memberCampaignIds + ownedCampaignIds).toSet()
+
+        val remoteById = linkedMapOf<String, CharacterRecord>()
+        collection.whereEqualTo("ownerId", session.uid).get().await().documents.forEach { document ->
+            document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
         }
-        val remoteRecords = snapshot.documents.mapNotNull { document ->
-            document.toObject(CharacterRecord::class.java)?.copy(id = document.id)
+        authorizedCampaignIds.forEach { campaignId ->
+            collection.whereEqualTo("campaignId", campaignId).get().await().documents.forEach { document ->
+                document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
+            }
         }
-        val remoteById = remoteRecords.associateBy(CharacterRecord::id)
-        val remoteIds = remoteRecords.mapTo(mutableSetOf()) { it.id }
-        val registeredOwnerIds = ownerDao.ids().toSet()
+        val remoteRecords = remoteById.values.toList()
+        val remoteIds = remoteById.keys
+
         val dirtyRecords = dao.dirty().filter { record ->
-            record.ownerId == session.uid || (
-                session.isMaster && (
-                    record.id in remoteIds || record.deleted || record.ownerId in registeredOwnerIds
-                )
-            )
+            record.ownerId == session.uid || normalizeCampaignId(record.campaignId) in ownedCampaignIds
         }
         val dirtyIds = dirtyRecords.mapTo(mutableSetOf(), CharacterRecord::id)
 
-        remoteRecords
-            .filter { it.id !in dirtyIds }
-            .forEach { remote ->
-                dao.upsert(
-                    remote.copy(
-                        dirty = false,
-                        lastSyncedAt = remote.updatedAt,
-                        deleted = false,
-                    ),
-                )
-            }
-        dao.visible(session.uid, session.isMaster)
+        remoteRecords.filter { it.id !in dirtyIds }.forEach { remote ->
+            dao.upsert(
+                remote.copy(
+                    campaignId = normalizeCampaignId(remote.campaignId),
+                    dirty = false,
+                    lastSyncedAt = remote.updatedAt,
+                    deleted = false,
+                ),
+            )
+        }
+        dao.visible(session.uid)
             .filter { !it.dirty && it.id !in remoteIds && it.id !in dirtyIds }
             .forEach { dao.purge(it.id) }
 
@@ -135,18 +147,15 @@ class OfflineFirstCharacterRepository(
             if (record.deleted) {
                 val remote = remoteById[record.id]
                 if (remote == null) {
-                    // A exclusão já foi sincronizada por outro dispositivo. Não tente apagar
-                    // novamente: as regras não conseguem validar a posse de um documento ausente.
                     dao.purge(record.id)
                 } else {
                     try {
                         collection.document(record.id).delete().await()
                         dao.purge(record.id)
                     } catch (error: Throwable) {
-                        // Restaura o estado autoritativo (por exemplo, um lock aplicado remotamente)
-                        // para que a mesma exclusão rejeitada não seja repetida a cada abertura.
                         dao.upsert(
                             remote.copy(
+                                campaignId = normalizeCampaignId(remote.campaignId),
                                 dirty = false,
                                 lastSyncedAt = remote.updatedAt,
                                 deleted = false,
@@ -156,9 +165,10 @@ class OfflineFirstCharacterRepository(
                     }
                 }
             } else {
+                val normalizedRecord = record.copy(campaignId = normalizeCampaignId(record.campaignId))
                 val remote = remoteById[record.id]
                 if (remote != null && remote.updatedAt > record.lastSyncedAt) {
-                    val localCharacter = record.toDomain()
+                    val localCharacter = normalizedRecord.toDomain()
                     val remoteCharacter = remote.toDomain()
                     val fields = characterConflictFields(localCharacter, remoteCharacter)
                     if (fields.isNotEmpty()) {
@@ -171,8 +181,8 @@ class OfflineFirstCharacterRepository(
                         return@forEach
                     }
                 }
-                collection.document(record.id).set(record.copy(dirty = false)).await()
-                dao.markSynced(record.id, record.updatedAt)
+                collection.document(record.id).set(normalizedRecord.copy(dirty = false)).await()
+                dao.markSynced(record.id, normalizedRecord.updatedAt)
             }
         }
         conflicts
@@ -187,6 +197,7 @@ class OfflineFirstCharacterRepository(
         if (characterConflictFields(merged, conflict.remote).isEmpty()) {
             dao.upsert(
                 conflict.remote.copy(
+                    campaignId = normalizeCampaignId(conflict.remote.campaignId),
                     dirty = false,
                     lastSyncedAt = conflict.remoteUpdatedAt,
                     deleted = false,
@@ -200,6 +211,7 @@ class OfflineFirstCharacterRepository(
         }
         dao.upsert(
             merged.copy(
+                campaignId = normalizeCampaignId(merged.campaignId),
                 updatedAt = System.currentTimeMillis(),
                 dirty = true,
                 lastSyncedAt = conflict.remoteUpdatedAt,

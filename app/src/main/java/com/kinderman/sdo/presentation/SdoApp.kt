@@ -14,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.MainActivity
 import com.kinderman.sdo.SdoApplication
+import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
 import com.kinderman.sdo.presentation.login.LoginScreen
@@ -25,15 +26,22 @@ import com.kinderman.sdo.ui.CyberLoadingScreen
 fun SdoApp(activity: MainActivity) {
     val application = LocalContext.current.applicationContext as SdoApplication
     val appViewModel: AppViewModel = viewModel(
-        factory = AppViewModelFactory(application.characterRepository, application.ownerRepository, application.catalogRepository),
+        factory = AppViewModelFactory(
+            application.characterRepository,
+            application.ownerRepository,
+            application.catalogRepository,
+            application.campaignRepository,
+        ),
     )
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
     val authenticatedSession by authViewModel.session.collectAsStateWithLifecycle()
     val appSession by appViewModel.session.collectAsStateWithLifecycle()
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
+    val campaigns by appViewModel.campaigns.collectAsStateWithLifecycle()
     val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
+    val invitePreview by appViewModel.invitePreview.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
     val catalog by appViewModel.catalog.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -72,13 +80,23 @@ fun SdoApp(activity: MainActivity) {
 
         selectedId == null -> DashboardScreen(
             characters = characters,
+            campaigns = campaigns,
             owners = owners,
             session = appSession,
             syncing = characterLoadState.syncing,
+            invitePreview = invitePreview,
             snackbarHost = { SnackbarHost(snackbar) },
             onAdd = appViewModel::add,
+            onAddToCampaign = appViewModel::addToCampaign,
             onOpen = { selectedId = it },
             onOwnerTransfer = appViewModel::transferOwner,
+            onCreateCampaign = appViewModel::createCampaign,
+            onArchiveCampaign = appViewModel::archiveCampaign,
+            onLeaveCampaign = appViewModel::leaveCampaign,
+            onCreateInvite = appViewModel::createCampaignInvite,
+            onPreviewInvite = appViewModel::previewCampaignInvite,
+            onAcceptInvite = appViewModel::acceptCampaignInvite,
+            onDismissInvitePreview = appViewModel::dismissInvitePreview,
             onSync = appViewModel::sync,
             onLogout = {
                 selectedId = null
@@ -88,21 +106,27 @@ fun SdoApp(activity: MainActivity) {
             },
         )
 
-        else -> CharacterSheetScreen(
-            character = characters.firstOrNull { it.id == selectedId },
-            session = appSession,
-            catalog = catalog,
-            snackbarHost = { SnackbarHost(snackbar) },
-            onBack = { selectedId = null },
-            onSave = appViewModel::save,
-            onAutosave = appViewModel::autosave,
-            onPlayerLock = appViewModel::setPlayerLocked,
-            onHistorianLock = appViewModel::setHistorianLocked,
-            onDelete = {
-                appViewModel.delete(it)
-                selectedId = null
-            },
-        )
+        else -> {
+            val selectedCharacter = characters.firstOrNull { it.id == selectedId }
+            val selectedCampaignId = normalizeCampaignId(selectedCharacter?.campaignId.orEmpty())
+            val archived = campaigns.firstOrNull { it.id == selectedCampaignId }?.isArchived == true
+            CharacterSheetScreen(
+                character = selectedCharacter,
+                session = appSession,
+                catalog = catalog,
+                readOnly = archived,
+                snackbarHost = { SnackbarHost(snackbar) },
+                onBack = { selectedId = null },
+                onSave = appViewModel::save,
+                onAutosave = appViewModel::autosave,
+                onPlayerLock = appViewModel::setPlayerLocked,
+                onHistorianLock = appViewModel::setHistorianLocked,
+                onDelete = {
+                    appViewModel.delete(it)
+                    selectedId = null
+                },
+            )
+        }
     }
 
     conflicts.firstOrNull()?.let { conflict ->

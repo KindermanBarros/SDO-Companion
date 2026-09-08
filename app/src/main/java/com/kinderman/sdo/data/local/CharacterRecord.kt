@@ -22,12 +22,13 @@ import com.kinderman.sdo.domain.model.defaultOrgans
 import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
 import com.kinderman.sdo.domain.model.defaultProtections
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
+import com.kinderman.sdo.domain.model.normalizeCampaignId
 
 @Entity(tableName = "characters")
 data class CharacterRecord(
     @PrimaryKey val id: String = "",
     val ownerId: String = "",
-    val campaignId: String = "default",
+    val campaignId: String = "",
     val name: String = "Novo personagem",
     val race: String = "",
     val subRace: String = "",
@@ -74,9 +75,6 @@ data class CharacterRecord(
     val organs: List<OrganStatus> = emptyList(),
     val mysticAbilities: List<MysticAbility> = emptyList(),
     val conditions: List<ConditionEffect> = emptyList(),
-    // Kotlin compiles Boolean properties prefixed with `is` to an `isLocked()`
-    // JavaBean getter. Firestore would otherwise infer the wire name `locked`,
-    // while the security rules intentionally validate `isLocked`.
     @get:PropertyName("isLocked")
     @field:PropertyName("isLocked")
     val isLocked: Boolean = false,
@@ -89,7 +87,7 @@ data class CharacterRecord(
 fun CharacterRecord.toDomain() = Character(
     id = id,
     ownerId = ownerId,
-    campaignId = campaignId,
+    campaignId = normalizeCampaignId(campaignId),
     name = name,
     race = race,
     subRace = subRace,
@@ -136,13 +134,7 @@ fun CharacterRecord.toDomain() = Character(
     notes = notes,
     personalNotes = personalNotes.ifEmpty {
         notes.takeIf(String::isNotBlank)?.let { legacyText ->
-            listOf(
-                PersonalNote(
-                    id = "legacy-$id",
-                    title = "Registro Pessoal 1",
-                    text = legacyText,
-                ),
-            )
+            listOf(PersonalNote(id = "legacy-$id", title = "Registro Pessoal 1", text = legacyText))
         }.orEmpty()
     },
     lockType = if (lockType == "NONE" && isLocked) {
@@ -161,7 +153,7 @@ fun CharacterRecord.toDomain() = Character(
 fun Character.toRecord() = CharacterRecord(
     id = id,
     ownerId = ownerId,
-    campaignId = campaignId,
+    campaignId = normalizeCampaignId(campaignId),
     name = name,
     race = race,
     subRace = subRace,
@@ -218,12 +210,8 @@ private fun resolveProtectionAdjustments(
     storedProtections: Map<String, Int>,
     storedAdjustments: Map<String, Int>,
 ): Map<String, Int> {
-    if (storedAdjustments.isNotEmpty()) {
-        return defaultProtectionAdjustments() + storedAdjustments
-    }
-    if (storedProtections == defaultProtections()) {
-        return defaultProtectionAdjustments()
-    }
+    if (storedAdjustments.isNotEmpty()) return defaultProtectionAdjustments() + storedAdjustments
+    if (storedProtections == defaultProtections()) return defaultProtectionAdjustments()
 
     fun attribute(acronym: String): Int = attributes.firstOrNull { it.acronym == acronym }?.value ?: 0
     fun skill(attributeAcronym: String, name: String): Int = attributes
