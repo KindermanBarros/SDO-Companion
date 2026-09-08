@@ -105,12 +105,11 @@ class OfflineFirstCampaignRepository(
         val target = dao.member(existing.id, newOwnerId)?.toDomain()
         check(target?.isActive == true) { "A nova Mestre precisa ser participante ativa da campanha." }
         val now = System.currentTimeMillis()
-        dao.upsertCampaign(existing.copy(ownerId = newOwnerId, updatedAt = now, dirty = true).toRecord())
+        // Keep the current owner authoritative in the local cache until Firestore accepts the
+        // complete handover. The promoted member, with the same timestamp as the dirty campaign,
+        // is the durable local marker for the pending transfer.
+        dao.upsertCampaign(existing.copy(updatedAt = now, dirty = true).toRecord())
         dao.upsertMember(target.copy(role = CampaignRole.MASTER, updatedAt = now, dirty = true).toRecord())
-        val current = dao.member(existing.id, session.uid)?.toDomain()
-        if (current != null) {
-            dao.upsertMember(current.copy(role = CampaignRole.PLAYER, updatedAt = now, dirty = true).toRecord())
-        }
     }
 
     override suspend fun leave(session: UserSession, campaign: Campaign) {
@@ -291,12 +290,42 @@ class OfflineFirstCampaignRepository(
         val dirtyCampaigns = dao.dirtyCampaigns().filter { it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
+        val dirtyMembers = dao.dirtyMembers()
+        val completedTransferCampaignIds = mutableSetOf<String>()
 
         newCampaigns.forEach { local ->
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
-        dao.dirtyMembers().forEach { local ->
+        changedCampaigns.forEach { localCampaign ->
+            val target = pendingOwnershipTransfer(localCampaign, dirtyMembers) ?: return@forEach
+            val current = dao.member(localCampaign.id, session.uid)
+                ?: error("A participação da Mestre atual não foi encontrada no cache local.")
+            val previousOwner = current.copy(
+                role = CampaignRole.PLAYER.name,
+                updatedAt = localCampaign.updatedAt,
+                dirty = false,
+            )
+
+            // Each write is awaited while the previous owner still has remote authority. Only
+            // after Firestore confirms the campaign owner change is the local authority replaced.
+            members.document(memberId(target.campaignId, target.userId))
+                .set(target.copy(dirty = false), SetOptions.merge()).await()
+            members.document(memberId(previousOwner.campaignId, previousOwner.userId))
+                .set(previousOwner, SetOptions.merge()).await()
+            val transferredCampaign = localCampaign.copy(ownerId = target.userId, dirty = false)
+            campaigns.document(localCampaign.id)
+                .set(transferredCampaign, SetOptions.merge()).await()
+
+            dao.upsertMember(target.copy(dirty = false, lastSyncedAt = target.updatedAt))
+            dao.upsertMember(previousOwner.copy(lastSyncedAt = previousOwner.updatedAt))
+            dao.upsertCampaign(
+                transferredCampaign.copy(lastSyncedAt = transferredCampaign.updatedAt),
+            )
+            completedTransferCampaignIds += localCampaign.id
+        }
+        dirtyMembers.forEach { local ->
+            if (local.campaignId in completedTransferCampaignIds) return@forEach
             if (local.userId == session.uid || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 members.document(memberId(local.campaignId, local.userId))
                     .set(local.copy(dirty = false), SetOptions.merge()).await()
@@ -310,6 +339,7 @@ class OfflineFirstCampaignRepository(
             }
         }
         changedCampaigns.forEach { local ->
+            if (local.id in completedTransferCampaignIds) return@forEach
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
@@ -387,4 +417,15 @@ class OfflineFirstCampaignRepository(
         private const val CODE_LENGTH = 8
         private const val CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     }
+}
+
+internal fun pendingOwnershipTransfer(
+    campaign: CampaignRecord,
+    dirtyMembers: List<CampaignMemberRecord>,
+): CampaignMemberRecord? = dirtyMembers.singleOrNull { member ->
+    member.campaignId == campaign.id &&
+        member.userId != campaign.ownerId &&
+        member.role == CampaignRole.MASTER.name &&
+        member.state == CampaignMemberState.ACTIVE.name &&
+        member.updatedAt == campaign.updatedAt
 }
