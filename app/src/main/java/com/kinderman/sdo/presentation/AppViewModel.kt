@@ -116,9 +116,7 @@ class AppViewModel(
 
     fun archiveCampaign(campaign: Campaign, archived: Boolean) = runAction(
         if (archived) "Campanha arquivada" else "Campanha restaurada",
-    ) { session ->
-        campaignRepository.archive(session, campaign, archived)
-    }
+    ) { session -> campaignRepository.archive(session, campaign, archived) }
 
     fun leaveCampaign(campaign: Campaign) = runAction("Você saiu da campanha; suas fichas foram preservadas") { session ->
         campaignRepository.leave(session, campaign)
@@ -156,9 +154,28 @@ class AppViewModel(
         }
     }
 
-    fun joinCampaign(code: String) = runAction("Entrada na campanha concluída") { session ->
-        campaignRepository.joinByCode(session, code)
-        _invitePreview.value = null
+    fun acceptCampaignInvite(code: String, character: Character?, createNewCharacter: Boolean) {
+        val session = currentSession.value ?: return
+        viewModelScope.launch {
+            runCatching {
+                val campaign = campaignRepository.joinByCode(session, code)
+                val selectedCharacter = when {
+                    createNewCharacter -> repository.create(session)
+                    character != null -> character
+                    else -> null
+                }
+                if (selectedCharacter != null) {
+                    val linked = campaignRepository.linkCharacter(session, selectedCharacter, campaign)
+                    repository.save(session, linked)
+                }
+            }.onSuccess {
+                _invitePreview.value = null
+                _message.value = "Entrada na campanha concluída"
+                startSync(initial = false)
+            }.onFailure { error ->
+                _message.value = userMessage(error, "Falha ao entrar na campanha")
+            }
+        }
     }
 
     fun dismissInvitePreview() { _invitePreview.value = null }
