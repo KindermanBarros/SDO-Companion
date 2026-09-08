@@ -57,6 +57,7 @@ fun CharacterSheetScreen(
     character: Character?,
     session: UserSession?,
     catalog: List<CatalogEntry>,
+    readOnly: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onSave: (Character) -> Unit,
@@ -68,9 +69,9 @@ fun CharacterSheetScreen(
     if (character == null || session == null) return
     var current by remember(character.id, character.updatedAt) { mutableStateOf(character) }
     var confirmDelete by remember { mutableStateOf(false) }
-    val editable = CharacterAccessPolicy.canEdit(session, current)
-    val canDelete = CharacterAccessPolicy.canDelete(session, current)
-    val canChangePlayerLock = CharacterAccessPolicy.canChangePlayerLock(session, current)
+    val editable = !readOnly && CharacterAccessPolicy.canEdit(session, current)
+    val canDelete = !readOnly && CharacterAccessPolicy.canDelete(session, current)
+    val canChangePlayerLock = !readOnly && CharacterAccessPolicy.canChangePlayerLock(session, current)
 
     BackHandler(onBack = onBack)
 
@@ -95,19 +96,20 @@ fun CharacterSheetScreen(
                             Text(current.name.uppercase(), style = MaterialTheme.typography.titleMedium)
                             Text(
                                 when {
+                                    readOnly -> "CAMPAIGN_ARCHIVE // READ_ONLY"
                                     session.isMaster -> "HISTORIAN_OVERRIDE"
                                     current.lockType == CharacterLock.HISTORIAN -> "PLAYER_FILE // HISTORIAN_LOCK"
                                     current.lockType == CharacterLock.PLAYER -> "PLAYER_FILE // PERSONAL_LOCK"
                                     else -> "PLAYER_FILE // EDIT"
                                 },
-                                color = if (current.isLocked) Signal else Acid,
+                                color = if (readOnly || current.isLocked) Signal else Acid,
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         }
                     },
                     navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
-                        if (session.isMaster) IconButton({
+                        if (!readOnly && session.isMaster) IconButton({
                             onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
                         }) {
                             Icon(
@@ -137,8 +139,10 @@ fun CharacterSheetScreen(
                 catalog = catalog,
                 editable = editable,
                 onChange = {
-                    current = it
-                    onAutosave(it)
+                    if (!readOnly) {
+                        current = it
+                        onAutosave(it)
+                    }
                 },
                 modifier = Modifier.padding(padding).fillMaxSize(),
             )
@@ -179,7 +183,7 @@ internal fun SheetHero(character: Character, session: UserSession) {
                         CharacterLock.PLAYER -> "EXCLUSÃO: BLOQUEIO PESSOAL"
                         CharacterLock.NONE -> "CACHE PROTEGIDO"
                     },
-                    color = if (character.isLocked) Signal else AcidCyan,
+                    color = Muted,
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
