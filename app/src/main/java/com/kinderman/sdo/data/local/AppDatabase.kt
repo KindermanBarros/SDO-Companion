@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [CharacterRecord::class, OwnerRecord::class, CatalogEntryRecord::class], version = 10, exportSchema = false)
+@Database(entities = [CharacterRecord::class, OwnerRecord::class, CatalogEntryRecord::class], version = 11, exportSchema = false)
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
@@ -112,6 +112,18 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN raceAttribute TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN relatedAttribute TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN initialValue INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN prerequisites TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN mechanicalEffect TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN ruleReference TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN keywords TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN repeatable INTEGER NOT NULL DEFAULT 0")
             }
         }
     }
