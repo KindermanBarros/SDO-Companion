@@ -213,24 +213,30 @@ internal fun AttributeSection(character: Character, enabled: Boolean, onChange: 
     TechPanel(accent = TechCutDark) {
         SectionHeader("04", "Atributos e conhecimentos")
         character.attributes.forEachIndexed { attributeIndex, attribute ->
-            AttributeEditor(attribute, enabled) { updated -> onChange(character.copy(attributes = character.attributes.replace(attributeIndex, updated))) }
+            AttributeEditor(character, attribute, enabled) { updated -> onChange(character.copy(attributes = character.attributes.replace(attributeIndex, updated))) }
             if (attributeIndex != character.attributes.lastIndex) HorizontalDivider(color = TechCutDark)
         }
     }
 }
 
 @Composable
-private fun AttributeEditor(attribute: AttributeValue, enabled: Boolean, onValue: (AttributeValue) -> Unit) {
+private fun AttributeEditor(character: Character, attribute: AttributeValue, enabled: Boolean, onValue: (AttributeValue) -> Unit) {
     Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = Ice, style = MaterialTheme.typography.titleLarge)
     TwoFields(
         { IntegerField("Valor", attribute.value, enabled, it) { value -> onValue(attribute.copy(value = value)) } },
         { IntegerField("Modificador", attribute.modifier, enabled, it) { value -> onValue(attribute.copy(modifier = value)) } },
     )
+    if (character.attributeTotal(attribute.acronym) != attribute.value) {
+        Text("TOTAL EQUIPADO // ${character.attributeTotal(attribute.acronym)}", color = Acid, style = MaterialTheme.typography.labelSmall)
+    }
     attribute.skills.forEachIndexed { index, skill ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(skill.name.uppercase(), color = LabelFunctional, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
             IntegerField("Valor", skill.value, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value)))) }
             IntegerField("Mod.", skill.modifier, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(modifier = value)))) }
+        }
+        if (character.basicKnowledgeTotal(attribute.acronym, skill.name) != skill.value) {
+            Text("${skill.name.uppercase()} EQUIPADO // ${character.basicKnowledgeTotal(attribute.acronym, skill.name)}", color = Acid, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -239,14 +245,20 @@ private fun AttributeEditor(attribute: AttributeValue, enabled: Boolean, onValue
 internal fun SpecialKnowledgeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
         SectionHeader("05", "Conhecimentos especiais")
-        KnowledgeList("Aprendidos", character.learnedKnowledges, enabled) { onChange(character.copy(learnedKnowledges = it)) }
-        KnowledgeList("Arcanos", character.arcaneKnowledges, enabled) { onChange(character.copy(arcaneKnowledges = it)) }
-        KnowledgeList("Técnicas de batalha", character.battleTechniques, enabled) { onChange(character.copy(battleTechniques = it)) }
+        KnowledgeList("Aprendidos", character.learnedKnowledges, enabled, character::acquiredKnowledgeValue) { onChange(character.copy(learnedKnowledges = it)) }
+        KnowledgeList("Arcanos", character.arcaneKnowledges, enabled, character::acquiredKnowledgeValue) { onChange(character.copy(arcaneKnowledges = it)) }
+        KnowledgeList("Técnicas de batalha", character.battleTechniques, enabled, character::acquiredKnowledgeValue) { onChange(character.copy(battleTechniques = it)) }
     }
 }
 
 @Composable
-private fun KnowledgeList(title: String, values: List<SpecialKnowledge>, enabled: Boolean, onValues: (List<SpecialKnowledge>) -> Unit) {
+private fun KnowledgeList(
+    title: String,
+    values: List<SpecialKnowledge>,
+    enabled: Boolean,
+    totalValue: (String) -> Int,
+    onValues: (List<SpecialKnowledge>) -> Unit,
+) {
     Text(title.uppercase(), color = Acid, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
         Column(Modifier.fillMaxWidth().background(Carbon).padding(8.dp)) {
@@ -259,6 +271,9 @@ private fun KnowledgeList(title: String, values: List<SpecialKnowledge>, enabled
                 { HudTextField("Atributo", knowledge.attribute, it, enabled = enabled) { value -> onValues(values.replace(index, knowledge.copy(attribute = value.uppercase()))) } },
                 { IntegerField("Valor", knowledge.value, enabled, it) { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
             )
+            if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value) {
+                Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = Acid, style = MaterialTheme.typography.labelSmall)
+            }
         }
     }
     AddButton("Adicionar $title", enabled) { onValues(values + SpecialKnowledge()) }
