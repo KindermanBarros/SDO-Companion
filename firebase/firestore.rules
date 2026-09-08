@@ -137,6 +137,20 @@ service cloud.firestore {
       );
     }
 
+    function validAdministratorLockTransition() {
+      return keepsLockState() || (
+        request.resource.data.lockType == 'HISTORIAN'
+        && requestedIsLocked() == true
+        && request.resource.data.lockedBy == request.auth.uid
+        && request.resource.data.get('lockedAt', null) != null
+      ) || (
+        request.resource.data.lockType == 'NONE'
+        && requestedIsLocked() == false
+        && request.resource.data.lockedBy == ''
+        && request.resource.data.get('lockedAt', null) == null
+      );
+    }
+
     function validCharacterCampaignTarget() {
       let nextCampaign = normalizedCampaignId(request.resource.data);
       return nextCampaign == '' || (
@@ -254,18 +268,18 @@ service cloud.firestore {
         )
       );
 
-      allow list: if signedIn() && isCampaignOwner(resource.data.campaignId);
+      allow list: if signedIn() && isCampaignResponsible(resource.data.campaignId);
 
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.code == inviteId
         && request.resource.data.campaignId != ''
         && campaignIsActive(request.resource.data.campaignId)
-        && isCampaignOwner(request.resource.data.campaignId)
+        && isCampaignResponsible(request.resource.data.campaignId)
         && request.resource.data.get('revokedAt', null) == null;
 
       allow update: if signedIn()
-        && isCampaignOwner(resource.data.campaignId)
+        && isCampaignResponsible(resource.data.campaignId)
         && campaignIsActive(resource.data.campaignId)
         && request.resource.data.campaignId == resource.data.campaignId
         && request.resource.data.code == resource.data.code
@@ -297,6 +311,16 @@ service cloud.firestore {
       allow update: if signedIn()
         && (
           (
+            isAdministrator()
+            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
+            && (
+              request.resource.data.ownerId == resource.data.ownerId
+              || exists(/databases/$(database)/documents/users/$(request.resource.data.ownerId))
+            )
+            && validAdministratorLockTransition()
+          )
+          ||
+          (
             ownsExistingCharacter()
             && request.resource.data.ownerId == resource.data.ownerId
             && request.resource.data.deleted == resource.data.get('deleted', false)
@@ -319,6 +343,8 @@ service cloud.firestore {
         );
 
       allow delete: if signedIn() && (
+        isAdministrator()
+        ||
         (
           ownsExistingCharacter()
           && existingLockType() == 'NONE'

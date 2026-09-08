@@ -34,7 +34,8 @@ class OfflineFirstCharacterRepository(
     private val syncMutex = Mutex()
 
     override fun observe(session: UserSession): Flow<List<Character>> =
-        dao.observe(session.uid).map { records -> records.map(CharacterRecord::toDomain) }
+        (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
+            .map { records -> records.map(CharacterRecord::toDomain) }
 
     override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { it?.toDomain() }
 
@@ -110,13 +111,17 @@ class OfflineFirstCharacterRepository(
         val conflicts = mutableListOf<CharacterSyncConflict>()
 
         val remoteById = linkedMapOf<String, CharacterRecord>()
-        val personalSnapshot = collection.whereEqualTo("ownerId", session.uid).get().await()
-        personalSnapshot.documents.forEach { document ->
+        val visibleSnapshot = if (session.isAdmin) {
+            collection.get().await()
+        } else {
+            collection.whereEqualTo("ownerId", session.uid).get().await()
+        }
+        visibleSnapshot.documents.forEach { document ->
             document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
         }
 
         var campaignScopeComplete = true
-        val membershipDocuments = runCatching {
+        val membershipDocuments = if (session.isAdmin) emptyList() else runCatching {
             members.whereEqualTo("userId", session.uid).get().await().documents
         }.getOrElse {
             campaignScopeComplete = false
@@ -134,7 +139,7 @@ class OfflineFirstCharacterRepository(
                 document.getString("state") == "ACTIVE" && (role == "HISTORIAN" || role == "MASTER")
             }
         }
-        val ownedCampaignIds = runCatching {
+        val ownedCampaignIds = if (session.isAdmin) mutableSetOf() else runCatching {
             campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
         }.getOrElse {
             campaignScopeComplete = false
@@ -173,7 +178,7 @@ class OfflineFirstCharacterRepository(
                 ),
             )
         }
-        dao.visible(session.uid)
+        (if (session.isAdmin) dao.all() else dao.visible(session.uid))
             .filter {
                 !it.dirty && it.id !in remoteIds && it.id !in dirtyIds &&
                     (it.ownerId == session.uid || campaignScopeComplete)

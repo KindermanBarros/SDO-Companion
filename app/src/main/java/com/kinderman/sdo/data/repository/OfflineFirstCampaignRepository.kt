@@ -36,7 +36,8 @@ class OfflineFirstCampaignRepository(
     private val random = SecureRandom()
 
     override fun observe(session: UserSession): Flow<List<Campaign>> =
-        dao.observeForUser(session.uid).map { values -> values.map(CampaignRecord::toDomain) }
+        (if (session.isAdmin) dao.observeAll() else dao.observeForUser(session.uid))
+            .map { values -> values.map(CampaignRecord::toDomain) }
 
     override fun observeMembers(campaignId: String): Flow<List<CampaignMember>> =
         dao.observeMembers(campaignId).map { values -> values.map(CampaignMemberRecord::toDomain) }
@@ -305,7 +306,7 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
-        val dirtyCampaigns = dao.dirtyCampaigns().filter { it.ownerId == session.uid }
+        val dirtyCampaigns = dao.dirtyCampaigns().filter { session.isAdmin || it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
         val dirtyMembers = dao.dirtyMembers()
@@ -351,14 +352,14 @@ class OfflineFirstCampaignRepository(
         }
         dirtyMembers.forEach { local ->
             if (local.campaignId in completedTransferCampaignIds) return@forEach
-            if (local.userId == session.uid || dao.campaign(local.campaignId)?.ownerId == session.uid) {
+            if (session.isAdmin || local.userId == session.uid || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 members.document(memberId(local.campaignId, local.userId))
                     .set(local.copy(dirty = false), SetOptions.merge()).await()
                 dao.markMemberSynced(local.campaignId, local.userId, local.updatedAt)
             }
         }
         dao.dirtyInvites().forEach { local ->
-            if (dao.campaign(local.campaignId)?.ownerId == session.uid) {
+            if (session.isAdmin || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 invites.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
                 dao.markInviteSynced(local.id, local.createdAt)
             }
@@ -369,7 +370,8 @@ class OfflineFirstCampaignRepository(
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
 
-        val membershipSnapshot = members.whereEqualTo("userId", session.uid).get().await()
+        val membershipSnapshot = if (session.isAdmin) members.get().await()
+            else members.whereEqualTo("userId", session.uid).get().await()
         val remoteMemberships = membershipSnapshot.documents.mapNotNull { document ->
             document.toObject(CampaignMemberRecord::class.java)
         }
@@ -378,7 +380,9 @@ class OfflineFirstCampaignRepository(
         val campaignIds = remoteMemberships
             .filter { it.state == CampaignMemberState.ACTIVE.name }
             .mapTo(mutableSetOf()) { it.campaignId }
-        campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapNotNull { document ->
+        val visibleCampaignDocuments = if (session.isAdmin) campaigns.get().await().documents
+            else campaigns.whereEqualTo("ownerId", session.uid).get().await().documents
+        visibleCampaignDocuments.mapNotNull { document ->
             document.toObject(CampaignRecord::class.java)?.copy(id = document.id)
         }.forEach { campaign ->
             campaignIds += campaign.id
@@ -391,8 +395,10 @@ class OfflineFirstCampaignRepository(
             }
         }
 
-        val ownedIds = dao.allCampaigns().filter { it.ownerId == session.uid }.mapTo(mutableSetOf()) { it.id }
-        ownedIds.forEach { campaignId ->
+        val manageableIds = dao.allCampaigns()
+            .filter { session.isAdmin || it.ownerId == session.uid }
+            .mapTo(mutableSetOf()) { it.id }
+        manageableIds.forEach { campaignId ->
             members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignMemberRecord::class.java)
             }.forEach { remote ->
