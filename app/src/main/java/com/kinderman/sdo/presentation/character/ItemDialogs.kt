@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.kinderman.sdo.domain.catalog.EquipmentGlossary
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.InventoryItem
@@ -248,6 +249,40 @@ private fun toggleModification(current: List<ItemPart>, item: ItemPart): List<It
     }
     if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
     return next
+}
+
+@Composable
+internal fun EquipmentGlossaryDialog(onDismiss: () -> Unit) {
+    var query by remember { mutableStateOf("") }
+    val filtered = remember(query) {
+        val needle = query.trim()
+        EquipmentGlossary.entries.filter { entry ->
+            needle.isEmpty() ||
+                entry.term.contains(needle, ignoreCase = true) ||
+                entry.group.contains(needle, ignoreCase = true) ||
+                entry.definition.contains(needle, ignoreCase = true)
+        }
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("GLOSSÁRIO DE EQUIPAMENTOS") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                HudTextField("Buscar termo, item ou material", query) { query = it }
+                Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState())) {
+                    filtered.forEach { entry ->
+                        Column(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(entry.term, color = Ice, style = MaterialTheme.typography.titleSmall)
+                            Text(entry.group.uppercase(), color = Acid, style = MaterialTheme.typography.labelSmall)
+                            Text(entry.definition, color = Muted, style = MaterialTheme.typography.bodySmall)
+                        }
+                        HorizontalDivider(color = TechCutDark)
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+    )
 }
 
 @Composable
