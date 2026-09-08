@@ -132,11 +132,13 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
             )
         }
         AddButton("Construtor de itens por pontos", enabled) { dialog = "builder" }
+        AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
         AddButton("Loja inicial // Pontos de Herança", enabled && catalog.isNotEmpty()) { dialog = "initial" }
         AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
         AddButton("Adicionar item manualmente", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
     }
     when (dialog) {
+        "glossary" -> EquipmentGlossaryDialog { dialog = null }
         "builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
             onChange(character.copy(inventory = character.inventory + item))
             dialog = null
@@ -238,6 +240,11 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
     var selecting by remember { mutableStateOf(false) }
     TechPanel(accent = AcidCyan) {
         SectionHeader("12", "Magias, runas e cinzas")
+        Text(
+            "CATÁLOGO EXPANSÍVEL // exemplos adicionais podem ser incluídos continuamente. Os procedimentos completos estão em Regras Arcanas Expandidas.",
+            color = Muted,
+            style = MaterialTheme.typography.bodySmall,
+        )
         character.mysticAbilities.forEachIndexed { index, ability ->
             MysticEditor(index, ability, enabled,
                 onRemove = { onChange(character.copy(mysticAbilities = character.mysticAbilities.filterIndexed { itemIndex, _ -> itemIndex != index })) },
