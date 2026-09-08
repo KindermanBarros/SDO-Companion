@@ -39,6 +39,7 @@ data class CampaignMemberRecord(
     val joinedAt: Long = 0,
     val updatedAt: Long = 0,
     val characterIds: List<String> = emptyList(),
+    val joinedByInviteId: String = "",
     @get:Exclude @field:Exclude val dirty: Boolean = false,
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
 )
@@ -96,6 +97,7 @@ fun CampaignMemberRecord.toDomain() = CampaignMember(
     joinedAt = joinedAt,
     updatedAt = updatedAt,
     characterIds = characterIds,
+    joinedByInviteId = joinedByInviteId,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
 )
@@ -108,6 +110,7 @@ fun CampaignMember.toRecord() = CampaignMemberRecord(
     joinedAt = joinedAt,
     updatedAt = updatedAt,
     characterIds = characterIds,
+    joinedByInviteId = joinedByInviteId,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
 )
