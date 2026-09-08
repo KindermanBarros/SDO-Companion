@@ -34,6 +34,7 @@ data class CampaignMember(
     val joinedAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val characterIds: List<String> = emptyList(),
+    val joinedByInviteId: String = "",
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
 ) {
