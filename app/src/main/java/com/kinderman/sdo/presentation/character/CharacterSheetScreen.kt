@@ -58,6 +58,8 @@ fun CharacterSheetScreen(
     session: UserSession?,
     catalog: List<CatalogEntry>,
     readOnly: Boolean = false,
+    isCampaignHistorian: Boolean = false,
+    isCampaignResponsible: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onSave: (Character) -> Unit,
@@ -69,9 +71,10 @@ fun CharacterSheetScreen(
     if (character == null || session == null) return
     var current by remember(character.id, character.updatedAt) { mutableStateOf(character) }
     var confirmDelete by remember { mutableStateOf(false) }
-    val editable = !readOnly && CharacterAccessPolicy.canEdit(session, current)
-    val canDelete = !readOnly && CharacterAccessPolicy.canDelete(session, current)
-    val canChangePlayerLock = !readOnly && CharacterAccessPolicy.canChangePlayerLock(session, current)
+    val editable = !readOnly && CharacterAccessPolicy.canEdit(session, current, isCampaignHistorian)
+    val canDelete = !readOnly && CharacterAccessPolicy.canDelete(session, current, isCampaignHistorian)
+    val canChangePlayerLock = !readOnly &&
+        CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
 
     BackHandler(onBack = onBack)
 
@@ -97,7 +100,8 @@ fun CharacterSheetScreen(
                             Text(
                                 when {
                                     readOnly -> "CAMPAIGN_ARCHIVE // READ_ONLY"
-                                    session.isMaster -> "HISTORIAN_OVERRIDE"
+                                    session.isAdmin -> "ADMIN_OVERRIDE"
+                                    isCampaignHistorian -> "HISTORIAN_ACCESS"
                                     current.lockType == CharacterLock.HISTORIAN -> "PLAYER_FILE // HISTORIAN_LOCK"
                                     current.lockType == CharacterLock.PLAYER -> "PLAYER_FILE // PERSONAL_LOCK"
                                     else -> "PLAYER_FILE // EDIT"
@@ -109,7 +113,7 @@ fun CharacterSheetScreen(
                     },
                     navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
-                        if (!readOnly && session.isMaster) IconButton({
+                        if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) IconButton({
                             onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
                         }) {
                             Icon(
@@ -154,7 +158,7 @@ fun CharacterSheetScreen(
 internal fun SheetHero(character: Character, session: UserSession) {
     TechPanel(accent = if (character.isLocked) Signal else Acid) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TelemetryTag(if (session.isMaster) "OVERRIDE.M" else "PROFILE.P")
+            TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
             TelemetryTag(
                 when (character.lockType) {
                     CharacterLock.HISTORIAN -> "LOCK.H"

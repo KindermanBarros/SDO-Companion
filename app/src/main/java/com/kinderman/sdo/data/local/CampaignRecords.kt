@@ -94,7 +94,10 @@ fun Campaign.toRecord() = CampaignRecord(
 fun CampaignMemberRecord.toDomain() = CampaignMember(
     campaignId = campaignId,
     userId = userId,
-    role = runCatching { CampaignRole.valueOf(role) }.getOrDefault(CampaignRole.PLAYER),
+    role = when (role) {
+        "MASTER" -> CampaignRole.HISTORIAN
+        else -> runCatching { CampaignRole.valueOf(role) }.getOrDefault(CampaignRole.PLAYER)
+    },
     state = runCatching { CampaignMemberState.valueOf(state) }.getOrDefault(CampaignMemberState.ACTIVE),
     joinedAt = joinedAt,
     updatedAt = updatedAt,

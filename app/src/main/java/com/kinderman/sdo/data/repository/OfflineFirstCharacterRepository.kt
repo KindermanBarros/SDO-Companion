@@ -4,6 +4,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterRecord
+import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.OwnerDao
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
@@ -12,6 +13,8 @@ import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.CampaignMemberState
+import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.characterConflictFields
 import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
@@ -26,6 +29,7 @@ import kotlinx.coroutines.tasks.await
 class OfflineFirstCharacterRepository(
     private val dao: CharacterDao,
     private val ownerDao: OwnerDao,
+    private val campaignDao: CampaignDao,
 ) : CharacterRepository {
     private val syncMutex = Mutex()
 
@@ -38,7 +42,9 @@ class OfflineFirstCharacterRepository(
         Character(ownerId = session.uid, campaignId = "").also { dao.upsert(it.toRecord()) }
 
     override suspend fun save(session: UserSession, character: Character) {
-        check(CharacterAccessPolicy.canEdit(session, character)) { "Você não pode editar esta ficha." }
+        check(CharacterAccessPolicy.canEdit(session, character, isCampaignHistorian(session, character))) {
+            "Você não pode editar esta ficha."
+        }
         dao.upsert(
             character.copy(
                 campaignId = normalizeCampaignId(character.campaignId),
@@ -49,22 +55,22 @@ class OfflineFirstCharacterRepository(
     }
 
     override suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) {
-        check(CharacterAccessPolicy.canChangePlayerLock(session, character)) {
+        check(CharacterAccessPolicy.canChangePlayerLock(session, character, isCampaignHistorian(session, character))) {
             "O bloqueio do jogador só pode ser alterado pelo dono e não substitui o bloqueio do historiador."
         }
         saveLock(character, if (locked) CharacterLock.PLAYER else CharacterLock.NONE, session.uid)
     }
 
     override suspend fun setHistorianLocked(session: UserSession, character: Character, locked: Boolean) {
-        check(CharacterAccessPolicy.canChangeHistorianLock(session)) {
+        check(CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian(session, character))) {
             "Somente o historiador pode alterar o bloqueio real."
         }
         saveLock(character, if (locked) CharacterLock.HISTORIAN else CharacterLock.NONE, session.uid)
     }
 
     override suspend fun transferOwnership(session: UserSession, character: Character, owner: UserProfile) {
-        check(CharacterAccessPolicy.canTransferOwnership(session)) {
-            "Somente o historiador pode transferir uma ficha."
+        check(CharacterAccessPolicy.canTransferOwnership(session, isCampaignResponsible(session, character))) {
+            "Somente a responsável principal pode transferir uma ficha."
         }
         check(owner.uid.isNotBlank()) { "O novo owner é inválido." }
         dao.upsert(
@@ -90,7 +96,9 @@ class OfflineFirstCharacterRepository(
     }
 
     override suspend fun delete(session: UserSession, character: Character) {
-        check(CharacterAccessPolicy.canDelete(session, character)) { "Esta ficha não pode ser removida." }
+        check(CharacterAccessPolicy.canDelete(session, character, isCampaignHistorian(session, character))) {
+            "Esta ficha não pode ser removida."
+        }
         dao.upsert(character.copy(deleted = true, updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
@@ -101,31 +109,57 @@ class OfflineFirstCharacterRepository(
         val members = store.collection("campaignMembers")
         val conflicts = mutableListOf<CharacterSyncConflict>()
 
-        val memberCampaignIds = members.whereEqualTo("userId", session.uid).get().await().documents
-            .mapNotNull { document ->
+        val remoteById = linkedMapOf<String, CharacterRecord>()
+        val personalSnapshot = collection.whereEqualTo("ownerId", session.uid).get().await()
+        personalSnapshot.documents.forEach { document ->
+            document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
+        }
+
+        var campaignScopeComplete = true
+        val membershipDocuments = runCatching {
+            members.whereEqualTo("userId", session.uid).get().await().documents
+        }.getOrElse {
+            campaignScopeComplete = false
+            emptyList()
+        }
+        val memberCampaignIds = membershipDocuments.mapNotNull { document ->
                 val campaignId = document.getString("campaignId").orEmpty()
                 val state = document.getString("state").orEmpty()
                 campaignId.takeIf { it.isNotBlank() && state == "ACTIVE" }
             }
             .toMutableSet()
-        val ownedCampaignIds = campaigns.whereEqualTo("ownerId", session.uid).get().await().documents
-            .mapTo(mutableSetOf()) { it.id }
-        val authorizedCampaignIds = (memberCampaignIds + ownedCampaignIds).toSet()
-
-        val remoteById = linkedMapOf<String, CharacterRecord>()
-        collection.whereEqualTo("ownerId", session.uid).get().await().documents.forEach { document ->
-            document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
+        val historianCampaignIds = membershipDocuments.mapNotNullTo(mutableSetOf()) { document ->
+            val role = document.getString("role").orEmpty()
+            document.getString("campaignId")?.takeIf {
+                document.getString("state") == "ACTIVE" && (role == "HISTORIAN" || role == "MASTER")
+            }
         }
+        val ownedCampaignIds = runCatching {
+            campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
+        }.getOrElse {
+            campaignScopeComplete = false
+            mutableSetOf()
+        }
+        val authorizedCampaignIds = (memberCampaignIds + ownedCampaignIds).toSet()
         authorizedCampaignIds.forEach { campaignId ->
-            collection.whereEqualTo("campaignId", campaignId).get().await().documents.forEach { document ->
-                document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
+            runCatching {
+                collection.whereEqualTo("campaignId", campaignId).get().await().documents
+            }.onSuccess { documents ->
+                documents.forEach { document ->
+                    document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
+                }
+            }.onFailure {
+                campaignScopeComplete = false
             }
         }
         val remoteRecords = remoteById.values.toList()
         val remoteIds = remoteById.keys
 
         val dirtyRecords = dao.dirty().filter { record ->
-            record.ownerId == session.uid || normalizeCampaignId(record.campaignId) in ownedCampaignIds
+            record.ownerId == session.uid ||
+                normalizeCampaignId(record.campaignId) in ownedCampaignIds ||
+                normalizeCampaignId(record.campaignId) in historianCampaignIds ||
+                session.isAdmin
         }
         val dirtyIds = dirtyRecords.mapTo(mutableSetOf(), CharacterRecord::id)
 
@@ -140,7 +174,10 @@ class OfflineFirstCharacterRepository(
             )
         }
         dao.visible(session.uid)
-            .filter { !it.dirty && it.id !in remoteIds && it.id !in dirtyIds }
+            .filter {
+                !it.dirty && it.id !in remoteIds && it.id !in dirtyIds &&
+                    (it.ownerId == session.uid || campaignScopeComplete)
+            }
             .forEach { dao.purge(it.id) }
 
         dirtyRecords.forEach { record ->
@@ -153,14 +190,8 @@ class OfflineFirstCharacterRepository(
                         collection.document(record.id).delete().await()
                         dao.purge(record.id)
                     } catch (error: Throwable) {
-                        dao.upsert(
-                            remote.copy(
-                                campaignId = normalizeCampaignId(remote.campaignId),
-                                dirty = false,
-                                lastSyncedAt = remote.updatedAt,
-                                deleted = false,
-                            ),
-                        )
+                        // Keep the pending local deletion. Losing permission must never discard
+                        // a user change that can be retried or resolved explicitly later.
                         throw error
                     }
                 }
@@ -206,7 +237,7 @@ class OfflineFirstCharacterRepository(
             return@withLock
         }
 
-        check(CharacterAccessPolicy.canEdit(session, conflict.remote)) {
+        check(CharacterAccessPolicy.canEdit(session, conflict.remote, isCampaignHistorian(session, conflict.remote))) {
             "A versão online está bloqueada. Para continuar, escolha todos os valores online."
         }
         dao.upsert(
@@ -218,5 +249,21 @@ class OfflineFirstCharacterRepository(
                 deleted = false,
             ).toRecord(),
         )
+    }
+
+    private suspend fun isCampaignHistorian(session: UserSession, character: Character): Boolean {
+        if (session.isAdmin) return true
+        val campaignId = normalizeCampaignId(character.campaignId)
+        if (campaignId.isBlank()) return false
+        if (campaignDao.campaign(campaignId)?.ownerId == session.uid) return true
+        val member = campaignDao.member(campaignId, session.uid) ?: return false
+        val role = if (member.role == "MASTER") CampaignRole.HISTORIAN.name else member.role
+        return member.state == CampaignMemberState.ACTIVE.name && role == CampaignRole.HISTORIAN.name
+    }
+
+    private suspend fun isCampaignResponsible(session: UserSession, character: Character): Boolean {
+        if (session.isAdmin) return true
+        val campaignId = normalizeCampaignId(character.campaignId)
+        return campaignId.isNotBlank() && campaignDao.campaign(campaignId)?.ownerId == session.uid
     }
 }

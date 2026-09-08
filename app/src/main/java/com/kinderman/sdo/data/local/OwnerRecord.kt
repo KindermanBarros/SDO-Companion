@@ -10,12 +10,13 @@ data class OwnerRecord(
     @PrimaryKey val uid: String = "",
     val email: String = "",
     val displayName: String = "",
-    val role: String = UserRole.PLAYER.name,
+    val role: String = UserRole.USER.name,
 )
 
 fun OwnerRecord.toDomain() = UserProfile(
     uid = uid,
     email = email,
     displayName = displayName,
-    role = runCatching { UserRole.valueOf(role) }.getOrDefault(UserRole.PLAYER),
+    // Global PLAYER/MASTER values are legacy profile data, never authorization.
+    role = UserRole.USER,
 )

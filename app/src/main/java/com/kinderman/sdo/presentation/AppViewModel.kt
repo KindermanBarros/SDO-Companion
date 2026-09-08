@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
+import com.kinderman.sdo.domain.model.CampaignMember
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
@@ -71,8 +72,11 @@ class AppViewModel(
     val characters = currentSession.flatMapLatest { session ->
         session?.let(repository::observe) ?: flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val memberships = currentSession.flatMapLatest { session ->
+        session?.let(campaignRepository::observeMemberships) ?: flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
     val owners = currentSession.flatMapLatest { session ->
-        if (session?.isMaster == true) ownerRepository.observe() else flowOf(emptyList())
+        if (session?.isAdmin == true) ownerRepository.observe() else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun setSession(session: UserSession) {
@@ -86,7 +90,7 @@ class AppViewModel(
         startSync(initial = true)
     }
 
-    fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.PLAYER))
+    fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.USER))
 
     fun clearSession() {
         syncJob?.cancel()
@@ -252,9 +256,17 @@ class AppViewModel(
         syncJob = viewModelScope.launch {
             _loadState.value = CharacterLoadState(initialLoading = initial, syncing = true)
             try {
-                ownerRepository.sync(session)
-                campaignRepository.sync(session)
-                _conflicts.value = repository.sync(session)
+                val failures = mutableListOf<Pair<String, Throwable>>()
+                runCatching { campaignRepository.sync(session) }
+                    .onFailure { failures += "campanhas" to it }
+                // Personal sync always runs, even if campaign authorization or queries fail.
+                // Keeping it after campaigns also lets a freshly accepted invite create its
+                // membership before the selected character is linked remotely.
+                runCatching { _conflicts.value = repository.sync(session) }
+                    .onFailure { failures += "fichas pessoais" to it }
+                runCatching { ownerRepository.sync(session) }
+                    .onFailure { failures += "administração" to it }
+                if (failures.isNotEmpty()) _message.value = syncFailureMessage(failures)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Throwable) {
@@ -278,6 +290,22 @@ class AppViewModel(
             "A sessão não pôde acessar o Firebase. Entre novamente se o problema continuar."
         } else {
             detail.ifBlank { fallback }
+        }
+    }
+
+    private fun syncFailureMessage(failures: List<Pair<String, Throwable>>): String {
+        val areas = failures.joinToString { it.first }
+        val details = failures.joinToString(" ") { it.second.message.orEmpty() }
+        return when {
+            details.contains("UNAUTHENTICATED", ignoreCase = true) ->
+                "Sua autenticação expirou. Entre novamente. Alterações locais foram preservadas."
+            details.contains("UNAVAILABLE", ignoreCase = true) ||
+                details.contains("network", ignoreCase = true) ||
+                details.contains("offline", ignoreCase = true) ->
+                "Sem conexão para sincronizar $areas. Alterações locais foram preservadas."
+            details.contains("PERMISSION_DENIED", ignoreCase = true) ->
+                "Sem permissão para sincronizar $areas. As demais áreas continuam disponíveis e as alterações locais foram preservadas."
+            else -> "Sincronização parcial em $areas. Alterações locais foram preservadas."
         }
     }
 }

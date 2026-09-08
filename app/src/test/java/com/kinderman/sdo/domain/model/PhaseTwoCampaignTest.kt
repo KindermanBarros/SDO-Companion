@@ -1,5 +1,6 @@
 package com.kinderman.sdo.domain.model
 
+import com.kinderman.sdo.data.local.toDomain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -38,5 +39,11 @@ class PhaseTwoCampaignTest {
         assertTrue(CampaignMember(state = CampaignMemberState.ACTIVE).isActive)
         assertFalse(CampaignMember(state = CampaignMemberState.LEFT).isActive)
         assertFalse(CampaignMember(state = CampaignMemberState.REMOVED).isActive)
+    }
+
+    @Test
+    fun `legacy master membership is read as contextual historian`() {
+        val record = com.kinderman.sdo.data.local.CampaignMemberRecord(role = "MASTER")
+        assertEquals(CampaignRole.HISTORIAN, record.toDomain().role)
     }
 }

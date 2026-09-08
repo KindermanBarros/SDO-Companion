@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface CampaignRepository {
     fun observe(session: UserSession): Flow<List<Campaign>>
     fun observeMembers(campaignId: String): Flow<List<CampaignMember>>
+    fun observeMemberships(session: UserSession): Flow<List<CampaignMember>>
     fun observeInvites(campaignId: String): Flow<List<CampaignInvite>>
 
     suspend fun create(session: UserSession, name: String, description: String = ""): Campaign
@@ -19,6 +20,7 @@ interface CampaignRepository {
     suspend fun transferOwnership(session: UserSession, campaign: Campaign, newOwnerId: String)
     suspend fun leave(session: UserSession, campaign: Campaign)
     suspend fun removeMember(session: UserSession, campaign: Campaign, userId: String)
+    suspend fun setMemberRole(session: UserSession, campaign: Campaign, userId: String, role: com.kinderman.sdo.domain.model.CampaignRole)
 
     suspend fun createInvite(session: UserSession, campaign: Campaign): CampaignInvite
     suspend fun revokeInvite(session: UserSession, invite: CampaignInvite)

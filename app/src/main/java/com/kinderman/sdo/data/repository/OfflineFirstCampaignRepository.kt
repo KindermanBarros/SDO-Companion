@@ -41,6 +41,9 @@ class OfflineFirstCampaignRepository(
     override fun observeMembers(campaignId: String): Flow<List<CampaignMember>> =
         dao.observeMembers(campaignId).map { values -> values.map(CampaignMemberRecord::toDomain) }
 
+    override fun observeMemberships(session: UserSession): Flow<List<CampaignMember>> =
+        dao.observeMemberships(session.uid).map { values -> values.map(CampaignMemberRecord::toDomain) }
+
     override fun observeInvites(campaignId: String): Flow<List<CampaignInvite>> =
         dao.observeInvites(campaignId).map { values -> values.map(CampaignInviteRecord::toDomain) }
 
@@ -59,7 +62,7 @@ class OfflineFirstCampaignRepository(
             CampaignMember(
                 campaignId = campaign.id,
                 userId = session.uid,
-                role = CampaignRole.MASTER,
+                role = CampaignRole.HISTORIAN,
                 state = CampaignMemberState.ACTIVE,
                 joinedAt = now,
                 updatedAt = now,
@@ -109,7 +112,7 @@ class OfflineFirstCampaignRepository(
         // complete handover. The promoted member, with the same timestamp as the dirty campaign,
         // is the durable local marker for the pending transfer.
         dao.upsertCampaign(existing.copy(updatedAt = now, dirty = true).toRecord())
-        dao.upsertMember(target.copy(role = CampaignRole.MASTER, updatedAt = now, dirty = true).toRecord())
+        dao.upsertMember(target.copy(role = CampaignRole.HISTORIAN, updatedAt = now, dirty = true).toRecord())
     }
 
     override suspend fun leave(session: UserSession, campaign: Campaign) {
@@ -144,6 +147,21 @@ class OfflineFirstCampaignRepository(
                 dirty = true,
             ).toRecord(),
         )
+    }
+
+    override suspend fun setMemberRole(
+        session: UserSession,
+        campaign: Campaign,
+        userId: String,
+        role: CampaignRole,
+    ) {
+        requireOwner(session, campaign)
+        val existing = requireActiveCampaign(campaign.id)
+        check(userId != existing.ownerId) { "A responsável principal já é Historiadora." }
+        val member = dao.member(existing.id, userId)?.toDomain()
+            ?: error("Participante não encontrada.")
+        check(member.isActive) { "O papel só pode ser alterado para participantes ativas." }
+        dao.upsertMember(member.copy(role = role, updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
     override suspend fun createInvite(session: UserSession, campaign: Campaign): CampaignInvite {
@@ -307,15 +325,22 @@ class OfflineFirstCampaignRepository(
                 dirty = false,
             )
 
-            // Each write is awaited while the previous owner still has remote authority. Only
-            // after Firestore confirms the campaign owner change is the local authority replaced.
-            members.document(memberId(target.campaignId, target.userId))
-                .set(target.copy(dirty = false), SetOptions.merge()).await()
-            members.document(memberId(previousOwner.campaignId, previousOwner.userId))
-                .set(previousOwner, SetOptions.merge()).await()
             val transferredCampaign = localCampaign.copy(ownerId = target.userId, dirty = false)
-            campaigns.document(localCampaign.id)
-                .set(transferredCampaign, SetOptions.merge()).await()
+            // Authority changes become visible together or not at all. Local ownership is only
+            // replaced after the server confirms the complete batch.
+            store.runBatch { batch ->
+                batch.set(
+                    members.document(memberId(target.campaignId, target.userId)),
+                    target.copy(dirty = false),
+                    SetOptions.merge(),
+                )
+                batch.set(
+                    members.document(memberId(previousOwner.campaignId, previousOwner.userId)),
+                    previousOwner,
+                    SetOptions.merge(),
+                )
+                batch.set(campaigns.document(localCampaign.id), transferredCampaign, SetOptions.merge())
+            }.await()
 
             dao.upsertMember(target.copy(dirty = false, lastSyncedAt = target.updatedAt))
             dao.upsertMember(previousOwner.copy(lastSyncedAt = previousOwner.updatedAt))
@@ -370,7 +395,14 @@ class OfflineFirstCampaignRepository(
         ownedIds.forEach { campaignId ->
             members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignMemberRecord::class.java)
-            }.forEach { dao.upsertMember(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
+            }.forEach { remote ->
+                val migrated = if (remote.role == "MASTER") remote.copy(role = CampaignRole.HISTORIAN.name) else remote
+                if (remote.role == "MASTER") {
+                    members.document(memberId(remote.campaignId, remote.userId))
+                        .set(migrated.copy(dirty = false), SetOptions.merge()).await()
+                }
+                dao.upsertMember(migrated.copy(dirty = false, lastSyncedAt = migrated.updatedAt))
+            }
             invites.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)
             }.forEach { dao.upsertInvite(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
@@ -400,7 +432,9 @@ class OfflineFirstCampaignRepository(
     }
 
     private fun requireOwner(session: UserSession, campaign: Campaign) {
-        check(campaign.ownerId == session.uid) { "Somente a Mestre responsável pode executar esta operação." }
+        check(session.isAdmin || campaign.ownerId == session.uid) {
+            "Somente a responsável principal pode executar esta operação."
+        }
     }
 
     private fun generateCode(): String = buildString(CODE_LENGTH) {
@@ -425,7 +459,7 @@ internal fun pendingOwnershipTransfer(
 ): CampaignMemberRecord? = dirtyMembers.singleOrNull { member ->
     member.campaignId == campaign.id &&
         member.userId != campaign.ownerId &&
-        member.role == CampaignRole.MASTER.name &&
+        member.role == CampaignRole.HISTORIAN.name &&
         member.state == CampaignMemberState.ACTIVE.name &&
         member.updatedAt == campaign.updatedAt
 }

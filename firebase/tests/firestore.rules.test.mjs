@@ -8,10 +8,15 @@ import {
   initializeTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
   setDoc,
   updateDoc,
+  where,
+  writeBatch,
 } from 'firebase/firestore';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -25,6 +30,7 @@ const ids = {
   player: 'player-1',
   outsider: 'outsider-1',
   joiner: 'joiner-1',
+  historian: 'historian-1',
   invite: 'ABCDEFGH',
   character: 'char-1',
 };
@@ -46,7 +52,7 @@ async function seed({ archived = false, revoked = false } = {}) {
     await setDoc(doc(db, 'campaignMembers', `${ids.campaign}::${ids.owner}`), {
       campaignId: ids.campaign,
       userId: ids.owner,
-      role: 'MASTER',
+      role: 'HISTORIAN',
       state: 'ACTIVE',
       joinedAt: 1,
       updatedAt: 1,
@@ -61,6 +67,16 @@ async function seed({ archived = false, revoked = false } = {}) {
       joinedAt: 1,
       updatedAt: 1,
       characterIds: [ids.character],
+      joinedByInviteId: ids.invite,
+    });
+    await setDoc(doc(db, 'campaignMembers', `${ids.campaign}::${ids.historian}`), {
+      campaignId: ids.campaign,
+      userId: ids.historian,
+      role: 'HISTORIAN',
+      state: 'ACTIVE',
+      joinedAt: 1,
+      updatedAt: 1,
+      characterIds: [],
       joinedByInviteId: ids.invite,
     });
     await setDoc(doc(db, 'campaignInvites', ids.invite), {
@@ -175,6 +191,82 @@ test('campaign owner can edit linked characters while campaign is active', async
     name: 'Atualizado pela mestre',
     updatedAt: 2,
   }));
+});
+
+test('contextual historian can edit linked characters but cannot perform responsible operations', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.historian).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), {
+    name: 'Atualizado pela historiadora',
+    updatedAt: 2,
+  }));
+  await assertFails(updateDoc(doc(db, 'campaignMembers', `${ids.campaign}::${ids.player}`), {
+    role: 'HISTORIAN',
+    updatedAt: 2,
+  }));
+  await assertFails(updateDoc(doc(db, 'campaigns', ids.campaign), {
+    state: 'ARCHIVED',
+    archivedAt: 2,
+    updatedAt: 2,
+  }));
+});
+
+test('owner campaign listing and empty real queries are authorized', async () => {
+  await seed();
+  const ownerDb = env.authenticatedContext(ids.owner).firestore();
+  const emptyDb = env.authenticatedContext('account-with-no-data').firestore();
+  await assertSucceeds(getDocs(query(collection(ownerDb, 'campaigns'), where('ownerId', '==', ids.owner))));
+  await assertSucceeds(getDocs(query(collection(emptyDb, 'campaigns'), where('ownerId', '==', 'account-with-no-data'))));
+  await assertSucceeds(getDocs(query(collection(emptyDb, 'campaignMembers'), where('userId', '==', 'account-with-no-data'))));
+  await assertSucceeds(getDocs(query(collection(emptyDb, 'characters'), where('ownerId', '==', 'account-with-no-data'))));
+});
+
+test('responsibility transfer is accepted atomically and cannot target a player', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'campaignMembers', `${ids.campaign}::${ids.historian}`), { role: 'HISTORIAN', updatedAt: 3 });
+  batch.update(doc(db, 'campaignMembers', `${ids.campaign}::${ids.owner}`), { role: 'PLAYER', updatedAt: 3 });
+  batch.update(doc(db, 'campaigns', ids.campaign), { ownerId: ids.historian, updatedAt: 3 });
+  await assertSucceeds(batch.commit());
+
+  await seed();
+  const invalid = writeBatch(db);
+  invalid.update(doc(db, 'campaignMembers', `${ids.campaign}::${ids.owner}`), { role: 'PLAYER', updatedAt: 4 });
+  invalid.update(doc(db, 'campaigns', ids.campaign), { ownerId: ids.player, updatedAt: 4 });
+  await assertFails(invalid.commit());
+});
+
+test('global profile role cannot grant administration', async () => {
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'users', ids.outsider), { displayName: 'Outra', role: 'MASTER' });
+    await setDoc(doc(db, 'users', ids.player), { displayName: 'Player', role: 'USER' });
+  });
+  const legacyMasterDb = env.authenticatedContext(ids.outsider, {
+    email: 'other@example.com', email_verified: true,
+  }).firestore();
+  await assertFails(getDoc(doc(legacyMasterDb, 'users', ids.player)));
+  await assertFails(updateDoc(doc(legacyMasterDb, 'users', ids.player), { displayName: 'Invadido' }));
+
+  const selfDb = env.authenticatedContext('new-user').firestore();
+  await assertFails(setDoc(doc(selfDb, 'users', 'new-user'), { displayName: 'Nova', role: 'MASTER' }));
+  await assertSucceeds(setDoc(doc(selfDb, 'users', 'new-user'), { displayName: 'Nova', role: 'USER' }));
+  await assertFails(updateDoc(doc(selfDb, 'users', 'new-user'), { role: 'MASTER' }));
+});
+
+test('administrator requires the configured verified auth identity', async () => {
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'users', ids.player), { role: 'USER' });
+  });
+  const verified = env.authenticatedContext('admin', {
+    email: 'kindbarros@gmail.com', email_verified: true,
+  }).firestore();
+  const unverified = env.authenticatedContext('lookalike', {
+    email: 'kindbarros@gmail.com', email_verified: false,
+  }).firestore();
+  await assertSucceeds(getDoc(doc(verified, 'users', ids.player)));
+  await assertFails(getDoc(doc(unverified, 'users', ids.player)));
 });
 
 test('archived campaign is read-only for characters', async () => {
