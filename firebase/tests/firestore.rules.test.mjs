@@ -9,6 +9,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -267,6 +268,40 @@ test('administrator requires the configured verified auth identity', async () =>
   }).firestore();
   await assertSucceeds(getDoc(doc(verified, 'users', ids.player)));
   await assertFails(getDoc(doc(unverified, 'users', ids.player)));
+});
+
+test('administrator can list every character and manage records from other accounts', async () => {
+  await seed();
+  const adminDb = env.authenticatedContext('admin', {
+    email: 'kindbarros@gmail.com', email_verified: true,
+  }).firestore();
+  const outsiderDb = env.authenticatedContext(ids.outsider).firestore();
+
+  await assertSucceeds(getDocs(collection(adminDb, 'characters')));
+  await assertSucceeds(getDocs(collection(adminDb, 'campaigns')));
+  await assertSucceeds(getDocs(collection(adminDb, 'campaignInvites')));
+  await assertSucceeds(setDoc(doc(adminDb, 'campaignInvites', 'ADMIN123'), {
+    campaignId: ids.campaign,
+    campaignName: 'Teste',
+    campaignDescription: 'Campanha de teste',
+    code: 'ADMIN123',
+    createdBy: 'admin',
+    createdAt: 2,
+    expiresAt: null,
+    revokedAt: null,
+    generation: 1,
+  }));
+  await assertSucceeds(updateDoc(doc(adminDb, 'campaignInvites', ids.invite), {
+    revokedAt: 2,
+  }));
+  await assertSucceeds(updateDoc(doc(adminDb, 'characters', ids.character), {
+    name: 'Atualizado pelo admin',
+    updatedAt: 2,
+  }));
+  await assertSucceeds(deleteDoc(doc(adminDb, 'characters', ids.character)));
+
+  await seed();
+  await assertFails(getDocs(collection(outsiderDb, 'characters')));
 });
 
 test('archived campaign is read-only for characters', async () => {

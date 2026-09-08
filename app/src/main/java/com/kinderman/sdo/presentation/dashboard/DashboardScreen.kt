@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -97,22 +98,65 @@ fun DashboardScreen(
     val rolesByCampaign = remember(memberships) { memberships.associateBy({ it.campaignId }, { it.role }) }
     val activeCampaigns = campaigns.filterNot(Campaign::isArchived)
     val archivedCampaigns = campaigns.filter(Campaign::isArchived)
-    val standalone = characters.filter { normalizeCampaignId(it.campaignId).isBlank() }
     var ownerTarget by remember { mutableStateOf<Character?>(null) }
     var createCampaign by remember { mutableStateOf(false) }
     var joinCampaign by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    var ownerFilter by remember { mutableStateOf<String?>(null) }
+    var campaignFilter by remember { mutableStateOf<String?>(null) }
+    var statusFilter by remember { mutableStateOf(AdminCharacterStatus.ALL) }
+    var choosingOwner by remember { mutableStateOf(false) }
+    var choosingCampaign by remember { mutableStateOf(false) }
+    var choosingStatus by remember { mutableStateOf(false) }
+    var section by remember { mutableStateOf(DashboardSection.CHARACTERS) }
+    val filtersActive = searchQuery.isNotBlank() || ownerFilter != null ||
+        campaignFilter != null || statusFilter != AdminCharacterStatus.ALL
+    val filteredCharacters = remember(
+        characters, ownersById, campaigns, searchQuery, ownerFilter, campaignFilter, statusFilter, admin,
+    ) {
+        if (!admin) characters else characters.filter { character ->
+            val campaignId = normalizeCampaignId(character.campaignId)
+            val owner = ownersById[character.ownerId]
+            val campaign = campaigns.firstOrNull { it.id == campaignId }
+            val queryMatches = searchQuery.isBlank() || listOf(
+                character.name,
+                character.race,
+                character.occupation,
+                character.ownerId,
+                owner?.displayName.orEmpty(),
+                owner?.email.orEmpty(),
+                campaign?.name.orEmpty(),
+            ).any { it.contains(searchQuery.trim(), ignoreCase = true) }
+            val ownerMatches = ownerFilter == null || character.ownerId == ownerFilter
+            val campaignMatches = when (campaignFilter) {
+                null -> true
+                STANDALONE_FILTER -> campaignId.isBlank()
+                else -> campaignId == campaignFilter
+            }
+            val statusMatches = when (statusFilter) {
+                AdminCharacterStatus.ALL -> true
+                AdminCharacterStatus.SYNCED -> !character.dirty
+                AdminCharacterStatus.PENDING -> character.dirty
+                AdminCharacterStatus.LOCKED -> character.isLocked
+            }
+            queryMatches && ownerMatches && campaignMatches && statusMatches
+        }
+    }
+    val standalone = filteredCharacters.filter { normalizeCampaignId(it.campaignId).isBlank() }
 
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
             snackbarHost = snackbarHost,
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onAdd,
-                    containerColor = Acid,
-                    contentColor = Void,
-                    shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
-                ) { Icon(Icons.Default.Add, "Criar personagem sem campanha") }
+                if (section == DashboardSection.CHARACTERS) {
+                    FloatingActionButton(
+                        onClick = onAdd,
+                        containerColor = Acid,
+                        contentColor = Void,
+                        shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
+                    ) { Icon(Icons.Default.Add, "Criar personagem sem campanha") }
+                }
             },
         ) { padding ->
             LazyColumn(
@@ -130,11 +174,53 @@ fun DashboardScreen(
                     }
                     Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
                     Text(if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS", style = MaterialTheme.typography.headlineLarge, color = Ice)
-                    Text("${activeCampaigns.size} CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA", color = Muted, style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // ${activeCampaigns.size} CAMPANHAS ATIVAS"
+                        else "${activeCampaigns.size} CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA",
+                        color = Muted,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
-                        TextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("ENTRAR POR CÓDIGO") }
+                        DashboardSection.entries.forEach { target ->
+                            TextButton(
+                                onClick = { section = target },
+                                modifier = Modifier.weight(1f).then(
+                                    if (section == target) Modifier.border(1.dp, Acid, CutCornerShape(6.dp)) else Modifier,
+                                ),
+                            ) {
+                                Text(target.label, color = if (section == target) Acid else Muted)
+                            }
+                        }
                     }
+                    if (section == DashboardSection.CAMPAIGNS) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
+                            TextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("ENTRAR POR CÓDIGO") }
+                        }
+                    }
+                }
+
+                if (admin && section == DashboardSection.CHARACTERS) item("admin-filters") {
+                    AdminCharacterFilters(
+                        query = searchQuery,
+                        ownerLabel = ownerFilter?.let { ownersById[it]?.firstName ?: it.take(8) } ?: "Todos os owners",
+                        campaignLabel = when (campaignFilter) {
+                            null -> "Todas as campanhas"
+                            STANDALONE_FILTER -> "Sem campanha"
+                            else -> campaigns.firstOrNull { it.id == campaignFilter }?.name ?: "Campanha"
+                        },
+                        statusLabel = statusFilter.label,
+                        onQueryChange = { searchQuery = it },
+                        onChooseOwner = { choosingOwner = true },
+                        onChooseCampaign = { choosingCampaign = true },
+                        onChooseStatus = { choosingStatus = true },
+                        onClear = {
+                            searchQuery = ""
+                            ownerFilter = null
+                            campaignFilter = null
+                            statusFilter = AdminCharacterStatus.ALL
+                        },
+                    )
                 }
 
                 if (syncing) item("sync-loading") {
@@ -145,87 +231,71 @@ fun DashboardScreen(
                     }
                 }
 
-                if (activeCampaigns.isEmpty() && standalone.isEmpty() && archivedCampaigns.isEmpty()) item {
-                    TechPanel(accent = Signal) {
-                        SectionHeader("00", "Nenhum sinal detectado")
-                        Text("Crie uma campanha, entre por código ou crie uma ficha sem campanha.")
-                        Barcode("EMPTY-SDO-ARCHIVE")
-                    }
-                }
-
-                activeCampaigns.forEachIndexed { campaignIndex, campaign ->
-                    item("campaign-${campaign.id}") {
-                        CampaignPanel(
-                            campaign = campaign,
-                            owner = campaign.ownerId == uid,
-                            role = rolesByCampaign[campaign.id],
-                            archived = false,
-                            onAdd = { onAddToCampaign(campaign) },
-                            onInvite = { onCreateInvite(campaign) },
-                            onArchive = { onArchiveCampaign(campaign, true) },
-                            onLeave = { onLeaveCampaign(campaign) },
-                            index = (campaignIndex + 1).toString().padStart(2, '0'),
-                        )
-                    }
-                    items(
-                        characters.filter { normalizeCampaignId(it.campaignId) == campaign.id },
-                        key = { "${campaign.id}:${it.id}" },
-                    ) { character ->
-                        CharacterAccessCard(
-                            character = character,
-                            master = admin,
-                            owner = ownersById[character.ownerId],
-                            onOpen = { onOpen(character.id) },
-                            onOwnerClick = { ownerTarget = character },
-                        )
-                    }
-                }
-
-                if (standalone.isNotEmpty()) {
-                    item("standalone-header") {
-                        TechPanel {
-                            SectionHeader("SC", "Fichas sem campanha")
-                            Text("Arquivos pessoais ainda não vinculados a uma campanha.", color = Muted)
-                        }
-                    }
-                    items(standalone, key = { "standalone:${it.id}" }) { character ->
-                        CharacterAccessCard(
-                            character = character,
-                            master = admin,
-                            owner = ownersById[character.ownerId],
-                            onOpen = { onOpen(character.id) },
-                            onOwnerClick = { ownerTarget = character },
-                        )
-                    }
-                }
-
-                if (archivedCampaigns.isNotEmpty()) {
-                    item("archived-header") { SectionHeader("AR", "Campanhas arquivadas") }
-                    archivedCampaigns.forEach { campaign ->
-                        item("archived-${campaign.id}") {
-                            CampaignPanel(
-                                campaign = campaign,
-                                owner = campaign.ownerId == uid,
-                                role = rolesByCampaign[campaign.id],
-                                archived = true,
-                                onAdd = {},
-                                onInvite = {},
-                                onArchive = { onArchiveCampaign(campaign, false) },
-                                onLeave = {},
-                                index = "AR",
+                when (section) {
+                    DashboardSection.CHARACTERS -> {
+                        if (filteredCharacters.isEmpty()) item("empty-characters") {
+                            EmptyDashboardPanel(
+                                title = if (filtersActive) "Nenhuma ficha encontrada" else "Nenhuma ficha detectada",
+                                message = if (filtersActive) "Ajuste ou limpe os filtros de pesquisa." else "Crie uma ficha para iniciar o arquivo.",
                             )
                         }
-                        items(
-                            characters.filter { normalizeCampaignId(it.campaignId) == campaign.id },
-                            key = { "archived:${campaign.id}:${it.id}" },
-                        ) { character ->
+                        items(filteredCharacters, key = { "character:${it.id}" }) { character ->
                             CharacterAccessCard(
                                 character = character,
                                 master = admin,
                                 owner = ownersById[character.ownerId],
+                                campaignName = campaigns.firstOrNull {
+                                    it.id == normalizeCampaignId(character.campaignId)
+                                }?.name,
                                 onOpen = { onOpen(character.id) },
                                 onOwnerClick = { ownerTarget = character },
                             )
+                        }
+                    }
+
+                    DashboardSection.CAMPAIGNS -> {
+                        if (activeCampaigns.isEmpty() && archivedCampaigns.isEmpty()) item("empty-campaigns") {
+                            EmptyDashboardPanel(
+                                title = "Nenhuma campanha detectada",
+                                message = "Crie uma campanha ou entre usando um código de convite.",
+                            )
+                        }
+                        activeCampaigns.forEachIndexed { campaignIndex, campaign ->
+                            item("campaign-${campaign.id}") {
+                                CampaignPanel(
+                                    campaign = campaign,
+                                    owner = campaign.ownerId == uid,
+                                    administrator = admin,
+                                    canAdd = campaign.ownerId == uid || rolesByCampaign[campaign.id] != null,
+                                    role = rolesByCampaign[campaign.id],
+                                    archived = false,
+                                    onAdd = { onAddToCampaign(campaign) },
+                                    onInvite = { onCreateInvite(campaign) },
+                                    onArchive = { onArchiveCampaign(campaign, true) },
+                                    onLeave = { onLeaveCampaign(campaign) },
+                                    index = (campaignIndex + 1).toString().padStart(2, '0'),
+                                )
+                            }
+                        }
+                        if (archivedCampaigns.isNotEmpty()) item("archived-header") {
+                            SectionHeader("AR", "Campanhas arquivadas")
+                        }
+                        archivedCampaigns.forEach { campaign ->
+                            item("archived-${campaign.id}") {
+                                CampaignPanel(
+                                    campaign = campaign,
+                                    owner = campaign.ownerId == uid,
+                                    administrator = admin,
+                                    canAdd = false,
+                                    role = rolesByCampaign[campaign.id],
+                                    archived = true,
+                                    onAdd = {},
+                                    onInvite = {},
+                                    onArchive = { onArchiveCampaign(campaign, false) },
+                                    onLeave = {},
+                                    index = "AR",
+                                )
+                            }
                         }
                     }
                 }
@@ -269,6 +339,117 @@ fun DashboardScreen(
                 onAccept = onAcceptInvite,
             )
         }
+        if (choosingOwner) {
+            val ownerOptions = characters.map(Character::ownerId).distinct().map { ownerId ->
+                ownerId to (ownersById[ownerId]?.let { "${it.firstName} // ${it.email}" } ?: "UID.${ownerId.take(8)}")
+            }.sortedBy { it.second }
+            FilterSelectionDialog(
+                title = "FILTRAR POR OWNER",
+                options = listOf(null to "Todos os owners") + ownerOptions,
+                onDismiss = { choosingOwner = false },
+                onSelect = { ownerFilter = it; choosingOwner = false },
+            )
+        }
+        if (choosingCampaign) FilterSelectionDialog(
+            title = "FILTRAR POR CAMPANHA",
+            options = listOf(
+                null to "Todas as campanhas",
+                STANDALONE_FILTER to "Sem campanha",
+            ) + campaigns.sortedBy(Campaign::name).map { it.id to it.name },
+            onDismiss = { choosingCampaign = false },
+            onSelect = { campaignFilter = it; choosingCampaign = false },
+        )
+        if (choosingStatus) FilterSelectionDialog(
+            title = "FILTRAR POR STATUS",
+            options = AdminCharacterStatus.entries.map { it.name to it.label },
+            onDismiss = { choosingStatus = false },
+            onSelect = { value ->
+                statusFilter = AdminCharacterStatus.entries.firstOrNull { it.name == value } ?: AdminCharacterStatus.ALL
+                choosingStatus = false
+            },
+        )
+    }
+}
+
+private const val STANDALONE_FILTER = "__standalone__"
+
+private enum class DashboardSection(val label: String) {
+    CHARACTERS("FICHAS"),
+    CAMPAIGNS("CAMPANHAS"),
+}
+
+private enum class AdminCharacterStatus(val label: String) {
+    ALL("Todos os status"),
+    SYNCED("Sincronizadas"),
+    PENDING("Pendentes"),
+    LOCKED("Bloqueadas"),
+}
+
+@Composable
+private fun AdminCharacterFilters(
+    query: String,
+    ownerLabel: String,
+    campaignLabel: String,
+    statusLabel: String,
+    onQueryChange: (String) -> Unit,
+    onChooseOwner: () -> Unit,
+    onChooseCampaign: () -> Unit,
+    onChooseStatus: () -> Unit,
+    onClear: () -> Unit,
+) {
+    TechPanel(accent = Acid) {
+        SectionHeader("FX", "Pesquisa administrativa")
+        HudTextField(
+            label = "Buscar ficha, owner ou campanha",
+            value = query,
+            placeholder = "Nome, raça, ocupação, e-mail ou UID",
+            onValue = onQueryChange,
+        )
+        TextButton(onClick = onChooseOwner, modifier = Modifier.fillMaxWidth()) {
+            Text("OWNER // ${ownerLabel.uppercase()}")
+        }
+        TextButton(onClick = onChooseCampaign, modifier = Modifier.fillMaxWidth()) {
+            Text("CAMPANHA // ${campaignLabel.uppercase()}")
+        }
+        TextButton(onClick = onChooseStatus, modifier = Modifier.fillMaxWidth()) {
+            Text("STATUS // ${statusLabel.uppercase()}")
+        }
+        TextButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
+            Text("LIMPAR FILTROS", color = Signal)
+        }
+    }
+}
+
+@Composable
+private fun FilterSelectionDialog(
+    title: String,
+    options: List<Pair<String?, String>>,
+    onDismiss: () -> Unit,
+    onSelect: (String?) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
+                items(options, key = { "${it.first.orEmpty()}:${it.second}" }) { (value, label) ->
+                    TextButton(onClick = { onSelect(value) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(label.uppercase())
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
+}
+
+@Composable
+private fun EmptyDashboardPanel(title: String, message: String) {
+    TechPanel(accent = Signal) {
+        SectionHeader("00", title)
+        Text(message)
+        Barcode("EMPTY-SDO-ARCHIVE")
     }
 }
 
@@ -276,6 +457,8 @@ fun DashboardScreen(
 private fun CampaignPanel(
     campaign: Campaign,
     owner: Boolean,
+    administrator: Boolean,
+    canAdd: Boolean,
     role: CampaignRole?,
     archived: Boolean,
     onAdd: () -> Unit,
@@ -291,6 +474,7 @@ private fun CampaignPanel(
             TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) Muted else AcidCyan)
             TelemetryTag(
                 when {
+                    administrator -> "ADMIN"
                     owner -> "RESPONSÁVEL // HISTORIAN"
                     role == CampaignRole.HISTORIAN -> "HISTORIAN"
                     else -> "PLAYER"
@@ -299,11 +483,11 @@ private fun CampaignPanel(
         }
         if (!archived) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                TextButton(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("+ FICHA") }
-                if (owner) TextButton(onClick = onInvite, modifier = Modifier.weight(1f)) { Text("CONVITE") }
+                if (canAdd) TextButton(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("+ FICHA") }
+                if (owner || administrator) TextButton(onClick = onInvite, modifier = Modifier.weight(1f)) { Text("CONVITE") }
             }
         }
-        if (owner) {
+        if (owner || administrator) {
             TextButton(onClick = onArchive, modifier = Modifier.fillMaxWidth()) {
                 Text(if (archived) "RESTAURAR CAMPANHA" else "ARQUIVAR CAMPANHA")
             }
@@ -401,6 +585,7 @@ private fun CharacterAccessCard(
     character: Character,
     master: Boolean,
     owner: UserProfile?,
+    campaignName: String?,
     onOpen: () -> Unit,
     onOwnerClick: () -> Unit,
 ) {
@@ -437,6 +622,11 @@ private fun CharacterAccessCard(
                     Text(
                         listOf(character.race, character.occupation, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
                         color = LabelFunctional,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    Text(
+                        campaignName?.let { "CAMPANHA // ${it.uppercase()}" } ?: "SEM CAMPANHA",
+                        color = Muted,
                         style = MaterialTheme.typography.labelSmall,
                     )
                     if (master) {

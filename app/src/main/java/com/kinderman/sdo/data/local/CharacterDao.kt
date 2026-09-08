@@ -25,6 +25,9 @@ interface CharacterDao {
     )
     fun observe(uid: String): Flow<List<CharacterRecord>>
 
+    @Query("SELECT * FROM characters WHERE deleted = 0 ORDER BY updatedAt DESC")
+    fun observeAll(): Flow<List<CharacterRecord>>
+
     @Query("SELECT * FROM characters WHERE id = :id AND deleted = 0")
     fun observeOne(id: String): Flow<CharacterRecord?>
 
@@ -44,6 +47,9 @@ interface CharacterDao {
         """,
     )
     suspend fun visible(uid: String): List<CharacterRecord>
+
+    @Query("SELECT * FROM characters")
+    suspend fun all(): List<CharacterRecord>
 
     @Upsert suspend fun upsert(character: CharacterRecord)
 

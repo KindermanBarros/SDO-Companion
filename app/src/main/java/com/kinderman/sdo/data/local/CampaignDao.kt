@@ -17,6 +17,9 @@ interface CampaignDao {
     )
     fun observeForUser(uid: String): Flow<List<CampaignRecord>>
 
+    @Query("SELECT * FROM campaigns ORDER BY updatedAt DESC")
+    fun observeAll(): Flow<List<CampaignRecord>>
+
     @Query("SELECT * FROM campaign_members WHERE campaignId = :campaignId ORDER BY joinedAt ASC")
     fun observeMembers(campaignId: String): Flow<List<CampaignMemberRecord>>
 
