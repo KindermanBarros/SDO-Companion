@@ -20,8 +20,13 @@ import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ModifierSourceType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.agilityLimitBreakdown
+import com.kinderman.sdo.domain.model.arcaneMaximumBreakdown
+import com.kinderman.sdo.domain.model.energyMaximumBreakdown
 import com.kinderman.sdo.domain.model.generalProtectionBreakdown
+import com.kinderman.sdo.domain.model.lifeMaximumBreakdown
+import com.kinderman.sdo.domain.model.loadCapacityBreakdown
 import com.kinderman.sdo.domain.model.localProtectionBreakdown
+import com.kinderman.sdo.domain.model.sanityMaximumBreakdown
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
 import com.kinderman.sdo.ui.Ice
@@ -143,10 +148,11 @@ internal fun CalculatedValuesAuditSection(character: Character) {
     TechPanel(accent = Acid) {
         SectionHeader("06.B", "Auditoria de valores calculados")
         Text("RECURSOS", color = Acid, style = MaterialTheme.typography.labelLarge)
-        CalculationLine("Vida máxima", "10 + Vitalidade", character.lifeCalculation())
-        CalculationLine("Sanidade máxima", "10 + Sanidade", character.sanityCalculation())
-        CalculationLine("Arcano máximo", "POD + Arcano", character.arcaneCalculation())
-        CalculationLine("Energia máxima", "VIG + Energia", character.energyCalculation())
+        CalculationLine("Vida máxima", "10 + Vitalidade + ajustes + bônus ativos", character.lifeMaximumBreakdown())
+        CalculationLine("Sanidade máxima", "10 + Sanidade + ajustes + bônus ativos", character.sanityMaximumBreakdown())
+        CalculationLine("Arcano máximo", "POD + Arcano + ajustes + bônus ativos", character.arcaneMaximumBreakdown())
+        CalculationLine("Energia máxima", "VIG + Energia + ajustes + bônus ativos", character.energyMaximumBreakdown())
+        CalculationLine("Capacidade de carga", "2 + FOR + recipiente + bônus ativos", character.loadCapacityBreakdown())
 
         Text("ATRIBUTOS", color = Acid, style = MaterialTheme.typography.labelLarge)
         character.attributes.forEach { attribute ->
