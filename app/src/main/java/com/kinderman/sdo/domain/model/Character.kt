@@ -6,6 +6,16 @@ enum class UserRole { PLAYER, MASTER }
 
 enum class CharacterLock { NONE, PLAYER, HISTORIAN }
 
+enum class PowerSourceType {
+    PATH,
+    RACE,
+    ITEM,
+    KNOWLEDGE,
+    NARRATIVE,
+    MANUAL,
+    CATALOG,
+}
+
 data class UserSession(
     val uid: String,
     val email: String,
@@ -40,7 +50,20 @@ data class SpecialKnowledge(
     val name: String = "",
     val attribute: String = "",
     val value: Int = 0,
-)
+    val catalogEntryId: String = "",
+    val catalogVersion: Int = 0,
+    val category: String = "",
+    val description: String = "",
+    val prerequisites: List<String> = emptyList(),
+    val mechanicalEffect: String = "",
+    val source: String = "",
+    val ruleReference: String = "",
+    val keywords: List<String> = emptyList(),
+    val repeatable: Boolean = false,
+    val adjustment: Int = 0,
+) {
+    val isCatalogEntry: Boolean get() = catalogEntryId.isNotBlank()
+}
 
 data class Power(
     val id: String = UUID.randomUUID().toString(),
@@ -52,6 +75,16 @@ data class Power(
     val duration: String = "",
     val limit: String = "",
     val effect: String = "",
+    val category: String = "",
+    val prerequisites: List<String> = emptyList(),
+    val activationCondition: String = "",
+    val enhancements: String = "",
+    val deactivationCondition: String = "",
+    val ruleReference: String = "",
+    val sourceType: PowerSourceType = PowerSourceType.MANUAL,
+    val sourceId: String = "",
+    val catalogEntryId: String = "",
+    val catalogVersion: Int = 0,
 )
 
 data class InventoryItem(
@@ -114,6 +147,23 @@ data class PersonalNote(
     val title: String = "",
     val text: String = "",
 )
+
+enum class ModifierSourceType { BASE, ADJUSTMENT, ITEM, TRAIT, RACE, CONDITION, OTHER }
+
+data class ValueModifier(
+    val sourceType: ModifierSourceType,
+    val sourceId: String = "",
+    val label: String,
+    val value: Int,
+)
+
+data class CalculatedValue(
+    val base: Int,
+    val adjustment: Int = 0,
+    val modifiers: List<ValueModifier> = emptyList(),
+) {
+    val total: Int get() = base + adjustment + modifiers.sumOf { it.value }
+}
 
 data class Character(
     val id: String = UUID.randomUUID().toString(),
@@ -182,6 +232,11 @@ data class Character(
     val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment).coerceAtLeast(0)
     val energyMaximum: Int get() = (energyBase + energy.adjustment).coerceAtLeast(0)
 
+    fun lifeCalculation() = CalculatedValue(lifeBase, life.adjustment)
+    fun sanityCalculation() = CalculatedValue(sanityBase, sanity.adjustment)
+    fun arcaneCalculation() = CalculatedValue(arcaneBase, arcane.adjustment)
+    fun energyCalculation() = CalculatedValue(energyBase, energy.adjustment)
+
     fun protectionBase(name: String): Int = when (name) {
         "Geral" -> 10 + equippedGeneralProtection
         "Esquiva" -> protectionTotal("Geral") + attributeValue("AGI") + skillValue("AGI", "Reflexos")
@@ -193,6 +248,11 @@ data class Character(
 
     fun protectionTotal(name: String): Int =
         (protectionBase(name) + (protectionAdjustments[name] ?: 0)).coerceAtLeast(0)
+
+    fun protectionCalculation(name: String) = CalculatedValue(
+        base = protectionBase(name),
+        adjustment = protectionAdjustments[name] ?: 0,
+    )
 
     fun calculatedProtections(): Map<String, Int> = defaultProtectionNames.associateWith(::protectionTotal)
 
@@ -246,30 +306,70 @@ data class Character(
         return inventory.filter { it.id in equippedIds }
     }
 
-    fun acquiredKnowledgeValue(name: String): Int =
-        (learnedKnowledges + arcaneKnowledges + battleTechniques)
+    fun acquiredKnowledgeValue(name: String): Int {
+        val matching = (learnedKnowledges + arcaneKnowledges + battleTechniques)
             .filter { it.name.equals(name, true) }
-            .sumOf { it.value } + equippedBonus(ItemBonusType.ACQUIRED_KNOWLEDGE, name)
+        return matching.sumOf { it.value + it.adjustment } + equippedBonus(ItemBonusType.ACQUIRED_KNOWLEDGE, name)
+    }
 
-    fun attributeTotal(acronym: String): Int =
-        (attributes.firstOrNull { it.acronym == acronym }?.value ?: 0) +
-            equippedBonus(ItemBonusType.ATTRIBUTE, acronym)
+    fun acquiredKnowledgeCalculation(name: String): CalculatedValue {
+        val matching = (learnedKnowledges + arcaneKnowledges + battleTechniques)
+            .filter { it.name.equals(name, true) }
+        return CalculatedValue(
+            base = matching.sumOf { it.value },
+            adjustment = matching.sumOf { it.adjustment },
+            modifiers = equippedModifiers(ItemBonusType.ACQUIRED_KNOWLEDGE, name),
+        )
+    }
+
+    fun attributeTotal(acronym: String): Int = attributeCalculation(acronym).total
+
+    fun attributeCalculation(acronym: String): CalculatedValue {
+        val attribute = attributes.firstOrNull { it.acronym.equals(acronym, true) }
+        return CalculatedValue(
+            base = attribute?.value ?: 0,
+            adjustment = attribute?.modifier ?: 0,
+            modifiers = equippedModifiers(ItemBonusType.ATTRIBUTE, acronym),
+        )
+    }
 
     fun basicKnowledgeTotal(attributeAcronym: String, skillName: String): Int =
-        attributes
-            .firstOrNull { it.acronym == attributeAcronym }
+        basicKnowledgeCalculation(attributeAcronym, skillName).total
+
+    fun basicKnowledgeCalculation(attributeAcronym: String, skillName: String): CalculatedValue {
+        val skill = attributes
+            .firstOrNull { it.acronym.equals(attributeAcronym, true) }
             ?.skills
-            ?.firstOrNull { it.name == skillName }
-            ?.value.orZero() + equippedBonus(ItemBonusType.BASIC_KNOWLEDGE, skillName)
+            ?.firstOrNull { it.name.equals(skillName, true) }
+        return CalculatedValue(
+            base = skill?.value ?: 0,
+            adjustment = skill?.modifier ?: 0,
+            modifiers = equippedModifiers(ItemBonusType.BASIC_KNOWLEDGE, ItemBonus.basicKnowledgeTarget(attributeAcronym, skillName), skillName),
+        )
+    }
 
     private fun attributeValue(acronym: String): Int = attributeTotal(acronym)
 
     private fun skillValue(attributeAcronym: String, skillName: String): Int = basicKnowledgeTotal(attributeAcronym, skillName)
 
-    private fun equippedBonus(type: ItemBonusType, target: String): Int = equippedItems()
-        .flatMap { it.bonuses }
-        .filter { it.type == type && it.target.equals(target, true) }
-        .sumOf { it.value }
+    private fun equippedBonus(type: ItemBonusType, target: String): Int = equippedModifiers(type, target).sumOf { it.value }
+
+    private fun equippedModifiers(type: ItemBonusType, target: String, legacyTarget: String = target): List<ValueModifier> =
+        equippedItems().flatMap { item ->
+            item.bonuses
+                .filter { bonus ->
+                    bonus.type == type &&
+                        (bonus.target.equals(target, true) || bonus.target.equals(legacyTarget, true))
+                }
+                .map { bonus ->
+                    ValueModifier(
+                        sourceType = ModifierSourceType.ITEM,
+                        sourceId = item.id,
+                        label = item.name.ifBlank { "Item sem nome" },
+                        value = bonus.value,
+                    )
+                }
+        }
 }
 
 private fun Int?.orZero() = this ?: 0

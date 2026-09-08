@@ -27,6 +27,17 @@ data class ItemBonus(
     val value: Int = 0,
 ) {
     val creationCost: Int get() = value.coerceAtLeast(0) * type.heritageCost
+    val isComplete: Boolean get() = target.isNotBlank()
+
+    fun displayTarget(): String = when (type) {
+        ItemBonusType.BASIC_KNOWLEDGE -> target.substringAfter(':', target)
+        else -> target
+    }
+
+    companion object {
+        fun basicKnowledgeTarget(attributeAcronym: String, skillName: String): String =
+            "${attributeAcronym.uppercase()}:$skillName"
+    }
 }
 
 enum class ItemQuality(
