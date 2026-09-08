@@ -217,14 +217,15 @@ object ItemCreationRules {
         else -> "CD 25; 15 Progressos; 2 semanas por teste"
     }
 
-    fun standardPrice(cost: Int): Int = PRICE_BY_HERITAGE[cost.coerceIn(0, 30)]
-
-    private val PRICE_BY_HERITAGE = listOf(
-        5, 20, 45, 90, 150, 250, 400, 600, 850, 1_250, 1_700,
-        2_200, 2_800, 3_500, 4_200, 5_000, 6_000, 7_000, 8_200, 9_500,
-        11_000, 13_000, 15_500, 18_000, 21_500, 25_000, 30_000, 36_000,
-        43_000, 51_000, 60_000,
-    )
+    fun standardPrice(cost: Int): Int = when (cost.coerceIn(0, 30)) {
+        0 -> 5; 1 -> 20; 2 -> 45; 3 -> 90; 4 -> 150; 5 -> 250
+        6 -> 400; 7 -> 600; 8 -> 850; 9 -> 1_250; 10 -> 1_700
+        11 -> 2_200; 12 -> 2_800; 13 -> 3_500; 14 -> 4_200; 15 -> 5_000
+        16 -> 6_000; 17 -> 7_000; 18 -> 8_200; 19 -> 9_500; 20 -> 11_000
+        21 -> 13_000; 22 -> 15_500; 23 -> 18_000; 24 -> 21_500; 25 -> 25_000
+        26 -> 30_000; 27 -> 36_000; 28 -> 43_000; 29 -> 51_000
+        else -> 60_000
+    }
 
     private fun qualityEffect(quality: ItemQuality, armor: Boolean): String? = when (quality) {
         ItemQuality.MUNDANE -> if (armor) "Mundana: não concede PL nem possui espaços." else "Mundana: -1 Categoria de Dado e sem espaços."
