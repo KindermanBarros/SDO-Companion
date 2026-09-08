@@ -27,8 +27,11 @@ import com.kinderman.sdo.domain.catalog.EquipmentGlossary
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemBonus
+import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemPart
-import com.kinderman.sdo.domain.model.ItemMaterialPart
+import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.matchesRegion
 import com.kinderman.sdo.domain.model.toInventoryItem
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
@@ -69,11 +72,11 @@ internal fun ItemCatalogDialog(
     onSelect: (InventoryItem) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
-    var pendingOverride by remember { mutableStateOf<CatalogEntry?>(null) }
-    val filtered = remember(entries, query) {
+    val filtered = remember(entries, query, remainingHeritage) {
         val needle = query.trim()
         entries.filter { entry ->
-            needle.isEmpty() || entry.name.contains(needle, true) || entry.group.contains(needle, true) || entry.summary.contains(needle, true)
+            (remainingHeritage == null || entry.creationCost.toIntOrNull() != null) &&
+                (needle.isEmpty() || entry.name.contains(needle, true) || entry.group.contains(needle, true) || entry.summary.contains(needle, true))
         }
     }
     AlertDialog(
@@ -83,20 +86,18 @@ internal fun ItemCatalogDialog(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 remainingHeritage?.let {
                     Text("PONTOS DE HERANÇA RESTANTES // $it / ${ItemCreationRules.HERITAGE_BUDGET}", color = if (it > 0) Acid else Signal)
-                    Text("Itens acima do saldo são bloqueados. Itens # exigem decisão do Historiador.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text("Itens acima do saldo são bloqueados. Itens # não participam da criação com PH.", color = Muted, style = MaterialTheme.typography.bodySmall)
                 }
                 HudTextField("Buscar item", query) { query = it }
                 Column(Modifier.fillMaxWidth().heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
                     filtered.forEach { entry ->
                         val numericCost = entry.creationCost.toIntOrNull()
                         val allowed = remainingHeritage == null || numericCost != null && numericCost <= remainingHeritage
-                        val overBudget = remainingHeritage != null && numericCost != null && numericCost > remainingHeritage
+                        val overBudget = remainingHeritage != null && (numericCost == null || numericCost > remainingHeritage)
                         Column(
                             Modifier.fillMaxWidth().clickable(enabled = !overBudget) {
                                 if (allowed) {
                                     onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
-                                } else {
-                                    pendingOverride = entry
                                 }
                             }.padding(vertical = 9.dp),
                             verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -121,15 +122,6 @@ internal fun ItemCatalogDialog(
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
-    pendingOverride?.let { entry ->
-        AssistedItemValidationDialog(
-            message = "Este item tem custo # e exige uma decisão do Historiador. Deseja adicioná-lo mesmo assim?",
-            onDismiss = { pendingOverride = null },
-        ) {
-            onSelect(entry.toInventoryItem(initialCreation = true))
-            pendingOverride = null
-        }
-    }
 }
 
 @Composable
@@ -140,27 +132,33 @@ internal fun ItemBuilderDialog(
 ) {
     var weapon by remember { mutableStateOf(true) }
     var base by remember { mutableStateOf(ItemCreationRules.weaponBases.first()) }
-    var parts by remember {
-        mutableStateOf(listOf(ItemMaterialPart("Parte principal", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" })))
-    }
+    var material by remember { mutableStateOf(ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }) }
     var modifications by remember { mutableStateOf(emptyList<ItemPart>()) }
     var gemSlots by remember { mutableIntStateOf(0) }
     var technologySlots by remember { mutableIntStateOf(0) }
     var customName by remember { mutableStateOf("") }
+    var quality by remember { mutableStateOf(ItemQuality.COMMON) }
+    var bonuses by remember { mutableStateOf(emptyList<ItemBonus>()) }
+    var gems by remember { mutableStateOf(emptyList<ItemPart>()) }
+    var manualPrice by remember { mutableStateOf("") }
     var picker by remember { mutableStateOf<String?>(null) }
-    var materialPartIndex by remember { mutableIntStateOf(-1) }
-    var confirmOverride by remember { mutableStateOf(false) }
     val availableBases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
-    val availableMaterials = when {
+    val allMaterials = when {
         weapon -> ItemCreationRules.weaponMaterials
         base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
         else -> ItemCreationRules.armorMaterials
     }
-    val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
-    val built = ItemCreationRules.build(base, parts, modifications, gemSlots, technologySlots, customName)
     val initialCreation = remainingHeritage != null
+    val availableMaterials = if (initialCreation) allMaterials.filter { it.creationCost != null } else allMaterials
+    val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
+    val built = ItemCreationRules.build(
+        base, material, modifications, gemSlots, technologySlots, customName, quality, bonuses,
+        components = gems,
+        priceOverride = manualPrice.toIntOrNull().takeIf { !initialCreation },
+    )
     val allowed = remainingHeritage == null || built.creationCost != null && built.creationCost <= remainingHeritage
-    val overBudget = remainingHeritage != null && built.creationCost != null && built.creationCost > remainingHeritage
+    val overBudget = remainingHeritage != null && (built.creationCost == null || built.creationCost > remainingHeritage)
+    val missingHistorianPrice = !initialCreation && built.creationCost == null && manualPrice.isBlank()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -175,39 +173,25 @@ internal fun ItemBuilderDialog(
                     TextButton(onClick = {
                         weapon = true
                         base = ItemCreationRules.weaponBases.first()
-                        parts = listOf(ItemMaterialPart("Parte principal", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }))
+                        material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
                     }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
                     TextButton(onClick = {
                         weapon = false
                         base = ItemCreationRules.armorBases.first()
-                        parts = listOf(ItemMaterialPart("Parte principal", ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }))
+                        material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
                     }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
                 }
                 HudTextField("Nome personalizado (opcional)", customName) { customName = it }
                 TextButton(onClick = { picker = "base" }, modifier = Modifier.fillMaxWidth()) { Text("TIPO // ${base.name}") }
-                Text("PARTES E MATERIAIS", color = Acid, style = MaterialTheme.typography.labelLarge)
-                parts.forEachIndexed { index, part ->
-                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        HudTextField("Nome da parte ${index + 1}", part.name) { value ->
-                            parts = parts.toMutableList().also { it[index] = part.copy(name = value) }
-                        }
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = {
-                                materialPartIndex = index
-                                picker = "material"
-                            }) { Text("MATERIAL // ${part.material.name}") }
-                            if (parts.size > 1) TextButton(onClick = {
-                                parts = parts.toMutableList().also { it.removeAt(index) }
-                            }) { Text("REMOVER", color = Signal) }
-                        }
-                    }
-                }
-                TextButton(onClick = {
-                    val defaultMaterial = availableMaterials.firstOrNull() ?: return@TextButton
-                    parts = parts + ItemMaterialPart("Parte ${parts.size + 1}", defaultMaterial)
-                }, modifier = Modifier.fillMaxWidth()) { Text("+ ADICIONAR PARTE") }
+                Text("MATERIAL PREDOMINANTE", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("Partes, camadas e ligas compatíveis pertencem à mesma composição; o material só é contabilizado uma vez.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
+                TextButton(
+                    onClick = { quality = ItemQuality.entries[(quality.ordinal + 1) % ItemQuality.entries.size] },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("QUALIDADE // ${quality.label}") }
                 Text("MODIFICAÇÕES", color = Acid, style = MaterialTheme.typography.labelLarge)
                 availableModifications.forEach { modification ->
                     val checked = modification in modifications
@@ -228,26 +212,74 @@ internal fun ItemBuilderDialog(
                     }
                 }
                 TwoFields(
-                    { IntegerField(if (initialCreation) "Espaços de Gema (1 PH)" else "Espaços de Gema", gemSlots, true, it) { value -> gemSlots = value.coerceIn(0, 5) } },
+                    { IntegerField(if (initialCreation) "Espaços de Gema (1 PH)" else "Espaços de Gema", gemSlots, true, it) { value -> gemSlots = value.coerceIn(gems.size, 5) } },
                     { IntegerField(if (initialCreation) "Espaços de Tecnologia (2 PH)" else "Espaços de Tecnologia", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
                 )
+                Text("GEMAS INSTALADAS", color = Acid, style = MaterialTheme.typography.labelLarge)
+                ItemCreationRules.gemComponents.forEach { gem ->
+                    val checked = gem in gems
+                    Row(Modifier.fillMaxWidth().clickable(enabled = quality != ItemQuality.MUNDANE) {
+                        gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
+                        gemSlots = gemSlots.coerceAtLeast(gems.size)
+                    }) {
+                        Checkbox(checked, enabled = quality != ItemQuality.MUNDANE, onCheckedChange = {
+                            gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
+                            gemSlots = gemSlots.coerceAtLeast(gems.size)
+                        })
+                        Column(Modifier.padding(top = 8.dp)) {
+                            Text("${gem.name} // ${gem.creationCost} PH", color = Ice)
+                            Text(gem.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("Bônus positivos custam PH; penalidades não concedem desconto.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                bonuses.forEachIndexed { index, bonus ->
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            TextButton(onClick = {
+                                val nextType = ItemBonusType.entries[(bonus.type.ordinal + 1) % ItemBonusType.entries.size]
+                                bonuses = bonuses.replace(index, bonus.copy(type = nextType, target = defaultBonusTarget(nextType)))
+                            }) { Text(bonus.type.label.uppercase()) }
+                            TextButton(onClick = { bonuses = bonuses.filterIndexed { itemIndex, _ -> itemIndex != index } }) { Text("REMOVER", color = Signal) }
+                        }
+                        if (bonus.type == ItemBonusType.ACQUIRED_KNOWLEDGE) {
+                            HudTextField("Conhecimento adquirido", bonus.target) { value -> bonuses = bonuses.replace(index, bonus.copy(target = value)) }
+                        } else {
+                            TextButton(onClick = {
+                                val options = bonusTargets(bonus.type)
+                                val next = (options.indexOf(bonus.target).coerceAtLeast(0) + 1) % options.size
+                                bonuses = bonuses.replace(index, bonus.copy(target = options[next]))
+                            }, modifier = Modifier.fillMaxWidth()) { Text("ALVO // ${bonus.target}") }
+                        }
+                        IntegerField("Valor (-5 a +5)", bonus.value, true) { value -> bonuses = bonuses.replace(index, bonus.copy(value = value.coerceIn(-5, 5))) }
+                    }
+                }
+                TextButton(onClick = { bonuses = bonuses + ItemBonus(target = defaultBonusTarget(ItemBonusType.ATTRIBUTE)) }, modifier = Modifier.fillMaxWidth()) {
+                    Text("+ ADICIONAR BÔNUS")
+                }
                 if (initialCreation) {
                     Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) Acid else Signal, style = MaterialTheme.typography.titleMedium)
+                } else {
+                    HudTextField("Preço final em E$ (Historiador pode ajustar)", manualPrice) { manualPrice = it.filter(Char::isDigit) }
                 }
-                Text("PREÇO COMUM // ${built.price} E$", color = Ice)
+                Text("PREÇO // ${built.price} E$", color = Ice)
+                if (missingHistorianPrice) Text("Materiais # exigem que jogador e Historiador definam um preço.", color = Signal)
+                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = Acid)
                 Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = Muted)
                 Text(built.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
                 if (initialCreation && !allowed) Text(
-                    if (built.creationCost == null) "Item # exige permissão do Historiador." else "Custo acima dos Pontos de Herança restantes.",
+                    if (built.creationCost == null) "Itens # não podem ser criados com PH." else "Custo acima dos Pontos de Herança restantes.",
                     color = Signal,
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                if (allowed) onAdd(built.toInventoryItem(initialCreation = initialCreation)) else confirmOverride = true
-            }, enabled = !overBudget) {
+                if (allowed) onAdd(built.toInventoryItem(initialCreation = initialCreation))
+            }, enabled = !overBudget && !missingHistorianPrice) {
                 Text(when {
+                    missingHistorianPrice -> "DEFINIR PREÇO"
                     allowed -> "ADICIONAR"
                     overBudget -> "SALDO INSUFICIENTE"
                     else -> "REVISAR E ADICIONAR"
@@ -266,35 +298,13 @@ internal fun ItemBuilderDialog(
         if (picker == "base") {
             base = part
             if (!weapon && part.id == "gibao") {
-                val organic = ItemCreationRules.armorMaterials.first { it.id == "organico" }
-                parts = parts.map { it.copy(material = organic) }
+                material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
             }
-        } else if (materialPartIndex in parts.indices) {
-            parts = parts.toMutableList().also { list ->
-                list[materialPartIndex] = list[materialPartIndex].copy(material = part)
-            }
+        } else {
+            material = part
         }
         picker = null
-        materialPartIndex = -1
     }
-    if (confirmOverride) AssistedItemValidationDialog(
-        message = "A composição contém custo # e exige uma decisão do Historiador. Deseja adicioná-la mesmo assim?",
-        onDismiss = { confirmOverride = false },
-    ) {
-        onAdd(built.toInventoryItem(initialCreation = true))
-        confirmOverride = false
-    }
-}
-
-@Composable
-private fun AssistedItemValidationDialog(message: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("VALIDAÇÃO ASSISTIDA") },
-        text = { Text(message, color = Muted) },
-        confirmButton = { TextButton(onClick = onConfirm) { Text("ADICIONAR MESMO ASSIM", color = Signal) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("VOLTAR") } },
-    )
 }
 
 @Composable
@@ -314,7 +324,13 @@ private fun ItemPartPickerDialog(
                     Column(Modifier.fillMaxWidth().clickable { onSelect(part) }.padding(vertical = 10.dp)) {
                         Text(part.name, color = Ice)
                         Text(
-                            if (showHeritageCost) "CRIAÇÃO ${part.creationCost ?: "#"} PH // ${part.price} E$" else "${part.price} E$",
+                            if (showHeritageCost) {
+                                "CRIAÇÃO ${part.creationCost ?: "#"} PH // ${part.price} E$"
+                            } else if (part.creationCost == null) {
+                                "CUSTO # // PREÇO MANUAL"
+                            } else {
+                                "${part.price} E$"
+                            },
                             color = Acid,
                             style = MaterialTheme.typography.labelSmall,
                         )
@@ -339,6 +355,18 @@ private fun toggleModification(current: List<ItemPart>, item: ItemPart): List<It
     }
     if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
     return next
+}
+
+private fun defaultBonusTarget(type: ItemBonusType): String = bonusTargets(type).first()
+
+private fun bonusTargets(type: ItemBonusType): List<String> = when (type) {
+    ItemBonusType.ATTRIBUTE -> listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR")
+    ItemBonusType.BASIC_KNOWLEDGE -> listOf(
+        "Atletismo", "Brutalidade", "Luta", "Arremesso", "Energia", "Vitalidade", "Tolerância", "Regeneração",
+        "Furtividade", "Reflexos", "Movimento", "Pontaria", "Arcano", "Sentidos", "Controle", "Recuperação",
+        "Sanidade", "Intuição", "Religião", "Raciocínio", "Política", "Lábia", "Enganação", "Intimidação",
+    )
+    ItemBonusType.ACQUIRED_KNOWLEDGE -> listOf("")
 }
 
 @Composable
@@ -395,14 +423,14 @@ internal fun EquipmentPickerDialog(
                 if (inventory.isEmpty()) Text("Nenhum item pronto no inventário.", color = Muted)
                 orderedInventory.forEach { item ->
                     val checked = item.id in selected
-                    val compatible = item.matchesEquipmentRegion(regionName)
+                    val compatible = item.matchesRegion(regionName)
                     Row(
-                        Modifier.fillMaxWidth().clickable {
-                            selected = selected.toggle(item.id)
+                        Modifier.fillMaxWidth().clickable(enabled = compatible) {
+                            selected = toggleEquipment(selected, item, inventory)
                         }.padding(vertical = 6.dp),
                     ) {
-                        Checkbox(checked, onCheckedChange = { value ->
-                            selected = if (value) selected + item.id else selected - item.id
+                        Checkbox(checked, enabled = compatible, onCheckedChange = { value ->
+                            selected = if (value) toggleEquipment(selected, item, inventory) else selected - item.id
                         })
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(item.name.ifBlank { "Item sem nome" }, color = Ice)
@@ -423,23 +451,20 @@ internal fun EquipmentPickerDialog(
 }
 
 internal fun InventoryItem.matchesEquipmentRegion(bodyRegionName: String): Boolean {
-    if (region.isBlank()) return false
-    val itemRegion = region.normalizedRegion()
-    val bodyRegion = bodyRegionName.normalizedRegion()
-    return when {
-        bodyRegion.startsWith("pe ") || bodyRegion == "pe" -> "pe" in itemRegion
-        bodyRegion.startsWith("mao ") || bodyRegion == "mao" -> "mao" in itemRegion
-        bodyRegion.startsWith("braco ") || bodyRegion == "braco" -> "braco" in itemRegion
-        bodyRegion.startsWith("perna ") || bodyRegion == "perna" -> "perna" in itemRegion
-        else -> bodyRegion in itemRegion || itemRegion in bodyRegion
-    }
+    return matchesRegion(bodyRegionName)
 }
 
-private fun String.normalizedRegion(): String = lowercase()
-    .replace('á', 'a').replace('à', 'a').replace('â', 'a').replace('ã', 'a')
-    .replace('é', 'e').replace('ê', 'e')
-    .replace('í', 'i').replace('ó', 'o').replace('ô', 'o').replace('õ', 'o')
-    .replace('ú', 'u').replace('ç', 'c')
-    .replace(Regex("\\b(pes|maos|bracos|pernas)\\b")) { match -> match.value.dropLast(1) }
+private fun toggleEquipment(selected: Set<String>, item: InventoryItem, inventory: List<InventoryItem>): Set<String> {
+    if (item.id in selected) return selected - item.id
+    if (!item.usesExclusiveRegionSlot()) return selected + item.id
+    val conflictingIds = inventory.filter { it.exclusiveSlot() == item.exclusiveSlot() }.mapTo(hashSetOf()) { it.id }
+    return (selected - conflictingIds) + item.id
+}
 
-private fun Set<String>.toggle(value: String): Set<String> = if (value in this) this - value else this + value
+private fun InventoryItem.usesExclusiveRegionSlot(): Boolean = exclusiveSlot().isNotBlank()
+
+private fun InventoryItem.exclusiveSlot(): String = when {
+    category.equals("Armadura", true) || (category.isBlank() && effect.contains("Categoria: Armadura", true)) -> "armadura"
+    category.equals("Acessório", true) || (category.isBlank() && effect.contains("Categoria: Acessório", true)) -> "acessório"
+    else -> ""
+}

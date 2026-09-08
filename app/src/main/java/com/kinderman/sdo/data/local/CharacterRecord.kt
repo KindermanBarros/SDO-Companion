@@ -21,6 +21,7 @@ import com.kinderman.sdo.domain.model.defaultBodyRegions
 import com.kinderman.sdo.domain.model.defaultOrgans
 import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
 import com.kinderman.sdo.domain.model.defaultProtections
+import com.kinderman.sdo.domain.model.normalizeBodyRegions
 
 @Entity(tableName = "characters")
 data class CharacterRecord(
@@ -126,7 +127,7 @@ fun CharacterRecord.toDomain() = Character(
     powers = powers,
     inventory = inventory,
     containerCapacity = containerCapacity,
-    bodyRegions = bodyRegions.ifEmpty { defaultBodyRegions() },
+    bodyRegions = normalizeBodyRegions(bodyRegions),
     agilityLimit = agilityLimit,
     organs = organs.ifEmpty { defaultOrgans() },
     mysticAbilities = mysticAbilities,

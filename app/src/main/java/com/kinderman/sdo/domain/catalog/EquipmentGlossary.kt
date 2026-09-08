@@ -23,8 +23,9 @@ object EquipmentGlossary {
         GlossaryEntry("Bobina", "Tecnologia", "Reserva operacional de uma arma de Tesla. O número indicado registra sua capacidade; gastos e recarga seguem o procedimento da arma."),
         GlossaryEntry("Passo de dado", "Dados", "É a quantidade de dados lançados. Em 1d8, o passo é 1; aumentar um passo transforma 1d8 em 2d8."),
         GlossaryEntry("Categoria de dado", "Dados", "É o tipo ou número de faces do dado. Em 1d8, a categoria é d8; aumentar uma categoria segue a escala de dados adotada pela regra."),
-        GlossaryEntry("Qualidade", "Equipamentos", "Classifica o acabamento do equipamento. O construtor gera Qualidade Comum por padrão, salvo quando uma regra, modificação ou criação especial declarar outra qualidade."),
-        GlossaryEntry("Durabilidade", "Equipamentos", "É registrada como atual/máxima. Na criação parte a parte, a Durabilidade máxima do item é a menor Durabilidade entre os materiais usados; Qualidade e Durabilidade são informações diferentes."),
+        GlossaryEntry("Qualidade", "Equipamentos", "Classifica acabamento e poder em Mundana, Comum, Aprimorada, Icônica, Obra-Prima, Artefato ou Anciã. A qualidade altera PH, preço, proteções, espaços e efeitos conforme a categoria."),
+        GlossaryEntry("Durabilidade", "Equipamentos", "É registrada como atual/máxima e deriva do único material predominante. Qualidade e Durabilidade são informações diferentes."),
+        GlossaryEntry("Material predominante", "Equipamentos", "Cada arma ou armadura possui um único material predominante. Partes, camadas e ligas sob a mesma família não repetem custo, PG, PL ou Durabilidade."),
     )
 
     val entries: List<GlossaryEntry> by lazy {

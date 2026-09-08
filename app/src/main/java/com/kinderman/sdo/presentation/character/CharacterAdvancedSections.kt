@@ -10,6 +10,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.initialCreationCost
+import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.catalog.withPathPreset
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -119,13 +121,21 @@ private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: ()
 internal fun InventorySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
     var dialog by remember { mutableStateOf<String?>(null) }
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
-    val remainingHeritage = (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0)
+    val hasInitialShopping = character.inventory.any { it.participatesInInitialCreation() }
+    val remainingHeritage = when {
+        hasInitialShopping || character.inventory.isEmpty() -> (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0)
+        else -> 0 // Personagens anteriores ao fluxo de PH permanecem válidos.
+    }
+    LaunchedEffect(remainingHeritage) {
+        if (remainingHeritage > 0 && dialog == null) dialog = "initial"
+    }
     TechPanel {
         SectionHeader("09", "Inventário")
         Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) Signal else AcidCyan, style = MaterialTheme.typography.titleLarge)
         Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = Muted, style = MaterialTheme.typography.bodySmall)
         if (remainingHeritage > 0) {
-            Text("CRIAÇÃO INICIAL // $remainingHeritage / 20 PH RESTANTES", color = Acid, style = MaterialTheme.typography.labelLarge)
+            Text("CRIAÇÃO INICIAL OBRIGATÓRIA // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = Acid, style = MaterialTheme.typography.labelLarge)
+            Text("Finalize os PH para liberar o catálogo comum, o construtor livre e itens manuais.", color = Muted, style = MaterialTheme.typography.bodySmall)
         }
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
         character.inventory.forEachIndexed { index, item ->
@@ -138,9 +148,11 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         if (remainingHeritage > 0) {
             AddButton("Loja inicial // comprar ou construir com PH", enabled) { dialog = "initial" }
         }
-        AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
-        AddButton("Construtor de item // fora da criação", enabled) { dialog = "builder" }
-        AddButton("Adicionar item manualmente", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
+        if (remainingHeritage == 0) {
+            AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
+            AddButton("Construtor de item // criação durante o jogo", enabled) { dialog = "builder" }
+            AddButton("Adicionar objeto narrativo sem valores mecânicos", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
+        }
     }
     when (dialog) {
         "glossary" -> EquipmentGlossaryDialog { dialog = null }
@@ -182,13 +194,13 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             { HudTextField("Estado E/R/M/G", item.state, it, enabled = enabled) { value -> onValue(item.copy(state = value.uppercase().take(1))) } },
             { IntegerField("Carga", item.load, enabled, it) { value -> onValue(item.copy(load = value.coerceAtLeast(0))) } },
         )
-        TwoFields(
-            { HudTextField("Durabilidade", item.durability, it, enabled = enabled) { value -> onValue(item.copy(durability = value)) } },
-            { HudTextField("Região", item.region, it, enabled = enabled) { value -> onValue(item.copy(region = value)) } },
-        )
-        TwoFields(
-            { IntegerField("PG", item.pg, enabled, it) { value -> onValue(item.copy(pg = value.coerceAtLeast(0))) } },
-            { IntegerField("PL", item.pl, enabled, it) { value -> onValue(item.copy(pl = value.coerceAtLeast(0))) } },
+        HudTextField("Durabilidade", item.durability, enabled = enabled) { value -> onValue(item.copy(durability = value)) }
+        Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.uppercase()}", color = Acid, style = MaterialTheme.typography.labelSmall)
+        Text("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = Ice)
+        if (item.bonuses.isNotEmpty()) Text(
+            "BÔNUS // " + item.bonuses.joinToString { "${if (it.value > 0) "+" else ""}${it.value} ${it.target}" },
+            color = Acid,
+            style = MaterialTheme.typography.bodySmall,
         )
         HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { onValue(item.copy(effect = it)) }
     }
@@ -198,7 +210,8 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = Signal) {
         SectionHeader("10", "Corpo e armadura")
-        HudTextField("Limitação de Agilidade", character.agilityLimit, enabled = enabled) { onChange(character.copy(agilityLimit = it)) }
+        Text("LA DOS EQUIPAMENTOS // ${character.equippedAgilityLimit ?: "—"}", color = Acid)
+        HudTextField("Ajuste excepcional de LA", character.agilityLimit, enabled = enabled) { onChange(character.copy(agilityLimit = it)) }
     }
 }
 

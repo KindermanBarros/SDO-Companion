@@ -102,7 +102,13 @@ class CharacterRecordFirestoreContractTest {
     @Test
     fun convertersPreserveEquipmentProtectionAndBodyAssignments() {
         val converters = CharacterConverters()
-        val item = com.kinderman.sdo.domain.model.InventoryItem(id = "armor-1", pg = 4, pl = 3)
+        val item = com.kinderman.sdo.domain.model.InventoryItem(
+            id = "armor-1", pg = 4, pl = 3, category = "Armadura", agilityLimit = 3,
+            quality = "Icônica",
+            bonuses = listOf(com.kinderman.sdo.domain.model.ItemBonus(
+                com.kinderman.sdo.domain.model.ItemBonusType.ATTRIBUTE, "VIG", 1,
+            )),
+        )
         val region = com.kinderman.sdo.domain.model.BodyRegion(name = "Braço", equippedItemIds = listOf(item.id))
 
         assertEquals(item, converters.stringToInventory(converters.inventoryToString(listOf(item))).single())

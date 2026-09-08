@@ -12,12 +12,36 @@ data class ItemPart(
     val effect: String = "",
     val pg: Int = 0,
     val pl: Int = 0,
+    val agilityLimit: Int? = null,
 )
 
-data class ItemMaterialPart(
-    val name: String,
-    val material: ItemPart,
-)
+enum class ItemBonusType(val label: String, val heritageCost: Int) {
+    ATTRIBUTE("Atributo", 3),
+    BASIC_KNOWLEDGE("Conhecimento básico", 2),
+    ACQUIRED_KNOWLEDGE("Conhecimento adquirido", 2),
+}
+
+data class ItemBonus(
+    val type: ItemBonusType = ItemBonusType.ATTRIBUTE,
+    val target: String = "",
+    val value: Int = 0,
+) {
+    val creationCost: Int get() = value.coerceAtLeast(0) * type.heritageCost
+}
+
+enum class ItemQuality(
+    val label: String,
+    val creationAdjustment: Int,
+    val priceMultiplier: Double,
+) {
+    MUNDANE("Mundana", -1, 0.25),
+    COMMON("Comum", 0, 1.0),
+    IMPROVED("Aprimorada", 3, 1.5),
+    ICONIC("Icônica", 5, 2.0),
+    MASTERPIECE("Obra-Prima", 8, 5.0),
+    ARTIFACT("Artefato", 15, 100.0),
+    ANCIENT("Anciã", 25, 10_000.0),
+}
 
 data class BuiltItem(
     val name: String,
@@ -30,6 +54,9 @@ data class BuiltItem(
     val effect: String,
     val pg: Int = 0,
     val pl: Int = 0,
+    val agilityLimit: Int? = null,
+    val quality: ItemQuality = ItemQuality.COMMON,
+    val bonuses: List<ItemBonus> = emptyList(),
 ) {
     fun toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
         name = name,
@@ -44,6 +71,10 @@ data class BuiltItem(
         ).joinToString("\n"),
         pg = pg,
         pl = pl,
+        category = category,
+        agilityLimit = agilityLimit,
+        quality = quality.label,
+        bonuses = bonuses,
     )
 }
 
@@ -60,6 +91,8 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false) = InventoryIt
     ).joinToString("\n"),
     pg = protectionValue("PG"),
     pl = protectionValue("PL"),
+    category = group,
+    agilityLimit = Regex("LA\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull(),
 )
 
 private fun CatalogEntry.protectionValue(label: String): Int =
@@ -67,5 +100,8 @@ private fun CatalogEntry.protectionValue(label: String): Int =
 
 fun InventoryItem.initialCreationCost(): Int =
     Regex("\\[Criação inicial: (\\d+) PH]").find(effect)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+
+fun InventoryItem.participatesInInitialCreation(): Boolean =
+    Regex("\\[Criação inicial: \\d+ PH]").containsMatchIn(effect)
 
 private fun initialCreationMarker(cost: Int) = "[Criação inicial: $cost PH]"
