@@ -2,6 +2,7 @@ package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CampaignAlertSettingsRecord
 import com.kinderman.sdo.data.local.CampaignDeliveryRecord
@@ -129,8 +130,20 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
         val library = store.collection(LIBRARY)
         val deliveries = store.collection(DELIVERIES)
         dao.dirtyOperations().filter { it.actorId == session.uid }.forEach { local ->
-            val remote = operations.document(local.id)
-            if (!remote.get().await().exists()) remote.set(local.copy(dirty = false), SetOptions.merge()).await()
+            // Audit entries are immutable. Reading a missing document first cannot be authorized
+            // by rules that inspect resource.data, so create directly and treat an existing
+            // idempotency key as an already completed retry.
+            val reference = operations.document(local.id)
+            try {
+                reference.set(local.copy(dirty = false)).await()
+            } catch (error: FirebaseFirestoreException) {
+                if (error.code != FirebaseFirestoreException.Code.PERMISSION_DENIED) throw error
+                val existing = reference.get().await()
+                val sameOperation = existing.exists() &&
+                    existing.getString("actorId") == local.actorId &&
+                    existing.getString("idempotencyKey") == local.idempotencyKey
+                if (!sameOperation) throw error
+            }
             dao.markOperationSynced(local.id, local.createdAt)
         }
         dao.dirtyLibrary().filter { it.campaignId in manageableCampaignIds }.forEach { local ->

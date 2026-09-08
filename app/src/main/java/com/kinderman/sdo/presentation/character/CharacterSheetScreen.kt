@@ -74,7 +74,8 @@ fun CharacterSheetScreen(
     var current by remember(character.id, character.updatedAt) { mutableStateOf(character) }
     var confirmDelete by remember { mutableStateOf(false) }
     val editable = !readOnly && CharacterAccessPolicy.canEdit(session, current, isCampaignHistorian)
-    val canDelete = !readOnly && CharacterAccessPolicy.canDelete(session, current, isCampaignHistorian)
+    // Ownership survives campaign archive/locks: the owner can always remove their own sheet.
+    val canDelete = CharacterAccessPolicy.canDelete(session, current, isCampaignHistorian)
     val canChangePlayerLock = !readOnly &&
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
 
@@ -101,12 +102,12 @@ fun CharacterSheetScreen(
                             Text(current.name.uppercase(), style = MaterialTheme.typography.titleMedium)
                             Text(
                                 when {
-                                    readOnly -> "CAMPAIGN_ARCHIVE // READ_ONLY"
-                                    session.isAdmin -> "ADMIN_OVERRIDE"
-                                    isCampaignHistorian -> "HISTORIAN_ACCESS"
-                                    current.lockType == CharacterLock.HISTORIAN -> "PLAYER_FILE // HISTORIAN_LOCK"
-                                    current.lockType == CharacterLock.PLAYER -> "PLAYER_FILE // PERSONAL_LOCK"
-                                    else -> "PLAYER_FILE // EDIT"
+                                    readOnly -> "Campanha arquivada · somente leitura"
+                                    session.isAdmin -> "Acesso administrativo"
+                                    isCampaignHistorian -> "Acesso da Mestre"
+                                    current.lockType == CharacterLock.HISTORIAN -> "Ficha bloqueada pela Mestre"
+                                    current.lockType == CharacterLock.PLAYER -> "Ficha com bloqueio pessoal"
+                                    else -> "Ficha editável"
                                 },
                                 color = if (readOnly || current.isLocked) Signal else Acid,
                                 style = MaterialTheme.typography.labelSmall,
@@ -138,7 +139,11 @@ fun CharacterSheetScreen(
                         if (canDelete) IconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = Signal) }
                         if (editable) IconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = Acid) }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Void, titleContentColor = Ice, navigationIconContentColor = Ice),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
+                    ),
                 )
             },
         ) { padding ->
@@ -176,7 +181,7 @@ internal fun SheetHero(character: Character, session: UserSession) {
         Text("ARQUIVO", color = Acid, style = MaterialTheme.typography.labelLarge)
         Text(
             character.name.uppercase(),
-            color = Ice,
+            color = MaterialTheme.colorScheme.onSurface,
             fontFamily = TechInterfaceFont,
             fontWeight = FontWeight.SemiBold,
             style = MaterialTheme.typography.titleLarge,
@@ -188,11 +193,11 @@ internal fun SheetHero(character: Character, session: UserSession) {
                 Icon(if (character.isLocked) Icons.Default.Lock else Icons.Default.CloudDone, null, tint = if (character.isLocked) Signal else AcidCyan)
                 Text(
                     when (character.lockType) {
-                        CharacterLock.HISTORIAN -> "EXCLUSÃO: SOMENTE HISTORIADOR"
-                        CharacterLock.PLAYER -> "EXCLUSÃO: BLOQUEIO PESSOAL"
-                        CharacterLock.NONE -> "CACHE PROTEGIDO"
+                        CharacterLock.HISTORIAN -> "Edição bloqueada pela Mestre"
+                        CharacterLock.PLAYER -> "Edição bloqueada pelo jogador"
+                        CharacterLock.NONE -> "Alterações salvas neste aparelho"
                     },
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall,
                 )
             }

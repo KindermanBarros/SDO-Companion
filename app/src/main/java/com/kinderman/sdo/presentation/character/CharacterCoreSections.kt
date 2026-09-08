@@ -53,8 +53,8 @@ internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (
     TechPanel {
         SectionHeader("01", "Identidade")
         HudTextField("Nome", character.name, enabled = enabled) { onChange(character.copy(name = it)) }
-        Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = Ice)
-        Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = Muted)
+        Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = MaterialTheme.colorScheme.onSurface)
+        Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         AddButton("Selecionar raça, sub-raça e poderes", enabled) { selectingRace = true }
         HudTextField("Ocupação", character.occupation, enabled = enabled) { onChange(character.copy(occupation = it)) }
         TwoFields(
@@ -131,14 +131,14 @@ private fun CalculatedResourceEditor(
     onValue: (ResourceValue) -> Unit,
 ) {
     Column(
-        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(Carbon).padding(10.dp),
+        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, color = Ice, style = MaterialTheme.typography.labelLarge)
+            Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
             Text("MÁXIMO $maximum", color = accent, style = MaterialTheme.typography.titleLarge)
         }
-        Text("CÁLCULO // $formula = $base", color = LabelFunctional, style = MaterialTheme.typography.labelSmall)
+        Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         IntegerField("Atual", resource.current, enabled) { value ->
             onValue(resource.copy(current = value.coerceAtLeast(0)))
         }
@@ -176,10 +176,10 @@ private fun CalculatedResourceEditor(
 @Composable
 private fun ManualResourceEditor(label: String, resource: ResourceValue, accent: Color, enabled: Boolean, onValue: (ResourceValue) -> Unit) {
     Column(
-        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(Carbon).padding(10.dp),
+        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(label, color = Ice, style = MaterialTheme.typography.labelLarge)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         TwoFields(
             { IntegerField("Atual", resource.current, enabled, it) { value -> onValue(resource.copy(current = value)) } },
             { IntegerField("Máximo", resource.maximum, enabled, it) { value -> onValue(resource.copy(maximum = value.coerceAtLeast(0))) } },
@@ -221,7 +221,7 @@ internal fun AttributeSection(character: Character, enabled: Boolean, onChange: 
 
 @Composable
 private fun AttributeEditor(character: Character, attribute: AttributeValue, enabled: Boolean, onValue: (AttributeValue) -> Unit) {
-    Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = Ice, style = MaterialTheme.typography.titleLarge)
+    Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
     TwoFields(
         { IntegerField("Valor", attribute.value, enabled, it) { value -> onValue(attribute.copy(value = value)) } },
         { IntegerField("Modificador", attribute.modifier, enabled, it) { value -> onValue(attribute.copy(modifier = value)) } },
@@ -261,7 +261,7 @@ private fun KnowledgeList(
 ) {
     Text(title.uppercase(), color = Acid, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
-        Column(Modifier.fillMaxWidth().background(Carbon).padding(8.dp)) {
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp)) {
             Row(Modifier.fillMaxWidth()) {
                 Text("REG.${(index + 1).toString().padStart(2, '0')}", color = LabelFunctional, modifier = Modifier.weight(1f))
                 RemoveButton(enabled, "Remover conhecimento") { onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index }) }
@@ -323,12 +323,12 @@ private fun ProtectionEditor(
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, AcidCyan, CutCornerShape(topEnd = 12.dp))
-            .background(Carbon)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(name.uppercase(), color = Ice, style = MaterialTheme.typography.labelLarge)
+            Text(name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
             Text("TOTAL $total", color = AcidCyan, style = MaterialTheme.typography.titleLarge)
         }
         Text("CÁLCULO // $formula = $base", color = LabelFunctional, style = MaterialTheme.typography.labelSmall)

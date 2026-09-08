@@ -19,10 +19,10 @@ class CharacterAccessPolicyTest {
         assertTrue(CharacterAccessPolicy.canDelete(player, character))
     }
 
-    @Test fun lockedOwnerCanEditButCannotDelete() {
+    @Test fun lockedOwnerCanEditAndDeleteOwnCharacter() {
         val character = Character(ownerId = player.uid, lockType = CharacterLock.PLAYER)
         assertTrue(CharacterAccessPolicy.canEdit(player, character))
-        assertFalse(CharacterAccessPolicy.canDelete(player, character))
+        assertTrue(CharacterAccessPolicy.canDelete(player, character))
         assertTrue(CharacterAccessPolicy.canChangePlayerLock(player, character))
     }
 
@@ -52,7 +52,7 @@ class CharacterAccessPolicyTest {
         val character = Character(ownerId = otherPlayer.uid, campaignId = "campaign")
         assertTrue(CharacterAccessPolicy.canRead(player, character, isCampaignHistorian = true))
         assertTrue(CharacterAccessPolicy.canEdit(player, character, isCampaignHistorian = true))
-        assertTrue(CharacterAccessPolicy.canDelete(player, character, isCampaignHistorian = true))
+        assertFalse(CharacterAccessPolicy.canDelete(player, character, isCampaignHistorian = true))
         assertTrue(CharacterAccessPolicy.canChangeHistorianLock(player, isCampaignHistorian = true))
         assertFalse(CharacterAccessPolicy.canTransferOwnership(player, isCampaignResponsible = false))
         assertTrue(CharacterAccessPolicy.canTransferOwnership(player, isCampaignResponsible = true))

@@ -12,7 +12,7 @@ object CharacterAccessPolicy {
         session.isAdmin || isCampaignHistorian || character.ownerId == session.uid
 
     fun canDelete(session: UserSession, character: Character, isCampaignHistorian: Boolean = false): Boolean =
-        session.isAdmin || isCampaignHistorian || (character.ownerId == session.uid && !character.isLocked)
+        session.isAdmin || character.ownerId == session.uid
 
     fun canChangePlayerLock(
         session: UserSession,

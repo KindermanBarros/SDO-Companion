@@ -68,10 +68,10 @@ fun SettingsScreen(
                 item {
                     TechPanel(accent = MaterialTheme.colorScheme.primary) {
                         TelemetryTag("LOCAL_PREFERENCES")
-                        Text("Preferências ficam neste aparelho", color = Ice, style = MaterialTheme.typography.titleLarge)
+                        Text("Preferências ficam neste aparelho", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                         Text(
                             "A troca é imediata e não altera a ficha, a campanha ou o Firebase.",
-                            color = Muted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
@@ -133,8 +133,8 @@ fun SettingsScreen(
                 item {
                     TechPanel(accent = Acid) {
                         TelemetryTag("A11Y.CONTRACT")
-                        Text("Estados usam texto, ícone e cor", color = Ice)
-                        Text("Controles preservam área mínima de toque e seguem a escala de animação do sistema.", color = Muted)
+                        Text("Estados usam texto, ícone e cor", color = MaterialTheme.colorScheme.onSurface)
+                        Text("Controles preservam área mínima de toque e seguem a escala de animação do sistema.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

@@ -69,22 +69,22 @@ internal fun PhaseOneStrictInventorySection(
             color = if (character.currentLoad > character.maximumLoad) Signal else Acid,
             style = MaterialTheme.typography.titleLarge,
         )
-        Text("Bônus mecânicos usam somente seletores controlados de tipo e destino.", color = Muted, style = MaterialTheme.typography.bodySmall)
+        Text("Bônus mecânicos usam somente seletores controlados de tipo e destino.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) {
             onChange(character.copy(containerCapacity = it.coerceAtLeast(0)))
         }
 
         character.inventory.forEachIndexed { index, item ->
             Column(
-                Modifier.fillMaxWidth().background(Carbon).padding(9.dp),
+                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Row(Modifier.fillMaxWidth()) {
-                    Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = Ice, modifier = Modifier.weight(1f))
+                    Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                     RemoveButton(enabled, "Remover item") { onChange(character.removeInventoryItem(item.id)) }
                 }
                 Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality} // PG ${item.pg} // PL ${item.pl}", color = Acid, style = MaterialTheme.typography.labelSmall)
-                Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.load} // LA ${item.agilityLimit ?: "—"}", color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.load} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 if (item.bonuses.isNotEmpty()) {
                     item.bonuses.forEach { bonus ->
                         Text(

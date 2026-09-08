@@ -107,8 +107,8 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
         item {
             TechPanel {
                 TelemetryTag("SELECT_OPERATIVE")
-                Text("Escolha uma ficha para a sessão", color = Ice, style = MaterialTheme.typography.titleLarge)
-                Text("Os ajustes rápidos usam a mesma ficha offline-first.", color = Muted)
+                Text("Escolha uma ficha para a sessão", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                Text("Ajustes rápidos são salvos neste aparelho e entram na fila de sincronização.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         items(characters, key = Character::id) { character ->
@@ -122,7 +122,7 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
                 }
             }
         }
-        if (characters.isEmpty()) item { Text("Nenhuma ficha disponível.", color = Muted) }
+        if (characters.isEmpty()) item { Text("Nenhuma ficha disponível.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
 }
 
@@ -155,7 +155,7 @@ private fun SessionContent(
                         },
                     )
                 }
-                Text("AÇÕES DE COMBATE", color = Ice, style = MaterialTheme.typography.titleLarge)
+                Text("Ações de combate", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { damageDialog = true }, enabled = !readOnly, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.Shield, null)
@@ -197,11 +197,11 @@ private fun SessionContent(
         item {
             TechPanel {
                 TelemetryTag("DEFENSE.SNAPSHOT")
-                Text("PROTEÇÕES", color = Ice, style = MaterialTheme.typography.titleMedium)
+                Text("Proteções", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 character.calculatedProtections().forEach { (name, value) ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(name, color = Muted)
-                        Text(value.toString(), color = Ice)
+                        Text(name, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(value.toString(), color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -213,8 +213,8 @@ private fun SessionContent(
             }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("ABILITIES.READY")
-                Text("PODERES, MAGIAS, CINZAS E RUNAS", color = Ice, style = MaterialTheme.typography.titleMedium)
-                if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = Muted)
+                Text("Poderes, magias, cinzas e runas", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 entries.forEach { (kind, id, description) ->
                     Column(Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(6.dp)).padding(10.dp)) {
                         Text(kind, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
@@ -239,10 +239,10 @@ private fun SessionContent(
         item {
             TechPanel(accent = if (character.conditions.isEmpty()) Acid else Signal) {
                 TelemetryTag("CONDITIONS.${character.conditions.size}")
-                Text("CONDIÇÕES", color = Ice, style = MaterialTheme.typography.titleMedium)
-                if (character.conditions.isEmpty()) Text("Nenhuma condição ativa.", color = Muted)
+                Text("Condições", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                if (character.conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 character.conditions.forEach { condition ->
-                    Text("${condition.name} // ${condition.intensity} // ${condition.duration}", color = Ice)
+                    Text("${condition.name} // ${condition.intensity} // ${condition.duration}", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
@@ -276,8 +276,8 @@ private fun SessionContent(
 private fun ResourceControl(label: String, current: Int, maximum: Int, enabled: Boolean, onChange: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(label, color = Muted, style = MaterialTheme.typography.labelSmall)
-            Text("$current / $maximum", color = Ice, style = MaterialTheme.typography.titleMedium)
+            Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Text("$current / $maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         }
         IconButton({ onChange(current - 1) }, enabled = enabled && current > 0) { Icon(Icons.Default.Remove, "Reduzir $label") }
         IconButton({ onChange(current + 1) }, enabled = enabled && current < maximum) { Icon(Icons.Default.Add, "Aumentar $label") }
@@ -306,7 +306,7 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
                 }
                 Text("3. P.L. local: $protection")
                 Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) Signal else Acid)
-                Text("Nada é alterado antes da confirmação.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text("Nada é alterado antes da confirmação.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = { TextButton({ onConfirm(amount, region) }) { Text("CONFIRMAR") } },
