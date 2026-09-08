@@ -18,7 +18,8 @@ As regras visuais, tokens e componentes estão documentados no
 - o catálogo é atualizado pelo próprio APK no Room, sem depender nem alterar a estrutura sincronizada no Firebase;
 - inventário com construtor canônico de armas, armaduras e acessórios, composição parte a parte com um material por parte, cálculo de Tipo + Materiais + Modificações + espaços, preço em E$ e complexidade;
 - glossário pesquisável de itens e materiais, incluindo P.G., P.L., LA, propriedades de armas, tecnologia, passo/categoria de dado, Qualidade e Durabilidade;
-- loja inicial controlada pelos 20 Pontos de Herança, catálogo de itens para aquisições posteriores e criação manual livre;
+- loja inicial controlada pelos 20 Pontos de Herança, com escolha de itens prontos ou construtor parte a parte no mesmo fluxo; catálogo para aquisições posteriores e criação manual livre;
+- itens acima dos Pontos de Herança restantes são bloqueados; itens com custo `#` exigem confirmação do Historiador;
 - Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
@@ -33,6 +34,7 @@ As regras visuais, tokens e componentes estão documentados no
 - resolução de conflitos por campo quando a ficha local e a online foram alteradas desde a última sincronização;
 - tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
 - persistência local com Room;
+- salvamento local automático a cada alteração; sincronização remota acionada separadamente;
 - sincronização com Cloud Firestore;
 - loadings cibernéticos distintos para autenticação e sincronização de personagens;
 - exclusão offline-first com sincronização da remoção;
