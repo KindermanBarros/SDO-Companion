@@ -40,6 +40,7 @@ import com.kinderman.sdo.ui.TechCutDark
 @Composable
 internal fun InitialShopDialog(
     remainingHeritage: Int,
+    catalogAvailable: Boolean,
     onDismiss: () -> Unit,
     onCatalog: () -> Unit,
     onBuilder: () -> Unit,
@@ -50,7 +51,7 @@ internal fun InitialShopDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = Muted)
-                TextButton(onClick = onCatalog, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
+                TextButton(onClick = onCatalog, enabled = catalogAvailable, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
                 TextButton(onClick = onBuilder, modifier = Modifier.fillMaxWidth()) { Text("CONSTRUIR ITEM COM PH") }
             }
         },
@@ -82,7 +83,7 @@ internal fun ItemCatalogDialog(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 remainingHeritage?.let {
                     Text("PONTOS DE HERANÇA RESTANTES // $it / ${ItemCreationRules.HERITAGE_BUDGET}", color = if (it > 0) Acid else Signal)
-                    Text("Itens # e itens acima do saldo exigem decisão do Historiador.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text("Itens acima do saldo são bloqueados. Itens # exigem decisão do Historiador.", color = Muted, style = MaterialTheme.typography.bodySmall)
                 }
                 HudTextField("Buscar item", query) { query = it }
                 Column(Modifier.fillMaxWidth().heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
@@ -102,7 +103,11 @@ internal fun ItemCatalogDialog(
                         ) {
                             Text(entry.name, color = if (allowed) Ice else Muted, style = MaterialTheme.typography.titleSmall)
                             Text(
-                                "${entry.group} // CRIAÇÃO ${entry.creationCost.ifBlank { "—" }} // ${entry.price} E$ // CARGA ${entry.load}",
+                                if (remainingHeritage != null) {
+                                    "${entry.group} // CRIAÇÃO ${entry.creationCost.ifBlank { "—" }} PH // ${entry.price} E$ // CARGA ${entry.load}"
+                                } else {
+                                    "${entry.group} // ${entry.price} E$ // CARGA ${entry.load}"
+                                },
                                 color = if (allowed) Acid else Signal,
                                 style = MaterialTheme.typography.labelSmall,
                             )
@@ -129,7 +134,7 @@ internal fun ItemCatalogDialog(
 
 @Composable
 internal fun ItemBuilderDialog(
-    remainingHeritage: Int,
+    remainingHeritage: Int?,
     onDismiss: () -> Unit,
     onAdd: (InventoryItem) -> Unit,
 ) {
@@ -153,18 +158,19 @@ internal fun ItemBuilderDialog(
     }
     val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
     val built = ItemCreationRules.build(base, parts, modifications, gemSlots, technologySlots, customName)
-    val allowed = built.creationCost != null && built.creationCost <= remainingHeritage
-    val overBudget = built.creationCost != null && built.creationCost > remainingHeritage
+    val initialCreation = remainingHeritage != null
+    val allowed = remainingHeritage == null || built.creationCost != null && built.creationCost <= remainingHeritage
+    val overBudget = remainingHeritage != null && built.creationCost != null && built.creationCost > remainingHeritage
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("CONSTRUTOR DE ITEM") },
+        title = { Text(if (initialCreation) "CONSTRUTOR // CRIAÇÃO INICIAL" else "CONSTRUTOR DE ITEM") },
         text = {
             Column(
                 Modifier.fillMaxWidth().heightIn(max = 570.dp).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(9.dp),
             ) {
-                Text("CRIAÇÃO INICIAL // $remainingHeritage PH RESTANTES", color = Acid)
+                remainingHeritage?.let { Text("CRIAÇÃO INICIAL // $it PH RESTANTES", color = Acid) }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     TextButton(onClick = {
                         weapon = true
@@ -212,20 +218,26 @@ internal fun ItemBuilderDialog(
                     ) {
                         Checkbox(checked, onCheckedChange = { modifications = toggleModification(modifications, modification) })
                         Column(Modifier.padding(top = 8.dp)) {
-                            Text("${modification.name} // ${modification.creationCost ?: "#"} PH", color = Ice)
+                            Text(
+                                if (initialCreation) "${modification.name} // ${modification.creationCost ?: "#"} PH"
+                                else "${modification.name} // ${modification.price} E$",
+                                color = Ice,
+                            )
                             Text(modification.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
                 TwoFields(
-                    { IntegerField("Espaços de Gema (1 PH)", gemSlots, true, it) { value -> gemSlots = value.coerceIn(0, 5) } },
-                    { IntegerField("Espaços de Tecnologia (2 PH)", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
+                    { IntegerField(if (initialCreation) "Espaços de Gema (1 PH)" else "Espaços de Gema", gemSlots, true, it) { value -> gemSlots = value.coerceIn(0, 5) } },
+                    { IntegerField(if (initialCreation) "Espaços de Tecnologia (2 PH)" else "Espaços de Tecnologia", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
                 )
-                Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) Acid else Signal, style = MaterialTheme.typography.titleMedium)
+                if (initialCreation) {
+                    Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) Acid else Signal, style = MaterialTheme.typography.titleMedium)
+                }
                 Text("PREÇO COMUM // ${built.price} E$", color = Ice)
                 Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = Muted)
                 Text(built.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
-                if (!allowed) Text(
+                if (initialCreation && !allowed) Text(
                     if (built.creationCost == null) "Item # exige permissão do Historiador." else "Custo acima dos Pontos de Herança restantes.",
                     color = Signal,
                 )
@@ -233,7 +245,7 @@ internal fun ItemBuilderDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                if (allowed) onAdd(built.toInventoryItem(initialCreation = true)) else confirmOverride = true
+                if (allowed) onAdd(built.toInventoryItem(initialCreation = initialCreation)) else confirmOverride = true
             }, enabled = !overBudget) {
                 Text(when {
                     allowed -> "ADICIONAR"
@@ -248,6 +260,7 @@ internal fun ItemBuilderDialog(
     if (picker != null) ItemPartPickerDialog(
         title = if (picker == "base") "SELECIONAR TIPO" else "SELECIONAR MATERIAL",
         parts = if (picker == "base") availableBases else availableMaterials,
+        showHeritageCost = initialCreation,
         onDismiss = { picker = null },
     ) { part ->
         if (picker == "base") {
@@ -285,7 +298,13 @@ private fun AssistedItemValidationDialog(message: String, onDismiss: () -> Unit,
 }
 
 @Composable
-private fun ItemPartPickerDialog(title: String, parts: List<ItemPart>, onDismiss: () -> Unit, onSelect: (ItemPart) -> Unit) {
+private fun ItemPartPickerDialog(
+    title: String,
+    parts: List<ItemPart>,
+    showHeritageCost: Boolean,
+    onDismiss: () -> Unit,
+    onSelect: (ItemPart) -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -294,7 +313,11 @@ private fun ItemPartPickerDialog(title: String, parts: List<ItemPart>, onDismiss
                 parts.forEach { part ->
                     Column(Modifier.fillMaxWidth().clickable { onSelect(part) }.padding(vertical = 10.dp)) {
                         Text(part.name, color = Ice)
-                        Text("CRIAÇÃO ${part.creationCost ?: "#"} // ${part.price} E$", color = Acid, style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            if (showHeritageCost) "CRIAÇÃO ${part.creationCost ?: "#"} PH // ${part.price} E$" else "${part.price} E$",
+                            color = Acid,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                         if (part.effect.isNotBlank()) Text(part.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
                         HorizontalDivider(color = TechCutDark)
                     }

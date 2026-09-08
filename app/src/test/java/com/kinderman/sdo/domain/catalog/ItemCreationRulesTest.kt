@@ -38,6 +38,7 @@ class ItemCreationRulesTest {
         assertTrue(item.effect.contains("Afiada"))
         assertTrue(item.effect.contains("CD 18; 8 Progressos; 2 dias"))
         assertEquals(7, item.toInventoryItem(initialCreation = true).initialCreationCost())
+        assertEquals(0, item.toInventoryItem(initialCreation = false).initialCreationCost())
     }
 
     @Test fun variableMaterialsRemainHistorianControlled() {

@@ -19,7 +19,8 @@ As regras visuais, tokens e componentes estão documentados no
 - o catálogo é atualizado pelo próprio APK no Room, sem depender nem alterar a estrutura sincronizada no Firebase;
 - inventário com construtor canônico de armas, armaduras e acessórios, composição parte a parte com um material por parte, cálculo de Tipo + Materiais + Modificações + espaços, preço em E$ e complexidade;
 - glossário pesquisável de itens e materiais, incluindo P.G., P.L., LA, propriedades de armas, tecnologia, passo/categoria de dado, Qualidade e Durabilidade;
-- loja inicial controlada pelos 20 Pontos de Herança, com escolha de itens prontos ou construtor parte a parte no mesmo fluxo; catálogo para aquisições posteriores e criação manual livre;
+- loja inicial controlada pelos 20 Pontos de Herança, com escolha de itens prontos ou construtor parte a parte no mesmo fluxo; todo o fluxo de PH desaparece ao esgotar o saldo;
+- construtor normal de itens sempre disponível fora da criação inicial, sem consumir PH, além do catálogo e da criação manual livre;
 - itens acima dos Pontos de Herança restantes são bloqueados; itens com custo `#` exigem confirmação do Historiador;
 - Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e

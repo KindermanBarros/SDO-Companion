@@ -123,7 +123,9 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         SectionHeader("09", "Inventário")
         Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) Signal else AcidCyan, style = MaterialTheme.typography.titleLarge)
         Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = Muted, style = MaterialTheme.typography.bodySmall)
-        Text("CRIAÇÃO INICIAL // $remainingHeritage / 20 PH RESTANTES", color = if (remainingHeritage > 0) Acid else Signal, style = MaterialTheme.typography.labelLarge)
+        if (remainingHeritage > 0) {
+            Text("CRIAÇÃO INICIAL // $remainingHeritage / 20 PH RESTANTES", color = Acid, style = MaterialTheme.typography.labelLarge)
+        }
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
         character.inventory.forEachIndexed { index, item ->
             InventoryEditor(index, item, enabled,
@@ -132,19 +134,27 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
             )
         }
         AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
-        AddButton("Loja inicial // comprar ou construir com PH", enabled && catalog.isNotEmpty()) { dialog = "initial" }
+        if (remainingHeritage > 0) {
+            AddButton("Loja inicial // comprar ou construir com PH", enabled) { dialog = "initial" }
+        }
         AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
+        AddButton("Construtor de item // fora da criação", enabled) { dialog = "builder" }
         AddButton("Adicionar item manualmente", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
     }
     when (dialog) {
         "glossary" -> EquipmentGlossaryDialog { dialog = null }
         "initial" -> InitialShopDialog(
             remainingHeritage = remainingHeritage,
+            catalogAvailable = catalog.isNotEmpty(),
             onDismiss = { dialog = null },
             onCatalog = { dialog = "initial_catalog" },
-            onBuilder = { dialog = "builder" },
+            onBuilder = { dialog = "initial_builder" },
         )
-        "builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
+        "initial_builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
+            onChange(character.copy(inventory = character.inventory + item))
+            dialog = null
+        }
+        "builder" -> ItemBuilderDialog(null, { dialog = null }) { item ->
             onChange(character.copy(inventory = character.inventory + item))
             dialog = null
         }
