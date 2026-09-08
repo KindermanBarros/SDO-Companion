@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class CharacterLoadState(
     val initialLoading: Boolean = false,
@@ -49,6 +51,7 @@ class AppViewModel(
     private val _conflicts = MutableStateFlow<List<CharacterSyncConflict>>(emptyList())
     private var syncJob: Job? = null
     private var syncRequested = false
+    private val localSaveMutex = Mutex()
 
     val session = currentSession.asStateFlow()
     val message = _message.asStateFlow()
@@ -87,7 +90,9 @@ class AppViewModel(
 
     fun add() = runAction { session -> repository.create(session) }
 
-    fun save(character: Character) = runAction("Ficha salva") { session -> saveCharacter(session, character) }
+    fun save(character: Character) = saveLocally(character, notify = true)
+
+    fun autosave(character: Character) = saveLocally(character, notify = false)
 
     fun setPlayerLocked(character: Character, locked: Boolean) = runAction(
         if (locked) "Bloqueio pessoal ativado" else "Bloqueio pessoal removido",
@@ -106,6 +111,15 @@ class AppViewModel(
     fun dismissMessage() { _message.value = null }
 
     fun sync() = startSync(initial = false)
+
+    private fun saveLocally(character: Character, notify: Boolean) {
+        val session = currentSession.value ?: return
+        viewModelScope.launch {
+            runCatching { localSaveMutex.withLock { saveCharacter(session, character) } }
+                .onSuccess { if (notify) _message.value = "Ficha salva localmente" }
+                .onFailure { _message.value = userMessage(it, "Falha ao salvar ficha localmente") }
+        }
+    }
 
     fun resolveConflict(conflict: CharacterSyncConflict, remoteFieldIds: Set<String>) {
         val session = currentSession.value ?: return
