@@ -11,6 +11,7 @@ import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SkillValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
@@ -20,8 +21,11 @@ private const val ROW = "\u001e"
 private const val FIELD = "\u001f"
 private const val BONUS_ROW = "\u001b"
 private const val BONUS_FIELD = "\u001a"
+private const val NESTED = "\u0019"
 private fun String.parts() = split(FIELD)
 private fun List<String>.row() = joinToString(FIELD)
+private fun List<String>.nested() = joinToString(NESTED)
+private fun String.toNestedList() = if (isBlank()) emptyList() else split(NESTED)
 
 class CharacterConverters {
     @TypeConverter fun resourceToString(value: ResourceValue) =
@@ -48,11 +52,70 @@ class CharacterConverters {
         row.split("\u001c").let { fields -> AttributeValue(fields[0], fields[1], fields.getOrNull(2)?.toIntOrNull() ?: 0, fields.getOrNull(3)?.toIntOrNull() ?: 0, fields.getOrNull(4).orEmpty().split(ROW).filter(String::isNotEmpty).map { skill -> skill.parts().let { SkillValue(it[0], it.getOrNull(1)?.toIntOrNull() ?: 0, it.getOrNull(2)?.toIntOrNull() ?: 0) } }) }
     }
 
-    @TypeConverter fun powersToString(value: List<Power>) = value.joinToString(ROW) { listOf(it.id, it.name, it.origin, it.cost, it.action, it.range, it.duration, it.limit, it.effect).row() }
-    @TypeConverter fun stringToPowers(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { row -> row.parts().let { p ->
-        if (p.size >= 9) Power(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8])
-        else Power(name = p.getOrElse(0) { "" }, origin = p.getOrElse(1) { "" }, cost = p.getOrElse(2) { "" }, action = p.getOrElse(3) { "" }, range = p.getOrElse(4) { "" }, duration = p.getOrElse(5) { "" }, limit = p.getOrElse(6) { "" }, effect = p.getOrElse(7) { "" })
-    } }
+    @TypeConverter fun powersToString(value: List<Power>) = value.joinToString(ROW) {
+        listOf(
+            it.id,
+            it.name,
+            it.origin,
+            it.cost,
+            it.action,
+            it.range,
+            it.duration,
+            it.limit,
+            it.effect,
+            it.category,
+            it.prerequisites.nested(),
+            it.activationCondition,
+            it.enhancements,
+            it.deactivationCondition,
+            it.ruleReference,
+            it.sourceType.name,
+            it.sourceId,
+            it.catalogEntryId,
+            it.catalogVersion.toString(),
+        ).row()
+    }
+
+    @TypeConverter fun stringToPowers(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { row ->
+        row.parts().let { p ->
+            if (p.size >= 9) {
+                Power(
+                    id = p[0],
+                    name = p[1],
+                    origin = p[2],
+                    cost = p[3],
+                    action = p[4],
+                    range = p[5],
+                    duration = p[6],
+                    limit = p[7],
+                    effect = p[8],
+                    category = p.getOrElse(9) { "" },
+                    prerequisites = p.getOrElse(10) { "" }.toNestedList(),
+                    activationCondition = p.getOrElse(11) { "" },
+                    enhancements = p.getOrElse(12) { "" },
+                    deactivationCondition = p.getOrElse(13) { "" },
+                    ruleReference = p.getOrElse(14) { "" },
+                    sourceType = runCatching { PowerSourceType.valueOf(p.getOrElse(15) { PowerSourceType.MANUAL.name }) }
+                        .getOrDefault(inferLegacyPowerSource(p.getOrElse(2) { "" })),
+                    sourceId = p.getOrElse(16) { "" },
+                    catalogEntryId = p.getOrElse(17) { "" },
+                    catalogVersion = p.getOrNull(18)?.toIntOrNull() ?: 0,
+                )
+            } else {
+                Power(
+                    name = p.getOrElse(0) { "" },
+                    origin = p.getOrElse(1) { "" },
+                    cost = p.getOrElse(2) { "" },
+                    action = p.getOrElse(3) { "" },
+                    range = p.getOrElse(4) { "" },
+                    duration = p.getOrElse(5) { "" },
+                    limit = p.getOrElse(6) { "" },
+                    effect = p.getOrElse(7) { "" },
+                    sourceType = inferLegacyPowerSource(p.getOrElse(1) { "" }),
+                )
+            }
+        }
+    }
 
     @TypeConverter fun inventoryToString(value: List<InventoryItem>) = value.joinToString(ROW) { item ->
         listOf(
@@ -86,8 +149,47 @@ class CharacterConverters {
         }
     }
 
-    @TypeConverter fun knowledgesToString(value: List<SpecialKnowledge>) = value.joinToString(ROW) { listOf(it.id, it.name, it.attribute, it.value.toString()).row() }
-    @TypeConverter fun stringToKnowledges(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> SpecialKnowledge(p[0], p.getOrElse(1) { "" }, p.getOrElse(2) { "" }, p.getOrNull(3)?.toIntOrNull() ?: 0) } }
+    @TypeConverter fun knowledgesToString(value: List<SpecialKnowledge>) = value.joinToString(ROW) {
+        listOf(
+            it.id,
+            it.name,
+            it.attribute,
+            it.value.toString(),
+            it.catalogEntryId,
+            it.catalogVersion.toString(),
+            it.category,
+            it.description,
+            it.prerequisites.nested(),
+            it.mechanicalEffect,
+            it.source,
+            it.ruleReference,
+            it.keywords.nested(),
+            it.repeatable.toString(),
+            it.adjustment.toString(),
+        ).row()
+    }
+
+    @TypeConverter fun stringToKnowledges(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { row ->
+        row.parts().let { p ->
+            SpecialKnowledge(
+                id = p.getOrElse(0) { "" },
+                name = p.getOrElse(1) { "" },
+                attribute = p.getOrElse(2) { "" },
+                value = p.getOrNull(3)?.toIntOrNull() ?: 0,
+                catalogEntryId = p.getOrElse(4) { "" },
+                catalogVersion = p.getOrNull(5)?.toIntOrNull() ?: 0,
+                category = p.getOrElse(6) { "" },
+                description = p.getOrElse(7) { "" },
+                prerequisites = p.getOrElse(8) { "" }.toNestedList(),
+                mechanicalEffect = p.getOrElse(9) { "" },
+                source = p.getOrElse(10) { "" },
+                ruleReference = p.getOrElse(11) { "" },
+                keywords = p.getOrElse(12) { "" }.toNestedList(),
+                repeatable = p.getOrNull(13)?.toBooleanStrictOrNull() ?: false,
+                adjustment = p.getOrNull(14)?.toIntOrNull() ?: 0,
+            )
+        }
+    }
 
     @TypeConverter fun bodyToString(value: List<BodyRegion>) = value.joinToString(ROW) { listOf(it.roll.toString(), it.name, it.failures.toString(), it.damage, it.implants, it.equipment, it.localProtection.toString(), it.generalProtection.toString(), it.equippedItemIds.joinToString(",")).row() }
     @TypeConverter fun stringToBody(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> BodyRegion(p[0].toIntOrNull() ?: 0, p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrNull(6)?.toIntOrNull() ?: 0, p.getOrNull(7)?.toIntOrNull() ?: 0, p.getOrElse(8) { "" }.split(',').filter(String::isNotBlank)) } }
@@ -114,4 +216,10 @@ class CharacterConverters {
                 )
             }
         }
+}
+
+private fun inferLegacyPowerSource(origin: String): PowerSourceType = when {
+    origin.startsWith("Caminho", ignoreCase = true) -> PowerSourceType.PATH
+    origin.startsWith("Raça", ignoreCase = true) || origin.startsWith("Sub-raça", ignoreCase = true) -> PowerSourceType.RACE
+    else -> PowerSourceType.MANUAL
 }
