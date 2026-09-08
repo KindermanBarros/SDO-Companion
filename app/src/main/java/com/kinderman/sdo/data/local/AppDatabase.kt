@@ -141,7 +141,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_11_12 = object : Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // "default" represented the absence of a real campaign in legacy builds.
                 db.execSQL("UPDATE characters SET campaignId = '' WHERE campaignId = 'default'")
                 db.execSQL(
                     """
@@ -184,6 +183,8 @@ abstract class AppDatabase : RoomDatabase() {
                     CREATE TABLE IF NOT EXISTS campaign_invites (
                         id TEXT NOT NULL PRIMARY KEY,
                         campaignId TEXT NOT NULL,
+                        campaignName TEXT NOT NULL,
+                        campaignDescription TEXT NOT NULL,
                         code TEXT NOT NULL,
                         createdBy TEXT NOT NULL,
                         createdAt INTEGER NOT NULL,
