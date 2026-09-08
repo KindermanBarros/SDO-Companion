@@ -7,6 +7,7 @@ import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.CampaignInviteRecord
 import com.kinderman.sdo.data.local.CampaignMemberRecord
 import com.kinderman.sdo.data.local.CampaignRecord
+import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.domain.model.Campaign
@@ -29,6 +30,7 @@ import kotlinx.coroutines.tasks.await
 
 class OfflineFirstCampaignRepository(
     private val dao: CampaignDao,
+    private val characterDao: CharacterDao,
 ) : CampaignRepository {
     private val syncMutex = Mutex()
     private val random = SecureRandom()
@@ -118,6 +120,7 @@ class OfflineFirstCampaignRepository(
         val member = dao.member(existing.id, session.uid)?.toDomain()
             ?: error("Você não participa desta campanha.")
         val now = System.currentTimeMillis()
+        detachMemberCharacters(member, existing.id, now)
         dao.upsertMember(
             member.copy(
                 state = CampaignMemberState.LEFT,
@@ -133,11 +136,13 @@ class OfflineFirstCampaignRepository(
         val existing = requireActiveCampaign(campaign.id)
         check(userId != existing.ownerId) { "A Mestre principal não pode ser removida." }
         val member = dao.member(existing.id, userId)?.toDomain() ?: return
+        val now = System.currentTimeMillis()
+        detachMemberCharacters(member, existing.id, now)
         dao.upsertMember(
             member.copy(
                 state = CampaignMemberState.REMOVED,
                 characterIds = emptyList(),
-                updatedAt = System.currentTimeMillis(),
+                updatedAt = now,
                 dirty = true,
             ).toRecord(),
         )
@@ -165,12 +170,7 @@ class OfflineFirstCampaignRepository(
     override suspend fun revokeInvite(session: UserSession, invite: CampaignInvite) {
         val campaign = requireCampaign(invite.campaignId)
         requireOwner(session, campaign)
-        dao.upsertInvite(
-            invite.copy(
-                revokedAt = System.currentTimeMillis(),
-                dirty = true,
-            ).toRecord(),
-        )
+        dao.upsertInvite(invite.copy(revokedAt = System.currentTimeMillis(), dirty = true).toRecord())
     }
 
     override suspend fun regenerateInvite(session: UserSession, invite: CampaignInvite): CampaignInvite {
@@ -212,7 +212,6 @@ class OfflineFirstCampaignRepository(
             dirty = false,
         )
         if (campaign.isArchived) return null
-
         return CampaignInvitePreview(
             campaign = campaign,
             invite = invite,
@@ -295,14 +294,10 @@ class OfflineFirstCampaignRepository(
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
 
-        // A campaign document must exist before its bootstrap MASTER membership can be created.
         newCampaigns.forEach { local ->
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
-
-        // Membership role changes are written before an ownership transfer so the outgoing
-        // owner still has authorization to update both member documents.
         dao.dirtyMembers().forEach { local ->
             if (local.userId == session.uid || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 members.document(memberId(local.campaignId, local.userId))
@@ -354,6 +349,21 @@ class OfflineFirstCampaignRepository(
         }
     }
 
+    private suspend fun detachMemberCharacters(member: CampaignMember, campaignId: String, now: Long) {
+        member.characterIds.forEach { characterId ->
+            val record = characterDao.get(characterId) ?: return@forEach
+            if (normalizeCampaignId(record.campaignId) == campaignId) {
+                characterDao.upsert(
+                    record.copy(
+                        campaignId = "",
+                        updatedAt = now,
+                        dirty = true,
+                    ),
+                )
+            }
+        }
+    }
+
     private suspend fun requireCampaign(id: String): Campaign =
         dao.campaign(id)?.toDomain() ?: error("Campanha não encontrada no cache local.")
 
@@ -370,7 +380,6 @@ class OfflineFirstCampaignRepository(
     }
 
     private fun normalizeCode(value: String): String = value.trim().uppercase().filter { it in CODE_ALPHABET }
-
     private fun memberId(campaignId: String, userId: String): String = "$campaignId::$userId"
 
     companion object {
