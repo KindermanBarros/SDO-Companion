@@ -17,6 +17,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -24,6 +28,7 @@ import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.catalog.withRaceSelection
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.AcidMagenta
@@ -33,6 +38,7 @@ import com.kinderman.sdo.ui.EnergyBlue
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.LabelFunctional
+import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.NeonCoral
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.Signal
@@ -43,13 +49,13 @@ import com.kinderman.sdo.ui.TechPanel
 
 @Composable
 internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    var selectingRace by remember { mutableStateOf(false) }
     TechPanel {
         SectionHeader("01", "Identidade")
         HudTextField("Nome", character.name, enabled = enabled) { onChange(character.copy(name = it)) }
-        TwoFields(
-            { HudTextField("Raça", character.race, it, enabled = enabled) { value -> onChange(character.copy(race = value)) } },
-            { HudTextField("Sub-raça", character.subRace, it, enabled = enabled) { value -> onChange(character.copy(subRace = value)) } },
-        )
+        Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = Ice)
+        Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = Muted)
+        AddButton("Selecionar raça, sub-raça e poderes", enabled) { selectingRace = true }
         HudTextField("Ocupação", character.occupation, enabled = enabled) { onChange(character.copy(occupation = it)) }
         TwoFields(
             { HudTextField("Altura", character.height, it, enabled = enabled) { value -> onChange(character.copy(height = value)) } },
@@ -60,6 +66,10 @@ internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (
             { IntegerField("Nível", character.level, enabled, it) { value -> onChange(character.copy(level = value.coerceAtLeast(1))) } },
             { IntegerField("Dinheiro (E$)", character.money, enabled, it) { value -> onChange(character.copy(money = value)) } },
         )
+    }
+    if (selectingRace) RacePickerDialog(character, { selectingRace = false }) { race, subRace, attribute, basePowers, subRacePower ->
+        onChange(character.withRaceSelection(race, subRace, attribute, basePowers, subRacePower))
+        selectingRace = false
     }
 }
 

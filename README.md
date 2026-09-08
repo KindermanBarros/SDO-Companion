@@ -12,6 +12,7 @@ As regras visuais, tokens e componentes estão documentados no
 - login único com Google via Firebase Authentication e Credential Manager;
 - perfil Jogador/Mestre carregado do Firestore;
 - ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
+- seletor canônico de raça e sub-raça, com bônus de recursos e atributo, escolha dos dois poderes raciais e substituição de um deles por um poder de sub-raça;
 - referência arcana canônica distribuída entre `Magia.md`, `Cinzas.md`, `Runas.md`, `Regras Arcanas Expandidas.md` e os catálogos de 50 exemplos;
 - catálogo local pesquisável com Caminhos, 50 Poderes Mágicos, 50 Poderes de Profissão/Conhecimento e 50 exemplos de cada tipo: Magias, Cinzas e Runas;
 - seleção pelo catálogo é opcional: ela apenas preenche uma nova entrada, que continua modular e totalmente editável; entradas manuais continuam disponíveis;
@@ -31,6 +32,7 @@ As regras visuais, tokens e componentes estão documentados no
 - anotações em uma aba própria, organizadas como registros pessoais com título e texto;
 - Caminho e Poderes em abas independentes, sem limite de quantidade para os poderes;
 - navegação paginada em oito módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
+- regiões do corpo renderizadas individualmente, permitindo selecionar equipamentos do inventário também nos dois pés;
 - resolução de conflitos por campo quando a ficha local e a online foram alteradas desde a última sincronização;
 - tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
 - persistência local com Room;

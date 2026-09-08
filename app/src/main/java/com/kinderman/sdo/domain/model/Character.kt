@@ -118,6 +118,7 @@ data class Character(
     val name: String = "Novo personagem",
     val race: String = "",
     val subRace: String = "",
+    val raceAttribute: String = "",
     val occupation: String = "",
     val height: String = "",
     val age: String = "",
