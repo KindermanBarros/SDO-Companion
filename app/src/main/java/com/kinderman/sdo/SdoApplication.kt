@@ -49,7 +49,7 @@ class SdoApplication : Application() {
         characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao())
         ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
-        campaignRepository = OfflineFirstCampaignRepository(db.campaignDao())
+        campaignRepository = OfflineFirstCampaignRepository(db.campaignDao(), db.characterDao())
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {
             catalogRepository.refreshBundledCatalog()
