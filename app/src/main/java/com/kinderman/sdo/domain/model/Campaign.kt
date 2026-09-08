@@ -44,6 +44,8 @@ data class CampaignMember(
 data class CampaignInvite(
     val id: String = UUID.randomUUID().toString(),
     val campaignId: String = "",
+    val campaignName: String = "",
+    val campaignDescription: String = "",
     val code: String = "",
     val createdBy: String = "",
     val createdAt: Long = System.currentTimeMillis(),
