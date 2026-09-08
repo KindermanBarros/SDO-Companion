@@ -24,7 +24,9 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -145,6 +147,30 @@ private val arcaneColors = darkColorScheme(
     onError = Color(0xFF2B0014),
 )
 
+private val terminalColors = darkColorScheme(
+    primary = Color(0xFF70FF9A), onPrimary = Color(0xFF001B08), secondary = Color(0xFFB7FFCA),
+    onSecondary = Color(0xFF001B08), tertiary = Color(0xFFFFD166), onTertiary = Color(0xFF241A00),
+    background = Color(0xFF030D07), onBackground = Color(0xFFE8FFEE), surface = Color(0xFF0D1C12),
+    onSurface = Color(0xFFE8FFEE), surfaceVariant = Color(0xFF183622), onSurfaceVariant = Color(0xFFC9F5D5),
+    error = Color(0xFFFF7A9E), onError = Color.Black,
+)
+
+private val crimsonColors = darkColorScheme(
+    primary = Color(0xFFFF866E), onPrimary = Color(0xFF2D0500), secondary = Color(0xFFFFC06B),
+    onSecondary = Color(0xFF281500), tertiary = Color(0xFFFF75AA), onTertiary = Color(0xFF300016),
+    background = Color(0xFF150605), onBackground = Color(0xFFFFF1ED), surface = Color(0xFF2A1210),
+    onSurface = Color(0xFFFFF1ED), surfaceVariant = Color(0xFF4A211D), onSurfaceVariant = Color(0xFFFFD4CA),
+    error = Color(0xFFFF75AA), onError = Color(0xFF300016),
+)
+
+private val systemLightColors = lightColorScheme(
+    primary = Color(0xFF006A64), onPrimary = Color.White, secondary = Color(0xFF3D6374),
+    onSecondary = Color.White, tertiary = Color(0xFF8B1551), onTertiary = Color.White,
+    background = Color(0xFFF5FAFA), onBackground = Color(0xFF101C1B), surface = Color.White,
+    onSurface = Color(0xFF101C1B), surfaceVariant = Color(0xFFDCE8E6), onSurfaceVariant = Color(0xFF3F4947),
+    error = Color(0xFFBA1A1A), onError = Color.White,
+)
+
 val TechInterfaceFont = FontFamily(
     Font(R.font.oxanium_variable, weight = FontWeight.Normal),
 )
@@ -210,9 +236,12 @@ fun SdoTheme(
     content: @Composable () -> Unit,
 ) {
     val colors = when (preferences.theme) {
-        SdoThemeVariant.NEON -> hudColors
+        SdoThemeVariant.CYAN_INDUSTRIAL -> hudColors
+        SdoThemeVariant.GREEN_TERMINAL -> terminalColors
+        SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
+        SdoThemeVariant.VIOLET_DREAM -> arcaneColors
         SdoThemeVariant.HIGH_CONTRAST -> highContrastColors
-        SdoThemeVariant.ARCANE -> arcaneColors
+        SdoThemeVariant.SYSTEM -> if (isSystemInDarkTheme()) hudColors else systemLightColors
     }
     MaterialTheme(
         colorScheme = colors,
@@ -226,6 +255,7 @@ fun HudBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val gridColor = MaterialTheme.colorScheme.surfaceVariant
     Box(modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.background)) {
@@ -236,7 +266,7 @@ fun HudBackground(
             while (x <= size.width) {
                 val isMajor = (x % major) < 0.5f
                 drawLine(
-                    color = (if (isMajor) GridGuide else Grid).copy(alpha = if (isMajor) 0.40f else 0.16f),
+                    color = gridColor.copy(alpha = if (isMajor) 0.40f else 0.16f),
                     start = Offset(x, 0f),
                     end = Offset(x, size.height),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -247,7 +277,7 @@ fun HudBackground(
             while (y <= size.height) {
                 val isMajor = (y % major) < 0.5f
                 drawLine(
-                    color = (if (isMajor) GridGuide else Grid).copy(alpha = if (isMajor) 0.40f else 0.16f),
+                    color = gridColor.copy(alpha = if (isMajor) 0.40f else 0.16f),
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -262,15 +292,16 @@ fun HudBackground(
 @Composable
 fun TechPanel(
     modifier: Modifier = Modifier,
-    accent: Color = Acid,
+    accent: Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = accent.copy(alpha = 0.72f),
+                color = resolvedAccent.copy(alpha = 0.72f),
                 shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
             ),
         shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
@@ -286,6 +317,8 @@ fun TechPanel(
 
 @Composable
 fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
+    val secondary = MaterialTheme.colorScheme.secondary
+    val error = MaterialTheme.colorScheme.error
     Row(
         modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -293,14 +326,14 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
     ) {
         Box(
             Modifier
-                .background(Acid, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
+                .background(MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         ) {
-            Text(index, color = Void, style = MaterialTheme.typography.labelLarge)
+            Text(index, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelLarge)
         }
         Text(
             title.uppercase(),
-            color = Ice,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -308,21 +341,21 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
         Canvas(Modifier
             .weight(1f)
             .height(9.dp)) {
-            drawLine(TechCutCyan, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
+            drawLine(secondary, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
             drawLine(
-                Signal,
+                error,
                 Offset(size.width * .72f, 0f),
                 Offset(size.width * .64f, size.height),
                 3f
             )
             drawLine(
-                Signal,
+                error,
                 Offset(size.width * .84f, 0f),
                 Offset(size.width * .76f, size.height),
                 3f
             )
             drawLine(
-                Signal,
+                error,
                 Offset(size.width * .96f, 0f),
                 Offset(size.width * .88f, size.height),
                 3f
@@ -332,19 +365,22 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TelemetryTag(text: String, color: Color = Acid) {
+fun TelemetryTag(text: String, color: Color? = null) {
+    val resolved = color ?: MaterialTheme.colorScheme.primary
     Text(
         text = text.uppercase(),
-        color = color,
+        color = resolved,
         style = MaterialTheme.typography.labelSmall,
         modifier = Modifier
-            .border(1.dp, color.copy(alpha = .65f))
+            .border(1.dp, resolved.copy(alpha = .65f))
             .padding(horizontal = 7.dp, vertical = 4.dp),
     )
 }
 
 @Composable
 fun Barcode(seed: String, modifier: Modifier = Modifier) {
+    val signal = MaterialTheme.colorScheme.error
+    val neutral = MaterialTheme.colorScheme.outline
     Canvas(modifier
         .fillMaxWidth()
         .height(28.dp)) {
@@ -355,7 +391,7 @@ fun Barcode(seed: String, modifier: Modifier = Modifier) {
             val code = safeSeed[index % safeSeed.length].code
             val width = ((code % 4) + 1) * 1.2.dp.toPx()
             drawRect(
-                color = if (index % 7 == 0) Signal else WireframeNeutral,
+                color = if (index % 7 == 0) signal else neutral,
                 topLeft = Offset(cursor, 0f),
                 size = androidx.compose.ui.geometry.Size(width, size.height),
             )
@@ -367,20 +403,21 @@ fun Barcode(seed: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun ComplianceMark(modifier: Modifier = Modifier) {
+    val primary = MaterialTheme.colorScheme.primary
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         Canvas(Modifier.size(28.dp)) {
-            drawCircle(Acid, style = Stroke(width = 2.dp.toPx()))
+            drawCircle(primary, style = Stroke(width = 2.dp.toPx()))
             val p = Path().apply {
                 moveTo(size.width * .68f, size.height * .22f)
                 lineTo(size.width * .38f, size.height * .5f)
                 lineTo(size.width * .68f, size.height * .78f)
             }
-            drawPath(p, Acid, style = Stroke(width = 2.dp.toPx()))
+            drawPath(p, primary, style = Stroke(width = 2.dp.toPx()))
         }
         Spacer(Modifier.size(6.dp))
         Column {
-            Text("CE//SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
-            Text("CONFORMIDADE ATIVA", color = MetaStamp, style = MaterialTheme.typography.labelSmall)
+            Text("CE//SDO", color = primary, style = MaterialTheme.typography.labelLarge)
+            Text("CONFORMIDADE ATIVA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -405,13 +442,13 @@ fun HudTextField(
         enabled = enabled,
         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Acid,
-            unfocusedBorderColor = TechCutDark,
-            focusedLabelColor = Acid,
-            unfocusedLabelColor = LabelFunctional,
-            focusedContainerColor = Carbon,
-            unfocusedContainerColor = Carbon,
-            cursorColor = Acid,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary,
         ),
         textStyle = MaterialTheme.typography.bodyLarge,
     )

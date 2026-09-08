@@ -2,6 +2,20 @@ package com.kinderman.sdo.presentation
 
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.weight
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,6 +41,8 @@ import com.kinderman.sdo.ui.CyberLoadingMode
 import com.kinderman.sdo.ui.CyberLoadingScreen
 import com.kinderman.sdo.ui.SdoContentDensity
 import com.kinderman.sdo.ui.SdoPreferences
+import com.kinderman.sdo.ui.LocalSdoWindowClass
+import com.kinderman.sdo.ui.SdoWindowClass
 
 private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, SETTINGS }
 
@@ -43,6 +59,7 @@ fun SdoApp(
             application.ownerRepository,
             application.catalogRepository,
             application.campaignRepository,
+            application.operationsRepository,
         ),
     )
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
@@ -57,6 +74,10 @@ fun SdoApp(
     val invitePreview by appViewModel.invitePreview.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
     val catalog by appViewModel.catalog.collectAsStateWithLifecycle()
+    val audit by appViewModel.audit.collectAsStateWithLifecycle()
+    val campaignLibrary by appViewModel.library.collectAsStateWithLifecycle()
+    val deliveries by appViewModel.deliveries.collectAsStateWithLifecycle()
+    val alertSettings by appViewModel.alertSettings.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -69,6 +90,7 @@ fun SdoApp(
             else -> appViewModel.clearSession()
         }
     }
+    LaunchedEffect(preferences.autoSync) { appViewModel.setAutomaticSync(preferences.autoSync) }
     LaunchedEffect(message) {
         message?.let {
             snackbar.showSnackbar(it)
@@ -101,6 +123,18 @@ fun SdoApp(
             val isCampaignHistorian = appSession?.isAdmin == true ||
                 selectedCampaign?.ownerId == appSession?.uid || membership?.role == CampaignRole.HISTORIAN
             val isCampaignResponsible = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
+            val wide = LocalSdoWindowClass.current == SdoWindowClass.EXPANDED
+            val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { campaign ->
+                campaign.ownerId == appSession?.uid || memberships.any { it.campaignId == campaign.id && it.role == CampaignRole.HISTORIAN }
+            }
+            Row(Modifier.fillMaxSize()) {
+                if (wide) NavigationRail {
+                    NavigationRailItem(surface == AppSurface.DASHBOARD, { selectedId = null; surface = AppSurface.DASHBOARD }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Painel") })
+                    NavigationRailItem(surface == AppSurface.SESSION, { selectedId = null; surface = AppSurface.SESSION }, icon = { Icon(Icons.Default.PlayCircle, null) }, label = { Text("Sessão") })
+                    if (canOpenHistorian) NavigationRailItem(surface == AppSurface.HISTORIAN, { surface = AppSurface.HISTORIAN }, icon = { Icon(Icons.Default.Visibility, null) }, label = { Text("Mestre") })
+                    NavigationRailItem(surface == AppSurface.SETTINGS, { surface = AppSurface.SETTINGS }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Ajustes") })
+                }
+                Box(Modifier.weight(1f).fillMaxSize()) {
             when (surface) {
                 AppSurface.DASHBOARD -> DashboardScreen(
                     characters = characters,
@@ -109,6 +143,8 @@ fun SdoApp(
                     owners = owners,
                     session = appSession,
                     syncing = characterLoadState.syncing,
+                    compactCards = preferences.compactCards,
+                    showArchivedCampaigns = preferences.showArchivedCampaigns,
                     invitePreview = invitePreview,
                     snackbarHost = { SnackbarHost(snackbar) },
                     onAdd = appViewModel::add,
@@ -132,6 +168,8 @@ fun SdoApp(
                     },
                     onOpenHistorian = { surface = AppSurface.HISTORIAN },
                     onOpenSettings = { surface = AppSurface.SETTINGS },
+                    deliveries = if (preferences.notifications) deliveries.filter { it.recipientId == appSession?.uid } else emptyList(),
+                    onRespondDelivery = appViewModel::respondDelivery,
                     onLogout = {
                         selectedId = null
                         surface = AppSurface.DASHBOARD
@@ -171,14 +209,14 @@ fun SdoApp(
                 AppSurface.SESSION -> SessionModeScreen(
                     characters = characters,
                     selectedId = selectedId,
-                    compact = preferences.density == SdoContentDensity.COMPACT,
+                    compact = preferences.density == SdoContentDensity.COMPACT || preferences.compactCards,
                     readOnly = archived,
                     onSelect = { selectedId = it },
                     onOpenSheet = {
                         selectedId = it
                         surface = AppSurface.SHEET
                     },
-                    onChange = appViewModel::autosave,
+                    onCommand = appViewModel::applySessionCommand,
                     onBack = {
                         selectedId = null
                         surface = AppSurface.DASHBOARD
@@ -191,6 +229,16 @@ fun SdoApp(
                     memberships = memberships,
                     characters = characters,
                     catalog = catalog,
+                    audit = audit,
+                    library = campaignLibrary,
+                    deliveries = deliveries,
+                    alertSettings = alertSettings,
+                    onApplyCommand = appViewModel::applySessionCommand,
+                    onSaveLibrary = appViewModel::saveLibrary,
+                    onDuplicateLibrary = appViewModel::duplicateLibrary,
+                    onArchiveLibrary = appViewModel::archiveLibrary,
+                    onDeliverLibrary = appViewModel::deliverLibrary,
+                    onSaveAlertSettings = appViewModel::saveAlertSettings,
                     onOpenSession = {
                         selectedId = it
                         surface = AppSurface.SESSION
@@ -207,6 +255,8 @@ fun SdoApp(
                     onPreferencesChange = onPreferencesChange,
                     onBack = { surface = AppSurface.DASHBOARD },
                 )
+            }
+                }
             }
         }
     }

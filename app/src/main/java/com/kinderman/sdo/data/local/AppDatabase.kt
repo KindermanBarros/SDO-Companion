@@ -14,8 +14,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignRecord::class,
         CampaignMemberRecord::class,
         CampaignInviteRecord::class,
+        SessionOperationRecord::class,
+        CampaignLibraryRecord::class,
+        CampaignDeliveryRecord::class,
+        CampaignAlertSettingsRecord::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -24,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun ownerDao(): OwnerDao
     abstract fun catalogDao(): CatalogDao
     abstract fun campaignDao(): CampaignDao
+    abstract fun operationsDao(): OperationsDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -206,6 +211,22 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("UPDATE characters SET campaignId = '' WHERE campaignId = 'default'")
                 db.execSQL("UPDATE campaign_members SET role = 'HISTORIAN' WHERE role = 'MASTER'")
                 db.execSQL("UPDATE owners SET role = 'USER'")
+            }
+        }
+
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS session_operations (id TEXT NOT NULL PRIMARY KEY, idempotencyKey TEXT NOT NULL, campaignId TEXT NOT NULL, characterId TEXT NOT NULL, actorId TEXT NOT NULL, type TEXT NOT NULL, target TEXT NOT NULL, previousValue TEXT NOT NULL, newValue TEXT NOT NULL, amount INTEGER NOT NULL, reason TEXT NOT NULL, createdAt INTEGER NOT NULL, dirty INTEGER NOT NULL, lastSyncedAt INTEGER NOT NULL)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_session_operations_idempotencyKey ON session_operations(idempotencyKey)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_session_operations_campaignId ON session_operations(campaignId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_session_operations_characterId ON session_operations(characterId)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS campaign_library_entries (id TEXT NOT NULL PRIMARY KEY, campaignId TEXT NOT NULL, kind TEXT NOT NULL, name TEXT NOT NULL, summary TEXT NOT NULL, payload TEXT NOT NULL, catalogEntryId TEXT NOT NULL, knowledgeBonus INTEGER NOT NULL, archived INTEGER NOT NULL, version INTEGER NOT NULL, createdBy TEXT NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, dirty INTEGER NOT NULL, lastSyncedAt INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_library_entries_campaignId ON campaign_library_entries(campaignId)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS campaign_deliveries (id TEXT NOT NULL PRIMARY KEY, campaignId TEXT NOT NULL, libraryEntryId TEXT NOT NULL, recipientId TEXT NOT NULL, recipientCharacterId TEXT NOT NULL, snapshotKind TEXT NOT NULL, snapshotName TEXT NOT NULL, snapshotSummary TEXT NOT NULL, snapshotPayload TEXT NOT NULL, knowledgeMapping TEXT NOT NULL, knowledgeBonus INTEGER NOT NULL, state TEXT NOT NULL, createdBy TEXT NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, dirty INTEGER NOT NULL, lastSyncedAt INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_campaignId ON campaign_deliveries(campaignId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_recipientId ON campaign_deliveries(recipientId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_recipientCharacterId ON campaign_deliveries(recipientCharacterId)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS campaign_alert_settings (campaignId TEXT NOT NULL PRIMARY KEY, lifeThresholdPercent INTEGER NOT NULL, sanityThresholdPercent INTEGER NOT NULL, exhaustionThresholdPercent INTEGER NOT NULL, staleAfterHours INTEGER NOT NULL, alertConditions INTEGER NOT NULL, alertBodyFailures INTEGER NOT NULL)")
             }
         }
     }

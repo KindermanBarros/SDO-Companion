@@ -262,6 +262,9 @@ private fun StructuredPowerEditor(
             { HudTextField("Duração", power.duration, it, enabled = enabled) { value -> onValue(power.copy(duration = value)) } },
         )
         HudTextField("Limite de uso", power.limit, enabled = enabled) { onValue(power.copy(limit = it)) }
+        AbilityUsageEditor(power.favorite, power.available, power.costResource, power.costAmount, power.usage, enabled) { favorite, available, resource, amount, usage ->
+            onValue(power.copy(favorite = favorite, available = available, costResource = resource, costAmount = amount, usage = usage))
+        }
         HudTextField("Pré-requisitos", power.prerequisites.joinToString("; "), multiline = true, enabled = enabled) {
             onValue(power.copy(prerequisites = it.split(';').map(String::trim).filter(String::isNotBlank)))
         }

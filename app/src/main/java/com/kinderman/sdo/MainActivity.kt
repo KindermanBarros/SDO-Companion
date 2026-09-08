@@ -13,6 +13,7 @@ import com.kinderman.sdo.ui.SdoFontScale
 import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.SdoThemeVariant
+import com.kinderman.sdo.ui.SdoResponsiveFrame
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,14 +21,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             var preferences by remember { mutableStateOf(loadPreferences()) }
             SdoTheme(preferences) {
-                SdoApp(
+                SdoResponsiveFrame { SdoApp(
                     activity = this,
                     preferences = preferences,
                     onPreferencesChange = { updated ->
                         preferences = updated
                         savePreferences(updated)
                     },
-                )
+                ) }
             }
         }
     }
@@ -35,9 +36,14 @@ class MainActivity : ComponentActivity() {
     private fun loadPreferences(): SdoPreferences {
         val storage = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
         return SdoPreferences(
-            theme = enumValueOrDefault(storage.getString("theme", null), SdoThemeVariant.NEON),
+            theme = enumValueOrDefault(storage.getString("theme", null), SdoThemeVariant.CYAN_INDUSTRIAL),
             density = enumValueOrDefault(storage.getString("density", null), SdoContentDensity.COMFORTABLE),
             fontScale = enumValueOrDefault(storage.getString("font_scale", null), SdoFontScale.STANDARD),
+            autoSync = storage.getBoolean("auto_sync", true),
+            notifications = storage.getBoolean("notifications", true),
+            compactCards = storage.getBoolean("compact_cards", false),
+            collapseLongSections = storage.getBoolean("collapse_long_sections", true),
+            showArchivedCampaigns = storage.getBoolean("show_archived_campaigns", true),
         )
     }
 
@@ -46,6 +52,11 @@ class MainActivity : ComponentActivity() {
             .putString("theme", preferences.theme.name)
             .putString("density", preferences.density.name)
             .putString("font_scale", preferences.fontScale.name)
+            .putBoolean("auto_sync", preferences.autoSync)
+            .putBoolean("notifications", preferences.notifications)
+            .putBoolean("compact_cards", preferences.compactCards)
+            .putBoolean("collapse_long_sections", preferences.collapseLongSections)
+            .putBoolean("show_archived_campaigns", preferences.showArchivedCampaigns)
             .apply()
     }
 

@@ -1,9 +1,12 @@
 package com.kinderman.sdo.ui
 
 enum class SdoThemeVariant(val label: String, val description: String) {
-    NEON("Neon operacional", "Ciano, azul e magenta do HUD original."),
+    CYAN_INDUSTRIAL("Ciano industrial", "Ciano, azul e magenta do HUD original."),
+    GREEN_TERMINAL("Verde terminal", "Verde fosforescente sobre superfícies técnicas."),
+    CRIMSON_ARCANE("Rubro arcano", "Vermelho ritual com sinais âmbar."),
+    VIOLET_DREAM("Violeta onírico", "Violeta e ciano para foco místico."),
     HIGH_CONTRAST("Alto contraste", "Superfícies mais escuras e sinais mais claros."),
-    ARCANE("Arcano", "Violeta e ciano para sessões de foco místico."),
+    SYSTEM("Tema do sistema", "Segue a preferência de contraste claro/escuro do aparelho."),
 }
 
 enum class SdoContentDensity(val label: String, val description: String) {
@@ -17,7 +20,12 @@ enum class SdoFontScale(val label: String, val multiplier: Float) {
 }
 
 data class SdoPreferences(
-    val theme: SdoThemeVariant = SdoThemeVariant.NEON,
+    val theme: SdoThemeVariant = SdoThemeVariant.CYAN_INDUSTRIAL,
     val density: SdoContentDensity = SdoContentDensity.COMFORTABLE,
     val fontScale: SdoFontScale = SdoFontScale.STANDARD,
+    val autoSync: Boolean = true,
+    val notifications: Boolean = true,
+    val compactCards: Boolean = false,
+    val collapseLongSections: Boolean = true,
+    val showArchivedCampaigns: Boolean = true,
 )

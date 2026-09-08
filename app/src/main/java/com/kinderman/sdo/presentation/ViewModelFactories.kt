@@ -7,16 +7,18 @@ import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import com.kinderman.sdo.domain.repository.OperationsRepository
 
 class AppViewModelFactory(
     private val repository: CharacterRepository,
     private val ownerRepository: OwnerRepository,
     private val catalogRepository: CatalogRepository,
     private val campaignRepository: CampaignRepository,
+    private val operationsRepository: OperationsRepository,
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T =
-        AppViewModel(repository, ownerRepository, catalogRepository, campaignRepository) as T
+        AppViewModel(repository, ownerRepository, catalogRepository, campaignRepository, operationsRepository) as T
 }
 
 class AuthViewModelFactory(private val repository: AuthRepository) : ViewModelProvider.Factory {

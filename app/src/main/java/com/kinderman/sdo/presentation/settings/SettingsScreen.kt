@@ -16,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -76,6 +77,30 @@ fun SettingsScreen(
                     }
                 }
                 item {
+                    TogglePanel("INTERFACE", listOf(
+                        Triple("Cartões compactos", preferences.compactCards, { value: Boolean -> onPreferencesChange(preferences.copy(compactCards = value)) }),
+                        Triple("Recolher seções longas", preferences.collapseLongSections, { value: Boolean -> onPreferencesChange(preferences.copy(collapseLongSections = value)) }),
+                    ))
+                }
+                item {
+                    TogglePanel("SINCRONIZAÇÃO E NOTIFICAÇÕES", listOf(
+                        Triple("Sincronização automática", preferences.autoSync, { value: Boolean -> onPreferencesChange(preferences.copy(autoSync = value)) }),
+                        Triple("Alertas e entregas", preferences.notifications, { value: Boolean -> onPreferencesChange(preferences.copy(notifications = value)) }),
+                    ))
+                }
+                item {
+                    TogglePanel("CAMPANHAS", listOf(
+                        Triple("Mostrar campanhas arquivadas", preferences.showArchivedCampaigns, { value: Boolean -> onPreferencesChange(preferences.copy(showArchivedCampaigns = value)) }),
+                    ))
+                }
+                item {
+                    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
+                        TelemetryTag("ACCOUNT.SESSION")
+                        Text("Conta e sessão", color = MaterialTheme.colorScheme.onSurface)
+                        Text("Identidade, saída e permissões continuam centralizadas no painel principal.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                item {
                     ChoicePanel(
                         title = "TEMA",
                         options = SdoThemeVariant.entries,
@@ -112,6 +137,19 @@ fun SettingsScreen(
                         Text("Controles preservam área mínima de toque e seguem a escala de animação do sistema.", color = Muted)
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TogglePanel(title: String, options: List<Triple<String, Boolean, (Boolean) -> Unit>>) {
+    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
+        TelemetryTag(title)
+        options.forEach { (label, selected, onChange) ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(label, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                Switch(checked = selected, onCheckedChange = onChange)
             }
         }
     }

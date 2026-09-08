@@ -3,6 +3,9 @@ package com.kinderman.sdo.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kinderman.sdo.domain.model.Campaign
+import com.kinderman.sdo.domain.model.CampaignAlertSettings
+import com.kinderman.sdo.domain.model.CampaignDelivery
+import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
 import com.kinderman.sdo.domain.model.CampaignMember
 import com.kinderman.sdo.domain.model.Character
@@ -10,10 +13,12 @@ import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import com.kinderman.sdo.domain.repository.OperationsRepository
 import com.kinderman.sdo.domain.usecase.DeleteCharacter
 import com.kinderman.sdo.domain.usecase.SaveCharacter
 import com.kinderman.sdo.domain.usecase.SetHistorianLock
@@ -26,6 +31,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -44,6 +50,7 @@ class AppViewModel(
     private val ownerRepository: OwnerRepository,
     catalogRepository: CatalogRepository,
     private val campaignRepository: CampaignRepository,
+    private val operationsRepository: OperationsRepository,
 ) : ViewModel() {
     private val saveCharacter = SaveCharacter(repository)
     private val deleteCharacter = DeleteCharacter(repository)
@@ -57,6 +64,7 @@ class AppViewModel(
     private val _invitePreview = MutableStateFlow<CampaignInvitePreview?>(null)
     private var syncJob: Job? = null
     private var syncRequested = false
+    private var automaticSync = true
     private val localSaveMutex = Mutex()
 
     val session = currentSession.asStateFlow()
@@ -78,6 +86,22 @@ class AppViewModel(
     val owners = currentSession.flatMapLatest { session ->
         if (session?.isAdmin == true) ownerRepository.observe() else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    private val manageableCampaignIds = combine(currentSession, campaigns, memberships) { session, values, memberValues ->
+        if (session == null) emptySet() else values.filter { campaign ->
+            session.isAdmin || campaign.ownerId == session.uid || memberValues.any {
+                it.campaignId == campaign.id && it.role == com.kinderman.sdo.domain.model.CampaignRole.HISTORIAN
+            }
+        }.mapTo(linkedSetOf(), Campaign::id)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+    val audit = manageableCampaignIds.flatMapLatest(operationsRepository::observeAudit)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val library = manageableCampaignIds.flatMapLatest(operationsRepository::observeLibrary)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val deliveries = combine(currentSession, manageableCampaignIds) { session, ids -> session to ids }
+        .flatMapLatest { (session, ids) -> session?.let { operationsRepository.observeDeliveries(it, ids) } ?: flowOf(emptyList()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val alertSettings = manageableCampaignIds.flatMapLatest(operationsRepository::observeAlertSettings)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun setSession(session: UserSession) {
         if (currentSession.value == session) return
@@ -91,6 +115,7 @@ class AppViewModel(
     }
 
     fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.USER))
+    fun setAutomaticSync(enabled: Boolean) { automaticSync = enabled }
 
     fun clearSession() {
         syncJob?.cancel()
@@ -113,6 +138,22 @@ class AppViewModel(
 
     fun save(character: Character) = saveLocally(character, notify = true)
     fun autosave(character: Character) = saveLocally(character, notify = false)
+
+    fun applySessionCommand(character: Character, command: SessionCommand) {
+        val session = currentSession.value ?: return
+        viewModelScope.launch {
+            runCatching { operationsRepository.apply(session, character, command) }
+                .onSuccess { if (it && automaticSync) startSync(initial = false) }
+                .onFailure { _message.value = userMessage(it, "Falha ao aplicar ação") }
+        }
+    }
+
+    fun saveLibrary(entry: CampaignLibraryEntry) = runAction("Biblioteca atualizada") { operationsRepository.saveLibrary(it, entry) }
+    fun duplicateLibrary(entry: CampaignLibraryEntry) = runAction("Modelo duplicado") { operationsRepository.duplicateLibrary(it, entry) }
+    fun archiveLibrary(entry: CampaignLibraryEntry, archived: Boolean) = runAction(if (archived) "Modelo arquivado" else "Modelo restaurado") { operationsRepository.archiveLibrary(it, entry, archived) }
+    fun deliverLibrary(entry: CampaignLibraryEntry, recipients: List<Character>, mappings: Map<String, String>) = runAction("Entrega enviada") { operationsRepository.deliver(it, entry, recipients, mappings) }
+    fun respondDelivery(delivery: CampaignDelivery, accept: Boolean) = runAction(if (accept) "Conteúdo aceito" else "Conteúdo recusado") { operationsRepository.respondToDelivery(it, delivery, accept) }
+    fun saveAlertSettings(settings: CampaignAlertSettings) = viewModelScope.launch { operationsRepository.saveAlertSettings(settings) }
 
     fun createCampaign(name: String, description: String) = runAction("Campanha criada") { session ->
         campaignRepository.create(session, name, description)
@@ -140,7 +181,7 @@ class AppViewModel(
             runCatching { campaignRepository.createInvite(session, campaign) }
                 .onSuccess { invite ->
                     _message.value = "Convite ${invite.code} criado"
-                    startSync(initial = false)
+                    if (automaticSync) startSync(initial = false)
                 }
                 .onFailure { _message.value = userMessage(it, "Falha ao criar convite") }
         }
@@ -175,7 +216,7 @@ class AppViewModel(
             }.onSuccess {
                 _invitePreview.value = null
                 _message.value = "Entrada na campanha concluída"
-                startSync(initial = false)
+                if (automaticSync) startSync(initial = false)
             }.onFailure { error ->
                 _message.value = userMessage(error, "Falha ao entrar na campanha")
             }
@@ -241,7 +282,7 @@ class AppViewModel(
             runCatching { action(session) }
                 .onSuccess {
                     if (success != null) _message.value = success
-                    startSync(initial = false)
+                    if (automaticSync) startSync(initial = false)
                 }
                 .onFailure { _message.value = userMessage(it, "Falha na operação") }
         }
@@ -266,6 +307,8 @@ class AppViewModel(
                     .onFailure { failures += "fichas pessoais" to it }
                 runCatching { ownerRepository.sync(session) }
                     .onFailure { failures += "administração" to it }
+                runCatching { operationsRepository.sync(session, manageableCampaignIds.value) }
+                    .onFailure { failures += "operações" to it }
                 if (failures.isNotEmpty()) _message.value = syncFailureMessage(failures)
             } catch (cancelled: CancellationException) {
                 throw cancelled

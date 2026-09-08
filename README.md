@@ -44,7 +44,9 @@ As regras visuais, tokens e componentes estão documentados no
 - central de operações com fundações navegáveis para Modo Sessão, Painel do Historiador e Aparência;
 - Modo Sessão compacto com recursos rápidos, proteções, condições, habilidades e prévia confirmável de dano/cura;
 - Painel do Historiador agrupado por campanha, com alertas operacionais e consulta ao catálogo local;
-- temas Neon, Alto contraste e Arcano, escala de texto e densidade persistidos somente no aparelho;
+- seis temas semânticos, escala de texto, densidade, cartões, alertas e sincronização persistidos somente no aparelho;
+- operações de sessão idempotentes e histórico append-only com autor, alvo, antes/depois e motivo;
+- biblioteca de campanha com modelos versionados, duplicação, arquivamento e entregas snapshot com aceite/recusa;
 - exclusão offline-first com sincronização da remoção;
 - jogador edita as próprias fichas e pode ativar um bloqueio pessoal para impedir a própria exclusão;
 - a Mestre/Historiador acessa e edita todas as fichas, aplica/remove o bloqueio de historiador e pode excluir qualquer personagem;

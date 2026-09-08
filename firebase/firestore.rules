@@ -289,6 +289,62 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /campaignAudit/{operationId} {
+      allow read: if signedIn() && (
+        (resource.data.campaignId == '' && resource.data.actorId == request.auth.uid)
+        || canReadCampaign(resource.data.campaignId)
+      );
+      allow create: if signedIn()
+        && request.resource.data.actorId == request.auth.uid
+        && request.resource.data.idempotencyKey == operationId
+        && (
+          request.resource.data.campaignId == ''
+          || canReadCampaign(request.resource.data.campaignId)
+        );
+      allow update, delete: if false;
+    }
+
+    match /campaignLibrary/{entryId} {
+      allow read: if signedIn() && canReadCampaign(resource.data.campaignId);
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && isCampaignHistorian(request.resource.data.campaignId);
+      allow update: if signedIn()
+        && request.resource.data.campaignId == resource.data.campaignId
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && isCampaignHistorian(resource.data.campaignId);
+      allow delete: if false;
+    }
+
+    match /campaignDeliveries/{deliveryId} {
+      allow read: if signedIn() && (
+        resource.data.recipientId == request.auth.uid
+        || isCampaignHistorian(resource.data.campaignId)
+      );
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.state == 'PENDING'
+        && isCampaignHistorian(request.resource.data.campaignId);
+      allow update: if signedIn()
+        && request.resource.data.campaignId == resource.data.campaignId
+        && request.resource.data.libraryEntryId == resource.data.libraryEntryId
+        && request.resource.data.recipientId == resource.data.recipientId
+        && request.resource.data.recipientCharacterId == resource.data.recipientCharacterId
+        && request.resource.data.snapshotKind == resource.data.snapshotKind
+        && request.resource.data.snapshotName == resource.data.snapshotName
+        && request.resource.data.snapshotSummary == resource.data.snapshotSummary
+        && request.resource.data.snapshotPayload == resource.data.snapshotPayload
+        && request.resource.data.knowledgeMapping == resource.data.knowledgeMapping
+        && request.resource.data.knowledgeBonus == resource.data.knowledgeBonus
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && resource.data.state == 'PENDING'
+        && request.resource.data.state in ['ACCEPTED', 'DECLINED']
+        && resource.data.recipientId == request.auth.uid;
+      allow delete: if false;
+    }
+
     match /characters/{characterId} {
       allow read: if signedIn() && (
         isAdministrator()

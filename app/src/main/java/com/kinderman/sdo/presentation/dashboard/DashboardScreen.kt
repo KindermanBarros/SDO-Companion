@@ -47,6 +47,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
+import com.kinderman.sdo.domain.model.CampaignDelivery
+import com.kinderman.sdo.domain.model.CampaignDeliveryState
 import com.kinderman.sdo.domain.model.CampaignMember
 import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.Character
@@ -79,6 +81,8 @@ fun DashboardScreen(
     owners: List<UserProfile>,
     session: UserSession?,
     syncing: Boolean,
+    compactCards: Boolean,
+    showArchivedCampaigns: Boolean,
     invitePreview: CampaignInvitePreview?,
     snackbarHost: @Composable () -> Unit,
     onAdd: () -> Unit,
@@ -96,6 +100,8 @@ fun DashboardScreen(
     onOpenSession: () -> Unit,
     onOpenHistorian: () -> Unit,
     onOpenSettings: () -> Unit,
+    deliveries: List<CampaignDelivery>,
+    onRespondDelivery: (CampaignDelivery, Boolean) -> Unit,
     onLogout: () -> Unit,
 ) {
     val admin = session?.isAdmin == true
@@ -103,7 +109,7 @@ fun DashboardScreen(
     val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
     val rolesByCampaign = remember(memberships) { memberships.associateBy({ it.campaignId }, { it.role }) }
     val activeCampaigns = campaigns.filterNot(Campaign::isArchived)
-    val archivedCampaigns = campaigns.filter(Campaign::isArchived)
+    val archivedCampaigns = if (showArchivedCampaigns) campaigns.filter(Campaign::isArchived) else emptyList()
     var ownerTarget by remember { mutableStateOf<Character?>(null) }
     var createCampaign by remember { mutableStateOf(false) }
     var joinCampaign by remember { mutableStateOf(false) }
@@ -168,9 +174,10 @@ fun DashboardScreen(
             LazyColumn(
                 Modifier.padding(padding).fillMaxSize(),
                 contentPadding = PaddingValues(18.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compactCards) 9.dp else 14.dp),
             ) {
                 item {
+                    Column(verticalArrangement = Arrangement.spacedBy(if (compactCards) 8.dp else 12.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
@@ -219,11 +226,27 @@ fun DashboardScreen(
                             }
                         }
                     }
+                    val pendingDeliveries = deliveries.filter { it.state == CampaignDeliveryState.PENDING }
+                    if (pendingDeliveries.isNotEmpty()) TechPanel(accent = Signal) {
+                        TelemetryTag("INBOX.${pendingDeliveries.size}", Signal)
+                        Text("ENTREGAS DA CAMPANHA", color = Ice, style = MaterialTheme.typography.titleMedium)
+                        pendingDeliveries.forEach { delivery ->
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text("${delivery.snapshotKind.name} // ${delivery.snapshotName}", color = Ice)
+                                Text(delivery.snapshotSummary, color = Muted, style = MaterialTheme.typography.bodySmall)
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    TextButton({ onRespondDelivery(delivery, true) }, modifier = Modifier.weight(1f)) { Text("ACEITAR") }
+                                    TextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = Signal) }
+                                }
+                            }
+                        }
+                    }
                     if (section == DashboardSection.CAMPAIGNS) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
                             TextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("ENTRAR POR CÓDIGO") }
                         }
+                    }
                     }
                 }
 

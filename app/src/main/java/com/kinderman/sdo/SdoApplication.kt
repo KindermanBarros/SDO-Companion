@@ -9,11 +9,13 @@ import com.kinderman.sdo.data.repository.LocalCatalogRepository
 import com.kinderman.sdo.data.repository.OfflineFirstCampaignRepository
 import com.kinderman.sdo.data.repository.OfflineFirstCharacterRepository
 import com.kinderman.sdo.data.repository.OfflineFirstOwnerRepository
+import com.kinderman.sdo.data.repository.OfflineFirstOperationsRepository
 import com.kinderman.sdo.domain.repository.AuthRepository
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import com.kinderman.sdo.domain.repository.OperationsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +29,7 @@ class SdoApplication : Application() {
     lateinit var ownerRepository: OwnerRepository
     lateinit var catalogRepository: CatalogRepository
     lateinit var campaignRepository: CampaignRepository
+    lateinit var operationsRepository: OperationsRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -45,12 +48,14 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_10_11,
                 AppDatabase.MIGRATION_11_12,
                 AppDatabase.MIGRATION_12_13,
+                AppDatabase.MIGRATION_13_14,
             )
             .build()
         characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao())
         ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
         campaignRepository = OfflineFirstCampaignRepository(db.campaignDao(), db.characterDao())
+        operationsRepository = OfflineFirstOperationsRepository(db.operationsDao())
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {
             catalogRepository.refreshBundledCatalog()

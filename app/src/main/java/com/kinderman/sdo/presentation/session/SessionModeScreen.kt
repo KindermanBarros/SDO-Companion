@@ -42,7 +42,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.ResourceValue
+import com.kinderman.sdo.domain.model.SessionCommand
+import com.kinderman.sdo.domain.model.SessionOperationType
+import com.kinderman.sdo.domain.model.SessionResource
 import com.kinderman.sdo.domain.model.localProtectionBreakdown
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
@@ -62,7 +64,7 @@ fun SessionModeScreen(
     readOnly: Boolean,
     onSelect: (String) -> Unit,
     onOpenSheet: (String) -> Unit,
-    onChange: (Character) -> Unit,
+    onCommand: (Character, SessionCommand) -> Unit,
     onBack: () -> Unit,
 ) {
     BackHandler(onBack = onBack)
@@ -89,7 +91,7 @@ fun SessionModeScreen(
             if (character == null) {
                 CharacterSelector(characters, Modifier.padding(padding), onSelect)
             } else {
-                SessionContent(character, compact, readOnly, Modifier.padding(padding), onChange)
+                SessionContent(character, compact, readOnly, Modifier.padding(padding), onCommand)
             }
         }
     }
@@ -130,10 +132,11 @@ private fun SessionContent(
     compact: Boolean,
     readOnly: Boolean,
     modifier: Modifier,
-    onChange: (Character) -> Unit,
+    onCommand: (Character, SessionCommand) -> Unit,
 ) {
     var damageDialog by remember { mutableStateOf(false) }
     var healingDialog by remember { mutableStateOf(false) }
+    var pendingAbilityId by remember { mutableStateOf<String?>(null) }
     val spacing = if (compact) 8.dp else 14.dp
     LazyColumn(
         modifier.fillMaxSize(),
@@ -169,25 +172,25 @@ private fun SessionContent(
             TechPanel(accent = AcidCyan) {
                 TelemetryTag("RESOURCES.QUICK")
                 ResourceControl("VIDA", character.life.current, character.lifeMaximum, !readOnly) {
-                    onChange(character.copy(life = character.life.withCurrent(it, character.lifeMaximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.LIFE, amount = it - character.life.current))
                 }
                 ResourceControl("SANIDADE", character.sanity.current, character.sanityMaximum, !readOnly) {
-                    onChange(character.copy(sanity = character.sanity.withCurrent(it, character.sanityMaximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.SANITY, amount = it - character.sanity.current))
                 }
                 ResourceControl("ARCANO", character.arcane.current, character.arcaneMaximum, !readOnly) {
-                    onChange(character.copy(arcane = character.arcane.withCurrent(it, character.arcaneMaximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ARCANE, amount = it - character.arcane.current))
                 }
                 ResourceControl("ENERGIA", character.energy.current, character.energyMaximum, !readOnly) {
-                    onChange(character.copy(energy = character.energy.withCurrent(it, character.energyMaximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ENERGY, amount = it - character.energy.current))
                 }
                 ResourceControl("DESTINO", character.destiny.current, character.destiny.maximum, !readOnly) {
-                    onChange(character.copy(destiny = character.destiny.withCurrent(it, character.destiny.maximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.DESTINY, resource = SessionResource.DESTINY, amount = it - character.destiny.current))
                 }
                 ResourceControl("EXAUSTÃO", character.exhaustion.current, character.exhaustion.maximum, !readOnly) {
-                    onChange(character.copy(exhaustion = character.exhaustion.withCurrent(it, character.exhaustion.maximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.EXHAUSTION, amount = it - character.exhaustion.current))
                 }
                 ResourceControl("CORRUPÇÃO", character.corruption.current, character.corruption.maximum, !readOnly) {
-                    onChange(character.copy(corruption = character.corruption.withCurrent(it, character.corruption.maximum)))
+                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.CORRUPTION, amount = it - character.corruption.current))
                 }
             }
         }
@@ -205,17 +208,30 @@ private fun SessionContent(
         }
         item {
             val entries = buildList {
-                character.powers.forEach { add("PODER" to "${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}") }
-                character.mysticAbilities.forEach { add(it.type.ifBlank { "ARCANO" }.uppercase() to "${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}") }
+                character.powers.sortedByDescending { it.favorite }.forEach { add(Triple("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.costResource.name} ${it.costAmount} // ${it.usage.remaining ?: "∞"} uso(s)\n${it.effect}")) }
+                character.mysticAbilities.sortedByDescending { it.favorite }.forEach { add(Triple(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.costResource.name} ${it.costAmount} // ${it.usage.remaining ?: "∞"} uso(s)\n${it.effect}")) }
             }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("ABILITIES.READY")
                 Text("PODERES, MAGIAS, CINZAS E RUNAS", color = Ice, style = MaterialTheme.typography.titleMedium)
                 if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = Muted)
-                entries.forEach { (kind, description) ->
+                entries.forEach { (kind, id, description) ->
                     Column(Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(6.dp)).padding(10.dp)) {
                         Text(kind, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         Text(description, color = MaterialTheme.colorScheme.onSurface)
+                        TextButton(
+                            onClick = { pendingAbilityId = id },
+                            enabled = !readOnly,
+                        ) { Text("USAR") }
+                    }
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("TURN", "SCENE", "REST").forEach { period ->
+                        TextButton(
+                            onClick = { onCommand(character, SessionCommand(type = SessionOperationType.USAGE_RESET, detail = period)) },
+                            enabled = !readOnly,
+                            modifier = Modifier.weight(1f),
+                        ) { Text("NOVO $period") }
                     }
                 }
             }
@@ -234,13 +250,25 @@ private fun SessionContent(
 
     if (damageDialog) DamageDialog(character, onDismiss = { damageDialog = false }) { amount, region ->
         damageDialog = false
-        val protection = character.localProtectionBreakdown(region).total
-        val applied = (amount - protection).coerceAtLeast(0)
-        onChange(character.copy(life = character.life.withCurrent(character.life.current - applied, character.lifeMaximum)))
+        onCommand(character, SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, regionId = region.name))
     }
     if (healingDialog) AmountDialog("APLICAR CURA", character.life.current, character.lifeMaximum, { healingDialog = false }) { amount ->
         healingDialog = false
-        onChange(character.copy(life = character.life.withCurrent(character.life.current + amount, character.lifeMaximum)))
+        onCommand(character, SessionCommand(type = SessionOperationType.HEAL, resource = SessionResource.LIFE, amount = amount))
+    }
+    pendingAbilityId?.let { id ->
+        val power = character.powers.firstOrNull { it.id == id }
+        val ability = character.mysticAbilities.firstOrNull { it.id == id }
+        val name = power?.name ?: ability?.name.orEmpty()
+        val resource = power?.costResource ?: ability?.costResource ?: SessionResource.ARCANE
+        val cost = power?.costAmount ?: ability?.costAmount ?: 0
+        AlertDialog(
+            onDismissRequest = { pendingAbilityId = null },
+            title = { Text("CONFIRMAR USO") },
+            text = { Text("$name consumirá $cost de ${resource.name}. O uso e o limite estruturado serão registrados no histórico.") },
+            confirmButton = { TextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
+            dismissButton = { TextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
+        )
     }
 }
 
@@ -311,7 +339,5 @@ private fun Stepper(value: Int, minimum: Int, maximum: Int, onChange: (Int) -> U
         IconButton({ onChange((value + 1).coerceAtMost(maximum)) }) { Icon(Icons.Default.Add, "Aumentar") }
     }
 }
-
-private fun ResourceValue.withCurrent(value: Int, limit: Int): ResourceValue = copy(current = value.coerceIn(0, limit.coerceAtLeast(0)))
 
 private fun Int.floorMod(divisor: Int): Int = if (divisor <= 0) 0 else Math.floorMod(this, divisor)

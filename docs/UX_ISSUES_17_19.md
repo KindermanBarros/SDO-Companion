@@ -1,8 +1,8 @@
 # Fundação de UX — issues #17, #18 e #19
 
-Esta entrega prepara a navegação e os estados visuais das três issues abertas após as Fases 1 e 2.
-Ela conecta somente ações que já possuem regra e persistência seguras. Auditoria, distribuição de
-conteúdo e registro estruturado de usos continuam identificados como integrações de domínio futuras.
+Esta entrega implementa a navegação, os estados visuais e as integrações de domínio das Fases 3–5.
+Operações, auditoria, distribuição de conteúdo e usos estruturados funcionam offline-first e retomam
+a sincronização conforme a preferência local.
 
 ## Mapa de navegação
 
@@ -23,8 +23,8 @@ conteúdo e registro estruturado de usos continuam identificados como integraç�
 - campanha arquivada sinalizada como somente leitura;
 - densidade compacta configurável para telefones menores.
 
-Ainda depende das regras de domínio da issue: histórico estruturado, idempotência e contadores de uso.
-Por isso a biblioteca de habilidades é somente leitura nesta fundação.
+- usos possuem custo/recurso, confirmação, favoritos, disponibilidade e limites por turno/cena/descanso;
+- operações possuem chave de idempotência e audit log append-only.
 
 ## #18 — Painel do Historiador
 
@@ -34,12 +34,14 @@ Por isso a biblioteca de habilidades é somente leitura nesta fundação.
 - atalhos contextuais para Sessão e Ficha;
 - biblioteca pesquisável do catálogo local, sem criar cópias no Firebase.
 
-CRUD de biblioteca de campanha, distribuição para jogadores e trilha de auditoria serão conectados
-quando os contratos de persistência correspondentes forem implementados.
+- biblioteca permite criação, edição, duplicação e arquivamento;
+- entregas são snapshots independentes, aceitos ou recusados pelo destinatário;
+- bônus em Conhecimento Adquirido exige mapeamento por ficha antes do envio;
+- ações rápidas da Mestre reutilizam as mesmas funções de domínio da sessão.
 
 ## #19 — Aparência e acessibilidade
 
-- três temas persistidos localmente: Neon operacional, Alto contraste e Arcano;
+- seis temas persistidos localmente: Ciano industrial, Verde terminal, Rubro arcano, Violeta onírico, Alto contraste e Sistema;
 - texto padrão ou ampliado aplicado à tipografia global;
 - densidade confortável ou compacta aplicada ao Modo Sessão;
 - preferência imediata e independente de ficha/campanha/Firebase;
@@ -56,4 +58,3 @@ quando os contratos de persistência correspondentes forem implementados.
 | sincronizado | `SYNC_OK` |
 | recurso no limite | controle correspondente é desabilitado |
 | dano absorvido | prévia mostra resultado zero antes da confirmação |
-
