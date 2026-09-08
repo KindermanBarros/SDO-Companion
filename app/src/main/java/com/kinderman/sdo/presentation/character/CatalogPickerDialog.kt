@@ -33,8 +33,8 @@ internal fun CatalogPickerDialog(
     title: String,
     entries: List<CatalogEntry>,
     onDismiss: () -> Unit,
-    onSelect: (CatalogEntry) -> Unit,
     alreadyAddedCatalogIds: Set<String> = emptySet(),
+    onSelect: (CatalogEntry) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
     var selectedAttribute by remember { mutableStateOf("") }
