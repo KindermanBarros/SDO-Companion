@@ -145,11 +145,13 @@ class OfflineFirstCampaignRepository(
 
     override suspend fun createInvite(session: UserSession, campaign: Campaign): CampaignInvite {
         requireOwner(session, campaign)
-        requireActiveCampaign(campaign.id)
+        val existing = requireActiveCampaign(campaign.id)
         val code = generateCode()
         val invite = CampaignInvite(
             id = code,
-            campaignId = campaign.id,
+            campaignId = existing.id,
+            campaignName = existing.name,
+            campaignDescription = existing.description,
             code = code,
             createdBy = session.uid,
             createdAt = System.currentTimeMillis(),
@@ -174,12 +176,14 @@ class OfflineFirstCampaignRepository(
     override suspend fun regenerateInvite(session: UserSession, invite: CampaignInvite): CampaignInvite {
         val campaign = requireCampaign(invite.campaignId)
         requireOwner(session, campaign)
-        requireActiveCampaign(campaign.id)
+        val existing = requireActiveCampaign(campaign.id)
         revokeInvite(session, invite)
         val code = generateCode()
         return CampaignInvite(
             id = code,
-            campaignId = campaign.id,
+            campaignId = existing.id,
+            campaignName = existing.name,
+            campaignDescription = existing.description,
             code = code,
             createdBy = session.uid,
             createdAt = System.currentTimeMillis(),
@@ -199,11 +203,14 @@ class OfflineFirstCampaignRepository(
         } ?: return null
         if (!invite.isUsable()) return null
 
-        val campaign = dao.campaign(invite.campaignId)?.toDomain() ?: run {
-            val store = runCatching { Firebase.firestore }.getOrNull() ?: return null
-            val document = store.collection(CAMPAIGNS).document(invite.campaignId).get().await()
-            document.toObject(CampaignRecord::class.java)?.copy(id = document.id)?.toDomain()
-        } ?: return null
+        val campaign = dao.campaign(invite.campaignId)?.toDomain() ?: Campaign(
+            id = invite.campaignId,
+            name = invite.campaignName.ifBlank { "Campanha" },
+            description = invite.campaignDescription,
+            ownerId = invite.createdBy,
+            state = CampaignState.ACTIVE,
+            dirty = false,
+        )
         if (campaign.isArchived) return null
 
         return CampaignInvitePreview(
@@ -245,10 +252,11 @@ class OfflineFirstCampaignRepository(
         check(character.ownerId == session.uid || existing.ownerId == session.uid) {
             "Você não pode vincular esta ficha à campanha."
         }
-        if (member != null && character.id !in member.characterIds) {
+        val ownerMembership = dao.member(existing.id, character.ownerId)?.toDomain()
+        if (ownerMembership != null && character.id !in ownerMembership.characterIds) {
             dao.upsertMember(
-                member.copy(
-                    characterIds = member.characterIds + character.id,
+                ownerMembership.copy(
+                    characterIds = ownerMembership.characterIds + character.id,
                     updatedAt = System.currentTimeMillis(),
                     dirty = true,
                 ).toRecord(),
@@ -283,12 +291,18 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
-        dao.dirtyCampaigns().forEach { local ->
-            if (local.ownerId == session.uid) {
-                campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
-                dao.markCampaignSynced(local.id, local.updatedAt)
-            }
+        val dirtyCampaigns = dao.dirtyCampaigns().filter { it.ownerId == session.uid }
+        val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
+        val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
+
+        // A campaign document must exist before its bootstrap MASTER membership can be created.
+        newCampaigns.forEach { local ->
+            campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
+            dao.markCampaignSynced(local.id, local.updatedAt)
         }
+
+        // Membership role changes are written before an ownership transfer so the outgoing
+        // owner still has authorization to update both member documents.
         dao.dirtyMembers().forEach { local ->
             if (local.userId == session.uid || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 members.document(memberId(local.campaignId, local.userId))
@@ -301,6 +315,10 @@ class OfflineFirstCampaignRepository(
                 invites.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
                 dao.markInviteSynced(local.id, local.createdAt)
             }
+        }
+        changedCampaigns.forEach { local ->
+            campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
+            dao.markCampaignSynced(local.id, local.updatedAt)
         }
 
         val membershipSnapshot = members.whereEqualTo("userId", session.uid).get().await()
