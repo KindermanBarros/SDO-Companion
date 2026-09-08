@@ -34,7 +34,7 @@ internal fun PhaseOneInventoryWithBonusSection(
     enabled: Boolean,
     onChange: (Character) -> Unit,
 ) {
-    PhaseOneInventorySection(character, catalog, enabled, onChange)
+    PhaseOneStrictInventorySection(character, catalog, enabled, onChange)
     ItemBonusAuditSection(character, enabled, onChange)
 }
 
@@ -102,7 +102,7 @@ private fun ControlledItemBonusEditor(
                         onItem(item.copy(bonuses = item.bonuses.replace(bonusIndex, bonus.copy(target = next))))
                     },
                 ) {
-                    Text("APLICAR EM // ${bonus.target.ifBlank { if (options.isEmpty()) "SEM OPÇÕES" else "SELECIONAR" }}")
+                    Text("APLICAR EM // ${bonus.displayTarget().ifBlank { if (options.isEmpty()) "SEM OPÇÕES" else "SELECIONAR" }}")
                 }
                 IntegerField("Valor", bonus.value, enabled) { value ->
                     onItem(item.copy(bonuses = item.bonuses.replace(bonusIndex, bonus.copy(value = value.coerceIn(-99, 99)))))
