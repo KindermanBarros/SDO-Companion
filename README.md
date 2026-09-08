@@ -23,6 +23,7 @@ As regras visuais, tokens e componentes estão documentados no
 - construtor normal de itens sempre disponível fora da criação inicial, sem consumir PH, além do catálogo e da criação manual livre;
 - itens acima dos Pontos de Herança restantes são bloqueados; itens com custo `#` exigem confirmação do Historiador;
 - Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
+- selecionar um Caminho pré-feito aplica automaticamente lema, três palavras-chave, três pilares e seus dois Poderes de Caminho canônicos;
 - todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
   Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
 - Magias, Runas e Cinzas aceitam expansão contínua por novos exemplos; os procedimentos completos permanecem em `Regras Arcanas Expandidas.md`;

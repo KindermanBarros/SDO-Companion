@@ -23,6 +23,7 @@ import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
+import com.kinderman.sdo.domain.catalog.withPathPreset
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.ui.Acid
@@ -58,7 +59,7 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
         }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR CAMINHO", catalog, { selecting = false }) { entry ->
-        onChange(character.copy(pathName = entry.name, pathMotto = character.pathMotto.ifBlank { entry.summary }))
+        onChange(character.withPathPreset(entry))
         selecting = false
     }
 }
