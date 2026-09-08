@@ -5,6 +5,8 @@ import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemBonus
+import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
@@ -16,6 +18,8 @@ import com.kinderman.sdo.domain.model.defaultAttributes
 
 private const val ROW = "\u001e"
 private const val FIELD = "\u001f"
+private const val BONUS_ROW = "\u001b"
+private const val BONUS_FIELD = "\u001a"
 private fun String.parts() = split(FIELD)
 private fun List<String>.row() = joinToString(FIELD)
 
@@ -50,8 +54,37 @@ class CharacterConverters {
         else Power(name = p.getOrElse(0) { "" }, origin = p.getOrElse(1) { "" }, cost = p.getOrElse(2) { "" }, action = p.getOrElse(3) { "" }, range = p.getOrElse(4) { "" }, duration = p.getOrElse(5) { "" }, limit = p.getOrElse(6) { "" }, effect = p.getOrElse(7) { "" })
     } }
 
-    @TypeConverter fun inventoryToString(value: List<InventoryItem>) = value.joinToString(ROW) { listOf(it.id, it.state, it.name, it.load.toString(), it.durability, it.region, it.effect, it.pg.toString(), it.pl.toString()).row() }
-    @TypeConverter fun stringToInventory(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> InventoryItem(p[0], p.getOrElse(1) { "M" }, p.getOrElse(2) { "" }, p.getOrNull(3)?.toIntOrNull() ?: 0, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrElse(6) { "" }, p.getOrNull(7)?.toIntOrNull() ?: 0, p.getOrNull(8)?.toIntOrNull() ?: 0) } }
+    @TypeConverter fun inventoryToString(value: List<InventoryItem>) = value.joinToString(ROW) { item ->
+        listOf(
+            item.id, item.state, item.name, item.load.toString(), item.durability, item.region,
+            item.effect, item.pg.toString(), item.pl.toString(), item.category,
+            item.agilityLimit?.toString().orEmpty(), item.quality,
+            item.bonuses.joinToString(BONUS_ROW) { bonus ->
+                listOf(bonus.type.name, bonus.target, bonus.value.toString()).joinToString(BONUS_FIELD)
+            },
+        ).row()
+    }
+
+    @TypeConverter fun stringToInventory(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { row ->
+        row.parts().let { p ->
+            InventoryItem(
+                id = p[0], state = p.getOrElse(1) { "M" }, name = p.getOrElse(2) { "" },
+                load = p.getOrNull(3)?.toIntOrNull() ?: 0, durability = p.getOrElse(4) { "" },
+                region = p.getOrElse(5) { "" }, effect = p.getOrElse(6) { "" },
+                pg = p.getOrNull(7)?.toIntOrNull() ?: 0, pl = p.getOrNull(8)?.toIntOrNull() ?: 0,
+                category = p.getOrElse(9) { "" }, agilityLimit = p.getOrNull(10)?.toIntOrNull(),
+                quality = p.getOrElse(11) { "Comum" },
+                bonuses = p.getOrElse(12) { "" }.split(BONUS_ROW).filter(String::isNotBlank).map { encoded ->
+                    val fields = encoded.split(BONUS_FIELD)
+                    ItemBonus(
+                        type = runCatching { ItemBonusType.valueOf(fields[0]) }.getOrDefault(ItemBonusType.ATTRIBUTE),
+                        target = fields.getOrElse(1) { "" },
+                        value = fields.getOrNull(2)?.toIntOrNull() ?: 0,
+                    )
+                },
+            )
+        }
+    }
 
     @TypeConverter fun knowledgesToString(value: List<SpecialKnowledge>) = value.joinToString(ROW) { listOf(it.id, it.name, it.attribute, it.value.toString()).row() }
     @TypeConverter fun stringToKnowledges(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> SpecialKnowledge(p[0], p.getOrElse(1) { "" }, p.getOrElse(2) { "" }, p.getOrNull(3)?.toIntOrNull() ?: 0) } }
