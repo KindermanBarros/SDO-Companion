@@ -27,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -94,12 +95,24 @@ fun HistorianDashboardScreen(
     var actionTarget by remember { mutableStateOf<Character?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
-    val historianCampaignIds = remember(session, campaigns) {
+    var choosingCampaign by remember { mutableStateOf(false) }
+    var selectedCampaignId by remember { mutableStateOf("") }
+    val historianCampaignIds = remember(session, campaigns, memberships) {
+        val memberCampaignIds = memberships.filter {
+            it.userId == session.uid && it.isActive && it.role == CampaignRole.HISTORIAN
+        }.map(CampaignMember::campaignId)
         campaigns.filter { campaign ->
-            session.isAdmin || campaign.ownerId == session.uid
+            session.isAdmin || campaign.ownerId == session.uid || campaign.id in memberCampaignIds
         }.mapTo(linkedSetOf(), Campaign::id)
     }
     val visibleCampaigns = campaigns.filter { it.id in historianCampaignIds }
+    LaunchedEffect(visibleCampaigns.map(Campaign::id)) {
+        if (selectedCampaignId !in historianCampaignIds) selectedCampaignId = visibleCampaigns.firstOrNull()?.id.orEmpty()
+    }
+    val selectedCampaign = visibleCampaigns.firstOrNull { it.id == selectedCampaignId }
+    val selectedCharacters = characters.filter { normalizeCampaignId(it.campaignId) == selectedCampaignId }
+    val selectedAudit = audit.filter { it.campaignId == selectedCampaignId }
+    val selectedLibrary = library.filter { it.campaignId == selectedCampaignId }
 
     HudBackground {
         Scaffold(
@@ -132,6 +145,15 @@ fun HistorianDashboardScreen(
                         }
                     }
                 }
+                item {
+                    TextButton(
+                        onClick = { choosingCampaign = true },
+                        enabled = visibleCampaigns.isNotEmpty(),
+                        modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)),
+                    ) {
+                        Text("CAMPANHA // ${selectedCampaign?.name?.uppercase() ?: "NENHUMA DISPONÍVEL"}")
+                    }
+                }
                 when (section) {
                     HistorianSection.OPERATION -> {
                         item {
@@ -147,8 +169,8 @@ fun HistorianDashboardScreen(
                                 Text("Entre como Historiador ou responsável por uma campanha para acessar esta visão.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
-                        visibleCampaigns.forEach { campaign ->
-                            val campaignCharacters = characters.filter { normalizeCampaignId(it.campaignId) == campaign.id }
+                        selectedCampaign?.let { campaign ->
+                            val campaignCharacters = selectedCharacters
                             item("campaign:${campaign.id}") {
                                 TechPanel(accent = if (campaign.isArchived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary) {
                                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -187,15 +209,15 @@ fun HistorianDashboardScreen(
                                     onValue = { search = it },
                                 )
                                 TextButton({
-                                    visibleCampaigns.firstOrNull()?.let { editingLibrary = CampaignLibraryEntry(campaignId = it.id, createdBy = session.uid) }
-                                }, enabled = visibleCampaigns.isNotEmpty()) { Text("+ NOVO MODELO") }
+                                    selectedCampaign?.let { editingLibrary = CampaignLibraryEntry(campaignId = it.id, createdBy = session.uid) }
+                                }, enabled = selectedCampaign != null) { Text("+ NOVO MODELO") }
                             }
                         }
-                        val filteredLibrary = library.filter { entry -> search.isBlank() || listOf(entry.name, entry.summary, entry.kind.name).any { it.contains(search.trim(), true) } }
+                        val filteredLibrary = selectedLibrary.filter { entry -> search.isBlank() || listOf(entry.name, entry.summary, entry.kind.name).any { it.contains(search.trim(), true) } }
                         item {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text("${filteredLibrary.size} MODELOS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-                                Text("${deliveries.count { it.state.name == "PENDING" }} ENTREGAS PENDENTES", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                                Text("${deliveries.count { it.campaignId == selectedCampaignId && it.state.name == "PENDING" }} ENTREGAS PENDENTES", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                             }
                         }
                         items(filteredLibrary, key = { "library:${it.id}" }) { entry ->
@@ -208,12 +230,12 @@ fun HistorianDashboardScreen(
                     HistorianSection.AUDIT -> {
                         item {
                             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                                TelemetryTag("APPEND_ONLY.${audit.size}")
+                                TelemetryTag("APPEND_ONLY.${selectedAudit.size}")
                                 Text("HISTÓRICO DA CAMPANHA", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                                 Text("Autor, alvo e valores anteriores/novos são preservados em registros imutáveis.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
-                        items(audit, key = { "audit:${it.id}" }) { operation ->
+                        items(selectedAudit, key = { "audit:${it.id}" }) { operation ->
                             TechPanel(accent = if (operation.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     TelemetryTag(operation.type.name)
@@ -228,6 +250,24 @@ fun HistorianDashboardScreen(
                 }
             }
         }
+    }
+    if (choosingCampaign) {
+        AlertDialog(
+            onDismissRequest = { choosingCampaign = false },
+            title = { Text("SELECIONAR CAMPANHA") },
+            text = {
+                Column {
+                    visibleCampaigns.forEach { campaign ->
+                        TextButton(
+                            onClick = { selectedCampaignId = campaign.id; choosingCampaign = false },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(campaign.name.uppercase()) }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { choosingCampaign = false }) { Text("CANCELAR") } },
+        )
     }
     actionTarget?.let { character -> QuickActionsDialog(character, { actionTarget = null }) { command -> onApplyCommand(character, command); actionTarget = null } }
     editingLibrary?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
