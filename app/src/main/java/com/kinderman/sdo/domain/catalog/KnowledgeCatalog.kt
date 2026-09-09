@@ -62,7 +62,7 @@ object KnowledgeCatalog {
         ),
         arcane(
             id = "knowledge.arcane.runas",
-            name = "Estudo de Runas",
+            name = "Runas",
             category = "Estudo arcano",
             attribute = "POD",
             description = "Conhecimento teórico e prático de estruturas rúnicas e seus fenômenos.",
@@ -71,7 +71,7 @@ object KnowledgeCatalog {
         ),
         arcane(
             id = "knowledge.arcane.cinzas",
-            name = "Estudo de Cinzas",
+            name = "Cinzas",
             category = "Estudo arcano",
             attribute = "POD",
             description = "Conhecimento de Cinzas, aplicações tecnomágicas e fenômenos associados.",

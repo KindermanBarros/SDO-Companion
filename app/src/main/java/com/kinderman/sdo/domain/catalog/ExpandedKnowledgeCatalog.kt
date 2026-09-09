@@ -72,12 +72,12 @@ internal object ExpandedKnowledgeCatalog {
     """)
 
     private val arcane = rows(CatalogKind.ARCANE_KNOWLEDGE, """
-        necromancia|Estudo de Necromancia|Escola arcana|POD|Investiga morte, espíritos e decadência sem prometer restauração verdadeira.
-        abjuracao|Estudo de Abjuração|Escola arcana|POD|Constrói barreiras, dissipações e selos de negação.
-        invocacao|Estudo de Invocação|Escola arcana|POD|Chama matéria, ferramentas e presenças temporárias mediante vínculo.
-        encantamento|Estudo de Encantamento|Escola arcana|POD|Influencia emoções e impulsos sem apagar identidade.
-        ilusao|Estudo de Ilusão|Escola arcana|POD|Molda percepção sensorial e enfrenta observadores atentos.
-        transmutacao|Estudo de Transmutação|Escola arcana|POD|Altera propriedades materiais sem criar riqueza permanente.
+        necromancia|Necromancia|Escola arcana|POD|Investiga morte, espíritos e decadência sem prometer restauração verdadeira.
+        abjuracao|Abjuração|Escola arcana|POD|Constrói barreiras, dissipações e selos de negação.
+        invocacao|Invocação|Escola arcana|POD|Chama matéria, ferramentas e presenças temporárias mediante vínculo.
+        encantamento|Encantamento|Escola arcana|POD|Influencia emoções e impulsos sem apagar identidade.
+        ilusao|Ilusão|Escola arcana|POD|Molda percepção sensorial e enfrenta observadores atentos.
+        transmutacao|Transmutação|Escola arcana|POD|Altera propriedades materiais sem criar riqueza permanente.
         electromancia|Electromancia|Escola arcana|POD|Conduz eletricidade, nervos e velocidade pelos circuitos do mundo.
         litomancia|Litomancia|Escola arcana|POD|Trabalha pedra, peso e estrutura com precisão mineral.
         natureza_arcana|Natureza Arcana|Escola arcana|POD|Negocia com plantas, animais e ciclos orgânicos vivos.

@@ -36,5 +36,6 @@ class BuiltInCatalogTest {
         assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ACQUIRED_KNOWLEDGE })
         assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ARCANE_KNOWLEDGE })
         assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.BATTLE_TECHNIQUE })
+        assertTrue(KnowledgeCatalog.entries.none { it.name.startsWith("Estudo de ", ignoreCase = true) })
     }
 }
