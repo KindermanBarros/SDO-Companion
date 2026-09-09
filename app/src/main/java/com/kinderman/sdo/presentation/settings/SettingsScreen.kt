@@ -78,9 +78,9 @@ fun SettingsScreen(
                 }
                 item {
                     TogglePanel("INTERFACE", listOf(
-                        Triple("Auditoria de valores", preferences.showValueAudit, { value: Boolean -> onPreferencesChange(preferences.copy(showValueAudit = value)) }),
                         Triple("Cartões compactos", preferences.compactCards, { value: Boolean -> onPreferencesChange(preferences.copy(compactCards = value)) }),
                         Triple("Recolher seções longas", preferences.collapseLongSections, { value: Boolean -> onPreferencesChange(preferences.copy(collapseLongSections = value)) }),
+                        Triple("Auditoria de valores", preferences.calculationAuditEnabled, { value: Boolean -> onPreferencesChange(preferences.copy(calculationAuditEnabled = value)) }),
                     ))
                 }
                 item {

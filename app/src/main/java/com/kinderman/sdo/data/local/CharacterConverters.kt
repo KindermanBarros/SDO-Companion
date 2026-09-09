@@ -2,7 +2,6 @@ package com.kinderman.sdo.data.local
 
 import androidx.room.TypeConverter
 import com.kinderman.sdo.domain.model.AttributeValue
-import com.kinderman.sdo.domain.model.AbilityUsageLimit
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
@@ -14,10 +13,8 @@ import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.ResourceValue
-import com.kinderman.sdo.domain.model.SessionResource
 import com.kinderman.sdo.domain.model.SkillValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
-import com.kinderman.sdo.domain.model.UsagePeriod
 import com.kinderman.sdo.domain.model.defaultAttributes
 
 private const val ROW = "\u001e"
@@ -52,7 +49,7 @@ class CharacterConverters {
         listOf(attribute.name, attribute.acronym, attribute.value.toString(), attribute.modifier.toString(), attribute.skills.joinToString(ROW) { listOf(it.name, it.value.toString(), it.modifier.toString()).row() }).joinToString("\u001c")
     }
     @TypeConverter fun stringToAttributes(value: String) = if (value.isEmpty()) defaultAttributes() else value.split("\u001d").map { row ->
-        row.split("\u001c").let { fields -> AttributeValue(fields[0], fields[1], fields.getOrNull(2)?.toIntOrNull() ?: 0, fields.getOrNull(3)?.toIntOrNull() ?: 0, fields.getOrNull(4).orEmpty().split(ROW).filter(String::isNotEmpty).map { skill -> skill.parts().let { SkillValue(it[0], it.getOrNull(1)?.toIntOrNull() ?: 0, it.getOrNull(2)?.toIntOrNull() ?: 0) } }) }
+        row.split("\u001c").let { fields -> AttributeValue(fields[0], fields.getOrElse(1) { "" }, fields.getOrNull(2)?.toIntOrNull() ?: 0, fields.getOrNull(3)?.toIntOrNull() ?: 0, fields.getOrNull(4).orEmpty().split(ROW).filter(String::isNotEmpty).map { skill -> skill.parts().let { SkillValue(it[0], it.getOrNull(1)?.toIntOrNull() ?: 0, it.getOrNull(2)?.toIntOrNull() ?: 0) } }) }
     }
 
     @TypeConverter fun powersToString(value: List<Power>) = value.joinToString(ROW) {
@@ -78,12 +75,6 @@ class CharacterConverters {
             it.catalogVersion.toString(),
             it.favorite.toString(),
             it.available.toString(),
-            it.costResource.name,
-            it.costAmount.toString(),
-            it.usage.period.name,
-            it.usage.maximum.toString(),
-            it.usage.used.toString(),
-            it.usage.periodKey,
         ).row()
     }
 
@@ -113,16 +104,6 @@ class CharacterConverters {
                     catalogVersion = p.getOrNull(18)?.toIntOrNull() ?: 0,
                     favorite = p.getOrNull(19)?.toBooleanStrictOrNull() ?: false,
                     available = p.getOrNull(20)?.toBooleanStrictOrNull() ?: true,
-                    costResource = runCatching { SessionResource.valueOf(p.getOrElse(21) { SessionResource.ARCANE.name }) }
-                        .getOrDefault(SessionResource.ARCANE),
-                    costAmount = p.getOrNull(22)?.toIntOrNull() ?: 0,
-                    usage = AbilityUsageLimit(
-                        period = runCatching { UsagePeriod.valueOf(p.getOrElse(23) { UsagePeriod.NONE.name }) }
-                            .getOrDefault(UsagePeriod.NONE),
-                        maximum = p.getOrNull(24)?.toIntOrNull() ?: 0,
-                        used = p.getOrNull(25)?.toIntOrNull() ?: 0,
-                        periodKey = p.getOrElse(26) { "" },
-                    ),
                 )
             } else {
                 Power(
@@ -223,8 +204,8 @@ class CharacterConverters {
     @TypeConverter fun abilitiesToString(value: List<MysticAbility>) = value.joinToString(ROW) {
         listOf(
             it.id, it.type, it.name, it.cost, it.action, it.range, it.duration, it.effect,
-            it.favorite.toString(), it.available.toString(), it.costResource.name, it.costAmount.toString(),
-            it.usage.period.name, it.usage.maximum.toString(), it.usage.used.toString(), it.usage.periodKey,
+            it.favorite.toString(), it.available.toString(), "catalog-v2", it.category, it.source,
+            it.ruleReference, it.catalogEntryId, it.catalogVersion.toString(),
         ).row()
     }
     @TypeConverter fun stringToAbilities(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map {
@@ -235,16 +216,11 @@ class CharacterConverters {
                 duration = p.getOrElse(6) { "" }, effect = p.getOrElse(7) { "" },
                 favorite = p.getOrNull(8)?.toBooleanStrictOrNull() ?: false,
                 available = p.getOrNull(9)?.toBooleanStrictOrNull() ?: true,
-                costResource = runCatching { SessionResource.valueOf(p.getOrElse(10) { SessionResource.ARCANE.name }) }
-                    .getOrDefault(SessionResource.ARCANE),
-                costAmount = p.getOrNull(11)?.toIntOrNull() ?: 0,
-                usage = AbilityUsageLimit(
-                    period = runCatching { UsagePeriod.valueOf(p.getOrElse(12) { UsagePeriod.NONE.name }) }
-                        .getOrDefault(UsagePeriod.NONE),
-                    maximum = p.getOrNull(13)?.toIntOrNull() ?: 0,
-                    used = p.getOrNull(14)?.toIntOrNull() ?: 0,
-                    periodKey = p.getOrElse(15) { "" },
-                ),
+                category = p.getOrElse(11) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                source = p.getOrElse(12) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                ruleReference = p.getOrElse(13) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                catalogEntryId = p.getOrElse(14) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                catalogVersion = p.getOrNull(15)?.toIntOrNull().takeIf { p.getOrNull(10) == "catalog-v2" } ?: 0,
             )
         }
     }

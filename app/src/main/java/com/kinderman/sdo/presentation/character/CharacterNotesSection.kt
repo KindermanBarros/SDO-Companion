@@ -28,11 +28,11 @@ import com.kinderman.sdo.ui.TechPanel
 
 @Composable
 internal fun NotesSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("15", "Registros pessoais")
         Text(
             "Crie registros separados para pistas, memórias e acontecimentos da campanha.",
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
         )
 
@@ -85,11 +85,11 @@ private fun PersonalNoteCard(
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = TechCutDark,
+                color = MaterialTheme.colorScheme.outlineVariant,
                 shape = CutCornerShape(topEnd = 18.dp, bottomStart = 10.dp),
             ),
         shape = CutCornerShape(topEnd = 18.dp, bottomStart = 10.dp),
-        colors = CardDefaults.cardColors(containerColor = Panel),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -99,7 +99,7 @@ private fun PersonalNoteCard(
                 Text(
                     "REGISTRO ${(index + 1).toString().padStart(2, '0')}",
                     modifier = Modifier.weight(1f),
-                    color = Ice,
+                    color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.labelLarge,
                 )
                 RemoveButton(enabled, "Remover registro", onRemove)

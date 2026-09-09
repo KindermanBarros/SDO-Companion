@@ -75,7 +75,7 @@ internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (
 
 @Composable
 internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("02", "Recursos")
         CalculatedResourceEditor(
             label = "VIDA",
@@ -83,7 +83,7 @@ internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (
             resource = character.life,
             base = character.lifeBase,
             maximum = character.lifeMaximum,
-            accent = StatHeaderLight,
+            accent = MaterialTheme.colorScheme.secondary,
             enabled = enabled,
         ) { onChange(character.copy(life = it)) }
         CalculatedResourceEditor(
@@ -92,7 +92,7 @@ internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (
             resource = character.sanity,
             base = character.sanityBase,
             maximum = character.sanityMaximum,
-            accent = StatHeader,
+            accent = MaterialTheme.colorScheme.secondary,
             enabled = enabled,
         ) { onChange(character.copy(sanity = it)) }
         CalculatedResourceEditor(
@@ -101,7 +101,7 @@ internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (
             resource = character.arcane,
             base = character.arcaneBase,
             maximum = character.arcaneMaximum,
-            accent = AuraBlue,
+            accent = MaterialTheme.colorScheme.secondary,
             enabled = enabled,
         ) { onChange(character.copy(arcane = it)) }
         CalculatedResourceEditor(
@@ -110,12 +110,12 @@ internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (
             resource = character.energy,
             base = character.energyBase,
             maximum = character.energyMaximum,
-            accent = EnergyBlue,
+            accent = MaterialTheme.colorScheme.secondary,
             enabled = enabled,
         ) { onChange(character.copy(energy = it)) }
-        ManualResourceEditor("DESTINO", character.destiny, AcidCyan, enabled) { onChange(character.copy(destiny = it)) }
-        ManualResourceEditor("EXAUSTÃO", character.exhaustion, NeonCoral, enabled) { onChange(character.copy(exhaustion = it)) }
-        ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption, AcidMagenta, enabled) { onChange(character.copy(corruption = it)) }
+        ManualResourceEditor("DESTINO", character.destiny, MaterialTheme.colorScheme.secondary, enabled) { onChange(character.copy(destiny = it)) }
+        ManualResourceEditor("EXAUSTÃO", character.exhaustion, MaterialTheme.colorScheme.error, enabled) { onChange(character.copy(exhaustion = it)) }
+        ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption, MaterialTheme.colorScheme.tertiary, enabled) { onChange(character.copy(corruption = it)) }
     }
 }
 
@@ -189,7 +189,7 @@ private fun ManualResourceEditor(label: String, resource: ResourceValue, accent:
 
 @Composable
 internal fun TraitSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("03", "Traços")
         TraitList("Positivos", character.positiveTraits, enabled) { onChange(character.copy(positiveTraits = it)) }
         TraitList("Negativos", character.negativeTraits, enabled) { onChange(character.copy(negativeTraits = it)) }
@@ -198,7 +198,7 @@ internal fun TraitSection(character: Character, enabled: Boolean, onChange: (Cha
 
 @Composable
 private fun TraitList(title: String, values: List<String>, enabled: Boolean, onValues: (List<String>) -> Unit) {
-    Text(title.uppercase(), color = LabelFunctional, style = MaterialTheme.typography.labelLarge)
+    Text(title.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, value ->
         Row(Modifier.fillMaxWidth()) {
             HudTextField("Traço ${index + 1}", value, Modifier.weight(1f), enabled = enabled) { onValues(values.replace(index, it)) }
@@ -210,11 +210,11 @@ private fun TraitList(title: String, values: List<String>, enabled: Boolean, onV
 
 @Composable
 internal fun AttributeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = TechCutDark) {
+    TechPanel(accent = MaterialTheme.colorScheme.outlineVariant) {
         SectionHeader("04", "Atributos e conhecimentos")
         character.attributes.forEachIndexed { attributeIndex, attribute ->
             AttributeEditor(character, attribute, enabled) { updated -> onChange(character.copy(attributes = character.attributes.replace(attributeIndex, updated))) }
-            if (attributeIndex != character.attributes.lastIndex) HorizontalDivider(color = TechCutDark)
+            if (attributeIndex != character.attributes.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }
@@ -227,16 +227,16 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
         { IntegerField("Modificador", attribute.modifier, enabled, it) { value -> onValue(attribute.copy(modifier = value)) } },
     )
     if (character.attributeTotal(attribute.acronym) != attribute.value) {
-        Text("TOTAL EQUIPADO // ${character.attributeTotal(attribute.acronym)}", color = Acid, style = MaterialTheme.typography.labelSmall)
+        Text("TOTAL EQUIPADO // ${character.attributeTotal(attribute.acronym)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
     }
     attribute.skills.forEachIndexed { index, skill ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(skill.name.uppercase(), color = LabelFunctional, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
+            Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
             IntegerField("Valor", skill.value, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value)))) }
             IntegerField("Mod.", skill.modifier, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(modifier = value)))) }
         }
         if (character.basicKnowledgeTotal(attribute.acronym, skill.name) != skill.value) {
-            Text("${skill.name.uppercase()} EQUIPADO // ${character.basicKnowledgeTotal(attribute.acronym, skill.name)}", color = Acid, style = MaterialTheme.typography.labelSmall)
+            Text("${skill.name.uppercase()} EQUIPADO // ${character.basicKnowledgeTotal(attribute.acronym, skill.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -259,11 +259,11 @@ private fun KnowledgeList(
     totalValue: (String) -> Int,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
-    Text(title.uppercase(), color = Acid, style = MaterialTheme.typography.labelLarge)
+    Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp)) {
             Row(Modifier.fillMaxWidth()) {
-                Text("REG.${(index + 1).toString().padStart(2, '0')}", color = LabelFunctional, modifier = Modifier.weight(1f))
+                Text("REG.${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                 RemoveButton(enabled, "Remover conhecimento") { onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index }) }
             }
             HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
@@ -272,7 +272,7 @@ private fun KnowledgeList(
                 { IntegerField("Valor", knowledge.value, enabled, it) { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
             )
             if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value) {
-                Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
@@ -281,7 +281,7 @@ private fun KnowledgeList(
 
 @Composable
 internal fun ProtectionSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = AcidCyan) {
+    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
         SectionHeader("06", "Proteções")
         val formulas = linkedMapOf(
             "Geral" to "10 + PG DOS EQUIPAMENTOS",
@@ -322,22 +322,22 @@ private fun ProtectionEditor(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, AcidCyan, CutCornerShape(topEnd = 12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.secondary, CutCornerShape(topEnd = 12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-            Text("TOTAL $total", color = AcidCyan, style = MaterialTheme.typography.titleLarge)
+            Text("TOTAL $total", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
         }
-        Text("CÁLCULO // $formula = $base", color = LabelFunctional, style = MaterialTheme.typography.labelSmall)
+        Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             IconButton(
                 enabled = enabled && adjustment > -base,
                 onClick = { onAdjustment(adjustment - 1) },
             ) {
-                Icon(Icons.Default.Remove, "Diminuir ajuste de $name", tint = AcidCyan)
+                Icon(Icons.Default.Remove, "Diminuir ajuste de $name", tint = MaterialTheme.colorScheme.secondary)
             }
             IntegerField(
                 label = "Ajuste (+/-)",
@@ -351,13 +351,13 @@ private fun ProtectionEditor(
                 enabled = enabled,
                 onClick = { onAdjustment(adjustment + 1) },
             ) {
-                Icon(Icons.Default.Add, "Aumentar ajuste de $name", tint = AcidCyan)
+                Icon(Icons.Default.Add, "Aumentar ajuste de $name", tint = MaterialTheme.colorScheme.secondary)
             }
         }
         val adjustmentLabel = if (adjustment >= 0) "+$adjustment" else adjustment.toString()
         Text(
             "BASE $base // AJUSTE $adjustmentLabel // TOTAL $total",
-            color = AcidCyan,
+            color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.labelSmall,
         )
     }

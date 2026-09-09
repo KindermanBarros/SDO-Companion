@@ -145,7 +145,7 @@ private fun SessionContent(
         verticalArrangement = Arrangement.spacedBy(spacing),
     ) {
         item {
-            TechPanel(accent = if (character.dirty) Signal else Acid) {
+            TechPanel(accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     TelemetryTag("SESSION.MODE")
                     TelemetryTag(
@@ -170,7 +170,7 @@ private fun SessionContent(
             }
         }
         item {
-            TechPanel(accent = AcidCyan) {
+            TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("RESOURCES.QUICK")
                 ResourceControl("VIDA", character.life.current, character.lifeMaximum, !readOnly) {
                     onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.LIFE, amount = it - character.life.current))
@@ -209,8 +209,8 @@ private fun SessionContent(
         }
         item {
             val entries = buildList {
-                character.powers.sortedByDescending { it.favorite }.forEach { add(Triple("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.costResource.name} ${it.costAmount} // ${it.usage.remaining ?: "∞"} uso(s)\n${it.effect}")) }
-                character.mysticAbilities.sortedByDescending { it.favorite }.forEach { add(Triple(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.costResource.name} ${it.costAmount} // ${it.usage.remaining ?: "∞"} uso(s)\n${it.effect}")) }
+                character.powers.sortedByDescending { it.favorite }.forEach { add(Triple("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}")) }
+                character.mysticAbilities.sortedByDescending { it.favorite }.forEach { add(Triple(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}")) }
             }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("ABILITIES.READY")
@@ -226,23 +226,10 @@ private fun SessionContent(
                         ) { Text("USAR") }
                     }
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf("TURN", "SCENE", "REST").forEach { period ->
-                        TextButton(
-                            onClick = { onCommand(character, SessionCommand(type = SessionOperationType.USAGE_RESET, detail = period)) },
-                            enabled = !readOnly,
-                            modifier = Modifier.weight(1f),
-                        ) { com.kinderman.sdo.ui.AdaptiveActionLabel("+ " + when (period) {
-                            "TURN" -> "Turno"
-                            "SCENE" -> "Cena"
-                            else -> "Descanso"
-                        }) }
-                    }
-                }
             }
         }
         item {
-            TechPanel(accent = if (character.conditions.isEmpty()) Acid else Signal) {
+            TechPanel(accent = if (character.conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
                 TelemetryTag("CONDITIONS.${character.conditions.size}")
                 Text("Condições", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 if (character.conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -265,12 +252,11 @@ private fun SessionContent(
         val power = character.powers.firstOrNull { it.id == id }
         val ability = character.mysticAbilities.firstOrNull { it.id == id }
         val name = power?.name ?: ability?.name.orEmpty()
-        val resource = power?.costResource ?: ability?.costResource ?: SessionResource.ARCANE
-        val cost = power?.costAmount ?: ability?.costAmount ?: 0
+        val cost = power?.cost ?: ability?.cost.orEmpty()
         AlertDialog(
             onDismissRequest = { pendingAbilityId = null },
             title = { Text("CONFIRMAR USO") },
-            text = { Text("$name consumirá $cost de ${resource.name}. O uso e o limite estruturado serão registrados no histórico.") },
+            text = { Text("$name // ${cost.ifBlank { "sem custo" }}. Custos fixos em PV, PS, PM, PE ou Destino serão descontados; custos em dados continuam sob controle da mesa.") },
             confirmButton = { TextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
             dismissButton = { TextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
         )
@@ -310,7 +296,7 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
                     TextButton({ regionIndex = (regionIndex + 1).floorMod(character.bodyRegions.size) }) { Text("›") }
                 }
                 Text("3. P.L. local: $protection")
-                Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) Signal else Acid)
+                Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                 Text("Nada é alterado antes da confirmação.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         },

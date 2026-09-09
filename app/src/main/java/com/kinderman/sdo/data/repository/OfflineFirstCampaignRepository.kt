@@ -49,6 +49,9 @@ class OfflineFirstCampaignRepository(
     override fun observeInvites(campaignId: String): Flow<List<CampaignInvite>> =
         dao.observeInvites(campaignId).map { values -> values.map(CampaignInviteRecord::toDomain) }
 
+    override fun observeAllInvites(): Flow<List<CampaignInvite>> =
+        dao.observeAllInvites().map { values -> values.map(CampaignInviteRecord::toDomain) }
+
     override suspend fun create(session: UserSession, name: String, description: String): Campaign {
         val now = System.currentTimeMillis()
         val campaign = Campaign(
@@ -116,7 +119,7 @@ class OfflineFirstCampaignRepository(
         check(session.isAdmin || remote.getString("ownerId") == session.uid) { "Sem permissão para excluir." }
         val characters = store.collection("characters").whereEqualTo("campaignId", campaign.id)
             .get(com.google.firebase.firestore.Source.SERVER).await().documents
-        check(characters.size <= 450) { "Esta campanha exige exclusão administrativa por conter mais de 450 fichas." }
+        check(characters.size <= 450) { "Desvincule algumas fichas antes de excluir: o limite seguro por operação é de 450 fichas." }
         val now = System.currentTimeMillis()
         val batch = store.batch()
         characters.forEach { batch.update(it.reference, mapOf("campaignId" to "", "updatedAt" to now)) }
@@ -265,19 +268,18 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
-        // Reconcile terminal state before replaying stale offline campaign edits.
-        dao.dirtyCampaigns().filter { it.lastSyncedAt != 0L && (session.isAdmin || it.ownerId == session.uid) }.forEach { local ->
-            val remote = campaigns.document(local.id).get().await()
+        dao.allCampaigns().filter { it.lastSyncedAt != 0L && it.state != CampaignState.DELETED.name && (session.isAdmin || it.ownerId == session.uid || dao.member(it.id, session.uid)?.state == CampaignMemberState.ACTIVE.name) }.forEach { local ->
+            val remote = campaigns.document(local.id).get(com.google.firebase.firestore.Source.SERVER).await()
                 .toObject(CampaignRecord::class.java)
             if (remote?.state == CampaignState.DELETED.name) {
                 dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
-                characterDao.all().filter { it.campaignId == local.id }.forEach {
+                characterDao.inCampaign(local.id).forEach {
                     characterDao.upsert(it.copy(campaignId = "", dirty = true))
                 }
             }
         }
         val deletedIds = dao.allCampaigns().filter { it.state == CampaignState.DELETED.name }.map { it.id }.toSet()
-        val dirtyCampaigns = dao.dirtyCampaigns().filter { session.isAdmin || it.ownerId == session.uid }
+        val dirtyCampaigns = dao.dirtyCampaigns().filterNot { it.id in deletedIds }.filter { session.isAdmin || it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
         val dirtyMembers = dao.dirtyMembers().filterNot { it.campaignId in deletedIds }
@@ -341,7 +343,7 @@ class OfflineFirstCampaignRepository(
         }
 
         val manageableIds = dao.allCampaigns()
-            .filter { session.isAdmin || it.ownerId == session.uid }
+            .filter { it.state != CampaignState.DELETED.name && (session.isAdmin || it.ownerId == session.uid) }
             .mapTo(mutableSetOf()) { it.id }
         manageableIds.forEach { campaignId ->
             members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
@@ -354,6 +356,8 @@ class OfflineFirstCampaignRepository(
                 }
                 dao.upsertMember(migrated.copy(dirty = false, lastSyncedAt = migrated.updatedAt))
             }
+        }
+        (campaignIds - deletedIds).forEach { campaignId ->
             invites.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)
             }.forEach { dao.upsertInvite(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }

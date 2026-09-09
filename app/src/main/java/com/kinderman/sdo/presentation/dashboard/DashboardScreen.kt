@@ -2,6 +2,8 @@ package com.kinderman.sdo.presentation.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Visibility
@@ -40,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
+import com.kinderman.sdo.domain.model.CampaignInvite
 import com.kinderman.sdo.domain.model.CampaignDelivery
 import com.kinderman.sdo.domain.model.CampaignDeliveryState
 import com.kinderman.sdo.domain.model.CampaignMember
@@ -78,11 +85,13 @@ fun DashboardScreen(
     characters: List<Character>,
     campaigns: List<Campaign>,
     memberships: List<CampaignMember>,
+    campaignInvites: List<CampaignInvite>,
     campaignMembers: List<CampaignMember>,
     owners: List<UserProfile>,
     session: UserSession?,
     syncing: Boolean,
     compactCards: Boolean,
+    collapseCampaignCards: Boolean,
     showArchivedCampaigns: Boolean,
     invitePreview: CampaignInvitePreview?,
     snackbarHost: @Composable () -> Unit,
@@ -94,7 +103,6 @@ fun DashboardScreen(
     onArchiveCampaign: (Campaign, Boolean) -> Unit,
     onDeleteCampaign: (Campaign) -> Unit,
     onLeaveCampaign: (Campaign) -> Unit,
-    onCreateInvite: (Campaign) -> Unit,
     onPreviewInvite: (String) -> Unit,
     onAcceptInvite: (String, Character?, Boolean) -> Unit,
     onDismissInvitePreview: () -> Unit,
@@ -106,31 +114,40 @@ fun DashboardScreen(
     onRespondDelivery: (CampaignDelivery, Boolean) -> Unit,
     onLogout: () -> Unit,
 ) {
-    var deletingCampaign by remember { mutableStateOf<Campaign?>(null) }
     val admin = session?.isAdmin == true
     val uid = session?.uid.orEmpty()
     val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
     val rolesByCampaign = remember(memberships) { memberships.associateBy({ it.campaignId }, { it.role }) }
-    val activeCampaigns = campaigns.filterNot(Campaign::isArchived)
-    val archivedCampaigns = if (showArchivedCampaigns) campaigns.filter(Campaign::isArchived) else emptyList()
     var ownerTarget by remember { mutableStateOf<Character?>(null) }
     var createCampaign by remember { mutableStateOf(false) }
     var joinCampaign by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    var ownerFilter by remember { mutableStateOf<String?>(null) }
-    var campaignFilter by remember { mutableStateOf<String?>(null) }
-    var statusFilter by remember { mutableStateOf(AdminCharacterStatus.ALL) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var campaignSearchQuery by rememberSaveable { mutableStateOf("") }
+    var ownerFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var campaignFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var statusFilter by rememberSaveable { mutableStateOf(AdminCharacterStatus.ALL) }
     var choosingOwner by remember { mutableStateOf(false) }
     var choosingCampaign by remember { mutableStateOf(false) }
     var choosingStatus by remember { mutableStateOf(false) }
-    var section by remember { mutableStateOf(DashboardSection.CHARACTERS) }
+    var section by rememberSaveable { mutableStateOf(DashboardSection.CHARACTERS) }
     var assigningCampaign by remember { mutableStateOf<Campaign?>(null) }
+    var deletingCampaign by remember { mutableStateOf<Campaign?>(null) }
+    val visibleCampaigns = remember(campaigns, campaignSearchQuery) {
+        val needle = campaignSearchQuery.trim()
+        campaigns.filter { campaign ->
+            needle.isEmpty() || listOf(campaign.name, campaign.description, campaign.id)
+                .any { it.contains(needle, ignoreCase = true) }
+        }
+    }
+    val activeCampaigns = visibleCampaigns.filterNot(Campaign::isArchived)
+    val archivedCampaigns = if (showArchivedCampaigns) visibleCampaigns.filter(Campaign::isArchived) else emptyList()
+    val activeCampaignCount = campaigns.count { !it.isArchived }
     val filtersActive = searchQuery.isNotBlank() || ownerFilter != null ||
         campaignFilter != null || statusFilter != AdminCharacterStatus.ALL
     val filteredCharacters = remember(
         characters, ownersById, campaigns, searchQuery, ownerFilter, campaignFilter, statusFilter, admin,
     ) {
-        if (!admin) characters else characters.filter { character ->
+        characters.filter { character ->
             val campaignId = normalizeCampaignId(character.campaignId)
             val owner = ownersById[character.ownerId]
             val campaign = campaigns.firstOrNull { it.id == campaignId }
@@ -143,18 +160,18 @@ fun DashboardScreen(
                 owner?.email.orEmpty(),
                 campaign?.name.orEmpty(),
             ).any { it.contains(searchQuery.trim(), ignoreCase = true) }
-            val ownerMatches = ownerFilter == null || character.ownerId == ownerFilter
+            val ownerMatches = !admin || ownerFilter == null || character.ownerId == ownerFilter
             val campaignMatches = when (campaignFilter) {
                 null -> true
                 STANDALONE_FILTER -> campaignId.isBlank()
                 else -> campaignId == campaignFilter
-            }
+            }.let { !admin || it }
             val statusMatches = when (statusFilter) {
                 AdminCharacterStatus.ALL -> true
                 AdminCharacterStatus.SYNCED -> !character.dirty
                 AdminCharacterStatus.PENDING -> character.dirty
                 AdminCharacterStatus.LOCKED -> character.isLocked
-            }
+            }.let { !admin || it }
             queryMatches && ownerMatches && campaignMatches && statusMatches
         }
     }
@@ -168,8 +185,8 @@ fun DashboardScreen(
                 if (section == DashboardSection.CHARACTERS) {
                     FloatingActionButton(
                         onClick = onAdd,
-                        containerColor = Acid,
-                        contentColor = Void,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
                     ) { Icon(Icons.Default.Add, "Criar personagem sem campanha") }
                 }
@@ -185,15 +202,15 @@ fun DashboardScreen(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
-                            IconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = Acid) }
-                            IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = Signal) }
+                            IconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = MaterialTheme.colorScheme.primary) }
+                            IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
                         }
                     }
-                    Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
+                    Text("SDO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     Text(if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
                     Text(
-                        if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // ${activeCampaigns.size} CAMPANHAS ATIVAS"
-                        else "${activeCampaigns.size} CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA",
+                        if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // $activeCampaignCount CAMPANHAS ATIVAS"
+                        else "$activeCampaignCount CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -202,21 +219,21 @@ fun DashboardScreen(
                             TextButton(
                                 onClick = { section = target },
                                 modifier = Modifier.weight(1f).then(
-                                    if (section == target) Modifier.border(1.dp, Acid, CutCornerShape(6.dp)) else Modifier,
+                                    if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
                                 ),
                             ) {
-                                Text(target.label, color = if (section == target) Acid else Muted)
+                                Text(target.label, color = if (section == target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
-                    TechPanel(accent = AcidCyan) {
+                    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                         TelemetryTag("QUICK_ACCESS")
                         Text("Acessos rápidos", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             TextButton(onClick = onOpenSession, modifier = Modifier.weight(1f)) {
                                 Icon(Icons.Default.PlayCircle, "Modo sessão")
                             }
-                            if (admin || activeCampaigns.any { it.ownerId == uid }) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
+                            if (admin || campaigns.any { !it.isArchived && it.ownerId == uid }) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
                                 Icon(Icons.Default.Visibility, "Painel do Historiador")
                             }
                             TextButton(onClick = onOpenSettings, modifier = Modifier.weight(1f)) {
@@ -225,8 +242,8 @@ fun DashboardScreen(
                         }
                     }
                     val pendingDeliveries = deliveries.filter { it.state == CampaignDeliveryState.PENDING }
-                    if (pendingDeliveries.isNotEmpty()) TechPanel(accent = Signal) {
-                        TelemetryTag("INBOX.${pendingDeliveries.size}", Signal)
+                    if (pendingDeliveries.isNotEmpty()) TechPanel(accent = MaterialTheme.colorScheme.error) {
+                        TelemetryTag("INBOX.${pendingDeliveries.size}", MaterialTheme.colorScheme.error)
                         Text("Entregas da campanha", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         pendingDeliveries.forEach { delivery ->
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -234,7 +251,7 @@ fun DashboardScreen(
                                 Text(delivery.snapshotSummary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     TextButton({ onRespondDelivery(delivery, true) }, modifier = Modifier.weight(1f)) { Text("ACEITAR") }
-                                    TextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = Signal) }
+                                    TextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = MaterialTheme.colorScheme.error) }
                                 }
                             }
                         }
@@ -271,8 +288,17 @@ fun DashboardScreen(
                     )
                 }
 
+                if (!admin && section == DashboardSection.CHARACTERS) item("character-search") {
+                    CompactSearchField(
+                        label = "Buscar minhas fichas",
+                        query = searchQuery,
+                        placeholder = "Nome, raça ou ocupação",
+                        onQueryChange = { searchQuery = it },
+                    )
+                }
+
                 if (syncing) item("sync-loading") {
-                    TechPanel(accent = Acid) {
+                    TechPanel(accent = MaterialTheme.colorScheme.primary) {
                         TelemetryTag("SINCRONIZAÇÃO")
                         CyberLoadingIndicator("Sincronizando campanhas e personagens")
                         Text("Enviando alterações preservadas neste aparelho", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
@@ -302,10 +328,18 @@ fun DashboardScreen(
                     }
 
                     DashboardSection.CAMPAIGNS -> {
+                        item("campaign-search") {
+                            CompactSearchField(
+                                label = "Buscar campanhas",
+                                query = campaignSearchQuery,
+                                placeholder = "Nome, descrição ou ID",
+                                onQueryChange = { campaignSearchQuery = it },
+                            )
+                        }
                         if (activeCampaigns.isEmpty() && archivedCampaigns.isEmpty()) item("empty-campaigns") {
                             EmptyDashboardPanel(
-                                title = "Sem campanhas",
-                                message = "Crie uma campanha ou entre usando um código de convite.",
+                                title = if (campaignSearchQuery.isBlank()) "Nenhuma campanha detectada" else "Nenhuma campanha encontrada",
+                                message = if (campaignSearchQuery.isBlank()) "Crie uma campanha ou entre usando um código de convite." else "Revise o termo pesquisado.",
                             )
                         }
                         activeCampaigns.forEachIndexed { campaignIndex, campaign ->
@@ -317,11 +351,14 @@ fun DashboardScreen(
                                     canAdd = campaign.ownerId == uid || rolesByCampaign[campaign.id] != null,
                                     role = rolesByCampaign[campaign.id],
                                     archived = false,
+                                    inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
+                                    characterCount = characters.count { normalizeCampaignId(it.campaignId) == campaign.id },
+                                    memberCount = campaignMembers.count { it.campaignId == campaign.id && it.isActive },
+                                    initiallyExpanded = !collapseCampaignCards,
                                     onAdd = {
                                         if (campaign.ownerId == uid || admin) assigningCampaign = campaign
                                         else onAddToCampaign(campaign, uid)
                                     },
-                                    onInvite = { onCreateInvite(campaign) },
                                     onArchive = { onArchiveCampaign(campaign, true) },
                                     onDelete = { deletingCampaign = campaign },
                                     onLeave = { onLeaveCampaign(campaign) },
@@ -341,8 +378,11 @@ fun DashboardScreen(
                                     canAdd = false,
                                     role = rolesByCampaign[campaign.id],
                                     archived = true,
+                                    inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
+                                    characterCount = characters.count { normalizeCampaignId(it.campaignId) == campaign.id },
+                                    memberCount = campaignMembers.count { it.campaignId == campaign.id && it.isActive },
+                                    initiallyExpanded = !collapseCampaignCards,
                                     onAdd = {},
-                                    onInvite = {},
                                     onArchive = { onArchiveCampaign(campaign, false) },
                                     onDelete = { deletingCampaign = campaign },
                                     onLeave = {},
@@ -477,26 +517,44 @@ private fun AdminCharacterFilters(
     onChooseStatus: () -> Unit,
     onClear: () -> Unit,
 ) {
-    TechPanel(accent = Acid) {
-        SectionHeader("FX", "Pesquisa administrativa")
+    Column(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(8.dp)).padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
         HudTextField(
-            label = "Buscar ficha, owner ou campanha",
+            label = "Pesquisa administrativa",
             value = query,
             placeholder = "Nome, raça, ocupação, e-mail ou UID",
             onValue = onQueryChange,
         )
-        TextButton(onClick = onChooseOwner, modifier = Modifier.fillMaxWidth()) {
-            Text("OWNER // ${ownerLabel.uppercase()}")
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = onChooseOwner, modifier = Modifier.weight(1f)) {
+                Text("OWNER // ${ownerLabel.uppercase()}", maxLines = 1)
+            }
+            TextButton(onClick = onChooseCampaign, modifier = Modifier.weight(1f)) {
+                Text("CAMPANHA // ${campaignLabel.uppercase()}", maxLines = 1)
+            }
         }
-        TextButton(onClick = onChooseCampaign, modifier = Modifier.fillMaxWidth()) {
-            Text("CAMPANHA // ${campaignLabel.uppercase()}")
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = onChooseStatus, modifier = Modifier.weight(1f)) {
+                Text("STATUS // ${statusLabel.uppercase()}", maxLines = 1)
+            }
+            TextButton(onClick = onClear, modifier = Modifier.weight(1f)) {
+                Text("LIMPAR", color = MaterialTheme.colorScheme.error)
+            }
         }
-        TextButton(onClick = onChooseStatus, modifier = Modifier.fillMaxWidth()) {
-            Text("STATUS // ${statusLabel.uppercase()}")
-        }
-        TextButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
-            Text("LIMPAR FILTROS", color = Signal)
-        }
+    }
+}
+
+@Composable
+private fun CompactSearchField(
+    label: String,
+    query: String,
+    placeholder: String,
+    onQueryChange: (String) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+        HudTextField(label = label, value = query, placeholder = placeholder, onValue = onQueryChange)
     }
 }
 
@@ -573,41 +631,94 @@ private fun CampaignPanel(
     canAdd: Boolean,
     role: CampaignRole?,
     archived: Boolean,
+    inviteCode: String,
+    characterCount: Int,
+    memberCount: Int,
+    initiallyExpanded: Boolean,
     onAdd: () -> Unit,
-    onInvite: () -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit,
     onLeave: () -> Unit,
     index: String,
 ) {
-    TechPanel(accent = if (archived) TechCutDark else AcidCyan) {
-        SectionHeader(index, campaign.name)
-        if (campaign.description.isNotBlank()) Text(campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) Muted else AcidCyan)
-            TelemetryTag(
-                when {
-                    administrator -> "ADMIN"
-                    owner -> "MESTRE // CRIADOR"
-                    else -> "PLAYER"
-                },
+    var expanded by rememberSaveable(campaign.id) { mutableStateOf(initiallyExpanded) }
+    TechPanel(
+        modifier = Modifier.animateContentSize(),
+        accent = if (archived) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.secondary,
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.secondary)
+                    TelemetryTag(
+                        when {
+                            administrator -> "ADMIN"
+                            owner -> "MESTRE // CRIADOR"
+                            else -> "PLAYER"
+                        },
+                    )
+                }
+                Text(campaign.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall)
+            }
+            Icon(
+                if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                if (expanded) "Recolher campanha" else "Expandir campanha",
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
-        if (!archived) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (canAdd) TextButton(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("+ FICHA") }
-                if (owner || administrator) TextButton(onClick = onInvite, modifier = Modifier.weight(1f)) { Text("CONVITE") }
+        Column(
+            Modifier.fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text("CÓDIGO DA CAMPANHA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            androidx.compose.foundation.text.selection.SelectionContainer {
+                Text(inviteCode.ifBlank { "SINCRONIZANDO" }, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
             }
         }
-        if (owner || administrator) {
-            TextButton(onClick = onArchive, modifier = Modifier.fillMaxWidth()) {
-                Text(if (archived) "RESTAURAR CAMPANHA" else "ARQUIVAR CAMPANHA")
+        if (expanded) {
+            if (campaign.description.isNotBlank()) {
+                Text(campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
             }
-            TextButton(onClick = onDelete) { Text("Excluir campanha", color = MaterialTheme.colorScheme.error) }
-        } else if (!archived) {
-            TextButton(onClick = onLeave, modifier = Modifier.fillMaxWidth()) { Text("SAIR DA CAMPANHA", color = Signal) }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CampaignMetric("FICHAS", characterCount.toString(), Modifier.weight(1f))
+                CampaignMetric("PARTICIPANTES", memberCount.toString(), Modifier.weight(1f))
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (!archived && canAdd) {
+                    androidx.compose.material3.Button(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("NOVA FICHA") }
+                }
+                if (owner || administrator) {
+                    TextButton(onClick = onArchive, modifier = Modifier.weight(1f)) {
+                        Text(if (archived) "RESTAURAR" else "ARQUIVAR")
+                    }
+                } else if (!archived) {
+                    TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = MaterialTheme.colorScheme.error) }
+                }
+            }
+            if (owner || administrator) {
+                TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                    Text("APAGAR DEFINITIVAMENTE", color = MaterialTheme.colorScheme.error)
+                }
+            }
+            Text("ID ${campaign.id.take(12).uppercase()} // REG.$index", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         }
-        Barcode(campaign.id)
+    }
+}
+
+@Composable
+private fun CampaignMetric(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CutCornerShape(6.dp)).padding(9.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        Text(value, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
     }
 }
 
@@ -662,9 +773,9 @@ private fun InvitePreviewDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (preview.campaign.description.isNotBlank()) Text(preview.campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("CONVITE // ${preview.invite.code}", color = Acid)
+                Text("CONVITE // ${preview.invite.code}", color = MaterialTheme.colorScheme.primary)
                 if (preview.alreadyMember) {
-                    Text("Você já participa desta campanha.", color = AcidCyan)
+                    Text("Você já participa desta campanha.", color = MaterialTheme.colorScheme.secondary)
                 } else {
                     Text("Escolha uma ficha sem campanha ou crie uma nova.", color = MaterialTheme.colorScheme.onSurface)
                     characters.forEach { character ->
@@ -706,7 +817,7 @@ private fun CharacterAccessCard(
         onClick = onOpen,
         modifier = Modifier.fillMaxWidth().border(
             1.dp,
-            when { character.isLocked -> Signal; character.dirty -> Acid; else -> TechCutDark },
+            when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.outlineVariant },
             CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
         ),
         shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
@@ -725,19 +836,19 @@ private fun CharacterAccessCard(
                         character.dirty -> "LOCAL_DELTA"
                         else -> "SYNC_OK"
                     },
-                    when { character.isLocked -> Signal; character.dirty -> Acid; else -> AcidCyan },
+                    when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.secondary },
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(54.dp).background(Acid, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)), contentAlignment = Alignment.Center) {
-                    Text(character.name.take(2).uppercase(), color = Void, style = MaterialTheme.typography.titleLarge)
+                Box(Modifier.size(54.dp).background(MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)), contentAlignment = Alignment.Center) {
+                    Text(character.name.take(2).uppercase(), color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleLarge)
                 }
                 Spacer(Modifier.size(13.dp))
                 Column(Modifier.weight(1f)) {
                     Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                     Text(
                         listOf(character.race, character.occupation, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
-                        color = LabelFunctional,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall,
                     )
                     Text(
@@ -748,7 +859,7 @@ private fun CharacterAccessCard(
                     if (master) {
                         TextButton(onClick = onOwnerClick, contentPadding = PaddingValues(0.dp)) {
                             Column(horizontalAlignment = Alignment.Start) {
-                                Text("OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                                Text("OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                                 Text("UID.${character.ownerId.take(8)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                             }
                         }
@@ -757,7 +868,7 @@ private fun CharacterAccessCard(
                 Icon(
                     when { character.isLocked -> Icons.Default.Lock; master -> Icons.Default.AdminPanelSettings; else -> Icons.Default.ChevronRight },
                     null,
-                    tint = if (character.isLocked) Signal else Acid,
+                    tint = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 )
             }
             Barcode(character.id)

@@ -2,6 +2,8 @@ package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 
@@ -45,16 +47,36 @@ fun CatalogEntry.toStructuredPower(
     action = action,
     range = range,
     duration = duration,
-    limit = extractLimit(summary),
+    limit = limit,
     effect = mechanicalEffect.ifBlank { summary },
     category = group,
     prerequisites = prerequisites,
-    activationCondition = "",
-    enhancements = extractEnhancement(summary),
-    deactivationCondition = "",
+    activationCondition = activationCondition,
+    enhancements = enhancements,
+    deactivationCondition = deactivationCondition,
     ruleReference = ruleReference,
     sourceType = sourceType,
     sourceId = sourceId,
+    catalogEntryId = id,
+    catalogVersion = version,
+)
+
+fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
+    type = when (kind) {
+        CatalogKind.MAGIC -> "Magia"
+        CatalogKind.ASH -> "Cinza"
+        CatalogKind.RUNE -> "Runa"
+        else -> kind.name
+    },
+    name = name,
+    cost = cost,
+    action = action,
+    range = range,
+    duration = duration,
+    effect = mechanicalEffect.ifBlank { summary },
+    category = group,
+    source = source,
+    ruleReference = ruleReference,
     catalogEntryId = id,
     catalogVersion = version,
 )
@@ -83,17 +105,17 @@ private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
     return Power(
         name = name,
         origin = "Caminho — ${path.name}",
-        cost = cost,
-        action = action,
-        range = range,
-        duration = duration,
-        limit = limit,
+        cost = cost.ifBlank { "Sem custo adicional expresso; consulte as condições do efeito" },
+        action = action.ifBlank { "Vinculada à ação ou condição descrita no efeito" },
+        range = range.ifBlank { "Alvo ou situação descrita no efeito" },
+        duration = duration.ifBlank { "Enquanto a condição descrita no efeito se aplicar" },
+        limit = limit.ifBlank { "Sem limite adicional expresso" },
         effect = mainEffect,
-        category = category,
+        category = category.ifBlank { "Poder de Caminho" },
         prerequisites = emptyList(),
-        activationCondition = activation,
-        enhancements = enhancement,
-        deactivationCondition = deactivation,
+        activationCondition = activation.ifBlank { "Conforme condição descrita no efeito" },
+        enhancements = enhancement.ifBlank { "Sem aprimoramento publicado" },
+        deactivationCondition = deactivation.ifBlank { "Quando encerrar a condição ou duração do efeito" },
         ruleReference = path.ruleReference,
         sourceType = PowerSourceType.PATH,
         sourceId = path.id,

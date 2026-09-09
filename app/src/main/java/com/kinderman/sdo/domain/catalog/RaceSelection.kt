@@ -30,9 +30,9 @@ fun Character.withRaceSelection(
         it.origin.startsWith("Raça — ") || it.origin.startsWith("Sub-raça — ")
     }
     val racialPowers = selectedBasePowers.map {
-        Power(name = it.name, origin = "Raça — ${raceDefinition.name}", effect = it.effect)
+        it.toRacialPower("Raça — ${raceDefinition.name}")
     } + listOfNotNull(selectedSubRacePower?.let {
-        Power(name = it.name, origin = "Sub-raça — ${subRaceDefinition?.name}", effect = it.effect)
+        it.toRacialPower("Sub-raça — ${subRaceDefinition?.name}")
     })
     fun previous(value: Int) = if (hadManagedRace) value else 0
 
@@ -48,3 +48,15 @@ fun Character.withRaceSelection(
         powers = retainedPowers + racialPowers,
     )
 }
+
+private fun RacialPower.toRacialPower(origin: String): Power = Power(
+    name = name, origin = origin, effect = effect,
+    cost = "Conforme custo e condição descritos no efeito racial",
+    action = "Vinculada à ação ou condição descrita no efeito",
+    range = "Alvo ou situação descrita no efeito",
+    duration = "Enquanto a condição descrita no efeito se aplicar",
+    category = "Poder racial", sourceType = com.kinderman.sdo.domain.model.PowerSourceType.RACE,
+    sourceId = origin, ruleReference = RaceCatalog.RULE_REFERENCE,
+    activationCondition = "Conforme efeito racial", deactivationCondition = "Conforme duração e condição do efeito racial",
+    enhancements = "Sem aprimoramento racial publicado", catalogVersion = BuiltInCatalog.VERSION,
+)

@@ -87,9 +87,6 @@ data class Power(
     val catalogVersion: Int = 0,
     val favorite: Boolean = false,
     val available: Boolean = true,
-    val costResource: SessionResource = SessionResource.ARCANE,
-    val costAmount: Int = 0,
-    val usage: AbilityUsageLimit = AbilityUsageLimit(),
 )
 
 data class InventoryItem(
@@ -139,9 +136,11 @@ data class MysticAbility(
     val effect: String = "",
     val favorite: Boolean = false,
     val available: Boolean = true,
-    val costResource: SessionResource = SessionResource.ARCANE,
-    val costAmount: Int = 0,
-    val usage: AbilityUsageLimit = AbilityUsageLimit(),
+    val category: String = "",
+    val source: String = "",
+    val ruleReference: String = "",
+    val catalogEntryId: String = "",
+    val catalogVersion: Int = 0,
 )
 
 data class ConditionEffect(
@@ -215,7 +214,7 @@ data class Character(
     val containerCapacity: Int = 0,
     val bodyRegions: List<BodyRegion> = defaultBodyRegions(),
     val agilityLimit: String = "",
-    val organs: List<OrganStatus> = defaultOrgans(),
+    val organs: List<OrganStatus> = emptyList(),
     val mysticAbilities: List<MysticAbility> = emptyList(),
     val conditions: List<ConditionEffect> = emptyList(),
     val story: String = "",
@@ -443,7 +442,3 @@ fun normalizeBodyRegions(regions: List<BodyRegion>): List<BodyRegion> {
             ?: canonical
     }
 }
-
-fun defaultOrgans() = listOf(
-    "Cérebro", "Coração ou núcleo", "Pulmões ou sistema respiratório", "Fígado ou filtro", "Outro",
-).map { OrganStatus(name = it) }

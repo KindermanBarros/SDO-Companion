@@ -52,6 +52,7 @@ internal fun CharacterSheetPager(
     session: UserSession,
     catalog: List<CatalogEntry>,
     editable: Boolean,
+    showCalculationAudit: Boolean,
     onChange: (Character) -> Unit,
     modifier: Modifier = Modifier,
     saveError: String? = null,
@@ -87,23 +88,20 @@ internal fun CharacterSheetPager(
         }
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = Void,
-            contentColor = Acid,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary,
             edgePadding = 8.dp,
-            divider = { HorizontalDivider(color = TechCutDark) },
+            divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) },
         ) {
             pages.forEachIndexed { index, page ->
                 Tab(
                     selected = pagerState.currentPage == index,
                     onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                     text = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(page.label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
-                            Text(page.code, color = if (pagerState.currentPage == index) Acid else Muted, style = MaterialTheme.typography.labelSmall)
-                        }
+                        Text(page.label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
                     },
-                    selectedContentColor = Acid,
-                    unselectedContentColor = Ice,
+                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
@@ -120,6 +118,7 @@ internal fun CharacterSheetPager(
                 session = session,
                 catalog = catalog,
                 editable = editable,
+                showCalculationAudit = showCalculationAudit,
                 onChange = onChange,
                 scrollState = pageScrollStates[pageIndex],
                 saveError = saveError,
@@ -135,11 +134,11 @@ private fun SheetPageContent(
     session: UserSession,
     catalog: List<CatalogEntry>,
     editable: Boolean,
+    showCalculationAudit: Boolean,
     onChange: (Character) -> Unit,
     scrollState: LazyListState,
     saveError: String?,
 ) {
-    val showAudit = com.kinderman.sdo.ui.LocalSdoPreferences.current.showValueAudit
     var equipmentRegionIndex by remember(character.id) { mutableStateOf<Int?>(null) }
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -159,7 +158,7 @@ private fun SheetPageContent(
                 item("attributes") { com.kinderman.sdo.ui.CollapsibleSection("Atributos") { AttributeSection(character, editable, onChange) } }
                 item("knowledge") { com.kinderman.sdo.ui.CollapsibleSection("Conhecimentos") { PhaseOneKnowledgeSection(character, catalog, editable, onChange) } }
                 item("protection") { com.kinderman.sdo.ui.CollapsibleSection("Proteções") { ProtectionSection(character, editable, onChange) } }
-                if (showAudit) item("calculation-audit") { com.kinderman.sdo.ui.CollapsibleSection("Auditoria de valores") { CalculatedValuesAuditSection(character) } }
+                if (showCalculationAudit) item("calculation-audit") { com.kinderman.sdo.ui.CollapsibleSection("Auditoria de valores") { CalculatedValuesAuditSection(character) } }
             }
 
             SheetPage.PATH -> item("path") {

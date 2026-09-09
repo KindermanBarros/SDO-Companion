@@ -18,7 +18,6 @@ import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.defaultAttributes
 import com.kinderman.sdo.domain.model.defaultBodyRegions
-import com.kinderman.sdo.domain.model.defaultOrgans
 import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
 import com.kinderman.sdo.domain.model.defaultProtections
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
@@ -127,7 +126,7 @@ fun CharacterRecord.toDomain() = Character(
     containerCapacity = containerCapacity,
     bodyRegions = normalizeBodyRegions(bodyRegions),
     agilityLimit = agilityLimit,
-    organs = organs.ifEmpty { defaultOrgans() },
+    organs = organs,
     mysticAbilities = mysticAbilities,
     conditions = conditions,
     story = story,

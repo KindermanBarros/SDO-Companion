@@ -249,7 +249,7 @@ service cloud.firestore {
           )
         );
 
-      allow delete: if false;
+      allow delete: if signedIn() && isCampaignResponsible(resource.data.campaignId);
     }
 
     match /campaignInvites/{inviteId} {
@@ -265,7 +265,7 @@ service cloud.firestore {
         )
       );
 
-      allow list: if signedIn() && isCampaignResponsible(resource.data.campaignId);
+      allow list: if signedIn() && canReadCampaign(resource.data.campaignId);
 
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
@@ -278,7 +278,7 @@ service cloud.firestore {
       // One reusable code is created with the campaign and remains immutable.
       allow update: if false;
 
-      allow delete: if false;
+      allow delete: if signedIn() && isCampaignResponsible(resource.data.campaignId);
     }
 
     match /campaignAudit/{operationId} {
@@ -389,6 +389,7 @@ service cloud.firestore {
             && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
             && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
           )
+
         );
 
       allow delete: if signedIn() && (

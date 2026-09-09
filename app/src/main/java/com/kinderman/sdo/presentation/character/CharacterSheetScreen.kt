@@ -63,6 +63,7 @@ fun CharacterSheetScreen(
     saveError: String? = null,
     isCampaignHistorian: Boolean = false,
     isCampaignResponsible: Boolean = false,
+    showCalculationAudit: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onOpenSession: (String) -> Unit,
@@ -88,7 +89,7 @@ fun CharacterSheetScreen(
         title = { Text("REMOVER PERSONAGEM") },
         text = { Text("A exclusão de ${current.name} será sincronizada com o Firebase e removida do cache local.") },
         confirmButton = {
-            TextButton(onClick = { confirmDelete = false; onDelete(current) }) { Text("REMOVER", color = Signal) }
+            TextButton(onClick = { confirmDelete = false; onDelete(current) }) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
         },
         dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("CANCELAR") } },
     )
@@ -111,7 +112,7 @@ fun CharacterSheetScreen(
                                     current.lockType == CharacterLock.PLAYER -> "Ficha com bloqueio pessoal"
                                     else -> "Ficha editável"
                                 },
-                                color = if (readOnly || current.isLocked) Signal else Acid,
+                                color = if (readOnly || current.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         }
@@ -119,7 +120,7 @@ fun CharacterSheetScreen(
                     navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
                         IconButton({ onOpenSession(current.id) }) {
-                            Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = AcidCyan)
+                            Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
                         }
                         if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) IconButton({
                             onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
@@ -127,7 +128,7 @@ fun CharacterSheetScreen(
                             Icon(
                                 if (current.lockType == CharacterLock.HISTORIAN) Icons.Default.LockOpen else Icons.Default.Lock,
                                 if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador",
-                                tint = if (current.lockType == CharacterLock.HISTORIAN) Acid else Signal,
+                                tint = if (current.lockType == CharacterLock.HISTORIAN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                             )
                         } else if (canChangePlayerLock) IconButton({
                             onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
@@ -135,11 +136,11 @@ fun CharacterSheetScreen(
                             Icon(
                                 if (current.lockType == CharacterLock.PLAYER) Icons.Default.LockOpen else Icons.Default.Lock,
                                 if (current.lockType == CharacterLock.PLAYER) "Remover meu bloqueio" else "Impedir que eu apague esta ficha",
-                                tint = if (current.lockType == CharacterLock.PLAYER) Acid else Signal,
+                                tint = if (current.lockType == CharacterLock.PLAYER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                             )
                         }
-                        if (canDelete) IconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = Signal) }
-                        if (editable) IconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = Acid) }
+                        if (canDelete) IconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = MaterialTheme.colorScheme.error) }
+                        if (editable) IconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary) }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -155,6 +156,7 @@ fun CharacterSheetScreen(
                 session = session,
                 catalog = catalog,
                 editable = editable,
+                showCalculationAudit = showCalculationAudit,
                 onChange = {
                     if (!readOnly) {
                         current = it
@@ -179,10 +181,10 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
                     CharacterLock.PLAYER -> "LOCK.P"
                     CharacterLock.NONE -> "LV.${character.level}"
                 },
-                if (character.isLocked) Signal else Acid,
+                if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             )
         }
-        Text("ARQUIVO", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("ARQUIVO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         Text(
             character.name.uppercase(),
             color = MaterialTheme.colorScheme.onSurface,

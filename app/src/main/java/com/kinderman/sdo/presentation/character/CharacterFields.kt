@@ -61,7 +61,7 @@ internal fun AddButton(label: String, enabled: Boolean, onClick: () -> Unit) {
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = MaterialTheme.colorScheme.onPrimary),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
     ) {
         Icon(Icons.Default.Add, null)
         Text(label.uppercase(), style = MaterialTheme.typography.labelLarge)
@@ -70,7 +70,7 @@ internal fun AddButton(label: String, enabled: Boolean, onClick: () -> Unit) {
 
 @Composable
 internal fun RemoveButton(enabled: Boolean, description: String, onClick: () -> Unit) {
-    IconButton(onClick = onClick, enabled = enabled) { Icon(Icons.Default.Close, description, tint = Signal) }
+    IconButton(onClick = onClick, enabled = enabled) { Icon(Icons.Default.Close, description, tint = MaterialTheme.colorScheme.error) }
 }
 
 @Composable

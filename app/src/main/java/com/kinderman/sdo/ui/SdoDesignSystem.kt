@@ -204,8 +204,8 @@ private val apertureWhiteColors = lightColorScheme(
     tertiary = Color(0xFF007BA3), onTertiary = Color.White,
     background = Color(0xFFF4F7F8), onBackground = Color(0xFF101B24),
     surface = Color(0xFFFFFFFF), onSurface = Color(0xFF101B24),
-    surfaceVariant = Color(0xFFE3EAF0), onSurfaceVariant = Color(0xFF344956),
-    outline = Color(0xFF607786), outlineVariant = Color(0xFFAAB9C2),
+    surfaceVariant = Color(0xFFE9E4E4), onSurfaceVariant = Color(0xFF514A4A),
+    outline = Color(0xFF8E8585), outlineVariant = Color(0xFFB5AAAA),
     error = Color(0xFFB3261E), onError = Color.White,
 )
 

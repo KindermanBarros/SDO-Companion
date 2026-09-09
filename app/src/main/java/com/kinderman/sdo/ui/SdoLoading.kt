@@ -66,10 +66,10 @@ fun CyberLoadingScreen(mode: CyberLoadingMode, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             TelemetryTag(mode.code)
-            TechPanel(accent = Acid) {
-                Text(mode.title, color = Ice, style = MaterialTheme.typography.titleLarge)
+            TechPanel(accent = MaterialTheme.colorScheme.primary) {
+                Text(mode.title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                 CyberLoadingIndicator(mode.accessibilityLabel)
-                Text(mode.detail, color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(mode.detail, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 Barcode("${mode.code}-${mode.title}")
             }
         }
@@ -81,6 +81,10 @@ fun CyberLoadingIndicator(
     accessibilityLabel: String,
     modifier: Modifier = Modifier,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
+    val error = MaterialTheme.colorScheme.error
+    val outline = MaterialTheme.colorScheme.outlineVariant
+    val onSurface = MaterialTheme.colorScheme.onSurface
     val transition = rememberInfiniteTransition(label = "cyber-loading")
     val scan by transition.animateFloat(
         initialValue = 0f,
@@ -101,11 +105,6 @@ fun CyberLoadingIndicator(
         label = "signal-pulse",
     )
 
-    val borderColor = TechCutCyan
-    val gridColor = GridGuide
-    val signalColor = Signal
-    val accentColor = Acid
-    val textColor = Ice
     Canvas(
         modifier
             .fillMaxWidth()
@@ -114,8 +113,8 @@ fun CyberLoadingIndicator(
             .semantics { contentDescription = accessibilityLabel },
     ) {
         val border = 1.dp.toPx()
-        drawRect(borderColor.copy(alpha = .72f), style = Stroke(border))
-        drawLine(gridColor.copy(alpha = .55f), Offset(0f, size.height / 2), Offset(size.width, size.height / 2), border)
+        drawRect(outline.copy(alpha = .72f), style = Stroke(border))
+        drawLine(outline.copy(alpha = .55f), Offset(0f, size.height / 2), Offset(size.width, size.height / 2), border)
 
         val segmentCount = 15
         val gap = 4.dp.toPx()
@@ -125,7 +124,7 @@ fun CyberLoadingIndicator(
             val distance = abs(center - scan)
             val energy = (1f - distance * 5f).coerceIn(.12f, 1f)
             drawRect(
-                color = if (index % 5 == 4) signalColor.copy(alpha = energy * pulse) else accentColor.copy(alpha = energy),
+                color = if (index % 5 == 4) error.copy(alpha = energy * pulse) else primary.copy(alpha = energy),
                 topLeft = Offset(gap + index * (segmentWidth + gap), size.height * .28f),
                 size = Size(segmentWidth, size.height * .44f),
             )
@@ -133,7 +132,7 @@ fun CyberLoadingIndicator(
 
         val scannerX = scan * size.width
         drawLine(
-            color = textColor.copy(alpha = .45f * pulse),
+            color = onSurface.copy(alpha = .45f * pulse),
             start = Offset(scannerX, 0f),
             end = Offset(scannerX, size.height),
             strokeWidth = 2.dp.toPx(),

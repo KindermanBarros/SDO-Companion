@@ -27,11 +27,10 @@ import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.catalog.withPathPreset
+import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.MysticAbility
+import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.Power
-import com.kinderman.sdo.domain.model.SessionResource
-import com.kinderman.sdo.domain.model.UsagePeriod
-import com.kinderman.sdo.domain.model.AbilityUsageLimit
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.ArcanePanel
@@ -48,18 +47,18 @@ import com.kinderman.sdo.ui.TechPanel
 @Composable
 internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
     var selecting by remember { mutableStateOf(false) }
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("07", "Caminho")
         HudTextField("Nome do Caminho", character.pathName, enabled = enabled) {
             onChange(character.copy(pathName = it))
         }
         AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
         HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
-        Text("PALAVRAS-CHAVE // 3", color = LabelFunctional, style = MaterialTheme.typography.labelLarge)
+        Text("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathKeywords.forEachIndexed { index, keyword ->
             HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) { onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it))) }
         }
-        Text("PILARES // 3", color = LabelFunctional, style = MaterialTheme.typography.labelLarge)
+        Text("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathPillars.forEachIndexed { index, pillar ->
             HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) { onChange(character.copy(pathPillars = character.pathPillars.replace(index, it))) }
         }
@@ -73,9 +72,9 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
 @Composable
 internal fun PowerSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
     var selecting by remember { mutableStateOf(false) }
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("08", "Poderes")
-        Text("REGISTROS // ${character.powers.size}", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("REGISTROS // ${character.powers.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         character.powers.forEachIndexed { index, power ->
             PowerEditor(index, power, enabled,
                 onRemove = { onChange(character.copy(powers = character.powers.filterIndexed { itemIndex, _ -> itemIndex != index })) },
@@ -101,9 +100,9 @@ internal fun PowerSection(character: Character, catalog: List<CatalogEntry>, ena
 
 @Composable
 private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: () -> Unit, onValue: (Power) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(ArcanePanel).padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text("PODER ${(index + 1).toString().padStart(2, '0')}", color = Ice, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text("PODER ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover poder", onRemove)
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
@@ -117,8 +116,8 @@ private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: ()
             { HudTextField("Duração", power.duration, it, enabled = enabled) { value -> onValue(power.copy(duration = value)) } },
         )
         HudTextField("Limite", power.limit, enabled = enabled) { onValue(power.copy(limit = it)) }
-        AbilityUsageEditor(power.favorite, power.available, power.costResource, power.costAmount, power.usage, enabled) { favorite, available, resource, amount, usage ->
-            onValue(power.copy(favorite = favorite, available = available, costResource = resource, costAmount = amount, usage = usage))
+        AbilityAvailabilityEditor(power.favorite, power.available, enabled) { favorite, available ->
+            onValue(power.copy(favorite = favorite, available = available))
         }
         HudTextField("Efeito", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
     }
@@ -138,11 +137,11 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
     }
     TechPanel {
         SectionHeader("09", "Inventário")
-        Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) Signal else AcidCyan, style = MaterialTheme.typography.titleLarge)
-        Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = Muted, style = MaterialTheme.typography.bodySmall)
+        Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
+        Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         if (remainingHeritage > 0) {
-            Text("CRIAÇÃO INICIAL OBRIGATÓRIA // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = Acid, style = MaterialTheme.typography.labelLarge)
-            Text("Finalize os PH para liberar o catálogo comum, o construtor livre e itens manuais.", color = Muted, style = MaterialTheme.typography.bodySmall)
+            Text("CRIAÇÃO INICIAL OBRIGATÓRIA // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+            Text("Finalize os PH para liberar o catálogo comum, o construtor livre e itens manuais.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
         character.inventory.forEachIndexed { index, item ->
@@ -191,9 +190,9 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
 
 @Composable
 private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, onRemove: () -> Unit, onValue: (InventoryItem) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(Carbon).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text("ITEM ${(index + 1).toString().padStart(2, '0')}", color = Ice, modifier = Modifier.weight(1f))
+            Text("ITEM ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover item", onRemove)
         }
         HudTextField("Nome", item.name, enabled = enabled) { onValue(item.copy(name = it)) }
@@ -202,11 +201,11 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             { IntegerField("Carga", item.load, enabled, it) { value -> onValue(item.copy(load = value.coerceAtLeast(0))) } },
         )
         HudTextField("Durabilidade", item.durability, enabled = enabled) { value -> onValue(item.copy(durability = value)) }
-        Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.uppercase()}", color = Acid, style = MaterialTheme.typography.labelSmall)
-        Text("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = Ice)
+        Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.uppercase()}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        Text("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
         if (item.bonuses.isNotEmpty()) Text(
             "BÔNUS // " + item.bonuses.joinToString { "${if (it.value > 0) "+" else ""}${it.value} ${it.target}" },
-            color = Acid,
+            color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodySmall,
         )
         HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { onValue(item.copy(effect = it)) }
@@ -215,9 +214,9 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
 
 @Composable
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("10", "Corpo e armadura")
-        Text("LA DOS EQUIPAMENTOS // ${character.equippedAgilityLimit ?: "—"}", color = Acid)
+        Text("LA DOS EQUIPAMENTOS // ${character.equippedAgilityLimit ?: "—"}", color = MaterialTheme.colorScheme.primary)
         HudTextField("Ajuste excepcional de LA", character.agilityLimit, enabled = enabled) { onChange(character.copy(agilityLimit = it)) }
     }
 }
@@ -231,21 +230,21 @@ internal fun BodyRegionSection(
     onSelectEquipment: () -> Unit,
 ) {
     val region = character.bodyRegions[index]
-    TechPanel(accent = Signal) {
-        Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = Ice, style = MaterialTheme.typography.titleMedium)
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
+        Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             IntegerField("Falhas", region.failures, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(failures = value.coerceIn(0, 4))))) }
             IntegerField("Ajuste PL", region.localProtection, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(localProtection = value.coerceAtLeast(0))))) }
         }
         Text(
             "PL TOTAL ${character.localProtection(region)} // PG DO PERSONAGEM +${character.equippedGeneralProtection}",
-            color = Acid,
+            color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.labelLarge,
         )
         HudTextField("Danos", region.damage, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(damage = it)))) }
         HudTextField("Implantes", region.implants, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(implants = it)))) }
         val equippedNames = character.equippedItems(region).joinToString { it.name.ifBlank { "Item sem nome" } }
-        Text("EQUIPAMENTOS // ${equippedNames.ifBlank { "NENHUM" }}", color = if (equippedNames.isBlank()) Muted else Ice)
+        Text("EQUIPAMENTOS // ${equippedNames.ifBlank { "NENHUM" }}", color = if (equippedNames.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
         AddButton("Selecionar equipamentos do inventário", enabled, onSelectEquipment)
         HudTextField("Observações de equipamento", region.equipment, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(equipment = it)))) }
     }
@@ -253,16 +252,32 @@ internal fun BodyRegionSection(
 
 @Composable
 internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("11", "Órgãos")
+        if (character.organs.isEmpty()) {
+            Text(
+                "Registre apenas órgãos com dano, implante, parasita ou outra alteração relevante.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
         character.organs.forEachIndexed { index, organ ->
-            Column(Modifier.fillMaxWidth().background(Carbon).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                Row(Modifier.fillMaxWidth()) {
+                    Text("ALTERAÇÃO ${(index + 1).toString().padStart(2, '0')}", modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary)
+                    RemoveButton(enabled, "Remover registro de órgão") {
+                        onChange(character.copy(organs = character.organs.filterNot { it.id == organ.id }))
+                    }
+                }
                 HudTextField("Órgão", organ.name, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(name = it)))) }
                 IntegerField("Falhas", organ.failures, enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(failures = it.coerceIn(0, 3))))) }
-                HudTextField("Implante", organ.implant, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(implant = it)))) }
-                HudTextField("Efeito", organ.effect, multiline = true, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(effect = it)))) }
+                HudTextField("Implante ou parasita", organ.implant, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(implant = it)))) }
+                HudTextField("Dano / efeito", organ.effect, multiline = true, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(effect = it)))) }
             }
-            if (index != character.organs.lastIndex) HorizontalDivider(color = TechCutDark)
+            if (index != character.organs.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+        AddButton("Adicionar alteração de órgão", enabled) {
+            onChange(character.copy(organs = character.organs + OrganStatus()))
         }
     }
 }
@@ -270,11 +285,11 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
 @Composable
 internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
     var selecting by remember { mutableStateOf(false) }
-    TechPanel(accent = AcidCyan) {
+    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
         SectionHeader("12", "Magias, runas e cinzas")
         Text(
             "CATÁLOGO EXPANSÍVEL // exemplos adicionais podem ser incluídos continuamente. Os procedimentos completos estão em Regras Arcanas Expandidas.",
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
         )
         character.mysticAbilities.forEachIndexed { index, ability ->
@@ -287,35 +302,29 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
         AddButton("Adicionar efeito manualmente", enabled) { onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility())) }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR EFEITO MÍSTICO", catalog, { selecting = false }) { entry ->
-        onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility(
-            type = when (entry.kind) {
-                CatalogKind.MAGIC -> "Magia"
-                CatalogKind.ASH -> "Cinza"
-                CatalogKind.RUNE -> "Runa"
-                else -> entry.kind.name
-            },
-            name = entry.name,
-            cost = entry.cost,
-            action = entry.action,
-            range = entry.range,
-            duration = entry.duration,
-            effect = entry.summary,
-        )))
+        onChange(character.copy(mysticAbilities = character.mysticAbilities + entry.toMysticAbility()))
         selecting = false
     }
 }
 
 @Composable
 private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, onRemove: () -> Unit, onValue: (MysticAbility) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(ArcanePanel).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text("EFEITO ${(index + 1).toString().padStart(2, '0')}", color = Ice, modifier = Modifier.weight(1f))
+            Text("EFEITO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover efeito", onRemove)
         }
         TwoFields(
             { HudTextField("Tipo", ability.type, it, enabled = enabled) { value -> onValue(ability.copy(type = value)) } },
             { HudTextField("Nome", ability.name, it, enabled = enabled) { value -> onValue(ability.copy(name = value)) } },
         )
+        if (ability.category.isNotBlank() || ability.source.isNotBlank()) {
+            Text(
+                listOf(ability.category, ability.source).filter(String::isNotBlank).joinToString(" // "),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
         TwoFields(
             { HudTextField("Custo", ability.cost, it, enabled = enabled) { value -> onValue(ability.copy(cost = value)) } },
             { HudTextField("Ação", ability.action, it, enabled = enabled) { value -> onValue(ability.copy(action = value)) } },
@@ -325,15 +334,18 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
             { HudTextField("Duração", ability.duration, it, enabled = enabled) { value -> onValue(ability.copy(duration = value)) } },
         )
         HudTextField("Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
-        AbilityUsageEditor(ability.favorite, ability.available, ability.costResource, ability.costAmount, ability.usage, enabled) { favorite, available, resource, amount, usage ->
-            onValue(ability.copy(favorite = favorite, available = available, costResource = resource, costAmount = amount, usage = usage))
+        if (ability.ruleReference.isNotBlank()) {
+            Text("REFERÊNCIA // ${ability.ruleReference}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        }
+        AbilityAvailabilityEditor(ability.favorite, ability.available, enabled) { favorite, available ->
+            onValue(ability.copy(favorite = favorite, available = available))
         }
     }
 }
 
 @Composable
 internal fun ConditionSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("13", "Condições")
         character.conditions.forEachIndexed { index, condition ->
             ConditionEditor(index, condition, enabled,
@@ -347,9 +359,9 @@ internal fun ConditionSection(character: Character, enabled: Boolean, onChange: 
 
 @Composable
 private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boolean, onRemove: () -> Unit, onValue: (ConditionEffect) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(Carbon).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text("CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}", color = Ice, modifier = Modifier.weight(1f))
+            Text("CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover condição", onRemove)
         }
         HudTextField("Condição", condition.name, enabled = enabled) { onValue(condition.copy(name = it)) }
@@ -363,33 +375,16 @@ private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boo
 }
 
 @Composable
-internal fun AbilityUsageEditor(
+internal fun AbilityAvailabilityEditor(
     favorite: Boolean,
     available: Boolean,
-    resource: SessionResource,
-    costAmount: Int,
-    usage: AbilityUsageLimit,
     enabled: Boolean,
-    onChange: (Boolean, Boolean, SessionResource, Int, AbilityUsageLimit) -> Unit,
+    onChange: (Boolean, Boolean) -> Unit,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        TextButton({ onChange(!favorite, available, resource, costAmount, usage) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
-        TextButton({ onChange(favorite, !available, resource, costAmount, usage) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
+        TextButton({ onChange(!favorite, available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
+        TextButton({ onChange(favorite, !available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
     }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        TextButton({
-            val values = SessionResource.entries
-            onChange(favorite, available, values[(values.indexOf(resource) + 1) % values.size], costAmount, usage)
-        }, enabled = enabled, modifier = Modifier.weight(1f)) { Text("RECURSO // ${resource.name}") }
-        TextButton({
-            val values = UsagePeriod.entries
-            onChange(favorite, available, resource, costAmount, usage.copy(period = values[(values.indexOf(usage.period) + 1) % values.size]))
-        }, enabled = enabled, modifier = Modifier.weight(1f)) { Text("LIMITE // ${usage.period.name}") }
-    }
-    TwoFields(
-        { IntegerField("Custo estruturado", costAmount, enabled, it) { onChange(favorite, available, resource, it.coerceAtLeast(0), usage) } },
-        { IntegerField("Usos máximos", usage.maximum, enabled, it) { onChange(favorite, available, resource, costAmount, usage.copy(maximum = it.coerceAtLeast(0))) } },
-    )
 }
 
 @Composable

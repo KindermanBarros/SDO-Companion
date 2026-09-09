@@ -39,11 +39,11 @@ class MainActivity : ComponentActivity() {
             theme = enumValueOrDefault(storage.getString("theme", null), SdoThemeVariant.CYAN_INDUSTRIAL),
             density = enumValueOrDefault(storage.getString("density", null), SdoContentDensity.COMFORTABLE),
             fontScale = enumValueOrDefault(storage.getString("font_scale", null), SdoFontScale.STANDARD),
-            showValueAudit = storage.getBoolean("show_value_audit", false),
             autoSync = storage.getBoolean("auto_sync", true),
             notifications = storage.getBoolean("notifications", true),
             compactCards = storage.getBoolean("compact_cards", false),
             collapseLongSections = storage.getBoolean("collapse_long_sections", true),
+            calculationAuditEnabled = storage.getBoolean("calculation_audit_enabled", storage.getBoolean("show_value_audit", false)),
             showArchivedCampaigns = storage.getBoolean("show_archived_campaigns", true),
         )
     }
@@ -53,11 +53,11 @@ class MainActivity : ComponentActivity() {
             .putString("theme", preferences.theme.name)
             .putString("density", preferences.density.name)
             .putString("font_scale", preferences.fontScale.name)
-            .putBoolean("show_value_audit", preferences.showValueAudit)
             .putBoolean("auto_sync", preferences.autoSync)
             .putBoolean("notifications", preferences.notifications)
             .putBoolean("compact_cards", preferences.compactCards)
             .putBoolean("collapse_long_sections", preferences.collapseLongSections)
+            .putBoolean("calculation_audit_enabled", preferences.calculationAuditEnabled)
             .putBoolean("show_archived_campaigns", preferences.showArchivedCampaigns)
             .apply()
     }

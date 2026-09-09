@@ -36,6 +36,10 @@ data class CatalogEntry(
     val ruleReference: String = "",
     val keywords: List<String> = emptyList(),
     val repeatable: Boolean = false,
+    val limit: String = "",
+    val activationCondition: String = "",
+    val enhancements: String = "",
+    val deactivationCondition: String = "",
 ) {
     val category: String get() = group
     val description: String get() = summary
@@ -58,5 +62,7 @@ data class CatalogEntry(
         append(prerequisites.joinToString(" "))
         append(' ')
         append(keywords.joinToString(" "))
+        append(' ')
+        append(listOf(cost, action, range, duration, limit, activationCondition, enhancements, deactivationCondition).joinToString(" "))
     }
 }

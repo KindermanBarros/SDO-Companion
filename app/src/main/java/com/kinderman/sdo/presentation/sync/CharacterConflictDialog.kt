@@ -48,19 +48,19 @@ fun CharacterConflictDialog(
 
     AlertDialog(
         onDismissRequest = {},
-        containerColor = Void,
+        containerColor = MaterialTheme.colorScheme.background,
         shape = CutCornerShape(topEnd = 24.dp, bottomStart = 16.dp),
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("CONFLITO DE SINCRONIA", color = Signal, style = MaterialTheme.typography.titleLarge)
-                Text(conflict.local.name, color = Ice, style = MaterialTheme.typography.titleMedium)
+                Text("CONFLITO DE SINCRONIA", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                Text(conflict.local.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
             }
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     "A ficha foi alterada neste aparelho e também online. Escolha qual versão fica em cada campo.",
-                    color = LabelFunctional,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -99,7 +99,7 @@ fun CharacterConflictDialog(
         confirmButton = {
             Button(
                 onClick = { onResolve(remoteFieldIds) },
-                colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
                 shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
             ) {
                 Text("APLICAR ESCOLHAS")
@@ -117,12 +117,12 @@ private fun ConflictFieldChoice(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, TechCutDark, CutCornerShape(topEnd = 12.dp))
-            .background(Carbon)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CutCornerShape(topEnd = 12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(9.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        Text(field.label.uppercase(), color = Ice, style = MaterialTheme.typography.labelLarge)
+        Text(field.label.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge)
         VersionChoice(
             label = "LOCAL",
             summary = field.localSummary,
@@ -148,18 +148,18 @@ private fun VersionChoice(
     OutlinedButton(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) Acid else TechCutDark),
+        border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (selected) Acid.copy(alpha = 0.12f) else Void,
-            contentColor = Ice,
+            containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
         shape = CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp),
     ) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(label, color = if (selected) Acid else LabelFunctional, style = MaterialTheme.typography.labelSmall)
+            Text(label, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             Text(
                 summary,
-                color = Ice,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis,

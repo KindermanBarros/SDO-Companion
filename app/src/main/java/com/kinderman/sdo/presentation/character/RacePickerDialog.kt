@@ -66,7 +66,7 @@ internal fun RacePickerDialog(
         title = { Text("SELECIONAR RAÇA") },
         text = {
             Column(Modifier.fillMaxWidth().heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("RAÇA-BASE", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("RAÇA-BASE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 SelectionMenu(
                     label = race.name.uppercase(),
                     options = RaceCatalog.races,
@@ -80,8 +80,8 @@ internal fun RacePickerDialog(
                     }
                     basePowers = if (subRace == null) option.powers.toSet() else setOf(option.powers.first())
                 }
-                Text("HP +${race.hp} // SAN +${race.sanity} // ARC +${race.arcane} // ENE +${race.energy}", color = Ice)
-                Text("ATRIBUTO // ${race.attribute} +1", color = Acid)
+                Text("HP +${race.hp} // SAN +${race.sanity} // ARC +${race.arcane} // ENE +${race.energy}", color = MaterialTheme.colorScheme.onSurface)
+                Text("ATRIBUTO // ${race.attribute} +1", color = MaterialTheme.colorScheme.primary)
                 if (race.attribute == "Qualquer") {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR").forEach { option ->
@@ -89,8 +89,8 @@ internal fun RacePickerDialog(
                         }
                     }
                 }
-                HorizontalDivider(color = TechCutDark)
-                Text("SUB-RAÇA // ADICIONAL OPCIONAL", color = Acid, style = MaterialTheme.typography.labelLarge)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Text("SUB-RAÇA // ADICIONAL OPCIONAL", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 SelectionMenu(
                     label = subRace?.name?.uppercase() ?: "NENHUMA",
                     options = listOf<SubRaceDefinition?>(null) + RaceCatalog.subRacesFor(race),
@@ -100,20 +100,20 @@ internal fun RacePickerDialog(
                     basePowers = if (option == null) race.powers.toSet() else setOf(race.powers.first())
                     subRacePower = option?.powers?.first()
                 }
-                HorizontalDivider(color = TechCutDark)
-                Text(if (needsReplacement) "MANTENHA 1 PODER RACIAL" else "PODERES RACIAIS", color = Acid, style = MaterialTheme.typography.labelLarge)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Text(if (needsReplacement) "MANTENHA 1 PODER RACIAL" else "PODERES RACIAIS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 race.powers.forEach { power -> PowerChoice(power, power in basePowers) { checked ->
                     basePowers = if (checked) {
                         if (needsReplacement) setOf(power) else basePowers + power
                     } else basePowers - power
                 } }
                 subRace?.let { selected ->
-                    Text("ESCOLHA 1 PODER DE ${selected.name.uppercase()}", color = Signal, style = MaterialTheme.typography.labelLarge)
+                    Text("ESCOLHA 1 PODER DE ${selected.name.uppercase()}", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelLarge)
                     selected.powers.forEach { power -> PowerChoice(power, subRacePower == power) { checked ->
                         subRacePower = power.takeIf { checked }
                     } }
                 }
-                if (!valid) Text("Selecione exatamente dois poderes: dois raciais, ou um racial e um de sub-raça.", color = Signal)
+                if (!valid) Text("Selecione exatamente dois poderes: dois raciais, ou um racial e um de sub-raça.", color = MaterialTheme.colorScheme.error)
             }
         },
         confirmButton = { TextButton(onClick = { onConfirm(race, subRace, attribute, basePowers.toList(), subRacePower) }, enabled = valid) { Text("APLICAR") } },
@@ -126,8 +126,8 @@ private fun PowerChoice(power: RacialPower, checked: Boolean, onChecked: (Boolea
     Row(Modifier.fillMaxWidth().clickable { onChecked(!checked) }.padding(vertical = 4.dp)) {
         Checkbox(checked, onCheckedChange = null)
         Column(Modifier.padding(top = 8.dp)) {
-            Text(power.name, color = Ice)
-            Text(power.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
+            Text(power.name, color = MaterialTheme.colorScheme.onSurface)
+            Text(power.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
