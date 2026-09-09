@@ -38,4 +38,12 @@ class BuiltInCatalogTest {
         assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.BATTLE_TECHNIQUE })
         assertTrue(KnowledgeCatalog.entries.none { it.name.startsWith("Estudo de ", ignoreCase = true) })
     }
+
+    @Test fun everyDefaultPowerIsACompleteCreationGuide() {
+        val powers = BuiltInCatalog.entries.filter { it.kind == CatalogKind.POWER }
+        assertTrue(powers.all { it.name.isNotBlank() && it.summary.isNotBlank() })
+        assertTrue(powers.all { it.cost.isNotBlank() && it.action.isNotBlank() })
+        assertTrue(powers.all { it.range.isNotBlank() && it.duration.isNotBlank() })
+        assertTrue(powers.all { it.mechanicalEffect.isNotBlank() && it.ruleReference.isNotBlank() })
+    }
 }

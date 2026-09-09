@@ -19,14 +19,49 @@ object BuiltInCatalog {
     private fun rows(kind: CatalogKind, source: String, values: String): List<CatalogEntry> =
         values.trimIndent().lineSequence().filter(String::isNotBlank).map { row ->
             val p = row.split('|')
+            val summary = p.getOrElse(3) { "" }
             CatalogEntry(
                 id = "${kind.name.lowercase()}.${p[0]}", kind = kind, name = p[1], group = p[2],
-                summary = p.getOrElse(3) { "" }, cost = p.getOrElse(4) { "" },
-                action = p.getOrElse(5) { "" }, range = p.getOrElse(6) { "" },
-                duration = p.getOrElse(7) { "" }, source = source, version = VERSION,
+                summary = summary,
+                cost = p.getOrElse(4) { "" }.ifBlank { if (kind == CatalogKind.POWER) powerCost(summary) else "" },
+                action = p.getOrElse(5) { "" }.ifBlank { if (kind == CatalogKind.POWER) powerAction(summary) else "" },
+                range = p.getOrElse(6) { "" }.ifBlank { if (kind == CatalogKind.POWER) powerRange(summary) else "" },
+                duration = p.getOrElse(7) { "" }.ifBlank { if (kind == CatalogKind.POWER) powerDuration(summary) else "" },
+                mechanicalEffect = summary,
+                source = source, version = VERSION,
                 ruleReference = canonicalReference(source),
             )
         }.toList()
+
+    private fun powerCost(text: String): String =
+        Regex("(?i)(?:\\d+d\\d+|\\d+)\\s*(?:PM|PE|PV|HP|Arcano|Energia|Destino)")
+            .find(text)?.value ?: "Sem custo"
+
+    private fun powerAction(text: String): String = when {
+        text.contains("ação completa", true) -> "Ação Completa"
+        text.contains("reação", true) -> "Reação"
+        Regex("(?i)(?:com|e|uma|1)\\s+(?:uma\\s+|1\\s+)?ação").containsMatchIn(text) -> "1 ação"
+        else -> "Passiva"
+    }
+
+    private fun powerRange(text: String): String {
+        val meters = Regex("(?i)(?:até|em|a)\\s+(\\d+)\\s*m(?:etros?)?").find(text)?.groupValues?.get(1)
+        return when {
+            meters != null -> "$meters metros"
+            text.contains("alvo", true) -> "Alvo descrito"
+            text.contains("aliado", true) -> "Aliado descrito"
+            else -> "Pessoal"
+        }
+    }
+
+    private fun powerDuration(text: String): String = when {
+        text.contains("por sessão", true) || text.contains("uma vez por sessão", true) -> "Conforme limite da sessão"
+        text.contains("por dia", true) || text.contains("uma vez ao dia", true) -> "Conforme limite diário"
+        text.contains("fim da cena", true) || text.contains("por uma cena", true) -> "1 cena"
+        text.contains("por turno", true) || text.contains("próximo turno", true) -> "1 turno"
+        text.contains("descanso", true) -> "Até o próximo descanso"
+        else -> "Contínua"
+    }
 
     private val paths = rows(CatalogKind.PATH, "Catálogos canônicos de Caminhos", """
         engrenagens|Caminho das Engrenagens|Solidão dos Oprimidos|Reparar, criação e perseverança.
