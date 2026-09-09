@@ -2,6 +2,8 @@ package com.kinderman.sdo.presentation.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Visibility
@@ -40,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,6 +90,7 @@ fun DashboardScreen(
     session: UserSession?,
     syncing: Boolean,
     compactCards: Boolean,
+    collapseCampaignCards: Boolean,
     showArchivedCampaigns: Boolean,
     invitePreview: CampaignInvitePreview?,
     snackbarHost: @Composable () -> Unit,
@@ -324,6 +330,7 @@ fun DashboardScreen(
                                     inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
                                     characterCount = characters.count { normalizeCampaignId(it.campaignId) == campaign.id },
                                     memberCount = campaignMembers.count { it.campaignId == campaign.id && it.isActive },
+                                    initiallyExpanded = !collapseCampaignCards,
                                     onAdd = {
                                         if (campaign.ownerId == uid || admin) assigningCampaign = campaign
                                         else onAddToCampaign(campaign, uid)
@@ -350,6 +357,7 @@ fun DashboardScreen(
                                     inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
                                     characterCount = characters.count { normalizeCampaignId(it.campaignId) == campaign.id },
                                     memberCount = campaignMembers.count { it.campaignId == campaign.id && it.isActive },
+                                    initiallyExpanded = !collapseCampaignCards,
                                     onAdd = {},
                                     onArchive = { onArchiveCampaign(campaign, false) },
                                     onDelete = { deletingCampaign = campaign },
@@ -587,30 +595,41 @@ private fun CampaignPanel(
     inviteCode: String,
     characterCount: Int,
     memberCount: Int,
+    initiallyExpanded: Boolean,
     onAdd: () -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit,
     onLeave: () -> Unit,
     index: String,
 ) {
-    TechPanel(accent = if (archived) TechCutDark else AcidCyan) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) Muted else AcidCyan)
-            TelemetryTag(
-                when {
-                    administrator -> "ADMIN"
-                    owner -> "MESTRE // CRIADOR"
-                    else -> "PLAYER"
-                },
+    var expanded by rememberSaveable(campaign.id) { mutableStateOf(initiallyExpanded) }
+    TechPanel(
+        modifier = Modifier.animateContentSize(),
+        accent = if (archived) TechCutDark else AcidCyan,
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) Muted else AcidCyan)
+                    TelemetryTag(
+                        when {
+                            administrator -> "ADMIN"
+                            owner -> "MESTRE // CRIADOR"
+                            else -> "PLAYER"
+                        },
+                    )
+                }
+                Text(campaign.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall)
+            }
+            Icon(
+                if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                if (expanded) "Recolher campanha" else "Expandir campanha",
+                tint = MaterialTheme.colorScheme.primary,
             )
-        }
-        Text(campaign.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall)
-        if (campaign.description.isNotBlank()) {
-            Text(campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CampaignMetric("FICHAS", characterCount.toString(), Modifier.weight(1f))
-            CampaignMetric("PARTICIPANTES", memberCount.toString(), Modifier.weight(1f))
         }
         Column(
             Modifier.fillMaxWidth()
@@ -623,26 +642,33 @@ private fun CampaignPanel(
                 Text(inviteCode.ifBlank { "SINCRONIZANDO" }, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (!archived && canAdd) {
-                androidx.compose.material3.Button(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("NOVA FICHA") }
+        if (expanded) {
+            if (campaign.description.isNotBlank()) {
+                Text(campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
             }
-            if (owner || administrator) {
-                TextButton(onClick = onArchive, modifier = Modifier.weight(1f)) {
-                    Text(if (archived) "RESTAURAR" else "ARQUIVAR")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CampaignMetric("FICHAS", characterCount.toString(), Modifier.weight(1f))
+                CampaignMetric("PARTICIPANTES", memberCount.toString(), Modifier.weight(1f))
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (!archived && canAdd) {
+                    androidx.compose.material3.Button(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("NOVA FICHA") }
                 }
-            } else if (!archived) {
-                TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = Signal) }
+                if (owner || administrator) {
+                    TextButton(onClick = onArchive, modifier = Modifier.weight(1f)) {
+                        Text(if (archived) "RESTAURAR" else "ARQUIVAR")
+                    }
+                } else if (!archived) {
+                    TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = Signal) }
+                }
             }
-        }
-        if (owner || administrator) {
-            if (archived) {
+            if ((owner || administrator) && archived) {
                 TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
                     Text("APAGAR DEFINITIVAMENTE", color = Signal)
                 }
             }
+            Text("ID ${campaign.id.take(12).uppercase()} // REG.$index", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         }
-        Text("ID ${campaign.id.take(12).uppercase()} // REG.$index", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
     }
 }
 

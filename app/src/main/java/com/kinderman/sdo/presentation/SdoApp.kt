@@ -143,6 +143,7 @@ fun SdoApp(
                     session = appSession,
                     syncing = characterLoadState.syncing,
                     compactCards = preferences.compactCards,
+                    collapseCampaignCards = preferences.collapseLongSections,
                     showArchivedCampaigns = preferences.showArchivedCampaigns,
                     invitePreview = invitePreview,
                     snackbarHost = { SnackbarHost(snackbar) },
