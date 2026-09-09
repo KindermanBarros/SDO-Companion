@@ -225,18 +225,12 @@ fun SdoApp(
                     selectedId = selectedId,
                     compact = preferences.density == SdoContentDensity.COMPACT || preferences.compactCards,
                     readOnly = archived,
-                    onSelect = { selectedId = it },
+                    onSelect = { navigate(AppSurface.SESSION, it) },
                     onOpenSheet = {
                         navigate(AppSurface.SHEET, it)
                     },
                     onCommand = appViewModel::applySessionCommand,
-                    onBack = {
-                        if (selectedId != null) {
-                            selectedId = null
-                        } else {
-                            goBack()
-                        }
-                    },
+                    onBack = { goBack() },
                 )
 
                 AppSurface.HISTORIAN -> HistorianDashboardScreen(
