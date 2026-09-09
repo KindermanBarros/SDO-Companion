@@ -386,7 +386,7 @@ fun TechPanel(
 @Composable
 fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
     val secondary = MaterialTheme.colorScheme.secondary
-    val error = MaterialTheme.colorScheme.error
+    val error = MaterialTheme.colorScheme.primary
     Row(
         modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -499,6 +499,7 @@ fun HudTextField(
     multiline: Boolean = false,
     placeholder: String? = null,
     enabled: Boolean = true,
+    keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
     onValue: (String) -> Unit,
 ) {
     val interaction = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -518,6 +519,7 @@ fun HudTextField(
         onValueChange = onValue,
         modifier = modifier.fillMaxWidth().then(Modifier.heightIn(min = if (compact) 48.dp else 56.dp)),
         interactionSource = interaction,
+        keyboardOptions = keyboardOptions,
         singleLine = !multiline,
         cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
         minLines = if (multiline) 3 else 1,

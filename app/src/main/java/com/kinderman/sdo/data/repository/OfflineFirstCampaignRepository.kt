@@ -265,10 +265,22 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
+        // Reconcile terminal state before replaying stale offline campaign edits.
+        dao.dirtyCampaigns().filter { it.lastSyncedAt != 0L && (session.isAdmin || it.ownerId == session.uid) }.forEach { local ->
+            val remote = campaigns.document(local.id).get().await()
+                .toObject(CampaignRecord::class.java)
+            if (remote?.state == CampaignState.DELETED.name) {
+                dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
+                characterDao.all().filter { it.campaignId == local.id }.forEach {
+                    characterDao.upsert(it.copy(campaignId = "", dirty = true))
+                }
+            }
+        }
+        val deletedIds = dao.allCampaigns().filter { it.state == CampaignState.DELETED.name }.map { it.id }.toSet()
         val dirtyCampaigns = dao.dirtyCampaigns().filter { session.isAdmin || it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
-        val dirtyMembers = dao.dirtyMembers()
+        val dirtyMembers = dao.dirtyMembers().filterNot { it.campaignId in deletedIds }
 
         newCampaigns.forEach { local ->
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
@@ -281,7 +293,7 @@ class OfflineFirstCampaignRepository(
                 dao.markMemberSynced(local.campaignId, local.userId, local.updatedAt)
             }
         }
-        dao.dirtyInvites().forEach { local ->
+        dao.dirtyInvites().filterNot { it.campaignId in deletedIds }.forEach { local ->
             if (session.isAdmin || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 val reference = invites.document(local.id)
                 try {
