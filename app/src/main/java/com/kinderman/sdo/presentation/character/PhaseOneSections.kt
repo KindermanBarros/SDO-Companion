@@ -203,21 +203,36 @@ internal fun PhaseOnePowerSection(
     onChange: (Character) -> Unit,
 ) {
     var selecting by remember { mutableStateOf(false) }
+    var expandedPowerId by remember(character.id) { mutableStateOf<String?>(null) }
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("08", "Poderes")
         Text("REGISTROS // ${character.powers.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        if (character.powers.isEmpty()) {
+            Text(
+                "Nenhum poder registrado. Selecione um padrão do catálogo ou crie um registro manual.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
         character.powers.forEachIndexed { index, power ->
             StructuredPowerEditor(
                 index = index,
                 power = power,
                 enabled = enabled,
-                onRemove = { onChange(character.copy(powers = character.powers.filterIndexed { itemIndex, _ -> itemIndex != index })) },
+                expanded = expandedPowerId == power.id,
+                onToggle = { expandedPowerId = power.id.takeUnless { it == expandedPowerId } },
+                onRemove = {
+                    if (expandedPowerId == power.id) expandedPowerId = null
+                    onChange(character.copy(powers = character.powers.filterNot { it.id == power.id }))
+                },
                 onValue = { onChange(character.copy(powers = character.powers.replace(index, it))) },
             )
         }
         AddButton("Selecionar poder do catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
         AddButton("Adicionar poder manualmente", enabled) {
-            onChange(character.copy(powers = character.powers + Power(sourceType = PowerSourceType.MANUAL)))
+            val power = Power(sourceType = PowerSourceType.MANUAL)
+            expandedPowerId = power.id
+            onChange(character.copy(powers = character.powers + power))
         }
     }
     if (selecting) {
@@ -228,7 +243,9 @@ internal fun PhaseOnePowerSection(
             alreadyAddedCatalogIds = character.powers.mapNotNull { it.catalogEntryId.takeIf(String::isNotBlank) }.toSet(),
             onSelect = { entry ->
                 if (character.powers.none { it.catalogEntryId == entry.id } || entry.repeatable) {
-                    onChange(character.copy(powers = character.powers + entry.toStructuredPower()))
+                    val power = entry.toStructuredPower()
+                    expandedPowerId = power.id
+                    onChange(character.copy(powers = character.powers + power))
                 }
                 selecting = false
             },
@@ -241,14 +258,36 @@ private fun StructuredPowerEditor(
     index: Int,
     power: Power,
     enabled: Boolean,
+    expanded: Boolean,
+    onToggle: () -> Unit,
     onRemove: () -> Unit,
     onValue: (Power) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text("PODER ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Text(power.sourceType.name, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    power.name.ifBlank { "PODER ${(index + 1).toString().padStart(2, '0')}" },
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    listOf(power.sourceType.name, power.action, power.cost).filter(String::isNotBlank).joinToString(" // "),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+            TextButton(onClick = onToggle) { Text(if (expanded) "FECHAR" else "EDITAR") }
             RemoveButton(enabled, "Remover poder", onRemove)
+        }
+        if (!expanded) {
+            Text(
+                power.effect.ifBlank { "Sem efeito descrito." },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 3,
+            )
+            return@Column
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
         HudTextField("Caminho / origem", power.origin, multiline = true, enabled = enabled) { onValue(power.copy(origin = it)) }
