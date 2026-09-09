@@ -81,6 +81,12 @@ interface CampaignDao {
     @Query("DELETE FROM campaign_members WHERE campaignId = :campaignId AND userId = :userId")
     suspend fun purgeMember(campaignId: String, userId: String)
 
+    @Query("DELETE FROM campaign_members WHERE campaignId = :campaignId")
+    suspend fun purgeMembersForCampaign(campaignId: String)
+
     @Query("DELETE FROM campaign_invites WHERE id = :id")
     suspend fun purgeInvite(id: String)
+
+    @Query("DELETE FROM campaign_invites WHERE campaignId = :campaignId")
+    suspend fun purgeInvitesForCampaign(campaignId: String)
 }

@@ -92,6 +92,7 @@ fun DashboardScreen(
     onOwnerTransfer: (Character, UserProfile) -> Unit,
     onCreateCampaign: (String, String) -> Unit,
     onArchiveCampaign: (Campaign, Boolean) -> Unit,
+    onDeleteCampaign: (Campaign) -> Unit,
     onLeaveCampaign: (Campaign) -> Unit,
     onCreateInvite: (Campaign) -> Unit,
     onPreviewInvite: (String) -> Unit,
@@ -123,6 +124,7 @@ fun DashboardScreen(
     var choosingStatus by remember { mutableStateOf(false) }
     var section by remember { mutableStateOf(DashboardSection.CHARACTERS) }
     var assigningCampaign by remember { mutableStateOf<Campaign?>(null) }
+    var deletingCampaign by remember { mutableStateOf<Campaign?>(null) }
     val filtersActive = searchQuery.isNotBlank() || ownerFilter != null ||
         campaignFilter != null || statusFilter != AdminCharacterStatus.ALL
     val filteredCharacters = remember(
@@ -324,6 +326,7 @@ fun DashboardScreen(
                                     },
                                     onInvite = { onCreateInvite(campaign) },
                                     onArchive = { onArchiveCampaign(campaign, true) },
+                                    onDelete = {},
                                     onLeave = { onLeaveCampaign(campaign) },
                                     index = (campaignIndex + 1).toString().padStart(2, '0'),
                                 )
@@ -344,6 +347,7 @@ fun DashboardScreen(
                                     onAdd = {},
                                     onInvite = {},
                                     onArchive = { onArchiveCampaign(campaign, false) },
+                                    onDelete = { deletingCampaign = campaign },
                                     onLeave = {},
                                     index = "AR",
                                 )
@@ -389,6 +393,20 @@ fun DashboardScreen(
                 characters = standalone.filter { it.ownerId == uid },
                 onDismiss = onDismissInvitePreview,
                 onAccept = onAcceptInvite,
+            )
+        }
+        deletingCampaign?.let { campaign ->
+            AlertDialog(
+                onDismissRequest = { deletingCampaign = null },
+                title = { Text("APAGAR CAMPANHA") },
+                text = { Text("${campaign.name} será apagada definitivamente. As fichas serão preservadas e desvinculadas. Esta ação exige conexão.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        deletingCampaign = null
+                        onDeleteCampaign(campaign)
+                    }) { Text("APAGAR", color = Signal) }
+                },
+                dismissButton = { TextButton(onClick = { deletingCampaign = null }) { Text("CANCELAR") } },
             )
         }
         if (choosingOwner) {
@@ -564,6 +582,7 @@ private fun CampaignPanel(
     onAdd: () -> Unit,
     onInvite: () -> Unit,
     onArchive: () -> Unit,
+    onDelete: () -> Unit,
     onLeave: () -> Unit,
     index: String,
 ) {
@@ -589,6 +608,11 @@ private fun CampaignPanel(
         if (owner || administrator) {
             TextButton(onClick = onArchive, modifier = Modifier.fillMaxWidth()) {
                 Text(if (archived) "RESTAURAR CAMPANHA" else "ARQUIVAR CAMPANHA")
+            }
+            if (archived) {
+                TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                    Text("APAGAR DEFINITIVAMENTE", color = Signal)
+                }
             }
         } else if (!archived) {
             TextButton(onClick = onLeave, modifier = Modifier.fillMaxWidth()) { Text("SAIR DA CAMPANHA", color = Signal) }

@@ -359,6 +359,28 @@ test('archived campaign is read-only for characters', async () => {
   }));
 });
 
+test('campaign owner can dismantle and delete an archived campaign safely', async () => {
+  await seed({ archived: true });
+  const ownerDb = testEnv.authenticatedContext(ids.owner).firestore();
+
+  await assertSucceeds(updateDoc(doc(ownerDb, 'characters', ids.character), {
+    campaignId: '',
+    updatedAt: 3,
+  }));
+  await assertSucceeds(deleteDoc(doc(ownerDb, 'campaignMembers', `${ids.campaign}::${ids.player}`)));
+  await assertSucceeds(deleteDoc(doc(ownerDb, 'campaignInvites', ids.invite)));
+  await assertSucceeds(deleteDoc(doc(ownerDb, 'campaigns', ids.campaign)));
+});
+
+test('active campaign and non-owner campaign deletion are denied', async () => {
+  await seed();
+  const ownerDb = testEnv.authenticatedContext(ids.owner).firestore();
+  const playerDb = testEnv.authenticatedContext(ids.player).firestore();
+
+  await assertFails(deleteDoc(doc(ownerDb, 'campaigns', ids.campaign)));
+  await assertFails(deleteDoc(doc(playerDb, 'campaigns', ids.campaign)));
+});
+
 test('unauthenticated users cannot preview invites', async () => {
   await seed();
   const db = env.unauthenticatedContext().firestore();

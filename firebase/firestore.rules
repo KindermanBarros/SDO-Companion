@@ -193,7 +193,9 @@ service cloud.firestore {
           )
         );
 
-      allow delete: if false;
+      allow delete: if signedIn()
+        && resource.data.state == 'ARCHIVED'
+        && isCampaignResponsible(campaignId);
     }
 
     match /campaignMembers/{membershipId} {
@@ -248,7 +250,7 @@ service cloud.firestore {
           )
         );
 
-      allow delete: if false;
+      allow delete: if signedIn() && isCampaignResponsible(resource.data.campaignId);
     }
 
     match /campaignInvites/{inviteId} {
@@ -277,7 +279,7 @@ service cloud.firestore {
       // One reusable code is created with the campaign and remains immutable.
       allow update: if false;
 
-      allow delete: if false;
+      allow delete: if signedIn() && isCampaignResponsible(resource.data.campaignId);
     }
 
     match /campaignAudit/{operationId} {
@@ -380,6 +382,13 @@ service cloud.firestore {
             && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
             && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
             && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
+          )
+          || (
+            normalizedCampaignId(resource.data) != ''
+            && get(campaignPath(normalizedCampaignId(resource.data))).data.state == 'ARCHIVED'
+            && isCampaignResponsible(normalizedCampaignId(resource.data))
+            && normalizedCampaignId(request.resource.data) == ''
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
           )
         );
 

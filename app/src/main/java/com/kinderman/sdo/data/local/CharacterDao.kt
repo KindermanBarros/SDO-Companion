@@ -34,6 +34,9 @@ interface CharacterDao {
     @Query("SELECT * FROM characters WHERE id = :id LIMIT 1")
     suspend fun get(id: String): CharacterRecord?
 
+    @Query("SELECT * FROM characters WHERE campaignId = :campaignId")
+    suspend fun inCampaign(campaignId: String): List<CharacterRecord>
+
     @Query("SELECT * FROM characters WHERE dirty = 1")
     suspend fun dirty(): List<CharacterRecord>
 

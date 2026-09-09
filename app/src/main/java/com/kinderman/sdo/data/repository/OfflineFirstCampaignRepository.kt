@@ -104,6 +104,37 @@ class OfflineFirstCampaignRepository(
         )
     }
 
+    override suspend fun deleteArchived(session: UserSession, campaign: Campaign) {
+        requireOwner(session, campaign)
+        val existing = requireCampaign(campaign.id)
+        check(existing.isArchived) { "Arquive a campanha antes de apagá-la." }
+        val store = runCatching { Firebase.firestore }.getOrNull()
+            ?: error("A exclusão definitiva exige conexão com o Firebase.")
+        val now = System.currentTimeMillis()
+        val characters = store.collection("characters")
+            .whereEqualTo("campaignId", existing.id)
+            .get().await().documents
+        characters.forEach { document ->
+            document.reference.update(mapOf<String, Any>("campaignId" to "", "updatedAt" to now)).await()
+        }
+        listOf(MEMBERS, INVITES).forEach { collectionName ->
+            store.collection(collectionName)
+                .whereEqualTo("campaignId", existing.id)
+                .get().await().documents
+                .forEach { it.reference.delete().await() }
+        }
+        store.collection(CAMPAIGNS).document(existing.id).delete().await()
+
+        characterDao.inCampaign(existing.id).forEach { character ->
+            characterDao.upsert(
+                character.copy(campaignId = "", updatedAt = now, dirty = false, lastSyncedAt = now),
+            )
+        }
+        dao.purgeMembersForCampaign(existing.id)
+        dao.purgeInvitesForCampaign(existing.id)
+        dao.purgeCampaign(existing.id)
+    }
+
     override suspend fun leave(session: UserSession, campaign: Campaign) {
         val existing = requireActiveCampaign(campaign.id)
         check(existing.ownerId != session.uid) { "A Mestre que criou a campanha não pode sair dela." }
