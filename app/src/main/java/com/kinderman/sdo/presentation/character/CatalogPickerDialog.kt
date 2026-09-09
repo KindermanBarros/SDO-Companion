@@ -1,7 +1,5 @@
 package com.kinderman.sdo.presentation.character
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -140,13 +138,10 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
         DetailLine("ALCANCE", entry.range)
         DetailLine("DURAÇÃO", entry.duration)
         DetailLine("LIMITE", entry.limit)
-        DetailLine("ATIVAÇÃO", entry.activationCondition)
         DetailLine("APRIMORAMENTOS", entry.enhancements)
-        DetailLine("ENCERRAMENTO", entry.deactivationCondition)
         DetailLine("PRÉ-REQUISITOS", entry.prerequisites.joinToString("; "))
         DetailLine("EFEITO MECÂNICO", entry.mechanicalEffect)
         DetailLine("FONTE", entry.source)
-        DetailLine("REFERÊNCIA", entry.ruleReference)
         DetailLine("PALAVRAS-CHAVE", entry.keywords.joinToString(", "))
         DetailLine("VERSÃO", entry.version.toString())
     }

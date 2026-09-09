@@ -12,6 +12,11 @@ enum class CatalogKind {
     BATTLE_TECHNIQUE,
 }
 
+fun String.withoutCatalogExampleCount(): String =
+    replace(Regex("\\b\\d+\\s+exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")
+        .replace(Regex("\\bexemplos?\\s+de\\s+\\d+\\s+", RegexOption.IGNORE_CASE), "")
+        .trim()
+
 data class CatalogEntry(
     val id: String,
     val kind: CatalogKind,
