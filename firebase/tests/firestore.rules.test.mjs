@@ -20,6 +20,25 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
+test('campaign deletion detaches characters atomically and preserves their data', async () => {
+  await seed({ archived: true });
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'characters', ids.character), { campaignId: '', updatedAt: 3 });
+  batch.update(doc(db, 'campaigns', ids.campaign), { state: 'DELETED', updatedAt: 3 });
+  await assertSucceeds(batch.commit());
+  await assertFails(updateDoc(doc(db, 'campaigns', ids.campaign), { state: 'ACTIVE' }));
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  const preserved = await assertSucceeds(getDoc(doc(playerDb, 'characters', ids.character)));
+  if (preserved.data().campaignId !== '') throw new Error('Character not detached');
+});
+
+test('players cannot delete campaigns or detach someone else through a deletion batch', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+  await assertFails(updateDoc(doc(db, 'campaigns', ids.campaign), { state: 'DELETED' }));
+});
+
 const here = dirname(fileURLToPath(import.meta.url));
 const rules = readFileSync(resolve(here, '../firestore.rules'), 'utf8');
 const projectId = 'sdo-companion-test';

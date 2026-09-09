@@ -18,7 +18,7 @@ interface CampaignRepository {
     suspend fun create(session: UserSession, name: String, description: String = ""): Campaign
     suspend fun update(session: UserSession, campaign: Campaign)
     suspend fun archive(session: UserSession, campaign: Campaign, archived: Boolean)
-    suspend fun deleteArchived(session: UserSession, campaign: Campaign)
+    suspend fun delete(session: UserSession, campaign: Campaign)
     suspend fun leave(session: UserSession, campaign: Campaign)
     suspend fun removeMember(session: UserSession, campaign: Campaign, userId: String)
 

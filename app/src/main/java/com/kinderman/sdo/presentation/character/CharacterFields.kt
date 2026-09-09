@@ -40,6 +40,7 @@ internal fun IntegerField(
         value = input,
         modifier = modifier,
         placeholder = "0",
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
         enabled = enabled,
     ) { raw ->
         val normalized = raw.filterIndexed { index, character ->

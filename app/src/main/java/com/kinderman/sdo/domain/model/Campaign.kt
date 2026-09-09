@@ -24,6 +24,7 @@ data class Campaign(
     val lastSyncedAt: Long = 0,
 ) {
     val isArchived: Boolean get() = state != CampaignState.ACTIVE
+    val isDeleted: Boolean get() = state == CampaignState.DELETED
 }
 
 data class CampaignMember(

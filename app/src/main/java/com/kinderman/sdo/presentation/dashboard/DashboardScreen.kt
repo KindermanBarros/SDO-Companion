@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Sync
@@ -230,16 +231,13 @@ fun DashboardScreen(
                         Text("Acessos rápidos", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             TextButton(onClick = onOpenSession, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.PlayCircle, null)
-                                Text(" SESSÃO")
+                                Icon(Icons.Default.PlayCircle, "Modo sessão")
                             }
                             if (admin || campaigns.any { !it.isArchived && it.ownerId == uid }) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.Visibility, null)
-                                Text(" MESTRE")
+                                Icon(Icons.Default.Visibility, "Painel do Historiador")
                             }
                             TextButton(onClick = onOpenSettings, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.Palette, null)
-                                Text(" TEMA")
+                                Icon(Icons.Default.Settings, "Configurações")
                             }
                         }
                     }
@@ -261,7 +259,7 @@ fun DashboardScreen(
                     if (section == DashboardSection.CAMPAIGNS) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
-                            TextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("ENTRAR POR CÓDIGO") }
+                            TextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("CÓDIGO") }
                         }
                     }
                     }
@@ -311,7 +309,7 @@ fun DashboardScreen(
                     DashboardSection.CHARACTERS -> {
                         if (filteredCharacters.isEmpty()) item("empty-characters") {
                             EmptyDashboardPanel(
-                                title = if (filtersActive) "Nenhuma ficha encontrada" else "Nenhuma ficha detectada",
+                                title = if (filtersActive) "Nenhuma ficha encontrada" else "Sem fichas",
                                 message = if (filtersActive) "Ajuste ou limpe os filtros de pesquisa." else "Crie uma ficha para iniciar o arquivo.",
                             )
                         }
@@ -362,7 +360,7 @@ fun DashboardScreen(
                                         else onAddToCampaign(campaign, uid)
                                     },
                                     onArchive = { onArchiveCampaign(campaign, true) },
-                                    onDelete = {},
+                                    onDelete = { deletingCampaign = campaign },
                                     onLeave = { onLeaveCampaign(campaign) },
                                     index = (campaignIndex + 1).toString().padStart(2, '0'),
                                 )
@@ -397,6 +395,18 @@ fun DashboardScreen(
             }
         }
 
+        deletingCampaign?.let { campaign ->
+            AlertDialog(
+                onDismissRequest = { deletingCampaign = null },
+                title = { Text("Excluir campanha?") },
+                text = { Text("Excluir “${campaign.name}”? Esta ação não pode ser desfeita. As fichas serão preservadas, sem campanha. É necessário estar online.") },
+                confirmButton = { TextButton(onClick = {
+                    deletingCampaign = null
+                    onDeleteCampaign(campaign)
+                }) { Text("Excluir", color = MaterialTheme.colorScheme.error) } },
+                dismissButton = { TextButton(onClick = { deletingCampaign = null }) { Text("Cancelar") } },
+            )
+        }
         ownerTarget?.let { character ->
             OwnerPickerDialog(
                 character = character,
@@ -432,20 +442,6 @@ fun DashboardScreen(
                 characters = standalone.filter { it.ownerId == uid },
                 onDismiss = onDismissInvitePreview,
                 onAccept = onAcceptInvite,
-            )
-        }
-        deletingCampaign?.let { campaign ->
-            AlertDialog(
-                onDismissRequest = { deletingCampaign = null },
-                title = { Text("APAGAR CAMPANHA") },
-                text = { Text("${campaign.name} será apagada definitivamente. As fichas serão preservadas e desvinculadas. Esta ação exige conexão.") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        deletingCampaign = null
-                        onDeleteCampaign(campaign)
-                    }) { Text("APAGAR", color = MaterialTheme.colorScheme.error) }
-                },
-                dismissButton = { TextButton(onClick = { deletingCampaign = null }) { Text("CANCELAR") } },
             )
         }
         if (choosingOwner) {
@@ -588,10 +584,9 @@ private fun FilterSelectionDialog(
 
 @Composable
 private fun EmptyDashboardPanel(title: String, message: String) {
-    TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("00", title)
+    TechPanel {
+        Text(title, style = MaterialTheme.typography.titleMedium)
         Text(message)
-        Barcode("EMPTY-SDO-ARCHIVE")
     }
 }
 
@@ -706,7 +701,7 @@ private fun CampaignPanel(
                     TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = MaterialTheme.colorScheme.error) }
                 }
             }
-            if ((owner || administrator) && archived) {
+            if (owner || administrator) {
                 TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
                     Text("APAGAR DEFINITIVAMENTE", color = MaterialTheme.colorScheme.error)
                 }

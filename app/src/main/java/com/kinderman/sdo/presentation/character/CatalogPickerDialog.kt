@@ -1,5 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -64,7 +66,7 @@ internal fun CatalogPickerDialog(
             if (details != null) {
                 CatalogDetails(details!!, details!!.id in alreadyAddedCatalogIds)
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     HudTextField("Buscar no catálogo", query) { query = it }
                     if (attributes.isNotEmpty()) FilterButton("ATRIBUTO", selectedAttribute, attributes) { selectedAttribute = it }
                     if (categories.isNotEmpty()) FilterButton("CATEGORIA", selectedCategory, categories) { selectedCategory = it }
@@ -78,8 +80,8 @@ internal fun CatalogPickerDialog(
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
-                                    if (alreadyAdded) Text("ADICIONADO", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                                    Text(entry.name, color = Ice, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                                    if (alreadyAdded) Text("ADICIONADO", color = Signal, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Text(
                                     listOf(entry.group, entry.relatedAttribute).filter(String::isNotBlank).joinToString(" // "),

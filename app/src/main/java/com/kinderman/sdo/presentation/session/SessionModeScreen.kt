@@ -1,6 +1,7 @@
 package com.kinderman.sdo.presentation.session
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -112,7 +113,7 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
             }
         }
         items(characters, key = Character::id) { character ->
-            OutlinedButton(onClick = { onSelect(character.id) }, modifier = Modifier.fillMaxWidth()) {
+            TechPanel(modifier = Modifier.fillMaxWidth().clickable { onSelect(character.id) }) {
                 Column(Modifier.fillMaxWidth()) {
                     Text(character.name.ifBlank { "Personagem sem nome" })
                     Text(

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -49,74 +50,74 @@ import com.kinderman.sdo.R
 import androidx.core.view.WindowCompat
 
 // --- Fundo de Tela e Superfícies Estruturais (Dark Canvas) ---
-val Void = Color(0xFF040D1B)
-val VoidDeep = Color(0xFF061424)
-val Panel = Color(0xFF191B1C)
-val ContainmentPanel = Color(0xFF1A060F)
-val ArcanePanel = Color(0xFF261E3C)
-val MysticPanel = Color(0xFF3B0855)
-val Carbon = Color(0xFF132B49)
-val CarbonAlt = Color(0xFF183451)
+val Void: Color @Composable get() = MaterialTheme.colorScheme.background
+val VoidDeep: Color @Composable get() = MaterialTheme.colorScheme.background
+val Panel: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val ContainmentPanel: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val ArcanePanel: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val MysticPanel: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val Carbon: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val CarbonAlt: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
 
 // --- Malha Técnica, Divisores e Wireframes (HUD Grid) ---
-val Grid = Color(0xFF383B3D)
-val GridGuide = Color(0xFF595F61)
-val WireframeNeutral = Color(0xFF7B8285)
-val WireframeLight = Color(0xFF9BA3A8)
-val TechCutDark = Color(0xFF274D7D)
-val TechCut = Color(0xFF2C5784)
-val TechCutCyan = Color(0xFF498099)
+val Grid: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val GridGuide: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val WireframeNeutral: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val WireframeLight: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val TechCutDark: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val TechCut: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val TechCutCyan: Color @Composable get() = MaterialTheme.colorScheme.outlineVariant
 
 // --- Tipografia e Hierarquia de Leitura ---
-val Ice = Color(0xFFFCFCFD)
-val TextPrimary = Color(0xFFEDEFF0)
-val LabelFunctional = Color(0xFFCADCF2)
-val LabelLight = Color(0xFFD8E6F6)
-val Muted = Color(0xFFC2C9CC)
-val MetaStamp = Color(0xFFD5D1E5)
-val MetalType = Color(0xFFB0A8CE)
-val MetalDeep = Color(0xFF8F82BA)
+val Ice: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+val TextPrimary: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+val LabelFunctional: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+val LabelLight: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+val Muted: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+val MetaStamp: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+val MetalType: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+val MetalDeep: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
 
 // --- Módulos de Sistema, Energia e Arcano (Tech Blues & Cyans) ---
-val AcidCyan = Color(0xFF30C0B7)
-val Acid = AcidCyan
-val Cyan = AcidCyan
-val EnergyBlue = Color(0xFF5690DA)
-val EnergyLight = Color(0xFF5E9CDE)
-val AuraBlue = Color(0xFF91B6E6)
-val AuraLight = Color(0xFF9CC1EA)
-val StatHeader = Color(0xFF3B6FB0)
-val StatHeaderLight = Color(0xFF407AB7)
-val ArcanePassive = Color(0xFF6E5BA2)
-val ArcaneLatent = Color(0xFF483B6D)
+val AcidCyan: Color @Composable get() = MaterialTheme.colorScheme.primary
+val Acid: Color @Composable get() = MaterialTheme.colorScheme.primary
+val Cyan: Color @Composable get() = MaterialTheme.colorScheme.primary
+val EnergyBlue: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val EnergyLight: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val AuraBlue: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val AuraLight: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val StatHeader: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val StatHeaderLight: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val ArcanePassive: Color @Composable get() = MaterialTheme.colorScheme.secondary
+val ArcaneLatent: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
 
 // --- Alertas, Dano e Tensão Psicológica (Acid Pinks & Corais) ---
-val AcidMagenta = Color(0xFFEE227D)
-val Signal = AcidMagenta
-val NeonCoral = Color(0xFFFD8083)
-val PenaltyPink = Color(0xFFD85E99)
-val StressPink = Color(0xFFE59BBA)
-val HostileHeader = Color(0xFF852467)
-val InsanityPink = Color(0xFFA84876)
-val DamageTrack = Color(0xFF773153)
-val DamageTrackDeep = Color(0xFF46192F)
-val HazardText = Color(0xFFF2D1DD)
+val AcidMagenta: Color @Composable get() = MaterialTheme.colorScheme.error
+val Signal: Color @Composable get() = MaterialTheme.colorScheme.error
+val NeonCoral: Color @Composable get() = MaterialTheme.colorScheme.error
+val PenaltyPink: Color @Composable get() = MaterialTheme.colorScheme.error
+val StressPink: Color @Composable get() = MaterialTheme.colorScheme.error
+val HostileHeader: Color @Composable get() = MaterialTheme.colorScheme.error
+val InsanityPink: Color @Composable get() = MaterialTheme.colorScheme.error
+val DamageTrack: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val DamageTrackDeep: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val HazardText: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
 
 private val hudColors = darkColorScheme(
-    primary = Acid,
-    onPrimary = Void,
-    secondary = EnergyBlue,
-    onSecondary = Void,
-    tertiary = Signal,
-    onTertiary = Void,
-    background = Void,
-    onBackground = Ice,
-    surface = Panel,
-    onSurface = Ice,
-    surfaceVariant = Carbon,
-    onSurfaceVariant = LabelFunctional,
-    error = Signal,
-    onError = Void,
+    primary = Color(0xFF30C0B7),
+    onPrimary = Color(0xFF040D1B),
+    secondary = Color(0xFF5690DA),
+    onSecondary = Color(0xFF040D1B),
+    tertiary = Color(0xFFEE227D),
+    onTertiary = Color(0xFF040D1B),
+    background = Color(0xFF040D1B),
+    onBackground = Color(0xFFFCFCFD),
+    surface = Color(0xFF191B1C),
+    onSurface = Color(0xFFFCFCFD),
+    surfaceVariant = Color(0xFF132B49),
+    onSurfaceVariant = Color(0xFFCADCF2),
+    error = Color(0xFFEE227D),
+    onError = Color(0xFF040D1B),
 )
 
 private val highContrastColors = darkColorScheme(
@@ -198,10 +199,10 @@ private val magentaDreamColors = darkColorScheme(
 )
 
 private val apertureWhiteColors = lightColorScheme(
-    primary = Color(0xFFFF9A00), onPrimary = Color(0xFF241400),
-    secondary = Color(0xFF27A7D8), onSecondary = Color(0xFF001E2A),
-    tertiary = Color(0xFF27A7D8), onTertiary = Color(0xFF001E2A),
-    background = Color(0xFFFAFAFA), onBackground = Color(0xFF1E1A1A),
+    primary = Color(0xFF006EB8), onPrimary = Color.White,
+    secondary = Color(0xFF005A91), onSecondary = Color.White,
+    tertiary = Color(0xFF007BA3), onTertiary = Color.White,
+    background = Color(0xFFF4F7F8), onBackground = Color(0xFF101B24),
     surface = Color(0xFFFFFFFF), onSurface = Color(0xFF101B24),
     surfaceVariant = Color(0xFFE9E4E4), onSurfaceVariant = Color(0xFF514A4A),
     outline = Color(0xFF8E8585), outlineVariant = Color(0xFFB5AAAA),
@@ -272,7 +273,7 @@ fun SdoTheme(
     preferences: SdoPreferences = SdoPreferences(),
     content: @Composable () -> Unit,
 ) {
-    val colors = when (preferences.theme) {
+    val baseColors = when (preferences.theme) {
         SdoThemeVariant.CYAN_INDUSTRIAL -> hudColors
         SdoThemeVariant.GREEN_TERMINAL -> terminalColors
         SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
@@ -283,6 +284,13 @@ fun SdoTheme(
         SdoThemeVariant.HIGH_CONTRAST -> highContrastColors
         SdoThemeVariant.SYSTEM -> if (isSystemInDarkTheme()) hudColors else systemLightColors
     }
+    val colors = baseColors.copy(
+        surfaceContainerHigh = baseColors.surface,
+        surfaceContainer = baseColors.surface,
+        surfaceContainerHighest = baseColors.surfaceVariant,
+        outline = baseColors.onSurfaceVariant.copy(alpha = 0.7f),
+        outlineVariant = baseColors.onSurfaceVariant.copy(alpha = 0.35f),
+    )
     val view = LocalView.current
     if (!view.isInEditMode) SideEffect {
         val window = (view.context as? Activity)?.window ?: return@SideEffect
@@ -296,7 +304,14 @@ fun SdoTheme(
     MaterialTheme(
         colorScheme = colors,
         typography = hudTypography(preferences.fontScale.multiplier),
-        content = content,
+        shapes = androidx.compose.material3.Shapes(
+            extraSmall = CutCornerShape(4.dp), small = CutCornerShape(8.dp),
+            medium = CutCornerShape(12.dp), large = CutCornerShape(16.dp),
+            extraLarge = CutCornerShape(22.dp),
+        ),
+        content = {
+            androidx.compose.runtime.CompositionLocalProvider(LocalSdoPreferences provides preferences, content = content)
+        },
     )
 }
 
@@ -371,7 +386,7 @@ fun TechPanel(
 @Composable
 fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
     val secondary = MaterialTheme.colorScheme.secondary
-    val error = MaterialTheme.colorScheme.error
+    val error = MaterialTheme.colorScheme.primary
     Row(
         modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -388,12 +403,12 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
             title.uppercase(),
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
+            modifier = Modifier.weight(1f),
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
         Canvas(Modifier
-            .weight(1f)
-            .height(9.dp)) {
+            .size(width = 24.dp, height = 9.dp)) {
             drawLine(secondary, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
             drawLine(
                 error,
@@ -432,7 +447,7 @@ fun TelemetryTag(text: String, color: Color? = null) {
 
 @Composable
 fun Barcode(seed: String, modifier: Modifier = Modifier) {
-    val signal = MaterialTheme.colorScheme.error
+    val signal = MaterialTheme.colorScheme.primary
     val neutral = MaterialTheme.colorScheme.outline
     Canvas(modifier
         .fillMaxWidth()
@@ -475,6 +490,7 @@ fun ComplianceMark(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HudTextField(
     label: String,
@@ -483,29 +499,50 @@ fun HudTextField(
     multiline: Boolean = false,
     placeholder: String? = null,
     enabled: Boolean = true,
+    keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
     onValue: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    val interaction = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val compact = LocalSdoWindowClass.current == SdoWindowClass.COMPACT ||
+        LocalSdoPreferences.current.density == SdoContentDensity.COMPACT
+    val colors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+    )
+    androidx.compose.foundation.text.BasicTextField(
         value = value,
         onValueChange = onValue,
-        modifier = modifier.fillMaxWidth(),
-        label = { Text(label.uppercase()) },
-        placeholder = placeholder?.let { hint -> { Text(hint, color = MaterialTheme.colorScheme.onSurfaceVariant) } },
-        minLines = if (multiline) 4 else 1,
+        modifier = modifier.fillMaxWidth().then(Modifier.heightIn(min = if (compact) 48.dp else 56.dp)),
+        interactionSource = interaction,
+        keyboardOptions = keyboardOptions,
+        singleLine = !multiline,
+        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+        minLines = if (multiline) 3 else 1,
         enabled = enabled,
-        shape = CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            cursorColor = MaterialTheme.colorScheme.primary,
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-        textStyle = MaterialTheme.typography.bodyLarge,
+        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
+        decorationBox = { inner ->
+            OutlinedTextFieldDefaults.DecorationBox(
+                value = value, innerTextField = inner, enabled = enabled,
+                singleLine = !multiline,
+                visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+                interactionSource = interaction,
+                label = { Text(label, maxLines = 1, style = MaterialTheme.typography.bodySmall) },
+                placeholder = placeholder?.let { hint -> { Text(hint, style = MaterialTheme.typography.bodyMedium) } },
+                colors = colors,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    horizontal = 12.dp, vertical = if (compact) 8.dp else 12.dp),
+                container = {
+                    OutlinedTextFieldDefaults.Container(
+                        enabled = enabled, isError = false, interactionSource = interaction,
+                        colors = colors, shape = CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp),
+                    )
+                },
+            )
+        },
     )
 }

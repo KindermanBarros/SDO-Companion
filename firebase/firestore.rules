@@ -359,6 +359,13 @@ service cloud.firestore {
       allow update: if signedIn()
         && (
           (
+            normalizedCampaignId(resource.data) != ''
+            && isCampaignResponsible(normalizedCampaignId(resource.data))
+            && getAfter(campaignPath(normalizedCampaignId(resource.data))).data.state == 'DELETED'
+            && normalizedCampaignId(request.resource.data) == ''
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
+          )
+          || (
             isAdministrator()
             && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
             && (

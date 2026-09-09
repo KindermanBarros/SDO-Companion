@@ -74,6 +74,7 @@ fun SdoApp(
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
     val invitePreview by appViewModel.invitePreview.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
+    val saveErrors by appViewModel.saveErrors.collectAsStateWithLifecycle()
     val catalog by appViewModel.catalog.collectAsStateWithLifecycle()
     val audit by appViewModel.audit.collectAsStateWithLifecycle()
     val campaignLibrary by appViewModel.library.collectAsStateWithLifecycle()
@@ -172,7 +173,7 @@ fun SdoApp(
                     onOwnerTransfer = appViewModel::transferOwner,
                     onCreateCampaign = appViewModel::createCampaign,
                     onArchiveCampaign = appViewModel::archiveCampaign,
-                    onDeleteCampaign = appViewModel::deleteArchivedCampaign,
+                    onDeleteCampaign = appViewModel::deleteCampaign,
                     onLeaveCampaign = appViewModel::leaveCampaign,
                     onPreviewInvite = appViewModel::previewCampaignInvite,
                     onAcceptInvite = appViewModel::acceptCampaignInvite,
@@ -197,6 +198,7 @@ fun SdoApp(
 
                 AppSurface.SHEET -> CharacterSheetScreen(
                     character = selectedCharacter,
+                    saveError = saveErrors[selectedCharacter?.id],
                     session = appSession,
                     catalog = catalog,
                     readOnly = archived,

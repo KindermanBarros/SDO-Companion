@@ -49,7 +49,7 @@ fun SettingsScreen(
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { Text("APARÊNCIA E ACESSIBILIDADE") },
+                    title = { Text("CONFIGURAÇÕES") },
                     navigationIcon = {
                         IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
                     },
@@ -131,13 +131,7 @@ fun SettingsScreen(
                         onSelect = { onPreferencesChange(preferences.copy(fontScale = it)) },
                     )
                 }
-                item {
-                    TechPanel(accent = MaterialTheme.colorScheme.primary) {
-                        TelemetryTag("A11Y.CONTRACT")
-                        Text("Estados usam texto, ícone e cor", color = MaterialTheme.colorScheme.onSurface)
-                        Text("Controles preservam área mínima de toque e seguem a escala de animação do sistema.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
+
             }
         }
     }
