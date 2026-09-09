@@ -83,10 +83,7 @@ internal fun CharacterSheetPager(
                     selected = pagerState.currentPage == index,
                     onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                     text = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(page.label, style = MaterialTheme.typography.labelLarge)
-                            Text(page.code, color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-                        }
+                        Text(page.label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
                     },
                     selectedContentColor = MaterialTheme.colorScheme.primary,
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface,

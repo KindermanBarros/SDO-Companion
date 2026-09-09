@@ -1,6 +1,8 @@
 package com.kinderman.sdo.presentation.historian
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -92,15 +95,15 @@ fun HistorianDashboardScreen(
     onBack: () -> Unit,
 ) {
     BackHandler(onBack = onBack)
-    var section by remember { mutableStateOf(HistorianSection.OPERATION) }
-    var search by remember { mutableStateOf("") }
+    var section by rememberSaveable { mutableStateOf(HistorianSection.OPERATION) }
+    var search by rememberSaveable { mutableStateOf("") }
     var actionTarget by remember { mutableStateOf<Character?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var choosingCampaign by remember { mutableStateOf(false) }
-    var selectedCampaignId by remember { mutableStateOf("") }
-    var auditSearch by remember { mutableStateOf("") }
-    var auditType by remember { mutableStateOf<SessionOperationType?>(null) }
+    var selectedCampaignId by rememberSaveable { mutableStateOf("") }
+    var auditSearch by rememberSaveable { mutableStateOf("") }
+    var auditType by rememberSaveable { mutableStateOf<SessionOperationType?>(null) }
     val historianCampaignIds = remember(session, campaigns, memberships) {
         val memberCampaignIds = memberships.filter {
             it.userId == session.uid && it.isActive && it.role == CampaignRole.HISTORIAN
@@ -114,7 +117,7 @@ fun HistorianDashboardScreen(
         if (selectedCampaignId !in historianCampaignIds) selectedCampaignId = visibleCampaigns.firstOrNull()?.id.orEmpty()
     }
     val selectedCampaign = visibleCampaigns.firstOrNull { it.id == selectedCampaignId }
-    val selectedCharacters = characters.filter { normalizeCampaignId(it.campaignId) == selectedCampaignId }
+    val selectedCharacters = characters.filter { selectedCampaignId.isNotBlank() && normalizeCampaignId(it.campaignId) == selectedCampaignId }
     val selectedAudit = audit.filter { operation ->
         val characterName = characters.firstOrNull { it.id == operation.characterId }?.name.orEmpty()
         operation.campaignId == selectedCampaignId &&
@@ -156,23 +159,24 @@ fun HistorianDashboardScreen(
                     }
                 }
                 item {
-                    TextButton(
-                        onClick = { choosingCampaign = true },
-                        enabled = visibleCampaigns.isNotEmpty(),
-                        modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)),
-                    ) {
-                        Text("CAMPANHA // ${selectedCampaign?.name?.uppercase() ?: "NENHUMA DISPONÍVEL"}")
+                    androidx.compose.foundation.layout.Box {
+                        TextButton(
+                            onClick = { choosingCampaign = true },
+                            enabled = visibleCampaigns.isNotEmpty(),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("${selectedCampaign?.name ?: "Nenhuma campanha"} ▾", maxLines = 1) }
+                        androidx.compose.material3.DropdownMenu(choosingCampaign, { choosingCampaign = false }) {
+                            visibleCampaigns.forEach { campaign ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text(campaign.name) },
+                                    onClick = { selectedCampaignId = campaign.id; choosingCampaign = false },
+                                )
+                            }
+                        }
                     }
                 }
                 when (section) {
                     HistorianSection.OPERATION -> {
-                        item {
-                            TechPanel {
-                                TelemetryTag("CAMPAIGNS.${visibleCampaigns.size}")
-                                Text("VISÃO OPERACIONAL", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-                                Text("Recursos, alertas e sincronização por ficha em um único lugar.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
                         if (visibleCampaigns.isEmpty()) item {
                             TechPanel(accent = MaterialTheme.colorScheme.error) {
                                 Text("Nenhuma campanha com acesso de Historiador.", color = MaterialTheme.colorScheme.onSurface)
@@ -201,7 +205,7 @@ fun HistorianDashboardScreen(
                                     alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id),
                                     onOpenSession,
                                     onOpenSheet,
-                                    onQuickAction = { actionTarget = character },
+                                    onQuickAction = { if (!campaign.isArchived) actionTarget = character },
                                 )
                             }
                         }
@@ -234,8 +238,8 @@ fun HistorianDashboardScreen(
                             LibraryCard(entry, onEdit = { editingLibrary = entry }, onDuplicate = { onDuplicateLibrary(entry) }, onArchive = { onArchiveLibrary(entry, !entry.archived) }, onDeliver = { delivering = entry })
                         }
                         item { Text("CATÁLOGO LOCAL DE REFERÊNCIA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
-                        val filtered = catalog.filter { search.isBlank() || it.searchableText().contains(search.trim(), true) }
-                        items(filtered.take(40), key = { "catalog:${it.id}" }) { entry -> CatalogReferenceCard(entry) }
+                        val filtered = (catalog + racialReferences() + characterReferences(selectedCharacters)).filter { search.isBlank() || it.searchableText().contains(search.trim(), true) }
+                        items(filtered, key = { "catalog:${it.id}" }) { entry -> CatalogReferenceCard(entry) }
                     }
                     HistorianSection.AUDIT -> {
                         item {
@@ -276,24 +280,6 @@ fun HistorianDashboardScreen(
                 }
             }
         }
-    }
-    if (choosingCampaign) {
-        AlertDialog(
-            onDismissRequest = { choosingCampaign = false },
-            title = { Text("SELECIONAR CAMPANHA") },
-            text = {
-                Column {
-                    visibleCampaigns.forEach { campaign ->
-                        TextButton(
-                            onClick = { selectedCampaignId = campaign.id; choosingCampaign = false },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text(campaign.name.uppercase()) }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = { TextButton(onClick = { choosingCampaign = false }) { Text("CANCELAR") } },
-        )
     }
     actionTarget?.let { character -> QuickActionsDialog(character, { actionTarget = null }) { command -> onApplyCommand(character, command); actionTarget = null } }
     editingLibrary?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
@@ -355,7 +341,7 @@ private fun CatalogReferenceCard(entry: CatalogEntry) {
         Text(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         Text(entry.group, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        if (entry.ruleReference.isNotBlank()) Text(entry.ruleReference, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        CompendiumDetails(entry)
     }
 }
 
@@ -395,7 +381,7 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
         onDismissRequest = onDismiss,
         title = { Text("AÇÃO RÁPIDA // ${character.name.uppercase()}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("1. ESCOLHA A AÇÃO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 QuickActionKind.entries.chunked(3).forEach { row ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -457,6 +443,8 @@ private fun LibraryCard(
         }
         Text(entry.name.ifBlank { "Modelo sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(entry.payload, style = MaterialTheme.typography.bodySmall)
+        if (entry.knowledgeBonus != 0) Text("Bônus de Conhecimento: ${entry.knowledgeBonus}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TextButton(onEdit, modifier = Modifier.weight(1f)) { Text("EDITAR") }
             TextButton(onDuplicate, modifier = Modifier.weight(1f)) { Text("DUPLICAR") }

@@ -3,7 +3,7 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 
-/** Catálogo canônico ampliado: cada linha ancora uma prática em povos, lugares ou ofícios de Nulvara. */
+/** Catálogo autoral ampliado: cada linha ancora uma prática em povos, lugares ou ofícios de Nulvara. */
 internal object ExpandedKnowledgeCatalog {
     private fun rows(kind: CatalogKind, values: String): List<CatalogEntry> =
         values.trimIndent().lineSequence().filter(String::isNotBlank).map { row ->
@@ -17,9 +17,9 @@ internal object ExpandedKnowledgeCatalog {
                 relatedAttribute = attribute,
                 initialValue = 1,
                 mechanicalEffect = "Pode fundamentar testes de $name quando a especialização e a experiência do personagem forem relevantes.",
-                source = "Catálogo canônico de Conhecimentos de Nulvara",
+                source = "Catálogo do Companion — especializações de Nulvara",
                 version = BuiltInCatalog.VERSION,
-                ruleReference = "03 - Regras/Criação de Personagem/Catálogo de Conhecimentos.md",
+                ruleReference = "03 - Regras/Criação de Personagem/Criação de Personagem.md",
                 keywords = listOf(category, attribute, name),
             )
         }.toList()

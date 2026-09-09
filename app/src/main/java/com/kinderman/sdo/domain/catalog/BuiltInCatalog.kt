@@ -4,7 +4,7 @@ import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 
 object BuiltInCatalog {
-    const val VERSION = 2
+    const val VERSION = 3
 
     private fun canonicalReference(source: String): String = when (source) {
         "Catálogos canônicos de Caminhos" -> "03 - Regras/Caminhos"
@@ -349,5 +349,6 @@ object BuiltInCatalog {
         portal_oficina|Portal de Oficina|Nível 3 / Espaço|Abre passagem entre arcos pareados.
     """)
 
-    val entries: List<CatalogEntry> = paths + powers + professionPowers + magic + ashes + runes + ItemCreationRules.catalog
+    val entries: List<CatalogEntry> = (paths + powers + professionPowers + magic + ashes + runes + ItemCreationRules.catalog)
+        .map(CanonicalAbilityDefaults::apply)
 }

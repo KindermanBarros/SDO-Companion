@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
@@ -83,6 +84,21 @@ fun SdoApp(
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var surface by rememberSaveable { mutableStateOf(AppSurface.DASHBOARD) }
 
+    var backStack by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
+    val screenState = rememberSaveableStateHolder()
+    fun navigate(target: AppSurface, characterId: String? = selectedId) {
+        if (target == surface && characterId == selectedId) return
+        backStack = ArrayList(backStack + "${surface.name}|${selectedId.orEmpty()}")
+        selectedId = characterId
+        surface = target
+    }
+    fun goBack() {
+        val previous = backStack.lastOrNull()
+        backStack = ArrayList(backStack.dropLast(1))
+        surface = previous?.substringBefore('|')?.let(AppSurface::valueOf) ?: AppSurface.DASHBOARD
+        selectedId = previous?.substringAfter('|')?.takeIf(String::isNotBlank)
+    }
+
     LaunchedEffect(authenticatedSession, demo) {
         when {
             demo -> appViewModel.setDemoSession()
@@ -126,12 +142,13 @@ fun SdoApp(
             val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { it.ownerId == appSession?.uid }
             Row(Modifier.fillMaxSize()) {
                 if (wide) NavigationRail {
-                    NavigationRailItem(surface == AppSurface.DASHBOARD, { selectedId = null; surface = AppSurface.DASHBOARD }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Painel") })
-                    NavigationRailItem(surface == AppSurface.SESSION, { selectedId = null; surface = AppSurface.SESSION }, icon = { Icon(Icons.Default.PlayCircle, null) }, label = { Text("Sessão") })
-                    if (canOpenHistorian) NavigationRailItem(surface == AppSurface.HISTORIAN, { surface = AppSurface.HISTORIAN }, icon = { Icon(Icons.Default.Visibility, null) }, label = { Text("Mestre") })
-                    NavigationRailItem(surface == AppSurface.SETTINGS, { surface = AppSurface.SETTINGS }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Ajustes") })
+                    NavigationRailItem(surface == AppSurface.DASHBOARD, { navigate(AppSurface.DASHBOARD, null) }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Painel") })
+                    NavigationRailItem(surface == AppSurface.SESSION, { navigate(AppSurface.SESSION, null) }, icon = { Icon(Icons.Default.PlayCircle, null) }, label = { Text("Sessão") })
+                    if (canOpenHistorian) NavigationRailItem(surface == AppSurface.HISTORIAN, { navigate(AppSurface.HISTORIAN) }, icon = { Icon(Icons.Default.Visibility, null) }, label = { Text("Mestre") })
+                    NavigationRailItem(surface == AppSurface.SETTINGS, { navigate(AppSurface.SETTINGS) }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Ajustes") })
                 }
                 Box(Modifier.weight(1f).fillMaxSize()) {
+            screenState.SaveableStateProvider("${appSession?.uid}:${surface.name}") {
             when (surface) {
                 AppSurface.DASHBOARD -> DashboardScreen(
                     characters = characters,
@@ -150,8 +167,7 @@ fun SdoApp(
                     onAdd = appViewModel::add,
                     onAddToCampaign = appViewModel::addToCampaign,
                     onOpen = {
-                        selectedId = it
-                        surface = AppSurface.SHEET
+                        navigate(AppSurface.SHEET, it)
                     },
                     onOwnerTransfer = appViewModel::transferOwner,
                     onCreateCampaign = appViewModel::createCampaign,
@@ -163,16 +179,16 @@ fun SdoApp(
                     onDismissInvitePreview = appViewModel::dismissInvitePreview,
                     onSync = appViewModel::sync,
                     onOpenSession = {
-                        selectedId = null
-                        surface = AppSurface.SESSION
+                        navigate(AppSurface.SESSION, null)
                     },
-                    onOpenHistorian = { surface = AppSurface.HISTORIAN },
-                    onOpenSettings = { surface = AppSurface.SETTINGS },
+                    onOpenHistorian = { navigate(AppSurface.HISTORIAN) },
+                    onOpenSettings = { navigate(AppSurface.SETTINGS) },
                     deliveries = if (preferences.notifications) deliveries.filter { it.recipientId == appSession?.uid } else emptyList(),
                     onRespondDelivery = appViewModel::respondDelivery,
                     onLogout = {
                         selectedId = null
                         surface = AppSurface.DASHBOARD
+                        backStack = arrayListOf()
                         demo = false
                         authViewModel.logout()
                         appViewModel.clearSession()
@@ -188,13 +204,9 @@ fun SdoApp(
                     isCampaignResponsible = isCampaignResponsible,
                     showCalculationAudit = preferences.calculationAuditEnabled,
                     snackbarHost = { SnackbarHost(snackbar) },
-                    onBack = {
-                        selectedId = null
-                        surface = AppSurface.DASHBOARD
-                    },
+                    onBack = { goBack() },
                     onOpenSession = {
-                        selectedId = it
-                        surface = AppSurface.SESSION
+                        navigate(AppSurface.SESSION, it)
                     },
                     onSave = appViewModel::save,
                     onAutosave = appViewModel::autosave,
@@ -202,8 +214,7 @@ fun SdoApp(
                     onHistorianLock = appViewModel::setHistorianLocked,
                     onDelete = {
                         appViewModel.delete(it)
-                        selectedId = null
-                        surface = AppSurface.DASHBOARD
+                        goBack()
                     },
                 )
 
@@ -214,14 +225,10 @@ fun SdoApp(
                     readOnly = archived,
                     onSelect = { selectedId = it },
                     onOpenSheet = {
-                        selectedId = it
-                        surface = AppSurface.SHEET
+                        navigate(AppSurface.SHEET, it)
                     },
                     onCommand = appViewModel::applySessionCommand,
-                    onBack = {
-                        selectedId = null
-                        surface = AppSurface.DASHBOARD
-                    },
+                    onBack = { goBack() },
                 )
 
                 AppSurface.HISTORIAN -> HistorianDashboardScreen(
@@ -241,23 +248,22 @@ fun SdoApp(
                     onDeliverLibrary = appViewModel::deliverLibrary,
                     onSaveAlertSettings = appViewModel::saveAlertSettings,
                     onOpenSession = {
-                        selectedId = it
-                        surface = AppSurface.SESSION
+                        navigate(AppSurface.SESSION, it)
                     },
                     onOpenSheet = {
-                        selectedId = it
-                        surface = AppSurface.SHEET
+                        navigate(AppSurface.SHEET, it)
                     },
-                    onBack = { surface = AppSurface.DASHBOARD },
+                    onBack = { goBack() },
                 )
 
                 AppSurface.SETTINGS -> SettingsScreen(
                     preferences = preferences,
                     onPreferencesChange = onPreferencesChange,
-                    onBack = { surface = AppSurface.DASHBOARD },
+                    onBack = { goBack() },
                 )
             }
                 }
+            }
             }
         }
     }

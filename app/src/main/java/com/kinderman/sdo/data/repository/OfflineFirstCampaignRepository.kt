@@ -38,7 +38,7 @@ class OfflineFirstCampaignRepository(
 
     override fun observe(session: UserSession): Flow<List<Campaign>> =
         (if (session.isAdmin) dao.observeAll() else dao.observeForUser(session.uid))
-            .map { values -> values.map(CampaignRecord::toDomain) }
+            .map { values -> values.map(CampaignRecord::toDomain).filter { it.state != CampaignState.DELETED } }
 
     override fun observeMembers(campaignId: String): Flow<List<CampaignMember>> =
         dao.observeMembers(campaignId).map { values -> values.map(CampaignMemberRecord::toDomain) }
@@ -96,6 +96,7 @@ class OfflineFirstCampaignRepository(
     override suspend fun archive(session: UserSession, campaign: Campaign, archived: Boolean) {
         requireOwner(session, campaign)
         val existing = requireCampaign(campaign.id)
+        check(existing.state != CampaignState.DELETED) { "Campanha excluída não pode ser restaurada." }
         val now = System.currentTimeMillis()
         dao.upsertCampaign(
             existing.copy(
@@ -107,35 +108,28 @@ class OfflineFirstCampaignRepository(
         )
     }
 
-    override suspend fun deleteArchived(session: UserSession, campaign: Campaign) {
-        requireOwner(session, campaign)
+    override suspend fun deleteArchived(session: UserSession, campaign: Campaign) = syncMutex.withLock {
         val existing = requireCampaign(campaign.id)
-        check(existing.isArchived) { "Arquive a campanha antes de apagá-la." }
-        val store = runCatching { Firebase.firestore }.getOrNull()
-            ?: error("A exclusão definitiva exige conexão com o Firebase.")
+        requireOwner(session, existing)
+        check(existing.state == CampaignState.ARCHIVED) { "Arquive a campanha antes de apagá-la." }
+        val store = Firebase.firestore
+        val reference = store.collection(CAMPAIGNS).document(existing.id)
+        val remote = reference.get(com.google.firebase.firestore.Source.SERVER).await()
+        check(remote.getString("state") == CampaignState.ARCHIVED.name) { "Sincronize o arquivamento antes de excluir." }
+        val documents = store.collection("characters").whereEqualTo("campaignId", existing.id)
+            .get(com.google.firebase.firestore.Source.SERVER).await().documents
+        check(documents.size <= 450) { "Campanhas com mais de 450 fichas exigem exclusão administrativa." }
         val now = System.currentTimeMillis()
-        val characters = store.collection("characters")
-            .whereEqualTo("campaignId", existing.id)
-            .get().await().documents
-        characters.forEach { document ->
-            document.reference.update(mapOf<String, Any>("campaignId" to "", "updatedAt" to now)).await()
-        }
-        listOf(MEMBERS, INVITES).forEach { collectionName ->
-            store.collection(collectionName)
-                .whereEqualTo("campaignId", existing.id)
-                .get().await().documents
-                .forEach { it.reference.delete().await() }
-        }
-        store.collection(CAMPAIGNS).document(existing.id).delete().await()
-
+        val batch = store.batch()
+        documents.forEach { batch.update(it.reference, mapOf("campaignId" to "", "updatedAt" to now)) }
+        batch.update(reference, mapOf("state" to CampaignState.DELETED.name, "updatedAt" to now))
+        batch.commit().await()
         characterDao.inCampaign(existing.id).forEach { character ->
-            characterDao.upsert(
-                character.copy(campaignId = "", updatedAt = now, dirty = false, lastSyncedAt = now),
-            )
+            // Preserve pending edits; synchronization resolves concurrent character changes.
+            characterDao.upsert(character.copy(campaignId = "", updatedAt = now, dirty = true))
         }
-        dao.purgeMembersForCampaign(existing.id)
-        dao.purgeInvitesForCampaign(existing.id)
-        dao.purgeCampaign(existing.id)
+        dao.upsertCampaign(existing.copy(state = CampaignState.DELETED, updatedAt = now,
+            dirty = false, lastSyncedAt = now).toRecord())
     }
 
     override suspend fun leave(session: UserSession, campaign: Campaign) {
@@ -273,10 +267,21 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
-        val dirtyCampaigns = dao.dirtyCampaigns().filter { session.isAdmin || it.ownerId == session.uid }
+        dao.allCampaigns().filter { it.lastSyncedAt != 0L && it.state != CampaignState.DELETED.name && (session.isAdmin || it.ownerId == session.uid || dao.member(it.id, session.uid)?.state == CampaignMemberState.ACTIVE.name) }.forEach { local ->
+            val remote = campaigns.document(local.id).get(com.google.firebase.firestore.Source.SERVER).await()
+                .toObject(CampaignRecord::class.java)
+            if (remote?.state == CampaignState.DELETED.name) {
+                dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
+                characterDao.inCampaign(local.id).forEach {
+                    characterDao.upsert(it.copy(campaignId = "", dirty = true))
+                }
+            }
+        }
+        val deletedIds = dao.allCampaigns().filter { it.state == CampaignState.DELETED.name }.map { it.id }.toSet()
+        val dirtyCampaigns = dao.dirtyCampaigns().filterNot { it.id in deletedIds }.filter { session.isAdmin || it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
-        val dirtyMembers = dao.dirtyMembers()
+        val dirtyMembers = dao.dirtyMembers().filterNot { it.campaignId in deletedIds }
 
         newCampaigns.forEach { local ->
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
@@ -289,7 +294,7 @@ class OfflineFirstCampaignRepository(
                 dao.markMemberSynced(local.campaignId, local.userId, local.updatedAt)
             }
         }
-        dao.dirtyInvites().forEach { local ->
+        dao.dirtyInvites().filterNot { it.campaignId in deletedIds }.forEach { local ->
             if (session.isAdmin || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 val reference = invites.document(local.id)
                 try {
@@ -337,7 +342,7 @@ class OfflineFirstCampaignRepository(
         }
 
         val manageableIds = dao.allCampaigns()
-            .filter { session.isAdmin || it.ownerId == session.uid }
+            .filter { it.state != CampaignState.DELETED.name && (session.isAdmin || it.ownerId == session.uid) }
             .mapTo(mutableSetOf()) { it.id }
         manageableIds.forEach { campaignId ->
             members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->

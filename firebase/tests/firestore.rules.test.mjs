@@ -361,21 +361,22 @@ test('archived campaign is read-only for characters', async () => {
 
 test('campaign owner can dismantle and delete an archived campaign safely', async () => {
   await seed({ archived: true });
-  const ownerDb = testEnv.authenticatedContext(ids.owner).firestore();
+  const ownerDb = env.authenticatedContext(ids.owner).firestore();
 
-  await assertSucceeds(updateDoc(doc(ownerDb, 'characters', ids.character), {
-    campaignId: '',
-    updatedAt: 3,
-  }));
-  await assertSucceeds(deleteDoc(doc(ownerDb, 'campaignMembers', `${ids.campaign}::${ids.player}`)));
-  await assertSucceeds(deleteDoc(doc(ownerDb, 'campaignInvites', ids.invite)));
-  await assertSucceeds(deleteDoc(doc(ownerDb, 'campaigns', ids.campaign)));
+  const batch = writeBatch(ownerDb);
+  batch.update(doc(ownerDb, 'characters', ids.character), { campaignId: '', updatedAt: 3 });
+  batch.update(doc(ownerDb, 'campaigns', ids.campaign), { state: 'DELETED', updatedAt: 3 });
+  await assertSucceeds(batch.commit());
+  await assertFails(updateDoc(doc(ownerDb, 'campaigns', ids.campaign), { state: 'ACTIVE' }));
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  const preserved = await assertSucceeds(getDoc(doc(playerDb, 'characters', ids.character)));
+  if (preserved.data().campaignId !== '') throw new Error('Character must survive detached');
 });
 
 test('active campaign and non-owner campaign deletion are denied', async () => {
   await seed();
-  const ownerDb = testEnv.authenticatedContext(ids.owner).firestore();
-  const playerDb = testEnv.authenticatedContext(ids.player).firestore();
+  const ownerDb = env.authenticatedContext(ids.owner).firestore();
+  const playerDb = env.authenticatedContext(ids.player).firestore();
 
   await assertFails(deleteDoc(doc(ownerDb, 'campaigns', ids.campaign)));
   await assertFails(deleteDoc(doc(playerDb, 'campaigns', ids.campaign)));

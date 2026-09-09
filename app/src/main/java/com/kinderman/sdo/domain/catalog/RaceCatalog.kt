@@ -29,7 +29,7 @@ object RaceCatalog {
     const val SOURCE = "Raças — Regras de Personagem"
     const val RULE_REFERENCE = "03 - Regras/Raças.md"
 
-    private fun power(name: String, effect: String) = RacialPower(name, effect)
+    private fun power(name: String, effect: String) = RacialPower(name, canonicalRacialEffects[name] ?: effect)
     private fun race(name: String, attribute: String, hp: Int, sanity: Int, arcane: Int, energy: Int, organic: Boolean = true, vararg powers: RacialPower) =
         RaceDefinition(name, attribute, hp, sanity, arcane, energy, powers.toList(), organic)
 

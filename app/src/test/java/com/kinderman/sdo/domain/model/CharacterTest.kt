@@ -92,10 +92,10 @@ class CharacterTest {
         assertEquals(9, paid.life.current)
     }
 
-    @Test fun variableDiceCostsRemainUnderTableControl() {
+    @Test(expected = IllegalArgumentException::class) fun variableDiceCostsRemainUnderTableControl() {
         val character = Character(life = ResourceValue(current = 10))
 
-        assertEquals(10, character.payFixedAbilityCosts("1d6 HP").life.current)
+        character.payFixedAbilityCosts("1d6 HP")
     }
 
     @Test fun protectionsUseCanonicalFormulasAndManualAdjustments() {

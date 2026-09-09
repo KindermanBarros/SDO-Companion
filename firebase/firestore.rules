@@ -184,18 +184,17 @@ service cloud.firestore {
       allow update: if signedIn()
         && isCampaignResponsible(campaignId)
         && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.state in ['ACTIVE', 'ARCHIVED', 'DELETED']
         && (
           resource.data.state == 'ACTIVE'
           || (
             resource.data.state == 'ARCHIVED'
-            && request.resource.data.state == 'ACTIVE'
+            && request.resource.data.state in ['ACTIVE', 'DELETED']
             && request.resource.data.ownerId == resource.data.ownerId
           )
         );
 
-      allow delete: if signedIn()
-        && resource.data.state == 'ARCHIVED'
-        && isCampaignResponsible(campaignId);
+      allow delete: if false;
     }
 
     match /campaignMembers/{membershipId} {
@@ -385,7 +384,7 @@ service cloud.firestore {
           )
           || (
             normalizedCampaignId(resource.data) != ''
-            && get(campaignPath(normalizedCampaignId(resource.data))).data.state == 'ARCHIVED'
+            && getAfter(campaignPath(normalizedCampaignId(resource.data))).data.state == 'DELETED'
             && isCampaignResponsible(normalizedCampaignId(resource.data))
             && normalizedCampaignId(request.resource.data) == ''
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])

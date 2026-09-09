@@ -176,16 +176,23 @@ private fun Character.useAbility(command: SessionCommand): Character {
 }
 
 internal fun Character.payFixedAbilityCosts(cost: String): Character {
-    val costs = Regex("(?i)(?<!d)(\\d+)\\s*(PV|HP|PS|PM|PE|DESTINO)").findAll(cost).mapNotNull { match ->
+    val normalized = cost.trim()
+    if (normalized.isBlank() || normalized.startsWith("Sem custo", true)) return this
+    // Only a complete fixed-cost expression can be charged automatically. Dice, exchanges,
+    // alternatives, doses and conditional costs need the player's explicit resource adjustment.
+    val unit = "(?:PV|HP|PS|PM|PE|DESTINO|ENERGIA|ARCANO|VIDA|SANIDADE)"
+    require(Regex("(?i)\\d+\\s*$unit(?:\\s*\\+\\s*\\d+\\s*$unit)*").matches(normalized)) {
+        "Custo variável ou material: $cost. Ajuste os recursos conforme o efeito."
+    }
+    val costs = Regex("(?i)(\\d+)\\s*($unit)").findAll(normalized).map { match ->
         val resource = when (match.groupValues[2].uppercase()) {
-            "PV", "HP" -> SessionResource.LIFE
-            "PS" -> SessionResource.SANITY
-            "PM" -> SessionResource.ARCANE
-            "PE" -> SessionResource.ENERGY
-            "DESTINO" -> SessionResource.DESTINY
-            else -> null
+            "PV", "HP", "VIDA" -> SessionResource.LIFE
+            "PS", "SANIDADE" -> SessionResource.SANITY
+            "PM", "ARCANO" -> SessionResource.ARCANE
+            "PE", "ENERGIA" -> SessionResource.ENERGY
+            else -> SessionResource.DESTINY
         }
-        resource?.let { it to match.groupValues[1].toInt() }
+        resource to match.groupValues[1].toInt()
     }
     return costs.fold(this) { character, (resource, amount) -> character.mutateResource(resource, -amount) }
 }
