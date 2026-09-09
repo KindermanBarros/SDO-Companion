@@ -49,6 +49,9 @@ class OfflineFirstCampaignRepository(
     override fun observeInvites(campaignId: String): Flow<List<CampaignInvite>> =
         dao.observeInvites(campaignId).map { values -> values.map(CampaignInviteRecord::toDomain) }
 
+    override fun observeAllInvites(): Flow<List<CampaignInvite>> =
+        dao.observeAllInvites().map { values -> values.map(CampaignInviteRecord::toDomain) }
+
     override suspend fun create(session: UserSession, name: String, description: String): Campaign {
         val now = System.currentTimeMillis()
         val campaign = Campaign(

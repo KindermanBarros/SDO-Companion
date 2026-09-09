@@ -13,6 +13,7 @@ interface CampaignRepository {
     fun observeMembers(campaignId: String): Flow<List<CampaignMember>>
     fun observeMemberships(session: UserSession): Flow<List<CampaignMember>>
     fun observeInvites(campaignId: String): Flow<List<CampaignInvite>>
+    fun observeAllInvites(): Flow<List<CampaignInvite>>
 
     suspend fun create(session: UserSession, name: String, description: String = ""): Campaign
     suspend fun update(session: UserSession, campaign: Campaign)

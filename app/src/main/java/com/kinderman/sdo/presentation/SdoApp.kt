@@ -66,6 +66,7 @@ fun SdoApp(
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
     val campaigns by appViewModel.campaigns.collectAsStateWithLifecycle()
     val memberships by appViewModel.memberships.collectAsStateWithLifecycle()
+    val campaignInvites by appViewModel.campaignInvites.collectAsStateWithLifecycle()
     val campaignMembers by appViewModel.campaignMembers.collectAsStateWithLifecycle()
     val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
@@ -136,6 +137,7 @@ fun SdoApp(
                     characters = characters,
                     campaigns = campaigns,
                     memberships = memberships,
+                    campaignInvites = campaignInvites,
                     campaignMembers = campaignMembers,
                     owners = owners,
                     session = appSession,
@@ -155,7 +157,6 @@ fun SdoApp(
                     onArchiveCampaign = appViewModel::archiveCampaign,
                     onDeleteCampaign = appViewModel::deleteArchivedCampaign,
                     onLeaveCampaign = appViewModel::leaveCampaign,
-                    onCreateInvite = appViewModel::createCampaignInvite,
                     onPreviewInvite = appViewModel::previewCampaignInvite,
                     onAcceptInvite = appViewModel::acceptCampaignInvite,
                     onDismissInvitePreview = appViewModel::dismissInvitePreview,

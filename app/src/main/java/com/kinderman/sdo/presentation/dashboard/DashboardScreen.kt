@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
+import com.kinderman.sdo.domain.model.CampaignInvite
 import com.kinderman.sdo.domain.model.CampaignDelivery
 import com.kinderman.sdo.domain.model.CampaignDeliveryState
 import com.kinderman.sdo.domain.model.CampaignMember
@@ -78,6 +79,7 @@ fun DashboardScreen(
     characters: List<Character>,
     campaigns: List<Campaign>,
     memberships: List<CampaignMember>,
+    campaignInvites: List<CampaignInvite>,
     campaignMembers: List<CampaignMember>,
     owners: List<UserProfile>,
     session: UserSession?,
@@ -94,7 +96,6 @@ fun DashboardScreen(
     onArchiveCampaign: (Campaign, Boolean) -> Unit,
     onDeleteCampaign: (Campaign) -> Unit,
     onLeaveCampaign: (Campaign) -> Unit,
-    onCreateInvite: (Campaign) -> Unit,
     onPreviewInvite: (String) -> Unit,
     onAcceptInvite: (String, Character?, Boolean) -> Unit,
     onDismissInvitePreview: () -> Unit,
@@ -320,11 +321,11 @@ fun DashboardScreen(
                                     canAdd = campaign.ownerId == uid || rolesByCampaign[campaign.id] != null,
                                     role = rolesByCampaign[campaign.id],
                                     archived = false,
+                                    inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
                                     onAdd = {
                                         if (campaign.ownerId == uid || admin) assigningCampaign = campaign
                                         else onAddToCampaign(campaign, uid)
                                     },
-                                    onInvite = { onCreateInvite(campaign) },
                                     onArchive = { onArchiveCampaign(campaign, true) },
                                     onDelete = {},
                                     onLeave = { onLeaveCampaign(campaign) },
@@ -344,8 +345,8 @@ fun DashboardScreen(
                                     canAdd = false,
                                     role = rolesByCampaign[campaign.id],
                                     archived = true,
+                                    inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
                                     onAdd = {},
-                                    onInvite = {},
                                     onArchive = { onArchiveCampaign(campaign, false) },
                                     onDelete = { deletingCampaign = campaign },
                                     onLeave = {},
@@ -579,8 +580,8 @@ private fun CampaignPanel(
     canAdd: Boolean,
     role: CampaignRole?,
     archived: Boolean,
+    inviteCode: String,
     onAdd: () -> Unit,
-    onInvite: () -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit,
     onLeave: () -> Unit,
@@ -602,7 +603,17 @@ private fun CampaignPanel(
         if (!archived) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (canAdd) TextButton(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("+ FICHA") }
-                if (owner || administrator) TextButton(onClick = onInvite, modifier = Modifier.weight(1f)) { Text("CONVITE") }
+            }
+        }
+        Column(
+            Modifier.fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text("CÓDIGO DA CAMPANHA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            androidx.compose.foundation.text.selection.SelectionContainer {
+                Text(inviteCode.ifBlank { "SINCRONIZANDO" }, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
             }
         }
         if (owner || administrator) {

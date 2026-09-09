@@ -83,6 +83,8 @@ class AppViewModel(
     val memberships = currentSession.flatMapLatest { session ->
         session?.let(campaignRepository::observeMemberships) ?: flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
+    val campaignInvites = campaignRepository.observeAllInvites()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val owners = currentSession.flatMapLatest { session ->
         if (session?.isAdmin == true) ownerRepository.observe() else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

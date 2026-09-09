@@ -29,6 +29,9 @@ interface CampaignDao {
     @Query("SELECT * FROM campaign_invites WHERE campaignId = :campaignId ORDER BY createdAt DESC")
     fun observeInvites(campaignId: String): Flow<List<CampaignInviteRecord>>
 
+    @Query("SELECT * FROM campaign_invites ORDER BY createdAt ASC")
+    fun observeAllInvites(): Flow<List<CampaignInviteRecord>>
+
     @Query("SELECT * FROM campaigns WHERE id = :id LIMIT 1")
     suspend fun campaign(id: String): CampaignRecord?
 
