@@ -66,7 +66,7 @@ internal fun PhaseOneStrictInventorySection(
         SectionHeader("09", "Inventário")
         Text(
             "CARGA ${character.currentLoad} / ${character.maximumLoad}",
-            color = if (character.currentLoad > character.maximumLoad) Signal else Acid,
+            color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleLarge,
         )
         Text("Bônus mecânicos usam somente seletores controlados de tipo e destino.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -83,13 +83,13 @@ internal fun PhaseOneStrictInventorySection(
                     Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                     RemoveButton(enabled, "Remover item") { onChange(character.removeInventoryItem(item.id)) }
                 }
-                Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality} // PG ${item.pg} // PL ${item.pl}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.load} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 if (item.bonuses.isNotEmpty()) {
                     item.bonuses.forEach { bonus ->
                         Text(
                             "${bonus.type.label}: ${if (bonus.value >= 0) "+" else ""}${bonus.value} ${bonus.displayTarget()}",
-                            color = Acid,
+                            color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
@@ -105,7 +105,7 @@ internal fun PhaseOneStrictInventorySection(
 
         AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
         if (remainingHeritage > 0) {
-            Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = Acid)
+            Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
             AddButton("Selecionar item pronto", enabled && catalog.isNotEmpty()) { dialog = "initial_catalog" }
             AddButton("Construir item com PH", enabled) { dialog = "initial_builder" }
         } else {
@@ -207,7 +207,7 @@ private fun StrictItemBuilderDialog(
                 Modifier.fillMaxWidth().heightIn(max = 590.dp).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                remainingHeritage?.let { Text("PH RESTANTES // $it", color = Acid) }
+                remainingHeritage?.let { Text("PH RESTANTES // $it", color = MaterialTheme.colorScheme.primary) }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     TextButton(onClick = {
                         weapon = true
@@ -235,14 +235,14 @@ private fun StrictItemBuilderDialog(
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("QUALIDADE // ${quality.label}") }
 
-                Text("MODIFICAÇÕES", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 availableModifications.forEach { modification ->
                     val checked = modification in modifications
                     Row(Modifier.fillMaxWidth().clickable { modifications = strictToggleModification(modifications, modification) }) {
                         Checkbox(checked, onCheckedChange = { modifications = strictToggleModification(modifications, modification) })
                         Column(Modifier.padding(top = 8.dp)) {
-                            Text(modification.name, color = Ice)
-                            if (modification.effect.isNotBlank()) Text(modification.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
+                            Text(modification.name, color = MaterialTheme.colorScheme.onSurface)
+                            if (modification.effect.isNotBlank()) Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -251,7 +251,7 @@ private fun StrictItemBuilderDialog(
                     { IntegerField("Espaços de Gema", gemSlots, true, it) { value -> gemSlots = value.coerceIn(gems.size, 5) } },
                     { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
                 )
-                Text("GEMAS", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("GEMAS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 ItemCreationRules.gemComponents.forEach { gem ->
                     val checked = gem in gems
                     Row(Modifier.fillMaxWidth().clickable(enabled = quality != ItemQuality.MUNDANE) {
@@ -262,14 +262,14 @@ private fun StrictItemBuilderDialog(
                             gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
                             gemSlots = gemSlots.coerceAtLeast(gems.size)
                         })
-                        Text(gem.name, color = Ice, modifier = Modifier.padding(top = 10.dp))
+                        Text(gem.name, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 10.dp))
                     }
                 }
 
-                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 bonuses.forEachIndexed { index, bonus ->
                     val targets = strictBonusTargets(bonus.type, acquiredKnowledgeTargets)
-                    Column(Modifier.fillMaxWidth().background(Carbon).padding(7.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(7.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             TextButton(onClick = {
                                 val nextType = ItemBonusType.entries[(bonus.type.ordinal + 1) % ItemBonusType.entries.size]
@@ -277,7 +277,7 @@ private fun StrictItemBuilderDialog(
                                 bonuses = bonuses.replace(index, bonus.copy(type = nextType, target = target))
                             }) { Text("TIPO // ${bonus.type.label.uppercase()}") }
                             TextButton(onClick = { bonuses = bonuses.filterIndexed { itemIndex, _ -> itemIndex != index } }) {
-                                Text("REMOVER", color = Signal)
+                                Text("REMOVER", color = MaterialTheme.colorScheme.error)
                             }
                         }
                         TextButton(
@@ -298,7 +298,7 @@ private fun StrictItemBuilderDialog(
                             Text(
                                 if (bonus.type == ItemBonusType.ACQUIRED_KNOWLEDGE) "A ficha não possui Conhecimentos Adquiridos disponíveis para este bônus."
                                 else "Selecione um destino para o bônus.",
-                                color = Signal,
+                                color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
@@ -312,12 +312,12 @@ private fun StrictItemBuilderDialog(
                 if (!initialCreation) {
                     HudTextField("Preço final em E$", manualPrice) { manualPrice = it.filter(Char::isDigit) }
                 }
-                Text("CUSTO // ${built.creationCost ?: "#"} PH // PREÇO ${built.price} E$", color = Acid)
-                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = Ice)
-                Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = Muted)
-                if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = Signal)
-                if (requiresPrice) Text("Este material exige preço manual.", color = Signal)
-                if (!bonusesComplete) Text("Todos os bônus precisam de um destino válido.", color = Signal)
+                Text("CUSTO // ${built.creationCost ?: "#"} PH // PREÇO ${built.price} E$", color = MaterialTheme.colorScheme.primary)
+                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
+                Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
+                if (requiresPrice) Text("Este material exige preço manual.", color = MaterialTheme.colorScheme.error)
+                if (!bonusesComplete) Text("Todos os bônus precisam de um destino válido.", color = MaterialTheme.colorScheme.error)
             }
         },
         confirmButton = {

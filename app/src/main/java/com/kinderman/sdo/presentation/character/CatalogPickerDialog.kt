@@ -67,7 +67,7 @@ internal fun CatalogPickerDialog(
                     if (attributes.isNotEmpty()) FilterButton("ATRIBUTO", selectedAttribute, attributes) { selectedAttribute = it }
                     if (categories.isNotEmpty()) FilterButton("CATEGORIA", selectedCategory, categories) { selectedCategory = it }
                     if (sources.size > 1) FilterButton("ORIGEM", selectedSource, sources) { selectedSource = it }
-                    Text("RESULTADOS // ${filtered.size}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                    Text("RESULTADOS // ${filtered.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
                         items(filtered, key = CatalogEntry::id) { entry ->
                             val alreadyAdded = entry.id in alreadyAddedCatalogIds
@@ -76,16 +76,16 @@ internal fun CatalogPickerDialog(
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(entry.name, color = Ice, style = MaterialTheme.typography.titleSmall)
-                                    if (alreadyAdded) Text("ADICIONADO", color = Signal, style = MaterialTheme.typography.labelSmall)
+                                    Text(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                                    if (alreadyAdded) Text("ADICIONADO", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Text(
                                     listOf(entry.group, entry.relatedAttribute).filter(String::isNotBlank).joinToString(" // "),
-                                    color = Acid,
+                                    color = MaterialTheme.colorScheme.primary,
                                     style = MaterialTheme.typography.labelSmall,
                                 )
-                                Text(entry.summary, color = Muted, style = MaterialTheme.typography.bodySmall)
-                                HorizontalDivider(color = TechCutDark)
+                                Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
                         }
                     }
@@ -126,9 +126,9 @@ private fun FilterButton(label: String, selected: String, options: List<String>,
 @Composable
 private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
     Column(Modifier.fillMaxWidth().heightIn(max = 500.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(entry.group.uppercase(), color = Acid, style = MaterialTheme.typography.labelLarge)
-        if (alreadyAdded) Text(if (entry.repeatable) "JÁ ADICIONADO // REPETÍVEL" else "JÁ ADICIONADO", color = Signal)
-        Text(entry.summary, color = Ice, style = MaterialTheme.typography.bodyMedium)
+        Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        if (alreadyAdded) Text(if (entry.repeatable) "JÁ ADICIONADO // REPETÍVEL" else "JÁ ADICIONADO", color = MaterialTheme.colorScheme.error)
+        Text(entry.summary, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
         DetailLine("ATRIBUTO", entry.relatedAttribute)
         entry.initialValue?.let { DetailLine("VALOR INICIAL", it.toString()) }
         DetailLine("CUSTO", entry.cost)
@@ -147,5 +147,5 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
 @Composable
 private fun DetailLine(label: String, value: String) {
     if (value.isBlank()) return
-    Text("$label // $value", color = Muted, style = MaterialTheme.typography.bodySmall)
+    Text("$label // $value", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
 }

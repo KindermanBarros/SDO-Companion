@@ -67,7 +67,7 @@ internal fun OwnerPickerDialog(
         ) {
             TechPanel(
                 modifier = Modifier.widthIn(max = 520.dp),
-                accent = Acid,
+                accent = MaterialTheme.colorScheme.primary,
             ) {
                 Row(
                     Modifier.fillMaxWidth(),
@@ -75,12 +75,12 @@ internal fun OwnerPickerDialog(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TelemetryTag("OWNER.ROUTE")
-                    TelemetryTag("${owners.size.toString().padStart(2, '0')} OPERADORES", Signal)
+                    TelemetryTag("${owners.size.toString().padStart(2, '0')} OPERADORES", MaterialTheme.colorScheme.error)
                 }
                 SectionHeader("ID", "Transferir ${character.name}")
                 Text(
                     "SELECIONE O NOVO RESPONSÁVEL PELA FICHA",
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall,
                 )
                 HudTextField(
@@ -99,7 +99,7 @@ internal fun OwnerPickerDialog(
                         item("empty-owner-search") {
                             Text(
                                 "NO_SIGNAL // NENHUM OPERADOR ENCONTRADO",
-                                color = Signal,
+                                color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.labelSmall,
                                 modifier = Modifier.padding(vertical = 18.dp),
                             )
@@ -131,14 +131,14 @@ private fun OwnerOption(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val accent = if (selected) Acid else TechCutDark
+    val accent = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
     Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, accent, CutCornerShape(topEnd = 14.dp, bottomStart = 9.dp)),
         shape = CutCornerShape(topEnd = 14.dp, bottomStart = 9.dp),
-        colors = CardDefaults.cardColors(containerColor = Panel),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Row(
             Modifier
@@ -148,9 +148,9 @@ private fun OwnerOption(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(owner.firstName.uppercase(), color = Ice, style = MaterialTheme.typography.titleMedium)
-                Text(owner.email, color = Muted, style = MaterialTheme.typography.bodySmall)
-                Text("UID.${owner.uid.take(8)}", color = Muted, style = MaterialTheme.typography.labelSmall)
+                Text(owner.firstName.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                Text(owner.email, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                Text("UID.${owner.uid.take(8)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             }
             TelemetryTag(if (selected) "OWNER.ATUAL" else owner.role.name)
         }

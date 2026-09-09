@@ -72,10 +72,10 @@ internal fun CharacterSheetPager(
     Column(modifier.fillMaxSize()) {
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = Void,
-            contentColor = Acid,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary,
             edgePadding = 8.dp,
-            divider = { HorizontalDivider(color = TechCutDark) },
+            divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) },
         ) {
             pages.forEachIndexed { index, page ->
                 Tab(
@@ -84,11 +84,11 @@ internal fun CharacterSheetPager(
                     text = {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(page.label, style = MaterialTheme.typography.labelLarge)
-                            Text(page.code, color = if (pagerState.currentPage == index) Acid else Muted, style = MaterialTheme.typography.labelSmall)
+                            Text(page.code, color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                         }
                     },
-                    selectedContentColor = Acid,
-                    unselectedContentColor = Ice,
+                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

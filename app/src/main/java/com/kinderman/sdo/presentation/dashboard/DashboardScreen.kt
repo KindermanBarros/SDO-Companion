@@ -175,8 +175,8 @@ fun DashboardScreen(
                 if (section == DashboardSection.CHARACTERS) {
                     FloatingActionButton(
                         onClick = onAdd,
-                        containerColor = Acid,
-                        contentColor = Void,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
                     ) { Icon(Icons.Default.Add, "Criar personagem sem campanha") }
                 }
@@ -192,11 +192,11 @@ fun DashboardScreen(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
-                            IconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = Acid) }
-                            IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = Signal) }
+                            IconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = MaterialTheme.colorScheme.primary) }
+                            IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
                         }
                     }
-                    Text("SDO", color = Acid, style = MaterialTheme.typography.labelLarge)
+                    Text("SDO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     Text(if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
                     Text(
                         if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // ${activeCampaigns.size} CAMPANHAS ATIVAS"
@@ -209,14 +209,14 @@ fun DashboardScreen(
                             TextButton(
                                 onClick = { section = target },
                                 modifier = Modifier.weight(1f).then(
-                                    if (section == target) Modifier.border(1.dp, Acid, CutCornerShape(6.dp)) else Modifier,
+                                    if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
                                 ),
                             ) {
-                                Text(target.label, color = if (section == target) Acid else Muted)
+                                Text(target.label, color = if (section == target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
-                    TechPanel(accent = AcidCyan) {
+                    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                         TelemetryTag("QUICK_ACCESS")
                         Text("Acessos rápidos", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -235,8 +235,8 @@ fun DashboardScreen(
                         }
                     }
                     val pendingDeliveries = deliveries.filter { it.state == CampaignDeliveryState.PENDING }
-                    if (pendingDeliveries.isNotEmpty()) TechPanel(accent = Signal) {
-                        TelemetryTag("INBOX.${pendingDeliveries.size}", Signal)
+                    if (pendingDeliveries.isNotEmpty()) TechPanel(accent = MaterialTheme.colorScheme.error) {
+                        TelemetryTag("INBOX.${pendingDeliveries.size}", MaterialTheme.colorScheme.error)
                         Text("Entregas da campanha", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         pendingDeliveries.forEach { delivery ->
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -244,7 +244,7 @@ fun DashboardScreen(
                                 Text(delivery.snapshotSummary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     TextButton({ onRespondDelivery(delivery, true) }, modifier = Modifier.weight(1f)) { Text("ACEITAR") }
-                                    TextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = Signal) }
+                                    TextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = MaterialTheme.colorScheme.error) }
                                 }
                             }
                         }
@@ -282,7 +282,7 @@ fun DashboardScreen(
                 }
 
                 if (syncing) item("sync-loading") {
-                    TechPanel(accent = Acid) {
+                    TechPanel(accent = MaterialTheme.colorScheme.primary) {
                         TelemetryTag("SINCRONIZAÇÃO")
                         CyberLoadingIndicator("Sincronizando campanhas e personagens")
                         Text("Enviando alterações preservadas neste aparelho", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
@@ -417,7 +417,7 @@ fun DashboardScreen(
                     TextButton(onClick = {
                         deletingCampaign = null
                         onDeleteCampaign(campaign)
-                    }) { Text("APAGAR", color = Signal) }
+                    }) { Text("APAGAR", color = MaterialTheme.colorScheme.error) }
                 },
                 dismissButton = { TextButton(onClick = { deletingCampaign = null }) { Text("CANCELAR") } },
             )
@@ -495,7 +495,7 @@ private fun AdminCharacterFilters(
     onChooseStatus: () -> Unit,
     onClear: () -> Unit,
 ) {
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("FX", "Pesquisa administrativa")
         HudTextField(
             label = "Buscar ficha, owner ou campanha",
@@ -513,7 +513,7 @@ private fun AdminCharacterFilters(
             Text("STATUS // ${statusLabel.uppercase()}")
         }
         TextButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
-            Text("LIMPAR FILTROS", color = Signal)
+            Text("LIMPAR FILTROS", color = MaterialTheme.colorScheme.error)
         }
     }
 }
@@ -544,7 +544,7 @@ private fun FilterSelectionDialog(
 
 @Composable
 private fun EmptyDashboardPanel(title: String, message: String) {
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("00", title)
         Text(message)
         Barcode("EMPTY-SDO-ARCHIVE")
@@ -605,7 +605,7 @@ private fun CampaignPanel(
     var expanded by rememberSaveable(campaign.id) { mutableStateOf(initiallyExpanded) }
     TechPanel(
         modifier = Modifier.animateContentSize(),
-        accent = if (archived) TechCutDark else AcidCyan,
+        accent = if (archived) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.secondary,
     ) {
         Row(
             Modifier.fillMaxWidth().clickable { expanded = !expanded },
@@ -614,7 +614,7 @@ private fun CampaignPanel(
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) Muted else AcidCyan)
+                    TelemetryTag(if (archived) "ARCHIVED" else "ACTIVE", if (archived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.secondary)
                     TelemetryTag(
                         when {
                             administrator -> "ADMIN"
@@ -659,12 +659,12 @@ private fun CampaignPanel(
                         Text(if (archived) "RESTAURAR" else "ARQUIVAR")
                     }
                 } else if (!archived) {
-                    TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = Signal) }
+                    TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = MaterialTheme.colorScheme.error) }
                 }
             }
             if ((owner || administrator) && archived) {
                 TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
-                    Text("APAGAR DEFINITIVAMENTE", color = Signal)
+                    Text("APAGAR DEFINITIVAMENTE", color = MaterialTheme.colorScheme.error)
                 }
             }
             Text("ID ${campaign.id.take(12).uppercase()} // REG.$index", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
@@ -734,9 +734,9 @@ private fun InvitePreviewDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (preview.campaign.description.isNotBlank()) Text(preview.campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("CONVITE // ${preview.invite.code}", color = Acid)
+                Text("CONVITE // ${preview.invite.code}", color = MaterialTheme.colorScheme.primary)
                 if (preview.alreadyMember) {
-                    Text("Você já participa desta campanha.", color = AcidCyan)
+                    Text("Você já participa desta campanha.", color = MaterialTheme.colorScheme.secondary)
                 } else {
                     Text("Escolha uma ficha sem campanha ou crie uma nova.", color = MaterialTheme.colorScheme.onSurface)
                     characters.forEach { character ->
@@ -778,7 +778,7 @@ private fun CharacterAccessCard(
         onClick = onOpen,
         modifier = Modifier.fillMaxWidth().border(
             1.dp,
-            when { character.isLocked -> Signal; character.dirty -> Acid; else -> TechCutDark },
+            when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.outlineVariant },
             CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
         ),
         shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
@@ -797,19 +797,19 @@ private fun CharacterAccessCard(
                         character.dirty -> "LOCAL_DELTA"
                         else -> "SYNC_OK"
                     },
-                    when { character.isLocked -> Signal; character.dirty -> Acid; else -> AcidCyan },
+                    when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.secondary },
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(54.dp).background(Acid, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)), contentAlignment = Alignment.Center) {
-                    Text(character.name.take(2).uppercase(), color = Void, style = MaterialTheme.typography.titleLarge)
+                Box(Modifier.size(54.dp).background(MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)), contentAlignment = Alignment.Center) {
+                    Text(character.name.take(2).uppercase(), color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleLarge)
                 }
                 Spacer(Modifier.size(13.dp))
                 Column(Modifier.weight(1f)) {
                     Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                     Text(
                         listOf(character.race, character.occupation, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
-                        color = LabelFunctional,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall,
                     )
                     Text(
@@ -820,7 +820,7 @@ private fun CharacterAccessCard(
                     if (master) {
                         TextButton(onClick = onOwnerClick, contentPadding = PaddingValues(0.dp)) {
                             Column(horizontalAlignment = Alignment.Start) {
-                                Text("OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                                Text("OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                                 Text("UID.${character.ownerId.take(8)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                             }
                         }
@@ -829,7 +829,7 @@ private fun CharacterAccessCard(
                 Icon(
                     when { character.isLocked -> Icons.Default.Lock; master -> Icons.Default.AdminPanelSettings; else -> Icons.Default.ChevronRight },
                     null,
-                    tint = if (character.isLocked) Signal else Acid,
+                    tint = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 )
             }
             Barcode(character.id)

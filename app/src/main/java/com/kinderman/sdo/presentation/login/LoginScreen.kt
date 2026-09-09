@@ -56,17 +56,17 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 TelemetryTag("SYS.26 // ONLINE")
-                TelemetryTag("AUTH_GATE", Signal)
+                TelemetryTag("AUTH_GATE", MaterialTheme.colorScheme.error)
             }
-            TechPanel(accent = Acid) {
-                Text("SOLIDÃO DOS", color = Acid, style = MaterialTheme.typography.labelLarge)
-                Text("OPRIMIDOS", color = Ice, style = MaterialTheme.typography.displayLarge)
-                Text("COMPANION // TERMINAL DE PERSONAGEM", color = Muted, style = MaterialTheme.typography.labelSmall)
+            TechPanel(accent = MaterialTheme.colorScheme.primary) {
+                Text("SOLIDÃO DOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text("OPRIMIDOS", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.displayLarge)
+                Text("COMPANION // TERMINAL DE PERSONAGEM", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 Barcode("SDO-COMPANION-AUTH")
-                Text("Identifique-se para acessar arquivos locais e sincronizar a ficha.", color = Ice)
+                Text("Identifique-se para acessar arquivos locais e sincronizar a ficha.", color = MaterialTheme.colorScheme.onSurface)
                 state.error?.let {
-                    Box(Modifier.fillMaxWidth().border(1.dp, Signal).background(Signal.copy(alpha = .12f)).padding(10.dp)) {
-                        Text("ERR_AUTH // $it", color = Signal, style = MaterialTheme.typography.bodySmall)
+                    Box(Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.error).background(MaterialTheme.colorScheme.error.copy(alpha = .12f)).padding(10.dp)) {
+                        Text("ERR_AUTH // $it", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
                 }
                 Button(
@@ -74,9 +74,9 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     enabled = !state.loading,
                     shape = CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Ice),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onSurface),
                 ) {
-                    if (state.loading) CircularProgressIndicator(Modifier.size(22.dp), color = Ice, strokeWidth = 2.dp)
+                    if (state.loading) CircularProgressIndicator(Modifier.size(22.dp), color = MaterialTheme.colorScheme.onSurface, strokeWidth = 2.dp)
                     else {
                         Icon(Icons.Default.AccountCircle, null)
                         Spacer(Modifier.size(9.dp))
@@ -84,12 +84,12 @@ fun LoginScreen(
                     }
                 }
                 if (allowDemo) {
-                    HorizontalDivider(color = Grid)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     OutlinedButton(
                         onClick = onDemo,
                         modifier = Modifier.fillMaxWidth(),
                         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Ice),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
                         Text("MODO LOCAL // OFFLINE")
                     }

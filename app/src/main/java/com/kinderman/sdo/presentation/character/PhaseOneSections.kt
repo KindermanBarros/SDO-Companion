@@ -91,13 +91,13 @@ private fun PhaseOneKnowledgeList(
 ) {
     var selecting by remember { mutableStateOf(false) }
     val options = remember(catalog, kind) { catalog.filter { it.kind == kind } }
-    Text(title.uppercase(), color = Acid, style = MaterialTheme.typography.labelLarge)
+    Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
-        Column(Modifier.fillMaxWidth().background(Carbon).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(Modifier.fillMaxWidth()) {
-                Text("REG.${(index + 1).toString().padStart(2, '0')}", color = LabelFunctional, modifier = Modifier.weight(1f))
+                Text("REG.${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                 if (knowledge.isCatalogEntry) {
-                    Text("CAT v${knowledge.catalogVersion}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                    Text("CAT v${knowledge.catalogVersion}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 }
                 RemoveButton(enabled, "Remover conhecimento") {
                     onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index })
@@ -111,13 +111,13 @@ private fun PhaseOneKnowledgeList(
             IntegerField("Ajuste excepcional", knowledge.adjustment, enabled) { value ->
                 onValues(values.replace(index, knowledge.copy(adjustment = value)))
             }
-            if (knowledge.category.isNotBlank()) Text("CATEGORIA // ${knowledge.category}", color = Acid, style = MaterialTheme.typography.labelSmall)
-            if (knowledge.description.isNotBlank()) Text(knowledge.description, color = Muted, style = MaterialTheme.typography.bodySmall)
-            if (knowledge.prerequisites.isNotEmpty()) Text("PRÉ-REQUISITOS // ${knowledge.prerequisites.joinToString("; ")}", color = Muted, style = MaterialTheme.typography.bodySmall)
-            if (knowledge.mechanicalEffect.isNotBlank()) Text("EFEITO // ${knowledge.mechanicalEffect}", color = Ice, style = MaterialTheme.typography.bodySmall)
-            if (knowledge.ruleReference.isNotBlank()) Text("REF. // ${knowledge.ruleReference}", color = Muted, style = MaterialTheme.typography.labelSmall)
+            if (knowledge.category.isNotBlank()) Text("CATEGORIA // ${knowledge.category}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            if (knowledge.description.isNotBlank()) Text(knowledge.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            if (knowledge.prerequisites.isNotEmpty()) Text("PRÉ-REQUISITOS // ${knowledge.prerequisites.joinToString("; ")}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            if (knowledge.mechanicalEffect.isNotBlank()) Text("EFEITO // ${knowledge.mechanicalEffect}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
+            if (knowledge.ruleReference.isNotBlank()) Text("REF. // ${knowledge.ruleReference}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value + knowledge.adjustment) {
-                Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = Acid, style = MaterialTheme.typography.labelSmall)
+                Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
@@ -146,18 +146,18 @@ internal fun PhaseOnePathSection(
 ) {
     var selecting by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<CatalogEntry?>(null) }
-    TechPanel(accent = Signal) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("07", "Caminho")
         HudTextField("Nome do Caminho", character.pathName, enabled = enabled) { onChange(character.copy(pathName = it)) }
         AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
         HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
-        Text("PALAVRAS-CHAVE // 3", color = LabelFunctional, style = MaterialTheme.typography.labelLarge)
+        Text("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathKeywords.forEachIndexed { index, keyword ->
             HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) {
                 onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it)))
             }
         }
-        Text("PILARES // 3", color = LabelFunctional, style = MaterialTheme.typography.labelLarge)
+        Text("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathPillars.forEachIndexed { index, pillar ->
             HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) {
                 onChange(character.copy(pathPillars = character.pathPillars.replace(index, it)))
@@ -177,11 +177,11 @@ internal fun PhaseOnePathSection(
             title = { Text("TROCAR CAMINHO // ${entry.name}") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("SERÃO REMOVIDOS // ${preview.removed.size}", color = Signal)
-                    preview.removed.forEach { Text("− ${it.name}", color = Muted) }
-                    Text("SERÃO ADICIONADOS // ${preview.added.size}", color = Acid)
-                    preview.added.forEach { Text("+ ${it.name}", color = Ice) }
-                    Text("Poderes raciais, de itens, Conhecimentos, recompensas narrativas e registros manuais são preservados.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text("SERÃO REMOVIDOS // ${preview.removed.size}", color = MaterialTheme.colorScheme.error)
+                    preview.removed.forEach { Text("− ${it.name}", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    Text("SERÃO ADICIONADOS // ${preview.added.size}", color = MaterialTheme.colorScheme.primary)
+                    preview.added.forEach { Text("+ ${it.name}", color = MaterialTheme.colorScheme.onSurface) }
+                    Text("Poderes raciais, de itens, Conhecimentos, recompensas narrativas e registros manuais são preservados.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
             },
             confirmButton = {
@@ -203,9 +203,9 @@ internal fun PhaseOnePowerSection(
     onChange: (Character) -> Unit,
 ) {
     var selecting by remember { mutableStateOf(false) }
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("08", "Poderes")
-        Text("REGISTROS // ${character.powers.size}", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("REGISTROS // ${character.powers.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         character.powers.forEachIndexed { index, power ->
             StructuredPowerEditor(
                 index = index,
@@ -244,10 +244,10 @@ private fun StructuredPowerEditor(
     onRemove: () -> Unit,
     onValue: (Power) -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().background(ArcanePanel).padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text("PODER ${(index + 1).toString().padStart(2, '0')}", color = Ice, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Text(power.sourceType.name, color = Acid, style = MaterialTheme.typography.labelSmall)
+            Text("PODER ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text(power.sourceType.name, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             RemoveButton(enabled, "Remover poder", onRemove)
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }

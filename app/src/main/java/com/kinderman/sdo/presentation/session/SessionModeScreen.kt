@@ -144,7 +144,7 @@ private fun SessionContent(
         verticalArrangement = Arrangement.spacedBy(spacing),
     ) {
         item {
-            TechPanel(accent = if (character.dirty) Signal else Acid) {
+            TechPanel(accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     TelemetryTag("SESSION.MODE")
                     TelemetryTag(
@@ -169,7 +169,7 @@ private fun SessionContent(
             }
         }
         item {
-            TechPanel(accent = AcidCyan) {
+            TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("RESOURCES.QUICK")
                 ResourceControl("VIDA", character.life.current, character.lifeMaximum, !readOnly) {
                     onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.LIFE, amount = it - character.life.current))
@@ -237,7 +237,7 @@ private fun SessionContent(
             }
         }
         item {
-            TechPanel(accent = if (character.conditions.isEmpty()) Acid else Signal) {
+            TechPanel(accent = if (character.conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
                 TelemetryTag("CONDITIONS.${character.conditions.size}")
                 Text("Condições", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 if (character.conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -305,7 +305,7 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
                     TextButton({ regionIndex = (regionIndex + 1).floorMod(character.bodyRegions.size) }) { Text("›") }
                 }
                 Text("3. P.L. local: $protection")
-                Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) Signal else Acid)
+                Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                 Text("Nada é alterado antes da confirmação.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         },

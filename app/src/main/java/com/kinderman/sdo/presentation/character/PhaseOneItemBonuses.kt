@@ -48,7 +48,7 @@ internal fun PhaseOneInventoryWithBonusSection(
 
 @Composable
 private fun ItemBonusAuditSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("09.B", "Bônus mecânicos dos itens")
         Text(
             "Todo bônus abaixo usa tipo e destino controlados. O efeito só entra no cálculo enquanto o item estiver equipado.",
@@ -99,7 +99,7 @@ private fun ControlledItemBonusEditor(
                     TextButton(
                         enabled = enabled,
                         onClick = { onItem(item.copy(bonuses = item.bonuses.filterIndexed { index, _ -> index != bonusIndex })) },
-                    ) { Text("REMOVER", color = Signal) }
+                    ) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
                 }
                 TextButton(
                     enabled = enabled && options.isNotEmpty(),
@@ -115,7 +115,7 @@ private fun ControlledItemBonusEditor(
                 IntegerField("Valor", bonus.value, enabled) { value ->
                     onItem(item.copy(bonuses = item.bonuses.replace(bonusIndex, bonus.copy(value = value.coerceIn(-99, 99)))))
                 }
-                if (bonus.target.isBlank()) Text("Selecione um destino antes de considerar o bônus configurado.", color = Signal, style = MaterialTheme.typography.bodySmall)
+                if (bonus.target.isBlank()) Text("Selecione um destino antes de considerar o bônus configurado.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
         }
         AddButton("Adicionar bônus", enabled) {
@@ -145,21 +145,21 @@ private fun controlledBonusTargets(character: Character, type: ItemBonusType): L
 
 @Composable
 internal fun CalculatedValuesAuditSection(character: Character) {
-    TechPanel(accent = Acid) {
+    TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("06.B", "Auditoria de valores calculados")
-        Text("RECURSOS", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("RECURSOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         CalculationLine("Vida máxima", "10 + Vitalidade + ajustes + bônus ativos", character.lifeMaximumBreakdown())
         CalculationLine("Sanidade máxima", "10 + Sanidade + ajustes + bônus ativos", character.sanityMaximumBreakdown())
         CalculationLine("Arcano máximo", "POD + Arcano + ajustes + bônus ativos", character.arcaneMaximumBreakdown())
         CalculationLine("Energia máxima", "VIG + Energia + ajustes + bônus ativos", character.energyMaximumBreakdown())
         CalculationLine("Capacidade de carga", "2 + FOR + recipiente + bônus ativos", character.loadCapacityBreakdown())
 
-        Text("ATRIBUTOS", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("ATRIBUTOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         character.attributes.forEach { attribute ->
             CalculationLine(attribute.acronym, "Base + ajuste + bônus ativos", character.attributeCalculation(attribute.acronym))
         }
 
-        Text("CONHECIMENTOS BÁSICOS", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("CONHECIMENTOS BÁSICOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         character.attributes.forEach { attribute ->
             attribute.skills.forEach { skill ->
                 CalculationLine(skill.name, "Base + ajuste + bônus ativos", character.basicKnowledgeCalculation(attribute.acronym, skill.name))
@@ -167,13 +167,13 @@ internal fun CalculatedValuesAuditSection(character: Character) {
         }
 
         if (character.learnedKnowledges.isNotEmpty()) {
-            Text("CONHECIMENTOS ADQUIRIDOS", color = Acid, style = MaterialTheme.typography.labelLarge)
+            Text("CONHECIMENTOS ADQUIRIDOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             character.learnedKnowledges.map(SpecialKnowledge::name).filter(String::isNotBlank).distinct().forEach { name ->
                 CalculationLine(name, "Base + ajuste + bônus ativos", character.acquiredKnowledgeCalculation(name))
             }
         }
 
-        Text("PROTEÇÕES", color = Acid, style = MaterialTheme.typography.labelLarge)
+        Text("PROTEÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         CalculationLine("PG / Geral", "10 + PG dos itens equipados + ajuste", character.generalProtectionBreakdown())
         listOf("Esquiva", "Postura", "Mental", "Arcana").forEach { name ->
             CalculationLine(name, "Fórmula da proteção + ajuste", character.protectionCalculation(name))
@@ -182,11 +182,11 @@ internal fun CalculatedValuesAuditSection(character: Character) {
             CalculationLine("PL — ${region.name}", "PL base regional + itens equipados", character.localProtectionBreakdown(region))
         }
         val agilityLimit = character.agilityLimitBreakdown()
-        Column(Modifier.fillMaxWidth().background(Carbon).padding(7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("LA // ${agilityLimit.total ?: "—"}", color = Ice, style = MaterialTheme.typography.labelLarge)
-            Text("REGRA // menor LA entre itens equipados", color = Muted, style = MaterialTheme.typography.labelSmall)
+        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("LA // ${agilityLimit.total ?: "—"}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge)
+            Text("REGRA // menor LA entre itens equipados", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             agilityLimit.contributions.forEach { source ->
-                Text("Item: LA ${source.value} — ${source.label}", color = Acid, style = MaterialTheme.typography.bodySmall)
+                Text("Item: LA ${source.value} — ${source.label}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -194,10 +194,10 @@ internal fun CalculatedValuesAuditSection(character: Character) {
 
 @Composable
 private fun CalculationLine(label: String, formula: String, value: CalculatedValue) {
-    Column(Modifier.fillMaxWidth().background(Carbon).padding(7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text("$label // TOTAL ${value.total}", color = Ice, style = MaterialTheme.typography.labelLarge)
-        Text("FÓRMULA // $formula", color = Muted, style = MaterialTheme.typography.labelSmall)
-        Text("BASE ${value.base} // AJUSTE ${signed(value.adjustment)}", color = Muted, style = MaterialTheme.typography.bodySmall)
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text("$label // TOTAL ${value.total}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge)
+        Text("FÓRMULA // $formula", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        Text("BASE ${value.base} // AJUSTE ${signed(value.adjustment)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         value.modifiers.forEach { modifier ->
             val type = when (modifier.sourceType) {
                 ModifierSourceType.ITEM -> "Item"
@@ -208,7 +208,7 @@ private fun CalculationLine(label: String, formula: String, value: CalculatedVal
                 ModifierSourceType.BASE -> "Base"
                 ModifierSourceType.OTHER -> "Outro"
             }
-            Text("$type: ${signed(modifier.value)} — ${modifier.label}", color = Acid, style = MaterialTheme.typography.bodySmall)
+            Text("$type: ${signed(modifier.value)} — ${modifier.label}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

@@ -53,7 +53,7 @@ internal fun InitialShopDialog(
         title = { Text("LOJA INICIAL // $remainingHeritage PH") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = Muted)
+                Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 TextButton(onClick = onCatalog, enabled = catalogAvailable, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
                 TextButton(onClick = onBuilder, modifier = Modifier.fillMaxWidth()) { Text("CONSTRUIR ITEM COM PH") }
             }
@@ -85,8 +85,8 @@ internal fun ItemCatalogDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 remainingHeritage?.let {
-                    Text("PONTOS DE HERANÇA RESTANTES // $it / ${ItemCreationRules.HERITAGE_BUDGET}", color = if (it > 0) Acid else Signal)
-                    Text("Itens acima do saldo são bloqueados. Itens # não participam da criação com PH.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text("PONTOS DE HERANÇA RESTANTES // $it / ${ItemCreationRules.HERITAGE_BUDGET}", color = if (it > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                    Text("Itens acima do saldo são bloqueados. Itens # não participam da criação com PH.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 HudTextField("Buscar item", query) { query = it }
                 Column(Modifier.fillMaxWidth().heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
@@ -102,18 +102,18 @@ internal fun ItemCatalogDialog(
                             }.padding(vertical = 9.dp),
                             verticalArrangement = Arrangement.spacedBy(3.dp),
                         ) {
-                            Text(entry.name, color = if (allowed) Ice else Muted, style = MaterialTheme.typography.titleSmall)
+                            Text(entry.name, color = if (allowed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
                             Text(
                                 if (remainingHeritage != null) {
                                     "${entry.group} // CRIAÇÃO ${entry.creationCost.ifBlank { "—" }} PH // ${entry.price} E$ // CARGA ${entry.load}"
                                 } else {
                                     "${entry.group} // ${entry.price} E$ // CARGA ${entry.load}"
                                 },
-                                color = if (allowed) Acid else Signal,
+                                color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.labelSmall,
                             )
-                            Text(entry.summary, color = Muted, style = MaterialTheme.typography.bodySmall)
-                            HorizontalDivider(color = TechCutDark)
+                            Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                     }
                 }
@@ -168,7 +168,7 @@ internal fun ItemBuilderDialog(
                 Modifier.fillMaxWidth().heightIn(max = 570.dp).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(9.dp),
             ) {
-                remainingHeritage?.let { Text("CRIAÇÃO INICIAL // $it PH RESTANTES", color = Acid) }
+                remainingHeritage?.let { Text("CRIAÇÃO INICIAL // $it PH RESTANTES", color = MaterialTheme.colorScheme.primary) }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     TextButton(onClick = {
                         weapon = true
@@ -185,14 +185,14 @@ internal fun ItemBuilderDialog(
                 }
                 HudTextField("Nome personalizado (opcional)", customName) { customName = it }
                 TextButton(onClick = { picker = "base" }, modifier = Modifier.fillMaxWidth()) { Text("TIPO // ${base.name}") }
-                Text("MATERIAL PREDOMINANTE", color = Acid, style = MaterialTheme.typography.labelLarge)
-                Text("Partes, camadas e ligas compatíveis pertencem à mesma composição; o material só é contabilizado uma vez.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text("MATERIAL PREDOMINANTE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text("Partes, camadas e ligas compatíveis pertencem à mesma composição; o material só é contabilizado uma vez.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
                 TextButton(
                     onClick = { quality = ItemQuality.entries[(quality.ordinal + 1) % ItemQuality.entries.size] },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("QUALIDADE // ${quality.label}") }
-                Text("MODIFICAÇÕES", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 availableModifications.forEach { modification ->
                     val checked = modification in modifications
                     Row(
@@ -205,9 +205,9 @@ internal fun ItemBuilderDialog(
                             Text(
                                 if (initialCreation) "${modification.name} // ${modification.creationCost ?: "#"} PH"
                                 else "${modification.name} // ${modification.price} E$",
-                                color = Ice,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
-                            Text(modification.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
+                            Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -215,7 +215,7 @@ internal fun ItemBuilderDialog(
                     { IntegerField(if (initialCreation) "Espaços de Gema (1 PH)" else "Espaços de Gema", gemSlots, true, it) { value -> gemSlots = value.coerceIn(gems.size, 5) } },
                     { IntegerField(if (initialCreation) "Espaços de Tecnologia (2 PH)" else "Espaços de Tecnologia", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
                 )
-                Text("GEMAS INSTALADAS", color = Acid, style = MaterialTheme.typography.labelLarge)
+                Text("GEMAS INSTALADAS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 ItemCreationRules.gemComponents.forEach { gem ->
                     val checked = gem in gems
                     Row(Modifier.fillMaxWidth().clickable(enabled = quality != ItemQuality.MUNDANE) {
@@ -227,13 +227,13 @@ internal fun ItemBuilderDialog(
                             gemSlots = gemSlots.coerceAtLeast(gems.size)
                         })
                         Column(Modifier.padding(top = 8.dp)) {
-                            Text("${gem.name} // ${gem.creationCost} PH", color = Ice)
-                            Text(gem.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
+                            Text("${gem.name} // ${gem.creationCost} PH", color = MaterialTheme.colorScheme.onSurface)
+                            Text(gem.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
-                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = Acid, style = MaterialTheme.typography.labelLarge)
-                Text("Bônus positivos custam PH; penalidades não concedem desconto.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text("Bônus positivos custam PH; penalidades não concedem desconto.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 bonuses.forEachIndexed { index, bonus ->
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -241,7 +241,7 @@ internal fun ItemBuilderDialog(
                                 val nextType = ItemBonusType.entries[(bonus.type.ordinal + 1) % ItemBonusType.entries.size]
                                 bonuses = bonuses.replace(index, bonus.copy(type = nextType, target = defaultBonusTarget(nextType)))
                             }) { Text(bonus.type.label.uppercase()) }
-                            TextButton(onClick = { bonuses = bonuses.filterIndexed { itemIndex, _ -> itemIndex != index } }) { Text("REMOVER", color = Signal) }
+                            TextButton(onClick = { bonuses = bonuses.filterIndexed { itemIndex, _ -> itemIndex != index } }) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
                         }
                         if (bonus.type == ItemBonusType.ACQUIRED_KNOWLEDGE) {
                             HudTextField("Conhecimento adquirido", bonus.target) { value -> bonuses = bonuses.replace(index, bonus.copy(target = value)) }
@@ -259,18 +259,18 @@ internal fun ItemBuilderDialog(
                     Text("+ ADICIONAR BÔNUS")
                 }
                 if (initialCreation) {
-                    Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) Acid else Signal, style = MaterialTheme.typography.titleMedium)
+                    Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)
                 } else {
                     HudTextField("Preço final em E$ (Historiador pode ajustar)", manualPrice) { manualPrice = it.filter(Char::isDigit) }
                 }
-                Text("PREÇO // ${built.price} E$", color = Ice)
-                if (missingHistorianPrice) Text("Materiais # exigem que jogador e Historiador definam um preço.", color = Signal)
-                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = Acid)
-                Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = Muted)
-                Text(built.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text("PREÇO // ${built.price} E$", color = MaterialTheme.colorScheme.onSurface)
+                if (missingHistorianPrice) Text("Materiais # exigem que jogador e Historiador definam um preço.", color = MaterialTheme.colorScheme.error)
+                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.primary)
+                Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(built.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 if (initialCreation && !allowed) Text(
                     if (built.creationCost == null) "Itens # não podem ser criados com PH." else "Custo acima dos Pontos de Herança restantes.",
-                    color = Signal,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
         },
@@ -322,7 +322,7 @@ private fun ItemPartPickerDialog(
             Column(Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
                 parts.forEach { part ->
                     Column(Modifier.fillMaxWidth().clickable { onSelect(part) }.padding(vertical = 10.dp)) {
-                        Text(part.name, color = Ice)
+                        Text(part.name, color = MaterialTheme.colorScheme.onSurface)
                         Text(
                             if (showHeritageCost) {
                                 "CRIAÇÃO ${part.creationCost ?: "#"} PH // ${part.price} E$"
@@ -331,11 +331,11 @@ private fun ItemPartPickerDialog(
                             } else {
                                 "${part.price} E$"
                             },
-                            color = Acid,
+                            color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelSmall,
                         )
-                        if (part.effect.isNotBlank()) Text(part.effect, color = Muted, style = MaterialTheme.typography.bodySmall)
-                        HorizontalDivider(color = TechCutDark)
+                        if (part.effect.isNotBlank()) Text(part.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -390,11 +390,11 @@ internal fun EquipmentGlossaryDialog(onDismiss: () -> Unit) {
                 Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState())) {
                     filtered.forEach { entry ->
                         Column(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(entry.term, color = Ice, style = MaterialTheme.typography.titleSmall)
-                            Text(entry.group.uppercase(), color = Acid, style = MaterialTheme.typography.labelSmall)
-                            Text(entry.definition, color = Muted, style = MaterialTheme.typography.bodySmall)
+                            Text(entry.term, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                            Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                            Text(entry.definition, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
-                        HorizontalDivider(color = TechCutDark)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -420,7 +420,7 @@ internal fun EquipmentPickerDialog(
         title = { Text("EQUIPAR // ${regionName.uppercase()}") },
         text = {
             Column(Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
-                if (inventory.isEmpty()) Text("Nenhum item pronto no inventário.", color = Muted)
+                if (inventory.isEmpty()) Text("Nenhum item pronto no inventário.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 orderedInventory.forEach { item ->
                     val checked = item.id in selected
                     val compatible = item.matchesRegion(regionName)
@@ -433,15 +433,15 @@ internal fun EquipmentPickerDialog(
                             selected = if (value) toggleEquipment(selected, item, inventory) else selected - item.id
                         })
                         Column(Modifier.padding(top = 8.dp)) {
-                            Text(item.name.ifBlank { "Item sem nome" }, color = Ice)
+                            Text(item.name.ifBlank { "Item sem nome" }, color = MaterialTheme.colorScheme.onSurface)
                             Text(
                                 "PG ${item.pg} // PL ${item.pl}${item.region.takeIf(String::isNotBlank)?.let { " // $it" }.orEmpty()}${if (compatible) " // COMPATÍVEL" else ""}",
-                                color = if (compatible) Acid else Muted,
+                                color = if (compatible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         }
                     }
-                    HorizontalDivider(color = TechCutDark)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }
         },

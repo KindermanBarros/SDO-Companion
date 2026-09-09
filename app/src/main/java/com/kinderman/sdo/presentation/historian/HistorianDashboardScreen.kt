@@ -126,9 +126,9 @@ fun HistorianDashboardScreen(
                             TextButton(
                                 onClick = { section = target },
                                 modifier = Modifier.weight(1f).then(
-                                    if (section == target) Modifier.border(1.dp, Acid, CutCornerShape(6.dp)) else Modifier,
+                                    if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
                                 ),
-                            ) { Text(target.label, color = if (section == target) Acid else Muted) }
+                            ) { Text(target.label, color = if (section == target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) }
                         }
                     }
                 }
@@ -137,26 +137,26 @@ fun HistorianDashboardScreen(
                         item {
                             TechPanel {
                                 TelemetryTag("CAMPAIGNS.${visibleCampaigns.size}")
-                                Text("VISÃO OPERACIONAL", color = Ice, style = MaterialTheme.typography.titleLarge)
-                                Text("Recursos, alertas e sincronização por ficha em um único lugar.", color = Muted)
+                                Text("VISÃO OPERACIONAL", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                                Text("Recursos, alertas e sincronização por ficha em um único lugar.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                         if (visibleCampaigns.isEmpty()) item {
-                            TechPanel(accent = Signal) {
-                                Text("Nenhuma campanha com acesso de Historiador.", color = Ice)
-                                Text("Entre como Historiador ou responsável por uma campanha para acessar esta visão.", color = Muted)
+                            TechPanel(accent = MaterialTheme.colorScheme.error) {
+                                Text("Nenhuma campanha com acesso de Historiador.", color = MaterialTheme.colorScheme.onSurface)
+                                Text("Entre como Historiador ou responsável por uma campanha para acessar esta visão.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                         visibleCampaigns.forEach { campaign ->
                             val campaignCharacters = characters.filter { normalizeCampaignId(it.campaignId) == campaign.id }
                             item("campaign:${campaign.id}") {
-                                TechPanel(accent = if (campaign.isArchived) Muted else Acid) {
+                                TechPanel(accent = if (campaign.isArchived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary) {
                                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                         TelemetryTag(if (campaign.isArchived) "ARCHIVED" else "LIVE")
                                         TelemetryTag("FILES.${campaignCharacters.size}")
                                     }
-                                    Text(campaign.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleLarge)
-                                    if (campaignCharacters.isEmpty()) Text("Nenhuma ficha vinculada.", color = Muted)
+                                    Text(campaign.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                                    if (campaignCharacters.isEmpty()) Text("Nenhuma ficha vinculada.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     AlertSettingsRow(
                                         alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id),
                                         onSaveAlertSettings,
@@ -178,8 +178,8 @@ fun HistorianDashboardScreen(
                         item {
                             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                                 TelemetryTag("LOCAL.CATALOG")
-                                Text("BIBLIOTECA DE REFERÊNCIA", color = Ice, style = MaterialTheme.typography.titleLarge)
-                                Text("Modelos da campanha geram snapshots independentes para cada entrega.", color = Muted)
+                                Text("BIBLIOTECA DE REFERÊNCIA", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                                Text("Modelos da campanha geram snapshots independentes para cada entrega.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 HudTextField(
                                     label = "Buscar nome, grupo ou regra",
                                     value = search,
@@ -194,14 +194,14 @@ fun HistorianDashboardScreen(
                         val filteredLibrary = library.filter { entry -> search.isBlank() || listOf(entry.name, entry.summary, entry.kind.name).any { it.contains(search.trim(), true) } }
                         item {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("${filteredLibrary.size} MODELOS", color = Muted, style = MaterialTheme.typography.labelSmall)
-                                Text("${deliveries.count { it.state.name == "PENDING" }} ENTREGAS PENDENTES", color = Muted, style = MaterialTheme.typography.labelSmall)
+                                Text("${filteredLibrary.size} MODELOS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                                Text("${deliveries.count { it.state.name == "PENDING" }} ENTREGAS PENDENTES", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                             }
                         }
                         items(filteredLibrary, key = { "library:${it.id}" }) { entry ->
                             LibraryCard(entry, onEdit = { editingLibrary = entry }, onDuplicate = { onDuplicateLibrary(entry) }, onArchive = { onArchiveLibrary(entry, !entry.archived) }, onDeliver = { delivering = entry })
                         }
-                        item { Text("CATÁLOGO LOCAL DE REFERÊNCIA", color = Muted, style = MaterialTheme.typography.labelSmall) }
+                        item { Text("CATÁLOGO LOCAL DE REFERÊNCIA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
                         val filtered = catalog.filter { search.isBlank() || it.searchableText().contains(search.trim(), true) }
                         items(filtered.take(40), key = { "catalog:${it.id}" }) { entry -> CatalogReferenceCard(entry) }
                     }
@@ -209,19 +209,19 @@ fun HistorianDashboardScreen(
                         item {
                             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                                 TelemetryTag("APPEND_ONLY.${audit.size}")
-                                Text("HISTÓRICO DA CAMPANHA", color = Ice, style = MaterialTheme.typography.titleLarge)
-                                Text("Autor, alvo e valores anteriores/novos são preservados em registros imutáveis.", color = Muted)
+                                Text("HISTÓRICO DA CAMPANHA", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                                Text("Autor, alvo e valores anteriores/novos são preservados em registros imutáveis.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                         items(audit, key = { "audit:${it.id}" }) { operation ->
-                            TechPanel(accent = if (operation.dirty) Signal else Acid) {
+                            TechPanel(accent = if (operation.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     TelemetryTag(operation.type.name)
                                     TelemetryTag(if (operation.dirty) "LOCAL_DELTA" else "SYNC_OK")
                                 }
-                                Text("${operation.target}: ${operation.previousValue} → ${operation.newValue}", color = Ice)
-                                Text("ATOR ${operation.actorId.take(10)} // ALVO ${operation.characterId.take(10)} // ${operation.createdAt}", color = Muted, style = MaterialTheme.typography.labelSmall)
-                                if (operation.reason.isNotBlank()) Text(operation.reason, color = Muted)
+                                Text("${operation.target}: ${operation.previousValue} → ${operation.newValue}", color = MaterialTheme.colorScheme.onSurface)
+                                Text("ATOR ${operation.actorId.take(10)} // ALVO ${operation.characterId.take(10)} // ${operation.createdAt}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                                if (operation.reason.isNotBlank()) Text(operation.reason, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -251,17 +251,17 @@ private fun OperationalCharacterCard(
         if (character.lastSyncedAt > 0 && System.currentTimeMillis() - character.lastSyncedAt > settings.staleAfterHours * 3_600_000L) add("SYNC ANTIGO")
         if (character.dirty) add("ALTERAÇÃO LOCAL")
     }
-    TechPanel(accent = if (alerts.isEmpty()) Acid else Signal) {
+    TechPanel(accent = if (alerts.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(character.name.uppercase(), color = Ice, style = MaterialTheme.typography.titleMedium)
+            Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
             TelemetryTag(if (character.dirty) "LOCAL_DELTA" else "SYNC_OK")
         }
         Text(
             "VIDA ${character.life.current}/${character.lifeMaximum}  //  SAN ${character.sanity.current}/${character.sanityMaximum}  //  EXA ${character.exhaustion.current}/${character.exhaustion.maximum}",
-            color = Ice,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodySmall,
         )
-        if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = Signal, style = MaterialTheme.typography.labelSmall)
+        if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextButton(onQuickAction, modifier = Modifier.weight(1f)) { Text("AÇÃO") }
             TextButton({ onOpenSession(character.id) }, modifier = Modifier.weight(1f)) {
@@ -283,17 +283,17 @@ private fun CatalogReferenceCard(entry: CatalogEntry) {
             TelemetryTag(entry.kind.name)
             TelemetryTag("V.${entry.version}")
         }
-        Text(entry.name, color = Ice, style = MaterialTheme.typography.titleMedium)
+        Text(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         Text(entry.group, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-        Text(entry.summary, color = Muted, style = MaterialTheme.typography.bodySmall)
-        if (entry.ruleReference.isNotBlank()) Text(entry.ruleReference, color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (entry.ruleReference.isNotBlank()) Text(entry.ruleReference, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
     }
 }
 
 @Composable
 private fun AlertSettingsRow(settings: CampaignAlertSettings, onSave: (CampaignAlertSettings) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("ALERTAS // VIDA ≤${settings.lifeThresholdPercent}% // SAN ≤${settings.sanityThresholdPercent}% // EXA ≥${settings.exhaustionThresholdPercent}%", color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text("ALERTAS // VIDA ≤${settings.lifeThresholdPercent}% // SAN ≤${settings.sanityThresholdPercent}% // EXA ≥${settings.exhaustionThresholdPercent}%", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             TextButton({ onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent - 5).coerceAtLeast(5))) }, modifier = Modifier.weight(1f)) { Text("VIDA −") }
             TextButton({ onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent + 5).coerceAtMost(95))) }, modifier = Modifier.weight(1f)) { Text("VIDA +") }
@@ -347,13 +347,13 @@ private fun LibraryCard(
     onArchive: () -> Unit,
     onDeliver: () -> Unit,
 ) {
-    TechPanel(accent = if (entry.archived) Muted else MaterialTheme.colorScheme.secondary) {
+    TechPanel(accent = if (entry.archived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.secondary) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(entry.kind.name)
             TelemetryTag("V.${entry.version}")
         }
-        Text(entry.name.ifBlank { "Modelo sem nome" }, color = Ice, style = MaterialTheme.typography.titleMedium)
-        Text(entry.summary, color = Muted)
+        Text(entry.name.ifBlank { "Modelo sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+        Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TextButton(onEdit, modifier = Modifier.weight(1f)) { Text("EDITAR") }
             TextButton(onDuplicate, modifier = Modifier.weight(1f)) { Text("DUPLICAR") }
