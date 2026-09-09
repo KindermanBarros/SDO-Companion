@@ -9,7 +9,7 @@ class CharacterTest {
         assertEquals(listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR"), character.attributes.map { it.acronym })
         assertEquals(5, character.protections.size)
         assertEquals(10, character.bodyRegions.size)
-        assertEquals(5, character.organs.size)
+        assertEquals(0, character.organs.size)
         assertEquals(3, character.pathKeywords.size)
         assertEquals(3, character.pathPillars.size)
     }

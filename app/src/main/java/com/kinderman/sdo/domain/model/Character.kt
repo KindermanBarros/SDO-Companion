@@ -215,7 +215,7 @@ data class Character(
     val containerCapacity: Int = 0,
     val bodyRegions: List<BodyRegion> = defaultBodyRegions(),
     val agilityLimit: String = "",
-    val organs: List<OrganStatus> = defaultOrgans(),
+    val organs: List<OrganStatus> = emptyList(),
     val mysticAbilities: List<MysticAbility> = emptyList(),
     val conditions: List<ConditionEffect> = emptyList(),
     val story: String = "",
@@ -443,7 +443,3 @@ fun normalizeBodyRegions(regions: List<BodyRegion>): List<BodyRegion> {
             ?: canonical
     }
 }
-
-fun defaultOrgans() = listOf(
-    "Cérebro", "Coração ou núcleo", "Pulmões ou sistema respiratório", "Fígado ou filtro", "Outro",
-).map { OrganStatus(name = it) }

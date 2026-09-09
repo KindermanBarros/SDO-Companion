@@ -28,6 +28,7 @@ import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.catalog.withPathPreset
 import com.kinderman.sdo.domain.model.MysticAbility
+import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.SessionResource
 import com.kinderman.sdo.domain.model.UsagePeriod
@@ -255,14 +256,30 @@ internal fun BodyRegionSection(
 internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("11", "Órgãos")
+        if (character.organs.isEmpty()) {
+            Text(
+                "Registre apenas órgãos com dano, implante, parasita ou outra alteração relevante.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
         character.organs.forEachIndexed { index, organ ->
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                Row(Modifier.fillMaxWidth()) {
+                    Text("ALTERAÇÃO ${(index + 1).toString().padStart(2, '0')}", modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary)
+                    RemoveButton(enabled, "Remover registro de órgão") {
+                        onChange(character.copy(organs = character.organs.filterNot { it.id == organ.id }))
+                    }
+                }
                 HudTextField("Órgão", organ.name, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(name = it)))) }
                 IntegerField("Falhas", organ.failures, enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(failures = it.coerceIn(0, 3))))) }
-                HudTextField("Implante", organ.implant, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(implant = it)))) }
-                HudTextField("Efeito", organ.effect, multiline = true, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(effect = it)))) }
+                HudTextField("Implante ou parasita", organ.implant, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(implant = it)))) }
+                HudTextField("Dano / efeito", organ.effect, multiline = true, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(effect = it)))) }
             }
             if (index != character.organs.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+        AddButton("Adicionar alteração de órgão", enabled) {
+            onChange(character.copy(organs = character.organs + OrganStatus()))
         }
     }
 }
