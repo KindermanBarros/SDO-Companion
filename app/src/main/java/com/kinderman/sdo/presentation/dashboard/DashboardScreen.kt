@@ -495,25 +495,31 @@ private fun AdminCharacterFilters(
     onChooseStatus: () -> Unit,
     onClear: () -> Unit,
 ) {
-    TechPanel(accent = MaterialTheme.colorScheme.primary) {
-        SectionHeader("FX", "Pesquisa administrativa")
+    Column(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(8.dp)).padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
         HudTextField(
-            label = "Buscar ficha, owner ou campanha",
+            label = "Pesquisa administrativa",
             value = query,
             placeholder = "Nome, raça, ocupação, e-mail ou UID",
             onValue = onQueryChange,
         )
-        TextButton(onClick = onChooseOwner, modifier = Modifier.fillMaxWidth()) {
-            Text("OWNER // ${ownerLabel.uppercase()}")
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = onChooseOwner, modifier = Modifier.weight(1f)) {
+                Text("OWNER // ${ownerLabel.uppercase()}", maxLines = 1)
+            }
+            TextButton(onClick = onChooseCampaign, modifier = Modifier.weight(1f)) {
+                Text("CAMPANHA // ${campaignLabel.uppercase()}", maxLines = 1)
+            }
         }
-        TextButton(onClick = onChooseCampaign, modifier = Modifier.fillMaxWidth()) {
-            Text("CAMPANHA // ${campaignLabel.uppercase()}")
-        }
-        TextButton(onClick = onChooseStatus, modifier = Modifier.fillMaxWidth()) {
-            Text("STATUS // ${statusLabel.uppercase()}")
-        }
-        TextButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
-            Text("LIMPAR FILTROS", color = MaterialTheme.colorScheme.error)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = onChooseStatus, modifier = Modifier.weight(1f)) {
+                Text("STATUS // ${statusLabel.uppercase()}", maxLines = 1)
+            }
+            TextButton(onClick = onClear, modifier = Modifier.weight(1f)) {
+                Text("LIMPAR", color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }
