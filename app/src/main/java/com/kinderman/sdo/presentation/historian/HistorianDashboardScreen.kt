@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,8 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignAlertSettings
@@ -118,6 +122,17 @@ fun HistorianDashboardScreen(
     }
     val selectedCampaign = visibleCampaigns.firstOrNull { it.id == selectedCampaignId }
     val selectedCharacters = characters.filter { selectedCampaignId.isNotBlank() && normalizeCampaignId(it.campaignId) == selectedCampaignId }
+    val availableAuditTypes = remember(audit, selectedCampaignId) {
+        audit.asSequence()
+            .filter { it.campaignId == selectedCampaignId }
+            .map(SessionOperation::type)
+            .distinct()
+            .sortedBy(SessionOperationType::name)
+            .toList()
+    }
+    LaunchedEffect(availableAuditTypes) {
+        if (auditType != null && auditType !in availableAuditTypes) auditType = null
+    }
     val selectedAudit = audit.filter { operation ->
         val characterName = characters.firstOrNull { it.id == operation.characterId }?.name.orEmpty()
         operation.campaignId == selectedCampaignId &&
@@ -249,9 +264,11 @@ fun HistorianDashboardScreen(
                                 HudTextField("Buscar no histórico", auditSearch, onValue = { auditSearch = it })
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     TextButton(onClick = {
-                                        val options = listOf<SessionOperationType?>(null) + SessionOperationType.entries
+                                        val options = listOf<SessionOperationType?>(null) + availableAuditTypes
                                         auditType = options[(options.indexOf(auditType) + 1) % options.size]
-                                    }, modifier = Modifier.weight(1f)) { Text("TIPO // ${auditType?.name ?: "TODOS"}", maxLines = 1) }
+                                    }, enabled = availableAuditTypes.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                                        com.kinderman.sdo.ui.AdaptiveActionLabel("TIPO // ${auditType?.displayLabel() ?: "TODOS"}")
+                                    }
                                     TextButton(onClick = { auditSearch = ""; auditType = null }, modifier = Modifier.weight(1f)) { Text("LIMPAR") }
                                 }
                             }
@@ -296,6 +313,7 @@ private fun OperationalCharacterCard(
     onOpenSheet: (String) -> Unit,
     onQuickAction: () -> Unit,
 ) {
+    var expanded by rememberSaveable(character.id) { mutableStateOf(true) }
     val alerts = buildList {
         if (character.lifeMaximum > 0 && character.life.current * 100 <= character.lifeMaximum * settings.lifeThresholdPercent) add("VIDA CRÍTICA")
         if (character.sanityMaximum > 0 && character.sanity.current * 100 <= character.sanityMaximum * settings.sanityThresholdPercent) add("SANIDADE CRÍTICA")
@@ -306,28 +324,60 @@ private fun OperationalCharacterCard(
         if (character.dirty) add("ALTERAÇÃO LOCAL")
     }
     TechPanel(accent = if (alerts.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-            TelemetryTag(if (character.dirty) "LOCAL_DELTA" else "SYNC_OK")
-        }
-        Text(
-            "VIDA ${character.life.current}/${character.lifeMaximum}  //  SAN ${character.sanity.current}/${character.sanityMaximum}  //  EXA ${character.exhaustion.current}/${character.exhaustion.maximum}",
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodySmall,
-        )
-        if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onQuickAction, modifier = Modifier.weight(1f)) { Text("AÇÃO") }
-            TextButton({ onOpenSession(character.id) }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.PlayArrow, null)
-                Text(" SESSÃO")
+        Row(
+            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "VIDA ${character.life.current}/${character.lifeMaximum}  //  SAN ${character.sanity.current}/${character.sanityMaximum}  //  EXA ${character.exhaustion.current}/${character.exhaustion.maximum}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
-            TextButton({ onOpenSheet(character.id) }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.Description, null)
-                Text(" FICHA")
+            TelemetryTag(if (character.dirty) "LOCAL_DELTA" else "SYNC_OK")
+            Icon(
+                if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                if (expanded) "Recolher personagem" else "Expandir personagem",
+            )
+        }
+        if (expanded) {
+            if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+            androidx.compose.material3.Button(
+                onClick = { onOpenSession(character.id) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.PlayArrow, null)
+                com.kinderman.sdo.ui.AdaptiveActionLabel("ABRIR SESSÃO", color = MaterialTheme.colorScheme.onPrimary)
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onQuickAction, modifier = Modifier.weight(1f)) {
+                    com.kinderman.sdo.ui.AdaptiveActionLabel("AÇÃO")
+                }
+                TextButton({ onOpenSheet(character.id) }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Description, null)
+                    com.kinderman.sdo.ui.AdaptiveActionLabel("FICHA")
+                }
             }
         }
     }
+}
+
+private fun SessionOperationType.displayLabel(): String = when (this) {
+    SessionOperationType.DAMAGE -> "DANO"
+    SessionOperationType.HEAL -> "CURA"
+    SessionOperationType.RESOURCE -> "RECURSO"
+    SessionOperationType.CONDITION_ADD -> "CONDIÇÃO +"
+    SessionOperationType.CONDITION_REMOVE -> "CONDIÇÃO −"
+    SessionOperationType.MONEY -> "DINHEIRO"
+    SessionOperationType.DESTINY -> "DESTINO"
+    SessionOperationType.REWARD -> "RECOMPENSA"
+    SessionOperationType.NOTE -> "ANOTAÇÃO"
+    SessionOperationType.REGION_FAILURE -> "FALHA CORPORAL"
+    SessionOperationType.ABILITY_USE -> "HABILIDADE"
+    SessionOperationType.USAGE_RESET -> "REINÍCIO"
 }
 
 @Composable

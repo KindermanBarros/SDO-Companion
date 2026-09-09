@@ -115,7 +115,6 @@ private fun PhaseOneKnowledgeList(
             if (knowledge.description.isNotBlank()) Text(knowledge.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             if (knowledge.prerequisites.isNotEmpty()) Text("PRÉ-REQUISITOS // ${knowledge.prerequisites.joinToString("; ")}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             if (knowledge.mechanicalEffect.isNotBlank()) Text("EFEITO // ${knowledge.mechanicalEffect}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
-            if (knowledge.ruleReference.isNotBlank()) Text("REF. // ${knowledge.ruleReference}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value + knowledge.adjustment) {
                 Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             }
@@ -307,11 +306,8 @@ private fun StructuredPowerEditor(
         HudTextField("Pré-requisitos", power.prerequisites.joinToString("; "), multiline = true, enabled = enabled) {
             onValue(power.copy(prerequisites = it.split(';').map(String::trim).filter(String::isNotBlank)))
         }
-        HudTextField("Condição de ativação", power.activationCondition, multiline = true, enabled = enabled) { onValue(power.copy(activationCondition = it)) }
         HudTextField("Efeito principal", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
         HudTextField("Aprimoramentos", power.enhancements, multiline = true, enabled = enabled) { onValue(power.copy(enhancements = it)) }
-        HudTextField("Perda / desativação", power.deactivationCondition, multiline = true, enabled = enabled) { onValue(power.copy(deactivationCondition = it)) }
-        HudTextField("Referência nas regras", power.ruleReference, enabled = enabled) { onValue(power.copy(ruleReference = it)) }
     }
 }
 

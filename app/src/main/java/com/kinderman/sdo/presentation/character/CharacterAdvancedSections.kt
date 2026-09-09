@@ -31,6 +31,7 @@ import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.withoutCatalogExampleCount
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.ArcanePanel
@@ -106,7 +107,7 @@ private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: ()
             RemoveButton(enabled, "Remover poder", onRemove)
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
-        HudTextField("Origem narrativa", power.origin, multiline = true, enabled = enabled) { onValue(power.copy(origin = it)) }
+        HudTextField("Origem narrativa", power.origin.withoutCatalogExampleCount(), multiline = true, enabled = enabled) { onValue(power.copy(origin = it)) }
         TwoFields(
             { HudTextField("Custo", power.cost, it, enabled = enabled) { value -> onValue(power.copy(cost = value)) } },
             { HudTextField("Ação", power.action, it, enabled = enabled) { value -> onValue(power.copy(action = value)) } },
@@ -320,7 +321,7 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
         )
         if (ability.category.isNotBlank() || ability.source.isNotBlank()) {
             Text(
-                listOf(ability.category, ability.source).filter(String::isNotBlank).joinToString(" // "),
+                listOf(ability.category, ability.source.withoutCatalogExampleCount()).filter(String::isNotBlank).joinToString(" // "),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.labelSmall,
             )
@@ -334,9 +335,6 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
             { HudTextField("Duração", ability.duration, it, enabled = enabled) { value -> onValue(ability.copy(duration = value)) } },
         )
         HudTextField("Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
-        if (ability.ruleReference.isNotBlank()) {
-            Text("REFERÊNCIA // ${ability.ruleReference}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        }
         AbilityAvailabilityEditor(ability.favorite, ability.available, enabled) { favorite, available ->
             onValue(ability.copy(favorite = favorite, available = available))
         }
