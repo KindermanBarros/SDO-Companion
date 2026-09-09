@@ -30,5 +30,6 @@ data class SdoPreferences(
     val notifications: Boolean = true,
     val compactCards: Boolean = false,
     val collapseLongSections: Boolean = true,
+    val calculationAuditEnabled: Boolean = false,
     val showArchivedCampaigns: Boolean = true,
 )

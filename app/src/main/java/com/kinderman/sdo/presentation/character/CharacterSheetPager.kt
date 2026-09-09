@@ -52,6 +52,7 @@ internal fun CharacterSheetPager(
     session: UserSession,
     catalog: List<CatalogEntry>,
     editable: Boolean,
+    showCalculationAudit: Boolean,
     onChange: (Character) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -105,6 +106,7 @@ internal fun CharacterSheetPager(
                 session = session,
                 catalog = catalog,
                 editable = editable,
+                showCalculationAudit = showCalculationAudit,
                 onChange = onChange,
                 scrollState = pageScrollStates[pageIndex],
             )
@@ -119,6 +121,7 @@ private fun SheetPageContent(
     session: UserSession,
     catalog: List<CatalogEntry>,
     editable: Boolean,
+    showCalculationAudit: Boolean,
     onChange: (Character) -> Unit,
     scrollState: LazyListState,
 ) {
@@ -141,7 +144,7 @@ private fun SheetPageContent(
                 item("attributes") { AttributeSection(character, editable, onChange) }
                 item("knowledge") { PhaseOneKnowledgeSection(character, catalog, editable, onChange) }
                 item("protection") { ProtectionSection(character, editable, onChange) }
-                item("calculation-audit") { CalculatedValuesAuditSection(character) }
+                if (showCalculationAudit) item("calculation-audit") { CalculatedValuesAuditSection(character) }
             }
 
             SheetPage.PATH -> item("path") {

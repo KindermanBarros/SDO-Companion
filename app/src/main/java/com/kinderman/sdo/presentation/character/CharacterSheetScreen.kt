@@ -61,6 +61,7 @@ fun CharacterSheetScreen(
     readOnly: Boolean = false,
     isCampaignHistorian: Boolean = false,
     isCampaignResponsible: Boolean = false,
+    showCalculationAudit: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onOpenSession: (String) -> Unit,
@@ -152,6 +153,7 @@ fun CharacterSheetScreen(
                 session = session,
                 catalog = catalog,
                 editable = editable,
+                showCalculationAudit = showCalculationAudit,
                 onChange = {
                     if (!readOnly) {
                         current = it

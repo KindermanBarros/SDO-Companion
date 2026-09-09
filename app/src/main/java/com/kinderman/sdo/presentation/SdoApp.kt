@@ -186,6 +186,7 @@ fun SdoApp(
                     readOnly = archived,
                     isCampaignHistorian = isCampaignHistorian,
                     isCampaignResponsible = isCampaignResponsible,
+                    showCalculationAudit = preferences.calculationAuditEnabled,
                     snackbarHost = { SnackbarHost(snackbar) },
                     onBack = {
                         selectedId = null
