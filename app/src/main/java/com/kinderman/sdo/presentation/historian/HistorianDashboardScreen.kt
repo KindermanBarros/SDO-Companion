@@ -60,6 +60,8 @@ import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import java.text.DateFormat
+import java.util.Date
 
 private enum class HistorianSection(val label: String) {
     OPERATION("OPERAÇÃO"),
@@ -97,6 +99,8 @@ fun HistorianDashboardScreen(
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var choosingCampaign by remember { mutableStateOf(false) }
     var selectedCampaignId by remember { mutableStateOf("") }
+    var auditSearch by remember { mutableStateOf("") }
+    var auditType by remember { mutableStateOf<SessionOperationType?>(null) }
     val historianCampaignIds = remember(session, campaigns, memberships) {
         val memberCampaignIds = memberships.filter {
             it.userId == session.uid && it.isActive && it.role == CampaignRole.HISTORIAN
@@ -111,7 +115,13 @@ fun HistorianDashboardScreen(
     }
     val selectedCampaign = visibleCampaigns.firstOrNull { it.id == selectedCampaignId }
     val selectedCharacters = characters.filter { normalizeCampaignId(it.campaignId) == selectedCampaignId }
-    val selectedAudit = audit.filter { it.campaignId == selectedCampaignId }
+    val selectedAudit = audit.filter { operation ->
+        val characterName = characters.firstOrNull { it.id == operation.characterId }?.name.orEmpty()
+        operation.campaignId == selectedCampaignId &&
+            (auditType == null || operation.type == auditType) &&
+            (auditSearch.isBlank() || listOf(operation.target, operation.reason, operation.type.name, characterName)
+                .any { it.contains(auditSearch.trim(), ignoreCase = true) })
+    }.sortedByDescending(SessionOperation::createdAt)
     val selectedLibrary = library.filter { it.campaignId == selectedCampaignId }
 
     HudBackground {
@@ -232,8 +242,22 @@ fun HistorianDashboardScreen(
                             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                                 TelemetryTag("APPEND_ONLY.${selectedAudit.size}")
                                 Text("HISTÓRICO DA CAMPANHA", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-                                Text("Autor, alvo e valores anteriores/novos são preservados em registros imutáveis.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Ações mais recentes primeiro. Busque por personagem, alvo, motivo ou tipo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                HudTextField("Buscar no histórico", auditSearch, onValue = { auditSearch = it })
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    TextButton(onClick = {
+                                        val options = listOf<SessionOperationType?>(null) + SessionOperationType.entries
+                                        auditType = options[(options.indexOf(auditType) + 1) % options.size]
+                                    }, modifier = Modifier.weight(1f)) { Text("TIPO // ${auditType?.name ?: "TODOS"}", maxLines = 1) }
+                                    TextButton(onClick = { auditSearch = ""; auditType = null }, modifier = Modifier.weight(1f)) { Text("LIMPAR") }
+                                }
                             }
+                        }
+                        if (selectedAudit.isEmpty()) item("audit-empty") {
+                            Text(
+                                if (auditSearch.isBlank() && auditType == null) "Nenhuma ação registrada nesta campanha." else "Nenhum registro corresponde aos filtros.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                         items(selectedAudit, key = { "audit:${it.id}" }) { operation ->
                             TechPanel(accent = if (operation.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
@@ -241,8 +265,10 @@ fun HistorianDashboardScreen(
                                     TelemetryTag(operation.type.name)
                                     TelemetryTag(if (operation.dirty) "LOCAL_DELTA" else "SYNC_OK")
                                 }
-                                Text("${operation.target}: ${operation.previousValue} → ${operation.newValue}", color = MaterialTheme.colorScheme.onSurface)
-                                Text("ATOR ${operation.actorId.take(10)} // ALVO ${operation.characterId.take(10)} // ${operation.createdAt}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                                val characterName = characters.firstOrNull { it.id == operation.characterId }?.name ?: operation.characterId.take(10)
+                                Text("$characterName // ${operation.target.ifBlank { operation.type.name }}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                                Text("${operation.previousValue.ifBlank { "—" }} → ${operation.newValue.ifBlank { "—" }}", color = MaterialTheme.colorScheme.onSurface)
+                                Text("${formatAuditTime(operation.createdAt)} // ATOR ${operation.actorId.take(10)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                                 if (operation.reason.isNotBlank()) Text(operation.reason, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
@@ -273,6 +299,9 @@ fun HistorianDashboardScreen(
     editingLibrary?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
     delivering?.let { entry -> DeliveryDialog(entry, characters.filter { normalizeCampaignId(it.campaignId) == entry.campaignId }, { delivering = null }) { selected, mappings -> onDeliverLibrary(entry, selected, mappings); delivering = null } }
 }
+
+private fun formatAuditTime(timestamp: Long): String =
+    DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(timestamp))
 
 @Composable
 private fun OperationalCharacterCard(
