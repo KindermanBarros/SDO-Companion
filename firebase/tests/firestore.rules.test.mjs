@@ -20,8 +20,8 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-test('campaign deletion detaches characters atomically and preserves their data', async () => {
-  await seed({ archived: true });
+test('active campaign deletion detaches characters atomically and preserves their data', async () => {
+  await seed();
   const db = env.authenticatedContext(ids.owner).firestore();
   const batch = writeBatch(db);
   batch.update(doc(db, 'characters', ids.character), { campaignId: '', updatedAt: 3 });
@@ -406,4 +406,18 @@ test('unauthenticated users cannot preview invites', async () => {
   await seed();
   const db = env.unauthenticatedContext().firestore();
   await assertFails(getDoc(doc(db, 'campaignInvites', ids.invite)));
+});
+
+
+test('administrator can delete an active campaign owned by another account', async () => {
+  await seed();
+  const db = env.authenticatedContext('admin', {
+    email: 'kindbarros@gmail.com', email_verified: true,
+  }).firestore();
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'characters', ids.character), { campaignId: '', updatedAt: 3 });
+  batch.update(doc(db, 'campaigns', ids.campaign), { state: 'DELETED', updatedAt: 3 });
+  await assertSucceeds(batch.commit());
+  const preserved = await assertSucceeds(getDoc(doc(db, 'characters', ids.character)));
+  if (preserved.data().campaignId !== '') throw new Error('Character must survive detached');
 });

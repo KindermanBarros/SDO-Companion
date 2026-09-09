@@ -119,7 +119,7 @@ class OfflineFirstCampaignRepository(
         check(session.isAdmin || remote.getString("ownerId") == session.uid) { "Sem permissão para excluir." }
         val characters = store.collection("characters").whereEqualTo("campaignId", campaign.id)
             .get(com.google.firebase.firestore.Source.SERVER).await().documents
-        check(characters.size <= 450) { "Esta campanha exige exclusão administrativa por conter mais de 450 fichas." }
+        check(characters.size <= 450) { "Desvincule algumas fichas antes de excluir: o limite seguro por operação é de 450 fichas." }
         val now = System.currentTimeMillis()
         val batch = store.batch()
         characters.forEach { batch.update(it.reference, mapOf("campaignId" to "", "updatedAt" to now)) }

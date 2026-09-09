@@ -19,9 +19,10 @@ class CatalogMigrationTest {
         context.deleteDatabase(name)
         try {
             // Reconstruct v15: the only schema delta in v16 is these four catalog columns.
-            Room.databaseBuilder(context, AppDatabase::class.java, name).build().use { db ->
-                db.characterDao().upsert(CharacterRecord(id = "offline", name = "Ficha preservada", dirty = true))
-            }
+            val original = Room.databaseBuilder(context, AppDatabase::class.java, name).build()
+            try {
+                original.characterDao().upsert(CharacterRecord(id = "offline", name = "Ficha preservada", dirty = true))
+            } finally { original.close() }
             SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READWRITE).use { db ->
                 listOf("limit", "activationCondition", "enhancements", "deactivationCondition").forEach {
                     db.execSQL("ALTER TABLE catalog_entries DROP COLUMN `$it`")
@@ -29,8 +30,9 @@ class CatalogMigrationTest {
                 db.execSQL("DELETE FROM room_master_table")
                 db.version = 15
             }
-            Room.databaseBuilder(context, AppDatabase::class.java, name)
-                .addMigrations(AppDatabase.MIGRATION_15_16).build().use { db ->
+            val db = Room.databaseBuilder(context, AppDatabase::class.java, name)
+                .addMigrations(AppDatabase.MIGRATION_15_16).build()
+            try {
                     val character = db.characterDao().get("offline")!!
                     assertEquals("Ficha preservada", character.name)
                     assertTrue(character.dirty)
@@ -40,7 +42,7 @@ class CatalogMigrationTest {
                     assertTrue(entries.size >= 400)
                     assertEquals(entries.size, entries.map { it.id }.distinct().size)
                     assertTrue(entries.any { it.activationCondition.isNotBlank() })
-                }
+                } finally { db.close() }
         } finally {
             context.deleteDatabase(name)
         }
