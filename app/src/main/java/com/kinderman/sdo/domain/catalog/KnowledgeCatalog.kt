@@ -115,7 +115,7 @@ object KnowledgeCatalog {
             effect = "A mecânica específica deve seguir a referência publicada da técnica selecionada.",
             keywords = listOf("defesa", "postura", "combate"),
         ),
-    )
+    ) + ExpandedKnowledgeCatalog.entries
 
     private fun acquired(
         id: String,
@@ -169,7 +169,7 @@ object KnowledgeCatalog {
         group = category,
         summary = description,
         relatedAttribute = attribute,
-        initialValue = 0,
+        initialValue = 1,
         prerequisites = prerequisites,
         mechanicalEffect = effect,
         source = "Catálogo oficial do Companion",

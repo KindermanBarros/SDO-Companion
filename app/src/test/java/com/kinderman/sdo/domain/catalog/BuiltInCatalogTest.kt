@@ -31,4 +31,10 @@ class BuiltInCatalogTest {
         assertTrue(RaceCatalog.races.all { it.version == BuiltInCatalog.VERSION && it.ruleReference == RaceCatalog.RULE_REFERENCE })
         assertTrue(RaceCatalog.subRaces.all { it.version == BuiltInCatalog.VERSION && it.ruleReference == RaceCatalog.RULE_REFERENCE })
     }
+
+    @Test fun knowledgeCatalogHasFiftyEntriesOfEachType() {
+        assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ACQUIRED_KNOWLEDGE })
+        assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ARCANE_KNOWLEDGE })
+        assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.BATTLE_TECHNIQUE })
+    }
 }
