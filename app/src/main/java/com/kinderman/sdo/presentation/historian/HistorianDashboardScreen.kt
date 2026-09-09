@@ -128,7 +128,7 @@ fun HistorianDashboardScreen(
                                 modifier = Modifier.weight(1f).then(
                                     if (section == target) Modifier.border(1.dp, Acid, CutCornerShape(6.dp)) else Modifier,
                                 ),
-                            ) { Text(target.label, color = if (section == target) Acid else Muted) }
+                            ) { com.kinderman.sdo.ui.AdaptiveActionLabel(target.label, color = if (section == target) Acid else Muted) }
                         }
                     }
                 }
@@ -179,7 +179,6 @@ fun HistorianDashboardScreen(
                             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                                 TelemetryTag("LOCAL.CATALOG")
                                 Text("BIBLIOTECA DE REFERÊNCIA", color = Ice, style = MaterialTheme.typography.titleLarge)
-                                Text("Modelos da campanha geram snapshots independentes para cada entrega.", color = Muted)
                                 HudTextField(
                                     label = "Buscar nome, grupo ou regra",
                                     value = search,

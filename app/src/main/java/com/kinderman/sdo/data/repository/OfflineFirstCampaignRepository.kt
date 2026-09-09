@@ -38,7 +38,7 @@ class OfflineFirstCampaignRepository(
 
     override fun observe(session: UserSession): Flow<List<Campaign>> =
         (if (session.isAdmin) dao.observeAll() else dao.observeForUser(session.uid))
-            .map { values -> values.map(CampaignRecord::toDomain) }
+            .map { values -> values.map(CampaignRecord::toDomain).filterNot(Campaign::isDeleted) }
 
     override fun observeMembers(campaignId: String): Flow<List<CampaignMember>> =
         dao.observeMembers(campaignId).map { values -> values.map(CampaignMemberRecord::toDomain) }
@@ -93,6 +93,7 @@ class OfflineFirstCampaignRepository(
     override suspend fun archive(session: UserSession, campaign: Campaign, archived: Boolean) {
         requireOwner(session, campaign)
         val existing = requireCampaign(campaign.id)
+        check(!existing.isDeleted) { "Campanhas excluídas não podem ser restauradas." }
         val now = System.currentTimeMillis()
         dao.upsertCampaign(
             existing.copy(
@@ -102,6 +103,31 @@ class OfflineFirstCampaignRepository(
                 dirty = true,
             ).toRecord(),
         )
+    }
+
+    // A terminal tombstone prevents stale offline clients from recreating the campaign.
+    // Character documents are detached, never deleted.
+    override suspend fun delete(session: UserSession, campaign: Campaign) = syncMutex.withLock {
+        requireOwner(session, requireCampaign(campaign.id))
+        val store = Firebase.firestore
+        val reference = store.collection(CAMPAIGNS).document(campaign.id)
+        val remote = reference.get(com.google.firebase.firestore.Source.SERVER).await()
+        check(remote.exists()) { "Sincronize a campanha antes de excluí-la." }
+        check(session.isAdmin || remote.getString("ownerId") == session.uid) { "Sem permissão para excluir." }
+        val characters = store.collection("characters").whereEqualTo("campaignId", campaign.id)
+            .get(com.google.firebase.firestore.Source.SERVER).await().documents
+        check(characters.size <= 450) { "Esta campanha exige exclusão administrativa por conter mais de 450 fichas." }
+        val now = System.currentTimeMillis()
+        val batch = store.batch()
+        characters.forEach { batch.update(it.reference, mapOf("campaignId" to "", "updatedAt" to now)) }
+        batch.update(reference, mapOf("state" to CampaignState.DELETED.name, "updatedAt" to now))
+        batch.commit().await()
+        characterDao.all().filter { it.campaignId == campaign.id }.forEach {
+            characterDao.upsert(it.copy(campaignId = "", updatedAt = now, dirty = true))
+        }
+        dao.upsertCampaign(requireCampaign(campaign.id).copy(
+            state = CampaignState.DELETED, updatedAt = now, dirty = false, lastSyncedAt = now,
+        ).toRecord())
     }
 
     override suspend fun leave(session: UserSession, campaign: Campaign) {
@@ -239,10 +265,22 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
+        // Reconcile terminal state before replaying stale offline campaign edits.
+        dao.dirtyCampaigns().filter { it.lastSyncedAt != 0L && (session.isAdmin || it.ownerId == session.uid) }.forEach { local ->
+            val remote = campaigns.document(local.id).get().await()
+                .toObject(CampaignRecord::class.java)
+            if (remote?.state == CampaignState.DELETED.name) {
+                dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
+                characterDao.all().filter { it.campaignId == local.id }.forEach {
+                    characterDao.upsert(it.copy(campaignId = "", dirty = true))
+                }
+            }
+        }
+        val deletedIds = dao.allCampaigns().filter { it.state == CampaignState.DELETED.name }.map { it.id }.toSet()
         val dirtyCampaigns = dao.dirtyCampaigns().filter { session.isAdmin || it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
-        val dirtyMembers = dao.dirtyMembers()
+        val dirtyMembers = dao.dirtyMembers().filterNot { it.campaignId in deletedIds }
 
         newCampaigns.forEach { local ->
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
@@ -255,7 +293,7 @@ class OfflineFirstCampaignRepository(
                 dao.markMemberSynced(local.campaignId, local.userId, local.updatedAt)
             }
         }
-        dao.dirtyInvites().forEach { local ->
+        dao.dirtyInvites().filterNot { it.campaignId in deletedIds }.forEach { local ->
             if (session.isAdmin || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 val reference = invites.document(local.id)
                 try {
@@ -341,7 +379,7 @@ class OfflineFirstCampaignRepository(
         dao.campaign(id)?.toDomain() ?: error("Campanha não encontrada no cache local.")
 
     private suspend fun requireActiveCampaign(id: String): Campaign = requireCampaign(id).also {
-        check(!it.isArchived) { "Campanhas arquivadas são somente leitura." }
+        check(!it.isArchived) { "Campanhas arquivadas ou excluídas não podem ser alteradas." }
     }
 
     private fun requireOwner(session: UserSession, campaign: Campaign) {

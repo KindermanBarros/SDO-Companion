@@ -68,6 +68,8 @@ class AppViewModel(
     private val localSaveMutex = Mutex()
 
     val session = currentSession.asStateFlow()
+    private val _saveErrors = MutableStateFlow<Map<String, String>>(emptyMap())
+    val saveErrors = _saveErrors.asStateFlow()
     val message = _message.asStateFlow()
     val loadState = _loadState.asStateFlow()
     val conflicts = _conflicts.asStateFlow()
@@ -163,6 +165,10 @@ class AppViewModel(
         if (archived) "Campanha arquivada" else "Campanha restaurada",
     ) { session -> campaignRepository.archive(session, campaign, archived) }
 
+    fun deleteCampaign(campaign: Campaign) = runAction("Campanha excluída; fichas preservadas") { session ->
+        campaignRepository.delete(session, campaign)
+    }
+
     fun leaveCampaign(campaign: Campaign) = runAction("Você saiu da campanha; suas fichas foram preservadas") { session ->
         campaignRepository.leave(session, campaign)
     }
@@ -252,8 +258,15 @@ class AppViewModel(
         val session = currentSession.value ?: return
         viewModelScope.launch {
             runCatching { localSaveMutex.withLock { saveCharacter(session, character) } }
-                .onSuccess { if (notify) _message.value = "Ficha salva localmente" }
-                .onFailure { _message.value = userMessage(it, "Falha ao salvar ficha localmente") }
+                .onSuccess {
+                    _saveErrors.value = _saveErrors.value - character.id
+                    if (notify) _message.value = "Ficha salva localmente"
+                }
+                .onFailure {
+                    val error = userMessage(it, "Falha ao salvar ficha localmente")
+                    _saveErrors.value = _saveErrors.value + (character.id to error)
+                    _message.value = error
+                }
         }
     }
 

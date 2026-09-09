@@ -40,6 +40,7 @@ internal fun IntegerField(
         value = input,
         modifier = modifier,
         placeholder = "0",
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
         enabled = enabled,
     ) { raw ->
         val normalized = raw.filterIndexed { index, character ->
@@ -60,7 +61,7 @@ internal fun AddButton(label: String, enabled: Boolean, onClick: () -> Unit) {
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = Void),
+        colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = MaterialTheme.colorScheme.onPrimary),
     ) {
         Icon(Icons.Default.Add, null)
         Text(label.uppercase(), style = MaterialTheme.typography.labelLarge)

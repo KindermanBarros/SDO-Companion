@@ -1,5 +1,19 @@
 # SDO Companion — Design Guide
 
+## Revisão responsiva — setembro de 2026
+
+- As cores históricas abaixo descrevem o tema industrial, não valores fixos para todas as telas.
+  Tokens públicos agora resolvem papéis do tema ativo, incluindo modais e barras.
+- Aperture White usa azul Portal como destaque; vermelho fica reservado a erros e exclusão.
+- Campos compactos: mínimo de 48 dp, padding interno vertical de 8 dp, texto de 14 sp.
+  Preservar os intervalos entre itens e permitir crescimento para fontes ampliadas.
+- Cabeçalhos recebem largura limitada e podem quebrar em duas linhas; decoração nunca disputa
+  espaço com o título. Estados vazios não usam códigos de barras.
+- Seções recolhíveis preservam estado durante navegação. Auditoria é opcional em Configurações.
+- Acessos rápidos usam ícones com descrição acessível. Salvamento usa ícone e toast sob demanda.
+- Exclusão de campanha exige confirmação e conexão. Fichas são desvinculadas, não apagadas;
+  um estado terminal impede restauração por clientes antigos.
+
 ## Direção
 
 O SDO Companion combina **Cyberpunk / Sci-Fi HUD**, **FUI operacional** e **Acid Graphics /

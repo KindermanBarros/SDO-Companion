@@ -101,6 +101,11 @@ fun CyberLoadingIndicator(
         label = "signal-pulse",
     )
 
+    val borderColor = TechCutCyan
+    val gridColor = GridGuide
+    val signalColor = Signal
+    val accentColor = Acid
+    val textColor = Ice
     Canvas(
         modifier
             .fillMaxWidth()
@@ -109,8 +114,8 @@ fun CyberLoadingIndicator(
             .semantics { contentDescription = accessibilityLabel },
     ) {
         val border = 1.dp.toPx()
-        drawRect(TechCutCyan.copy(alpha = .72f), style = Stroke(border))
-        drawLine(GridGuide.copy(alpha = .55f), Offset(0f, size.height / 2), Offset(size.width, size.height / 2), border)
+        drawRect(borderColor.copy(alpha = .72f), style = Stroke(border))
+        drawLine(gridColor.copy(alpha = .55f), Offset(0f, size.height / 2), Offset(size.width, size.height / 2), border)
 
         val segmentCount = 15
         val gap = 4.dp.toPx()
@@ -120,7 +125,7 @@ fun CyberLoadingIndicator(
             val distance = abs(center - scan)
             val energy = (1f - distance * 5f).coerceIn(.12f, 1f)
             drawRect(
-                color = if (index % 5 == 4) Signal.copy(alpha = energy * pulse) else Acid.copy(alpha = energy),
+                color = if (index % 5 == 4) signalColor.copy(alpha = energy * pulse) else accentColor.copy(alpha = energy),
                 topLeft = Offset(gap + index * (segmentWidth + gap), size.height * .28f),
                 size = Size(segmentWidth, size.height * .44f),
             )
@@ -128,7 +133,7 @@ fun CyberLoadingIndicator(
 
         val scannerX = scan * size.width
         drawLine(
-            color = Ice.copy(alpha = .45f * pulse),
+            color = textColor.copy(alpha = .45f * pulse),
             start = Offset(scannerX, 0f),
             end = Offset(scannerX, size.height),
             strokeWidth = 2.dp.toPx(),

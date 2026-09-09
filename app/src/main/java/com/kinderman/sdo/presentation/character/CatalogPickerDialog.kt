@@ -1,5 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,7 +64,7 @@ internal fun CatalogPickerDialog(
             if (details != null) {
                 CatalogDetails(details!!, details!!.id in alreadyAddedCatalogIds)
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     HudTextField("Buscar no catálogo", query) { query = it }
                     if (attributes.isNotEmpty()) FilterButton("ATRIBUTO", selectedAttribute, attributes) { selectedAttribute = it }
                     if (categories.isNotEmpty()) FilterButton("CATEGORIA", selectedCategory, categories) { selectedCategory = it }
@@ -76,7 +78,7 @@ internal fun CatalogPickerDialog(
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(entry.name, color = Ice, style = MaterialTheme.typography.titleSmall)
+                                    Text(entry.name, color = Ice, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                                     if (alreadyAdded) Text("ADICIONADO", color = Signal, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Text(
@@ -125,7 +127,7 @@ private fun FilterButton(label: String, selected: String, options: List<String>,
 
 @Composable
 private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
-    Column(Modifier.fillMaxWidth().heightIn(max = 500.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(entry.group.uppercase(), color = Acid, style = MaterialTheme.typography.labelLarge)
         if (alreadyAdded) Text(if (entry.repeatable) "JÁ ADICIONADO // REPETÍVEL" else "JÁ ADICIONADO", color = Signal)
         Text(entry.summary, color = Ice, style = MaterialTheme.typography.bodyMedium)

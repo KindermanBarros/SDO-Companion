@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Lock
@@ -59,6 +60,7 @@ fun CharacterSheetScreen(
     session: UserSession?,
     catalog: List<CatalogEntry>,
     readOnly: Boolean = false,
+    saveError: String? = null,
     isCampaignHistorian: Boolean = false,
     isCampaignResponsible: Boolean = false,
     snackbarHost: @Composable () -> Unit,
@@ -149,6 +151,7 @@ fun CharacterSheetScreen(
         ) { padding ->
             CharacterSheetPager(
                 character = current,
+                saveError = saveError,
                 session = session,
                 catalog = catalog,
                 editable = editable,
@@ -165,7 +168,8 @@ fun CharacterSheetScreen(
 }
 
 @Composable
-internal fun SheetHero(character: Character, session: UserSession) {
+internal fun SheetHero(character: Character, session: UserSession, saveError: String? = null) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     TechPanel(accent = if (character.isLocked) Signal else Acid) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
@@ -189,17 +193,14 @@ internal fun SheetHero(character: Character, session: UserSession) {
         Barcode("${character.id}-${character.name}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ComplianceMark()
-            Column(horizontalAlignment = Alignment.End) {
-                Icon(if (character.isLocked) Icons.Default.Lock else Icons.Default.CloudDone, null, tint = if (character.isLocked) Signal else AcidCyan)
-                Text(
-                    when (character.lockType) {
-                        CharacterLock.HISTORIAN -> "Edição bloqueada pela Mestre"
-                        CharacterLock.PLAYER -> "Edição bloqueada pelo jogador"
-                        CharacterLock.NONE -> "Alterações salvas neste aparelho"
-                    },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelSmall,
-                )
+            IconButton(onClick = {
+                android.widget.Toast.makeText(context,
+                    saveError ?: if (character.dirty) "Alterações salvas no aparelho; sincronização pendente"
+                    else "Alterações salvas",
+                    android.widget.Toast.LENGTH_SHORT).show()
+            }) {
+                Icon(if (saveError == null) Icons.Default.CloudDone else Icons.Default.ErrorOutline,
+                    saveError ?: "Estado de salvamento", tint = if (saveError == null) Acid else Signal)
             }
         }
     }
