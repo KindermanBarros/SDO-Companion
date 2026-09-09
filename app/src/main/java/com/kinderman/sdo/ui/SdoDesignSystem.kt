@@ -199,13 +199,13 @@ private val magentaDreamColors = darkColorScheme(
 )
 
 private val apertureWhiteColors = lightColorScheme(
-    primary = Color(0xFF00A2FF), onPrimary = Color(0xFF001D2D),
-    secondary = Color(0xFFFF9A00), onSecondary = Color(0xFF2B1700),
-    tertiary = Color(0xFFFF9A00), onTertiary = Color(0xFF2B1700),
+    primary = Color(0xFFFF9A00), onPrimary = Color(0xFF2B1700),
+    secondary = Color(0xFF27A7D8), onSecondary = Color(0xFF001D2D),
+    tertiary = Color(0xFF27A7D8), onTertiary = Color(0xFF001D2D),
     background = Color(0xFFFFFFFF), onBackground = Color(0xFF10202A),
     surface = Color(0xFFFFFFFF), onSurface = Color(0xFF10202A),
-    surfaceVariant = Color(0xFFEAF7FF), onSurfaceVariant = Color(0xFF405662),
-    outline = Color(0xFF00A2FF), outlineVariant = Color(0x6600A2FF),
+    surfaceVariant = Color(0xFFF3F0F0), onSurfaceVariant = Color(0xFF514A4A),
+    outline = Color(0xFF8E8585), outlineVariant = Color(0xFFB5AAAA),
     error = Color(0xFFD45500), onError = Color.White,
 )
 

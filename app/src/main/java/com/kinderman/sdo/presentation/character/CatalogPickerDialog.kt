@@ -138,10 +138,13 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
         DetailLine("ALCANCE", entry.range)
         DetailLine("DURAÇÃO", entry.duration)
         DetailLine("LIMITE", entry.limit)
+        DetailLine("ATIVAÇÃO", entry.activationCondition)
         DetailLine("APRIMORAMENTOS", entry.enhancements)
+        DetailLine("ENCERRAMENTO", entry.deactivationCondition)
         DetailLine("PRÉ-REQUISITOS", entry.prerequisites.joinToString("; "))
         DetailLine("EFEITO MECÂNICO", entry.mechanicalEffect)
         DetailLine("FONTE", entry.source)
+        DetailLine("REFERÊNCIA", entry.ruleReference)
         DetailLine("PALAVRAS-CHAVE", entry.keywords.joinToString(", "))
         DetailLine("VERSÃO", entry.version.toString())
     }

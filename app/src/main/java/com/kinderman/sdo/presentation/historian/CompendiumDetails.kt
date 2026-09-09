@@ -29,10 +29,11 @@ internal fun CompendiumDetails(entry: CatalogEntry) {
         val values = linkedMapOf(
             "Custo" to entry.cost, "Ação" to entry.action, "Alcance" to entry.range,
             "Duração" to entry.duration, "Limite" to entry.limit,
+            "Ativação" to entry.activationCondition, "Encerramento" to entry.deactivationCondition,
             "Aprimoramentos" to entry.enhancements, "Efeito mecânico" to entry.mechanicalEffect,
             "Atributo" to entry.relatedAttribute, "Valor inicial" to entry.initialValue?.toString().orEmpty(),
             "Pré-requisitos" to entry.prerequisites.joinToString("; "), "Fonte" to entry.source,
-            "Versão" to entry.version.toString(),
+            "Referência" to entry.ruleReference, "Versão" to entry.version.toString(),
             "Palavras-chave" to entry.keywords.joinToString(", "),
         )
         if (entry.kind == CatalogKind.ITEM) values.putAll(linkedMapOf(
@@ -70,8 +71,8 @@ internal fun characterReferences(characters: List<Character>): List<CatalogEntry
     character.powers.map { power ->
         CatalogEntry("${character.id}:power:${power.id}", CatalogKind.POWER, power.name, power.category,
             power.effect, power.cost, power.action, power.range, power.duration, source,
-            mechanicalEffect = listOf(power.effect, "Origem: ${power.origin}",
-                "Limite: ${power.limit}", "Aprimoramentos: ${power.enhancements}",
+            mechanicalEffect = listOf(power.effect, "Origem: ${power.origin}", "Ativação: ${power.activationCondition}",
+                "Encerramento: ${power.deactivationCondition}", "Limite: ${power.limit}", "Aprimoramentos: ${power.enhancements}",
                 "Disponível: ${power.available}; Favorito: ${power.favorite}").joinToString("\n"),
             prerequisites = power.prerequisites, ruleReference = power.ruleReference)
     } + character.mysticAbilities.map { magic ->
