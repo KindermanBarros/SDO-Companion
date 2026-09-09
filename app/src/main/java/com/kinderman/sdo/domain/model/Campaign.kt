@@ -2,7 +2,7 @@ package com.kinderman.sdo.domain.model
 
 import java.util.UUID
 
-enum class CampaignState { ACTIVE, ARCHIVED }
+enum class CampaignState { ACTIVE, ARCHIVED, DELETED }
 enum class CampaignRole { HISTORIAN, PLAYER }
 enum class CampaignMemberState { ACTIVE, LEFT, REMOVED }
 
@@ -23,7 +23,8 @@ data class Campaign(
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
 ) {
-    val isArchived: Boolean get() = state == CampaignState.ARCHIVED
+    val isArchived: Boolean get() = state != CampaignState.ACTIVE
+    val isDeleted: Boolean get() = state == CampaignState.DELETED
 }
 
 data class CampaignMember(

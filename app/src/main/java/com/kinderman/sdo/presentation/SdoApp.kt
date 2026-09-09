@@ -153,6 +153,7 @@ fun SdoApp(
                     onOwnerTransfer = appViewModel::transferOwner,
                     onCreateCampaign = appViewModel::createCampaign,
                     onArchiveCampaign = appViewModel::archiveCampaign,
+                    onDeleteCampaign = appViewModel::deleteCampaign,
                     onLeaveCampaign = appViewModel::leaveCampaign,
                     onCreateInvite = appViewModel::createCampaignInvite,
                     onPreviewInvite = appViewModel::previewCampaignInvite,

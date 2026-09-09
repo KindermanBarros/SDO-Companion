@@ -49,7 +49,7 @@ fun SettingsScreen(
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { Text("APARÊNCIA E ACESSIBILIDADE") },
+                    title = { Text("CONFIGURAÇÕES") },
                     navigationIcon = {
                         IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
                     },
@@ -78,6 +78,7 @@ fun SettingsScreen(
                 }
                 item {
                     TogglePanel("INTERFACE", listOf(
+                        Triple("Auditoria de valores", preferences.showValueAudit, { value: Boolean -> onPreferencesChange(preferences.copy(showValueAudit = value)) }),
                         Triple("Cartões compactos", preferences.compactCards, { value: Boolean -> onPreferencesChange(preferences.copy(compactCards = value)) }),
                         Triple("Recolher seções longas", preferences.collapseLongSections, { value: Boolean -> onPreferencesChange(preferences.copy(collapseLongSections = value)) }),
                     ))
@@ -130,13 +131,7 @@ fun SettingsScreen(
                         onSelect = { onPreferencesChange(preferences.copy(fontScale = it)) },
                     )
                 }
-                item {
-                    TechPanel(accent = Acid) {
-                        TelemetryTag("A11Y.CONTRACT")
-                        Text("Estados usam texto, ícone e cor", color = MaterialTheme.colorScheme.onSurface)
-                        Text("Controles preservam área mínima de toque e seguem a escala de animação do sistema.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
+
             }
         }
     }

@@ -163,6 +163,10 @@ class AppViewModel(
         if (archived) "Campanha arquivada" else "Campanha restaurada",
     ) { session -> campaignRepository.archive(session, campaign, archived) }
 
+    fun deleteCampaign(campaign: Campaign) = runAction("Campanha excluída; fichas preservadas") { session ->
+        campaignRepository.delete(session, campaign)
+    }
+
     fun leaveCampaign(campaign: Campaign) = runAction("Você saiu da campanha; suas fichas foram preservadas") { session ->
         campaignRepository.leave(session, campaign)
     }

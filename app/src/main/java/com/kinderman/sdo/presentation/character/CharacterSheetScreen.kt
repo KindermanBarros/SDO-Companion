@@ -166,6 +166,7 @@ fun CharacterSheetScreen(
 
 @Composable
 internal fun SheetHero(character: Character, session: UserSession) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     TechPanel(accent = if (character.isLocked) Signal else Acid) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
@@ -189,17 +190,13 @@ internal fun SheetHero(character: Character, session: UserSession) {
         Barcode("${character.id}-${character.name}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ComplianceMark()
-            Column(horizontalAlignment = Alignment.End) {
-                Icon(if (character.isLocked) Icons.Default.Lock else Icons.Default.CloudDone, null, tint = if (character.isLocked) Signal else AcidCyan)
-                Text(
-                    when (character.lockType) {
-                        CharacterLock.HISTORIAN -> "Edição bloqueada pela Mestre"
-                        CharacterLock.PLAYER -> "Edição bloqueada pelo jogador"
-                        CharacterLock.NONE -> "Alterações salvas neste aparelho"
-                    },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelSmall,
-                )
+            IconButton(onClick = {
+                android.widget.Toast.makeText(context,
+                    if (character.dirty) "Alterações salvas no aparelho; sincronização pendente"
+                    else "Alterações salvas",
+                    android.widget.Toast.LENGTH_SHORT).show()
+            }) {
+                Icon(Icons.Default.CloudDone, "Estado de salvamento", tint = Acid)
             }
         }
     }
