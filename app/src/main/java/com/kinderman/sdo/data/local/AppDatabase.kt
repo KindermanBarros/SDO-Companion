@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -227,6 +227,14 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_recipientId ON campaign_deliveries(recipientId)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_recipientCharacterId ON campaign_deliveries(recipientCharacterId)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS campaign_alert_settings (campaignId TEXT NOT NULL PRIMARY KEY, lifeThresholdPercent INTEGER NOT NULL, sanityThresholdPercent INTEGER NOT NULL, exhaustionThresholdPercent INTEGER NOT NULL, staleAfterHours INTEGER NOT NULL, alertConditions INTEGER NOT NULL, alertBodyFailures INTEGER NOT NULL)")
+            }
+        }
+
+        val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                listOf("limit", "activationCondition", "enhancements", "deactivationCondition").forEach { column ->
+                    db.execSQL("ALTER TABLE catalog_entries ADD COLUMN `$column` TEXT NOT NULL DEFAULT ''")
+                }
             }
         }
 

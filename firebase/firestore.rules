@@ -186,7 +186,7 @@ service cloud.firestore {
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.state in ['ACTIVE', 'ARCHIVED', 'DELETED']
         && (
-          resource.data.state == 'ACTIVE'
+          (resource.data.state == 'ACTIVE' && request.resource.data.state in ['ACTIVE', 'ARCHIVED'])
           || (
             resource.data.state == 'ARCHIVED'
             && request.resource.data.state in ['ACTIVE', 'DELETED']
@@ -265,7 +265,7 @@ service cloud.firestore {
         )
       );
 
-      allow list: if signedIn() && isCampaignResponsible(resource.data.campaignId);
+      allow list: if signedIn() && canReadCampaign(resource.data.campaignId);
 
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid

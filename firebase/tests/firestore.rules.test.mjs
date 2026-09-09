@@ -378,6 +378,7 @@ test('active campaign and non-owner campaign deletion are denied', async () => {
   const ownerDb = env.authenticatedContext(ids.owner).firestore();
   const playerDb = env.authenticatedContext(ids.player).firestore();
 
+  await assertFails(updateDoc(doc(ownerDb, 'campaigns', ids.campaign), { state: 'DELETED' }));
   await assertFails(deleteDoc(doc(ownerDb, 'campaigns', ids.campaign)));
   await assertFails(deleteDoc(doc(playerDb, 'campaigns', ids.campaign)));
 });

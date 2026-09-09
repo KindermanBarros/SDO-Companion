@@ -355,6 +355,8 @@ class OfflineFirstCampaignRepository(
                 }
                 dao.upsertMember(migrated.copy(dirty = false, lastSyncedAt = migrated.updatedAt))
             }
+        }
+        (campaignIds - deletedIds).forEach { campaignId ->
             invites.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)
             }.forEach { dao.upsertInvite(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }

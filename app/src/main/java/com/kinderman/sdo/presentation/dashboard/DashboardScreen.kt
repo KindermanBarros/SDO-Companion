@@ -120,15 +120,15 @@ fun DashboardScreen(
     var ownerTarget by remember { mutableStateOf<Character?>(null) }
     var createCampaign by remember { mutableStateOf(false) }
     var joinCampaign by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    var campaignSearchQuery by remember { mutableStateOf("") }
-    var ownerFilter by remember { mutableStateOf<String?>(null) }
-    var campaignFilter by remember { mutableStateOf<String?>(null) }
-    var statusFilter by remember { mutableStateOf(AdminCharacterStatus.ALL) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var campaignSearchQuery by rememberSaveable { mutableStateOf("") }
+    var ownerFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var campaignFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var statusFilter by rememberSaveable { mutableStateOf(AdminCharacterStatus.ALL) }
     var choosingOwner by remember { mutableStateOf(false) }
     var choosingCampaign by remember { mutableStateOf(false) }
     var choosingStatus by remember { mutableStateOf(false) }
-    var section by remember { mutableStateOf(DashboardSection.CHARACTERS) }
+    var section by rememberSaveable { mutableStateOf(DashboardSection.CHARACTERS) }
     var assigningCampaign by remember { mutableStateOf<Campaign?>(null) }
     var deletingCampaign by remember { mutableStateOf<Campaign?>(null) }
     val visibleCampaigns = remember(campaigns, campaignSearchQuery) {

@@ -32,6 +32,10 @@ data class CatalogEntryRecord(
     val ruleReference: String,
     val keywords: String,
     val repeatable: Boolean,
+    val limit: String,
+    val activationCondition: String,
+    val enhancements: String,
+    val deactivationCondition: String,
 ) {
     fun toDomain() = CatalogEntry(
         id = id,
@@ -57,6 +61,10 @@ data class CatalogEntryRecord(
         ruleReference = ruleReference,
         keywords = keywords.decodeList(),
         repeatable = repeatable,
+        limit = limit,
+        activationCondition = activationCondition,
+        enhancements = enhancements,
+        deactivationCondition = deactivationCondition,
     )
 }
 
@@ -84,6 +92,10 @@ fun CatalogEntry.toRecord() = CatalogEntryRecord(
     ruleReference = ruleReference,
     keywords = keywords.encodeList(),
     repeatable = repeatable,
+        limit = limit,
+        activationCondition = activationCondition,
+        enhancements = enhancements,
+        deactivationCondition = deactivationCondition,
 )
 
 private fun List<String>.encodeList(): String = joinToString(LIST_SEPARATOR)

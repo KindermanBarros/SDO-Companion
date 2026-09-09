@@ -28,7 +28,9 @@ internal fun CompendiumDetails(entry: CatalogEntry) {
     if (expanded) Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         val values = linkedMapOf(
             "Custo" to entry.cost, "Ação" to entry.action, "Alcance" to entry.range,
-            "Duração" to entry.duration, "Efeito mecânico" to entry.mechanicalEffect,
+            "Duração" to entry.duration, "Limite" to entry.limit,
+            "Ativação" to entry.activationCondition, "Encerramento" to entry.deactivationCondition,
+            "Aprimoramentos" to entry.enhancements, "Efeito mecânico" to entry.mechanicalEffect,
             "Atributo" to entry.relatedAttribute, "Valor inicial" to entry.initialValue?.toString().orEmpty(),
             "Pré-requisitos" to entry.prerequisites.joinToString("; "), "Fonte" to entry.source,
             "Referência" to entry.ruleReference, "Versão" to entry.version.toString(),

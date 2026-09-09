@@ -3,9 +3,9 @@ name: SDO Companion Android release
 on:
   push:
     branches: [main]
-    paths: ['app/**', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/workflows/sdo-companion-android.yml']
   pull_request:
-    paths: ['app/**', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/workflows/sdo-companion-android.yml']
   workflow_dispatch:
 
 permissions:
@@ -30,6 +30,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Validate canonical catalog contract
+        run: python3 tools/generate_catalog.py --check
 
       - name: Calculate semantic version
         id: version

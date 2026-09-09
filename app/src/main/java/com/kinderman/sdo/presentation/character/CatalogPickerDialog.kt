@@ -1,6 +1,8 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -125,7 +127,7 @@ private fun FilterButton(label: String, selected: String, options: List<String>,
 
 @Composable
 private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
-    Column(Modifier.fillMaxWidth().heightIn(max = 500.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         if (alreadyAdded) Text(if (entry.repeatable) "JÁ ADICIONADO // REPETÍVEL" else "JÁ ADICIONADO", color = MaterialTheme.colorScheme.error)
         Text(entry.summary, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
@@ -135,6 +137,10 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
         DetailLine("AÇÃO", entry.action)
         DetailLine("ALCANCE", entry.range)
         DetailLine("DURAÇÃO", entry.duration)
+        DetailLine("LIMITE", entry.limit)
+        DetailLine("ATIVAÇÃO", entry.activationCondition)
+        DetailLine("APRIMORAMENTOS", entry.enhancements)
+        DetailLine("ENCERRAMENTO", entry.deactivationCondition)
         DetailLine("PRÉ-REQUISITOS", entry.prerequisites.joinToString("; "))
         DetailLine("EFEITO MECÂNICO", entry.mechanicalEffect)
         DetailLine("FONTE", entry.source)
