@@ -230,7 +230,13 @@ fun SdoApp(
                         navigate(AppSurface.SHEET, it)
                     },
                     onCommand = appViewModel::applySessionCommand,
-                    onBack = { goBack() },
+                    onBack = {
+                        if (selectedId != null) {
+                            selectedId = null
+                        } else {
+                            goBack()
+                        }
+                    },
                 )
 
                 AppSurface.HISTORIAN -> HistorianDashboardScreen(
