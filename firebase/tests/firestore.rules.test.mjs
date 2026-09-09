@@ -392,12 +392,12 @@ test('campaign owner can dismantle and delete an archived campaign safely', asyn
   if (preserved.data().campaignId !== '') throw new Error('Character must survive detached');
 });
 
-test('active campaign and non-owner campaign deletion are denied', async () => {
+test('non-owner tombstones and physical campaign deletion are denied', async () => {
   await seed();
   const ownerDb = env.authenticatedContext(ids.owner).firestore();
   const playerDb = env.authenticatedContext(ids.player).firestore();
 
-  await assertFails(updateDoc(doc(ownerDb, 'campaigns', ids.campaign), { state: 'DELETED' }));
+  await assertFails(updateDoc(doc(playerDb, 'campaigns', ids.campaign), { state: 'DELETED' }));
   await assertFails(deleteDoc(doc(ownerDb, 'campaigns', ids.campaign)));
   await assertFails(deleteDoc(doc(playerDb, 'campaigns', ids.campaign)));
 });

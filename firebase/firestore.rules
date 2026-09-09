@@ -186,7 +186,7 @@ service cloud.firestore {
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.state in ['ACTIVE', 'ARCHIVED', 'DELETED']
         && (
-          (resource.data.state == 'ACTIVE' && request.resource.data.state in ['ACTIVE', 'ARCHIVED'])
+          resource.data.state == 'ACTIVE'
           || (
             resource.data.state == 'ARCHIVED'
             && request.resource.data.state in ['ACTIVE', 'DELETED']
@@ -389,13 +389,7 @@ service cloud.firestore {
             && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
             && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
           )
-          || (
-            normalizedCampaignId(resource.data) != ''
-            && getAfter(campaignPath(normalizedCampaignId(resource.data))).data.state == 'DELETED'
-            && isCampaignResponsible(normalizedCampaignId(resource.data))
-            && normalizedCampaignId(request.resource.data) == ''
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
-          )
+
         );
 
       allow delete: if signedIn() && (
