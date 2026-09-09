@@ -2,6 +2,7 @@ package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.CampaignInviteRecord
@@ -63,13 +64,14 @@ class OfflineFirstCampaignRepository(
             CampaignMember(
                 campaignId = campaign.id,
                 userId = session.uid,
-                role = CampaignRole.HISTORIAN,
+                role = CampaignRole.PLAYER,
                 state = CampaignMemberState.ACTIVE,
                 joinedAt = now,
                 updatedAt = now,
                 dirty = true,
             ).toRecord(),
         )
+        createStaticInvite(session, campaign, now)
         return campaign
     }
 
@@ -102,23 +104,9 @@ class OfflineFirstCampaignRepository(
         )
     }
 
-    override suspend fun transferOwnership(session: UserSession, campaign: Campaign, newOwnerId: String) {
-        requireOwner(session, campaign)
-        val existing = requireActiveCampaign(campaign.id)
-        require(newOwnerId.isNotBlank() && newOwnerId != session.uid) { "Selecione outro participante ativo." }
-        val target = dao.member(existing.id, newOwnerId)?.toDomain()
-        check(target?.isActive == true) { "A nova Mestre precisa ser participante ativa da campanha." }
-        val now = System.currentTimeMillis()
-        // Keep the current owner authoritative in the local cache until Firestore accepts the
-        // complete handover. The promoted member, with the same timestamp as the dirty campaign,
-        // is the durable local marker for the pending transfer.
-        dao.upsertCampaign(existing.copy(updatedAt = now, dirty = true).toRecord())
-        dao.upsertMember(target.copy(role = CampaignRole.HISTORIAN, updatedAt = now, dirty = true).toRecord())
-    }
-
     override suspend fun leave(session: UserSession, campaign: Campaign) {
         val existing = requireActiveCampaign(campaign.id)
-        check(existing.ownerId != session.uid) { "Transfira a responsabilidade da campanha antes de sair." }
+        check(existing.ownerId != session.uid) { "A Mestre que criou a campanha não pode sair dela." }
         val member = dao.member(existing.id, session.uid)?.toDomain()
             ?: error("Você não participa desta campanha.")
         val now = System.currentTimeMillis()
@@ -150,62 +138,11 @@ class OfflineFirstCampaignRepository(
         )
     }
 
-    override suspend fun setMemberRole(
-        session: UserSession,
-        campaign: Campaign,
-        userId: String,
-        role: CampaignRole,
-    ) {
-        requireOwner(session, campaign)
-        val existing = requireActiveCampaign(campaign.id)
-        check(userId != existing.ownerId) { "A responsável principal já é Historiadora." }
-        val member = dao.member(existing.id, userId)?.toDomain()
-            ?: error("Participante não encontrada.")
-        check(member.isActive) { "O papel só pode ser alterado para participantes ativas." }
-        dao.upsertMember(member.copy(role = role, updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
-    }
-
     override suspend fun createInvite(session: UserSession, campaign: Campaign): CampaignInvite {
         requireOwner(session, campaign)
         val existing = requireActiveCampaign(campaign.id)
-        val code = generateCode()
-        val invite = CampaignInvite(
-            id = code,
-            campaignId = existing.id,
-            campaignName = existing.name,
-            campaignDescription = existing.description,
-            code = code,
-            createdBy = session.uid,
-            createdAt = System.currentTimeMillis(),
-            generation = 1,
-            dirty = true,
-        )
-        dao.upsertInvite(invite.toRecord())
-        return invite
-    }
-
-    override suspend fun revokeInvite(session: UserSession, invite: CampaignInvite) {
-        val campaign = requireActiveCampaign(invite.campaignId)
-        requireOwner(session, campaign)
-        dao.upsertInvite(invite.copy(revokedAt = System.currentTimeMillis(), dirty = true).toRecord())
-    }
-
-    override suspend fun regenerateInvite(session: UserSession, invite: CampaignInvite): CampaignInvite {
-        val campaign = requireActiveCampaign(invite.campaignId)
-        requireOwner(session, campaign)
-        revokeInvite(session, invite)
-        val code = generateCode()
-        return CampaignInvite(
-            id = code,
-            campaignId = campaign.id,
-            campaignName = campaign.name,
-            campaignDescription = campaign.description,
-            code = code,
-            createdBy = session.uid,
-            createdAt = System.currentTimeMillis(),
-            generation = invite.generation + 1,
-            dirty = true,
-        ).also { dao.upsertInvite(it.toRecord()) }
+        return dao.canonicalInvite(existing.id)?.toDomain()
+            ?: createStaticInvite(session, existing, System.currentTimeMillis())
     }
 
     override suspend fun previewInvite(session: UserSession, code: String): CampaignInvitePreview? {
@@ -264,9 +201,7 @@ class OfflineFirstCampaignRepository(
         check(currentCampaignId.isBlank() || currentCampaignId == existing.id) {
             "A ficha já está vinculada a outra campanha ativa."
         }
-        check(character.ownerId == session.uid || existing.ownerId == session.uid) {
-            "Você não pode vincular esta ficha à campanha."
-        }
+        check(character.ownerId == session.uid) { "Somente o dono pode vincular esta ficha." }
         val ownerMembership = dao.member(existing.id, character.ownerId)?.toDomain()
         if (ownerMembership != null && character.id !in ownerMembership.characterIds) {
             dao.upsertMember(
@@ -283,10 +218,8 @@ class OfflineFirstCampaignRepository(
     override suspend fun unlinkCharacter(session: UserSession, character: Character): Character {
         val campaignId = normalizeCampaignId(character.campaignId)
         if (campaignId.isBlank()) return character.copy(campaignId = "")
-        val campaign = requireActiveCampaign(campaignId)
-        check(character.ownerId == session.uid || campaign.ownerId == session.uid) {
-            "Você não pode remover esta ficha da campanha."
-        }
+        requireCampaign(campaignId)
+        check(character.ownerId == session.uid) { "Somente o dono pode desvincular esta ficha." }
         val member = dao.member(campaignId, character.ownerId)?.toDomain()
         if (member != null && character.id in member.characterIds) {
             dao.upsertMember(
@@ -310,62 +243,36 @@ class OfflineFirstCampaignRepository(
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
         val changedCampaigns = dirtyCampaigns.filter { it.lastSyncedAt != 0L }
         val dirtyMembers = dao.dirtyMembers()
-        val completedTransferCampaignIds = mutableSetOf<String>()
 
         newCampaigns.forEach { local ->
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
-        changedCampaigns.forEach { localCampaign ->
-            val target = pendingOwnershipTransfer(localCampaign, dirtyMembers) ?: return@forEach
-            val current = dao.member(localCampaign.id, session.uid)
-                ?: error("A participação da Mestre atual não foi encontrada no cache local.")
-            val previousOwner = current.copy(
-                role = CampaignRole.PLAYER.name,
-                updatedAt = localCampaign.updatedAt,
-                dirty = false,
-            )
-
-            val transferredCampaign = localCampaign.copy(ownerId = target.userId, dirty = false)
-            // Authority changes become visible together or not at all. Local ownership is only
-            // replaced after the server confirms the complete batch.
-            store.runBatch { batch ->
-                batch.set(
-                    members.document(memberId(target.campaignId, target.userId)),
-                    target.copy(dirty = false),
-                    SetOptions.merge(),
-                )
-                batch.set(
-                    members.document(memberId(previousOwner.campaignId, previousOwner.userId)),
-                    previousOwner,
-                    SetOptions.merge(),
-                )
-                batch.set(campaigns.document(localCampaign.id), transferredCampaign, SetOptions.merge())
-            }.await()
-
-            dao.upsertMember(target.copy(dirty = false, lastSyncedAt = target.updatedAt))
-            dao.upsertMember(previousOwner.copy(lastSyncedAt = previousOwner.updatedAt))
-            dao.upsertCampaign(
-                transferredCampaign.copy(lastSyncedAt = transferredCampaign.updatedAt),
-            )
-            completedTransferCampaignIds += localCampaign.id
-        }
         dirtyMembers.forEach { local ->
-            if (local.campaignId in completedTransferCampaignIds) return@forEach
             if (session.isAdmin || local.userId == session.uid || dao.campaign(local.campaignId)?.ownerId == session.uid) {
                 members.document(memberId(local.campaignId, local.userId))
-                    .set(local.copy(dirty = false), SetOptions.merge()).await()
+                    .set(local.copy(role = CampaignRole.PLAYER.name, dirty = false), SetOptions.merge()).await()
                 dao.markMemberSynced(local.campaignId, local.userId, local.updatedAt)
             }
         }
         dao.dirtyInvites().forEach { local ->
             if (session.isAdmin || dao.campaign(local.campaignId)?.ownerId == session.uid) {
-                invites.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
+                val reference = invites.document(local.id)
+                try {
+                    reference.set(local.copy(dirty = false)).await()
+                } catch (error: FirebaseFirestoreException) {
+                    if (error.code != FirebaseFirestoreException.Code.PERMISSION_DENIED) throw error
+                    val existing = reference.get().await()
+                    val sameInvite = existing.exists() &&
+                        existing.getString("campaignId") == local.campaignId &&
+                        existing.getString("code") == local.code &&
+                        existing.getString("createdBy") == local.createdBy
+                    if (!sameInvite) throw error
+                }
                 dao.markInviteSynced(local.id, local.createdAt)
             }
         }
         changedCampaigns.forEach { local ->
-            if (local.id in completedTransferCampaignIds) return@forEach
             campaigns.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
@@ -402,8 +309,8 @@ class OfflineFirstCampaignRepository(
             members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignMemberRecord::class.java)
             }.forEach { remote ->
-                val migrated = if (remote.role == "MASTER") remote.copy(role = CampaignRole.HISTORIAN.name) else remote
-                if (remote.role == "MASTER") {
+                val migrated = if (remote.role != CampaignRole.PLAYER.name) remote.copy(role = CampaignRole.PLAYER.name) else remote
+                if (remote.role != CampaignRole.PLAYER.name) {
                     members.document(memberId(remote.campaignId, remote.userId))
                         .set(migrated.copy(dirty = false), SetOptions.merge()).await()
                 }
@@ -450,6 +357,25 @@ class OfflineFirstCampaignRepository(
     private fun normalizeCode(value: String): String = value.trim().uppercase().filter { it in CODE_ALPHABET }
     private fun memberId(campaignId: String, userId: String): String = "$campaignId::$userId"
 
+    private suspend fun createStaticInvite(
+        session: UserSession,
+        campaign: Campaign,
+        createdAt: Long,
+    ): CampaignInvite {
+        val code = generateCode()
+        return CampaignInvite(
+            id = code,
+            campaignId = campaign.id,
+            campaignName = campaign.name,
+            campaignDescription = campaign.description,
+            code = code,
+            createdBy = session.uid,
+            createdAt = createdAt,
+            generation = 1,
+            dirty = true,
+        ).also { dao.upsertInvite(it.toRecord()) }
+    }
+
     companion object {
         private const val CAMPAIGNS = "campaigns"
         private const val MEMBERS = "campaignMembers"
@@ -457,15 +383,4 @@ class OfflineFirstCampaignRepository(
         private const val CODE_LENGTH = 8
         private const val CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     }
-}
-
-internal fun pendingOwnershipTransfer(
-    campaign: CampaignRecord,
-    dirtyMembers: List<CampaignMemberRecord>,
-): CampaignMemberRecord? = dirtyMembers.singleOrNull { member ->
-    member.campaignId == campaign.id &&
-        member.userId != campaign.ownerId &&
-        member.role == CampaignRole.HISTORIAN.name &&
-        member.state == CampaignMemberState.ACTIVE.name &&
-        member.updatedAt == campaign.updatedAt
 }

@@ -28,7 +28,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.MainActivity
 import com.kinderman.sdo.SdoApplication
 import com.kinderman.sdo.domain.model.normalizeCampaignId
-import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
 import com.kinderman.sdo.presentation.historian.HistorianDashboardScreen
@@ -67,6 +66,7 @@ fun SdoApp(
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
     val campaigns by appViewModel.campaigns.collectAsStateWithLifecycle()
     val memberships by appViewModel.memberships.collectAsStateWithLifecycle()
+    val campaignMembers by appViewModel.campaignMembers.collectAsStateWithLifecycle()
     val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
@@ -119,13 +119,10 @@ fun SdoApp(
             val archived = campaigns.firstOrNull { it.id == selectedCampaignId }?.isArchived == true
             val selectedCampaign = campaigns.firstOrNull { it.id == selectedCampaignId }
             val membership = memberships.firstOrNull { it.campaignId == selectedCampaignId }
-            val isCampaignHistorian = appSession?.isAdmin == true ||
-                selectedCampaign?.ownerId == appSession?.uid || membership?.role == CampaignRole.HISTORIAN
+            val isCampaignHistorian = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
             val isCampaignResponsible = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
             val wide = LocalSdoWindowClass.current == SdoWindowClass.EXPANDED
-            val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { campaign ->
-                campaign.ownerId == appSession?.uid || memberships.any { it.campaignId == campaign.id && it.role == CampaignRole.HISTORIAN }
-            }
+            val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { it.ownerId == appSession?.uid }
             Row(Modifier.fillMaxSize()) {
                 if (wide) NavigationRail {
                     NavigationRailItem(surface == AppSurface.DASHBOARD, { selectedId = null; surface = AppSurface.DASHBOARD }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Painel") })
@@ -139,6 +136,7 @@ fun SdoApp(
                     characters = characters,
                     campaigns = campaigns,
                     memberships = memberships,
+                    campaignMembers = campaignMembers,
                     owners = owners,
                     session = appSession,
                     syncing = characterLoadState.syncing,

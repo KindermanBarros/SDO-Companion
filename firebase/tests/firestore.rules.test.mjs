@@ -53,7 +53,7 @@ async function seed({ archived = false, revoked = false } = {}) {
     await setDoc(doc(db, 'campaignMembers', `${ids.campaign}::${ids.owner}`), {
       campaignId: ids.campaign,
       userId: ids.owner,
-      role: 'HISTORIAN',
+      role: 'PLAYER',
       state: 'ACTIVE',
       joinedAt: 1,
       updatedAt: 1,
@@ -194,10 +194,10 @@ test('campaign owner can edit linked characters while campaign is active', async
   }));
 });
 
-test('contextual historian can edit linked characters but cannot perform responsible operations', async () => {
+test('a legacy contextual historian is only a player and cannot edit another player sheet', async () => {
   await seed();
   const db = env.authenticatedContext(ids.historian).firestore();
-  await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), {
+  await assertFails(updateDoc(doc(db, 'characters', ids.character), {
     name: 'Atualizado pela historiadora',
     updatedAt: 2,
   }));
@@ -222,20 +222,60 @@ test('owner campaign listing and empty real queries are authorized', async () =>
   await assertSucceeds(getDocs(query(collection(emptyDb, 'characters'), where('ownerId', '==', 'account-with-no-data'))));
 });
 
-test('responsibility transfer is accepted atomically and cannot target a player', async () => {
+test('campaign creator remains the only master and ownership or roles cannot be transferred', async () => {
   await seed();
   const db = env.authenticatedContext(ids.owner).firestore();
-  const batch = writeBatch(db);
-  batch.update(doc(db, 'campaignMembers', `${ids.campaign}::${ids.historian}`), { role: 'HISTORIAN', updatedAt: 3 });
-  batch.update(doc(db, 'campaignMembers', `${ids.campaign}::${ids.owner}`), { role: 'PLAYER', updatedAt: 3 });
-  batch.update(doc(db, 'campaigns', ids.campaign), { ownerId: ids.historian, updatedAt: 3 });
-  await assertSucceeds(batch.commit());
+  await assertFails(updateDoc(doc(db, 'campaigns', ids.campaign), { ownerId: ids.historian, updatedAt: 3 }));
+  await assertFails(updateDoc(doc(db, 'campaignMembers', `${ids.campaign}::${ids.player}`), {
+    role: 'HISTORIAN', updatedAt: 3,
+  }));
+});
 
+test('campaign master can create a linked sheet assigned to an active player', async () => {
   await seed();
-  const invalid = writeBatch(db);
-  invalid.update(doc(db, 'campaignMembers', `${ids.campaign}::${ids.owner}`), { role: 'PLAYER', updatedAt: 4 });
-  invalid.update(doc(db, 'campaigns', ids.campaign), { ownerId: ids.player, updatedAt: 4 });
-  await assertFails(invalid.commit());
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertSucceeds(setDoc(doc(db, 'characters', 'assigned-by-master'), {
+    id: 'assigned-by-master', ownerId: ids.player, campaignId: ids.campaign,
+    name: 'Ficha atribuída', lockType: 'NONE', isLocked: false,
+    lockedBy: '', lockedAt: null, deleted: false, updatedAt: 2,
+  }));
+  await assertFails(setDoc(doc(db, 'characters', 'assigned-outsider'), {
+    id: 'assigned-outsider', ownerId: ids.outsider, campaignId: ids.campaign,
+    name: 'Inválida', lockType: 'NONE', isLocked: false,
+    lockedBy: '', lockedAt: null, deleted: false, updatedAt: 2,
+  }));
+});
+
+test('sheet owner can unlink and delete their own locked sheet even when campaign is archived', async () => {
+  await seed({ archived: true });
+  await env.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'characters', ids.character), {
+      lockType: 'HISTORIAN', isLocked: true, lockedBy: ids.owner, lockedAt: 2,
+    });
+  });
+  const db = env.authenticatedContext(ids.player).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), {
+    campaignId: '', updatedAt: 3,
+  }));
+  await assertSucceeds(deleteDoc(doc(db, 'characters', ids.character)));
+});
+
+test('campaign master may edit but may not unlink or delete another player sheet', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), { name: 'Edição da Mestre', updatedAt: 2 }));
+  await assertFails(updateDoc(doc(db, 'characters', ids.character), { campaignId: '', updatedAt: 3 }));
+  await assertFails(deleteDoc(doc(db, 'characters', ids.character)));
+});
+
+test('audit operation can be created without a forbidden read of a missing document', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+  await assertSucceeds(setDoc(doc(db, 'campaignAudit', 'operation-1'), {
+    idempotencyKey: 'operation-1', campaignId: ids.campaign, characterId: ids.character,
+    actorId: ids.player, type: 'RESOURCE', createdAt: 2,
+  }));
+  await assertFails(updateDoc(doc(db, 'campaignAudit', 'operation-1'), { type: 'ALTERED' }));
 });
 
 test('global profile role cannot grant administration', async () => {
@@ -291,7 +331,7 @@ test('administrator can list every character and manage records from other accou
     revokedAt: null,
     generation: 1,
   }));
-  await assertSucceeds(updateDoc(doc(adminDb, 'campaignInvites', ids.invite), {
+  await assertFails(updateDoc(doc(adminDb, 'campaignInvites', ids.invite), {
     revokedAt: 2,
   }));
   await assertSucceeds(updateDoc(doc(adminDb, 'characters', ids.character), {

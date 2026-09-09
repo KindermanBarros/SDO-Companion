@@ -38,6 +38,9 @@ interface CampaignDao {
     @Query("SELECT * FROM campaign_invites WHERE code = :code LIMIT 1")
     suspend fun inviteByCode(code: String): CampaignInviteRecord?
 
+    @Query("SELECT * FROM campaign_invites WHERE campaignId = :campaignId ORDER BY createdAt ASC LIMIT 1")
+    suspend fun canonicalInvite(campaignId: String): CampaignInviteRecord?
+
     @Query("SELECT * FROM campaigns WHERE dirty = 1")
     suspend fun dirtyCampaigns(): List<CampaignRecord>
 

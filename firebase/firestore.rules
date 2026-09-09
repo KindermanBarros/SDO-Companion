@@ -53,17 +53,9 @@ service cloud.firestore {
       return signedIn() && isActiveMemberFor(campaignId, request.auth.uid);
     }
 
-    function hasHistorianRole(campaignId, uid) {
-      return isActiveMemberFor(campaignId, uid)
-        && (
-          get(memberPath(campaignId, uid)).data.role == 'HISTORIAN'
-          || get(memberPath(campaignId, uid)).data.role == 'MASTER'
-        );
-    }
-
     function isCampaignHistorian(campaignId) {
-      return isAdministrator() || isCampaignOwner(campaignId)
-        || (signedIn() && hasHistorianRole(campaignId, request.auth.uid));
+      // "Mestre" is a campaign relationship, never a global/member role.
+      return isAdministrator() || isCampaignOwner(campaignId);
     }
 
     function canReadCampaign(campaignId) {
@@ -159,6 +151,16 @@ service cloud.firestore {
       );
     }
 
+    function validCharacterCreator() {
+      let nextCampaign = normalizedCampaignId(request.resource.data);
+      return isAdministrator() || request.resource.data.ownerId == request.auth.uid || (
+        nextCampaign != ''
+        && campaignIsActive(nextCampaign)
+        && isCampaignOwner(nextCampaign)
+        && isActiveMemberFor(nextCampaign, request.resource.data.ownerId)
+      );
+    }
+
     function campaignCharacterWritable() {
       let existingCampaign = normalizedCampaignId(resource.data);
       return existingCampaign != ''
@@ -181,19 +183,7 @@ service cloud.firestore {
 
       allow update: if signedIn()
         && isCampaignResponsible(campaignId)
-        && (
-          request.resource.data.ownerId == resource.data.ownerId
-          || (
-            resource.data.state == 'ACTIVE'
-            && request.resource.data.state == 'ACTIVE'
-            && request.resource.data.ownerId != request.auth.uid
-            && isActiveMemberFor(campaignId, request.resource.data.ownerId)
-            && (
-              getAfter(memberPath(campaignId, request.resource.data.ownerId)).data.role == 'HISTORIAN'
-              || getAfter(memberPath(campaignId, request.resource.data.ownerId)).data.role == 'MASTER'
-            )
-          )
-        )
+        && request.resource.data.ownerId == resource.data.ownerId
         && (
           resource.data.state == 'ACTIVE'
           || (
@@ -215,7 +205,7 @@ service cloud.firestore {
       allow create: if signedIn() && (
         (
           request.resource.data.userId == request.auth.uid
-          && request.resource.data.role == 'HISTORIAN'
+          && request.resource.data.role == 'PLAYER'
           && request.resource.data.state == 'ACTIVE'
           && request.resource.data.joinedByInviteId == ''
           && campaignIsActive(request.resource.data.campaignId)
@@ -239,11 +229,17 @@ service cloud.firestore {
 
       allow update: if signedIn() && request.resource.data.campaignId == resource.data.campaignId
         && request.resource.data.userId == resource.data.userId
-        && campaignIsActive(resource.data.campaignId)
+        && request.resource.data.role == 'PLAYER'
         && (
-          isCampaignResponsible(resource.data.campaignId)
+          (
+            isCampaignResponsible(resource.data.campaignId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'role', 'state', 'updatedAt', 'characterIds'
+            ])
+          )
           || (
-            resource.data.userId == request.auth.uid
+            campaignIsActive(resource.data.campaignId)
+            && resource.data.userId == request.auth.uid
             && request.resource.data.role == resource.data.role
             && request.resource.data.joinedAt == resource.data.joinedAt
             && request.resource.data.joinedByInviteId == resource.data.joinedByInviteId
@@ -278,13 +274,8 @@ service cloud.firestore {
         && isCampaignResponsible(request.resource.data.campaignId)
         && request.resource.data.get('revokedAt', null) == null;
 
-      allow update: if signedIn()
-        && isCampaignResponsible(resource.data.campaignId)
-        && campaignIsActive(resource.data.campaignId)
-        && request.resource.data.campaignId == resource.data.campaignId
-        && request.resource.data.code == resource.data.code
-        && request.resource.data.createdBy == resource.data.createdBy
-        && request.resource.data.createdAt == resource.data.createdAt;
+      // One reusable code is created with the campaign and remains immutable.
+      allow update: if false;
 
       allow delete: if false;
     }
@@ -356,7 +347,7 @@ service cloud.firestore {
       );
 
       allow create: if signedIn()
-        && request.resource.data.ownerId == request.auth.uid
+        && validCharacterCreator()
         && validCharacterCampaignTarget()
         && request.resource.data.lockType == 'NONE'
         && requestedIsLocked() == false
@@ -382,18 +373,12 @@ service cloud.firestore {
             && request.resource.data.deleted == resource.data.get('deleted', false)
             && validPlayerLockTransition()
             && validCharacterCampaignTarget()
-            && (
-              noCampaign(resource.data)
-              || campaignIsActive(normalizedCampaignId(resource.data))
-            )
           )
           || (
             campaignCharacterWritable()
+            && request.resource.data.ownerId == resource.data.ownerId
             && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && (
-              normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
-              || normalizedCampaignId(request.resource.data) == ''
-            )
+            && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
             && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
           )
         );
@@ -401,15 +386,7 @@ service cloud.firestore {
       allow delete: if signedIn() && (
         isAdministrator()
         ||
-        (
-          ownsExistingCharacter()
-          && existingLockType() == 'NONE'
-          && (
-            noCampaign(resource.data)
-            || campaignIsActive(normalizedCampaignId(resource.data))
-          )
-        )
-        || campaignCharacterWritable()
+        ownsExistingCharacter()
       );
     }
 

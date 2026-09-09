@@ -17,14 +17,10 @@ interface CampaignRepository {
     suspend fun create(session: UserSession, name: String, description: String = ""): Campaign
     suspend fun update(session: UserSession, campaign: Campaign)
     suspend fun archive(session: UserSession, campaign: Campaign, archived: Boolean)
-    suspend fun transferOwnership(session: UserSession, campaign: Campaign, newOwnerId: String)
     suspend fun leave(session: UserSession, campaign: Campaign)
     suspend fun removeMember(session: UserSession, campaign: Campaign, userId: String)
-    suspend fun setMemberRole(session: UserSession, campaign: Campaign, userId: String, role: com.kinderman.sdo.domain.model.CampaignRole)
 
     suspend fun createInvite(session: UserSession, campaign: Campaign): CampaignInvite
-    suspend fun revokeInvite(session: UserSession, invite: CampaignInvite)
-    suspend fun regenerateInvite(session: UserSession, invite: CampaignInvite): CampaignInvite
     suspend fun previewInvite(session: UserSession, code: String): CampaignInvitePreview?
     suspend fun joinByCode(session: UserSession, code: String): Campaign
 

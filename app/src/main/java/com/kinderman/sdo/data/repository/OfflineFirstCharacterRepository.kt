@@ -39,8 +39,33 @@ class OfflineFirstCharacterRepository(
 
     override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { it?.toDomain() }
 
-    override suspend fun create(session: UserSession): Character =
-        Character(ownerId = session.uid, campaignId = "").also { dao.upsert(it.toRecord()) }
+    override suspend fun create(session: UserSession, ownerId: String, campaignId: String): Character {
+        val normalizedCampaignId = normalizeCampaignId(campaignId)
+        if (ownerId != session.uid) {
+            check(normalizedCampaignId.isNotBlank()) { "A Mestre só pode atribuir uma ficha dentro da campanha." }
+            check(campaignDao.campaign(normalizedCampaignId)?.ownerId == session.uid || session.isAdmin) {
+                "Somente a Mestre da campanha pode atribuir fichas."
+            }
+            check(campaignDao.member(normalizedCampaignId, ownerId)?.state == CampaignMemberState.ACTIVE.name) {
+                "A ficha só pode ser atribuída a um jogador ativo da campanha."
+            }
+        }
+        val character = Character(ownerId = ownerId, campaignId = normalizedCampaignId)
+        dao.upsert(character.toRecord())
+        if (normalizedCampaignId.isNotBlank()) {
+            campaignDao.member(normalizedCampaignId, ownerId)?.let { membership ->
+                campaignDao.upsertMember(
+                    membership.copy(
+                        role = CampaignRole.PLAYER.name,
+                        characterIds = (membership.characterIds + character.id).distinct(),
+                        updatedAt = System.currentTimeMillis(),
+                        dirty = true,
+                    ),
+                )
+            }
+        }
+        return character
+    }
 
     override suspend fun save(session: UserSession, character: Character) {
         check(CharacterAccessPolicy.canEdit(session, character, isCampaignHistorian(session, character))) {
@@ -133,12 +158,6 @@ class OfflineFirstCharacterRepository(
                 campaignId.takeIf { it.isNotBlank() && state == "ACTIVE" }
             }
             .toMutableSet()
-        val historianCampaignIds = membershipDocuments.mapNotNullTo(mutableSetOf()) { document ->
-            val role = document.getString("role").orEmpty()
-            document.getString("campaignId")?.takeIf {
-                document.getString("state") == "ACTIVE" && (role == "HISTORIAN" || role == "MASTER")
-            }
-        }
         val ownedCampaignIds = if (session.isAdmin) mutableSetOf() else runCatching {
             campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
         }.getOrElse {
@@ -163,7 +182,6 @@ class OfflineFirstCharacterRepository(
         val dirtyRecords = dao.dirty().filter { record ->
             record.ownerId == session.uid ||
                 normalizeCampaignId(record.campaignId) in ownedCampaignIds ||
-                normalizeCampaignId(record.campaignId) in historianCampaignIds ||
                 session.isAdmin
         }
         val dirtyIds = dirtyRecords.mapTo(mutableSetOf(), CharacterRecord::id)
@@ -260,10 +278,7 @@ class OfflineFirstCharacterRepository(
         if (session.isAdmin) return true
         val campaignId = normalizeCampaignId(character.campaignId)
         if (campaignId.isBlank()) return false
-        if (campaignDao.campaign(campaignId)?.ownerId == session.uid) return true
-        val member = campaignDao.member(campaignId, session.uid) ?: return false
-        val role = if (member.role == "MASTER") CampaignRole.HISTORIAN.name else member.role
-        return member.state == CampaignMemberState.ACTIVE.name && role == CampaignRole.HISTORIAN.name
+        return campaignDao.campaign(campaignId)?.ownerId == session.uid
     }
 
     private suspend fun isCampaignResponsible(session: UserSession, character: Character): Boolean {

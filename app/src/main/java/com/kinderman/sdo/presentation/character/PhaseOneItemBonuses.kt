@@ -52,11 +52,11 @@ private fun ItemBonusAuditSection(character: Character, enabled: Boolean, onChan
         SectionHeader("09.B", "Bônus mecânicos dos itens")
         Text(
             "Todo bônus abaixo usa tipo e destino controlados. O efeito só entra no cálculo enquanto o item estiver equipado.",
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
         )
         if (character.inventory.isEmpty()) {
-            Text("Nenhum item no inventário.", color = Muted)
+            Text("Nenhum item no inventário.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         character.inventory.forEachIndexed { itemIndex, item ->
             ControlledItemBonusEditor(
@@ -79,11 +79,11 @@ private fun ControlledItemBonusEditor(
     onItem: (InventoryItem) -> Unit,
 ) {
     Column(
-        Modifier.fillMaxWidth().background(Carbon).padding(9.dp),
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        Text(item.name.ifBlank { "ITEM SEM NOME" }, color = Ice, style = MaterialTheme.typography.titleSmall)
-        if (item.bonuses.isEmpty()) Text("SEM BÔNUS", color = Muted, style = MaterialTheme.typography.labelSmall)
+        Text(item.name.ifBlank { "ITEM SEM NOME" }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
+        if (item.bonuses.isEmpty()) Text("SEM BÔNUS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         item.bonuses.forEachIndexed { bonusIndex, bonus ->
             val options = controlledBonusTargets(character, bonus.type)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

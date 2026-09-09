@@ -42,8 +42,8 @@ class PhaseTwoCampaignTest {
     }
 
     @Test
-    fun `legacy master membership is read as contextual historian`() {
+    fun `legacy master membership is normalized to player`() {
         val record = com.kinderman.sdo.data.local.CampaignMemberRecord(role = "MASTER")
-        assertEquals(CampaignRole.HISTORIAN, record.toDomain().role)
+        assertEquals(CampaignRole.PLAYER, record.toDomain().role)
     }
 }

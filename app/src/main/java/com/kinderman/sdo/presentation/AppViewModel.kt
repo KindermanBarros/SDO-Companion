@@ -86,11 +86,13 @@ class AppViewModel(
     val owners = currentSession.flatMapLatest { session ->
         if (session?.isAdmin == true) ownerRepository.observe() else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    private val manageableCampaignIds = combine(currentSession, campaigns, memberships) { session, values, memberValues ->
+    val campaignMembers = campaigns.flatMapLatest { values ->
+        if (values.isEmpty()) flowOf(emptyList())
+        else combine(values.map { campaignRepository.observeMembers(it.id) }) { groups -> groups.flatMap { it } }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
+    private val manageableCampaignIds = combine(currentSession, campaigns) { session, values ->
         if (session == null) emptySet() else values.filter { campaign ->
-            session.isAdmin || campaign.ownerId == session.uid || memberValues.any {
-                it.campaignId == campaign.id && it.role == com.kinderman.sdo.domain.model.CampaignRole.HISTORIAN
-            }
+            session.isAdmin || campaign.ownerId == session.uid
         }.mapTo(linkedSetOf(), Campaign::id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
     val audit = manageableCampaignIds.flatMapLatest(operationsRepository::observeAudit)
@@ -130,10 +132,8 @@ class AppViewModel(
 
     fun add() = runAction { session -> repository.create(session) }
 
-    fun addToCampaign(campaign: Campaign) = runAction("Ficha criada na campanha") { session ->
-        val created = repository.create(session)
-        val linked = campaignRepository.linkCharacter(session, created, campaign)
-        repository.save(session, linked)
+    fun addToCampaign(campaign: Campaign, ownerId: String) = runAction("Ficha criada na campanha") { session ->
+        repository.create(session, ownerId = ownerId, campaignId = campaign.id)
     }
 
     fun save(character: Character) = saveLocally(character, notify = true)
@@ -171,16 +171,12 @@ class AppViewModel(
         campaignRepository.removeMember(session, campaign, userId)
     }
 
-    fun transferCampaignOwner(campaign: Campaign, newOwnerId: String) = runAction("Responsabilidade transferida") { session ->
-        campaignRepository.transferOwnership(session, campaign, newOwnerId)
-    }
-
     fun createCampaignInvite(campaign: Campaign) {
         val session = currentSession.value ?: return
         viewModelScope.launch {
             runCatching { campaignRepository.createInvite(session, campaign) }
                 .onSuccess { invite ->
-                    _message.value = "Convite ${invite.code} criado"
+                    _message.value = "Código de convite: ${invite.code}"
                     if (automaticSync) startSync(initial = false)
                 }
                 .onFailure { _message.value = userMessage(it, "Falha ao criar convite") }

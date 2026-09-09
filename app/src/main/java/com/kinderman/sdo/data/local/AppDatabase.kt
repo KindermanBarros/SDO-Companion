@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -227,6 +227,14 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_recipientId ON campaign_deliveries(recipientId)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_campaign_deliveries_recipientCharacterId ON campaign_deliveries(recipientCharacterId)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS campaign_alert_settings (campaignId TEXT NOT NULL PRIMARY KEY, lifeThresholdPercent INTEGER NOT NULL, sanityThresholdPercent INTEGER NOT NULL, exhaustionThresholdPercent INTEGER NOT NULL, staleAfterHours INTEGER NOT NULL, alertConditions INTEGER NOT NULL, alertBodyFailures INTEGER NOT NULL)")
+            }
+        }
+
+        val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Campaign authority comes only from campaigns.ownerId. Legacy contextual roles
+                // are normalized so the same account can be Mestre in one campaign and jogador in another.
+                db.execSQL("UPDATE campaign_members SET role = 'PLAYER' WHERE role != 'PLAYER'")
             }
         }
     }

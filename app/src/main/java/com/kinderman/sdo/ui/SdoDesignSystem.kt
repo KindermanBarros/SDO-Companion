@@ -1,5 +1,6 @@
 package com.kinderman.sdo.ui
 
+import android.app.Activity
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,11 +27,15 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
@@ -41,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.R
+import androidx.core.view.WindowCompat
 
 // --- Fundo de Tela e Superfícies Estruturais (Dark Canvas) ---
 val Void = Color(0xFF040D1B)
@@ -171,6 +177,37 @@ private val systemLightColors = lightColorScheme(
     error = Color(0xFFBA1A1A), onError = Color.White,
 )
 
+private val edgerunnersColors = darkColorScheme(
+    primary = Color(0xFFFCEE09), onPrimary = Color(0xFF111111),
+    secondary = Color(0xFF00F0FF), onSecondary = Color(0xFF001417),
+    tertiary = Color(0xFFFF003C), onTertiary = Color.White,
+    background = Color(0xFF050A18), onBackground = Color(0xFFF7F7F2),
+    surface = Color(0xFF111827), onSurface = Color(0xFFF7F7F2),
+    surfaceVariant = Color(0xFF1B2A41), onSurfaceVariant = Color(0xFFD8E5F2),
+    error = Color(0xFFFF003C), onError = Color.White,
+)
+
+private val magentaDreamColors = darkColorScheme(
+    primary = Color(0xFFFF2AA1), onPrimary = Color(0xFF250016),
+    secondary = Color(0xFF8F7CFF), onSecondary = Color(0xFF100638),
+    tertiary = Color(0xFF5CF7E8), onTertiary = Color(0xFF00201D),
+    background = Color(0xFF110713), onBackground = Color(0xFFFFF3FA),
+    surface = Color(0xFF261126), onSurface = Color(0xFFFFF3FA),
+    surfaceVariant = Color(0xFF42203F), onSurfaceVariant = Color(0xFFF5CCE8),
+    error = Color(0xFFFF6B82), onError = Color(0xFF310008),
+)
+
+private val apertureWhiteColors = lightColorScheme(
+    primary = Color(0xFFF47B20), onPrimary = Color(0xFF241000),
+    secondary = Color(0xFF164B73), onSecondary = Color.White,
+    tertiary = Color(0xFF00A6D6), onTertiary = Color(0xFF001E2A),
+    background = Color(0xFFF4F7F8), onBackground = Color(0xFF101B24),
+    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF101B24),
+    surfaceVariant = Color(0xFFE3EAF0), onSurfaceVariant = Color(0xFF344956),
+    outline = Color(0xFF607786), outlineVariant = Color(0xFFAAB9C2),
+    error = Color(0xFFB3261E), onError = Color.White,
+)
+
 val TechInterfaceFont = FontFamily(
     Font(R.font.oxanium_variable, weight = FontWeight.Normal),
 )
@@ -240,8 +277,21 @@ fun SdoTheme(
         SdoThemeVariant.GREEN_TERMINAL -> terminalColors
         SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
         SdoThemeVariant.VIOLET_DREAM -> arcaneColors
+        SdoThemeVariant.EDGERUNNERS -> edgerunnersColors
+        SdoThemeVariant.MAGENTA_DREAM -> magentaDreamColors
+        SdoThemeVariant.APERTURE_WHITE -> apertureWhiteColors
         SdoThemeVariant.HIGH_CONTRAST -> highContrastColors
         SdoThemeVariant.SYSTEM -> if (isSystemInDarkTheme()) hudColors else systemLightColors
+    }
+    val view = LocalView.current
+    if (!view.isInEditMode) SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        window.statusBarColor = colors.background.toArgb()
+        window.navigationBarColor = colors.surface.toArgb()
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = colors.background.luminance() > 0.5f
+            isAppearanceLightNavigationBars = colors.surface.luminance() > 0.5f
+        }
     }
     MaterialTheme(
         colorScheme = colors,
@@ -305,7 +355,10 @@ fun TechPanel(
                 shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
             ),
         shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -437,7 +490,7 @@ fun HudTextField(
         onValueChange = onValue,
         modifier = modifier.fillMaxWidth(),
         label = { Text(label.uppercase()) },
-        placeholder = placeholder?.let { hint -> { Text(hint, color = Muted) } },
+        placeholder = placeholder?.let { hint -> { Text(hint, color = MaterialTheme.colorScheme.onSurfaceVariant) } },
         minLines = if (multiline) 4 else 1,
         enabled = enabled,
         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 8.dp),
@@ -449,6 +502,9 @@ fun HudTextField(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             cursorColor = MaterialTheme.colorScheme.primary,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         textStyle = MaterialTheme.typography.bodyLarge,
     )

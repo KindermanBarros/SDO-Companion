@@ -4,7 +4,10 @@ enum class SdoThemeVariant(val label: String, val description: String) {
     CYAN_INDUSTRIAL("Ciano industrial", "Ciano, azul e magenta do HUD original."),
     GREEN_TERMINAL("Verde terminal", "Verde fosforescente sobre superfícies técnicas."),
     CRIMSON_ARCANE("Rubro arcano", "Vermelho ritual com sinais âmbar."),
-    VIOLET_DREAM("Violeta onírico", "Violeta e ciano para foco místico."),
+    VIOLET_DREAM("Violeta Rúnico", "Violeta profundo, lavanda e ciano rúnico."),
+    EDGERUNNERS("Edgerunners", "Amarelo elétrico, ciano e vermelho sobre azul noturno."),
+    MAGENTA_DREAM("Magenta Onírico", "Rosa ácido e violeta sobre superfícies escuras."),
+    APERTURE_WHITE("Aperture White", "Modo claro em branco, azul escuro e laranja Portal."),
     HIGH_CONTRAST("Alto contraste", "Superfícies mais escuras e sinais mais claros."),
     SYSTEM("Tema do sistema", "Segue a preferência de contraste claro/escuro do aparelho."),
 }

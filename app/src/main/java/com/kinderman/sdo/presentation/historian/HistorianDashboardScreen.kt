@@ -94,11 +94,9 @@ fun HistorianDashboardScreen(
     var actionTarget by remember { mutableStateOf<Character?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
-    val historianCampaignIds = remember(session, campaigns, memberships) {
+    val historianCampaignIds = remember(session, campaigns) {
         campaigns.filter { campaign ->
-            session.isAdmin || campaign.ownerId == session.uid || memberships.any {
-                it.campaignId == campaign.id && it.userId == session.uid && it.role == CampaignRole.HISTORIAN && it.isActive
-            }
+            session.isAdmin || campaign.ownerId == session.uid
         }.mapTo(linkedSetOf(), Campaign::id)
     }
     val visibleCampaigns = campaigns.filter { it.id in historianCampaignIds }
