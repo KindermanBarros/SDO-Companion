@@ -87,9 +87,9 @@ fun SdoApp(
 
     var backStack by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
     val screenState = rememberSaveableStateHolder()
-    fun navigate(target: AppSurface, characterId: String? = selectedId, returnCharacterId: String? = selectedId) {
+    fun navigate(target: AppSurface, characterId: String? = selectedId) {
         if (target == surface && characterId == selectedId) return
-        backStack = ArrayList(backStack + "${surface.name}|${returnCharacterId.orEmpty()}")
+        backStack = ArrayList(backStack + "${surface.name}|${selectedId.orEmpty()}")
         selectedId = characterId
         surface = target
     }
@@ -227,7 +227,7 @@ fun SdoApp(
                     readOnly = archived,
                     onSelect = { selectedId = it },
                     onOpenSheet = {
-                        navigate(AppSurface.SHEET, it, returnCharacterId = null)
+                        navigate(AppSurface.SHEET, it)
                     },
                     onCommand = appViewModel::applySessionCommand,
                     onBack = { goBack() },
