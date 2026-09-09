@@ -173,10 +173,10 @@ object KnowledgeCatalog {
         prerequisites = prerequisites,
         mechanicalEffect = effect,
         source = "Catálogo oficial do Companion",
-        ruleReference = "Regras SDO — Conhecimentos",
+        ruleReference = "03 - Regras/Criação de Personagem/Criação de Personagem.md#4-conhecimentos-adquiridos",
         keywords = keywords,
         repeatable = repeatable,
-        version = 1,
+        version = BuiltInCatalog.VERSION,
     )
 }
 

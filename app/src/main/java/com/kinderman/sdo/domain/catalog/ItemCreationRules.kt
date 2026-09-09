@@ -291,10 +291,17 @@ object ItemCreationRules {
         id = id, kind = CatalogKind.ITEM, name = name, group = category, summary = effect,
         source = "Tabelas canônicas de equipamentos", creationCost = creationCost?.toString() ?: "#",
         price = price, load = load, durability = durability.takeIf { it > 0 }?.let { "$it/$it" }.orEmpty(), region = region,
+        version = BuiltInCatalog.VERSION,
+        ruleReference = "03 - Regras/Balanceamento de Criação e Equipamentos.md",
     )
 
     private fun simple(id: String, name: String, group: String, cost: Int, price: Int, load: Int, region: String, effect: String) =
-        CatalogEntry(id, CatalogKind.ITEM, name, group, effect, source = "Criação de Personagem", creationCost = cost.toString(), price = price, load = load, region = region)
+        CatalogEntry(
+            id, CatalogKind.ITEM, name, group, effect,
+            source = "Criação de Personagem", version = BuiltInCatalog.VERSION,
+            creationCost = cost.toString(), price = price, load = load, region = region,
+            ruleReference = "03 - Regras/Criação de Personagem/Criação de Personagem.md#10-pontos-de-herança",
+        )
 
     private fun weapon(id: String, name: String, group: String, cost: Int, price: Int, load: Int, effect: String) =
         part(id, name, group, cost, price, load = load, effect = effect)

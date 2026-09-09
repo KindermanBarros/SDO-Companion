@@ -22,4 +22,13 @@ class BuiltInCatalogTest {
         assertEquals(ids.size, ids.distinct().size)
         assertTrue(ids.all { it.matches(Regex("[a-z]+\\.[a-z0-9_]+")) })
     }
+
+    @Test fun everyCatalogEntryTracksTheCurrentCanonicalRules() {
+        val entries = BuiltInCatalog.entries + KnowledgeCatalog.entries
+        assertTrue(entries.all { it.version == BuiltInCatalog.VERSION })
+        assertTrue(entries.all { it.source.isNotBlank() })
+        assertTrue(entries.all { it.ruleReference.isNotBlank() })
+        assertTrue(RaceCatalog.races.all { it.version == BuiltInCatalog.VERSION && it.ruleReference == RaceCatalog.RULE_REFERENCE })
+        assertTrue(RaceCatalog.subRaces.all { it.version == BuiltInCatalog.VERSION && it.ruleReference == RaceCatalog.RULE_REFERENCE })
+    }
 }

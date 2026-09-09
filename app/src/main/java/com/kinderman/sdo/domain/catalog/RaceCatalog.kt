@@ -11,15 +11,24 @@ data class RaceDefinition(
     val energy: Int,
     val powers: List<RacialPower>,
     val organic: Boolean = true,
+    val source: String = RaceCatalog.SOURCE,
+    val ruleReference: String = RaceCatalog.RULE_REFERENCE,
+    val version: Int = BuiltInCatalog.VERSION,
 )
 
 data class SubRaceDefinition(
     val name: String,
     val powers: List<RacialPower>,
     val organicOnly: Boolean = false,
+    val source: String = RaceCatalog.SOURCE,
+    val ruleReference: String = RaceCatalog.RULE_REFERENCE,
+    val version: Int = BuiltInCatalog.VERSION,
 )
 
 object RaceCatalog {
+    const val SOURCE = "Raças — Regras de Personagem"
+    const val RULE_REFERENCE = "03 - Regras/Raças.md"
+
     private fun power(name: String, effect: String) = RacialPower(name, effect)
     private fun race(name: String, attribute: String, hp: Int, sanity: Int, arcane: Int, energy: Int, organic: Boolean = true, vararg powers: RacialPower) =
         RaceDefinition(name, attribute, hp, sanity, arcane, energy, powers.toList(), organic)

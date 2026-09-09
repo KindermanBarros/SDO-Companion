@@ -4,7 +4,17 @@ import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 
 object BuiltInCatalog {
-    const val VERSION = 1
+    const val VERSION = 2
+
+    private fun canonicalReference(source: String): String = when (source) {
+        "Catálogos canônicos de Caminhos" -> "03 - Regras/Caminhos"
+        "50 Exemplos de Poderes Mágicos" -> "03 - Regras/Magia/50 Exemplos de Poderes Mágicos.md"
+        "50 Exemplos de Poderes de Profissão e Conhecimento" -> "90 - Modelos/Exemplo de 50 Poderes.md"
+        "50 Exemplos de Magias" -> "03 - Regras/Magia/50 Exemplos de Magias.md"
+        "50 Exemplos de Cinzas" -> "03 - Regras/Magia/50 Exemplos de Cinzas.md"
+        "50 Exemplos de Runas" -> "03 - Regras/Magia/50 Exemplos de Runas.md"
+        else -> error("Fonte canônica não registrada: $source")
+    }
 
     private fun rows(kind: CatalogKind, source: String, values: String): List<CatalogEntry> =
         values.trimIndent().lineSequence().filter(String::isNotBlank).map { row ->
@@ -14,6 +24,7 @@ object BuiltInCatalog {
                 summary = p.getOrElse(3) { "" }, cost = p.getOrElse(4) { "" },
                 action = p.getOrElse(5) { "" }, range = p.getOrElse(6) { "" },
                 duration = p.getOrElse(7) { "" }, source = source, version = VERSION,
+                ruleReference = canonicalReference(source),
             )
         }.toList()
 
