@@ -137,7 +137,7 @@ fun DashboardScreen(
     val filteredCharacters = remember(
         characters, ownersById, campaigns, searchQuery, ownerFilter, campaignFilter, statusFilter, admin,
     ) {
-        if (!admin) characters else characters.filter { character ->
+        characters.filter { character ->
             val campaignId = normalizeCampaignId(character.campaignId)
             val owner = ownersById[character.ownerId]
             val campaign = campaigns.firstOrNull { it.id == campaignId }
@@ -150,18 +150,18 @@ fun DashboardScreen(
                 owner?.email.orEmpty(),
                 campaign?.name.orEmpty(),
             ).any { it.contains(searchQuery.trim(), ignoreCase = true) }
-            val ownerMatches = ownerFilter == null || character.ownerId == ownerFilter
+            val ownerMatches = !admin || ownerFilter == null || character.ownerId == ownerFilter
             val campaignMatches = when (campaignFilter) {
                 null -> true
                 STANDALONE_FILTER -> campaignId.isBlank()
                 else -> campaignId == campaignFilter
-            }
+            }.let { !admin || it }
             val statusMatches = when (statusFilter) {
                 AdminCharacterStatus.ALL -> true
                 AdminCharacterStatus.SYNCED -> !character.dirty
                 AdminCharacterStatus.PENDING -> character.dirty
                 AdminCharacterStatus.LOCKED -> character.isLocked
-            }
+            }.let { !admin || it }
             queryMatches && ownerMatches && campaignMatches && statusMatches
         }
     }
@@ -278,6 +278,15 @@ fun DashboardScreen(
                             campaignFilter = null
                             statusFilter = AdminCharacterStatus.ALL
                         },
+                    )
+                }
+
+                if (!admin && section == DashboardSection.CHARACTERS) item("character-search") {
+                    CompactSearchField(
+                        label = "Buscar minhas fichas",
+                        query = searchQuery,
+                        placeholder = "Nome, raça ou ocupação",
+                        onQueryChange = { searchQuery = it },
                     )
                 }
 
@@ -521,6 +530,18 @@ private fun AdminCharacterFilters(
                 Text("LIMPAR", color = MaterialTheme.colorScheme.error)
             }
         }
+    }
+}
+
+@Composable
+private fun CompactSearchField(
+    label: String,
+    query: String,
+    placeholder: String,
+    onQueryChange: (String) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+        HudTextField(label = label, value = query, placeholder = placeholder, onValue = onQueryChange)
     }
 }
 
