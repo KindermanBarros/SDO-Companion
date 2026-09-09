@@ -80,6 +80,24 @@ class CharacterTest {
         assertEquals("Registro Pessoal 5", nextPersonalNoteTitle(notes))
     }
 
+    @Test fun aSingleTextCostDeductsEveryFixedResourceWithoutUsageCounters() {
+        val character = Character(
+            life = ResourceValue(current = 10),
+            arcane = ResourceValue(current = 8, adjustment = 10),
+        )
+
+        val paid = character.payFixedAbilityCosts("2 PM + 1 PV")
+
+        assertEquals(6, paid.arcane.current)
+        assertEquals(9, paid.life.current)
+    }
+
+    @Test fun variableDiceCostsRemainUnderTableControl() {
+        val character = Character(life = ResourceValue(current = 10))
+
+        assertEquals(10, character.payFixedAbilityCosts("1d6 HP").life.current)
+    }
+
     @Test fun protectionsUseCanonicalFormulasAndManualAdjustments() {
         val attributes = defaultAttributes().map { attribute ->
             when (attribute.acronym) {

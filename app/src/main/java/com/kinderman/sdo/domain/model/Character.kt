@@ -87,9 +87,6 @@ data class Power(
     val catalogVersion: Int = 0,
     val favorite: Boolean = false,
     val available: Boolean = true,
-    val costResource: SessionResource = SessionResource.ARCANE,
-    val costAmount: Int = 0,
-    val usage: AbilityUsageLimit = AbilityUsageLimit(),
 )
 
 data class InventoryItem(
@@ -139,9 +136,6 @@ data class MysticAbility(
     val effect: String = "",
     val favorite: Boolean = false,
     val available: Boolean = true,
-    val costResource: SessionResource = SessionResource.ARCANE,
-    val costAmount: Int = 0,
-    val usage: AbilityUsageLimit = AbilityUsageLimit(),
 )
 
 data class ConditionEffect(

@@ -208,8 +208,8 @@ private fun SessionContent(
         }
         item {
             val entries = buildList {
-                character.powers.sortedByDescending { it.favorite }.forEach { add(Triple("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.costResource.name} ${it.costAmount} // ${it.usage.remaining ?: "∞"} uso(s)\n${it.effect}")) }
-                character.mysticAbilities.sortedByDescending { it.favorite }.forEach { add(Triple(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.costResource.name} ${it.costAmount} // ${it.usage.remaining ?: "∞"} uso(s)\n${it.effect}")) }
+                character.powers.sortedByDescending { it.favorite }.forEach { add(Triple("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}")) }
+                character.mysticAbilities.sortedByDescending { it.favorite }.forEach { add(Triple(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}")) }
             }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("ABILITIES.READY")
@@ -223,15 +223,6 @@ private fun SessionContent(
                             onClick = { pendingAbilityId = id },
                             enabled = !readOnly,
                         ) { Text("USAR") }
-                    }
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf("TURN", "SCENE", "REST").forEach { period ->
-                        TextButton(
-                            onClick = { onCommand(character, SessionCommand(type = SessionOperationType.USAGE_RESET, detail = period)) },
-                            enabled = !readOnly,
-                            modifier = Modifier.weight(1f),
-                        ) { Text("NOVO $period") }
                     }
                 }
             }
@@ -260,12 +251,11 @@ private fun SessionContent(
         val power = character.powers.firstOrNull { it.id == id }
         val ability = character.mysticAbilities.firstOrNull { it.id == id }
         val name = power?.name ?: ability?.name.orEmpty()
-        val resource = power?.costResource ?: ability?.costResource ?: SessionResource.ARCANE
-        val cost = power?.costAmount ?: ability?.costAmount ?: 0
+        val cost = power?.cost ?: ability?.cost.orEmpty()
         AlertDialog(
             onDismissRequest = { pendingAbilityId = null },
             title = { Text("CONFIRMAR USO") },
-            text = { Text("$name consumirá $cost de ${resource.name}. O uso e o limite estruturado serão registrados no histórico.") },
+            text = { Text("$name // ${cost.ifBlank { "sem custo" }}. Custos fixos em PV, PS, PM, PE ou Destino serão descontados; custos em dados continuam sob controle da mesa.") },
             confirmButton = { TextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
             dismissButton = { TextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
         )

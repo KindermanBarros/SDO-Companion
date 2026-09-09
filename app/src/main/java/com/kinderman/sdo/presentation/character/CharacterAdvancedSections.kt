@@ -30,9 +30,6 @@ import com.kinderman.sdo.domain.catalog.withPathPreset
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.Power
-import com.kinderman.sdo.domain.model.SessionResource
-import com.kinderman.sdo.domain.model.UsagePeriod
-import com.kinderman.sdo.domain.model.AbilityUsageLimit
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.ArcanePanel
@@ -118,8 +115,8 @@ private fun PowerEditor(index: Int, power: Power, enabled: Boolean, onRemove: ()
             { HudTextField("Duração", power.duration, it, enabled = enabled) { value -> onValue(power.copy(duration = value)) } },
         )
         HudTextField("Limite", power.limit, enabled = enabled) { onValue(power.copy(limit = it)) }
-        AbilityUsageEditor(power.favorite, power.available, power.costResource, power.costAmount, power.usage, enabled) { favorite, available, resource, amount, usage ->
-            onValue(power.copy(favorite = favorite, available = available, costResource = resource, costAmount = amount, usage = usage))
+        AbilityAvailabilityEditor(power.favorite, power.available, enabled) { favorite, available ->
+            onValue(power.copy(favorite = favorite, available = available))
         }
         HudTextField("Efeito", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
     }
@@ -342,8 +339,8 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
             { HudTextField("Duração", ability.duration, it, enabled = enabled) { value -> onValue(ability.copy(duration = value)) } },
         )
         HudTextField("Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
-        AbilityUsageEditor(ability.favorite, ability.available, ability.costResource, ability.costAmount, ability.usage, enabled) { favorite, available, resource, amount, usage ->
-            onValue(ability.copy(favorite = favorite, available = available, costResource = resource, costAmount = amount, usage = usage))
+        AbilityAvailabilityEditor(ability.favorite, ability.available, enabled) { favorite, available ->
+            onValue(ability.copy(favorite = favorite, available = available))
         }
     }
 }
@@ -380,33 +377,16 @@ private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boo
 }
 
 @Composable
-internal fun AbilityUsageEditor(
+internal fun AbilityAvailabilityEditor(
     favorite: Boolean,
     available: Boolean,
-    resource: SessionResource,
-    costAmount: Int,
-    usage: AbilityUsageLimit,
     enabled: Boolean,
-    onChange: (Boolean, Boolean, SessionResource, Int, AbilityUsageLimit) -> Unit,
+    onChange: (Boolean, Boolean) -> Unit,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        TextButton({ onChange(!favorite, available, resource, costAmount, usage) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
-        TextButton({ onChange(favorite, !available, resource, costAmount, usage) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
+        TextButton({ onChange(!favorite, available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
+        TextButton({ onChange(favorite, !available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
     }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        TextButton({
-            val values = SessionResource.entries
-            onChange(favorite, available, values[(values.indexOf(resource) + 1) % values.size], costAmount, usage)
-        }, enabled = enabled, modifier = Modifier.weight(1f)) { Text("RECURSO // ${resource.name}") }
-        TextButton({
-            val values = UsagePeriod.entries
-            onChange(favorite, available, resource, costAmount, usage.copy(period = values[(values.indexOf(usage.period) + 1) % values.size]))
-        }, enabled = enabled, modifier = Modifier.weight(1f)) { Text("LIMITE // ${usage.period.name}") }
-    }
-    TwoFields(
-        { IntegerField("Custo estruturado", costAmount, enabled, it) { onChange(favorite, available, resource, it.coerceAtLeast(0), usage) } },
-        { IntegerField("Usos máximos", usage.maximum, enabled, it) { onChange(favorite, available, resource, costAmount, usage.copy(maximum = it.coerceAtLeast(0))) } },
-    )
 }
 
 @Composable

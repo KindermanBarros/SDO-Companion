@@ -2,7 +2,6 @@ package com.kinderman.sdo.data.local
 
 import androidx.room.TypeConverter
 import com.kinderman.sdo.domain.model.AttributeValue
-import com.kinderman.sdo.domain.model.AbilityUsageLimit
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
@@ -14,10 +13,8 @@ import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.ResourceValue
-import com.kinderman.sdo.domain.model.SessionResource
 import com.kinderman.sdo.domain.model.SkillValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
-import com.kinderman.sdo.domain.model.UsagePeriod
 import com.kinderman.sdo.domain.model.defaultAttributes
 
 private const val ROW = "\u001e"
@@ -78,12 +75,6 @@ class CharacterConverters {
             it.catalogVersion.toString(),
             it.favorite.toString(),
             it.available.toString(),
-            it.costResource.name,
-            it.costAmount.toString(),
-            it.usage.period.name,
-            it.usage.maximum.toString(),
-            it.usage.used.toString(),
-            it.usage.periodKey,
         ).row()
     }
 
@@ -113,16 +104,6 @@ class CharacterConverters {
                     catalogVersion = p.getOrNull(18)?.toIntOrNull() ?: 0,
                     favorite = p.getOrNull(19)?.toBooleanStrictOrNull() ?: false,
                     available = p.getOrNull(20)?.toBooleanStrictOrNull() ?: true,
-                    costResource = runCatching { SessionResource.valueOf(p.getOrElse(21) { SessionResource.ARCANE.name }) }
-                        .getOrDefault(SessionResource.ARCANE),
-                    costAmount = p.getOrNull(22)?.toIntOrNull() ?: 0,
-                    usage = AbilityUsageLimit(
-                        period = runCatching { UsagePeriod.valueOf(p.getOrElse(23) { UsagePeriod.NONE.name }) }
-                            .getOrDefault(UsagePeriod.NONE),
-                        maximum = p.getOrNull(24)?.toIntOrNull() ?: 0,
-                        used = p.getOrNull(25)?.toIntOrNull() ?: 0,
-                        periodKey = p.getOrElse(26) { "" },
-                    ),
                 )
             } else {
                 Power(
@@ -223,8 +204,7 @@ class CharacterConverters {
     @TypeConverter fun abilitiesToString(value: List<MysticAbility>) = value.joinToString(ROW) {
         listOf(
             it.id, it.type, it.name, it.cost, it.action, it.range, it.duration, it.effect,
-            it.favorite.toString(), it.available.toString(), it.costResource.name, it.costAmount.toString(),
-            it.usage.period.name, it.usage.maximum.toString(), it.usage.used.toString(), it.usage.periodKey,
+            it.favorite.toString(), it.available.toString(),
         ).row()
     }
     @TypeConverter fun stringToAbilities(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map {
@@ -235,16 +215,6 @@ class CharacterConverters {
                 duration = p.getOrElse(6) { "" }, effect = p.getOrElse(7) { "" },
                 favorite = p.getOrNull(8)?.toBooleanStrictOrNull() ?: false,
                 available = p.getOrNull(9)?.toBooleanStrictOrNull() ?: true,
-                costResource = runCatching { SessionResource.valueOf(p.getOrElse(10) { SessionResource.ARCANE.name }) }
-                    .getOrDefault(SessionResource.ARCANE),
-                costAmount = p.getOrNull(11)?.toIntOrNull() ?: 0,
-                usage = AbilityUsageLimit(
-                    period = runCatching { UsagePeriod.valueOf(p.getOrElse(12) { UsagePeriod.NONE.name }) }
-                        .getOrDefault(UsagePeriod.NONE),
-                    maximum = p.getOrNull(13)?.toIntOrNull() ?: 0,
-                    used = p.getOrNull(14)?.toIntOrNull() ?: 0,
-                    periodKey = p.getOrElse(15) { "" },
-                ),
             )
         }
     }
