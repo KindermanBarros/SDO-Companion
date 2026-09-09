@@ -1,117 +1,145 @@
 # SDO Companion
 
-Aplicativo Android offline-first para jogadores e mestre da campanha. A interface
-combina Cyberpunk, Sci-Fi HUD e Acid Graphics em uma FUI operacional com grid
-técnico, telemetria e geometria neo-brutalista.
+Companion Android para **Silêncio dos Oráculos**, criado para centralizar fichas, campanhas e operações de sessão em um único aplicativo.
 
-As regras visuais, tokens e componentes estão documentados no
-[`DESIGN_GUIDE.md`](DESIGN_GUIDE.md).
+O projeto atende jogadores e Historiadores sem exigir que uma conta pertença previamente a uma campanha. Cada pessoa pode manter fichas independentes e assumir papéis diferentes em campanhas diferentes.
 
-## Funcionalidades
+## O que o aplicativo resolve
 
-- login único com Google via Firebase Authentication e Credential Manager;
-- perfil Jogador/Mestre carregado do Firestore;
-- ficha baseada no documento canônico `90 - Modelos/Modelo de Ficha.md` do repositório de SDO;
-- seletor canônico de raça e sub-raça, com bônus de recursos e atributo, escolha dos dois poderes raciais e substituição de um deles por um poder de sub-raça;
-- referência arcana canônica distribuída entre `Magia.md`, `Cinzas.md`, `Runas.md`, `Regras Arcanas Expandidas.md` e os catálogos de 50 exemplos;
-- catálogo local pesquisável com Caminhos, 50 Poderes Mágicos, 50 Poderes de Profissão/Conhecimento e 50 exemplos de cada tipo: Magias, Cinzas e Runas;
-- seleção pelo catálogo é opcional: ela apenas preenche uma nova entrada, que continua modular e totalmente editável; entradas manuais continuam disponíveis;
-- o catálogo é atualizado pelo próprio APK no Room, sem depender nem alterar a estrutura sincronizada no Firebase;
-- inventário com construtor canônico de armas, armaduras e acessórios, composição parte a parte com um material por parte, cálculo de Tipo + Materiais + Modificações + espaços, preço em E$ e complexidade;
-- glossário pesquisável de itens e materiais, incluindo P.G., P.L., LA, propriedades de armas, tecnologia, passo/categoria de dado, Qualidade e Durabilidade;
-- loja inicial controlada pelos 20 Pontos de Herança, com escolha de itens prontos ou construtor parte a parte no mesmo fluxo; todo o fluxo de PH desaparece ao esgotar o saldo;
-- construtor normal de itens sempre disponível fora da criação inicial, sem consumir PH, além do catálogo e da criação manual livre;
-- itens acima dos Pontos de Herança restantes são bloqueados; itens com custo `#` exigem confirmação do Historiador;
-- Poderes podem ter como fonte Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa; fonte, pré-requisito e condição de perda fazem parte do modelo canônico;
-- selecionar um Caminho pré-feito aplica automaticamente lema, três palavras-chave, três pilares e seus dois Poderes de Caminho canônicos;
-- todos os campos da ficha: identidade, recursos, traços, atributos, Conhecimentos Básicos e
-  Especiais, Proteções, Caminho, Poderes, inventário, corpo, órgãos, magia e condições;
-- Magias, Runas e Cinzas aceitam expansão contínua por novos exemplos; os procedimentos completos permanecem em `Regras Arcanas Expandidas.md`;
-- Vida, Sanidade, Arcano e Energia calculados automaticamente a partir dos atributos e conhecimentos,
-  com ajuste manual positivo ou negativo;
-- Proteções Geral, Esquiva, Postura, Mental e Arcana calculadas automaticamente pelas regras
-  canônicas, também com ajuste manual positivo ou negativo;
-- anotações em uma aba própria, organizadas como registros pessoais com título e texto;
-- Caminho e Poderes em abas independentes, sem limite de quantidade para os poderes;
-- navegação paginada em oito módulos, com abas, gesto horizontal e listas renderizadas sob demanda;
-- regiões do corpo renderizadas individualmente, permitindo selecionar equipamentos do inventário também nos dois pés;
-- resolução de conflitos por campo quando a ficha local e a online foram alteradas desde a última sincronização;
-- tipografia empacotada: MB Forever Raw para assinatura metal e Oxanium para a interface HUD;
-- persistência local com Room;
-- salvamento local automático a cada alteração; sincronização remota acionada separadamente;
-- sincronização com Cloud Firestore;
-- loadings cibernéticos distintos para autenticação e sincronização de personagens;
-- central de operações com fundações navegáveis para Modo Sessão, Painel do Historiador e Aparência;
-- Modo Sessão compacto com recursos rápidos, proteções, condições, habilidades e prévia confirmável de dano/cura;
-- Painel do Historiador agrupado por campanha, com alertas operacionais e consulta ao catálogo local;
-- seis temas semânticos, escala de texto, densidade, cartões, alertas e sincronização persistidos somente no aparelho;
-- operações de sessão idempotentes e histórico append-only com autor, alvo, antes/depois e motivo;
-- biblioteca de campanha com modelos versionados, duplicação, arquivamento e entregas snapshot com aceite/recusa;
-- exclusão offline-first com sincronização da remoção;
-- jogador edita as próprias fichas e pode ativar um bloqueio pessoal para impedir a própria exclusão;
-- a Mestre/Historiador acessa e edita todas as fichas, aplica/remove o bloqueio de historiador e pode excluir qualquer personagem;
-- o historiador transfere fichas por um seletor de owner pesquisável, alimentado pelos perfis Google já registrados;
-- bloqueios pessoais podem ser removidos pelo dono; bloqueios de historiador somente pelo historiador;
-- CI com lint, testes e APK de release assinado como artifact no GitHub Actions.
+Durante uma campanha de RPG, informações importantes costumam ficar espalhadas entre fichas, anotações, documentos de regras e controles manuais. O SDO Companion reúne esse fluxo:
 
-## Arquitetura
+- criação e edição de personagens;
+- consulta aos catálogos canônicos do sistema;
+- organização de campanhas e participantes;
+- acesso rápido aos dados usados durante uma sessão;
+- ferramentas de acompanhamento para o Historiador;
+- persistência local e sincronização entre dispositivos.
 
-O código segue Clean Architecture em camadas e separa regras de negócio de Android/Firebase:
+O aplicativo segue uma abordagem **offline-first**: alterações são salvas primeiro no aparelho com Room e sincronizadas com o Cloud Firestore quando há conexão.
+
+## Experiência por perfil
+
+### Jogador
+
+O jogador pode:
+
+- criar e manter fichas com ou sem campanha;
+- preencher raça, sub-raça, atributos, recursos, conhecimentos e proteções;
+- administrar Caminho, Poderes, Magias, Runas e Cinzas;
+- registrar inventário, equipamentos, corpo, órgãos, condições e anotações;
+- usar o Modo Sessão para consultar recursos e aplicar ações rápidas;
+- receber conteúdo enviado pelo Historiador;
+- resolver conflitos quando a versão local e a versão online mudaram.
+
+### Historiador
+
+Dentro das campanhas em que possui esse papel, o Historiador pode:
+
+- acompanhar personagens e participantes;
+- abrir fichas ou o Modo Sessão de cada personagem;
+- aplicar dano, cura, condições e alterações de recursos;
+- bloquear fichas quando necessário;
+- consultar e distribuir conteúdo da biblioteca da campanha;
+- acompanhar operações registradas durante a sessão.
+
+### Administração
+
+A administração global do aplicativo é reservada à conta configurada como administradora. Contas comuns não escolhem um tipo global: permissões de jogador e Historiador pertencem ao contexto de cada campanha.
+
+## Principais recursos
+
+- autenticação com Google pelo Firebase Authentication;
+- fichas completas baseadas nas regras canônicas de SDO;
+- campanhas opcionais com convite por código;
+- catálogos pesquisáveis de Conhecimentos, Poderes, Magias, Runas e Cinzas;
+- criação manual livre além dos conteúdos prontos;
+- cálculos automáticos de recursos e proteções com ajustes manuais;
+- inventário e construção de armas, armaduras e acessórios;
+- Modo Sessão com ações rápidas e confirmação de dano ou cura;
+- Painel do Historiador organizado por campanha;
+- histórico de operações com autor, alvo, valores e motivo;
+- sincronização offline-first com resolução de conflitos por campo;
+- temas, densidade e preferências visuais armazenados no aparelho;
+- modo de demonstração local quando o Firebase não está configurado.
+
+## Tecnologias
+
+| Área | Tecnologia |
+| --- | --- |
+| Plataforma | Android |
+| Linguagem | Kotlin |
+| Interface | Jetpack Compose e Material 3 |
+| Persistência local | Room |
+| Autenticação | Firebase Authentication e Credential Manager |
+| Sincronização | Cloud Firestore |
+| Concorrência | Kotlin Coroutines |
+| Serialização | Kotlinx Serialization |
+| Build e CI | Gradle e GitHub Actions |
+
+## Organização do projeto
 
 ```text
-domain/
-  catalog/     conteúdo versionado do catálogo distribuído com o app
-  model/       modelos canônicos da ficha
-  policy/      autorização de leitura, edição, bloqueio e exclusão
-  repository/  contratos de dados e autenticação
-  usecase/     operações da aplicação
-data/
-  auth/        Google Sign-In e perfil Firebase
-  local/       Room, DAO, catálogo local, conversores e migrações
-  repository/  sincronização offline-first de fichas e perfis com Firestore
-presentation/
-  login/ dashboard/ character/  telas e estado de UI
-ui/            tokens e componentes do design system
+app/src/main/java/com/kinderman/sdo/
+├── domain/         Regras, modelos, políticas, catálogos e contratos
+├── data/           Room, Firebase e repositórios offline-first
+├── presentation/   Login, painel, ficha, sessão, Historiador e ajustes
+└── ui/             Temas, componentes e comportamento responsivo
+
+catalogs/           Conteúdo canônico distribuído com o aplicativo
+firebase/           Regras, índices e testes do Cloud Firestore
+docs/               Auditorias e documentação técnica complementar
+licenses/           Licenças das fontes incluídas no APK
 ```
 
-As telas dependem dos contratos do domínio. Regras de autorização são aplicadas no domínio,
-novamente no repositório e, como última barreira, em `firebase/firestore.rules`.
+A autorização é verificada nas regras de domínio, nos repositórios e nas regras do Firestore. A interface não é tratada como barreira de segurança.
 
-Os fluxos e limites da fundação de UX das issues abertas estão documentados em
-[`docs/UX_ISSUES_17_19.md`](docs/UX_ISSUES_17_19.md).
+## Como executar
 
-## Configuração Firebase
+### Requisitos
 
-1. Crie um projeto no Firebase e um app Android com package `com.kinderman.sdo`.
-2. Ative Authentication > Google e Cloud Firestore.
-3. Baixe `google-services.json` em `app/google-services.json` (o arquivo é ignorado pelo Git).
-4. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`. O primeiro login
-   verificado de `kindbarros@gmail.com` cria ou
-   corrige automaticamente o perfil para `role: "MASTER"`. As outras contas recebem `PLAYER`.
-5. No GitHub, salve o JSON puro ou em Base64 no secret `GOOGLE_SERVICES_JSON`.
-6. Configure os secrets de assinatura `SDO_KEYSTORE_BASE64`,
-   `SDO_KEYSTORE_PASSWORD`, `SDO_KEY_ALIAS` e `SDO_KEY_PASSWORD`.
+- Android Studio compatível com o projeto;
+- JDK 25;
+- Android SDK 37;
+- dispositivo ou emulador com Android 11 (API 30) ou superior.
 
-O keystore de release é exclusivo do SDO Companion e nunca deve ser commitado.
+### Execução local
 
-As licenças das fontes distribuídas no APK estão em [`licenses/fonts`](licenses/fonts).
+1. Clone o repositório.
+2. Abra a raiz no Android Studio.
+3. Aguarde a sincronização do Gradle.
+4. Execute o módulo `app`.
 
-> Sem configuração Firebase, o app oferece um modo local de demonstração. A autorização remota usa
-> o e-mail verificado da conta bootstrap e `users/{uid}.role`; jogadores não podem se promover.
+Sem um arquivo `google-services.json`, o aplicativo continua disponível em modo local de demonstração.
 
-## Executar
+### Firebase opcional
 
-Abra a raiz do repositório no Android Studio, sincronize o Gradle e rode o módulo `app`. Sem
-`google-services.json`, o app continua utilizável localmente com Room.
+Para habilitar autenticação e sincronização:
 
-## Manutenção de dependências
+1. Crie um projeto no Firebase.
+2. Registre um aplicativo Android com o package `com.kinderman.sdo`.
+3. Ative Google em **Authentication** e crie o **Cloud Firestore**.
+4. Coloque o arquivo `google-services.json` em `app/google-services.json`.
+5. Publique `firebase/firestore.rules` e `firebase/firestore.indexes.json`.
 
-O Dependabot verifica Gradle e GitHub Actions semanalmente. Atualizações minor/patch são agrupadas;
-majors permanecem isoladas para revisão e devem passar por lint, testes e build assinado antes do merge.
+As orientações de implantação estão em [docs/firebase-deploy.md](docs/firebase-deploy.md).
 
-## Próximas fatias
+## Verificações
 
-1. campanhas e convites por código;
-2. resolução explícita de conflitos de edição;
-3. testes instrumentados do Room, regras do Firestore e Compose UI;
-4. representar na ficha e na persistência a fonte, os pré-requisitos e a condição de perda dos Poderes.
+Para executar as verificações locais:
+
+```bash
+./gradlew testDebugUnitTest lintDebug
+```
+
+O GitHub Actions executa lint, testes e geração do APK. A distribuição assinada exige os secrets de Firebase e assinatura configurados no repositório.
+
+## Documentação relacionada
+
+- [Guia visual e componentes](DESIGN_GUIDE.md)
+- [Catálogos do aplicativo](catalogs/README.md)
+- [Implantação do Firebase](docs/firebase-deploy.md)
+- [Auditoria atual do projeto](docs/CHECKLIST_AUDIT_2026_09.md)
+
+## Status
+
+O SDO Companion está em desenvolvimento ativo. Issues e pull requests são usadas para registrar bugs, evoluções de UX e adequações às regras canônicas de Silêncio dos Oráculos.
