@@ -2,6 +2,8 @@ package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 
@@ -55,6 +57,26 @@ fun CatalogEntry.toStructuredPower(
     ruleReference = ruleReference,
     sourceType = sourceType,
     sourceId = sourceId,
+    catalogEntryId = id,
+    catalogVersion = version,
+)
+
+fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
+    type = when (kind) {
+        CatalogKind.MAGIC -> "Magia"
+        CatalogKind.ASH -> "Cinza"
+        CatalogKind.RUNE -> "Runa"
+        else -> kind.name
+    },
+    name = name,
+    cost = cost,
+    action = action,
+    range = range,
+    duration = duration,
+    effect = mechanicalEffect.ifBlank { summary },
+    category = group,
+    source = source,
+    ruleReference = ruleReference,
     catalogEntryId = id,
     catalogVersion = version,
 )

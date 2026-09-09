@@ -46,4 +46,18 @@ class BuiltInCatalogTest {
         assertTrue(powers.all { it.range.isNotBlank() && it.duration.isNotBlank() })
         assertTrue(powers.all { it.mechanicalEffect.isNotBlank() && it.ruleReference.isNotBlank() })
     }
+
+    @Test fun everyDefaultMagicIsCompleteAndKeepsItsCanonicalProvenance() {
+        val magics = BuiltInCatalog.entries.filter { it.kind == CatalogKind.MAGIC }
+        assertTrue(magics.all { it.name.isNotBlank() && it.summary.isNotBlank() })
+        assertTrue(magics.all { it.cost.isNotBlank() && it.action.isNotBlank() })
+        assertTrue(magics.all { it.range.isNotBlank() && it.duration.isNotBlank() })
+        assertTrue(magics.all { it.mechanicalEffect.isNotBlank() && it.ruleReference.isNotBlank() })
+        assertTrue(magics.all { entry ->
+            entry.toMysticAbility().let { ability ->
+                ability.catalogEntryId == entry.id && ability.catalogVersion == entry.version &&
+                    ability.source == entry.source && ability.category == entry.group
+            }
+        })
+    }
 }

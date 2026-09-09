@@ -204,7 +204,8 @@ class CharacterConverters {
     @TypeConverter fun abilitiesToString(value: List<MysticAbility>) = value.joinToString(ROW) {
         listOf(
             it.id, it.type, it.name, it.cost, it.action, it.range, it.duration, it.effect,
-            it.favorite.toString(), it.available.toString(),
+            it.favorite.toString(), it.available.toString(), "catalog-v2", it.category, it.source,
+            it.ruleReference, it.catalogEntryId, it.catalogVersion.toString(),
         ).row()
     }
     @TypeConverter fun stringToAbilities(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map {
@@ -215,6 +216,11 @@ class CharacterConverters {
                 duration = p.getOrElse(6) { "" }, effect = p.getOrElse(7) { "" },
                 favorite = p.getOrNull(8)?.toBooleanStrictOrNull() ?: false,
                 available = p.getOrNull(9)?.toBooleanStrictOrNull() ?: true,
+                category = p.getOrElse(11) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                source = p.getOrElse(12) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                ruleReference = p.getOrElse(13) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                catalogEntryId = p.getOrElse(14) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
+                catalogVersion = p.getOrNull(15)?.toIntOrNull().takeIf { p.getOrNull(10) == "catalog-v2" } ?: 0,
             )
         }
     }

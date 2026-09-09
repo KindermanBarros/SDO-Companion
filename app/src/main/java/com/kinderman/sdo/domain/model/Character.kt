@@ -136,6 +136,11 @@ data class MysticAbility(
     val effect: String = "",
     val favorite: Boolean = false,
     val available: Boolean = true,
+    val category: String = "",
+    val source: String = "",
+    val ruleReference: String = "",
+    val catalogEntryId: String = "",
+    val catalogVersion: Int = 0,
 )
 
 data class ConditionEffect(

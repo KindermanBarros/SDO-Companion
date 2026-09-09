@@ -27,6 +27,7 @@ import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.catalog.withPathPreset
+import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.Power
@@ -301,20 +302,7 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
         AddButton("Adicionar efeito manualmente", enabled) { onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility())) }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR EFEITO MÍSTICO", catalog, { selecting = false }) { entry ->
-        onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility(
-            type = when (entry.kind) {
-                CatalogKind.MAGIC -> "Magia"
-                CatalogKind.ASH -> "Cinza"
-                CatalogKind.RUNE -> "Runa"
-                else -> entry.kind.name
-            },
-            name = entry.name,
-            cost = entry.cost,
-            action = entry.action,
-            range = entry.range,
-            duration = entry.duration,
-            effect = entry.summary,
-        )))
+        onChange(character.copy(mysticAbilities = character.mysticAbilities + entry.toMysticAbility()))
         selecting = false
     }
 }
@@ -330,6 +318,13 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
             { HudTextField("Tipo", ability.type, it, enabled = enabled) { value -> onValue(ability.copy(type = value)) } },
             { HudTextField("Nome", ability.name, it, enabled = enabled) { value -> onValue(ability.copy(name = value)) } },
         )
+        if (ability.category.isNotBlank() || ability.source.isNotBlank()) {
+            Text(
+                listOf(ability.category, ability.source).filter(String::isNotBlank).joinToString(" // "),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
         TwoFields(
             { HudTextField("Custo", ability.cost, it, enabled = enabled) { value -> onValue(ability.copy(cost = value)) } },
             { HudTextField("Ação", ability.action, it, enabled = enabled) { value -> onValue(ability.copy(action = value)) } },
@@ -339,6 +334,9 @@ private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, o
             { HudTextField("Duração", ability.duration, it, enabled = enabled) { value -> onValue(ability.copy(duration = value)) } },
         )
         HudTextField("Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
+        if (ability.ruleReference.isNotBlank()) {
+            Text("REFERÊNCIA // ${ability.ruleReference}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        }
         AbilityAvailabilityEditor(ability.favorite, ability.available, enabled) { favorite, available ->
             onValue(ability.copy(favorite = favorite, available = available))
         }
