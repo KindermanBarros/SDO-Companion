@@ -117,12 +117,11 @@ fun DashboardScreen(
     val uid = session?.uid.orEmpty()
     val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
     val rolesByCampaign = remember(memberships) { memberships.associateBy({ it.campaignId }, { it.role }) }
-    val activeCampaigns = campaigns.filterNot(Campaign::isArchived)
-    val archivedCampaigns = if (showArchivedCampaigns) campaigns.filter(Campaign::isArchived) else emptyList()
     var ownerTarget by remember { mutableStateOf<Character?>(null) }
     var createCampaign by remember { mutableStateOf(false) }
     var joinCampaign by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var campaignSearchQuery by remember { mutableStateOf("") }
     var ownerFilter by remember { mutableStateOf<String?>(null) }
     var campaignFilter by remember { mutableStateOf<String?>(null) }
     var statusFilter by remember { mutableStateOf(AdminCharacterStatus.ALL) }
@@ -132,6 +131,16 @@ fun DashboardScreen(
     var section by remember { mutableStateOf(DashboardSection.CHARACTERS) }
     var assigningCampaign by remember { mutableStateOf<Campaign?>(null) }
     var deletingCampaign by remember { mutableStateOf<Campaign?>(null) }
+    val visibleCampaigns = remember(campaigns, campaignSearchQuery) {
+        val needle = campaignSearchQuery.trim()
+        campaigns.filter { campaign ->
+            needle.isEmpty() || listOf(campaign.name, campaign.description, campaign.id)
+                .any { it.contains(needle, ignoreCase = true) }
+        }
+    }
+    val activeCampaigns = visibleCampaigns.filterNot(Campaign::isArchived)
+    val archivedCampaigns = if (showArchivedCampaigns) visibleCampaigns.filter(Campaign::isArchived) else emptyList()
+    val activeCampaignCount = campaigns.count { !it.isArchived }
     val filtersActive = searchQuery.isNotBlank() || ownerFilter != null ||
         campaignFilter != null || statusFilter != AdminCharacterStatus.ALL
     val filteredCharacters = remember(
@@ -199,8 +208,8 @@ fun DashboardScreen(
                     Text("SDO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     Text(if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
                     Text(
-                        if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // ${activeCampaigns.size} CAMPANHAS ATIVAS"
-                        else "${activeCampaigns.size} CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA",
+                        if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // $activeCampaignCount CAMPANHAS ATIVAS"
+                        else "$activeCampaignCount CAMPANHAS ATIVAS // ${standalone.size} FICHAS SEM CAMPANHA",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -224,7 +233,7 @@ fun DashboardScreen(
                                 Icon(Icons.Default.PlayCircle, null)
                                 Text(" SESSÃO")
                             }
-                            if (admin || activeCampaigns.any { it.ownerId == uid }) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
+                            if (admin || campaigns.any { !it.isArchived && it.ownerId == uid }) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
                                 Icon(Icons.Default.Visibility, null)
                                 Text(" MESTRE")
                             }
@@ -321,10 +330,18 @@ fun DashboardScreen(
                     }
 
                     DashboardSection.CAMPAIGNS -> {
+                        item("campaign-search") {
+                            CompactSearchField(
+                                label = "Buscar campanhas",
+                                query = campaignSearchQuery,
+                                placeholder = "Nome, descrição ou ID",
+                                onQueryChange = { campaignSearchQuery = it },
+                            )
+                        }
                         if (activeCampaigns.isEmpty() && archivedCampaigns.isEmpty()) item("empty-campaigns") {
                             EmptyDashboardPanel(
-                                title = "Nenhuma campanha detectada",
-                                message = "Crie uma campanha ou entre usando um código de convite.",
+                                title = if (campaignSearchQuery.isBlank()) "Nenhuma campanha detectada" else "Nenhuma campanha encontrada",
+                                message = if (campaignSearchQuery.isBlank()) "Crie uma campanha ou entre usando um código de convite." else "Revise o termo pesquisado.",
                             )
                         }
                         activeCampaigns.forEachIndexed { campaignIndex, campaign ->
