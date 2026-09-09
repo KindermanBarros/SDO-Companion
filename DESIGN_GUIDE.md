@@ -1,18 +1,126 @@
 # SDO Companion — Design Guide
 
-## Revisão responsiva — setembro de 2026
+## Estado atual da interface — setembro de 2026
 
-- As cores históricas abaixo descrevem o tema industrial, não valores fixos para todas as telas.
-  Tokens públicos agora resolvem papéis do tema ativo, incluindo modais e barras.
-- Aperture White usa azul Portal como destaque; vermelho fica reservado a erros e exclusão.
-- Campos compactos: mínimo de 48 dp, padding interno vertical de 8 dp, texto de 14 sp.
-  Preservar os intervalos entre itens e permitir crescimento para fontes ampliadas.
-- Cabeçalhos recebem largura limitada e podem quebrar em duas linhas; decoração nunca disputa
-  espaço com o título. Estados vazios não usam códigos de barras.
-- Seções recolhíveis preservam estado durante navegação. Auditoria é opcional em Configurações.
-- Acessos rápidos usam ícones com descrição acessível. Salvamento usa ícone e toast sob demanda.
-- Exclusão de campanha exige confirmação e conexão. Fichas são desvinculadas, não apagadas;
-  um estado terminal impede restauração por clientes antigos.
+Este guia descreve o comportamento implementado no aplicativo. A paleta histórica continua sendo a
+referência do tema **Ciano industrial**, mas componentes não devem depender diretamente dela:
+telas e componentes reutilizáveis consomem os papéis semânticos de `MaterialTheme.colorScheme`.
+
+### Implementações consolidadas
+
+- navegação principal para Painel, Modo Sessão, Painel do Historiador e Configurações;
+- ficha distribuída em oito páginas, com abas roláveis, menu “Ir para” e gesto horizontal;
+- preferências locais de tema, densidade, escala tipográfica, cards compactos e seções recolhíveis;
+- cards de campanha inteiramente acionáveis para expandir ou recolher detalhes;
+- código de convite sempre visível e selecionável, inclusive quando o card está recolhido;
+- cards de personagem com identidade, campanha, owner, bloqueio e sincronização;
+- filtros administrativos por texto, owner, campanha e status;
+- estados vazios com título e instrução, sem ornamentos que simulem dados;
+- suporte responsivo para celular e tablet;
+- modo claro real em Aperture White e modo claro/escuro automático no Tema do sistema;
+- cores de sistema, barras do Android e contraste de ícones sincronizados com o tema;
+- campos compactos com altura mínima de 48 dp e crescimento para texto ampliado;
+- auditoria de cálculos opcional, sem poluir a leitura padrão;
+- ações destrutivas identificadas por texto, ícone, cor de erro e confirmação.
+
+A estrutura de Magias, Runas, Cinzas e Poderes definida na issue
+[#70](https://github.com/KindermanBarros/SDO-Companion/issues/70) é uma evolução P0 planejada.
+Até sua implementação, este guia não deve apresentar seus novos dropdowns e cálculos como disponíveis.
+
+## Temas implementados
+
+Todos os temas usam os mesmos papéis semânticos. Trocar o tema não pode mudar o significado de uma
+ação, somente sua expressão cromática.
+
+| Tema | Variante | Primária | Secundária | Erro | Fundo | Superfície |
+| --- | --- | --- | --- | --- | --- | --- |
+| Ciano industrial | escura | `#30C0B7` | `#5690DA` | `#EE227D` | `#040D1B` | `#191B1C` |
+| Verde terminal | escura | `#70FF9A` | `#B7FFCA` | `#FF7A9E` | `#030D07` | `#0D1C12` |
+| Rubro arcano | escura | `#FF866E` | `#FFC06B` | `#FF75AA` | `#150605` | `#2A1210` |
+| Violeta Rúnico | escura | `#BCA8FF` | `#69E6DC` | `#FF8DBD` | `#0D0719` | `#21172F` |
+| Edgerunners | escura | `#FCEE09` | `#00F0FF` | `#FF003C` | `#050A18` | `#111827` |
+| Magenta Onírico | escura | `#FF2AA1` | `#8F7CFF` | `#FF6B82` | `#110713` | `#261126` |
+| Aperture White | clara | `#FF9A00` | `#27A7D8` | `#D45500` | `#FFFFFF` | `#FFFFFF` |
+| Alto contraste | escura | `#63FFF1` | `#A9CBFF` | `#FF70AE` | `#000000` | `#101214` |
+| Tema do sistema | adaptativa | ciano escuro ou `#006A64` | azul ou `#3D6374` | magenta ou `#BA1A1A` | segue o sistema | segue o sistema |
+
+### Regras dos temas
+
+- `primary`: ação principal, seleção, foco e destaque operacional;
+- `secondary`: informação estável, ação secundária e métricas;
+- `error`: erro, exclusão, bloqueio e perigo; nunca usar apenas por decoração;
+- `background`: canvas e barras de sistema;
+- `surface`: cards, diálogos e painéis;
+- `surfaceVariant`: campos, subdivisões e grid;
+- `onSurface`: texto principal;
+- `onSurfaceVariant`: metadados, ajuda e texto secundário;
+- `outline` e `outlineVariant`: bordas conforme o contraste da superfície.
+
+No Aperture White, laranja `#FF9A00` representa a ação primária, azul `#27A7D8` sustenta o
+contraste informativo e cinza `#B5AAAA` forma as bordas discretas. Texto usa tons escuros; branco
+sobre branco e cinza claro como texto funcional são proibidos.
+
+## Cards e expansão de conteúdo
+
+### Card de campanha
+
+O card inteiro deve funcionar como cabeçalho de expansão, não somente o ícone:
+
+- toque no cabeçalho alterna entre expandido e recolhido;
+- seta para cima/baixo reforça o estado com descrição acessível;
+- animação de tamanho acompanha a mudança sem deslocamentos abruptos;
+- nome, estado e papel permanecem visíveis nos dois estados;
+- código da campanha permanece sempre visível, selecionável e copiável;
+- descrição, métricas e ações ficam dentro da área expandida;
+- campanha arquivada usa borda neutra e tag `ARCHIVED`;
+- exclusão definitiva permanece isolada das ações comuns e exige confirmação;
+- o estado inicial respeita a preferência de recolhimento configurada pelo usuário.
+
+### Seções longas da ficha
+
+`CollapsibleSection` controla blocos extensos:
+
+- quando “Recolher seções longas” está ativo, um `TechPanel` acionável funciona como cabeçalho;
+- o toque em qualquer ponto do cabeçalho alterna o estado;
+- ícone e texto acessível indicam “Expandir” ou “Recolher”;
+- conteúdo usa `AnimatedVisibility`;
+- estado de expansão usa `rememberSaveable` e sobrevive à recomposição/navegação salva;
+- desativar a preferência exibe o conteúdo continuamente e remove o cabeçalho redundante.
+
+Não esconder informação crítica de confirmação, erro ou salvamento dentro de uma seção recolhida.
+
+### Card de personagem
+
+O card inteiro abre a ficha e apresenta, sem exigir expansão:
+
+- iniciais e nome;
+- raça, ocupação e nível;
+- campanha ou “Sem campanha”;
+- `SYNC_OK`, `LOCAL_DELTA`, `LOCK.P` ou `LOCK.H`;
+- owner e UID abreviado quando o usuário possui permissão administrativa;
+- borda semântica para bloqueio, alteração local ou estado neutro.
+
+A ação de owner deve ser um alvo interativo próprio e não pode acionar a abertura da ficha por
+propagação acidental.
+
+## Densidade, leitura e preferências
+
+Preferências visuais são locais ao aparelho e não modificam ficha, campanha ou Firebase.
+
+| Preferência | Opções | Efeito |
+| --- | --- | --- |
+| Tema | nove variantes | troca imediata de todos os papéis semânticos |
+| Densidade | Confortável / Compacta | ajusta espaçamento e altura dos controles |
+| Leitura | Padrão / Texto ampliado | multiplica a escala tipográfica por 1,00 ou 1,16 |
+| Cartões compactos | ligado/desligado | reduz informação e espaço nos cards aplicáveis |
+| Recolher seções longas | ligado/desligado | ativa cabeçalhos expansíveis |
+| Auditoria de valores | ligado/desligado | mostra decomposição dos cálculos |
+| Mostrar campanhas arquivadas | ligado/desligado | controla sua presença no painel |
+| Sincronização automática | ligado/desligado | altera comportamento de dados, não aparência |
+| Alertas e entregas | ligado/desligado | controla avisos locais relevantes |
+
+Área de toque continua com no mínimo 48 dp na densidade compacta. Compactar significa reduzir
+espaço supérfluo, nunca diminuir legibilidade ou acessibilidade.
 
 ## Direção
 
@@ -263,19 +371,21 @@ Movimento comunica mudança de estado; não é decoração contínua fora de pro
 - Larguras maiores: conteúdo central limitado e painéis em duas colunas quando não quebrar a ordem
   canônica da ficha.
 - Listas longas usam blocos repetíveis com ação de remoção no cabeçalho.
-- A ficha usa seis páginas com swipe, abas roláveis, contador e controles anterior/próxima.
-- Somente a página atual e páginas adjacentes entram na composição; cada página usa sua própria
-  `LazyColumn`, evitando medir as 13 seções simultaneamente.
-- A ordem das 13 seções segue o modelo canônico e não deve variar entre tamanhos de tela:
+- A ficha usa oito páginas com swipe, abas roláveis e menu “Ir para”.
+- `HorizontalPager` mantém somente a página necessária no viewport; cada página usa sua própria
+  `LazyColumn` e conserva seu estado de rolagem.
+- A ordem das 15 seções segue o modelo canônico e não deve variar entre tamanhos de tela:
 
-| Página | Seções canônicas |
-| --- | --- |
-| Perfil | 01 Identidade, 02 Recursos, 03 Traços |
-| Aptidões | 04 Atributos, 05 Conhecimentos Especiais, 06 Proteções |
-| Caminho | 07 Caminho e Poderes |
-| Corpo | 08 Inventário, 09 Corpo, 10 Órgãos |
-| Místico | 11 Magias, Runas e Cinzas |
-| Registro | 12 Condições, 13 História e Notas |
+| Página | Código | Seções canônicas |
+| --- | --- | --- |
+| Perfil | 01—03 | Identidade, Recursos e Traços |
+| Aptidões | 04—06 | Atributos, Conhecimentos e Proteções |
+| Caminho | 07 | Caminho |
+| Poderes | 08 | Poderes |
+| Corpo | 09—11 | Inventário, Corpo e Órgãos |
+| Místico | 12 | Magias, Runas e Cinzas |
+| Registro | 13—14 | Condições e História |
+| Anotações | 15 | Registros pessoais |
 
 ---
 
@@ -288,9 +398,9 @@ Canvas de fundo `Void` (`#040D1B`) com grade vetorial milimetrada em duas densid
 
 ### TechPanel
 
-Contêiner estrutural com fundo `Panel` (`#191B1C`, 96% opacidade), corte diagonal chanfrado e borda
-com a cor de acento do subsistema. Suporta acentos em `AcidCyan`, `HostileHeader`, `ArcanePanel` ou
-`TechCutDark`.
+Contêiner estrutural com `MaterialTheme.colorScheme.surface` a 96% de opacidade, corte diagonal
+chanfrado e borda com 72% da cor de acento. O acento padrão usa `primary`; informação estável usa
+`secondary`, perigo usa `error` e estados neutros usam `outline`/`outlineVariant`.
 
 ### SectionHeader
 
