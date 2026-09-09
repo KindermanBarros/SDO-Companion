@@ -346,37 +346,71 @@ private fun AlertSettingsRow(settings: CampaignAlertSettings, onSave: (CampaignA
 private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onApply: (SessionCommand) -> Unit) {
     var amount by remember { mutableIntStateOf(1) }
     var label by remember { mutableStateOf("") }
+    var selected by remember { mutableStateOf<QuickActionKind?>(null) }
+    var resource by remember { mutableStateOf(SessionResource.ENERGY) }
+    var regionIndex by remember { mutableIntStateOf(0) }
+    val region = character.bodyRegions.getOrNull(regionIndex)
+    val command = when (selected) {
+        QuickActionKind.DAMAGE -> SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, regionId = region?.name.orEmpty(), reason = label)
+        QuickActionKind.HEAL -> SessionCommand(type = SessionOperationType.HEAL, amount = amount, resource = SessionResource.LIFE, reason = label)
+        QuickActionKind.RESOURCE -> SessionCommand(type = SessionOperationType.RESOURCE, amount = amount, resource = resource, reason = label)
+        QuickActionKind.CONDITION -> SessionCommand(type = SessionOperationType.CONDITION_ADD, amount = amount, label = label.ifBlank { "Condição" }, detail = "Aplicada pelo Historiador", reason = label)
+        QuickActionKind.MONEY -> SessionCommand(type = SessionOperationType.MONEY, amount = amount, reason = label)
+        QuickActionKind.DESTINY -> SessionCommand(type = SessionOperationType.DESTINY, amount = amount, resource = SessionResource.DESTINY, reason = label)
+        QuickActionKind.NOTE -> SessionCommand(type = SessionOperationType.NOTE, label = label.ifBlank { "Anotação do Historiador" }, detail = "Registro operacional", reason = label)
+        QuickActionKind.REWARD -> SessionCommand(type = SessionOperationType.REWARD, label = label.ifBlank { "Recompensa" }, detail = amount.toString(), reason = label)
+        QuickActionKind.REGION -> SessionCommand(type = SessionOperationType.REGION_FAILURE, amount = amount, regionId = region?.name.orEmpty(), reason = label)
+        null -> null
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("AÇÃO RÁPIDA // ${character.name.uppercase()}") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("1. ESCOLHA A AÇÃO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                QuickActionKind.entries.chunked(3).forEach { row ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        row.forEach { action ->
+                            TextButton(
+                                onClick = { selected = action },
+                                modifier = Modifier.weight(1f).then(if (selected == action) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(4.dp)) else Modifier),
+                            ) { Text(action.label, maxLines = 1) }
+                        }
+                    }
+                }
+                Text("2. DEFINA OS DADOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     TextButton({ amount = (amount - 1).coerceAtLeast(1) }) { Text("−") }
                     Text("VALOR $amount", modifier = Modifier.padding(12.dp))
                     TextButton({ amount += 1 }) { Text("+") }
                 }
-                HudTextField("Motivo / nome da condição / anotação", label, onValue = { label = it })
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, regionId = character.bodyRegions.firstOrNull()?.name.orEmpty(), reason = label)) }, modifier = Modifier.weight(1f)) { Text("DANO") }
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.HEAL, amount = amount, resource = SessionResource.LIFE, reason = label)) }, modifier = Modifier.weight(1f)) { Text("CURA") }
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.RESOURCE, amount = amount, resource = SessionResource.ENERGY, reason = label)) }, modifier = Modifier.weight(1f)) { Text("ENERGIA") }
+                if (selected == QuickActionKind.RESOURCE) {
+                    TextButton(onClick = {
+                        val options = listOf(SessionResource.ENERGY, SessionResource.ARCANE, SessionResource.SANITY, SessionResource.LIFE)
+                        resource = options[(options.indexOf(resource) + 1) % options.size]
+                    }, modifier = Modifier.fillMaxWidth()) { Text("RECURSO // ${resource.name}") }
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.CONDITION_ADD, amount = amount, label = label.ifBlank { "Condição" }, detail = "Aplicada pela Mestre", reason = label)) }, modifier = Modifier.weight(1f)) { Text("CONDIÇÃO") }
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.MONEY, amount = amount, reason = label)) }, modifier = Modifier.weight(1f)) { Text("DINHEIRO") }
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.DESTINY, amount = amount, resource = SessionResource.DESTINY, reason = label)) }, modifier = Modifier.weight(1f)) { Text("DESTINO") }
+                if (selected == QuickActionKind.DAMAGE || selected == QuickActionKind.REGION) {
+                    TextButton(onClick = {
+                        if (character.bodyRegions.isNotEmpty()) regionIndex = (regionIndex + 1) % character.bodyRegions.size
+                    }, enabled = character.bodyRegions.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+                        Text("REGIÃO // ${region?.name?.uppercase() ?: "NENHUMA"}")
+                    }
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.NOTE, label = label.ifBlank { "Anotação da Mestre" }, detail = "Registro operacional", reason = label)) }, modifier = Modifier.weight(1f)) { Text("ANOTAÇÃO") }
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.REWARD, label = label.ifBlank { "Recompensa" }, detail = amount.toString(), reason = label)) }, modifier = Modifier.weight(1f)) { Text("RECOMPENSA") }
-                    TextButton({ onApply(SessionCommand(type = SessionOperationType.REGION_FAILURE, amount = amount, regionId = character.bodyRegions.firstOrNull()?.name.orEmpty(), reason = label)) }, modifier = Modifier.weight(1f)) { Text("REGIÃO") }
-                }
+                HudTextField("Motivo / nome / anotação", label, onValue = { label = it })
+                Text("3. CONFIRME", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                Text(selected?.let { "${it.label} // valor $amount // ${character.name}" } ?: "Selecione uma ação acima.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        confirmButton = {},
-        dismissButton = { TextButton(onDismiss) { Text("FECHAR") } },
+        confirmButton = { TextButton(onClick = { command?.let(onApply) }, enabled = command != null) { Text("APLICAR") } },
+        dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
     )
+}
+
+private enum class QuickActionKind(val label: String) {
+    DAMAGE("DANO"), HEAL("CURA"), RESOURCE("RECURSO"),
+    CONDITION("CONDIÇÃO"), MONEY("DINHEIRO"), DESTINY("DESTINO"),
+    NOTE("ANOTAÇÃO"), REWARD("RECOMPENSA"), REGION("FALHA LOCAL"),
 }
 
 @Composable
