@@ -81,7 +81,8 @@ internal fun LevelProgressionDialog(
                         Picker("Novo Conhecimento", choices["new-$level"], knowledgeEntries.map { it.id to "${it.name} — ${it.group}" }) { choices = choices + ("new-$level" to it) }
                         Picker("Marco de Caminho", choices["power-$level"], pathPowers.map { it.id to it.name }) { choices = choices + ("power-$level" to it) }
                     }
-                    Text("Vida +${1 + character.skillValue("VIG", "Vitalidade")} // Sanidade +1${if (level % 5 == 0) " // Energia +1 adicional" else ""}", style = MaterialTheme.typography.bodySmall)
+                    val vitality = character.attributes.firstOrNull { it.acronym == "VIG" }?.skills?.firstOrNull { it.name == "Vitalidade" }?.let { it.value + it.modifier } ?: 0
+                    Text("Vida +${1 + vitality.coerceAtLeast(0)} // Sanidade +1${if (level % 5 == 0) " // Energia +1 adicional" else ""}", style = MaterialTheme.typography.bodySmall)
                 }
                 if (levels.isNotEmpty()) Text("Revise todas as escolhas. Elas serão aplicadas juntas ao confirmar.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
