@@ -84,7 +84,7 @@ Observação: a segunda parte foi preservada como está na ficha; “falha nessa
                 ),
                 PathPower(
                     name = """Instrumento de Cenário""".trimIndent(),
-                    effect = """Você pode gastar 3 de Energia em vez de fazer o teste normal de Lábia. Você cria um objeto inexistente no cenário até alguém notar que ele não estava lá.""".trimIndent(),
+                    effect = """Em vez do teste normal de Lábia, crie um objeto inexistente no cenário até alguém notar que ele não estava lá.""".trimIndent(),
                     cost = "3 PE",
                     costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
                     costValue = 3,
@@ -105,7 +105,7 @@ Observação: a segunda parte foi preservada como está na ficha; “falha nessa
             powers = listOf(
                 PathPower(
                     name = """Ritos de Passagem""".trimIndent(),
-                    effect = """executar um ritual de 3 turnos para acalmar um morto em sua presença. Se for uma criatura morto-vivo, sua forma física se desfaz.""".trimIndent(),
+                    effect = """Execute um ritual de 3 turnos para acalmar um morto em sua presença. Se for uma criatura morto-vivo, sua forma física se desfaz.""".trimIndent(),
                     cost = "2 PE",
                     costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
                     costValue = 2,
