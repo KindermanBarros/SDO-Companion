@@ -57,7 +57,15 @@ class BuiltInCatalogTest {
         assertTrue(powers.all { it.activationCondition != it.mechanicalEffect })
         assertTrue(powers.none { "Profissão:" in it.mechanicalEffect || "Categoria:" in it.mechanicalEffect })
         assertTrue(powers.all { it.targetArea.isNotBlank() && it.abilitySource != null })
-        assertTrue(powers.all { it.abilityCostType == com.kinderman.sdo.domain.model.AbilityCostType.ENERGY })
+        assertTrue(powers.all {
+            it.abilityCostType in setOf(
+                com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                com.kinderman.sdo.domain.model.AbilityCostType.LIFE,
+                com.kinderman.sdo.domain.model.AbilityCostType.SANITY,
+                com.kinderman.sdo.domain.model.AbilityCostType.DESTINY,
+            )
+        })
+        assertTrue(powers.none { it.abilityCostType == com.kinderman.sdo.domain.model.AbilityCostType.ARCANE })
         assertTrue(powers.all { if (it.abilityExecution == com.kinderman.sdo.domain.model.AbilityExecution.PASSIVE) it.abilityCostValue == 0 else (it.abilityCostValue ?: 0) > 0 })
         assertTrue(powers.all { entry ->
             entry.toStructuredPower().let { power ->
