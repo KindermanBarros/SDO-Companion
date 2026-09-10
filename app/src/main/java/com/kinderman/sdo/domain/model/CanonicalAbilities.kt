@@ -129,16 +129,32 @@ fun Character.withUpdatedPower(power: Power): Character {
     return copy(powers = powers.map { if (it.id == power.id) power.canonicalized() else it }).constrainedToResourceMaximums()
 }
 
-fun Power.canonicalized(): Power = copy(
-    costType = AbilityCostType.ENERGY,
-    costValue = if (executionType == AbilityExecution.PASSIVE) 0 else costValue.coerceAtLeast(1),
-    timeValue = timeValue.coerceAtLeast(0),
-    durationValue = durationValue.coerceAtLeast(0),
-    knowledgeId = knowledgeId.takeIf { canonicalSource == AbilitySource.KNOWLEDGE }.orEmpty(),
-    knowledgeLevel = knowledgeLevel.takeIf { canonicalSource == AbilitySource.KNOWLEDGE },
-    linkedItemId = linkedItemId.takeIf { canonicalSource == AbilitySource.ITEM }.orEmpty(),
-    revision = revision.coerceAtLeast(1),
-)
+fun Power.canonicalized(): Power {
+    val normalizedCostType = when {
+        executionType == AbilityExecution.PASSIVE -> AbilityCostType.ENERGY
+        costType == AbilityCostType.DESTINY && destinyCostEligible -> AbilityCostType.DESTINY
+        costType in setOf(AbilityCostType.ENERGY, AbilityCostType.LIFE, AbilityCostType.SANITY) -> costType
+        else -> AbilityCostType.ENERGY
+    }
+    val normalizedCostValue = if (executionType == AbilityExecution.PASSIVE) 0 else costValue.coerceAtLeast(1)
+    return copy(
+        cost = when (normalizedCostType) {
+            AbilityCostType.ENERGY -> "$normalizedCostValue PE"
+            AbilityCostType.LIFE -> "$normalizedCostValue PV"
+            AbilityCostType.SANITY -> "$normalizedCostValue PS"
+            AbilityCostType.DESTINY -> "$normalizedCostValue PD"
+            else -> error("Tipo de custo inválido para Poder")
+        },
+        costType = normalizedCostType,
+        costValue = normalizedCostValue,
+        timeValue = timeValue.coerceAtLeast(0),
+        durationValue = durationValue.coerceAtLeast(0),
+        knowledgeId = knowledgeId.takeIf { canonicalSource == AbilitySource.KNOWLEDGE }.orEmpty(),
+        knowledgeLevel = knowledgeLevel.takeIf { canonicalSource == AbilitySource.KNOWLEDGE },
+        linkedItemId = linkedItemId.takeIf { canonicalSource == AbilitySource.ITEM }.orEmpty(),
+        revision = revision.coerceAtLeast(1),
+    )
+}
 
 fun Character.abilityDuplicates(): List<AbilityDuplicateGroup> {
     val powerGroups = powers.filter { it.name.isNotBlank() }
