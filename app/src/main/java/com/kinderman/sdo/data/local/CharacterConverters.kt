@@ -22,6 +22,9 @@ import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.ProgressionRecord
+import com.kinderman.sdo.domain.model.ProgressionReward
+import com.kinderman.sdo.domain.model.ProgressionRewardType
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SkillValue
@@ -41,6 +44,26 @@ private fun List<String>.nested() = joinToString(NESTED)
 private fun String.toNestedList() = if (isBlank()) emptyList() else split(NESTED)
 
 class CharacterConverters {
+    @TypeConverter fun progressionToString(value: List<ProgressionRecord>) = value.joinToString(ROW) { record ->
+        listOf(record.id, record.previousLevel.toString(), record.newLevel.toString(), record.appliedAt.toString(),
+            record.rewards.joinToString(BONUS_ROW) { reward ->
+                listOf(reward.level.toString(), reward.type.name, reward.targetId, reward.catalogEntryId, reward.canonical.toString()).joinToString(BONUS_FIELD)
+            }).row()
+    }
+
+    @TypeConverter fun stringToProgression(value: String): List<ProgressionRecord> = if (value.isEmpty()) emptyList() else value.split(ROW).map { encoded ->
+        val fields = encoded.parts()
+        ProgressionRecord(
+            id = fields.getOrElse(0) { "" }, previousLevel = fields.getOrNull(1)?.toIntOrNull() ?: 1,
+            newLevel = fields.getOrNull(2)?.toIntOrNull() ?: 1, appliedAt = fields.getOrNull(3)?.toLongOrNull() ?: 0,
+            rewards = fields.getOrElse(4) { "" }.split(BONUS_ROW).filter(String::isNotBlank).map { reward ->
+                val parts = reward.split(BONUS_FIELD)
+                ProgressionReward(parts.getOrNull(0)?.toIntOrNull() ?: 1,
+                    runCatching { ProgressionRewardType.valueOf(parts.getOrElse(1) { "" }) }.getOrDefault(ProgressionRewardType.RESOURCE),
+                    parts.getOrElse(2) { "" }, parts.getOrElse(3) { "" }, parts.getOrNull(4)?.toBooleanStrictOrNull() ?: true)
+            },
+        )
+    }
     @TypeConverter fun resourceToString(value: ResourceValue) =
         "${value.current}|${value.maximum}|${value.adjustment}"
 

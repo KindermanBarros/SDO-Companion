@@ -6,6 +6,8 @@ data class GlossaryEntry(
     val term: String,
     val group: String,
     val definition: String,
+    val section: String = "Termos",
+    val referenceId: String = "",
 )
 
 object EquipmentGlossary {
@@ -40,7 +42,7 @@ object EquipmentGlossary {
         GlossaryEntry(
             term = part.name,
             group = part.group,
-            definition = describe(part, includeDurability = true),
+            definition = describe(part, includeDurability = true), section = "Materiais", referenceId = part.id,
         )
     }
 
@@ -48,12 +50,12 @@ object EquipmentGlossary {
         GlossaryEntry(
             term = part.name,
             group = part.group,
-            definition = describe(part, includeDurability = false),
+            definition = describe(part, includeDurability = false), section = "Armas", referenceId = part.id,
         )
     }
 
     private fun modificationEntries(parts: List<ItemPart>) = parts.map { part ->
-        GlossaryEntry(part.name, part.group, part.effect.ifBlank { "Sem efeito adicional." })
+        GlossaryEntry(part.name, part.group, part.effect.ifBlank { "Sem efeito adicional." }, "Termos", part.id)
     }
 
     private fun describe(part: ItemPart, includeDurability: Boolean): String = buildList {
