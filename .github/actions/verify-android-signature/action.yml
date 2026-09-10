@@ -19,7 +19,9 @@ runs:
           exit 1
         fi
         signer_output="$("$apksigner_path" verify --verbose --print-certs "$APK_PATH")"
-        actual_sha="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "$signer_output" | head -n 1 | tr '[:upper:]' '[:lower:]')"
+        # Current Android Build Tools prefixes this line with the scheme (for
+        # example, "V2 Signer:") instead of the older "Signer #1" label.
+        actual_sha="$(sed -n 's/^.*certificate SHA-256 digest: //p' <<< "$signer_output" | head -n 1 | tr '[:upper:]' '[:lower:]')"
         # Hash the exported DER certificate directly instead of parsing keytool's
         # localized fingerprint labels (SHA256/SHA-256 varies by JDK version).
         expected_sha="$(keytool -exportcert \
