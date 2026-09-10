@@ -95,4 +95,34 @@ class PhaseOneCatalogTest {
         assertEquals(once.powers.count { it.sourceType == PowerSourceType.PATH }, twice.powers.count { it.sourceType == PowerSourceType.PATH })
         assertEquals(twice.powers.size, twice.powers.map { it.name to it.sourceType }.distinct().size)
     }
+    @Test fun loadingCharacterRefreshesManagedRacialAndPathPowers() {
+        val stored = Character(
+            race = "Skayra",
+            powers = listOf(
+                Power(
+                    name = "Marca do Pacto",
+                    origin = "Raça — Skayra",
+                    sourceType = PowerSourceType.RACE,
+                    costValue = 1,
+                ),
+                Power(
+                    name = "Ritos de Passagem",
+                    origin = "Caminho — Necrocamminus",
+                    sourceType = PowerSourceType.PATH,
+                    sourceId = "path.necrocamminus",
+                    costValue = 1,
+                ),
+            ),
+        )
+
+        val refreshed = stored.withRefreshedPresetPowers()
+        val racial = refreshed.powers.first { it.name == "Marca do Pacto" }
+        val path = refreshed.powers.first { it.name == "Ritos de Passagem" }
+
+        assertEquals(2, racial.costValue)
+        assertEquals("2 PE", racial.cost)
+        assertEquals(2, path.costValue)
+        assertEquals("2 PE", path.cost)
+    }
+
 }
