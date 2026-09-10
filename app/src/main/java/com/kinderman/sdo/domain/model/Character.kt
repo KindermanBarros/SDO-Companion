@@ -94,6 +94,7 @@ data class Power(
     val knowledgeLevel: Int? = null,
     val costType: AbilityCostType = AbilityCostType.NONE,
     val costValue: Int = 0,
+    val destinyCostEligible: Boolean = false,
     val executionType: AbilityExecution = AbilityExecution.ACTION,
     val rangeType: AbilityRange = AbilityRange.PERSONAL,
     val targetArea: String = "",
