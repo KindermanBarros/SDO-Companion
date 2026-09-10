@@ -114,4 +114,45 @@ class BuiltInCatalogTest {
         assertEquals("abj", entry.toMysticAbility(ready).knowledgeId)
         assertEquals(entry.sourceLevel, entry.toMysticAbility(ready).knowledgeLevel)
     }
+    @Test fun presetPowersKeepMechanicsInStructuredFields() {
+        val racialPowers = RaceCatalog.races.flatMap { it.powers } + RaceCatalog.subRaces.flatMap { it.powers }
+        val pathPowers = PathPresets.entries.flatMap { it.powers }
+        val allowedCosts = setOf(
+            com.kinderman.sdo.domain.model.AbilityCostType.NONE,
+            com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+            com.kinderman.sdo.domain.model.AbilityCostType.LIFE,
+            com.kinderman.sdo.domain.model.AbilityCostType.SANITY,
+            com.kinderman.sdo.domain.model.AbilityCostType.DESTINY,
+        )
+
+        assertTrue(racialPowers.all { it.costType in allowedCosts })
+        assertTrue(pathPowers.all { it.costType in allowedCosts })
+        assertTrue(racialPowers.none { it.costType == com.kinderman.sdo.domain.model.AbilityCostType.ARCANE })
+        assertTrue(pathPowers.none { it.costType == com.kinderman.sdo.domain.model.AbilityCostType.ARCANE })
+        assertTrue(racialPowers.all { it.costValue == 0 || it.executionType != com.kinderman.sdo.domain.model.AbilityExecution.PASSIVE })
+        assertTrue(pathPowers.all { it.costValue == 0 || it.executionType != com.kinderman.sdo.domain.model.AbilityExecution.PASSIVE })
+    }
+
+    @Test fun presetPowerCostsPreserveTheirPublishedValuesWithoutParsingEffects() {
+        fun racial(name: String) = (RaceCatalog.races.flatMap { it.powers } + RaceCatalog.subRaces.flatMap { it.powers })
+            .first { it.name == name }
+        fun path(name: String) = PathPresets.entries.flatMap { it.powers }.first { it.name == name }
+
+        assertEquals(2, racial("Marca do Pacto").costValue)
+        assertEquals(2, racial("Anatomia Impossível").costValue)
+        assertEquals(3, racial("Presença Anômala").costValue)
+        assertEquals(2, racial("Vislumbre do Possível").costValue)
+        assertTrue(racial("Vislumbre do Possível").destinyCostEligible)
+        assertEquals(3, path("Cara ou Coroa").costValue)
+        assertTrue(path("Cara ou Coroa").destinyCostEligible)
+        assertEquals(2, path("Escudo de Escamas").costValue)
+        assertEquals(2, path("Fio Coagulado").costValue)
+
+        val activationCostInEffect = Regex("(?i)\\b(?:gaste|gastar|custo)\\b[^.\\n]*\\b(?:PE|PM|PV|PS|PD)\\b")
+        assertTrue((RaceCatalog.races.flatMap { it.powers } + RaceCatalog.subRaces.flatMap { it.powers })
+            .none { activationCostInEffect.containsMatchIn(it.effect) })
+        assertTrue(PathPresets.entries.flatMap { it.powers }
+            .none { activationCostInEffect.containsMatchIn(it.effect) })
+    }
+
 }
