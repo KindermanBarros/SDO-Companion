@@ -371,11 +371,11 @@ private fun StructuredPowerEditor(
                 display = { id -> items.firstOrNull { it.id == id }?.name.orEmpty() }) { onValue(power.copy(linkedItemId = it, active = false)) }
         }
         TwoFields(
-            { ChoiceField("Custo", power.costType, AbilityCostType.entries.filterNot { it == AbilityCostType.DOSE }, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(costType = value, costValue = if (value == AbilityCostType.NONE) 0 else power.costValue, cost = value.label)) } },
-            { if (power.costType != AbilityCostType.NONE) IntegerField("Valor do custo", power.costValue, enabled, it) { value -> onValue(power.copy(costValue = value.coerceAtLeast(0))) } },
+            { ChoiceField("Custo", AbilityCostType.ENERGY, listOf(AbilityCostType.ENERGY), false, it, display = { value -> value.label }) { } },
+            { IntegerField("Valor em PE", if (power.executionType == AbilityExecution.PASSIVE) 0 else power.costValue, enabled && power.executionType != AbilityExecution.PASSIVE, it) { value -> onValue(power.copy(costType = AbilityCostType.ENERGY, costValue = value.coerceAtLeast(1), cost = "${value.coerceAtLeast(1)} PE")) } },
         )
         TwoFields(
-            { ChoiceField("Execução", power.executionType, AbilityExecution.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(executionType = value, action = value.label)) } },
+            { ChoiceField("Execução", power.executionType, AbilityExecution.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(executionType = value, action = value.label, costType = AbilityCostType.ENERGY, costValue = if (value == AbilityExecution.PASSIVE) 0 else power.costValue.coerceAtLeast(1), cost = if (value == AbilityExecution.PASSIVE) "0 PE" else "${power.costValue.coerceAtLeast(1)} PE")) } },
             { ChoiceField("Alcance", power.rangeType, AbilityRange.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(rangeType = value, range = value.label)) } },
         )
         if (power.executionType == AbilityExecution.TIME) TwoFields(

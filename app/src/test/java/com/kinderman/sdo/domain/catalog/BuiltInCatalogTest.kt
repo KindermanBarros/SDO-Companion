@@ -57,6 +57,8 @@ class BuiltInCatalogTest {
         assertTrue(powers.all { it.activationCondition != it.mechanicalEffect })
         assertTrue(powers.none { "Profissão:" in it.mechanicalEffect || "Categoria:" in it.mechanicalEffect })
         assertTrue(powers.all { it.targetArea.isNotBlank() && it.abilitySource != null })
+        assertTrue(powers.all { it.abilityCostType == com.kinderman.sdo.domain.model.AbilityCostType.ENERGY })
+        assertTrue(powers.all { if (it.abilityExecution == com.kinderman.sdo.domain.model.AbilityExecution.PASSIVE) it.abilityCostValue == 0 else (it.abilityCostValue ?: 0) > 0 })
         assertTrue(powers.all { entry ->
             entry.toStructuredPower().let { power ->
                 power.canonicalSource == entry.abilitySource && power.costType == entry.abilityCostType &&
@@ -71,6 +73,10 @@ class BuiltInCatalogTest {
         val abilities = BuiltInCatalog.entries.filter { it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH) }
         assertTrue(abilities.all { it.targetArea.isNotBlank() })
         assertTrue(abilities.none { it.mechanicalEffect.startsWith("Suporte e gatilho:", ignoreCase = true) })
+        assertTrue(abilities.filter { it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE) }
+            .all { it.abilityCostType == com.kinderman.sdo.domain.model.AbilityCostType.ARCANE })
+        assertTrue(abilities.filter { it.kind == CatalogKind.ASH }
+            .all { it.abilityCostType == com.kinderman.sdo.domain.model.AbilityCostType.DOSE })
     }
 
     @Test fun everyDefaultMagicIsCompleteAndKeepsItsCanonicalProvenance() {

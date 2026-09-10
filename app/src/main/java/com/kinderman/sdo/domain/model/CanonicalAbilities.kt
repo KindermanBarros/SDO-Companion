@@ -130,8 +130,8 @@ fun Character.withUpdatedPower(power: Power): Character {
 }
 
 fun Power.canonicalized(): Power = copy(
-    costType = costType.takeUnless { it == AbilityCostType.DOSE } ?: AbilityCostType.NONE,
-    costValue = costValue.coerceAtLeast(0),
+    costType = AbilityCostType.ENERGY,
+    costValue = if (executionType == AbilityExecution.PASSIVE) 0 else costValue.coerceAtLeast(1),
     timeValue = timeValue.coerceAtLeast(0),
     durationValue = durationValue.coerceAtLeast(0),
     knowledgeId = knowledgeId.takeIf { canonicalSource == AbilitySource.KNOWLEDGE }.orEmpty(),
@@ -217,8 +217,7 @@ val MysticAbility.uniqueKey: String
 fun MysticAbility.canonicalized(): MysticAbility = copy(
     costType = when {
         isAsh -> AbilityCostType.DOSE
-        type.equals("Runa", true) -> AbilityCostType.ARCANE
-        else -> costType.takeUnless { it == AbilityCostType.DOSE } ?: AbilityCostType.NONE
+        else -> AbilityCostType.ARCANE
     },
     costValue = costValue.coerceAtLeast(0),
     timeValue = timeValue.coerceAtLeast(0),

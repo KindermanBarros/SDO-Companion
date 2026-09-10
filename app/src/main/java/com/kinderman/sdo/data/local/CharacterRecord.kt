@@ -20,6 +20,7 @@ import com.kinderman.sdo.domain.model.defaultAttributes
 import com.kinderman.sdo.domain.model.defaultBodyRegions
 import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
 import com.kinderman.sdo.domain.model.defaultProtections
+import com.kinderman.sdo.domain.model.canonicalized
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 
@@ -122,13 +123,13 @@ fun CharacterRecord.toDomain() = Character(
     pathMotto = pathMotto,
     pathKeywords = pathKeywords.ifEmpty { listOf("", "", "") },
     pathPillars = pathPillars.ifEmpty { listOf("", "", "") },
-    powers = powers,
+    powers = powers.map(Power::canonicalized),
     inventory = inventory,
     containerCapacity = containerCapacity,
     bodyRegions = normalizeBodyRegions(bodyRegions),
     agilityLimit = agilityLimit,
     organs = organs,
-    mysticAbilities = mysticAbilities,
+    mysticAbilities = mysticAbilities.map(MysticAbility::canonicalized),
     conditions = conditions,
     story = story,
     notes = notes,
@@ -177,7 +178,7 @@ fun Character.toRecord() = CharacterRecord(
     negativeTraits = negativeTraits,
     pathName = pathName,
     pathMotto = pathMotto,
-    powers = powers,
+    powers = powers.map(Power::canonicalized),
     inventory = inventory,
     story = story,
     notes = "",
@@ -197,7 +198,7 @@ fun Character.toRecord() = CharacterRecord(
     bodyRegions = bodyRegions,
     agilityLimit = agilityLimit,
     organs = organs,
-    mysticAbilities = mysticAbilities,
+    mysticAbilities = mysticAbilities.map(MysticAbility::canonicalized),
     conditions = conditions,
     isLocked = isLocked,
     lockType = lockType.name,

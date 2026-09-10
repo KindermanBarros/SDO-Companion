@@ -300,8 +300,7 @@ private fun MysticEditor(
 ) {
     val effectiveCostType = when {
         ability.type.equals("Cinza", true) -> AbilityCostType.DOSE
-        ability.type.equals("Runa", true) -> AbilityCostType.ARCANE
-        else -> ability.costType.takeUnless { it == AbilityCostType.DOSE } ?: AbilityCostType.NONE
+        else -> AbilityCostType.ARCANE
     }
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
@@ -325,10 +324,9 @@ private fun MysticEditor(
             { ChoiceField("Tipo", ability.type.ifBlank { "Magia" }, listOf("Magia", "Runa", "Cinza"), enabled, it) { value ->
                 val costType = when (value) {
                     "Cinza" -> AbilityCostType.DOSE
-                    "Runa" -> AbilityCostType.ARCANE
-                    else -> ability.costType.takeUnless { type -> type == AbilityCostType.DOSE } ?: AbilityCostType.NONE
+                    else -> AbilityCostType.ARCANE
                 }
-                onValue(ability.copy(type = value, costType = costType, costValue = if (costType == AbilityCostType.NONE) 0 else ability.costValue))
+                onValue(ability.copy(type = value, costType = costType))
             } },
             { HudTextField("Nome", ability.name, it, enabled = enabled) { value -> onValue(ability.copy(name = value)) } },
         )
@@ -365,7 +363,7 @@ private fun MysticEditor(
             { when {
                 ability.type.equals("Cinza", true) -> ChoiceField("Custo", AbilityCostType.DOSE, listOf(AbilityCostType.DOSE), false, it, display = { value -> value.label }) { }
                 ability.type.equals("Runa", true) -> ChoiceField("Custo", AbilityCostType.ARCANE, listOf(AbilityCostType.ARCANE), false, it, display = { value -> value.label }) { }
-                else -> ChoiceField("Custo", ability.costType, AbilityCostType.entries.filterNot { value -> value == AbilityCostType.DOSE }, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(costType = value, costValue = if (value == AbilityCostType.NONE) 0 else ability.costValue, cost = value.label)) }
+                else -> ChoiceField("Custo", AbilityCostType.ARCANE, listOf(AbilityCostType.ARCANE), false, it, display = { value -> value.label }) { }
             } },
             { if (effectiveCostType != AbilityCostType.NONE) IntegerField("Valor do custo", ability.costValue, enabled, it) { value -> onValue(ability.copy(costType = effectiveCostType, costValue = value.coerceAtLeast(0))) } },
         )
