@@ -28,6 +28,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
@@ -360,6 +361,16 @@ fun TechPanel(
     accent: Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    if (LocalFlattenCollapsiblePanel.current) {
+        CompositionLocalProvider(LocalFlattenCollapsiblePanel provides false) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                content = content,
+            )
+        }
+        return
+    }
+
     val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
     Card(
         modifier = modifier
@@ -375,16 +386,20 @@ fun TechPanel(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            content = content,
-        )
+        CompositionLocalProvider(LocalCollapsibleSectionTitle provides null) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                content = content,
+            )
+        }
     }
 }
 
 @Composable
 fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
+    if (LocalCollapsibleSectionTitle.current != null) return
+
     val secondary = MaterialTheme.colorScheme.secondary
     val error = MaterialTheme.colorScheme.primary
     Row(
