@@ -300,11 +300,13 @@ service cloud.firestore {
       allow read: if signedIn() && canReadCampaign(resource.data.campaignId);
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
+        && campaignIsActive(request.resource.data.campaignId)
         && isCampaignHistorian(request.resource.data.campaignId);
       allow update: if signedIn()
         && request.resource.data.campaignId == resource.data.campaignId
         && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.createdAt == resource.data.createdAt
+        && campaignIsActive(resource.data.campaignId)
         && isCampaignHistorian(resource.data.campaignId);
       allow delete: if false;
     }
@@ -317,6 +319,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.state == 'PENDING'
+        && campaignIsActive(request.resource.data.campaignId)
         && isCampaignHistorian(request.resource.data.campaignId);
       allow update: if signedIn()
         && request.resource.data.campaignId == resource.data.campaignId
@@ -333,6 +336,10 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt
         && resource.data.state == 'PENDING'
         && request.resource.data.state in ['ACCEPTED', 'DECLINED']
+        && (
+          request.resource.data.state == 'DECLINED'
+          || getAfter(/databases/$(database)/documents/characters/$(resource.data.recipientCharacterId)).data.get('appliedDeliveryIds', []).hasAny([deliveryId])
+        )
         && resource.data.recipientId == request.auth.uid;
       allow delete: if false;
     }

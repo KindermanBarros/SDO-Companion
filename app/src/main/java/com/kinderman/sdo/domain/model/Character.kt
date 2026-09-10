@@ -268,6 +268,7 @@ data class Character(
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
     val deleted: Boolean = false,
+    val appliedDeliveryIds: List<String> = emptyList(),
 ) {
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.effectiveLoad() }

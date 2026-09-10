@@ -83,11 +83,23 @@ data class CampaignAlertSettingsRecord(
 
 fun SessionOperationRecord.toDomain() = SessionOperation(id, idempotencyKey, campaignId, characterId, actorId, enumValue(type, SessionOperationType.RESOURCE), target, previousValue, newValue, amount, reason, createdAt, dirty, lastSyncedAt)
 fun SessionOperation.toRecord() = SessionOperationRecord(id, idempotencyKey, campaignId, characterId, actorId, type.name, target, previousValue, newValue, amount, reason, createdAt, dirty, lastSyncedAt)
-fun CampaignLibraryRecord.toDomain() = CampaignLibraryEntry(id, campaignId, enumValue(kind, CampaignContentKind.NOTE), name, summary, payload, catalogEntryId, knowledgeBonus, archived, version, createdBy, createdAt, updatedAt, dirty, lastSyncedAt)
-fun CampaignLibraryEntry.toRecord() = CampaignLibraryRecord(id, campaignId, kind.name, name, summary, payload, catalogEntryId, knowledgeBonus, archived, version, createdBy, createdAt, updatedAt, dirty, lastSyncedAt)
+fun CampaignLibraryRecord.toDomain(): CampaignLibraryEntry {
+    val contentKind = enumValue(kind, CampaignContentKind.NOTE)
+    val decoded = CampaignPayloadCodec.decode(contentKind, payload)
+    return CampaignLibraryEntry(
+        id = id, campaignId = campaignId, kind = contentKind, name = name, summary = summary,
+        payload = decoded?.text ?: payload, catalogEntryId = catalogEntryId,
+        knowledgeBonus = knowledgeBonus, archived = archived, version = version, createdBy = createdBy,
+        createdAt = createdAt, updatedAt = updatedAt, dirty = dirty, lastSyncedAt = lastSyncedAt,
+        itemSnapshot = decoded?.item, powerSnapshot = decoded?.power, conditionSnapshot = decoded?.condition,
+    )
+}
+fun CampaignLibraryEntry.toRecord() = CampaignLibraryRecord(
+    id, campaignId, kind.name, name, summary, CampaignPayloadCodec.encode(this), catalogEntryId,
+    knowledgeBonus, archived, version, createdBy, createdAt, updatedAt, dirty, lastSyncedAt,
+)
 fun CampaignDeliveryRecord.toDomain() = CampaignDelivery(id, campaignId, libraryEntryId, recipientId, recipientCharacterId, enumValue(snapshotKind, CampaignContentKind.NOTE), snapshotName, snapshotSummary, snapshotPayload, knowledgeMapping, knowledgeBonus, enumValue(state, CampaignDeliveryState.PENDING), createdBy, createdAt, updatedAt, dirty, lastSyncedAt)
 fun CampaignDelivery.toRecord() = CampaignDeliveryRecord(id, campaignId, libraryEntryId, recipientId, recipientCharacterId, snapshotKind.name, snapshotName, snapshotSummary, snapshotPayload, knowledgeMapping, knowledgeBonus, state.name, createdBy, createdAt, updatedAt, dirty, lastSyncedAt)
 fun CampaignAlertSettingsRecord.toDomain() = CampaignAlertSettings(campaignId, lifeThresholdPercent, sanityThresholdPercent, exhaustionThresholdPercent, staleAfterHours, alertConditions, alertBodyFailures)
 fun CampaignAlertSettings.toRecord() = CampaignAlertSettingsRecord(campaignId, lifeThresholdPercent, sanityThresholdPercent, exhaustionThresholdPercent, staleAfterHours, alertConditions, alertBodyFailures)
 private inline fun <reified T : Enum<T>> enumValue(value: String, fallback: T) = enumValues<T>().firstOrNull { it.name == value } ?: fallback
-

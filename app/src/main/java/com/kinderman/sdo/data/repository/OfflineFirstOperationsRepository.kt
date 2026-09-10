@@ -5,6 +5,8 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CampaignAlertSettingsRecord
+import com.kinderman.sdo.data.local.CampaignDao
+import com.kinderman.sdo.data.local.CampaignPayloadCodec
 import com.kinderman.sdo.data.local.CampaignDeliveryRecord
 import com.kinderman.sdo.data.local.CampaignLibraryRecord
 import com.kinderman.sdo.data.local.OperationsDao
@@ -23,7 +25,6 @@ import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperation
-import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.applySessionCommand
 import com.kinderman.sdo.domain.repository.OperationsRepository
@@ -32,7 +33,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-class OfflineFirstOperationsRepository(private val dao: OperationsDao) : OperationsRepository {
+class OfflineFirstOperationsRepository(
+    private val dao: OperationsDao,
+    private val campaignDao: CampaignDao,
+) : OperationsRepository {
     override fun observeAudit(campaignIds: Set<String>): Flow<List<SessionOperation>> =
         dao.observeAudit(campaignIds.ifEmpty { setOf("") }).map { it.map(SessionOperationRecord::toDomain) }
 
@@ -51,11 +55,17 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
     }
 
     override suspend fun saveLibrary(session: UserSession, entry: CampaignLibraryEntry) {
+        requireActiveCampaign(entry.campaignId)
+        val existing = dao.library(entry.id)
+        require(existing == null || existing.campaignId == entry.campaignId) {
+            "A campanha de um modelo salvo não pode ser alterada. Duplique o modelo para transferi-lo."
+        }
         val now = System.currentTimeMillis()
         dao.upsertLibrary(entry.copy(createdBy = entry.createdBy.ifBlank { session.uid }, updatedAt = now, dirty = true).toRecord())
     }
 
     override suspend fun duplicateLibrary(session: UserSession, entry: CampaignLibraryEntry) {
+        requireActiveCampaign(entry.campaignId)
         saveLibrary(session, entry.copy(id = UUID.randomUUID().toString(), name = "${entry.name} — cópia", version = 1, createdBy = session.uid, createdAt = System.currentTimeMillis(), archived = false))
     }
 
@@ -68,6 +78,7 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
         recipients: List<Character>,
         knowledgeMappings: Map<String, String>,
     ) {
+        requireActiveCampaign(entry.campaignId)
         require(recipients.isNotEmpty()) { "Selecione ao menos uma ficha." }
         if (entry.knowledgeBonus != 0) require(recipients.all { !knowledgeMappings[it.id].isNullOrBlank() }) {
             "Mapeie o Conhecimento Adquirido de cada destinatário."
@@ -83,7 +94,7 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
                     snapshotKind = entry.kind,
                     snapshotName = entry.name,
                     snapshotSummary = entry.summary,
-                    snapshotPayload = entry.payload,
+                    snapshotPayload = CampaignPayloadCodec.encode(entry),
                     knowledgeMapping = knowledgeMappings[character.id].orEmpty(),
                     knowledgeBonus = entry.knowledgeBonus,
                     createdBy = session.uid,
@@ -105,21 +116,8 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
         )
         if (!accept) return dao.upsertDelivery(responded.toRecord())
         val record = dao.character(delivery.recipientCharacterId) ?: error("Ficha destinatária não encontrada.")
-        var character = record.toDomain()
-        character = when (delivery.snapshotKind) {
-            CampaignContentKind.ITEM -> character.copy(inventory = character.inventory + InventoryItem(name = delivery.snapshotName, effect = delivery.snapshotSummary))
-            CampaignContentKind.POWER -> character.copy(powers = character.powers + Power(name = delivery.snapshotName, effect = delivery.snapshotSummary))
-            CampaignContentKind.CONDITION -> character.copy(conditions = character.conditions + ConditionEffect(name = delivery.snapshotName, summary = delivery.snapshotSummary, origin = "Campanha"))
-            CampaignContentKind.NOTE, CampaignContentKind.REWARD, CampaignContentKind.TEMPLATE -> character.copy(personalNotes = character.personalNotes + PersonalNote(title = delivery.snapshotName, text = delivery.snapshotSummary + "\n" + delivery.snapshotPayload))
-        }
-        if (delivery.knowledgeBonus != 0) {
-            val index = character.learnedKnowledges.indexOfFirst { it.name.equals(delivery.knowledgeMapping, true) }
-            val learned = character.learnedKnowledges.toMutableList()
-            if (index >= 0) learned[index] = learned[index].copy(adjustment = learned[index].adjustment + delivery.knowledgeBonus)
-            else learned += SpecialKnowledge(name = delivery.knowledgeMapping, adjustment = delivery.knowledgeBonus, source = "Campanha")
-            character = character.copy(learnedKnowledges = learned)
-        }
-        dao.acceptDelivery(responded.toRecord(), character.copy(updatedAt = now, dirty = true).toRecord())
+        val character = applyDelivery(record.toDomain(), delivery).copy(updatedAt = now, dirty = true)
+        dao.acceptDeliveryOnce(responded.toRecord(), character.toRecord())
     }
 
     override suspend fun saveAlertSettings(settings: CampaignAlertSettings) = dao.upsertAlertSettings(settings.toRecord())
@@ -146,13 +144,22 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
             }
             dao.markOperationSynced(local.id, local.createdAt)
         }
-        dao.dirtyLibrary().filter { it.campaignId in manageableCampaignIds }.forEach { local ->
-            library.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
+        dao.dirtyLibrary().filter { it.campaignId in manageableCampaignIds }.forEach { original ->
+            val reference = library.document(original.id)
+            val remote = reference.get().await().toObject(CampaignLibraryRecord::class.java)
+            val local = if (remote != null && remote.campaignId != original.campaignId) {
+                original.copy(campaignId = remote.campaignId).also { dao.upsertLibrary(it) }
+            } else original
+            reference.set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markLibrarySynced(local.id, local.updatedAt)
         }
         dao.dirtyDeliveries().filter { it.createdBy == session.uid || it.recipientId == session.uid }.forEach { local ->
-            deliveries.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
-            dao.markDeliverySynced(local.id, local.updatedAt)
+            if (local.state == CampaignDeliveryState.ACCEPTED.name && local.recipientId == session.uid) {
+                syncAcceptedDelivery(store, local)
+            } else {
+                deliveries.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
+                dao.markDeliverySynced(local.id, local.updatedAt)
+            }
         }
         manageableCampaignIds.forEach { campaignId ->
             operations.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(SessionOperationRecord::class.java) }
@@ -171,4 +178,59 @@ class OfflineFirstOperationsRepository(private val dao: OperationsDao) : Operati
         const val LIBRARY = "campaignLibrary"
         const val DELIVERIES = "campaignDeliveries"
     }
+
+    private suspend fun requireActiveCampaign(campaignId: String) {
+        val campaign = campaignDao.campaign(campaignId) ?: error("Campanha não encontrada.")
+        require(campaign.state == "ACTIVE") { "Campanhas arquivadas são somente leitura." }
+    }
+
+    private suspend fun syncAcceptedDelivery(store: com.google.firebase.firestore.FirebaseFirestore, local: CampaignDeliveryRecord) {
+        val deliveryReference = store.collection(DELIVERIES).document(local.id)
+        val characterReference = store.collection("characters").document(local.recipientCharacterId)
+        val result = store.runTransaction { transaction ->
+            val remoteDelivery = transaction.get(deliveryReference).toObject(CampaignDeliveryRecord::class.java)
+                ?: error("Entrega remota não encontrada.")
+            require(remoteDelivery.recipientId == local.recipientId) { "Destinatário remoto divergente." }
+            require(remoteDelivery.state != CampaignDeliveryState.DECLINED.name) { "Esta entrega já foi recusada em outro aparelho." }
+            val remoteRecord = transaction.get(characterReference).toObject(com.kinderman.sdo.data.local.CharacterRecord::class.java)
+                ?: error("Ficha destinatária remota não encontrada.")
+            val remoteCharacter = remoteRecord.toDomain()
+            val applied = if (local.id in remoteCharacter.appliedDeliveryIds) remoteCharacter
+                else applyDelivery(remoteCharacter, local.toDomain()).copy(updatedAt = maxOf(local.updatedAt, System.currentTimeMillis()))
+            transaction.set(characterReference, applied.toRecord().copy(dirty = false))
+            if (remoteDelivery.state == CampaignDeliveryState.PENDING.name) {
+                transaction.set(deliveryReference, local.copy(dirty = false), SetOptions.merge())
+            }
+            applied
+        }.await()
+        dao.upsertCharacter(result.copy(dirty = false, lastSyncedAt = result.updatedAt).toRecord())
+        dao.upsertDelivery(local.copy(dirty = false, lastSyncedAt = local.updatedAt))
+    }
+}
+
+internal fun applyDelivery(character: Character, delivery: CampaignDelivery): Character {
+    if (delivery.id in character.appliedDeliveryIds) return character
+    val decoded = CampaignPayloadCodec.decode(delivery.snapshotKind, delivery.snapshotPayload)
+    var changed = when (delivery.snapshotKind) {
+        CampaignContentKind.ITEM -> character.copy(inventory = character.inventory + (decoded?.item
+            ?: InventoryItem(name = delivery.snapshotName, effect = delivery.snapshotSummary)))
+        CampaignContentKind.POWER -> character.copy(powers = character.powers + (decoded?.power
+            ?: Power(name = delivery.snapshotName, effect = delivery.snapshotSummary)))
+        CampaignContentKind.CONDITION -> character.copy(conditions = character.conditions + (decoded?.condition
+            ?: ConditionEffect(name = delivery.snapshotName, summary = delivery.snapshotSummary, origin = "Campanha")))
+        CampaignContentKind.NOTE, CampaignContentKind.REWARD, CampaignContentKind.TEMPLATE -> character.copy(
+            personalNotes = character.personalNotes + PersonalNote(
+                title = delivery.snapshotName,
+                text = delivery.snapshotSummary + "\n" + (decoded?.text ?: delivery.snapshotPayload),
+            ),
+        )
+    }
+    if (delivery.knowledgeBonus != 0) {
+        val index = changed.learnedKnowledges.indexOfFirst { it.id == delivery.knowledgeMapping || it.name.equals(delivery.knowledgeMapping, true) }
+        require(index >= 0) { "O Conhecimento Adquirido mapeado não existe mais." }
+        val learned = changed.learnedKnowledges.toMutableList()
+        learned[index] = learned[index].copy(adjustment = learned[index].adjustment + delivery.knowledgeBonus)
+        changed = changed.copy(learnedKnowledges = learned)
+    }
+    return changed.copy(appliedDeliveryIds = (changed.appliedDeliveryIds + delivery.id).distinct())
 }

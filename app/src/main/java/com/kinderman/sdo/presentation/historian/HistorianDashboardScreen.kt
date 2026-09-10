@@ -53,6 +53,9 @@ import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperation
@@ -141,6 +144,7 @@ fun HistorianDashboardScreen(
                 .any { it.contains(auditSearch.trim(), ignoreCase = true) })
     }.sortedByDescending(SessionOperation::createdAt)
     val selectedLibrary = library.filter { it.campaignId == selectedCampaignId }
+    val libraryWritable = selectedCampaign != null && !selectedCampaign.isArchived
 
     HudBackground {
         Scaffold(
@@ -237,8 +241,11 @@ fun HistorianDashboardScreen(
                                     onValue = { search = it },
                                 )
                                 TextButton({
-                                    selectedCampaign?.let { editingLibrary = CampaignLibraryEntry(campaignId = it.id, createdBy = session.uid) }
-                                }, enabled = selectedCampaign != null) { Text("+ NOVO MODELO") }
+                                    selectedCampaign?.takeUnless { it.isArchived }?.let { editingLibrary = CampaignLibraryEntry(campaignId = it.id, createdBy = session.uid) }
+                                }, enabled = libraryWritable) { Text("+ NOVO MODELO") }
+                                if (!libraryWritable && selectedCampaign != null) {
+                                    Text("Campanha arquivada: biblioteca disponível somente para leitura.", color = MaterialTheme.colorScheme.error)
+                                }
                             }
                         }
                         val filteredLibrary = selectedLibrary.filter { entry -> search.isBlank() || listOf(entry.name, entry.summary, entry.kind.name).any { it.contains(search.trim(), true) } }
@@ -249,7 +256,7 @@ fun HistorianDashboardScreen(
                             }
                         }
                         items(filteredLibrary, key = { "library:${it.id}" }) { entry ->
-                            LibraryCard(entry, onEdit = { editingLibrary = entry }, onDuplicate = { onDuplicateLibrary(entry) }, onArchive = { onArchiveLibrary(entry, !entry.archived) }, onDeliver = { delivering = entry })
+                            LibraryCard(entry, enabled = libraryWritable, onEdit = { editingLibrary = entry }, onDuplicate = { onDuplicateLibrary(entry) }, onArchive = { onArchiveLibrary(entry, !entry.archived) }, onDeliver = { delivering = entry })
                         }
                         item { Text("CATÁLOGO LOCAL DE REFERÊNCIA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
                         val filtered = (catalog + racialReferences() + characterReferences(selectedCharacters)).filter { search.isBlank() || it.searchableText().contains(search.trim(), true) }
@@ -298,8 +305,8 @@ fun HistorianDashboardScreen(
         }
     }
     actionTarget?.let { character -> QuickActionsDialog(character, { actionTarget = null }) { command -> onApplyCommand(character, command); actionTarget = null } }
-    editingLibrary?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
-    delivering?.let { entry -> DeliveryDialog(entry, characters.filter { normalizeCampaignId(it.campaignId) == entry.campaignId }, { delivering = null }) { selected, mappings -> onDeliverLibrary(entry, selected, mappings); delivering = null } }
+    editingLibrary?.takeIf { libraryWritable }?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns.filterNot { it.isArchived }, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
+    delivering?.takeIf { libraryWritable }?.let { entry -> DeliveryDialog(entry, characters.filter { normalizeCampaignId(it.campaignId) == entry.campaignId }, { delivering = null }) { selected, mappings -> onDeliverLibrary(entry, selected, mappings); delivering = null } }
 }
 
 private fun formatAuditTime(timestamp: Long): String =
@@ -480,6 +487,7 @@ private enum class QuickActionKind(val label: String) {
 @Composable
 private fun LibraryCard(
     entry: CampaignLibraryEntry,
+    enabled: Boolean,
     onEdit: () -> Unit,
     onDuplicate: () -> Unit,
     onArchive: () -> Unit,
@@ -495,10 +503,10 @@ private fun LibraryCard(
         Text(entry.payload, style = MaterialTheme.typography.bodySmall)
         if (entry.knowledgeBonus != 0) Text("Bônus de Conhecimento: ${entry.knowledgeBonus}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextButton(onEdit, modifier = Modifier.weight(1f)) { Text("EDITAR") }
-            TextButton(onDuplicate, modifier = Modifier.weight(1f)) { Text("DUPLICAR") }
-            TextButton(onArchive, modifier = Modifier.weight(1f)) { Text(if (entry.archived) "RESTAURAR" else "ARQUIVAR") }
-            TextButton(onDeliver, enabled = !entry.archived, modifier = Modifier.weight(1f)) { Text("ENTREGAR") }
+            TextButton(onEdit, enabled = enabled, modifier = Modifier.weight(1f)) { Text("EDITAR") }
+            TextButton(onDuplicate, enabled = enabled, modifier = Modifier.weight(1f)) { Text("DUPLICAR") }
+            TextButton(onArchive, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (entry.archived) "RESTAURAR" else "ARQUIVAR") }
+            TextButton(onDeliver, enabled = enabled && !entry.archived, modifier = Modifier.weight(1f)) { Text("ENTREGAR") }
         }
     }
 }
@@ -511,6 +519,7 @@ private fun LibraryEditorDialog(
     onSave: (CampaignLibraryEntry) -> Unit,
 ) {
     var value by remember(initial.id) { mutableStateOf(initial) }
+    val campaignCanChange = initial.version == 1 && initial.lastSyncedAt == 0L
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("MODELO DA BIBLIOTECA") },
@@ -519,20 +528,61 @@ private fun LibraryEditorDialog(
                 item {
                     TextButton({
                         val options = CampaignContentKind.entries
-                        value = value.copy(kind = options[(options.indexOf(value.kind) + 1) % options.size])
+                        val kind = options[(options.indexOf(value.kind) + 1) % options.size]
+                        value = value.copy(
+                            kind = kind,
+                            itemSnapshot = if (kind == CampaignContentKind.ITEM) value.itemSnapshot ?: InventoryItem(name = value.name, effect = value.summary) else null,
+                            powerSnapshot = if (kind == CampaignContentKind.POWER) value.powerSnapshot ?: Power(name = value.name, effect = value.summary) else null,
+                            conditionSnapshot = if (kind == CampaignContentKind.CONDITION) value.conditionSnapshot ?: ConditionEffect(name = value.name, summary = value.summary) else null,
+                        )
                     }) { Text("TIPO // ${value.kind.name}") }
                     TextButton({
                         val options = campaigns
                         if (options.isNotEmpty()) value = value.copy(campaignId = options[(options.indexOfFirst { it.id == value.campaignId } + 1).coerceAtLeast(0) % options.size].id)
-                    }) { Text("CAMPANHA // ${campaigns.firstOrNull { it.id == value.campaignId }?.name ?: "SELECIONE"}") }
+                    }, enabled = campaignCanChange) { Text("CAMPANHA // ${campaigns.firstOrNull { it.id == value.campaignId }?.name ?: "FIXA"}") }
                     HudTextField("Nome", value.name, onValue = { value = value.copy(name = it) })
                     HudTextField("Resumo", value.summary, multiline = true, onValue = { value = value.copy(summary = it) })
-                    HudTextField("Conteúdo / payload", value.payload, multiline = true, onValue = { value = value.copy(payload = it) })
+                    when (value.kind) {
+                        CampaignContentKind.ITEM -> {
+                            val item = value.itemSnapshot ?: InventoryItem(name = value.name, effect = value.summary)
+                            HudTextField("Categoria", item.category, onValue = { value = value.copy(itemSnapshot = item.copy(category = it)) })
+                            HudTextField("Carga", item.load.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(load = raw.toIntOrNull()?.coerceAtLeast(0) ?: 0)) })
+                            HudTextField("Durabilidade", item.durability, onValue = { value = value.copy(itemSnapshot = item.copy(durability = it)) })
+                            HudTextField("PG", item.pg.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(pg = raw.toIntOrNull() ?: 0)) })
+                            HudTextField("PL", item.pl.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(pl = raw.toIntOrNull() ?: 0)) })
+                            HudTextField("Efeito estruturado", item.effect, multiline = true, onValue = { value = value.copy(itemSnapshot = item.copy(name = value.name, effect = it)) })
+                        }
+                        CampaignContentKind.POWER -> {
+                            val power = value.powerSnapshot ?: Power(name = value.name, effect = value.summary)
+                            HudTextField("Custo", power.cost, onValue = { value = value.copy(powerSnapshot = power.copy(cost = it)) })
+                            HudTextField("Ação", power.action, onValue = { value = value.copy(powerSnapshot = power.copy(action = it)) })
+                            HudTextField("Alcance", power.range, onValue = { value = value.copy(powerSnapshot = power.copy(range = it)) })
+                            HudTextField("Duração", power.duration, onValue = { value = value.copy(powerSnapshot = power.copy(duration = it)) })
+                            HudTextField("Categoria", power.category, onValue = { value = value.copy(powerSnapshot = power.copy(category = it)) })
+                            HudTextField("Efeito estruturado", power.effect, multiline = true, onValue = { value = value.copy(powerSnapshot = power.copy(name = value.name, effect = it)) })
+                        }
+                        CampaignContentKind.CONDITION -> {
+                            val condition = value.conditionSnapshot ?: ConditionEffect(name = value.name, summary = value.summary)
+                            HudTextField("Intensidade", condition.intensity, onValue = { value = value.copy(conditionSnapshot = condition.copy(intensity = it)) })
+                            HudTextField("Duração", condition.duration, onValue = { value = value.copy(conditionSnapshot = condition.copy(duration = it)) })
+                            HudTextField("Origem", condition.origin, onValue = { value = value.copy(conditionSnapshot = condition.copy(origin = it)) })
+                            HudTextField("Efeito estruturado", condition.summary, multiline = true, onValue = { value = value.copy(conditionSnapshot = condition.copy(name = value.name, summary = it)) })
+                        }
+                        else -> Unit
+                    }
+                    HudTextField("Notas adicionais", value.payload, multiline = true, onValue = { value = value.copy(payload = it) })
                     HudTextField("Bônus em Conhecimento Adquirido", value.knowledgeBonus.toString(), onValue = { value = value.copy(knowledgeBonus = it.toIntOrNull() ?: 0) })
                 }
             }
         },
-        confirmButton = { TextButton({ onSave(value.copy(version = if (value.updatedAt == initial.updatedAt) value.version + 1 else value.version)) }) { Text("SALVAR") } },
+        confirmButton = { TextButton({
+            val synchronized = value.copy(
+                itemSnapshot = value.itemSnapshot?.copy(name = value.name),
+                powerSnapshot = value.powerSnapshot?.copy(name = value.name),
+                conditionSnapshot = value.conditionSnapshot?.copy(name = value.name),
+            )
+            onSave(synchronized.copy(version = if (value.updatedAt == initial.updatedAt) value.version + 1 else value.version))
+        }) { Text("SALVAR") } },
         dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
     )
 }

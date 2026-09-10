@@ -50,6 +50,13 @@ class CharacterRecordFirestoreContractTest {
     }
 
     @Test
+    fun deliveryApplicationMarkersSurviveLocalAndFirestoreMapping() {
+        val markers = listOf("delivery-a", "delivery-b")
+
+        assertEquals(markers, CharacterRecord(appliedDeliveryIds = markers).toDomain().toRecord().appliedDeliveryIds)
+    }
+
+    @Test
     fun resourceConverterReadsTheLegacyFormatWithoutAnAdjustment() {
         val resource = CharacterConverters().stringToResource("4|12")
 
