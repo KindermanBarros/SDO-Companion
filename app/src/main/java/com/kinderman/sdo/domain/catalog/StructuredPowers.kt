@@ -134,57 +134,36 @@ fun CatalogEntry.toMysticAbility(character: Character): MysticAbility {
     return ability.copy(knowledgeId = knowledge.id, knowledgeLevel = requiredLevel)
 }
 
-private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
-    val normalized = effect.replace("\r\n", "\n")
-    val category = Regex("(?im)^Categoria:\\s*(.+)$").find(normalized)?.groupValues?.get(1)?.trim().orEmpty()
-    val limit = extractLimit(normalized)
-    val enhancement = extractEnhancement(normalized)
-    val cost = extractCost(normalized)
-    val action = extractAction(normalized)
-    val range = extractRange(normalized)
-    val duration = extractDuration(normalized)
-    val activation = extractActivation(normalized)
-    val deactivation = extractDeactivation(normalized)
-    val enhancementStart = Regex("(?im)^Aprimoramento\\s*[—-]").find(normalized)?.range?.first ?: normalized.length
-    val mainEffect = normalized
-        .substring(0, enhancementStart)
-        .lines()
-        .filterNot { line ->
-            line.startsWith("Origem:", true) || line.startsWith("Categoria:", true)
-        }
-        .joinToString("\n")
-        .trim()
-
-    return Power(
-        name = name,
-        origin = "Caminho — ${path.name}",
-        cost = cost.ifBlank { "Sem custo adicional expresso; consulte as condições do efeito" },
-        action = action.ifBlank { "Vinculada à ação ou condição descrita no efeito" },
-        range = range.ifBlank { "Alvo ou situação descrita no efeito" },
-        duration = duration.ifBlank { "Enquanto a condição descrita no efeito se aplicar" },
-        limit = limit.ifBlank { "Sem limite adicional expresso" },
-        effect = mainEffect,
-        category = category.ifBlank { "Poder de Caminho" },
-        prerequisites = emptyList(),
-        activationCondition = activation.ifBlank { "Conforme condição descrita no efeito" },
-        enhancements = enhancement.ifBlank { "Sem aprimoramento publicado" },
-        deactivationCondition = deactivation.ifBlank { "Quando encerrar a condição ou duração do efeito" },
-        ruleReference = path.ruleReference,
-        sourceType = PowerSourceType.PATH,
-        sourceId = path.id,
-        catalogEntryId = path.id,
-        catalogVersion = path.version,
-        canonicalSource = AbilitySource.PATH,
-        costType = canonicalCostType(cost),
-        costValue = canonicalCostValue(cost),
-        executionType = canonicalExecution(action),
-        rangeType = canonicalRange(range),
-        durationType = canonicalDuration(duration),
-        durationValue = canonicalDurationValue(duration),
-        durationUnit = canonicalDurationUnit(duration),
-        resistance = canonicalResistance(mainEffect),
-    )
-}
+private fun PathPower.toStructuredPower(path: CatalogEntry): Power = Power(
+    name = name,
+    origin = "Caminho — ${path.name}",
+    cost = cost,
+    action = action,
+    range = range,
+    duration = duration,
+    limit = limit,
+    effect = effect,
+    category = category,
+    prerequisites = emptyList(),
+    activationCondition = activationCondition,
+    enhancements = enhancements,
+    deactivationCondition = deactivationCondition,
+    ruleReference = path.ruleReference,
+    sourceType = PowerSourceType.PATH,
+    sourceId = path.id,
+    catalogEntryId = path.id,
+    catalogVersion = path.version,
+    canonicalSource = AbilitySource.PATH,
+    costType = costType,
+    costValue = costValue,
+    destinyCostEligible = destinyCostEligible,
+    executionType = executionType,
+    rangeType = rangeType,
+    durationType = durationType,
+    durationValue = durationValue,
+    durationUnit = durationUnit,
+    resistance = resistance,
+)
 
 private fun PowerSourceType.toCanonicalSource(): AbilitySource = when (this) {
     PowerSourceType.PATH -> AbilitySource.PATH
@@ -245,55 +224,4 @@ private fun canonicalResistance(value: String): AbilityResistance = when {
     value.contains("Proteção Mental", true) -> AbilityResistance.MENTAL
     value.contains("Proteção Arcana", true) -> AbilityResistance.ARCANE
     else -> AbilityResistance.NONE
-}
-
-private fun extractCost(text: String): String {
-    val patterns = listOf(
-        Regex("(?i)(\\d+d\\d+\\s+HP)"),
-        Regex("(?i)(\\d+\\s*(?:PE|PM|HP|Energia|Arcano|Destino))"),
-    )
-    return patterns.firstNotNullOfOrNull { it.find(text)?.groupValues?.get(1)?.trim() }.orEmpty()
-}
-
-private fun extractAction(text: String): String = when {
-    Regex("(?i)1\\s+ação\\s+completa").containsMatchIn(text) -> "1 ação completa"
-    Regex("(?i)1\\s+ação").containsMatchIn(text) -> "1 ação"
-    Regex("(?i)reação").containsMatchIn(text) -> "Reação"
-    else -> ""
-}
-
-private fun extractRange(text: String): String {
-    val meters = Regex("(?i)(?:a até|até|a)\\s+(\\d+)\\s+metros?").find(text)?.groupValues?.get(1)
-    return when {
-        meters != null -> "$meters metros"
-        Regex("(?i)toque|tocar|contato físico").containsMatchIn(text) -> "Toque"
-        Regex("(?i)em si|você recebe|próprio corpo").containsMatchIn(text) -> "Pessoal"
-        else -> ""
-    }
-}
-
-private fun extractDuration(text: String): String {
-    val explicit = Regex("(?i)(?:dura|até)\\s+(?:o|a)?\\s*(fim[^.\\n]*|próximo descanso|final da cena|final do dia)")
-        .find(text)?.value?.trim()
-    return explicit.orEmpty()
-}
-
-private fun extractLimit(text: String): String {
-    val match = Regex("(?i)(uma vez|duas vezes|\\d+ vezes)\\s+por\\s+(turno|cena|dia|descanso|sessão)").find(text)
-    return match?.value?.replaceFirstChar { it.uppercase() }.orEmpty()
-}
-
-private fun extractEnhancement(text: String): String {
-    val marker = Regex("(?im)^Aprimoramento\\s*[—-]\\s*(.*)$").find(text) ?: return ""
-    return text.substring(marker.range.first).trim()
-}
-
-private fun extractActivation(text: String): String {
-    val match = Regex("(?im)^(quando|enquanto|ao |durante |se )(.+)$").find(text) ?: return ""
-    return match.value.trim().take(240)
-}
-
-private fun extractDeactivation(text: String): String {
-    val match = Regex("(?im)^(?:o poder |este poder )?(?:termina|não funciona|se desfaz|é encerrado)(.+)$").find(text)
-    return match?.value?.trim().orEmpty()
 }
