@@ -177,7 +177,7 @@ private fun SheetPageContent(
         when (page) {
             SheetPage.PROFILE -> {
                 item("hero") { SheetHero(character, session, saveError) }
-                item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade") { IdentitySection(character, editable, onChange) } }
+                item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade") { IdentitySection(character, catalog, editable, onChange) } }
                 item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos") { ResourceSection(character, editable, onChange) } }
                 item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços") { TraitSection(character, editable, onChange) } }
             }

@@ -204,6 +204,24 @@ data class PersonalNote(
     val text: String = "",
 )
 
+enum class ProgressionRewardType { RESOURCE, ATTRIBUTE, KNOWLEDGE, NEW_KNOWLEDGE, PATH_POWER }
+
+data class ProgressionReward(
+    val level: Int = 1,
+    val type: ProgressionRewardType = ProgressionRewardType.RESOURCE,
+    val targetId: String = "",
+    val catalogEntryId: String = "",
+    val canonical: Boolean = true,
+)
+
+data class ProgressionRecord(
+    val id: String = UUID.randomUUID().toString(),
+    val previousLevel: Int = 1,
+    val newLevel: Int = 1,
+    val rewards: List<ProgressionReward> = emptyList(),
+    val appliedAt: Long = System.currentTimeMillis(),
+)
+
 enum class ModifierSourceType { BASE, ADJUSTMENT, ITEM, TRAIT, RACE, CONDITION, OTHER }
 
 data class ValueModifier(
@@ -235,6 +253,11 @@ data class Character(
     val sex: String = "",
     val size: String = "",
     val level: Int = 1,
+    val progressionLifeBonus: Int = 0,
+    val progressionSanityBonus: Int = 0,
+    val progressionArcaneBonus: Int = 0,
+    val progressionEnergyBonus: Int = 0,
+    val progressionHistory: List<ProgressionRecord> = emptyList(),
     val money: Int = 0,
     val life: ResourceValue = ResourceValue(),
     val sanity: ResourceValue = ResourceValue(),
@@ -284,10 +307,10 @@ data class Character(
     val arcaneBase: Int get() = attributeValue("POD") + skillValue("POD", "Arcano")
     val energyBase: Int get() = attributeValue("VIG") + skillValue("VIG", "Energia")
 
-    val lifeMaximum: Int get() = (lifeBase + life.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE")).coerceAtLeast(0)
-    val sanityMaximum: Int get() = (sanityBase + sanity.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY")).coerceAtLeast(0)
-    val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE")).coerceAtLeast(0)
-    val energyMaximum: Int get() = (energyBase + energy.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY")).coerceAtLeast(0)
+    val lifeMaximum: Int get() = (lifeBase + life.adjustment + progressionLifeBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE")).coerceAtLeast(0)
+    val sanityMaximum: Int get() = (sanityBase + sanity.adjustment + progressionSanityBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY")).coerceAtLeast(0)
+    val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment + progressionArcaneBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE")).coerceAtLeast(0)
+    val energyMaximum: Int get() = (energyBase + energy.adjustment + progressionEnergyBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY")).coerceAtLeast(0)
     val destinyMaximum: Int get() = (destiny.maximum + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "DESTINY")).coerceAtLeast(0)
 
     fun lifeCalculation() = CalculatedValue(lifeBase, life.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE"))

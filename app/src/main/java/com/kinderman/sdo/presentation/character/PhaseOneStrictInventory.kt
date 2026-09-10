@@ -57,6 +57,8 @@ internal fun PhaseOneStrictInventorySection(
     onChange: (Character) -> Unit,
 ) {
     var dialog by remember { mutableStateOf<String?>(null) }
+    var inventoryQuery by remember { mutableStateOf("") }
+    var inventoryGroup by remember { mutableStateOf("Todos") }
     val context = LocalContext.current
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
     val hasInitialShopping = character.inventory.any { it.participatesInInitialCreation() }
@@ -82,8 +84,20 @@ internal fun PhaseOneStrictInventorySection(
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) {
             onChange(character.copy(containerCapacity = it.coerceAtLeast(0)))
         }
+        HudTextField("Buscar por nome, categoria, material ou estado", inventoryQuery) { inventoryQuery = it }
+        ChoiceField("Grupo", inventoryGroup, listOf("Todos", "Armas", "Armaduras", "Itens"), true) { inventoryGroup = it }
 
-        character.inventory.forEachIndexed { index, item ->
+        inventoryGroups(character.inventory).forEach { (group, groupItems) ->
+            val visible = groupItems.filter { item ->
+                (inventoryGroup == "Todos" || inventoryGroup == group) &&
+                    (inventoryQuery.isBlank() || listOf(item.name, item.category, item.quality, item.effect, itemStateLabel(item.state)).any { it.contains(inventoryQuery, true) })
+            }
+            if (inventoryGroup == "Todos" || inventoryGroup == group) {
+                Text("$group // ${groupItems.size} // CARGA ${groupItems.sumOf { it.effectiveLoad() }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                if (groupItems.isEmpty()) AddButton("Adicionar primeiro item em $group", enabled) { dialog = if (group == "Armas" || group == "Armaduras") "builder" else "catalog" }
+            }
+            visible.forEach { item ->
+            val index = character.inventory.indexOfFirst { it.id == item.id }
             Column(
                 Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -116,12 +130,14 @@ internal fun PhaseOneStrictInventorySection(
                         )
                     }
                 }
-                HudTextField("Estado E/R/M/G", item.state, enabled = enabled) { value ->
-                    onChange(character.copy(inventory = character.inventory.replace(index, item.copy(state = value.uppercase().take(1)))))
+                val states = validItemStates(item)
+                ChoiceField("Estado", item.state, states, enabled, display = ::itemStateLabel) { value ->
+                    onChange(character.copy(inventory = character.inventory.replace(index, item.copy(state = value))))
                 }
                 HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { value ->
                     onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
                 }
+            }
             }
         }
 
@@ -141,7 +157,13 @@ internal fun PhaseOneStrictInventorySection(
     }
 
     when (dialog) {
-        "glossary" -> EquipmentGlossaryDialog { dialog = null }
+        "glossary" -> EquipmentGlossaryDialog(
+            onDismiss = { dialog = null },
+            onUse = { entry ->
+                onChange(character.copy(inventory = character.inventory + InventoryItem(name = entry.term, category = if (entry.section == "Armas") "Arma" else "Item", effect = entry.definition)))
+                dialog = null
+            },
+        )
         "initial_catalog" -> ItemCatalogDialog(
             title = "LOJA INICIAL // ITENS PRONTOS",
             entries = itemCatalog,
@@ -181,6 +203,24 @@ internal fun PhaseOneStrictInventorySection(
             dialog = null
         }
     }
+}
+
+private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<InventoryItem>> = linkedMapOf(
+    "Armas" to items.filter { it.category.contains("arma", true) && !it.category.contains("armadura", true) },
+    "Armaduras" to items.filter { it.category.contains("armadura", true) || it.category.contains("acessório", true) },
+    "Itens" to items.filterNot { it.category.contains("arma", true) },
+).let { groups -> groups + ("Itens" to groups.getValue("Itens").filterNot { it.category.contains("armadura", true) || it.category.contains("acessório", true) }) }
+
+private fun validItemStates(item: InventoryItem): List<String> = buildList {
+    if (item.category.contains("arma", true) || item.category.contains("armadura", true) || item.category.contains("acessório", true)) add("E")
+    add("R"); add("M"); add("G")
+}
+
+private fun itemStateLabel(state: String): String = when (state) {
+    "E" -> "Equipado"
+    "R" -> "Recipiente"
+    "G" -> "Guardado"
+    else -> "Mochila"
 }
 
 @Composable

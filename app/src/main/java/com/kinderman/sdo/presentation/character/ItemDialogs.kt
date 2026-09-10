@@ -370,16 +370,19 @@ private fun bonusTargets(type: ItemBonusType): List<String> = when (type) {
 }
 
 @Composable
-internal fun EquipmentGlossaryDialog(onDismiss: () -> Unit) {
+internal fun EquipmentGlossaryDialog(onDismiss: () -> Unit, onUse: ((com.kinderman.sdo.domain.catalog.GlossaryEntry) -> Unit)? = null) {
     var query by remember { mutableStateOf("") }
-    val filtered = remember(query) {
+    var section by remember { mutableStateOf("Termos") }
+    var group by remember { mutableStateOf("Todos") }
+    val groups = remember(section) { EquipmentGlossary.entries.filter { it.section == section }.map { it.group }.distinct().sorted() }
+    val filtered = remember(query, section, group) {
         val needle = query.trim()
         EquipmentGlossary.entries.filter { entry ->
-            needle.isEmpty() ||
+            entry.section == section && (group == "Todos" || entry.group == group) && (needle.isEmpty() ||
                 entry.term.contains(needle, ignoreCase = true) ||
                 entry.group.contains(needle, ignoreCase = true) ||
-                entry.definition.contains(needle, ignoreCase = true)
-        }
+                entry.definition.contains(needle, ignoreCase = true))
+        }.sortedWith(compareBy({ it.group }, { it.term }))
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -387,12 +390,16 @@ internal fun EquipmentGlossaryDialog(onDismiss: () -> Unit) {
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 HudTextField("Buscar termo, item ou material", query) { query = it }
+                ChoiceField("Consulta", section, listOf("Termos", "Materiais", "Armas"), true) { section = it; group = "Todos" }
+                ChoiceField("Categoria", group, listOf("Todos") + groups, true) { group = it }
+                Text("RESULTADOS // ${filtered.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState())) {
                     filtered.forEach { entry ->
                         Column(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                             Text(entry.term, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
                             Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                             Text(entry.definition, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                            if (onUse != null && entry.referenceId.isNotBlank()) TextButton(onClick = { onUse(entry) }) { Text("USAR COMO BASE") }
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }

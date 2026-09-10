@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.catalog.withRaceSelection
@@ -48,8 +49,9 @@ import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
-internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
     var selectingRace by remember { mutableStateOf(false) }
+    var selectingLevel by remember { mutableStateOf(false) }
     TechPanel {
         SectionHeader("01", "Identidade")
         HudTextField("Nome", character.name, enabled = enabled) { onChange(character.copy(name = it)) }
@@ -63,13 +65,17 @@ internal fun IdentitySection(character: Character, enabled: Boolean, onChange: (
         )
         HudTextField("Sexo", character.sex, enabled = enabled) { value -> onChange(character.copy(sex = value)) }
         TwoFields(
-            { IntegerField("Nível", character.level, enabled, it) { value -> onChange(character.copy(level = value.coerceAtLeast(1))) } },
+            { AddButton("Nível ${character.level} — alterar", enabled) { selectingLevel = true } },
             { IntegerField("Dinheiro (E$)", character.money, enabled, it) { value -> onChange(character.copy(money = value)) } },
         )
     }
     if (selectingRace) RacePickerDialog(character, { selectingRace = false }) { race, subRace, attribute, basePowers, subRacePower ->
         onChange(character.withRaceSelection(race, subRace, attribute, basePowers, subRacePower))
         selectingRace = false
+    }
+    if (selectingLevel) LevelProgressionDialog(character, catalog, { selectingLevel = false }) {
+        onChange(it)
+        selectingLevel = false
     }
 }
 

@@ -14,6 +14,7 @@ import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.ProgressionRecord
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.defaultAttributes
@@ -37,6 +38,11 @@ data class CharacterRecord(
     val occupation: String = "",
     val age: String = "",
     val level: Int = 1,
+    val progressionLifeBonus: Int = 0,
+    val progressionSanityBonus: Int = 0,
+    val progressionArcaneBonus: Int = 0,
+    val progressionEnergyBonus: Int = 0,
+    val progressionHistory: List<ProgressionRecord> = emptyList(),
     val money: Int = 0,
     val life: ResourceValue = ResourceValue(),
     val sanity: ResourceValue = ResourceValue(),
@@ -100,6 +106,11 @@ fun CharacterRecord.toDomain() = Character(
     sex = sex,
     size = size,
     level = level,
+    progressionLifeBonus = progressionLifeBonus,
+    progressionSanityBonus = progressionSanityBonus,
+    progressionArcaneBonus = progressionArcaneBonus,
+    progressionEnergyBonus = progressionEnergyBonus,
+    progressionHistory = progressionHistory,
     money = money,
     life = life,
     sanity = sanity,
@@ -164,6 +175,11 @@ fun Character.toRecord() = CharacterRecord(
     occupation = occupation,
     age = age,
     level = level,
+    progressionLifeBonus = progressionLifeBonus,
+    progressionSanityBonus = progressionSanityBonus,
+    progressionArcaneBonus = progressionArcaneBonus,
+    progressionEnergyBonus = progressionEnergyBonus,
+    progressionHistory = progressionHistory,
     money = money,
     life = life.copy(maximum = lifeMaximum),
     sanity = sanity.copy(maximum = sanityMaximum),
