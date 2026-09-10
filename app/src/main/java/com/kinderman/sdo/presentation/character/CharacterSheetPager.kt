@@ -45,7 +45,8 @@ internal enum class SheetPage(val code: String, val label: String) {
     PATH("07", "CAMINHO"),
     POWERS("08", "PODERES"),
     MYSTIC("12", "MÍSTICO"),
-    BODY("09—11", "CORPO"),
+    INVENTORY("09", "INVENTÁRIO"),
+    BODY("10—11", "CORPO"),
     RECORD("13—14", "REGISTRO"),
     NOTES("15", "ANOTAÇÕES"),
 }
@@ -64,6 +65,7 @@ internal fun CharacterSheetPager(
     val pages = SheetPage.entries
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val pageScrollStates = listOf(
+        rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
@@ -195,10 +197,15 @@ private fun SheetPageContent(
                 com.kinderman.sdo.ui.CollapsibleSection("Poderes") { PhaseOnePowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, editable, onChange) }
             }
 
+            SheetPage.MYSTIC -> item("mystic") {
+                com.kinderman.sdo.ui.CollapsibleSection("Místico") { MysticSection(character, catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE }, editable, onChange) }
+            }
+
+            SheetPage.INVENTORY -> item("inventory") {
+                com.kinderman.sdo.ui.CollapsibleSection("Inventário") { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, editable, onChange) }
+            }
+
             SheetPage.BODY -> {
-                item("inventory") {
-                    com.kinderman.sdo.ui.CollapsibleSection("Inventário") { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, editable, onChange) }
-                }
                 item("body") { BodySection(character, editable, onChange) }
                 itemsIndexed(
                     items = character.bodyRegions,
@@ -213,10 +220,6 @@ private fun SheetPageContent(
                     )
                 }
                 item("organs") { com.kinderman.sdo.ui.CollapsibleSection("Órgãos") { OrganSection(character, editable, onChange) } }
-            }
-
-            SheetPage.MYSTIC -> item("mystic") {
-                com.kinderman.sdo.ui.CollapsibleSection("Místico") { MysticSection(character, catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE }, editable, onChange) }
             }
 
             SheetPage.RECORD -> {
