@@ -211,7 +211,15 @@ def load_catalog(directory):
                 assert entry['abilityRange'] in RANGE_VALUES.values(), (entry['id'], 'abilityRange')
                 assert entry['abilityDuration'] in DURATION_VALUES.values(), (entry['id'], 'abilityDuration')
                 assert entry['abilityResistance'] in RESISTANCE_VALUES.values(), (entry['id'], 'abilityResistance')
-                assert entry['abilityCostType'] == 'ENERGY', (entry['id'], 'power cost type')
+                assert entry['abilityCostType'] in {'ENERGY', 'LIFE', 'SANITY', 'DESTINY'}, (entry['id'], 'power cost type')
+                if entry['abilityCostType'] == 'DESTINY':
+                    destiny_context = ' '.join([
+                        entry['name'], entry['group'], entry['summary'],
+                        entry['mechanicalEffect'], *entry['keywords'],
+                    ]).lower()
+                    assert any(term in destiny_context for term in (
+                        'divin', 'sorte', 'destino', 'probabil', 'porcent',
+                    )), (entry['id'], 'destiny cost eligibility')
                 if entry['abilityExecution'] == 'PASSIVE':
                     assert entry['abilityCostValue'] == 0, (entry['id'], 'passive power cost')
                 else:
