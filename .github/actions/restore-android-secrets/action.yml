@@ -1,0 +1,31 @@
+name: Restore Android protected files
+description: Validate and restore the Firebase configuration and signing keystore
+runs:
+  using: composite
+  steps:
+    - name: Validate and restore files
+      shell: bash
+      run: |
+        set -euo pipefail
+        for secret_name in \
+          GOOGLE_SERVICES_JSON \
+          SDO_KEYSTORE_BASE64 \
+          SDO_KEYSTORE_PASSWORD \
+          SDO_KEY_ALIAS \
+          SDO_KEY_PASSWORD
+        do
+          if [[ -z "${!secret_name:-}" ]]; then
+            echo "::error::Missing ${secret_name} repository secret."
+            exit 1
+          fi
+        done
+        if printf '%s' "$GOOGLE_SERVICES_JSON" | jq -e . > /dev/null 2>&1; then
+          printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+        else
+          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
+        fi
+        jq -e '.project_info.project_id == "sdo-companion" and
+          .client[0].client_info.android_client_info.package_name == "com.kinderman.sdo"' \
+          app/google-services.json > /dev/null
+        printf '%s' "$SDO_KEYSTORE_BASE64" | base64 --decode > "$SDO_KEYSTORE_FILE"
+        chmod 600 "$SDO_KEYSTORE_FILE"

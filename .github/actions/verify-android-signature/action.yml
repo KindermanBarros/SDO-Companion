@@ -1,0 +1,32 @@
+name: Verify Android APK signature
+description: Verify the APK and require the certificate from the configured release keystore
+inputs:
+  apk:
+    description: APK path to verify
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Compare signing certificate SHA-256
+      shell: bash
+      env:
+        APK_PATH: ${{ inputs.apk }}
+      run: |
+        set -euo pipefail
+        apksigner_path="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+        if [[ -z "$apksigner_path" ]]; then
+          echo '::error::Android apksigner was not found.'
+          exit 1
+        fi
+        signer_output="$("$apksigner_path" verify --verbose --print-certs "$APK_PATH")"
+        actual_sha="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "$signer_output" | head -n 1 | tr '[:upper:]' '[:lower:]')"
+        expected_sha="$(keytool -list -v \
+          -keystore "$SDO_KEYSTORE_FILE" \
+          -storepass "$SDO_KEYSTORE_PASSWORD" \
+          -alias "$SDO_KEY_ALIAS" \
+          | sed -n 's/.*SHA256: //p' | head -n 1 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+        if [[ -z "$actual_sha" || -z "$expected_sha" || "$actual_sha" != "$expected_sha" ]]; then
+          echo '::error::APK certificate does not match the configured release certificate SHA-256.'
+          exit 1
+        fi
+        echo "Verified APK certificate SHA-256: $actual_sha"
