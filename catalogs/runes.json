@@ -19,10 +19,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "recipiente",
+      "targetArea": "Recipiente; recebe líquido frio",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: recipiente; recebe líquido frio. Aquece o conteúdo sem incendiá-lo."
+      "effect": "Aquece o conteúdo sem incendiá-lo."
     },
     {
       "id": "rune.centelha",
@@ -37,10 +37,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "ferramenta",
+      "targetArea": "Ferramenta; comando",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: ferramenta; comando. Produz chama pequena e estável.",
+      "effect": "Produz chama pequena e estável.",
       "package": "Kit de Runas Básicas"
     },
     {
@@ -56,10 +56,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "porta",
+      "targetArea": "Porta; criatura a cruza",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: porta; criatura a cruza. Emite clarão visível ao inscritor em 30 m."
+      "effect": "Emite clarão visível ao inscritor em 30 m."
     },
     {
       "id": "rune.lamina_morna",
@@ -74,10 +74,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "arma",
+      "targetArea": "Arma; desembainhar",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: arma; desembainhar. Próximo acerto causa +1d6 fogo."
+      "effect": "Próximo acerto causa +1d6 fogo."
     },
     {
       "id": "rune.selo_cauterizante",
@@ -92,10 +92,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "bandagem",
+      "targetArea": "Bandagem; contato com sangue",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: bandagem; contato com sangue. Interrompe sangramento comum."
+      "effect": "Interrompe sangramento comum."
     },
     {
       "id": "rune.dissipacao_impacto",
@@ -110,10 +110,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "parede",
+      "targetArea": "Parede; sofre impacto",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: parede; sofre impacto. Reduz em 2d6 o dano à estrutura."
+      "effect": "Reduz em 2d6 o dano à estrutura."
     },
     {
       "id": "rune.solo_firme",
@@ -128,11 +128,11 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "bota",
+      "targetArea": "Bota; terreno instável",
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: bota; terreno instável. Ignora uma penalidade de terreno difícil por uma rodada.",
+      "effect": "Ignora uma penalidade de terreno difícil por uma rodada.",
       "package": "Kit de Runas Básicas"
     },
     {
@@ -148,10 +148,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "porta",
+      "targetArea": "Porta; comando",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: porta; comando. Funde a porta ao batente; quebrar exige CD 17."
+      "effect": "Funde a porta ao batente; quebrar exige CD 17."
     },
     {
       "id": "rune.pilar_emergencia",
@@ -166,10 +166,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "piso",
+      "targetArea": "Piso; estrutura cede",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: piso; estrutura cede. Ergue suporte capaz de sustentar uma sala por uma cena."
+      "effect": "Ergue suporte capaz de sustentar uma sala por uma cena."
     },
     {
       "id": "rune.memoria_rocha",
@@ -184,12 +184,12 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "monólito",
+      "targetArea": "Monólito; toque e pergunta",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: monólito; toque e pergunta. Mostra vibração marcante ocorrida ali no último dia.",
+      "effect": "Mostra vibração marcante ocorrida ali no último dia.",
       "package": "Runas Avançadas"
     },
     {
@@ -205,12 +205,12 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "recipiente",
+      "targetArea": "Recipiente; fechado",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: recipiente; fechado. Conserva conteúdo por um dia.",
+      "effect": "Conserva conteúdo por um dia.",
       "package": "Kit de Runas Básicas"
     },
     {
@@ -226,10 +226,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "sola",
+      "targetArea": "Sola; pisar em líquido",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: sola; pisar em líquido. Congela uma área de 1 m sob o usuário."
+      "effect": "Congela uma área de 1 m sob o usuário."
     },
     {
       "id": "rune.ferrolho_gelo",
@@ -244,10 +244,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "porta",
+      "targetArea": "Porta; intrusão",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: porta; intrusão. Cria camada de gelo com 12 Vida."
+      "effect": "Cria camada de gelo com 12 Vida."
     },
     {
       "id": "rune.armadilha_geada",
@@ -262,10 +262,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "piso",
+      "targetArea": "Piso; peso de criatura",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Suporte e gatilho: piso; peso de criatura. Ataque do inscritor vs. PA; 2d6 + POD e −2 m Movimento.",
+      "effect": "Ataque do inscritor vs. PA; 2d6 + POD e −2 m Movimento.",
       "package": "Runas Intermediárias"
     },
     {
@@ -281,10 +281,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "sala",
+      "targetArea": "Sala; porta fechada",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: sala; porta fechada. Mantém frio intenso e preservação enquanto selada."
+      "effect": "Mantém frio intenso e preservação enquanto selada."
     },
     {
       "id": "rune.curativo_reativo",
@@ -299,10 +299,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "bandagem",
+      "targetArea": "Bandagem; portador sofre dano",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: bandagem; portador sofre dano. Recupera 1d6 + POD do inscritor Vida."
+      "effect": "Recupera 1d6 + POD do inscritor Vida."
     },
     {
       "id": "rune.marca_pureza",
@@ -317,12 +317,12 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "frasco",
+      "targetArea": "Frasco; veneno entra",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: frasco; veneno entra. Muda de cor diante de toxina comum."
+      "effect": "Muda de cor diante de toxina comum."
     },
     {
       "id": "rune.leito_restaurador",
@@ -337,10 +337,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "cama",
+      "targetArea": "Cama; descanso de 8 h",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: cama; descanso de 8 h. Hóspede recupera +2d6 Vida no descanso."
+      "effect": "Hóspede recupera +2d6 Vida no descanso."
     },
     {
       "id": "rune.selo_estabilizacao",
@@ -355,10 +355,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "armadura",
+      "targetArea": "Armadura; portador chega a 0 PV",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: armadura; portador chega a 0 PV. Estabiliza e suspende rolagem de morte até início do próximo turno.",
+      "effect": "Estabiliza e suspende rolagem de morte até início do próximo turno.",
       "package": "Runas Intermediárias"
     },
     {
@@ -374,10 +374,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "círculo",
+      "targetArea": "Círculo; comando",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: círculo; comando. Aliados no raio 3 m recuperam 3d6 + POD uma vez por cena.",
+      "effect": "Aliados no raio 3 m recuperam 3d6 + POD uma vez por cena.",
       "package": "Runas Avançadas"
     },
     {
@@ -393,10 +393,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "botas",
+      "targetArea": "Botas; comando",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: botas; comando. Abafa passos por uma cena ou até atacar."
+      "effect": "Abafa passos por uma cena ou até atacar."
     },
     {
       "id": "rune.fechadura_cega",
@@ -411,10 +411,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "fechadura",
+      "targetArea": "Fechadura; observação hostil",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: fechadura; observação hostil. Faz parecer que não há fechadura ou abertura."
+      "effect": "Faz parecer que não há fechadura ou abertura."
     },
     {
       "id": "rune.manto_parede",
@@ -429,10 +429,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "capa",
+      "targetArea": "Capa; permanecer imóvel",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: capa; permanecer imóvel. Concede +4 Furtividade por uma cena."
+      "effect": "Concede +4 Furtividade por uma cena."
     },
     {
       "id": "rune.corredor_falso",
@@ -447,10 +447,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "entrada",
+      "targetArea": "Entrada; intruso atravessa",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "Suporte e gatilho: entrada; intruso atravessa. Contra PMental, mostra passagem na direção errada."
+      "effect": "Contra PMental, mostra passagem na direção errada."
     },
     {
       "id": "rune.arquivo_inexistente",
@@ -465,10 +465,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "cofre",
+      "targetArea": "Cofre; pessoa não autorizada procura",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: cofre; pessoa não autorizada procura. Oculta cofre de percepção mundana por uma cena.",
+      "effect": "Oculta cofre de percepção mundana por uma cena.",
       "package": "Runas Avançadas"
     },
     {
@@ -484,10 +484,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "placa",
+      "targetArea": "Placa; palavra-chave",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: placa; palavra-chave. Reproduz mensagem de até dez segundos.",
+      "effect": "Reproduz mensagem de até dez segundos.",
       "package": "Kit de Runas Básicas"
     },
     {
@@ -503,10 +503,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "fio",
+      "targetArea": "Fio; rompimento",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: fio; rompimento. Alerta mentalmente o portador em até 100 m."
+      "effect": "Alerta mentalmente o portador em até 100 m."
     },
     {
       "id": "rune.ruptura_harmonica",
@@ -521,10 +521,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "martelo",
+      "targetArea": "Martelo; golpear objeto",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: martelo; golpear objeto. Causa 2d6 + POD adicional a objeto ou estrutura frágil.",
+      "effect": "Causa 2d6 + POD adicional a objeto ou estrutura frágil.",
       "package": "Runas Intermediárias"
     },
     {
@@ -540,10 +540,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "parede",
+      "targetArea": "Parede; comando",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: parede; comando. Sons não atravessam uma sala por uma cena."
+      "effect": "Sons não atravessam uma sala por uma cena."
     },
     {
       "id": "rune.voz_anfiteatro",
@@ -558,10 +558,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "palco",
+      "targetArea": "Palco; orador inicia discurso",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: palco; orador inicia discurso. Voz chega claramente a todos no local sem ensurdecer."
+      "effect": "Voz chega claramente a todos no local sem ensurdecer."
     },
     {
       "id": "rune.retorno_magnetico",
@@ -576,10 +576,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "arma metálica",
+      "targetArea": "Arma metálica; comando",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: arma metálica; comando. Arma arremessada retorna à mão se caminho estiver livre."
+      "effect": "Arma arremessada retorna à mão se caminho estiver livre."
     },
     {
       "id": "rune.desvio_projetil",
@@ -594,10 +594,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "escudo",
+      "targetArea": "Escudo; projétil metálico se aproxima",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Suporte e gatilho: escudo; projétil metálico se aproxima. +4 PG contra aquele ataque."
+      "effect": "+4 PG contra aquele ataque."
     },
     {
       "id": "rune.inventario_fiel",
@@ -612,10 +612,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "caixa",
+      "targetArea": "Caixa; item marcado sai",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: caixa; item marcado sai. Emite tom e registra qual selo foi removido."
+      "effect": "Emite tom e registra qual selo foi removido."
     },
     {
       "id": "rune.corrente_obediente",
@@ -630,10 +630,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "corrente",
+      "targetArea": "Corrente; comando",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Suporte e gatilho: corrente; comando. Enrola alvo adjacente; ataque vs. PG para Imobilizar."
+      "effect": "Enrola alvo adjacente; ataque vs. PG para Imobilizar."
     },
     {
       "id": "rune.arsenal_vinculado",
@@ -648,10 +648,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "suporte",
+      "targetArea": "Suporte; comando do dono",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: suporte; comando do dono. Convoca à mão uma arma marcada no mesmo edifício."
+      "effect": "Convoca à mão uma arma marcada no mesmo edifício."
     },
     {
       "id": "rune.raiz_guarda",
@@ -666,10 +666,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "vaso",
+      "targetArea": "Vaso; estranho se aproxima",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: vaso; estranho se aproxima. Planta se move e aponta para o intruso."
+      "effect": "Planta se move e aponta para o intruso."
     },
     {
       "id": "rune.madeira_renovada",
@@ -684,10 +684,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "ferramenta de madeira",
+      "targetArea": "Ferramenta de madeira; quebra",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: ferramenta de madeira; quebra. Repara dano simples uma vez."
+      "effect": "Repara dano simples uma vez."
     },
     {
       "id": "rune.cerca_espinhosa",
@@ -702,10 +702,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "marco no solo",
+      "targetArea": "Marco no solo; comando",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: marco no solo; comando. Cria barreira vegetal de 5 m com 15 Vida por uma cena.",
+      "effect": "Cria barreira vegetal de 5 m com 15 Vida por uma cena.",
       "package": "Runas Intermediárias"
     },
     {
@@ -721,12 +721,12 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "árvore",
+      "targetArea": "Árvore; criatura autorizada toca",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: árvore; criatura autorizada toca. Produz fruto que remove 1 Exaustão, uma vez por dia."
+      "effect": "Produz fruto que remove 1 Exaustão, uma vez por dia."
     },
     {
       "id": "rune.jardim_sentinela",
@@ -741,10 +741,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "jardim",
+      "targetArea": "Jardim; intrusão",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Suporte e gatilho: jardim; intrusão. Plantas prendem invasores; ataque vs. PG, Imobilizado."
+      "effect": "Plantas prendem invasores; ataque vs. PG, Imobilizado."
     },
     {
       "id": "rune.ancora_onirica",
@@ -759,10 +759,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "estaca",
+      "targetArea": "Estaca; toca entidade planar",
       "duration": "Cena",
       "resistance": "Arcana",
-      "effect": "Suporte e gatilho: estaca; toca entidade planar. Contra PA, impede teleporte e deslocamento planar por uma cena.",
+      "effect": "Contra PA, impede teleporte e deslocamento planar por uma cena.",
       "package": "Runas Avançadas"
     },
     {
@@ -778,10 +778,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "cristal",
+      "targetArea": "Cristal; toque voluntário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: cristal; toque voluntário. Guarda memória sensorial curta, reproduzível três vezes."
+      "effect": "Guarda memória sensorial curta, reproduzível três vezes."
     },
     {
       "id": "rune.despertador_pesadelo",
@@ -796,12 +796,12 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "amuleto",
+      "targetArea": "Amuleto; portador dorme",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: amuleto; portador dorme. Acorda o portador diante de intrusão mental."
+      "effect": "Acorda o portador diante de intrusão mental."
     },
     {
       "id": "rune.janela_sonho",
@@ -816,10 +816,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "espelho",
+      "targetArea": "Espelho; duas peças pareadas",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: espelho; duas peças pareadas. Permite imagem e voz entre os espelhos uma vez por cena."
+      "effect": "Permite imagem e voz entre os espelhos uma vez por cena."
     },
     {
       "id": "rune.lacre_antimanifesto",
@@ -834,10 +834,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "porta",
+      "targetArea": "Porta; Manifesto se aproxima",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Suporte e gatilho: porta; Manifesto se aproxima. Entidade deve vencer PA 16 para cruzar."
+      "effect": "Entidade deve vencer PA 16 para cruzar."
     },
     {
       "id": "rune.heranca_rubra",
@@ -852,10 +852,10 @@
       "executionValue": 10,
       "executionUnit": "Minutos",
       "range": "Pessoal",
-      "targetArea": "medalhão",
+      "targetArea": "Medalhão; sangue de parente toca",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: medalhão; sangue de parente toca. Confirma ou rejeita parentesco direto por mudança de cor."
+      "effect": "Confirma ou rejeita parentesco direto por mudança de cor."
     },
     {
       "id": "rune.juramento_carmesim",
@@ -870,10 +870,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "contrato",
+      "targetArea": "Contrato; signatário quebra cláusula",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: contrato; signatário quebra cláusula. Marca visível surge na pele; não força obediência."
+      "effect": "Marca visível surge na pele; não força obediência."
     },
     {
       "id": "rune.guardiao_reliquia",
@@ -888,10 +888,10 @@
       "executionValue": 1,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "relíquia",
+      "targetArea": "Relíquia; usuário não autorizado toca",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Suporte e gatilho: relíquia; usuário não autorizado toca. Ataque vs. PA; 2d6 + POD e repele 2 m."
+      "effect": "Ataque vs. PA; 2d6 + POD e repele 2 m."
     },
     {
       "id": "rune.traducao_recursiva",
@@ -906,10 +906,10 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "placa",
+      "targetArea": "Placa; inscrição antiga é aproximada",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: placa; inscrição antiga é aproximada. Exibe tradução funcional de símbolos conhecidos por uma cena."
+      "effect": "Exibe tradução funcional de símbolos conhecidos por uma cena."
     },
     {
       "id": "rune.portal_oficina",
@@ -924,11 +924,11 @@
       "executionValue": 8,
       "executionUnit": "Horas",
       "range": "Pessoal",
-      "targetArea": "dois arcos pareados",
+      "targetArea": "Dois arcos pareados; comando",
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Suporte e gatilho: dois arcos pareados; comando. Abre passagem entre arcos no mesmo assentamento por uma rodada."
+      "effect": "Abre passagem entre arcos no mesmo assentamento por uma rodada."
     }
   ]
 }

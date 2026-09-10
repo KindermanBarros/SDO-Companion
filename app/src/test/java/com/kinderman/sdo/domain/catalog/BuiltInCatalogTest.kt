@@ -54,6 +54,23 @@ class BuiltInCatalogTest {
         assertTrue(powers.all { it.cost.isNotBlank() && it.action.isNotBlank() })
         assertTrue(powers.all { it.range.isNotBlank() && it.duration.isNotBlank() })
         assertTrue(powers.all { it.mechanicalEffect.isNotBlank() && it.ruleReference.isNotBlank() })
+        assertTrue(powers.all { it.activationCondition != it.mechanicalEffect })
+        assertTrue(powers.none { "Profissão:" in it.mechanicalEffect || "Categoria:" in it.mechanicalEffect })
+        assertTrue(powers.all { it.targetArea.isNotBlank() && it.abilitySource != null })
+        assertTrue(powers.all { entry ->
+            entry.toStructuredPower().let { power ->
+                power.canonicalSource == entry.abilitySource && power.costType == entry.abilityCostType &&
+                    power.costValue == entry.abilityCostValue && power.executionType == entry.abilityExecution &&
+                    power.rangeType == entry.abilityRange && power.targetArea == entry.targetArea &&
+                    power.durationType == entry.abilityDuration && power.resistance == entry.abilityResistance
+            }
+        })
+    }
+
+    @Test fun everyMysticExampleKeepsMetadataOutOfItsEffect() {
+        val abilities = BuiltInCatalog.entries.filter { it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH) }
+        assertTrue(abilities.all { it.targetArea.isNotBlank() })
+        assertTrue(abilities.none { it.mechanicalEffect.startsWith("Suporte e gatilho:", ignoreCase = true) })
     }
 
     @Test fun everyDefaultMagicIsCompleteAndKeepsItsCanonicalProvenance() {
