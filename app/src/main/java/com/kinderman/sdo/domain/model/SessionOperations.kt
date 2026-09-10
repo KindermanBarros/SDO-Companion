@@ -126,14 +126,15 @@ fun Character.applySessionCommand(command: SessionCommand, actorId: String): Ses
             copy(bodyRegions = regions).also { next = it.bodyRegions[index].failures.toString() }
         }
         SessionOperationType.ABILITY_USE -> useAbility(command).also { result ->
-            target = command.targetId
-            previous = "READY"
-            next = "USED"
+            target = abilityName(command.targetId)
+            val changedResources = SessionResource.entries.filter { resourceValue(it).current != result.resourceValue(it).current }
+            previous = changedResources.joinToString(", ") { "${it.name}=${resourceValue(it).current}" }.ifBlank { "SEM CUSTO" }
+            next = changedResources.joinToString(", ") { "${it.name}=${result.resourceValue(it).current}" }.ifBlank { "SEM ALTERAÇÃO" }
         }
         SessionOperationType.USAGE_RESET -> this.also {
-            target = command.detail
-            previous = "USED"
-            next = "READY"
+            target = command.detail.ifBlank { "LEGADO" }
+            previous = "SEM ALTERAÇÃO"
+            next = "SEM ALTERAÇÃO"
         }
         SessionOperationType.REWARD -> {
             target = command.label
@@ -141,7 +142,10 @@ fun Character.applySessionCommand(command: SessionCommand, actorId: String): Ses
             next = command.detail
             this
         }
-    }.copy(updatedAt = now, dirty = true)
+    }.let { result ->
+        if (command.type == SessionOperationType.USAGE_RESET || result == this) result
+        else result.copy(updatedAt = now, dirty = true)
+    }
     return SessionMutation(
         character = changed,
         operation = SessionOperation(
@@ -166,13 +170,51 @@ private fun Character.useAbility(command: SessionCommand): Character {
     if (powerIndex >= 0) {
         val power = powers[powerIndex]
         require(power.available) { "Este poder não está disponível agora." }
-        return payFixedAbilityCosts(power.cost)
+        return if (power.costType == AbilityCostType.NONE && power.cost.isNotBlank()) payFixedAbilityCosts(power.cost)
+        else payCanonicalAbilityCost(power.costType, power.costValue, power.id)
     }
     val abilityIndex = mysticAbilities.indexOfFirst { it.id == command.targetId }
     require(abilityIndex >= 0) { "Habilidade não encontrada." }
     val ability = mysticAbilities[abilityIndex]
     require(ability.available) { "Esta habilidade não está disponível agora." }
-    return payFixedAbilityCosts(ability.cost)
+    val prepared = if (ability.type.equals("Runa", true)) copy(
+        mysticAbilities = mysticAbilities.replaceAbility(
+            abilityIndex,
+            ability.copy(
+                inscriberId = id,
+                inscriberPower = attributeTotal("POD"),
+                inscriberRunicKnowledge = maxOf(acquiredKnowledgeValue("Rúnico"), acquiredKnowledgeValue("Runas")),
+                revision = ability.revision + 1,
+            ),
+        ),
+    ) else this
+    val costType = if (ability.type.equals("Runa", true)) AbilityCostType.ARCANE else ability.costType
+    return if (costType == AbilityCostType.NONE && ability.cost.isNotBlank()) prepared.payFixedAbilityCosts(ability.cost)
+    else prepared.payCanonicalAbilityCost(costType, ability.costValue, ability.id)
+}
+
+private fun List<MysticAbility>.replaceAbility(index: Int, value: MysticAbility) = toMutableList().also { it[index] = value }
+
+private fun Character.abilityName(id: String): String =
+    powers.firstOrNull { it.id == id }?.name ?: mysticAbilities.firstOrNull { it.id == id }?.name.orEmpty()
+
+internal fun Character.payCanonicalAbilityCost(type: AbilityCostType, amount: Int, abilityId: String = ""): Character {
+    val value = amount.coerceAtLeast(0)
+    if (type == AbilityCostType.NONE || value == 0) return this
+    if (type == AbilityCostType.DOSE) {
+        val item = inventory.firstOrNull { it.linkedAshId == abilityId }
+        require(item != null && item.quantity >= value) { "Sem cinzas necessárias" }
+        return copy(inventory = inventory.map { if (it.id == item.id) it.copy(quantity = it.quantity - value) else it })
+    }
+    val resource = when (type) {
+        AbilityCostType.ARCANE -> SessionResource.ARCANE
+        AbilityCostType.ENERGY -> SessionResource.ENERGY
+        AbilityCostType.DESTINY -> SessionResource.DESTINY
+        AbilityCostType.LIFE -> SessionResource.LIFE
+        AbilityCostType.SANITY -> SessionResource.SANITY
+        AbilityCostType.NONE, AbilityCostType.DOSE -> error("Tipo de custo não consumível")
+    }
+    return mutateResource(resource, -value)
 }
 
 internal fun Character.payFixedAbilityCosts(cost: String): Character {
@@ -228,6 +270,7 @@ fun Character.resourceMaximum(resource: SessionResource): Int = when (resource) 
     SessionResource.SANITY -> sanityMaximum
     SessionResource.ENERGY -> energyMaximum
     SessionResource.ARCANE -> arcaneMaximum
+    SessionResource.DESTINY -> destinyMaximum
     else -> resourceValue(resource).maximum
 }
 

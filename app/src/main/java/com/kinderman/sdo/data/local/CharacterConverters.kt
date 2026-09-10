@@ -2,6 +2,17 @@ package com.kinderman.sdo.data.local
 
 import androidx.room.TypeConverter
 import com.kinderman.sdo.domain.model.AttributeValue
+import com.kinderman.sdo.domain.model.AbilityCostType
+import com.kinderman.sdo.domain.model.AbilityDuration
+import com.kinderman.sdo.domain.model.AbilityExecution
+import com.kinderman.sdo.domain.model.AbilityModifier
+import com.kinderman.sdo.domain.model.AbilityModifierTarget
+import com.kinderman.sdo.domain.model.AbilityRange
+import com.kinderman.sdo.domain.model.AbilityResistance
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.AbilityTimeUnit
+import com.kinderman.sdo.domain.model.AshPurity
+import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
@@ -22,6 +33,8 @@ private const val FIELD = "\u001f"
 private const val BONUS_ROW = "\u001b"
 private const val BONUS_FIELD = "\u001a"
 private const val NESTED = "\u0019"
+private const val MODIFIER_ROW = "\u0018"
+private const val MODIFIER_FIELD = "\u0017"
 private fun String.parts() = split(FIELD)
 private fun List<String>.row() = joinToString(FIELD)
 private fun List<String>.nested() = joinToString(NESTED)
@@ -75,6 +88,26 @@ class CharacterConverters {
             it.catalogVersion.toString(),
             it.favorite.toString(),
             it.available.toString(),
+            "canonical-v1",
+            it.canonicalSource.name,
+            it.knowledgeId,
+            it.knowledgeLevel?.toString().orEmpty(),
+            it.costType.name,
+            it.costValue.toString(),
+            it.executionType.name,
+            it.rangeType.name,
+            it.targetArea,
+            it.durationType.name,
+            it.resistance.name,
+            it.timeValue.toString(),
+            it.timeUnit.name,
+            it.grantsPermanentBonus.toString(),
+            it.modifiers.joinToString(MODIFIER_ROW) { modifier ->
+                listOf(modifier.id, modifier.targetType.name, modifier.targetId, modifier.value.toString()).joinToString(MODIFIER_FIELD)
+            },
+            it.active.toString(),
+            it.linkedItemId,
+            it.revision.toString(),
         ).row()
     }
 
@@ -104,6 +137,23 @@ class CharacterConverters {
                     catalogVersion = p.getOrNull(18)?.toIntOrNull() ?: 0,
                     favorite = p.getOrNull(19)?.toBooleanStrictOrNull() ?: false,
                     available = p.getOrNull(20)?.toBooleanStrictOrNull() ?: true,
+                    canonicalSource = p.enumAt(22, AbilitySource.NARRATIVE),
+                    knowledgeId = p.getOrElse(23) { "" }.takeIf { p.getOrNull(21) == "canonical-v1" }.orEmpty(),
+                    knowledgeLevel = p.getOrNull(24)?.toIntOrNull().takeIf { p.getOrNull(21) == "canonical-v1" },
+                    costType = p.enumAt(25, legacyCostType(p.getOrElse(3) { "" })),
+                    costValue = p.getOrNull(26)?.toIntOrNull().takeIf { p.getOrNull(21) == "canonical-v1" } ?: legacyCostValue(p.getOrElse(3) { "" }),
+                    executionType = p.enumAt(27, legacyExecution(p.getOrElse(4) { "" })),
+                    rangeType = p.enumAt(28, legacyRange(p.getOrElse(5) { "" })),
+                    targetArea = p.getOrElse(29) { "" }.takeIf { p.getOrNull(21) == "canonical-v1" }.orEmpty(),
+                    durationType = p.enumAt(30, legacyDuration(p.getOrElse(6) { "" })),
+                    resistance = p.enumAt(31, AbilityResistance.NONE),
+                    timeValue = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(21) == "canonical-v1" } ?: 0,
+                    timeUnit = p.enumAt(33, AbilityTimeUnit.MINUTES),
+                    grantsPermanentBonus = p.getOrNull(34)?.toBooleanStrictOrNull().takeIf { p.getOrNull(21) == "canonical-v1" } ?: false,
+                    modifiers = p.getOrElse(35) { "" }.takeIf { p.getOrNull(21) == "canonical-v1" }.toModifiers(),
+                    active = p.getOrNull(36)?.toBooleanStrictOrNull().takeIf { p.getOrNull(21) == "canonical-v1" } ?: false,
+                    linkedItemId = p.getOrElse(37) { "" }.takeIf { p.getOrNull(21) == "canonical-v1" }.orEmpty(),
+                    revision = p.getOrNull(38)?.toIntOrNull().takeIf { p.getOrNull(21) == "canonical-v1" } ?: 1,
                 )
             } else {
                 Power(
@@ -129,6 +179,7 @@ class CharacterConverters {
             item.bonuses.joinToString(BONUS_ROW) { bonus ->
                 listOf(bonus.type.name, bonus.target, bonus.value.toString()).joinToString(BONUS_FIELD)
             },
+            "canonical-v1", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
         ).row()
     }
 
@@ -149,6 +200,9 @@ class CharacterConverters {
                         value = fields.getOrNull(2)?.toIntOrNull() ?: 0,
                     )
                 },
+                quantity = p.getOrNull(14)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v1" } ?: 0,
+                linkedAshId = p.getOrElse(15) { "" }.takeIf { p.getOrNull(13) == "canonical-v1" }.orEmpty(),
+                ashPurity = p.enumAt(16, AshPurity.RAW),
             )
         }
     }
@@ -170,6 +224,7 @@ class CharacterConverters {
             it.keywords.nested(),
             it.repeatable.toString(),
             it.adjustment.toString(),
+            "canonical-v1", it.milestoneLevels.joinToString(","), it.specializationParentId,
         ).row()
     }
 
@@ -191,6 +246,8 @@ class CharacterConverters {
                 keywords = p.getOrElse(12) { "" }.toNestedList(),
                 repeatable = p.getOrNull(13)?.toBooleanStrictOrNull() ?: false,
                 adjustment = p.getOrNull(14)?.toIntOrNull() ?: 0,
+                milestoneLevels = p.getOrElse(16) { "" }.takeIf { p.getOrNull(15) == "canonical-v1" }.orEmpty().split(',').mapNotNull(String::toIntOrNull),
+                specializationParentId = p.getOrElse(17) { "" }.takeIf { p.getOrNull(15) == "canonical-v1" }.orEmpty(),
             )
         }
     }
@@ -206,6 +263,11 @@ class CharacterConverters {
             it.id, it.type, it.name, it.cost, it.action, it.range, it.duration, it.effect,
             it.favorite.toString(), it.available.toString(), "catalog-v2", it.category, it.source,
             it.ruleReference, it.catalogEntryId, it.catalogVersion.toString(),
+            "canonical-v1", it.canonicalSource.name, it.knowledgeId, it.knowledgeLevel?.toString().orEmpty(),
+            it.costType.name, it.costValue.toString(), it.executionType.name, it.rangeType.name,
+            it.targetArea, it.durationType.name, it.resistance.name, it.timeValue.toString(), it.timeUnit.name,
+            it.ashSource.name, it.ashPurity.name, it.linkedInventoryItemId, it.inscriberId, it.revision.toString(),
+            it.inscriberPower.toString(), it.inscriberRunicKnowledge.toString(),
         ).row()
     }
     @TypeConverter fun stringToAbilities(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map {
@@ -221,6 +283,25 @@ class CharacterConverters {
                 ruleReference = p.getOrElse(13) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
                 catalogEntryId = p.getOrElse(14) { "" }.takeIf { p.getOrNull(10) == "catalog-v2" }.orEmpty(),
                 catalogVersion = p.getOrNull(15)?.toIntOrNull().takeIf { p.getOrNull(10) == "catalog-v2" } ?: 0,
+                canonicalSource = p.enumAt(17, AbilitySource.NARRATIVE),
+                knowledgeId = p.getOrElse(18) { "" }.takeIf { p.getOrNull(16) == "canonical-v1" }.orEmpty(),
+                knowledgeLevel = p.getOrNull(19)?.toIntOrNull().takeIf { p.getOrNull(16) == "canonical-v1" },
+                costType = p.enumAt(20, legacyCostType(p.getOrElse(3) { "" }, p.getOrElse(1) { "" })),
+                costValue = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(16) == "canonical-v1" } ?: legacyCostValue(p.getOrElse(3) { "" }),
+                executionType = p.enumAt(22, legacyExecution(p.getOrElse(4) { "" })),
+                rangeType = p.enumAt(23, legacyRange(p.getOrElse(5) { "" })),
+                targetArea = p.getOrElse(24) { "" }.takeIf { p.getOrNull(16) == "canonical-v1" }.orEmpty(),
+                durationType = p.enumAt(25, legacyDuration(p.getOrElse(6) { "" })),
+                resistance = p.enumAt(26, AbilityResistance.NONE),
+                timeValue = p.getOrNull(27)?.toIntOrNull().takeIf { p.getOrNull(16) == "canonical-v1" } ?: 0,
+                timeUnit = p.enumAt(28, AbilityTimeUnit.MINUTES),
+                ashSource = p.enumAt(29, AshSource.FIRE),
+                ashPurity = p.enumAt(30, AshPurity.RAW),
+                linkedInventoryItemId = p.getOrElse(31) { "" }.takeIf { p.getOrNull(16) == "canonical-v1" }.orEmpty(),
+                inscriberId = p.getOrElse(32) { "" }.takeIf { p.getOrNull(16) == "canonical-v1" }.orEmpty(),
+                revision = p.getOrNull(33)?.toIntOrNull().takeIf { p.getOrNull(16) == "canonical-v1" } ?: 1,
+                inscriberPower = p.getOrNull(34)?.toIntOrNull().takeIf { p.getOrNull(16) == "canonical-v1" } ?: 0,
+                inscriberRunicKnowledge = p.getOrNull(35)?.toIntOrNull().takeIf { p.getOrNull(16) == "canonical-v1" } ?: 0,
             )
         }
     }
@@ -247,4 +328,56 @@ private fun inferLegacyPowerSource(origin: String): PowerSourceType = when {
     origin.startsWith("Caminho", ignoreCase = true) -> PowerSourceType.PATH
     origin.startsWith("Raça", ignoreCase = true) || origin.startsWith("Sub-raça", ignoreCase = true) -> PowerSourceType.RACE
     else -> PowerSourceType.MANUAL
+}
+
+private inline fun <reified T : Enum<T>> List<String>.enumAt(index: Int, fallback: T): T =
+    runCatching { enumValueOf<T>(getOrElse(index) { "" }) }.getOrDefault(fallback)
+
+private fun String?.toModifiers(): List<AbilityModifier> = this.orEmpty().split(MODIFIER_ROW).filter(String::isNotBlank).map { encoded ->
+    val values = encoded.split(MODIFIER_FIELD)
+    AbilityModifier(
+        id = values.getOrElse(0) { "" },
+        targetType = runCatching { AbilityModifierTarget.valueOf(values.getOrElse(1) { "" }) }.getOrDefault(AbilityModifierTarget.ATTRIBUTE),
+        targetId = values.getOrElse(2) { "" },
+        value = values.getOrNull(3)?.toIntOrNull() ?: 0,
+    )
+}
+
+private fun legacyCostType(cost: String, type: String = ""): AbilityCostType {
+    if (type.equals("Cinza", true)) return AbilityCostType.DOSE
+    return when {
+        cost.contains("arcano", true) || cost.contains("PM", true) -> AbilityCostType.ARCANE
+        cost.contains("energia", true) || cost.contains("PE", true) -> AbilityCostType.ENERGY
+        cost.contains("destino", true) -> AbilityCostType.DESTINY
+        cost.contains("sanidade", true) || cost.contains("PS", true) -> AbilityCostType.SANITY
+        cost.contains("vida", true) || cost.contains("PV", true) || cost.contains("HP", true) -> AbilityCostType.LIFE
+        else -> AbilityCostType.NONE
+    }
+}
+
+private fun legacyCostValue(cost: String): Int = Regex("\\d+").find(cost)?.value?.toIntOrNull() ?: 0
+
+private fun legacyExecution(action: String): AbilityExecution = when {
+    action.contains("reação", true) -> AbilityExecution.REACTION
+    action.contains("turno", true) -> AbilityExecution.TURN
+    action.contains("livre", true) -> AbilityExecution.FREE
+    action.contains("passiv", true) -> AbilityExecution.PASSIVE
+    action.contains("minuto", true) || action.contains("hora", true) || action.contains("dia", true) -> AbilityExecution.TIME
+    else -> AbilityExecution.ACTION
+}
+
+private fun legacyRange(range: String): AbilityRange = when {
+    range.contains("indefin", true) -> AbilityRange.INDEFINITE
+    range.contains("pessoal", true) || range.contains("toque", true) -> AbilityRange.PERSONAL
+    Regex("(?:9|[1-8])\\s*m", RegexOption.IGNORE_CASE).containsMatchIn(range) -> AbilityRange.SHORT
+    Regex("(?:[12]\\d|30)\\s*m", RegexOption.IGNORE_CASE).containsMatchIn(range) -> AbilityRange.MEDIUM
+    else -> AbilityRange.LONG
+}
+
+private fun legacyDuration(duration: String): AbilityDuration = when {
+    duration.contains("turno", true) -> AbilityDuration.TURNS
+    duration.contains("cena", true) -> AbilityDuration.SCENE
+    duration.contains("sessão", true) -> AbilityDuration.SESSION
+    duration.contains("instant", true) -> AbilityDuration.INSTANT
+    else -> AbilityDuration.TIME
 }

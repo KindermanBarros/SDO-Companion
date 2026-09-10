@@ -23,7 +23,7 @@ fun Character.generalProtectionBreakdown(): CalculatedValue {
                 label = item.name.ifBlank { "Item sem nome" },
                 value = item.pg,
             )
-        },
+        } + powerValueModifiers(AbilityModifierTarget.PROTECTION, "Geral"),
     )
 }
 

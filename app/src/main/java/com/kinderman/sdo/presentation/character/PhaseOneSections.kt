@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,18 +20,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.canAddCatalogEntry
 import com.kinderman.sdo.domain.catalog.previewPathChange
 import com.kinderman.sdo.domain.catalog.toSpecialKnowledge
 import com.kinderman.sdo.domain.catalog.toStructuredPower
 import com.kinderman.sdo.domain.catalog.withStructuredPathPreset
+import com.kinderman.sdo.domain.catalog.withKnowledgeLevel
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.AbilityCostType
+import com.kinderman.sdo.domain.model.AbilityDuration
+import com.kinderman.sdo.domain.model.AbilityExecution
+import com.kinderman.sdo.domain.model.AbilityModifier
+import com.kinderman.sdo.domain.model.AbilityModifierTarget
+import com.kinderman.sdo.domain.model.AbilityRange
+import com.kinderman.sdo.domain.model.AbilityResistance
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.withAddedPower
+import com.kinderman.sdo.domain.model.withUpdatedPower
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.ArcanePanel
 import com.kinderman.sdo.ui.Carbon
@@ -59,6 +73,7 @@ internal fun PhaseOneKnowledgeSection(
             catalog = catalog,
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
+            onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
         ) { onChange(character.copy(learnedKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Conhecimentos arcanos",
@@ -67,6 +82,7 @@ internal fun PhaseOneKnowledgeSection(
             catalog = catalog,
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
+            onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
         ) { onChange(character.copy(arcaneKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Técnicas de batalha",
@@ -75,6 +91,7 @@ internal fun PhaseOneKnowledgeSection(
             catalog = catalog,
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
+            onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
         ) { onChange(character.copy(battleTechniques = it)) }
     }
 }
@@ -87,6 +104,7 @@ private fun PhaseOneKnowledgeList(
     catalog: List<CatalogEntry>,
     enabled: Boolean,
     totalValue: (String) -> Int,
+    onLevelChange: (SpecialKnowledge, Int) -> Unit,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
     var selecting by remember { mutableStateOf(false) }
@@ -106,7 +124,7 @@ private fun PhaseOneKnowledgeList(
             HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
             TwoFields(
                 { HudTextField("Atributo", knowledge.attribute, it, enabled = enabled) { value -> onValues(values.replace(index, knowledge.copy(attribute = value.uppercase()))) } },
-                { IntegerField("Base", knowledge.value, enabled, it) { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
+                { IntegerField("Nível (0–5)", knowledge.value, enabled, it) { value -> onLevelChange(knowledge, value) } },
             )
             IntegerField("Ajuste excepcional", knowledge.adjustment, enabled) { value ->
                 onValues(values.replace(index, knowledge.copy(adjustment = value)))
@@ -204,6 +222,10 @@ internal fun PhaseOnePowerSection(
 ) {
     var selecting by remember { mutableStateOf(false) }
     var expandedPowerId by remember(character.id) { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    fun applyPowerChange(block: () -> Character) {
+        runCatching(block).onSuccess(onChange).onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
+    }
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("08", "Poderes")
         Text("REGISTROS // ${character.powers.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
@@ -218,6 +240,7 @@ internal fun PhaseOnePowerSection(
             StructuredPowerEditor(
                 index = index,
                 power = power,
+                character = character,
                 enabled = enabled,
                 expanded = expandedPowerId == power.id,
                 onToggle = { expandedPowerId = power.id.takeUnless { it == expandedPowerId } },
@@ -225,14 +248,14 @@ internal fun PhaseOnePowerSection(
                     if (expandedPowerId == power.id) expandedPowerId = null
                     onChange(character.copy(powers = character.powers.filterNot { it.id == power.id }))
                 },
-                onValue = { onChange(character.copy(powers = character.powers.replace(index, it))) },
+                onValue = { value -> applyPowerChange { character.withUpdatedPower(value.copy(revision = power.revision + 1)) } },
             )
         }
         AddButton("Selecionar poder do catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
         AddButton("Adicionar poder manualmente", enabled) {
             val power = Power(sourceType = PowerSourceType.MANUAL)
             expandedPowerId = power.id
-            onChange(character.copy(powers = character.powers + power))
+            applyPowerChange { character.withAddedPower(power) }
         }
     }
     if (selecting) {
@@ -245,7 +268,7 @@ internal fun PhaseOnePowerSection(
                 if (character.powers.none { it.catalogEntryId == entry.id } || entry.repeatable) {
                     val power = entry.toStructuredPower()
                     expandedPowerId = power.id
-                    onChange(character.copy(powers = character.powers + power))
+                    applyPowerChange { character.withAddedPower(power) }
                 }
                 selecting = false
             },
@@ -257,6 +280,7 @@ internal fun PhaseOnePowerSection(
 private fun StructuredPowerEditor(
     index: Int,
     power: Power,
+    character: Character,
     enabled: Boolean,
     expanded: Boolean,
     onToggle: () -> Unit,
@@ -290,28 +314,86 @@ private fun StructuredPowerEditor(
             return@Column
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
-        HudTextField("Caminho / origem", power.origin, multiline = true, enabled = enabled) { onValue(power.copy(origin = it)) }
-        HudTextField("Categoria", power.category, enabled = enabled) { onValue(power.copy(category = it)) }
+        ChoiceField("Fonte", power.canonicalSource, AbilitySource.entries, enabled, display = { it.label }) {
+            onValue(power.copy(canonicalSource = it, knowledgeId = "", knowledgeLevel = null, linkedItemId = "", active = false))
+        }
+        if (power.canonicalSource == AbilitySource.KNOWLEDGE) {
+            val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques
+            if (knowledges.isEmpty()) Text("Adicione um Conhecimento à ficha antes de selecionar esta fonte.", color = MaterialTheme.colorScheme.error)
+            else {
+                val selected = knowledges.firstOrNull { it.id == power.knowledgeId } ?: knowledges.first()
+                ChoiceField("Conhecimento", selected, knowledges, enabled, display = { it.name }) {
+                    onValue(power.copy(knowledgeId = it.id, knowledgeLevel = (power.knowledgeLevel ?: 0).coerceIn(0, it.value)))
+                }
+                ChoiceField("Nível", (power.knowledgeLevel ?: 0).coerceIn(0, selected.value), (0..selected.value).toList(), enabled) {
+                    onValue(power.copy(knowledgeId = selected.id, knowledgeLevel = it))
+                }
+            }
+        }
+        if (power.canonicalSource == AbilitySource.ITEM) {
+            val items = character.inventory.filter { it.linkedAshId.isBlank() }
+            if (items.isEmpty()) Text("Adicione um item ao inventário antes de vincular o poder.", color = MaterialTheme.colorScheme.error)
+            else ChoiceField("Item", power.linkedItemId.takeIf { id -> items.any { it.id == id } } ?: items.first().id, items.map { it.id }, enabled,
+                display = { id -> items.firstOrNull { it.id == id }?.name.orEmpty() }) { onValue(power.copy(linkedItemId = it, active = false)) }
+        }
         TwoFields(
-            { HudTextField("Custo", power.cost, it, enabled = enabled) { value -> onValue(power.copy(cost = value)) } },
-            { HudTextField("Tipo de ação", power.action, it, enabled = enabled) { value -> onValue(power.copy(action = value)) } },
+            { ChoiceField("Custo", power.costType, AbilityCostType.entries.filterNot { it == AbilityCostType.DOSE }, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(costType = value, costValue = if (value == AbilityCostType.NONE) 0 else power.costValue, cost = value.label)) } },
+            { if (power.costType != AbilityCostType.NONE) IntegerField("Valor do custo", power.costValue, enabled, it) { value -> onValue(power.copy(costValue = value.coerceAtLeast(0))) } },
         )
         TwoFields(
-            { HudTextField("Alcance", power.range, it, enabled = enabled) { value -> onValue(power.copy(range = value)) } },
-            { HudTextField("Duração", power.duration, it, enabled = enabled) { value -> onValue(power.copy(duration = value)) } },
+            { ChoiceField("Execução", power.executionType, AbilityExecution.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(executionType = value, action = value.label)) } },
+            { ChoiceField("Alcance", power.rangeType, AbilityRange.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(rangeType = value, range = value.label)) } },
         )
-        HudTextField("Limite de uso", power.limit, enabled = enabled) { onValue(power.copy(limit = it)) }
+        HudTextField("Alvo / Área (opcional)", power.targetArea, enabled = enabled) { onValue(power.copy(targetArea = it)) }
+        if (power.executionType != AbilityExecution.PASSIVE) {
+            TwoFields(
+                { ChoiceField("Duração", power.durationType, AbilityDuration.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(durationType = value, duration = value.label)) } },
+                { ChoiceField("Resistência", power.resistance, AbilityResistance.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(resistance = value)) } },
+            )
+        }
         AbilityAvailabilityEditor(power.favorite, power.available, enabled) { favorite, available ->
             onValue(power.copy(favorite = favorite, available = available))
         }
-        HudTextField("Pré-requisitos", power.prerequisites.joinToString("; "), multiline = true, enabled = enabled) {
-            onValue(power.copy(prerequisites = it.split(';').map(String::trim).filter(String::isNotBlank)))
+        if (power.executionType == AbilityExecution.PASSIVE) {
+            Row(Modifier.fillMaxWidth()) {
+                Checkbox(power.grantsPermanentBonus, { onValue(power.copy(grantsPermanentBonus = it)) }, enabled = enabled)
+                Text("Concede bônus permanente", modifier = Modifier.weight(1f))
+                if (power.canonicalSource != AbilitySource.ITEM) Switch(power.active, { onValue(power.copy(active = it)) }, enabled = enabled)
+            }
+            if (power.grantsPermanentBonus) {
+                power.modifiers.forEachIndexed { modifierIndex, modifier ->
+                    PowerModifierEditor(character, modifier, enabled,
+                        onRemove = { onValue(power.copy(modifiers = power.modifiers.filterIndexed { i, _ -> i != modifierIndex })) },
+                        onValue = { onValue(power.copy(modifiers = power.modifiers.replace(modifierIndex, it))) })
+                }
+                AddButton("Adicionar modificador", enabled) { onValue(power.copy(modifiers = power.modifiers + AbilityModifier())) }
+            } else HudTextField("Efeito", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
+        } else HudTextField("Efeito", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
+    }
+}
+
+@Composable
+private fun PowerModifierEditor(character: Character, modifier: AbilityModifier, enabled: Boolean, onRemove: () -> Unit, onValue: (AbilityModifier) -> Unit) {
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth()) {
+            ChoiceField("Alvo", modifier.targetType, AbilityModifierTarget.entries, enabled, Modifier.weight(1f), display = { it.label }) {
+                onValue(modifier.copy(targetType = it, targetId = ""))
+            }
+            RemoveButton(enabled, "Remover modificador", onRemove)
         }
-        HudTextField("Condição de ativação", power.activationCondition, multiline = true, enabled = enabled) { onValue(power.copy(activationCondition = it)) }
-        HudTextField("Efeito principal", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
-        HudTextField("Aprimoramentos", power.enhancements, multiline = true, enabled = enabled) { onValue(power.copy(enhancements = it)) }
-        HudTextField("Perda / desativação", power.deactivationCondition, multiline = true, enabled = enabled) { onValue(power.copy(deactivationCondition = it)) }
-        HudTextField("Referência nas regras", power.ruleReference, enabled = enabled) { onValue(power.copy(ruleReference = it)) }
+        val targets = when (modifier.targetType) {
+            AbilityModifierTarget.ATTRIBUTE -> character.attributes.map { it.acronym to it.name }
+            AbilityModifierTarget.KNOWLEDGE -> (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques).map { it.id to it.name }
+            AbilityModifierTarget.RESOURCE_MAXIMUM -> listOf("LIFE" to "Vida", "SANITY" to "Sanidade", "ARCANE" to "Arcano", "ENERGY" to "Energia", "DESTINY" to "Destino")
+            AbilityModifierTarget.PROTECTION -> listOf("Geral", "Esquiva", "Postura", "Mental", "Arcana").map { it to it }
+        }
+        if (targets.isNotEmpty()) {
+            val targetId = modifier.targetId.takeIf { id -> targets.any { it.first == id } } ?: targets.first().first
+            ChoiceField("Aplicar em", targetId, targets.map { it.first }, enabled, display = { id -> targets.first { it.first == id }.second }) {
+                onValue(modifier.copy(targetId = it))
+            }
+        }
+        IntegerField("Modificador", modifier.value, enabled) { onValue(modifier.copy(value = it)) }
     }
 }
 

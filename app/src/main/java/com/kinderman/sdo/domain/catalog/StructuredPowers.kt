@@ -6,6 +6,12 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
+import com.kinderman.sdo.domain.model.AbilityCostType
+import com.kinderman.sdo.domain.model.AbilityDuration
+import com.kinderman.sdo.domain.model.AbilityExecution
+import com.kinderman.sdo.domain.model.AbilityRange
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.AshPurity
 
 data class PathChangePreview(
     val pathName: String,
@@ -59,6 +65,12 @@ fun CatalogEntry.toStructuredPower(
     sourceId = sourceId,
     catalogEntryId = id,
     catalogVersion = version,
+    canonicalSource = sourceType.toCanonicalSource(),
+    costType = canonicalCostType(cost),
+    costValue = canonicalCostValue(cost),
+    executionType = canonicalExecution(action),
+    rangeType = canonicalRange(range),
+    durationType = canonicalDuration(duration),
 )
 
 fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
@@ -79,6 +91,13 @@ fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
     ruleReference = ruleReference,
     catalogEntryId = id,
     catalogVersion = version,
+    canonicalSource = AbilitySource.NARRATIVE,
+    costType = if (kind == CatalogKind.ASH) AbilityCostType.DOSE else canonicalCostType(cost),
+    costValue = canonicalCostValue(cost),
+    executionType = canonicalExecution(action),
+    rangeType = canonicalRange(range),
+    durationType = canonicalDuration(duration),
+    ashPurity = AshPurity.entries.firstOrNull { summary.contains(it.label, true) } ?: AshPurity.RAW,
 )
 
 private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
@@ -121,7 +140,57 @@ private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
         sourceId = path.id,
         catalogEntryId = path.id,
         catalogVersion = path.version,
+        canonicalSource = AbilitySource.PATH,
+        costType = canonicalCostType(cost),
+        costValue = canonicalCostValue(cost),
+        executionType = canonicalExecution(action),
+        rangeType = canonicalRange(range),
+        durationType = canonicalDuration(duration),
     )
+}
+
+private fun PowerSourceType.toCanonicalSource(): AbilitySource = when (this) {
+    PowerSourceType.PATH -> AbilitySource.PATH
+    PowerSourceType.RACE -> AbilitySource.RACE
+    PowerSourceType.ITEM -> AbilitySource.ITEM
+    PowerSourceType.KNOWLEDGE -> AbilitySource.KNOWLEDGE
+    else -> AbilitySource.NARRATIVE
+}
+
+private fun canonicalCostValue(value: String): Int = Regex("\\d+").find(value)?.value?.toIntOrNull() ?: 0
+
+private fun canonicalCostType(value: String): AbilityCostType = when {
+    value.contains("Arcano", true) || value.contains("PM", true) -> AbilityCostType.ARCANE
+    value.contains("Energia", true) || value.contains("PE", true) -> AbilityCostType.ENERGY
+    value.contains("Destino", true) -> AbilityCostType.DESTINY
+    value.contains("Sanidade", true) || value.contains("PS", true) -> AbilityCostType.SANITY
+    value.contains("Vida", true) || value.contains("PV", true) || value.contains("HP", true) -> AbilityCostType.LIFE
+    else -> AbilityCostType.NONE
+}
+
+private fun canonicalExecution(value: String): AbilityExecution = when {
+    value.contains("Reação", true) -> AbilityExecution.REACTION
+    value.contains("Turno", true) -> AbilityExecution.TURN
+    value.contains("Livre", true) -> AbilityExecution.FREE
+    value.contains("Passiv", true) -> AbilityExecution.PASSIVE
+    value.contains("Minuto", true) || value.contains("Hora", true) || value.contains("Dia", true) -> AbilityExecution.TIME
+    else -> AbilityExecution.ACTION
+}
+
+private fun canonicalRange(value: String): AbilityRange = when {
+    value.contains("Indefin", true) -> AbilityRange.INDEFINITE
+    value.contains("Pessoal", true) || value.contains("Toque", true) -> AbilityRange.PERSONAL
+    Regex("(?:9|[1-8])\\s*m", RegexOption.IGNORE_CASE).containsMatchIn(value) -> AbilityRange.SHORT
+    Regex("(?:[12]\\d|30)\\s*m", RegexOption.IGNORE_CASE).containsMatchIn(value) -> AbilityRange.MEDIUM
+    else -> AbilityRange.LONG
+}
+
+private fun canonicalDuration(value: String): AbilityDuration = when {
+    value.contains("Turno", true) -> AbilityDuration.TURNS
+    value.contains("Cena", true) -> AbilityDuration.SCENE
+    value.contains("Sessão", true) -> AbilityDuration.SESSION
+    value.contains("Instant", true) -> AbilityDuration.INSTANT
+    else -> AbilityDuration.TIME
 }
 
 private fun extractCost(text: String): String {
