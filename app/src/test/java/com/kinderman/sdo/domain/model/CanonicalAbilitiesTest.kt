@@ -6,6 +6,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CanonicalAbilitiesTest {
+    @Test fun eachAbilityFamilyOwnsExactlyOneCostResource() {
+        val activePower = Power(costType = AbilityCostType.ARCANE, costValue = 2).canonicalized()
+        val passivePower = Power(executionType = AbilityExecution.PASSIVE, costType = AbilityCostType.LIFE, costValue = 3).canonicalized()
+        val magic = MysticAbility(type = "Magia", costType = AbilityCostType.ENERGY, costValue = 2).canonicalized()
+        val rune = MysticAbility(type = "Runa", costType = AbilityCostType.LIFE, costValue = 2).canonicalized()
+        val ash = MysticAbility(type = "Cinza", costType = AbilityCostType.ARCANE, costValue = 1).canonicalized()
+
+        assertEquals(AbilityCostType.ENERGY, activePower.costType)
+        assertEquals(2, activePower.costValue)
+        assertEquals(AbilityCostType.ENERGY, passivePower.costType)
+        assertEquals(0, passivePower.costValue)
+        assertEquals(AbilityCostType.ARCANE, magic.costType)
+        assertEquals(AbilityCostType.ARCANE, rune.costType)
+        assertEquals(AbilityCostType.DOSE, ash.costType)
+    }
+
+    @Test fun activePowerCannotHaveZeroCost() {
+        val power = Power(executionType = AbilityExecution.ACTION, costValue = 0).canonicalized()
+        assertEquals(AbilityCostType.ENERGY, power.costType)
+        assertEquals(1, power.costValue)
+    }
+
     @Test fun canonicalCostCanReachZeroButNeverGoNegative() {
         val character = Character(arcane = ResourceValue(current = 3, maximum = 3))
         assertEquals(0, character.payCanonicalAbilityCost(AbilityCostType.ARCANE, 3).arcane.current)

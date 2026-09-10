@@ -173,7 +173,7 @@ def load_abilities(name, doc):
         else:
             assert entry['source'] in SOURCE_VALUES and entry['knowledge'].strip()
             assert 0 <= entry['level'] <= 5
-            assert entry['costType'] != 'Dose'
+            assert entry['costType'] == 'Arcano'
         if entry['type'] == 'RUNE':
             assert entry['costType'] == 'Arcano' and entry['execution'] == 'Tempo'
         entries.append(ability_to_catalog(entry, doc))
@@ -211,6 +211,11 @@ def load_catalog(directory):
                 assert entry['abilityRange'] in RANGE_VALUES.values(), (entry['id'], 'abilityRange')
                 assert entry['abilityDuration'] in DURATION_VALUES.values(), (entry['id'], 'abilityDuration')
                 assert entry['abilityResistance'] in RESISTANCE_VALUES.values(), (entry['id'], 'abilityResistance')
+                assert entry['abilityCostType'] == 'ENERGY', (entry['id'], 'power cost type')
+                if entry['abilityExecution'] == 'PASSIVE':
+                    assert entry['abilityCostValue'] == 0, (entry['id'], 'passive power cost')
+                else:
+                    assert entry['abilityCostValue'] > 0, (entry['id'], 'active power cost')
             else:
                 assert entry['relatedAttribute'] in ('FOR', 'AGI', 'VIG', 'INT', 'POD', 'CAR')
                 assert entry['initialValue'] == 1
