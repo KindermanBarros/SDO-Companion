@@ -370,12 +370,35 @@ private fun StructuredPowerEditor(
             else ChoiceField("Item", power.linkedItemId.takeIf { id -> items.any { it.id == id } } ?: items.first().id, items.map { it.id }, enabled,
                 display = { id -> items.firstOrNull { it.id == id }?.name.orEmpty() }) { onValue(power.copy(linkedItemId = it, active = false)) }
         }
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Checkbox(
+                checked = power.destinyCostEligible,
+                onCheckedChange = { eligible ->
+                    onValue(power.copy(
+                        destinyCostEligible = eligible,
+                        costType = if (!eligible && power.costType == AbilityCostType.DESTINY) AbilityCostType.ENERGY else power.costType,
+                    ))
+                },
+                enabled = enabled,
+            )
+            Text(
+                "Poder divino ou ligado a sorte, Destino, probabilidades ou porcentagens (permite PD)",
+                modifier = Modifier.padding(top = 12.dp),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        val costOptions = buildList {
+            add(AbilityCostType.ENERGY)
+            add(AbilityCostType.LIFE)
+            add(AbilityCostType.SANITY)
+            if (power.destinyCostEligible) add(AbilityCostType.DESTINY)
+        }
         TwoFields(
-            { ChoiceField("Custo", AbilityCostType.ENERGY, listOf(AbilityCostType.ENERGY), false, it, display = { value -> value.label }) { } },
-            { IntegerField("Valor em PE", if (power.executionType == AbilityExecution.PASSIVE) 0 else power.costValue, enabled && power.executionType != AbilityExecution.PASSIVE, it) { value -> onValue(power.copy(costType = AbilityCostType.ENERGY, costValue = value.coerceAtLeast(1), cost = "${value.coerceAtLeast(1)} PE")) } },
+            { ChoiceField("Custo", power.costType.takeIf { it in costOptions } ?: AbilityCostType.ENERGY, costOptions, enabled && power.executionType != AbilityExecution.PASSIVE, it, display = { value -> value.label }) { value -> onValue(power.copy(costType = value)) } },
+            { IntegerField("Valor do custo", if (power.executionType == AbilityExecution.PASSIVE) 0 else power.costValue, enabled && power.executionType != AbilityExecution.PASSIVE, it) { value -> onValue(power.copy(costValue = value.coerceAtLeast(1))) } },
         )
         TwoFields(
-            { ChoiceField("Execução", power.executionType, AbilityExecution.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(executionType = value, action = value.label, costType = AbilityCostType.ENERGY, costValue = if (value == AbilityExecution.PASSIVE) 0 else power.costValue.coerceAtLeast(1), cost = if (value == AbilityExecution.PASSIVE) "0 PE" else "${power.costValue.coerceAtLeast(1)} PE")) } },
+            { ChoiceField("Execução", power.executionType, AbilityExecution.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(executionType = value, action = value.label, costType = if (value == AbilityExecution.PASSIVE) AbilityCostType.ENERGY else power.costType.takeIf { it in costOptions } ?: AbilityCostType.ENERGY, costValue = if (value == AbilityExecution.PASSIVE) 0 else power.costValue.coerceAtLeast(1))) } },
             { ChoiceField("Alcance", power.rangeType, AbilityRange.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(rangeType = value, range = value.label)) } },
         )
         if (power.executionType == AbilityExecution.TIME) TwoFields(
