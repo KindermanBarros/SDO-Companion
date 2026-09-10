@@ -89,7 +89,8 @@ data class AbilityDuplicateGroup(val key: String, val type: String, val entries:
 fun normalizeAbilityName(value: String): String = Normalizer.normalize(value.trim(), Normalizer.Form.NFD)
     .replace(Regex("\\p{M}+"), "")
     .lowercase()
-    .replace(Regex("\\s+"), " ")
+    .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
+    .trim()
 
 fun InventoryItem.effectiveLoad(): Int = if (linkedAshId.isBlank()) load else {
     if (quantity <= 0) 0 else ceil(quantity.toDouble() / ashPurity.dosesPerLoad).toInt()
@@ -118,15 +119,26 @@ fun Character.withAddedPower(power: Power): Character {
     require(power.name.isBlank() || powers.none { normalizeAbilityName(it.name) == normalizeAbilityName(power.name) }) {
         "Já existe uma entrada com esse nome"
     }
-    return copy(powers = powers + power.copy(revision = power.revision.coerceAtLeast(1)))
+    return copy(powers = powers + power.canonicalized())
 }
 
 fun Character.withUpdatedPower(power: Power): Character {
     require(power.name.isBlank() || powers.none { it.id != power.id && normalizeAbilityName(it.name) == normalizeAbilityName(power.name) }) {
         "Já existe uma entrada com esse nome"
     }
-    return copy(powers = powers.map { if (it.id == power.id) power else it }).constrainedToResourceMaximums()
+    return copy(powers = powers.map { if (it.id == power.id) power.canonicalized() else it }).constrainedToResourceMaximums()
 }
+
+fun Power.canonicalized(): Power = copy(
+    costType = costType.takeUnless { it == AbilityCostType.DOSE } ?: AbilityCostType.NONE,
+    costValue = costValue.coerceAtLeast(0),
+    timeValue = timeValue.coerceAtLeast(0),
+    durationValue = durationValue.coerceAtLeast(0),
+    knowledgeId = knowledgeId.takeIf { canonicalSource == AbilitySource.KNOWLEDGE }.orEmpty(),
+    knowledgeLevel = knowledgeLevel.takeIf { canonicalSource == AbilitySource.KNOWLEDGE },
+    linkedItemId = linkedItemId.takeIf { canonicalSource == AbilitySource.ITEM }.orEmpty(),
+    revision = revision.coerceAtLeast(1),
+)
 
 fun Character.abilityDuplicates(): List<AbilityDuplicateGroup> {
     val powerGroups = powers.filter { it.name.isNotBlank() }
@@ -210,8 +222,27 @@ fun MysticAbility.canonicalized(): MysticAbility = copy(
     },
     costValue = costValue.coerceAtLeast(0),
     timeValue = timeValue.coerceAtLeast(0),
+    durationValue = durationValue.coerceAtLeast(0),
+    knowledgeId = knowledgeId.takeIf { !isAsh && canonicalSource == AbilitySource.KNOWLEDGE }.orEmpty(),
+    knowledgeLevel = knowledgeLevel.takeIf { !isAsh && canonicalSource == AbilitySource.KNOWLEDGE },
     revision = revision.coerceAtLeast(1),
 )
+
+fun formattedAbilityCost(type: AbilityCostType, value: Int): String = when (type) {
+    AbilityCostType.NONE -> type.label
+    else -> "${value.coerceAtLeast(0)} ${type.label}"
+}
+
+fun formattedAbilityExecution(type: AbilityExecution, value: Int, unit: AbilityTimeUnit): String = when (type) {
+    AbilityExecution.TIME -> "${type.label}: ${value.coerceAtLeast(0)} ${unit.label.lowercase()}"
+    else -> type.label
+}
+
+fun formattedAbilityDuration(type: AbilityDuration, value: Int, unit: AbilityTimeUnit): String = when (type) {
+    AbilityDuration.TURNS -> "${value.coerceAtLeast(0)} turnos"
+    AbilityDuration.TIME -> "${value.coerceAtLeast(0)} ${unit.label.lowercase()}"
+    else -> type.label
+}
 
 fun Character.isPowerActive(power: Power): Boolean = when (power.canonicalSource) {
     AbilitySource.ITEM -> inventory.any { it.id == power.linkedItemId && it.state == "E" }

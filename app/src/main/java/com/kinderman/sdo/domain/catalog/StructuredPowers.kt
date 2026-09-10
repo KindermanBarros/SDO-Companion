@@ -10,8 +10,11 @@ import com.kinderman.sdo.domain.model.AbilityCostType
 import com.kinderman.sdo.domain.model.AbilityDuration
 import com.kinderman.sdo.domain.model.AbilityExecution
 import com.kinderman.sdo.domain.model.AbilityRange
+import com.kinderman.sdo.domain.model.AbilityResistance
 import com.kinderman.sdo.domain.model.AbilitySource
 import com.kinderman.sdo.domain.model.AshPurity
+import com.kinderman.sdo.domain.model.AshSource
+import com.kinderman.sdo.domain.model.AbilityTimeUnit
 
 data class PathChangePreview(
     val pathName: String,
@@ -71,6 +74,9 @@ fun CatalogEntry.toStructuredPower(
     executionType = canonicalExecution(action),
     rangeType = canonicalRange(range),
     durationType = canonicalDuration(duration),
+    durationValue = canonicalDurationValue(duration),
+    durationUnit = canonicalDurationUnit(duration),
+    resistance = canonicalResistance(listOf(summary, mechanicalEffect).joinToString("\n")),
 )
 
 fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
@@ -91,14 +97,38 @@ fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
     ruleReference = ruleReference,
     catalogEntryId = id,
     catalogVersion = version,
-    canonicalSource = AbilitySource.NARRATIVE,
-    costType = if (kind == CatalogKind.ASH) AbilityCostType.DOSE else canonicalCostType(cost),
-    costValue = canonicalCostValue(cost),
-    executionType = canonicalExecution(action),
-    rangeType = canonicalRange(range),
-    durationType = canonicalDuration(duration),
-    ashPurity = AshPurity.entries.firstOrNull { summary.contains(it.label, true) } ?: AshPurity.RAW,
+    canonicalSource = abilitySource ?: AbilitySource.NARRATIVE,
+    knowledgeLevel = sourceLevel,
+    costType = abilityCostType ?: canonicalCostType(cost),
+    costValue = abilityCostValue ?: canonicalCostValue(cost),
+    executionType = abilityExecution ?: canonicalExecution(action),
+    timeValue = executionValue,
+    timeUnit = executionUnit,
+    rangeType = abilityRange ?: canonicalRange(range),
+    targetArea = targetArea,
+    durationType = abilityDuration ?: canonicalDuration(duration),
+    durationValue = durationValue.takeIf { abilityDuration != null } ?: canonicalDurationValue(duration),
+    durationUnit = durationUnit.takeIf { abilityDuration != null } ?: canonicalDurationUnit(duration),
+    resistance = abilityResistance ?: canonicalResistance(listOf(summary, mechanicalEffect).joinToString("\n")),
+    ashSource = catalogAshSource
+        ?: AshSource.entries.firstOrNull { ash -> group.substringBefore('/').trim().equals(ash.label, true) }
+        ?: AshSource.FIRE,
+    ashPurity = catalogAshPurity
+        ?: AshPurity.entries.firstOrNull { purity -> group.substringAfter('/', "").trim().equals(purity.label, true) }
+        ?: AshPurity.RAW,
 )
+
+fun CatalogEntry.toMysticAbility(character: Character): MysticAbility {
+    val ability = toMysticAbility()
+    if (ability.canonicalSource != AbilitySource.KNOWLEDGE) return ability
+    val requiredLevel = sourceLevel ?: 0
+    val knowledge = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
+        .firstOrNull { com.kinderman.sdo.domain.model.normalizeAbilityName(it.name) == com.kinderman.sdo.domain.model.normalizeAbilityName(sourceKnowledge) }
+    require(knowledge != null && knowledge.value >= requiredLevel) {
+        "Conhecimento necessário: $sourceKnowledge $requiredLevel"
+    }
+    return ability.copy(knowledgeId = knowledge.id, knowledgeLevel = requiredLevel)
+}
 
 private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
     val normalized = effect.replace("\r\n", "\n")
@@ -146,6 +176,9 @@ private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
         executionType = canonicalExecution(action),
         rangeType = canonicalRange(range),
         durationType = canonicalDuration(duration),
+        durationValue = canonicalDurationValue(duration),
+        durationUnit = canonicalDurationUnit(duration),
+        resistance = canonicalResistance(mainEffect),
     )
 }
 
@@ -191,6 +224,23 @@ private fun canonicalDuration(value: String): AbilityDuration = when {
     value.contains("Sessão", true) -> AbilityDuration.SESSION
     value.contains("Instant", true) -> AbilityDuration.INSTANT
     else -> AbilityDuration.TIME
+}
+
+private fun canonicalDurationValue(value: String): Int = Regex("\\d+").find(value)?.value?.toIntOrNull() ?: 0
+
+private fun canonicalDurationUnit(value: String): AbilityTimeUnit = when {
+    value.contains("dia", true) -> AbilityTimeUnit.DAYS
+    value.contains("hora", true) -> AbilityTimeUnit.HOURS
+    else -> AbilityTimeUnit.HOURS
+}
+
+private fun canonicalResistance(value: String): AbilityResistance = when {
+    value.contains("Proteção Geral", true) -> AbilityResistance.GENERAL
+    value.contains("Proteção de Esquiva", true) -> AbilityResistance.DODGE
+    value.contains("Proteção de Postura", true) -> AbilityResistance.POSTURE
+    value.contains("Proteção Mental", true) -> AbilityResistance.MENTAL
+    value.contains("Proteção Arcana", true) -> AbilityResistance.ARCANE
+    else -> AbilityResistance.NONE
 }
 
 private fun extractCost(text: String): String {

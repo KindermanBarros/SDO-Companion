@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 17,
+    version = 18,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -249,6 +249,28 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_16_17 = object : Migration(16, 17) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN appliedDeliveryIds TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilitySource TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN sourceKnowledge TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN sourceLevel INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilityCostType TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilityCostValue INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilityExecution TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN executionValue INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN executionUnit TEXT NOT NULL DEFAULT 'MINUTES'")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilityRange TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN targetArea TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilityDuration TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN durationValue INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN durationUnit TEXT NOT NULL DEFAULT 'HOURS'")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN abilityResistance TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN catalogAshSource TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN catalogAshPurity TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE catalog_entries ADD COLUMN runePackage TEXT NOT NULL DEFAULT ''")
             }
         }
     }

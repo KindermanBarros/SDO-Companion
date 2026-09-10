@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "SDO Companion canonical catalog v1",
+  "title": "SDO Companion powers catalog v1",
   "type": "object",
   "required": [
     "schemaVersion",
@@ -61,15 +61,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "POWER",
-              "MAGIC",
-              "ASH",
-              "RUNE",
-              "ACQUIRED_KNOWLEDGE",
-              "ARCANE_KNOWLEDGE",
-              "BATTLE_TECHNIQUE"
-            ]
+            "const": "POWER"
           },
           "name": {
             "type": "string"

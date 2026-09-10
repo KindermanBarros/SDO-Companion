@@ -170,8 +170,7 @@ private fun Character.useAbility(command: SessionCommand): Character {
     if (powerIndex >= 0) {
         val power = powers[powerIndex]
         require(power.available) { "Este poder não está disponível agora." }
-        return if (power.costType == AbilityCostType.NONE && power.cost.isNotBlank()) payFixedAbilityCosts(power.cost)
-        else payCanonicalAbilityCost(power.costType, power.costValue, power.id)
+        return payCanonicalAbilityCost(power.costType, power.costValue, power.id)
     }
     val abilityIndex = mysticAbilities.indexOfFirst { it.id == command.targetId }
     require(abilityIndex >= 0) { "Habilidade não encontrada." }
@@ -189,8 +188,7 @@ private fun Character.useAbility(command: SessionCommand): Character {
         ),
     ) else this
     val costType = if (ability.type.equals("Runa", true)) AbilityCostType.ARCANE else ability.costType
-    return if (costType == AbilityCostType.NONE && ability.cost.isNotBlank()) prepared.payFixedAbilityCosts(ability.cost)
-    else prepared.payCanonicalAbilityCost(costType, ability.costValue, ability.id)
+    return prepared.payCanonicalAbilityCost(costType, ability.costValue, ability.id)
 }
 
 private fun List<MysticAbility>.replaceAbility(index: Int, value: MysticAbility) = toMutableList().also { it[index] = value }

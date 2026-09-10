@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SDO Companion canonical abilities v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "schemaVersion",
+    "catalogVersion",
+    "sourceRepository",
+    "sourceDocument",
+    "ruleReference",
+    "abilities"
+  ],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 2 },
+    "catalogVersion": { "type": "integer", "minimum": 1 },
+    "sourceRepository": { "type": "string", "minLength": 1 },
+    "sourceDocument": { "type": "string", "minLength": 1 },
+    "ruleReference": { "type": "string", "minLength": 1 },
+    "abilities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ability" }
+    }
+  },
+  "$defs": {
+    "ability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "name",
+        "source",
+        "costType",
+        "costValue",
+        "execution",
+        "range",
+        "targetArea",
+        "duration",
+        "resistance",
+        "effect"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["MAGIC", "RUNE", "ASH"] },
+        "name": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "knowledge": { "type": "string", "minLength": 1 },
+        "level": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "purity": { "enum": ["Bruta", "Refinada", "Pura"] },
+        "package": { "type": "string", "minLength": 1 },
+        "costType": { "enum": ["Nenhum", "Arcano", "Energia", "Destino", "Vida", "Sanidade", "Dose"] },
+        "costValue": { "type": "integer", "minimum": 0 },
+        "execution": { "enum": ["Ação", "Turno", "Livre", "Reação", "Passiva", "Tempo"] },
+        "executionValue": { "type": "integer", "minimum": 1 },
+        "executionUnit": { "enum": ["Minutos", "Horas", "Dias"] },
+        "range": { "enum": ["Pessoal", "Curto", "Médio", "Longo", "Indefinido"] },
+        "targetArea": { "type": "string" },
+        "duration": { "enum": ["Instantânea", "Turnos", "Cena", "Sessão", "Tempo"] },
+        "durationValue": { "type": "integer", "minimum": 1 },
+        "durationUnit": { "enum": ["Horas", "Dias"] },
+        "resistance": { "enum": ["Nenhuma", "Geral", "Esquiva", "Postura", "Mental", "Arcana"] },
+        "effect": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "ASH" } } },
+          "then": {
+            "required": ["purity"],
+            "not": { "anyOf": [{ "required": ["knowledge"] }, { "required": ["level"] }] }
+          },
+          "else": { "required": ["knowledge", "level"] }
+        },
+        {
+          "if": { "properties": { "execution": { "const": "Tempo" } } },
+          "then": { "required": ["executionValue", "executionUnit"] },
+          "else": { "not": { "anyOf": [{ "required": ["executionValue"] }, { "required": ["executionUnit"] }] } }
+        },
+        {
+          "if": { "properties": { "duration": { "enum": ["Turnos", "Tempo"] } } },
+          "then": { "required": ["durationValue"] },
+          "else": { "not": { "required": ["durationValue"] } }
+        },
+        {
+          "if": { "properties": { "duration": { "const": "Tempo" } } },
+          "then": { "required": ["durationUnit"] },
+          "else": { "not": { "required": ["durationUnit"] } }
+        }
+      ]
+    }
+  }
+}

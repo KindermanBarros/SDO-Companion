@@ -16,7 +16,7 @@ Base auditada: `feat/auditoria-checklist-completa`, commit `3cf8b68`. Existem ex
 | 10. Órgãos dinâmicos | Lista vazia inicialmente; inclusão, edição e remoção com IDs persistentes. |
 | 11. Poderes pré-preenchidos | 100 exemplos em JSON possuem custo, ação, alcance, duração, efeito, condições, limite textual e aprimoramento explícitos. |
 | 12. Custo único e sem usos máximos | Campos redundantes removidos; mantém frequência canônica textual sem contador de máximo. Custos variáveis e materiais exigem ajuste explícito. |
-| 13. Magias pré-preenchidas | 50 magias, 50 cinzas e 50 runas normalizadas; efeito completo e origem preservados. |
+| 13. Magias pré-preenchidas | 50 magias, 150 cinzas (50 nomes × 3 purezas) e 50 runas normalizadas; efeito completo e origem preservados. |
 | 14. Auditoria inicialmente desativada | Preferência padrão false, persistida em MainActivity. |
 | 15. Pesquisa administrativa compacta | Busca e filtros compactos presentes; filtros agora sobrevivem ao retorno. |
 | 16. Pesquisa de contas normais | Filtra somente o conjunto de fichas fornecido pelo repositório autorizado. |
@@ -37,6 +37,6 @@ Base auditada: `feat/auditoria-checklist-completa`, commit `3cf8b68`. Existem ex
 
 O commit `3013513` passou nos Actions Android (APK release e verificações existentes) e Firebase (emulador de regras). A etapa seguinte adiciona o catálogo estruturado, migração e validação determinística; consultar o resultado do commit final na PR.
 
-O ambiente local não consegue baixar a distribuição Gradle; isso não é resultado de compilação. `git diff --check`, sintaxe JavaScript e verificação dos 400 registros executados localmente.
+O ambiente local não consegue baixar a distribuição Gradle; isso não é resultado de compilação. `git diff --check`, sintaxe JavaScript e verificação dos 500 registros executados localmente.
 
 Nenhum APK foi executado em aparelho nesta sessão. Design e gestos precisam de aceite visual; as verificações de build não comprovam UX. As regras Firestore somente entram em produção pelo workflow de publicação após integração.

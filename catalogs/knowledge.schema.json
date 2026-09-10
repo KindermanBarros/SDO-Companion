@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SDO Companion knowledge catalog v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "schemaVersion",
+    "catalogVersion",
+    "sourceRepository",
+    "editorialStatus",
+    "knowledges"
+  ],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 2 },
+    "catalogVersion": { "type": "integer", "minimum": 1 },
+    "sourceRepository": { "type": "string", "minLength": 1 },
+    "editorialStatus": { "type": "string", "minLength": 1 },
+    "knowledges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/knowledge" }
+    }
+  },
+  "$defs": {
+    "knowledge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "name",
+        "category",
+        "description",
+        "attribute",
+        "initialLevel",
+        "maxLevel",
+        "prerequisites",
+        "effect",
+        "source",
+        "ruleReference",
+        "keywords",
+        "repeatable"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^knowledge\\.[a-z0-9_.]+$" },
+        "type": {
+          "enum": [
+            "ACQUIRED_KNOWLEDGE",
+            "ARCANE_KNOWLEDGE",
+            "BATTLE_TECHNIQUE"
+          ]
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "attribute": { "enum": ["FOR", "AGI", "VIG", "INT", "POD", "CAR"] },
+        "initialLevel": { "const": 1 },
+        "maxLevel": { "const": 5 },
+        "prerequisites": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "effect": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "ruleReference": { "type": "string", "minLength": 1 },
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "repeatable": { "type": "boolean" }
+      }
+    }
+  }
+}

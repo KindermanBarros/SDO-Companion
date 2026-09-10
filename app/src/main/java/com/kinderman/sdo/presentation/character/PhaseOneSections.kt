@@ -42,6 +42,9 @@ import com.kinderman.sdo.domain.model.AbilityModifierTarget
 import com.kinderman.sdo.domain.model.AbilityRange
 import com.kinderman.sdo.domain.model.AbilityResistance
 import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.AbilityTimeUnit
+import com.kinderman.sdo.domain.model.formattedAbilityCost
+import com.kinderman.sdo.domain.model.formattedAbilityExecution
 import com.kinderman.sdo.domain.model.withAddedPower
 import com.kinderman.sdo.domain.model.withUpdatedPower
 import com.kinderman.sdo.ui.Acid
@@ -73,6 +76,7 @@ internal fun PhaseOneKnowledgeSection(
             catalog = catalog,
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
+            attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
         ) { onChange(character.copy(learnedKnowledges = it)) }
         PhaseOneKnowledgeList(
@@ -82,6 +86,7 @@ internal fun PhaseOneKnowledgeSection(
             catalog = catalog,
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
+            attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
         ) { onChange(character.copy(arcaneKnowledges = it)) }
         PhaseOneKnowledgeList(
@@ -91,6 +96,7 @@ internal fun PhaseOneKnowledgeSection(
             catalog = catalog,
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
+            attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
         ) { onChange(character.copy(battleTechniques = it)) }
     }
@@ -104,26 +110,42 @@ private fun PhaseOneKnowledgeList(
     catalog: List<CatalogEntry>,
     enabled: Boolean,
     totalValue: (String) -> Int,
+    attributeOptions: List<Pair<String, String>>,
     onLevelChange: (SpecialKnowledge, Int) -> Unit,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
     var selecting by remember { mutableStateOf(false) }
+    var expandedKnowledgeId by remember { mutableStateOf<String?>(null) }
     val options = remember(catalog, kind) { catalog.filter { it.kind == kind } }
     Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(Modifier.fillMaxWidth()) {
-                Text("REG.${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                Column(Modifier.weight(1f)) {
+                    Text(knowledge.name.ifBlank { "REG.${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
+                    Text("${knowledge.attribute.ifBlank { "SEM ATRIBUTO" }} // NÍVEL ${knowledge.value}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                }
                 if (knowledge.isCatalogEntry) {
                     Text("CAT v${knowledge.catalogVersion}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                }
+                TextButton(onClick = { expandedKnowledgeId = knowledge.id.takeUnless { it == expandedKnowledgeId } }) {
+                    Text(if (expandedKnowledgeId == knowledge.id) "FECHAR" else "EDITAR")
                 }
                 RemoveButton(enabled, "Remover conhecimento") {
                     onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index })
                 }
             }
+            if (expandedKnowledgeId != knowledge.id) return@Column
             HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
             TwoFields(
-                { HudTextField("Atributo", knowledge.attribute, it, enabled = enabled) { value -> onValues(values.replace(index, knowledge.copy(attribute = value.uppercase()))) } },
+                {
+                    val selectedAttribute = knowledge.attribute.takeIf { current -> attributeOptions.any { it.first == current } }
+                        ?: attributeOptions.firstOrNull()?.first.orEmpty()
+                    ChoiceField("Atributo", selectedAttribute, attributeOptions.map { it.first }, enabled, it,
+                        display = { acronym -> attributeOptions.firstOrNull { option -> option.first == acronym }?.let { option -> "${option.first} — ${option.second}" }.orEmpty() }) { value ->
+                        onValues(values.replace(index, knowledge.copy(attribute = value)))
+                    }
+                },
                 { IntegerField("Nível (0–5)", knowledge.value, enabled, it) { value -> onLevelChange(knowledge, value) } },
             )
             IntegerField("Ajuste excepcional", knowledge.adjustment, enabled) { value ->
@@ -140,7 +162,11 @@ private fun PhaseOneKnowledgeList(
         }
     }
     AddButton("Selecionar do catálogo", enabled && options.isNotEmpty()) { selecting = true }
-    AddButton("Adicionar manualmente", enabled) { onValues(values + SpecialKnowledge()) }
+    AddButton("Adicionar manualmente", enabled) {
+        val knowledge = SpecialKnowledge(attribute = attributeOptions.firstOrNull()?.first.orEmpty())
+        expandedKnowledgeId = knowledge.id
+        onValues(values + knowledge)
+    }
     if (selecting) {
         CatalogPickerDialog(
             title = "SELECIONAR // ${title.uppercase()}",
@@ -296,7 +322,11 @@ private fun StructuredPowerEditor(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    listOf(power.sourceType.name, power.action, power.cost).filter(String::isNotBlank).joinToString(" // "),
+                    listOf(
+                        power.canonicalSource.label,
+                        formattedAbilityExecution(power.executionType, power.timeValue, power.timeUnit),
+                        formattedAbilityCost(power.costType, power.costValue),
+                    ).joinToString(" // "),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelSmall,
                 )
@@ -314,11 +344,20 @@ private fun StructuredPowerEditor(
             return@Column
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
-        ChoiceField("Fonte", power.canonicalSource, AbilitySource.entries, enabled, display = { it.label }) {
-            onValue(power.copy(canonicalSource = it, knowledgeId = "", knowledgeLevel = null, linkedItemId = "", active = false))
+        val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques
+        val sourceOptions = AbilitySource.entries.filterNot { it == AbilitySource.KNOWLEDGE && knowledges.isEmpty() }
+        ChoiceField("Fonte", power.canonicalSource, sourceOptions, enabled, display = { it.label }) { source ->
+            val selectedKnowledge = knowledges.firstOrNull()
+            val selectedItem = character.inventory.firstOrNull { it.linkedAshId.isBlank() }
+            onValue(power.copy(
+                canonicalSource = source,
+                knowledgeId = selectedKnowledge?.id.orEmpty().takeIf { source == AbilitySource.KNOWLEDGE }.orEmpty(),
+                knowledgeLevel = if (source == AbilitySource.KNOWLEDGE) 0 else null,
+                linkedItemId = selectedItem?.id.orEmpty().takeIf { source == AbilitySource.ITEM }.orEmpty(),
+                active = false,
+            ))
         }
         if (power.canonicalSource == AbilitySource.KNOWLEDGE) {
-            val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques
             if (knowledges.isEmpty()) Text("Adicione um Conhecimento à ficha antes de selecionar esta fonte.", color = MaterialTheme.colorScheme.error)
             else {
                 val selected = knowledges.firstOrNull { it.id == power.knowledgeId } ?: knowledges.first()
@@ -344,11 +383,22 @@ private fun StructuredPowerEditor(
             { ChoiceField("Execução", power.executionType, AbilityExecution.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(executionType = value, action = value.label)) } },
             { ChoiceField("Alcance", power.rangeType, AbilityRange.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(rangeType = value, range = value.label)) } },
         )
+        if (power.executionType == AbilityExecution.TIME) TwoFields(
+            { IntegerField("Tempo de execução", power.timeValue, enabled, it) { value -> onValue(power.copy(timeValue = value.coerceAtLeast(0))) } },
+            { ChoiceField("Unidade", power.timeUnit, AbilityTimeUnit.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(timeUnit = value)) } },
+        )
         HudTextField("Alvo / Área (opcional)", power.targetArea, enabled = enabled) { onValue(power.copy(targetArea = it)) }
         if (power.executionType != AbilityExecution.PASSIVE) {
             TwoFields(
                 { ChoiceField("Duração", power.durationType, AbilityDuration.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(durationType = value, duration = value.label)) } },
                 { ChoiceField("Resistência", power.resistance, AbilityResistance.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(resistance = value)) } },
+            )
+            if (power.durationType == AbilityDuration.TURNS) {
+                IntegerField("Quantidade de turnos", power.durationValue, enabled) { value -> onValue(power.copy(durationValue = value.coerceAtLeast(0))) }
+            }
+            if (power.durationType == AbilityDuration.TIME) TwoFields(
+                { IntegerField("Tempo de duração", power.durationValue, enabled, it) { value -> onValue(power.copy(durationValue = value.coerceAtLeast(0))) } },
+                { ChoiceField("Unidade da duração", power.durationUnit, listOf(AbilityTimeUnit.HOURS, AbilityTimeUnit.DAYS), enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(durationUnit = value)) } },
             )
         }
         AbilityAvailabilityEditor(power.favorite, power.available, enabled) { favorite, available ->

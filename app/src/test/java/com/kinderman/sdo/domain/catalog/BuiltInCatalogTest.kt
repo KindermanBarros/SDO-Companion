@@ -1,6 +1,8 @@
 package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.SpecialKnowledge
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -11,7 +13,7 @@ class BuiltInCatalogTest {
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes Mágicos" })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes de Profissão e Conhecimento" })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.MAGIC })
-        assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.ASH })
+        assertEquals(150, BuiltInCatalog.entries.count { it.kind == CatalogKind.ASH })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.RUNE })
         assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.PATH } >= 18)
         assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.ITEM } >= 60)
@@ -20,12 +22,16 @@ class BuiltInCatalogTest {
     @Test fun idsAreStableAndUnique() {
         val ids = BuiltInCatalog.entries.map { it.id }
         assertEquals(ids.size, ids.distinct().size)
-        assertTrue(ids.all { it.matches(Regex("[a-z]+\\.[a-z0-9_]+")) })
+        assertTrue(ids.all { it.matches(Regex("[a-z]+(?:\\.[a-z0-9_]+)+")) })
     }
 
     @Test fun everyCatalogEntryTracksTheCurrentCanonicalRules() {
+        assertTrue(BuiltInCatalog.entries.filter { it.kind !in setOf(CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH) }
+            .all { it.version == BuiltInCatalog.VERSION })
+        assertTrue(BuiltInCatalog.entries.filter { it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH) }
+            .all { it.version == 5 })
+        assertTrue(KnowledgeCatalog.entries.all { it.version == KnowledgeCatalog.VERSION })
         val entries = BuiltInCatalog.entries + KnowledgeCatalog.entries
-        assertTrue(entries.all { it.version == BuiltInCatalog.VERSION })
         assertTrue(entries.all { it.source.isNotBlank() })
         assertTrue(entries.all { it.ruleReference.isNotBlank() })
         assertTrue(RaceCatalog.races.all { it.version == BuiltInCatalog.VERSION && it.ruleReference == RaceCatalog.RULE_REFERENCE })
@@ -37,6 +43,9 @@ class BuiltInCatalogTest {
         assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ARCANE_KNOWLEDGE })
         assertEquals(50, KnowledgeCatalog.entries.count { it.kind == CatalogKind.BATTLE_TECHNIQUE })
         assertTrue(KnowledgeCatalog.entries.none { it.name.startsWith("Estudo de ", ignoreCase = true) })
+        assertTrue(KnowledgeCatalog.entries.all { it.initialValue == 1 })
+        assertTrue(KnowledgeCatalog.entries.any { it.name == "Natureza" && it.kind == CatalogKind.ARCANE_KNOWLEDGE })
+        assertTrue(KnowledgeCatalog.entries.any { it.name == "Cura" && it.kind == CatalogKind.ARCANE_KNOWLEDGE })
     }
 
     @Test fun everyDefaultPowerIsACompleteCreationGuide() {
@@ -56,8 +65,22 @@ class BuiltInCatalogTest {
         assertTrue(magics.all { entry ->
             entry.toMysticAbility().let { ability ->
                 ability.catalogEntryId == entry.id && ability.catalogVersion == entry.version &&
-                    ability.source == entry.source && ability.category == entry.group
+                    ability.source == entry.source && ability.category == entry.group &&
+                    ability.costType == entry.abilityCostType && ability.costValue == entry.abilityCostValue &&
+                    ability.executionType == entry.abilityExecution && ability.rangeType == entry.abilityRange &&
+                    ability.targetArea == entry.targetArea && ability.durationType == entry.abilityDuration &&
+                    ability.resistance == entry.abilityResistance
             }
         })
+    }
+
+    @Test fun catalogMagicBindsOnlyToAnOwnedKnowledgeAtTheRequiredLevel() {
+        val entry = BuiltInCatalog.entries.first { it.kind == CatalogKind.MAGIC && it.sourceKnowledge == "Abjuração" }
+        val lowLevel = Character(arcaneKnowledges = listOf(SpecialKnowledge(id = "abj", name = "Abjuração", value = 0)))
+        val ready = lowLevel.copy(arcaneKnowledges = listOf(lowLevel.arcaneKnowledges.single().copy(value = entry.sourceLevel!!)))
+
+        assertTrue(runCatching { entry.toMysticAbility(lowLevel) }.isFailure)
+        assertEquals("abj", entry.toMysticAbility(ready).knowledgeId)
+        assertEquals(entry.sourceLevel, entry.toMysticAbility(ready).knowledgeLevel)
     }
 }
