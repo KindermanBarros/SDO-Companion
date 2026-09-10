@@ -14,6 +14,7 @@ import com.kinderman.sdo.domain.model.AbilityResistance
 import com.kinderman.sdo.domain.model.AbilitySource
 import com.kinderman.sdo.domain.model.AshPurity
 import com.kinderman.sdo.domain.model.AshSource
+import com.kinderman.sdo.domain.model.canonicalized
 import com.kinderman.sdo.domain.model.AbilityTimeUnit
 
 data class PathChangePreview(
