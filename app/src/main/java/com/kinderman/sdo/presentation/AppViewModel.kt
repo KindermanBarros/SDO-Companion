@@ -123,7 +123,12 @@ class AppViewModel(
     }
 
     fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.USER))
-    fun setAutomaticSync(enabled: Boolean) { automaticSync = enabled }
+
+    fun setAutomaticSync(enabled: Boolean) {
+        val shouldSyncPendingChanges = enabled && !automaticSync
+        automaticSync = enabled
+        if (shouldSyncPendingChanges) startSync(initial = false)
+    }
 
     fun clearSession() {
         autosaveJobs.values.forEach(Job::cancel)
@@ -284,6 +289,7 @@ class AppViewModel(
             .onSuccess {
                 _saveErrors.value = _saveErrors.value - character.id
                 if (notify) _message.value = "Ficha salva localmente"
+                if (automaticSync) startSync(initial = false)
             }
             .onFailure {
                 val error = userMessage(it, "Falha ao salvar ficha localmente")
