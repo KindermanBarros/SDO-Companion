@@ -18,7 +18,7 @@ object LevelProgression {
     fun levelsBetween(current: Int, target: Int): List<Int> {
         require(current in MIN_LEVEL..MAX_LEVEL && target in MIN_LEVEL..MAX_LEVEL)
         require(target > current)
-        return (current + 1)..target
+        return ((current + 1)..target).toList()
     }
 
     fun apply(character: Character, target: Int, rewards: List<ProgressionReward>, catalog: List<CatalogEntry>, now: Long = System.currentTimeMillis()): Character {
@@ -39,7 +39,7 @@ object LevelProgression {
         var result = character
         levels.forEach { level ->
             result = result.copy(
-                progressionLifeBonus = result.progressionLifeBonus + 1 + result.skillValue("VIG", "Vitalidade"),
+                progressionLifeBonus = result.progressionLifeBonus + 1 + result.vitalityValue(),
                 progressionSanityBonus = result.progressionSanityBonus + 1,
             )
             rewards.filter { it.level == level }.forEach { reward -> result = result.applyReward(reward, catalog) }
@@ -97,3 +97,6 @@ private fun Character.incrementKnowledge(id: String): Character {
     require((learnedKnowledges + arcaneKnowledges + battleTechniques).any { it.id == id && it.value < 5 }) { "Conhecimento inválido ou no máximo." }
     return copy(learnedKnowledges = update(learnedKnowledges), arcaneKnowledges = update(arcaneKnowledges), battleTechniques = update(battleTechniques))
 }
+
+private fun Character.vitalityValue(): Int = attributes.firstOrNull { it.acronym == "VIG" }
+    ?.skills?.firstOrNull { it.name == "Vitalidade" }?.let { it.value + it.modifier }?.coerceAtLeast(0) ?: 0

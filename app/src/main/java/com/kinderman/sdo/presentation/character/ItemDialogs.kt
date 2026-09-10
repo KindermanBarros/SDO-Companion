@@ -370,7 +370,7 @@ private fun bonusTargets(type: ItemBonusType): List<String> = when (type) {
 }
 
 @Composable
-internal fun EquipmentGlossaryDialog(onDismiss: () -> Unit, onUse: ((com.kinderman.sdo.domain.catalog.GlossaryEntry) -> Unit)? = null) {
+internal fun EquipmentGlossaryDialog(onUse: ((com.kinderman.sdo.domain.catalog.GlossaryEntry) -> Unit)? = null, onDismiss: () -> Unit) {
     var query by remember { mutableStateOf("") }
     var section by remember { mutableStateOf("Termos") }
     var group by remember { mutableStateOf("Todos") }
