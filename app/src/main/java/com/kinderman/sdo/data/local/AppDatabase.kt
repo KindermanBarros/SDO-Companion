@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 16,
+    version = 17,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -243,6 +243,12 @@ abstract class AppDatabase : RoomDatabase() {
                 // Campaign authority comes only from campaigns.ownerId. Legacy contextual roles
                 // are normalized so the same account can be Mestre in one campaign and jogador in another.
                 db.execSQL("UPDATE campaign_members SET role = 'PLAYER' WHERE role != 'PLAYER'")
+            }
+        }
+
+        val MIGRATION_16_17 = object : Migration(16, 17) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE characters ADD COLUMN appliedDeliveryIds TEXT NOT NULL DEFAULT ''")
             }
         }
     }

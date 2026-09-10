@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,16 +74,21 @@ fun CharacterSheetScreen(
     onHistorianLock: (Character, Boolean) -> Unit,
     onDelete: (Character) -> Unit,
 ) {
-    if (character == null || session == null) return
-    var current by remember(character.id, character.updatedAt) { mutableStateOf(character) }
+    BackHandler(onBack = onBack)
+    if (character == null || session == null) {
+        MissingCharacterState(sessionAvailable = session != null, snackbarHost = snackbarHost, onBack = onBack)
+        return
+    }
+    var current by remember(character.id) { mutableStateOf(character) }
     var confirmDelete by remember { mutableStateOf(false) }
+    LaunchedEffect(character.updatedAt) {
+        if (shouldReplaceDraft(current.updatedAt, character.updatedAt)) current = character
+    }
     val editable = !readOnly && CharacterAccessPolicy.canEdit(session, current, isCampaignHistorian)
     // Ownership survives campaign archive/locks: the owner can always remove their own sheet.
     val canDelete = CharacterAccessPolicy.canDelete(session, current, isCampaignHistorian)
     val canChangePlayerLock = !readOnly &&
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
-
-    BackHandler(onBack = onBack)
 
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
@@ -159,12 +165,50 @@ fun CharacterSheetScreen(
                 showCalculationAudit = showCalculationAudit,
                 onChange = {
                     if (!readOnly) {
-                        current = it
-                        onAutosave(it)
+                        val draft = it.copy(
+                            updatedAt = maxOf(System.currentTimeMillis(), current.updatedAt + 1),
+                            dirty = true,
+                        )
+                        current = draft
+                        onAutosave(draft)
                     }
                 },
                 modifier = Modifier.padding(padding).fillMaxSize(),
             )
+        }
+    }
+}
+
+internal fun shouldReplaceDraft(currentUpdatedAt: Long, incomingUpdatedAt: Long): Boolean =
+    incomingUpdatedAt > currentUpdatedAt
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun MissingCharacterState(
+    sessionAvailable: Boolean,
+    snackbarHost: @Composable () -> Unit,
+    onBack: () -> Unit,
+) {
+    HudBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            snackbarHost = snackbarHost,
+            topBar = {
+                TopAppBar(
+                    title = { Text("FICHA INDISPONÍVEL") },
+                    navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar ao painel") } },
+                )
+            },
+        ) { padding ->
+            Column(
+                Modifier.padding(padding).padding(24.dp).fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
+                Text(if (sessionAvailable) "Esta ficha não existe mais ou ainda não foi sincronizada." else "A sessão não está disponível.")
+                TextButton(onClick = onBack) { Text("VOLTAR AO PAINEL") }
+            }
         }
     }
 }

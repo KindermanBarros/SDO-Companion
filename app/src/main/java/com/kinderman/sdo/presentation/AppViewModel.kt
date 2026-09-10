@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -66,6 +67,7 @@ class AppViewModel(
     private var syncRequested = false
     private var automaticSync = true
     private val localSaveMutex = Mutex()
+    private val autosaveJobs = mutableMapOf<String, Job>()
 
     val session = currentSession.asStateFlow()
     private val _saveErrors = MutableStateFlow<Map<String, String>>(emptyMap())
@@ -124,6 +126,8 @@ class AppViewModel(
     fun setAutomaticSync(enabled: Boolean) { automaticSync = enabled }
 
     fun clearSession() {
+        autosaveJobs.values.forEach(Job::cancel)
+        autosaveJobs.clear()
         syncJob?.cancel()
         syncJob = null
         syncRequested = false
@@ -140,8 +144,20 @@ class AppViewModel(
         repository.create(session, ownerId = ownerId, campaignId = campaign.id)
     }
 
-    fun save(character: Character) = saveLocally(character, notify = true)
-    fun autosave(character: Character) = saveLocally(character, notify = false)
+    fun save(character: Character) {
+        autosaveJobs.remove(character.id)?.cancel()
+        saveLocally(character, notify = true)
+    }
+
+    fun autosave(character: Character) {
+        autosaveJobs.remove(character.id)?.cancel()
+        val job = viewModelScope.launch {
+            delay(350)
+            persistLocally(character, notify = false)
+        }
+        autosaveJobs[character.id] = job
+        job.invokeOnCompletion { if (autosaveJobs[character.id] === job) autosaveJobs.remove(character.id) }
+    }
 
     fun applySessionCommand(character: Character, command: SessionCommand) {
         val session = currentSession.value ?: return
@@ -257,19 +273,23 @@ class AppViewModel(
     fun sync() = startSync(initial = false)
 
     private fun saveLocally(character: Character, notify: Boolean) {
-        val session = currentSession.value ?: return
         viewModelScope.launch {
-            runCatching { localSaveMutex.withLock { saveCharacter(session, character) } }
-                .onSuccess {
-                    _saveErrors.value = _saveErrors.value - character.id
-                    if (notify) _message.value = "Ficha salva localmente"
-                }
-                .onFailure {
-                    val error = userMessage(it, "Falha ao salvar ficha localmente")
-                    _saveErrors.value = _saveErrors.value + (character.id to error)
-                    _message.value = error
-                }
+            persistLocally(character, notify)
         }
+    }
+
+    private suspend fun persistLocally(character: Character, notify: Boolean) {
+        val session = currentSession.value ?: return
+        runCatching { localSaveMutex.withLock { saveCharacter(session, character) } }
+            .onSuccess {
+                _saveErrors.value = _saveErrors.value - character.id
+                if (notify) _message.value = "Ficha salva localmente"
+            }
+            .onFailure {
+                val error = userMessage(it, "Falha ao salvar ficha localmente")
+                _saveErrors.value = _saveErrors.value + (character.id to error)
+                _message.value = error
+            }
     }
 
     fun resolveConflict(conflict: CharacterSyncConflict, remoteFieldIds: Set<String>) {
@@ -311,6 +331,10 @@ class AppViewModel(
                 val failures = mutableListOf<Pair<String, Throwable>>()
                 runCatching { campaignRepository.sync(session) }
                     .onFailure { failures += "campanhas" to it }
+                // Delivery acceptance claims and applies remote content atomically before the
+                // general character sync can upload an offline draft of the same sheet.
+                runCatching { operationsRepository.sync(session, manageableCampaignIds.value) }
+                    .onFailure { failures += "operações" to it }
                 // Personal sync always runs, even if campaign authorization or queries fail.
                 // Keeping it after campaigns also lets a freshly accepted invite create its
                 // membership before the selected character is linked remotely.
@@ -318,8 +342,6 @@ class AppViewModel(
                     .onFailure { failures += "fichas pessoais" to it }
                 runCatching { ownerRepository.sync(session) }
                     .onFailure { failures += "administração" to it }
-                runCatching { operationsRepository.sync(session, manageableCampaignIds.value) }
-                    .onFailure { failures += "operações" to it }
                 if (failures.isNotEmpty()) _message.value = syncFailureMessage(failures)
             } catch (cancelled: CancellationException) {
                 throw cancelled

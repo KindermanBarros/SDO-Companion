@@ -81,6 +81,7 @@ data class CharacterRecord(
     val lockedBy: String = "",
     val lockedAt: Long? = null,
     val deleted: Boolean = false,
+    val appliedDeliveryIds: List<String> = emptyList(),
 )
 
 fun CharacterRecord.toDomain() = Character(
@@ -147,6 +148,7 @@ fun CharacterRecord.toDomain() = Character(
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
+    appliedDeliveryIds = appliedDeliveryIds,
 )
 
 fun Character.toRecord() = CharacterRecord(
@@ -202,6 +204,7 @@ fun Character.toRecord() = CharacterRecord(
     lockedBy = lockedBy,
     lockedAt = lockedAt,
     deleted = deleted,
+    appliedDeliveryIds = appliedDeliveryIds,
 )
 
 private fun resolveProtectionAdjustments(

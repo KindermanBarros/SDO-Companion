@@ -51,13 +51,14 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_13_14,
                 AppDatabase.MIGRATION_14_15,
                 AppDatabase.MIGRATION_15_16,
+                AppDatabase.MIGRATION_16_17,
             )
             .build()
         characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao())
         ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
         campaignRepository = OfflineFirstCampaignRepository(db.campaignDao(), db.characterDao())
-        operationsRepository = OfflineFirstOperationsRepository(db.operationsDao())
+        operationsRepository = OfflineFirstOperationsRepository(db.operationsDao(), db.campaignDao())
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {
             catalogRepository.refreshBundledCatalog()

@@ -21,6 +21,9 @@ data class CampaignLibraryEntry(
     val updatedAt: Long = System.currentTimeMillis(),
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
+    val itemSnapshot: InventoryItem? = null,
+    val powerSnapshot: Power? = null,
+    val conditionSnapshot: ConditionEffect? = null,
 )
 
 data class CampaignDelivery(
@@ -52,4 +55,3 @@ data class CampaignAlertSettings(
     val alertConditions: Boolean = true,
     val alertBodyFailures: Boolean = true,
 )
-

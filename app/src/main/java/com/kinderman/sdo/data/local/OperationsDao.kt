@@ -28,6 +28,7 @@ interface OperationsDao {
     @Upsert suspend fun upsertDelivery(value: CampaignDeliveryRecord)
     @Upsert suspend fun upsertAlertSettings(value: CampaignAlertSettingsRecord)
     @Query("SELECT * FROM characters WHERE id = :id LIMIT 1") suspend fun character(id: String): CharacterRecord?
+    @Query("SELECT * FROM campaign_library_entries WHERE id = :id LIMIT 1") suspend fun library(id: String): CampaignLibraryRecord?
     @Query("UPDATE session_operations SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markOperationSynced(id: String, at: Long)
     @Query("UPDATE campaign_library_entries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markLibrarySynced(id: String, at: Long)
     @Query("UPDATE campaign_deliveries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markDeliverySynced(id: String, at: Long)
@@ -40,8 +41,14 @@ interface OperationsDao {
     }
 
     @Transaction
-    suspend fun acceptDelivery(delivery: CampaignDeliveryRecord, character: CharacterRecord) {
-        upsertCharacter(character)
+    suspend fun acceptDeliveryOnce(delivery: CampaignDeliveryRecord, updatedCharacter: CharacterRecord): Boolean {
+        val stored = character(updatedCharacter.id)
+        if (delivery.id in stored?.appliedDeliveryIds.orEmpty()) {
+            upsertDelivery(delivery)
+            return false
+        }
+        upsertCharacter(updatedCharacter)
         upsertDelivery(delivery)
+        return true
     }
 }

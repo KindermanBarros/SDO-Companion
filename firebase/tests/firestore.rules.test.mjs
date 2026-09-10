@@ -120,6 +120,7 @@ async function seed({ archived = false, revoked = false } = {}) {
       lockedBy: '',
       lockedAt: null,
       deleted: false,
+      appliedDeliveryIds: [],
       updatedAt: 1,
     });
   });
@@ -130,6 +131,55 @@ before(async () => {
     projectId,
     firestore: { rules },
   });
+});
+
+async function seedLibraryAndDelivery({ archived = false } = {}) {
+  await seed({ archived });
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'campaignLibrary', 'library-1'), {
+      id: 'library-1', campaignId: ids.campaign, kind: 'ITEM', name: 'Item', summary: 'Resumo',
+      payload: '', catalogEntryId: '', knowledgeBonus: 0, archived: false, version: 1,
+      createdBy: ids.owner, createdAt: 1, updatedAt: 1,
+    });
+    await setDoc(doc(db, 'campaignDeliveries', 'delivery-1'), {
+      id: 'delivery-1', campaignId: ids.campaign, libraryEntryId: 'library-1',
+      recipientId: ids.player, recipientCharacterId: ids.character,
+      snapshotKind: 'ITEM', snapshotName: 'Item', snapshotSummary: 'Resumo', snapshotPayload: '',
+      knowledgeMapping: '', knowledgeBonus: 0, state: 'PENDING', createdBy: ids.owner,
+      createdAt: 1, updatedAt: 1,
+    });
+  });
+}
+
+test('archived campaigns reject every library mutation and new delivery', async () => {
+  await seedLibraryAndDelivery({ archived: true });
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertFails(setDoc(doc(db, 'campaignLibrary', 'library-2'), {
+    id: 'library-2', campaignId: ids.campaign, kind: 'NOTE', name: 'Nota', summary: '', payload: '',
+    catalogEntryId: '', knowledgeBonus: 0, archived: false, version: 1,
+    createdBy: ids.owner, createdAt: 2, updatedAt: 2,
+  }));
+  await assertFails(updateDoc(doc(db, 'campaignLibrary', 'library-1'), { name: 'Alterado', updatedAt: 2 }));
+  await assertFails(setDoc(doc(db, 'campaignDeliveries', 'delivery-2'), {
+    id: 'delivery-2', campaignId: ids.campaign, libraryEntryId: 'library-1',
+    recipientId: ids.player, recipientCharacterId: ids.character,
+    snapshotKind: 'ITEM', snapshotName: 'Item', snapshotSummary: '', snapshotPayload: '',
+    knowledgeMapping: '', knowledgeBonus: 0, state: 'PENDING', createdBy: ids.owner,
+    createdAt: 2, updatedAt: 2,
+  }));
+});
+
+test('delivery acceptance requires the character application marker in the same atomic write', async () => {
+  await seedLibraryAndDelivery();
+  const db = env.authenticatedContext(ids.player).firestore();
+  await assertFails(updateDoc(doc(db, 'campaignDeliveries', 'delivery-1'), { state: 'ACCEPTED', updatedAt: 2 }));
+
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'characters', ids.character), { appliedDeliveryIds: ['delivery-1'], updatedAt: 2 });
+  batch.update(doc(db, 'campaignDeliveries', 'delivery-1'), { state: 'ACCEPTED', updatedAt: 2 });
+  await assertSucceeds(batch.commit());
+  await assertFails(updateDoc(doc(db, 'campaignDeliveries', 'delivery-1'), { state: 'ACCEPTED', updatedAt: 3 }));
 });
 
 beforeEach(async () => {
