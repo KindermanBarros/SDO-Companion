@@ -97,24 +97,38 @@ fun CatalogEntry.toMysticAbility(): MysticAbility = MysticAbility(
     ruleReference = ruleReference,
     catalogEntryId = id,
     catalogVersion = version,
-    canonicalSource = AbilitySource.NARRATIVE,
-    costType = when (kind) {
-        CatalogKind.ASH -> AbilityCostType.DOSE
-        CatalogKind.RUNE -> AbilityCostType.ARCANE
-        else -> canonicalCostType(cost)
-    },
-    costValue = if (kind == CatalogKind.ASH) canonicalCostValue(cost).coerceAtLeast(1) else canonicalCostValue(cost),
-    executionType = canonicalExecution(action),
-    rangeType = canonicalRange(range),
-    durationType = canonicalDuration(duration),
-    durationValue = canonicalDurationValue(duration),
-    durationUnit = canonicalDurationUnit(duration),
-    resistance = canonicalResistance(listOf(summary, mechanicalEffect).joinToString("\n")),
-    ashSource = AshSource.entries.firstOrNull { ash -> group.substringBefore('/').trim().equals(ash.label, true) } ?: AshSource.FIRE,
-    ashPurity = AshPurity.entries.firstOrNull { purity -> group.substringAfter('/', "").trim().equals(purity.label, true) }
-        ?: AshPurity.entries.firstOrNull { purity -> summary.contains(purity.label, true) }
+    canonicalSource = abilitySource ?: AbilitySource.NARRATIVE,
+    knowledgeLevel = sourceLevel,
+    costType = abilityCostType ?: canonicalCostType(cost),
+    costValue = abilityCostValue ?: canonicalCostValue(cost),
+    executionType = abilityExecution ?: canonicalExecution(action),
+    timeValue = executionValue,
+    timeUnit = executionUnit,
+    rangeType = abilityRange ?: canonicalRange(range),
+    targetArea = targetArea,
+    durationType = abilityDuration ?: canonicalDuration(duration),
+    durationValue = durationValue.takeIf { abilityDuration != null } ?: canonicalDurationValue(duration),
+    durationUnit = durationUnit.takeIf { abilityDuration != null } ?: canonicalDurationUnit(duration),
+    resistance = abilityResistance ?: canonicalResistance(listOf(summary, mechanicalEffect).joinToString("\n")),
+    ashSource = catalogAshSource
+        ?: AshSource.entries.firstOrNull { ash -> group.substringBefore('/').trim().equals(ash.label, true) }
+        ?: AshSource.FIRE,
+    ashPurity = catalogAshPurity
+        ?: AshPurity.entries.firstOrNull { purity -> group.substringAfter('/', "").trim().equals(purity.label, true) }
         ?: AshPurity.RAW,
 )
+
+fun CatalogEntry.toMysticAbility(character: Character): MysticAbility {
+    val ability = toMysticAbility()
+    if (ability.canonicalSource != AbilitySource.KNOWLEDGE) return ability
+    val requiredLevel = sourceLevel ?: 0
+    val knowledge = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
+        .firstOrNull { com.kinderman.sdo.domain.model.normalizeAbilityName(it.name) == com.kinderman.sdo.domain.model.normalizeAbilityName(sourceKnowledge) }
+    require(knowledge != null && knowledge.value >= requiredLevel) {
+        "Conhecimento necessário: $sourceKnowledge $requiredLevel"
+    }
+    return ability.copy(knowledgeId = knowledge.id, knowledgeLevel = requiredLevel)
+}
 
 private fun PathPower.toStructuredPower(path: CatalogEntry): Power {
     val normalized = effect.replace("\r\n", "\n")

@@ -40,6 +40,23 @@ data class CatalogEntry(
     val activationCondition: String = "",
     val enhancements: String = "",
     val deactivationCondition: String = "",
+    val abilitySource: AbilitySource? = null,
+    val sourceKnowledge: String = "",
+    val sourceLevel: Int? = null,
+    val abilityCostType: AbilityCostType? = null,
+    val abilityCostValue: Int? = null,
+    val abilityExecution: AbilityExecution? = null,
+    val executionValue: Int = 0,
+    val executionUnit: AbilityTimeUnit = AbilityTimeUnit.MINUTES,
+    val abilityRange: AbilityRange? = null,
+    val targetArea: String = "",
+    val abilityDuration: AbilityDuration? = null,
+    val durationValue: Int = 0,
+    val durationUnit: AbilityTimeUnit = AbilityTimeUnit.HOURS,
+    val abilityResistance: AbilityResistance? = null,
+    val catalogAshSource: AshSource? = null,
+    val catalogAshPurity: AshPurity? = null,
+    val runePackage: String = "",
 ) {
     val category: String get() = group
     val description: String get() = summary
@@ -64,5 +81,12 @@ data class CatalogEntry(
         append(keywords.joinToString(" "))
         append(' ')
         append(listOf(cost, action, range, duration, limit, activationCondition, enhancements, deactivationCondition).joinToString(" "))
+        append(' ')
+        append(listOfNotNull(
+            abilitySource?.label, sourceKnowledge, sourceLevel?.toString(), abilityCostType?.label,
+            abilityCostValue?.toString(), abilityExecution?.label, abilityRange?.label, targetArea,
+            abilityDuration?.label, abilityResistance?.label, catalogAshSource?.label,
+            catalogAshPurity?.label, runePackage,
+        ).joinToString(" "))
     }
 }

@@ -276,7 +276,11 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
         }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR EFEITO MÍSTICO", catalog, { selecting = false }) { entry ->
-        val ability = entry.toMysticAbility()
+        val ability = runCatching { entry.toMysticAbility(character) }
+            .getOrElse {
+                android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show()
+                return@CatalogPickerDialog
+            }
         expandedAbilityId = ability.id
         applyChange { character.withAddedAbility(ability, reuseExistingAsh = true) }
         selecting = false

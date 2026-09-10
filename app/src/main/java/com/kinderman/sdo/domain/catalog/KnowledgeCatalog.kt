@@ -5,6 +5,7 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 
 object KnowledgeCatalog {
+    const val VERSION = 5
     val entries: List<CatalogEntry> = CanonicalCatalogData.entries.filter {
         it.kind in setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE)
     }
