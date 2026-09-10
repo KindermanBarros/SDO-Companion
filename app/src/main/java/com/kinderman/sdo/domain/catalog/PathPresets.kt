@@ -12,7 +12,28 @@ data class PathPreset(
     val powers: List<PathPower>,
 )
 
-data class PathPower(val name: String, val effect: String)
+data class PathPower(
+    val name: String,
+    val effect: String,
+    val cost: String = "Sem custo",
+    val action: String = "Passiva",
+    val range: String = "Pessoal",
+    val duration: String = "Instantânea",
+    val limit: String = "Sem limite adicional",
+    val category: String = "Poder de Caminho",
+    val activationCondition: String = "Sempre ativo",
+    val enhancements: String = "Sem aprimoramento publicado",
+    val deactivationCondition: String = "Não aplicável",
+    val costType: com.kinderman.sdo.domain.model.AbilityCostType = com.kinderman.sdo.domain.model.AbilityCostType.NONE,
+    val costValue: Int = 0,
+    val destinyCostEligible: Boolean = false,
+    val executionType: com.kinderman.sdo.domain.model.AbilityExecution = com.kinderman.sdo.domain.model.AbilityExecution.PASSIVE,
+    val rangeType: com.kinderman.sdo.domain.model.AbilityRange = com.kinderman.sdo.domain.model.AbilityRange.PERSONAL,
+    val durationType: com.kinderman.sdo.domain.model.AbilityDuration = com.kinderman.sdo.domain.model.AbilityDuration.INSTANT,
+    val durationValue: Int = 0,
+    val durationUnit: com.kinderman.sdo.domain.model.AbilityTimeUnit = com.kinderman.sdo.domain.model.AbilityTimeUnit.HOURS,
+    val resistance: com.kinderman.sdo.domain.model.AbilityResistance = com.kinderman.sdo.domain.model.AbilityResistance.NONE,
+)
 
 object PathPresets {
     val entries = listOf(
@@ -26,16 +47,25 @@ object PathPresets {
                 """Persistência — Se não deu certo, é porque ainda falta uma peça.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Arquiteto da Sucata""".trimIndent(), """Origem: Caminho
-
-Você pode gastar 2 Energia para gerar um item temporário com a sucata que tiver ao seu redor. O item não pode ser modificado nem adornado e dura 1 cena.""".trimIndent()),
-                PathPower("""Eureka!""".trimIndent(), """Origem: Caminho
-
-Ao realizar uma análise utilizando Engenhocaria, receba +5 no teste.
+                PathPower(
+                    name = """Arquiteto da Sucata""".trimIndent(),
+                    effect = """gerar um item temporário com a sucata que tiver ao seu redor. O item não pode ser modificado nem adornado e dura 1 cena.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    duration = "1 cena",
+                    durationType = com.kinderman.sdo.domain.model.AbilityDuration.SCENE,
+                ),
+                PathPower(
+                    name = """Eureka!""".trimIndent(),
+                    effect = """Ao realizar uma análise utilizando Engenhocaria, receba +5 no teste.
 
 Para cada falha nessa análise, você pode utilizar 1 sucata para cada 1 no custo daquele item para desfazê-la.
 
-Observação: a segunda parte foi preservada como está na ficha; “falha nessa análise” e “cada 1 no custo” não são definidos nela.""".trimIndent()),
+Observação: a segunda parte foi preservada como está na ficha; “falha nessa análise” e “cada 1 no custo” não são definidos nela.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -48,12 +78,19 @@ Observação: a segunda parte foi preservada como está na ficha; “falha nessa
                 """Ato III — É o momento de clímax, onde o conflito principal atinge o seu ponto mais alto e é resolvido. A história é concluída, mostrando as consequências da jornada para o personagem e seu mundo.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Falas Preparadas""".trimIndent(), """Origem: Caminho
-
-Durante um descanso, você pode escolher não recuperar Energia. Caso faça isso, você prepara dois objetos alterados em até itens incomuns até o fim do dia.""".trimIndent()),
-                PathPower("""Instrumento de Cenário""".trimIndent(), """Origem: Caminho
-
-Você pode gastar 3 de Energia em vez de fazer o teste normal de Lábia. Você cria um objeto inexistente no cenário até alguém notar que ele não estava lá.""".trimIndent()),
+                PathPower(
+                    name = """Falas Preparadas""".trimIndent(),
+                    effect = """Durante um descanso, você pode escolher não recuperar Energia. Caso faça isso, você prepara dois objetos alterados em até itens incomuns até o fim do dia.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Instrumento de Cenário""".trimIndent(),
+                    effect = """Você pode gastar 3 de Energia em vez de fazer o teste normal de Lábia. Você cria um objeto inexistente no cenário até alguém notar que ele não estava lá.""".trimIndent(),
+                    cost = "3 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 3,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                ),
             ),
         ),
         PathPreset(
@@ -66,14 +103,21 @@ Você pode gastar 3 de Energia em vez de fazer o teste normal de Lábia. Você c
                 """Ritos — Descrição ainda não preenchida.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Ritos de Passagem""".trimIndent(), """Origem: Caminho
+                PathPower(
+                    name = """Ritos de Passagem""".trimIndent(),
+                    effect = """executar um ritual de 3 turnos para acalmar um morto em sua presença. Se for uma criatura morto-vivo, sua forma física se desfaz.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                ),
+                PathPower(
+                    name = """Instrumentos do Ofício""".trimIndent(),
+                    effect = """Você inicia com uma arma de truque que se torna um instrumento de sua escolha.
 
-Você pode gastar 2 PM para executar um ritual de 3 turnos para acalmar um morto em sua presença. Se for uma criatura morto-vivo, sua forma física se desfaz.""".trimIndent()),
-                PathPower("""Instrumentos do Ofício""".trimIndent(), """Origem: Caminho
-
-Você inicia com uma arma de truque que se torna um instrumento de sua escolha.
-
-Na ficha, o equipamento relacionado registrado é Tripidante, com 1d10 de dano e forma Pá — Instrumento.""".trimIndent()),
+Na ficha, o equipamento relacionado registrado é Tripidante, com 1d10 de dano e forma Pá — Instrumento.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -86,14 +130,23 @@ Na ficha, o equipamento relacionado registrado é Tripidante, com 1d10 de dano e
                 """Conhecimento é Poder — O maior tesouro não é o ouro, mas o conhecimento. Cada descoberta fortalece a compreensão do passado e revela caminhos para o futuro.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Leitor de Ruínas""".trimIndent(), """Origem: Séculos como explorador
+                PathPower(
+                    name = """Leitor de Ruínas""".trimIndent(),
+                    effect = """Recebe +2 de Linguística.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Memória Onírica""".trimIndent(),
+                    effect = """Ao entrar em contato físico com um objeto ou local, captar a impressão emocional mais forte deixada naquele lugar.
 
-Recebe +2 de Linguística.""".trimIndent()),
-                PathPower("""Memória Onírica""".trimIndent(), """Origem: Ligação com a Bruma
-
-Ao entrar em contato físico com um objeto ou local, você pode gastar 2 PM para captar a impressão emocional mais forte deixada naquele lugar.
-
-O poder não pode ser usado no mesmo objeto ou local mais de uma vez por dia.""".trimIndent()),
+O poder não pode ser usado no mesmo objeto ou local mais de uma vez por dia.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "Toque",
+                    limit = "Uma vez por dia",
+                ),
             ),
         ),
         PathPreset(
@@ -132,10 +185,9 @@ Encontrar felicidade não é suficiente.
 Ele quer aprender a compartilhá-la.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Ingrediente Secreto""".trimIndent(), """Categoria: Ofício / Sobrenatural  
-Origem: Gastromancia, Culinária do Ventre da Terra e treinamento com Xantia.
-
-Carlo aprendeu que ingredientes carregam propriedades que vão além de sabor e
+                PathPower(
+                    name = """Ingrediente Secreto""".trimIndent(),
+                    effect = """Carlo aprendeu que ingredientes carregam propriedades que vão além de sabor e
 valor nutricional.
 
 Características marcantes de animais, monstros, plantas, fungos e outros
@@ -168,11 +220,7 @@ A propriedade precisa existir ou ser claramente representada pelo ingrediente.
 
 Extrair Propriedade
 
-Ao preparar uma refeição utilizando um ingrediente analisado, Carlo pode gastar:
-
-2 PM
-
-e realizar um teste de:
+Ao preparar uma refeição utilizando um ingrediente analisado, Carlo pode realizar um teste de:
 
 INT + Culinária
 
@@ -197,20 +245,24 @@ Limites
 • uma criatura só pode possuir 1 efeito de Ingrediente Secreto ativo;
 • o poder não copia literalmente Poderes Raciais, magias ou habilidades completas;
 • ele traduz uma característica do ingrediente em um benefício culinário limitado.
-•""".trimIndent()),
-                PathPower("""Prato Favorito""".trimIndent(), """Categoria: Social / Sobrenatural  
-Origem: Fabrizio, a Carbonara e os ensinamentos de Xantia sobre alimentar a alma.
-
-Xantia ensinou Carlo que conhecer ingredientes não é suficiente.
+•""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    category = "Ofício / Sobrenatural",
+                ),
+                PathPower(
+                    name = """Prato Favorito""".trimIndent(),
+                    effect = """Xantia ensinou Carlo que conhecer ingredientes não é suficiente.
 
 Uma refeição pode carregar lembranças, conforto e significado.
 
 Carlo precisa conhecer o prato favorito da pessoa e possuir ingredientes
 razoavelmente adequados para prepará-lo.
 
-Durante um descanso ou período seguro, Carlo pode preparar esse prato e gastar:
-
-2 PM
+Durante um descanso ou período seguro, Carlo pode preparar esse prato.
 
 A criatura que consumir a refeição:
 
@@ -246,7 +298,15 @@ seu Prato Favorito.
 
 Quando a prepara para alguém que conheça a história de Fabrizio e compartilhe
 a refeição com Carlo, ela também pode ser tratada como Prato Favorito daquela
-pessoa caso exista uma ligação emocional construída em jogo.""".trimIndent()),
+pessoa caso exista uma ligação emocional construída em jogo.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por dia",
+                    category = "Social / Sobrenatural",
+                ),
             ),
         ),
         PathPreset(
@@ -259,14 +319,9 @@ pessoa caso exista uma ligação emocional construída em jogo.""".trimIndent())
                 """Estude e Impressione — Conhecimento também é espetáculo. Estudo e técnica permitem criar desde apresentações até máquinas, fogos de artifício e invenções.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Palco de Batalha""".trimIndent(), """Origem: Caminho  
-Categoria: Suporte / Performance
-
-Uma vez por cena, enquanto possuir uma Araninha Dançarina funcional a até 10 metros, use:
-
-1 ação + 2 PE
-
-para iniciar uma apresentação sincronizada.
+                PathPower(
+                    name = """Palco de Batalha""".trimIndent(),
+                    effect = """Uma vez por cena, enquanto possuir uma Araninha Dançarina funcional a até 10 metros, iniciar uma apresentação sincronizada.
 
 Escolha até 3 aliados que consigam perceber a música ou apresentação.
 
@@ -274,27 +329,40 @@ Cada um recebe:
 
 +2 no próximo teste realizado até o início do seu próximo turno.
 
-O bônus não acumula com Ajuda no mesmo teste.
+O bônus não acumula com Ajuda no mesmo teste.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "10 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.MEDIUM,
+                    limit = "Uma vez por cena",
+                    category = "Suporte / Performance",
+                    enhancements = """Grande Espetáculo
 
-Aprimoramento — Grande Espetáculo
-
-O benefício dura até o final do próximo turno de cada aliado.""".trimIndent()),
-                PathPower("""O Show Tem Que Continuar""".trimIndent(), """Origem: Caminho  
-Categoria: Motivação / Resiliência
-
-Uma vez por cena, quando você ou um aliado a até 10 metros falhar em um teste por uma diferença de até 2 pontos, você pode gastar:
-
-1 PE
-
-para transformar a falha em:
+O benefício dura até o final do próximo turno de cada aliado.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """O Show Tem Que Continuar""".trimIndent(),
+                    effect = """Uma vez por cena, quando você ou um aliado a até 10 metros falhar em um teste por uma diferença de até 2 pontos, transformar a falha em:
 
 sucesso parcial.
 
-A ação funciona, mas deve gerar uma complicação, custo ou consequência menor apropriada.
+A ação funciona, mas deve gerar uma complicação, custo ou consequência menor apropriada.""".trimIndent(),
+                    cost = "1 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 1,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "10 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.MEDIUM,
+                    limit = "Uma vez por cena",
+                    category = "Motivação / Resiliência",
+                    enhancements = """Encore
 
-Aprimoramento — Encore
-
-O poder pode ser usado duas vezes por cena, mas nunca duas vezes no mesmo teste.""".trimIndent()),
+O poder pode ser usado duas vezes por cena, mas nunca duas vezes no mesmo teste.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -307,18 +375,13 @@ O poder pode ser usado duas vezes por cena, mas nunca duas vezes no mesmo teste.
                 """Punição — Quem insiste em oprimir os fracos deve enfrentar consequências.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Guilhotina de Bromir""".trimIndent(), """Origem: Caminho  
-Categoria: Combate / Execução
-
-Uma vez por cena, ao atingir com um ataque corpo a corpo uma criatura que esteja:
+                PathPower(
+                    name = """Guilhotina de Bromir""".trimIndent(),
+                    effect = """Uma vez por cena, ao atingir com um ataque corpo a corpo uma criatura que esteja:
 
 com 25% ou menos de sua Vida Máxima
 
-você pode gastar:
-
-3 PE
-
-para transformar o golpe em uma execução direcionada.
+transformar o golpe em uma execução direcionada.
 
 O ataque recebe:
 
@@ -326,32 +389,43 @@ O ataque recebe:
 
 e ignora a penalidade de Ataque Direcionado contra uma região corporal, caso esteja mirando cabeça, pescoço ou outro ponto vital apropriado.
 
-Se o dano gerar uma Falha Corporal ou consequência crítica suficiente para matar o alvo segundo as regras normais, a execução ocorre.
-
-Aprimoramento — Sentença
+Se o dano gerar uma Falha Corporal ou consequência crítica suficiente para matar o alvo segundo as regras normais, a execução ocorre.""".trimIndent(),
+                    cost = "3 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 3,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Combate / Execução",
+                    enhancements = """Sentença
 
 Quando utilizar Guilhotina de Bromir, o dano adicional aumenta para:
 
-+1d8""".trimIndent()),
-                PathPower("""Provocação Intensificada""".trimIndent(), """Origem: Caminho  
-Categoria: Controle / Proteção
-
-Uma vez por cena, escolha uma criatura a até 10 metros que esteja atacando ou ameaçando um aliado e gaste:
-
-2 PE
-
-Faça um Teste Resistido apropriado de intimidação, provocação ou domínio contra o alvo.
++1d8""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Provocação Intensificada""".trimIndent(),
+                    effect = """Uma vez por cena, escolha uma criatura a até 10 metros que esteja atacando ou ameaçando um aliado e Faça um Teste Resistido apropriado de intimidação, provocação ou domínio contra o alvo.
 
 Em caso de sucesso, até o início do seu próximo turno:
 
 • o alvo recebe −4 em ataques contra criaturas que não sejam você;
 • você recebe +2 na Proteção apropriada contra o primeiro ataque realizado por ele contra você.
 
-O alvo ainda pode escolher agir contra outra criatura; o poder não remove sua agência.
+O alvo ainda pode escolher agir contra outra criatura; o poder não remove sua agência.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "10 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.MEDIUM,
+                    limit = "Uma vez por cena",
+                    category = "Controle / Proteção",
+                    enhancements = """Olhe Para Mim
 
-Aprimoramento — Olhe Para Mim
-
-A duração passa até o final do seu próximo turno.""".trimIndent()),
+A duração passa até o final do seu próximo turno.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -364,30 +438,31 @@ A duração passa até o final do seu próximo turno.""".trimIndent()),
                 """Irei Salvar — Habilidades antes usadas para caçar e matar agora devem servir para preservar vidas.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Coadjuvante""".trimIndent(), """Origem: Caminho  
-Categoria: Cooperação
-
-Quando usar a ação Ajuda em um teste no qual possua um Conhecimento relevante, você concede:
+                PathPower(
+                    name = """Coadjuvante""".trimIndent(),
+                    effect = """Quando usar a ação Ajuda em um teste no qual possua um Conhecimento relevante, você concede:
 
 +5 nesse teste em conjunto.
 
-Você não pode ser o personagem principal daquele teste.
+Você não pode ser o personagem principal daquele teste.""".trimIndent(),
+                    category = "Cooperação",
+                    enhancements = """Eu Cubro Você
 
-Aprimoramento — Eu Cubro Você
-
-Uma vez por cena, quando já estiver participando diretamente da mesma tarefa, pode usar Ajuda sem gastar uma ação.""".trimIndent()),
-                PathPower("""Sentidos Aprimorados""".trimIndent(), """Origem: Caminho  
-Categoria: Percepção
-
-+2 em testes de Sentidos para perceber ameaças, rastros ou alterações no ambiente.
+Uma vez por cena, quando já estiver participando diretamente da mesma tarefa, pode usar Ajuda sem gastar uma ação.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Sentidos Aprimorados""".trimIndent(),
+                    effect = """+2 em testes de Sentidos para perceber ameaças, rastros ou alterações no ambiente.
 
 Uma vez por cena, quando estiver conscientemente procurando algo, transforme o bônus em:
 
-+4 para um único teste.
++4 para um único teste.""".trimIndent(),
+                    limit = "Uma vez por cena",
+                    category = "Percepção",
+                    enhancements = """Caçador Reformado
 
-Aprimoramento — Caçador Reformado
-
-Quando obtiver sucesso usando o bônus de +4, pode também determinar uma informação adicional plausível sobre aquilo que percebeu: direção, quantidade aproximada, tempo de passagem ou estado geral.""".trimIndent()),
+Quando obtiver sucesso usando o bônus de +4, pode também determinar uma informação adicional plausível sobre aquilo que percebeu: direção, quantidade aproximada, tempo de passagem ou estado geral.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -400,10 +475,9 @@ Quando obtiver sucesso usando o bônus de +4, pode também determinar uma inform
                 """Exploração — A ficha não apresenta um terceiro Pilar formalmente nomeado, mas suas situações de favorecimento enfatizam desmontar tecnologia, explorar ambientes e compreender conceitos desconhecidos.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Quero Entender Isso""".trimIndent(), """Origem: Caminho  
-Categoria: Conhecimento / Investigação
-
-Uma vez por cena, depois de realizar um teste para:
+                PathPower(
+                    name = """Quero Entender Isso""".trimIndent(),
+                    effect = """Uma vez por cena, depois de realizar um teste para:
 
 • estudar;
 • identificar;
@@ -411,34 +485,37 @@ Uma vez por cena, depois de realizar um teste para:
 • desmontar;
 • interpretar;
 
-algo que Eloah nunca tenha encontrado antes, ela pode gastar:
+algo que Eloah nunca tenha encontrado antes, receba:
 
-1 PE
++5 no teste.""".trimIndent(),
+                    cost = "1 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 1,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Conhecimento / Investigação",
+                    enhancements = """Mais Uma Pergunta
 
-para receber:
-
-+5 no teste.
-
-Aprimoramento — Mais Uma Pergunta
-
-Em caso de sucesso, Eloah também pode descobrir uma informação secundária verdadeira diretamente relacionada ao objeto estudado.""".trimIndent()),
-                PathPower("""Desmontar Para Aprender""".trimIndent(), """Origem: Caminho  
-Categoria: Ofício / Pesquisa
-
-Durante um período seguro, Eloah pode desmontar ou analisar profundamente um objeto, dispositivo, artefato ou mecanismo acessível.
+Em caso de sucesso, Eloah também pode descobrir uma informação secundária verdadeira diretamente relacionada ao objeto estudado.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Desmontar Para Aprender""".trimIndent(),
+                    effect = """Durante um período seguro, Eloah pode desmontar ou analisar profundamente um objeto, dispositivo, artefato ou mecanismo acessível.
 
 Faça um teste apropriado.
 
 Em caso de sucesso, escolha um benefício:
 
 • produzir anotações que permitam qualquer um receber +2 em um teste diretamente relacionado;
-• identificar uma peça, função ou princípio essencial do objeto.
-
-Aprimoramento — Caderno de Descobertas
+• identificar uma peça, função ou princípio essencial do objeto.""".trimIndent(),
+                    category = "Ofício / Pesquisa",
+                    enhancements = """Caderno de Descobertas
 
 Uma vez por sessão, um bônus obtido por esse poder é:
 
-+5.""".trimIndent()),
++5.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -451,14 +528,9 @@ Uma vez por sessão, um bônus obtido por esse poder é:
                 """Analítico — Serabatte não joga cegamente. Probabilidade, leitura do adversário e intuição são partes da aposta.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Cara ou Coroa""".trimIndent(), """Origem: Caminho  
-Categoria: Destino / Risco
-
-Uma vez por cena, antes de realizar um teste próprio, gaste:
-
-3 PE ou 3 PM
-
-e jogue uma moeda.
+                PathPower(
+                    name = """Cara ou Coroa""".trimIndent(),
+                    effect = """Uma vez por cena, antes de realizar um teste próprio, jogue uma moeda.
 
 Cara:
 
@@ -470,17 +542,24 @@ o teste é tratado como uma Falha Crítica automática.
 
 Você não rola o d20 para esse teste.
 
-Este poder não pode receber Vantagem, pois o resultado já é substituído por um Crítico Automático ou Falha Crítica automática.
-
-Aprimoramento — Dobrar a Aposta
+Este poder não pode receber Vantagem, pois o resultado já é substituído por um Crítico Automático ou Falha Crítica automática.""".trimIndent(),
+                    cost = "3 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 3,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    destinyCostEligible = true,
+                    limit = "Uma vez por cena",
+                    category = "Destino / Risco",
+                    enhancements = """Dobrar a Aposta
 
 Depois de obter Coroa, você pode gastar 1 Destino para jogar novamente a moeda.
 
-O segundo resultado é obrigatório.""".trimIndent()),
-                PathPower("""Rodada da Casa""".trimIndent(), """Origem: Caminho  
-Categoria: Destino
-
-Uma vez por sessão, depois de realizar um teste, antes de sua resolução final, peça ao Mestre para rolar:
+O segundo resultado é obrigatório.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Rodada da Casa""".trimIndent(),
+                    effect = """Uma vez por sessão, depois de realizar um teste, antes de sua resolução final, peça ao Mestre para rolar:
 
 1d20 secreto.
 
@@ -489,11 +568,13 @@ Depois que ele informar apenas o resultado total alternativo, você escolhe entr
 • seu resultado original;
 • o resultado da Casa.
 
-Todos os modificadores normais do teste são aplicados à rolagem da Casa.
+Todos os modificadores normais do teste são aplicados à rolagem da Casa.""".trimIndent(),
+                    limit = "Uma vez por sessão",
+                    category = "Destino",
+                    enhancements = """A Casa Sempre ganha
 
-Aprimoramento — A Casa Sempre ganha
-
-Você pode usar Rodada da Casa duas vezes por sessão, mas nunca mais de uma vez na mesma cena.""".trimIndent()),
+Você pode usar Rodada da Casa duas vezes por sessão, mas nunca mais de uma vez na mesma cena.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -506,18 +587,17 @@ Você pode usar Rodada da Casa duas vezes por sessão, mas nunca mais de uma vez
                 """Vontade de Leão — Um objetivo escolhido de verdade não deve ser abandonado facilmente.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Combate Bêbado""".trimIndent(), """Origem: Caminho  
-Categoria: Combate
-
-Enquanto estiver sob efeito narrativo de álcool suficiente para estar Bêbado, você recebe:
+                PathPower(
+                    name = """Combate Bêbado""".trimIndent(),
+                    effect = """Enquanto estiver sob efeito narrativo de álcool suficiente para estar Bêbado, você recebe:
 
 Vantagem em ataques corpo a corpo desarmados.
 
 Quando estiver sóbrio, o poder simplesmente não funciona; ele não aplica a antiga penalidade de −2.
 
-Combate Bêbado não concede Crítico Automático e não pode ser combinado com outro efeito que transforme a mesma rolagem em Crítico Automático.
-
-Aprimoramento — Briga de Taverna
+Combate Bêbado não concede Crítico Automático e não pode ser combinado com outro efeito que transforme a mesma rolagem em Crítico Automático.""".trimIndent(),
+                    category = "Combate",
+                    enhancements = """Briga de Taverna
 
 Uma vez por cena, ao acertar um ataque beneficiado por Combate Bêbado, você pode gastar:
 
@@ -525,26 +605,31 @@ Uma vez por cena, ao acertar um ataque beneficiado por Combate Bêbado, você po
 
 para causar:
 
-+1d6 de dano de impacto.""".trimIndent()),
-                PathPower("""Impaciência Furiosa""".trimIndent(), """Origem: Caminho  
-Categoria: Resistência / Esforço
-
-Uma vez por cena, gaste:
-
-2 PE
-
-para entrar em fúria até o final da cena.
++1d6 de dano de impacto.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Impaciência Furiosa""".trimIndent(),
+                    effect = """Uma vez por cena, para entrar em fúria até o final da cena.
 
 Durante esse período:
 
 • recebe Redução de Dano 1 contra Impacto e Perfuração;
 • recebe +2 em testes baseados em FOR.
 
-O bônus não aumenta dano diretamente.
+O bônus não aumenta dano diretamente.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    duration = "1 cena",
+                    durationType = com.kinderman.sdo.domain.model.AbilityDuration.SCENE,
+                    limit = "Uma vez por cena",
+                    category = "Resistência / Esforço",
+                    enhancements = """Cabeça Dura
 
-Aprimoramento — Cabeça Dura
-
-Recebe um aumento de dano igual a sua brutalidade.""".trimIndent()),
+Recebe um aumento de dano igual a sua brutalidade.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -557,30 +642,30 @@ Recebe um aumento de dano igual a sua brutalidade.""".trimIndent()),
                 """Assimilar — Toda oportunidade de aprimorar corpo, equipamento ou posição pode ser aproveitada, independentemente de quão agradável seja o processo.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Protético""".trimIndent(), """Origem: Caminho  
-Categoria: Tecnologia / Corpo
-
-Você recebe:
+                PathPower(
+                    name = """Protético""".trimIndent(),
+                    effect = """Você recebe:
 
 +5 em testes diretamente relacionados à instalação, adaptação ou aceitação de implantes no próprio corpo.
 
-Quando um implante ancestral exigiria um teste para rejeição ou instabilidade, você pode gastar:
-
-2 PE
-
-para repetir o teste.
+Quando um implante ancestral exigiria um teste para rejeição ou instabilidade, repetir o teste.
 
 O segundo resultado deve ser mantido.
 
-O Poder não reduz permanentemente sua Energia por implante. Custos de manutenção pertencem às regras do próprio implante.
+O Poder não reduz permanentemente sua Energia por implante. Custos de manutenção pertencem às regras do próprio implante.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    category = "Tecnologia / Corpo",
+                    enhancements = """Corpo Modular
 
-Aprimoramento — Corpo Modular
-
-Uma vez por descanso, durante manutenção apropriada, você pode receber +2 em um teste para reparar ou recalibrar um dos seus próprios implantes.""".trimIndent()),
-                PathPower("""Sempre de Pé""".trimIndent(), """Origem: Caminho  
-Categoria: Autopreservação
-
-Uma vez por cena, quando sofrer um efeito que tentaria:
+Uma vez por descanso, durante manutenção apropriada, você pode receber +2 em um teste para reparar ou recalibrar um dos seus próprios implantes.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Sempre de Pé""".trimIndent(),
+                    effect = """Uma vez por cena, quando sofrer um efeito que tentaria:
 
 • derrubá-lo;
 • empurrá-lo;
@@ -588,19 +673,22 @@ Uma vez por cena, quando sofrer um efeito que tentaria:
 • fazê-lo largar um objeto;
 • forçá-lo a recuar;
 
-você pode gastar:
-
-1 PE
-
-para receber:
+receber:
 
 +4 no teste ou resistência apropriada.
 
-Se o efeito não permitir teste, reduza pela metade a distância de movimento forçado, quando aplicável.
+Se o efeito não permitir teste, reduza pela metade a distância de movimento forçado, quando aplicável.""".trimIndent(),
+                    cost = "1 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 1,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Autopreservação",
+                    enhancements = """Terceiro Lugar
 
-Aprimoramento — Terceiro Lugar
-
-Uma vez por sessão, quando seria reduzido a 0 Vida, pode gastar 1 Destino para permanecer com 1 Vida.""".trimIndent()),
+Uma vez por sessão, quando seria reduzido a 0 Vida, pode gastar 1 Destino para permanecer com 1 Vida.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -613,10 +701,9 @@ Uma vez por sessão, quando seria reduzido a 0 Vida, pode gastar 1 Destino para 
                 """Ainda Não, Posso Melhorar — Erros são dados. Cada falha informa como a próxima versão pode funcionar melhor.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Mestre das Máquinas""".trimIndent(), """Origem: Caminho  
-Categoria: Reparo / Tecnologia
-
-Uma vez por cena, ao realizar um teste de Reparo em:
+                PathPower(
+                    name = """Mestre das Máquinas""".trimIndent(),
+                    effect = """Uma vez por cena, ao realizar um teste de Reparo em:
 
 • mecanitos;
 • máquinas;
@@ -624,11 +711,7 @@ Uma vez por cena, ao realizar um teste de Reparo em:
 • construtos;
 • dispositivos mecânicos;
 
-você pode gastar:
-
-1 PE
-
-para receber:
+receber:
 
 +5 no teste.
 
@@ -636,19 +719,21 @@ Se o reparo recuperar Vida de uma entidade mecânica, em caso de sucesso ela rec
 
 +2 Vida adicional.
 
-Isso não remove Falhas Corporais ou Falhas de Órgão mecânicas automaticamente.
+Isso não remove Falhas Corporais ou Falhas de Órgão mecânicas automaticamente.""".trimIndent(),
+                    cost = "1 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 1,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Reparo / Tecnologia",
+                    enhancements = """Não Joga Fora Ainda
 
-Aprimoramento — Não Joga Fora Ainda
-
-O bônus de recuperação aumenta de +2 para +4 Vida.""".trimIndent()),
-                PathPower("""Peça de Reposição""".trimIndent(), """Origem: Caminho  
-Categoria: Improviso / Ofício
-
-Uma vez por cena, usando sucata ou material mecânico plausível, gaste:
-
-2 PE + 1 Ação Completa
-
-para improvisar uma peça temporária capaz de substituir um componente comum quebrado ou ausente.
+O bônus de recuperação aumenta de +2 para +4 Vida.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Peça de Reposição""".trimIndent(),
+                    effect = """Uma vez por cena, usando sucata ou material mecânico plausível, improvise uma peça temporária capaz de substituir um componente comum quebrado ou ausente.
 
 A peça permite que o objeto volte a funcionar:
 
@@ -660,11 +745,18 @@ Ela não reproduz componentes:
 • mágicos;
 • divinos;
 • de tecnologia ancestral excepcional;
-• cujo funcionamento dependa de material que Óleo não possua.
+• cujo funcionamento dependa de material que Óleo não possua.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação completa",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Improviso / Ofício",
+                    enhancements = """Quase Original
 
-Aprimoramento — Quase Original
-
-O reparo temporário dura até o próximo descanso.""".trimIndent()),
+O reparo temporário dura até o próximo descanso.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -683,20 +775,20 @@ A verdade de Exomathis não deve apenas ser conhecida, mas propagada.""".trimInd
 A transformação da carne é entendida como parte inevitável do propósito da Máquina.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Cavaleiro""".trimIndent(), """Categoria: Combate  
-Origem: Caminho
-
-Você recebe acesso à Técnica de Batalha:
+                PathPower(
+                    name = """Cavaleiro""".trimIndent(),
+                    effect = """Você recebe acesso à Técnica de Batalha:
 
 Lâminas Gêmeas
 
 Ela conta como uma Técnica de Batalha adquirida normalmente e segue suas próprias regras.
 
-Este Poder não concede bônus adicionais além do acesso à técnica.""".trimIndent()),
-                PathPower("""Bispo""".trimIndent(), """Categoria: Doutrina  
-Origem: Caminho
-
-Você recebe:
+Este Poder não concede bônus adicionais além do acesso à técnica.""".trimIndent(),
+                    category = "Combate",
+                ),
+                PathPower(
+                    name = """Bispo""".trimIndent(),
+                    effect = """Você recebe:
 
 +2 em testes diretamente relacionados a Exomathis.
 
@@ -709,13 +801,14 @@ O bônus pode se aplicar a assuntos como:
 • identificação de práticas religiosas;
 • interpretação dos dogmas de Exomathis.
 
-Não se aplica automaticamente a qualquer ação realizada em nome da religião.
-
-Aprimoramento — Voz da Máquina
+Não se aplica automaticamente a qualquer ação realizada em nome da religião.""".trimIndent(),
+                    category = "Doutrina",
+                    enhancements = """Voz da Máquina
 
 Uma vez por cena, transforme o bônus de +2 em:
 
-+4 para um único teste.""".trimIndent()),
++4 para um único teste.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -734,10 +827,9 @@ Autoridade sem autonomia não é liderança.""".trimIndent(),
 O poder deve produzir segurança e estabilidade para aqueles que dependem dele.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Intuição de Governante""".trimIndent(), """Categoria: Social / Competência  
-Origem: Caminho
-
-Uma vez por cena, depois de realizar um teste de Intuição relacionado diretamente a:
+                PathPower(
+                    name = """Intuição de Governante""".trimIndent(),
+                    effect = """Uma vez por cena, depois de realizar um teste de Intuição relacionado diretamente a:
 
 • política;
 • lealdade;
@@ -746,25 +838,23 @@ Uma vez por cena, depois de realizar um teste de Intuição relacionado diretame
 • intenção de um governante;
 • comportamento de uma facção;
 
-você pode gastar:
+receber:
 
-2 PE
++4 no resultado.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Social / Competência",
+                    enhancements = """Leitura da Corte
 
-para receber:
-
-+4 no resultado.
-
-Aprimoramento — Leitura da Corte
-
-Você pode usar o poder duas vezes por cena.""".trimIndent()),
-                PathPower("""Entrada Triunfal""".trimIndent(), """Categoria: Social  
-Origem: Caminho
-
-Uma vez por cena, ao entrar em um ambiente social onde sua presença possa ser percebida, você pode gastar:
-
-2 PE + 1 ação
-
-para fazer uma apresentação, anúncio, discurso ou demonstração pública.
+Você pode usar o poder duas vezes por cena.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Entrada Triunfal""".trimIndent(),
+                    effect = """Uma vez por cena, ao entrar em um ambiente social onde sua presença possa ser percebida, fazer uma apresentação, anúncio, discurso ou demonstração pública.
 
 Escolha uma criatura ou grupo que tenha presenciado a entrada.
 
@@ -772,11 +862,20 @@ Você recebe:
 
 +4 no próximo teste social contra esse alvo ou grupo até o final da cena.
 
-O benefício termina após ser utilizado.
+O benefício termina após ser utilizado.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    duration = "1 cena",
+                    durationType = com.kinderman.sdo.domain.model.AbilityDuration.SCENE,
+                    limit = "Uma vez por cena",
+                    category = "Social",
+                    enhancements = """Presença Real
 
-Aprimoramento — Presença Real
-
-O bônus pode ser aplicado aos dois primeiros testes sociais realizados contra o público afetado.""".trimIndent()),
+O bônus pode ser aplicado aos dois primeiros testes sociais realizados contra o público afetado.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -789,35 +888,34 @@ O bônus pode ser aplicado aos dois primeiros testes sociais realizados contra o
                 """Sabedoria Oculta — Conhecimento é mais valioso quando compreendido. Saphire busca interpretar o passado para tomar decisões melhores no presente.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Escudo de Escamas""".trimIndent(), """Categoria: Sobrenatural / Defesa  
-Origem: Legado dracônico da família
-
-Uma vez por cena, use:
-
-1 ação + 2 PM
-
-para manifestar uma barreira de escamas dracônicas.
+                PathPower(
+                    name = """Escudo de Escamas""".trimIndent(),
+                    effect = """Uma vez por cena, manifestar uma barreira de escamas dracônicas.
 
 Por 1d4 turnos, você recebe:
 
 +5 em Proteção Geral  
 +5 em Proteção Arcana
 
-A barreira acompanha seus movimentos.
-
-Aprimoramento — Escamas Ancestrais
+A barreira acompanha seus movimentos.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    duration = "1d4 turnos",
+                    durationType = com.kinderman.sdo.domain.model.AbilityDuration.TURNS,
+                    limit = "Uma vez por cena",
+                    category = "Sobrenatural / Defesa",
+                    enhancements = """Escamas Ancestrais
 
 Durante a duração do poder, uma vez, ao sofrer dano físico ou mágico, reduza esse dano em:
 
-10 pontos.""".trimIndent()),
-                PathPower("""Visão das Cinzas""".trimIndent(), """Categoria: Sobrenatural / Investigação  
-Origem: Linhagem dracônica e conexão com cinzas ancestrais
-
-Ao tocar um objeto antigo, ruína ou local historicamente relevante, você pode gastar:
-
-2 PM
-
-para receber um fragmento sensorial verdadeiro ligado ao passado daquele alvo.
+10 pontos.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Visão das Cinzas""".trimIndent(),
+                    effect = """Ao tocar um objeto antigo, ruína ou local historicamente relevante, receber um fragmento sensorial verdadeiro ligado ao passado daquele alvo.
 
 O fragmento pode mostrar, por exemplo:
 
@@ -832,11 +930,18 @@ O poder não fornece uma reconstrução completa do passado.
 
 O mesmo objeto ou local só pode ser afetado:
 
-1 vez por dia.
+1 vez por dia.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "Toque",
+                    category = "Sobrenatural / Investigação",
+                    enhancements = """Ecos Mais Nítidos
 
-Aprimoramento — Ecos Mais Nítidos
-
-Ao usar Visão das Cinzas, você pode fazer uma pergunta objetiva sobre o fragmento percebido. A resposta deve ser verdadeira dentro das informações disponíveis naquele eco.""".trimIndent()),
+Ao usar Visão das Cinzas, você pode fazer uma pergunta objetiva sobre o fragmento percebido. A resposta deve ser verdadeira dentro das informações disponíveis naquele eco.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -855,7 +960,9 @@ Sua música é expressão, memória e controle emocional.""".trimIndent(),
 Confiança é rara e, por isso, possui grande valor.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Volume Máximo""".trimIndent(), """A música é minha válvula de escape para as incertezas que me assombram. Um legado que não me deixa virar um monstro por completo.
+                PathPower(
+                    name = """Volume Máximo""".trimIndent(),
+                    effect = """A música é minha válvula de escape para as incertezas que me assombram. Um legado que não me deixa virar um monstro por completo.
 
 Sua música é expressão, memória e controle emocional.
 
@@ -867,14 +974,7 @@ Confiança é rara e, por isso, possui grande valor.
 
 Volume Máximo
 
-Categoria: Performance / Suporte  
-Origem: Caminho
-
-Uma vez por cena, use:
-
-1 ação + 2 PM
-
-enquanto toca ou executa uma performance audível.
+Uma vez por cena, enquanto toca ou executa uma performance audível.
 
 Escolha até 3 aliados a até 10 metros que consigam ouvir você.
 
@@ -882,15 +982,23 @@ Cada alvo recebe:
 
 +2 no próximo teste realizado até o início do seu próximo turno.
 
-O bônus não acumula com outro benefício de Ajuda para o mesmo teste.
+O bônus não acumula com outro benefício de Ajuda para o mesmo teste.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "10 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.MEDIUM,
+                    limit = "Uma vez por cena",
+                    category = "Performance / Suporte",
+                    enhancements = """Refrão
 
-Aprimoramento — Refrão
-
-Os aliados podem utilizar o bônus até o final do seu próximo turno, em vez do início.""".trimIndent()),
-                PathPower("""Só Confio em Poucos""".trimIndent(), """Categoria: Vínculo / Sobrevivência  
-Origem: Caminho
-
-Escolha uma criatura com quem você tenha estabelecido confiança real.
+Os aliados podem utilizar o bônus até o final do seu próximo turno, em vez do início.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Só Confio em Poucos""".trimIndent(),
+                    effect = """Escolha uma criatura com quem você tenha estabelecido confiança real.
 
 Uma vez por cena, quando realizar um teste diretamente para:
 
@@ -904,15 +1012,17 @@ essa criatura, receba:
 
 +2 no teste.
 
-Apenas uma criatura pode ser seu Vínculo por vez. A mudança deve ser consequência de desenvolvimento narrativo.
-
-Aprimoramento — Não Vou Perder Você
+Apenas uma criatura pode ser seu Vínculo por vez. A mudança deve ser consequência de desenvolvimento narrativo.""".trimIndent(),
+                    limit = "Uma vez por cena",
+                    category = "Vínculo / Sobrevivência",
+                    enhancements = """Não Vou Perder Você
 
 Uma vez por cena, em vez do bônus de +2, depois de falhar nesse teste você pode gastar:
 
 1 PE
 
-para rerrolar. O segundo resultado deve ser mantido.""".trimIndent()),
+para rerrolar. O segundo resultado deve ser mantido.""".trimIndent(),
+                ),
             ),
         ),
         PathPreset(
@@ -931,14 +1041,9 @@ Curar não significa apenas fechar ferimentos, mas preservar a capacidade do cor
 O próprio corpo é um recurso, mas sacrificá-lo só possui sentido quando protege outra vida.""".trimIndent(),
             ),
             powers = listOf(
-                PathPower("""Cicatrização Forçada""".trimIndent(), """Categoria: Sobrenatural / Cura  
-Origem: Sangromancia
-
-Uma vez por turno, use:
-
-1 ação + 2 PM
-
-e perca:
+                PathPower(
+                    name = """Cicatrização Forçada""".trimIndent(),
+                    effect = """Uma vez por turno, perca:
 
 1d6 HP
 
@@ -955,29 +1060,40 @@ Este poder:
 • não remove Falhas Corporais;
 • não remove Falhas de Órgão;
 • não restaura membros;
-• não pode ter o custo de HP reduzido ou prevenido.
-
-Aprimoramento — Sangue Compartilhado
+• não pode ter o custo de HP reduzido ou prevenido.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "3 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.SHORT,
+                    limit = "Uma vez por turno",
+                    category = "Sobrenatural / Cura",
+                    enhancements = """Sangue Compartilhado
 
 O alcance aumenta para:
 
-10 metros""".trimIndent()),
-                PathPower("""Fio Coagulado""".trimIndent(), """Categoria: Sobrenatural / Combate  
-Origem: Sangromancia
+10 metros""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Fio Coagulado""".trimIndent(),
+                    effect = """Quando acertar um ataque corpo a corpo com uma arma que possa ser coberta pelo próprio sangue, formar um fio ou lâmina coagulado ao redor da arma.
 
-Quando acertar um ataque corpo a corpo com uma arma que possa ser coberta pelo próprio sangue, você pode gastar:
-
-2 PM
-
-para formar um fio ou lâmina coagulado ao redor da arma.
-
-Some Sangromancia no dano desse ataque.
-Aprimoramento — Lâmina Rubra
+Some Sangromancia no dano desse ataque.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    category = "Sobrenatural / Combate",
+                    enhancements = """Lâmina Rubra
 
 Ao usar Fio Coagulado, escolha uma das opções:
 
 • causar +2 de dano adicional; ou
-• considerar o ataque mágico para superar resistências apropriadas.""".trimIndent()),
+• considerar o ataque mágico para superar resistências apropriadas.""".trimIndent(),
+                ),
             ),
         ),
     )
