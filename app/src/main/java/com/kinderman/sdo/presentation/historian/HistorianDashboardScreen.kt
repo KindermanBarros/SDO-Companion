@@ -61,7 +61,16 @@ import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperation
 import com.kinderman.sdo.domain.model.SessionOperationType
 import com.kinderman.sdo.domain.model.SessionResource
+import com.kinderman.sdo.domain.model.AbilityCostType
+import com.kinderman.sdo.domain.model.AbilityDuration
+import com.kinderman.sdo.domain.model.AbilityExecution
+import com.kinderman.sdo.domain.model.AbilityRange
+import com.kinderman.sdo.domain.model.AbilityResistance
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.AbilityTimeUnit
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.presentation.character.ChoiceField
+import com.kinderman.sdo.presentation.character.IntegerField
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudBackground
 import com.kinderman.sdo.ui.HudTextField
@@ -554,10 +563,41 @@ private fun LibraryEditorDialog(
                         }
                         CampaignContentKind.POWER -> {
                             val power = value.powerSnapshot ?: Power(name = value.name, effect = value.summary)
-                            HudTextField("Custo", power.cost, onValue = { value = value.copy(powerSnapshot = power.copy(cost = it)) })
-                            HudTextField("Ação", power.action, onValue = { value = value.copy(powerSnapshot = power.copy(action = it)) })
-                            HudTextField("Alcance", power.range, onValue = { value = value.copy(powerSnapshot = power.copy(range = it)) })
-                            HudTextField("Duração", power.duration, onValue = { value = value.copy(powerSnapshot = power.copy(duration = it)) })
+                            ChoiceField("Fonte", power.canonicalSource, AbilitySource.entries, true, display = { it.label }) {
+                                value = value.copy(powerSnapshot = power.copy(canonicalSource = it, knowledgeId = "", knowledgeLevel = null, linkedItemId = "", active = false))
+                            }
+                            ChoiceField("Custo", power.costType, AbilityCostType.entries.filterNot { it == AbilityCostType.DOSE }, true, display = { it.label }) {
+                                value = value.copy(powerSnapshot = power.copy(costType = it, costValue = if (it == AbilityCostType.NONE) 0 else power.costValue))
+                            }
+                            if (power.costType != AbilityCostType.NONE) IntegerField("Valor do custo", power.costValue, true) {
+                                value = value.copy(powerSnapshot = power.copy(costValue = it.coerceAtLeast(0)))
+                            }
+                            ChoiceField("Execução", power.executionType, AbilityExecution.entries, true, display = { it.label }) {
+                                value = value.copy(powerSnapshot = power.copy(executionType = it))
+                            }
+                            if (power.executionType == AbilityExecution.TIME) {
+                                IntegerField("Tempo de execução", power.timeValue, true) { raw -> value = value.copy(powerSnapshot = power.copy(timeValue = raw.coerceAtLeast(0))) }
+                                ChoiceField("Unidade da execução", power.timeUnit, AbilityTimeUnit.entries, true, display = { it.label }) { unit -> value = value.copy(powerSnapshot = power.copy(timeUnit = unit)) }
+                            }
+                            ChoiceField("Alcance", power.rangeType, AbilityRange.entries, true, display = { it.label }) {
+                                value = value.copy(powerSnapshot = power.copy(rangeType = it))
+                            }
+                            HudTextField("Alvo / Área (opcional)", power.targetArea, onValue = { value = value.copy(powerSnapshot = power.copy(targetArea = it)) })
+                            if (power.executionType != AbilityExecution.PASSIVE) {
+                                ChoiceField("Duração", power.durationType, AbilityDuration.entries, true, display = { it.label }) {
+                                    value = value.copy(powerSnapshot = power.copy(durationType = it))
+                                }
+                                if (power.durationType == AbilityDuration.TURNS) IntegerField("Quantidade de turnos", power.durationValue, true) { raw ->
+                                    value = value.copy(powerSnapshot = power.copy(durationValue = raw.coerceAtLeast(0)))
+                                }
+                                if (power.durationType == AbilityDuration.TIME) {
+                                    IntegerField("Tempo de duração", power.durationValue, true) { raw -> value = value.copy(powerSnapshot = power.copy(durationValue = raw.coerceAtLeast(0))) }
+                                    ChoiceField("Unidade da duração", power.durationUnit, listOf(AbilityTimeUnit.HOURS, AbilityTimeUnit.DAYS), true, display = { it.label }) { unit -> value = value.copy(powerSnapshot = power.copy(durationUnit = unit)) }
+                                }
+                            }
+                            ChoiceField("Resistência", power.resistance, AbilityResistance.entries, true, display = { it.label }) {
+                                value = value.copy(powerSnapshot = power.copy(resistance = it))
+                            }
                             HudTextField("Categoria", power.category, onValue = { value = value.copy(powerSnapshot = power.copy(category = it)) })
                             HudTextField("Efeito estruturado", power.effect, multiline = true, onValue = { value = value.copy(powerSnapshot = power.copy(name = value.name, effect = it)) })
                         }

@@ -36,7 +36,15 @@ class CanonicalAbilitiesTest {
         val magic = MysticAbility(type = "Magia", name = "Água Viva")
         val character = Character().withAddedAbility(magic)
         assertFalse(character.canUseAbilityKey(MysticAbility(type = "Magia", name = " agua   viva ")))
+        assertFalse(character.canUseAbilityKey(MysticAbility(type = "Magia", name = "Água—Viva!")))
         assertTrue(character.canUseAbilityKey(MysticAbility(type = "Runa", name = "Água Viva")))
+    }
+
+    @Test fun structuredLabelsUseIndependentExecutionAndDurationValues() {
+        assertEquals("Tempo: 15 minutos", formattedAbilityExecution(AbilityExecution.TIME, 15, AbilityTimeUnit.MINUTES))
+        assertEquals("2 dias", formattedAbilityDuration(AbilityDuration.TIME, 2, AbilityTimeUnit.DAYS))
+        assertEquals("3 turnos", formattedAbilityDuration(AbilityDuration.TURNS, 3, AbilityTimeUnit.HOURS))
+        assertEquals("Nenhum", formattedAbilityCost(AbilityCostType.NONE, 99))
     }
 
     @Test fun passiveModifiersComposeWithoutChangingBaseAndClampCurrentMaximum() {

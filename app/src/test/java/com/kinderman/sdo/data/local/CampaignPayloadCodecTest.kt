@@ -1,6 +1,8 @@
 package com.kinderman.sdo.data.local
 
 import com.kinderman.sdo.domain.model.AbilityCostType
+import com.kinderman.sdo.domain.model.AbilityDuration
+import com.kinderman.sdo.domain.model.AbilityTimeUnit
 import com.kinderman.sdo.domain.model.AbilityModifier
 import com.kinderman.sdo.domain.model.AbilityModifierTarget
 import com.kinderman.sdo.domain.model.CampaignContentKind
@@ -45,6 +47,7 @@ class CampaignPayloadCodecTest {
             id = "power-1", name = "Pulso", cost = "2 Energia", action = "Ação",
             range = "Curto", duration = "Cena", effect = "Empurra", category = "Cinética",
             costType = AbilityCostType.ENERGY, costValue = 2,
+            durationType = AbilityDuration.TIME, durationValue = 2, durationUnit = AbilityTimeUnit.DAYS,
             modifiers = listOf(AbilityModifier(targetType = AbilityModifierTarget.ATTRIBUTE, targetId = "FOR", value = 1)),
         )
         val condition = ConditionEffect("condition-1", "Abalado", "2", "1 cena", "Ritual", "-2 em testes")

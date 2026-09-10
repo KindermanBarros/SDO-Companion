@@ -18,6 +18,9 @@ import com.kinderman.sdo.domain.catalog.RaceCatalog
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.formattedAbilityCost
+import com.kinderman.sdo.domain.model.formattedAbilityDuration
+import com.kinderman.sdo.domain.model.formattedAbilityExecution
 
 @Composable
 internal fun CompendiumDetails(entry: CatalogEntry) {
@@ -70,15 +73,31 @@ internal fun characterReferences(characters: List<Character>): List<CatalogEntry
     val source = "Ficha: ${character.name}"
     character.powers.map { power ->
         CatalogEntry("${character.id}:power:${power.id}", CatalogKind.POWER, power.name, power.category,
-            power.effect, power.cost, power.action, power.range, power.duration, source,
-            mechanicalEffect = listOf(power.effect, "Origem: ${power.origin}", "Ativação: ${power.activationCondition}",
+            power.effect,
+            formattedAbilityCost(power.costType, power.costValue),
+            formattedAbilityExecution(power.executionType, power.timeValue, power.timeUnit),
+            power.rangeType.label,
+            formattedAbilityDuration(power.durationType, power.durationValue, power.durationUnit),
+            source,
+            mechanicalEffect = listOf(power.effect, "Fonte: ${power.canonicalSource.label}", "Alvo/Área: ${power.targetArea}", "Resistência: ${power.resistance.label}",
                 "Encerramento: ${power.deactivationCondition}", "Limite: ${power.limit}", "Aprimoramentos: ${power.enhancements}",
                 "Disponível: ${power.available}; Favorito: ${power.favorite}").joinToString("\n"),
             prerequisites = power.prerequisites, ruleReference = power.ruleReference)
     } + character.mysticAbilities.map { magic ->
-        CatalogEntry("${character.id}:magic:${magic.id}", CatalogKind.MAGIC, magic.name, magic.type,
-            magic.effect, magic.cost, magic.action, magic.range, magic.duration, source,
-            mechanicalEffect = "${magic.effect}\nCategoria: ${magic.category}\nDisponível: ${magic.available}; Favorito: ${magic.favorite}",
+        val kind = when {
+            magic.type.equals("Runa", true) -> CatalogKind.RUNE
+            magic.type.equals("Cinza", true) -> CatalogKind.ASH
+            else -> CatalogKind.MAGIC
+        }
+        val abilitySource = if (magic.type.equals("Cinza", true)) "${magic.ashSource.label} / ${magic.ashPurity.label}" else magic.canonicalSource.label
+        CatalogEntry("${character.id}:magic:${magic.id}", kind, magic.name, magic.type,
+            magic.effect,
+            formattedAbilityCost(magic.costType, magic.costValue),
+            formattedAbilityExecution(magic.executionType, magic.timeValue, magic.timeUnit),
+            magic.rangeType.label,
+            formattedAbilityDuration(magic.durationType, magic.durationValue, magic.durationUnit),
+            source,
+            mechanicalEffect = "${magic.effect}\nFonte: $abilitySource\nAlvo/Área: ${magic.targetArea}\nResistência: ${magic.resistance.label}\nDisponível: ${magic.available}; Favorito: ${magic.favorite}",
             ruleReference = magic.ruleReference)
     } + (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques).map { knowledge ->
         CatalogEntry("${character.id}:knowledge:${knowledge.id}", CatalogKind.ACQUIRED_KNOWLEDGE,
