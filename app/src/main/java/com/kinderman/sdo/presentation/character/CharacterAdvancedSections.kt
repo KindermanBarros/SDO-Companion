@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CatalogEntry
@@ -31,6 +32,18 @@ import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.AbilityCostType
+import com.kinderman.sdo.domain.model.AbilityDuration
+import com.kinderman.sdo.domain.model.AbilityExecution
+import com.kinderman.sdo.domain.model.AbilityRange
+import com.kinderman.sdo.domain.model.AbilityResistance
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.AbilityTimeUnit
+import com.kinderman.sdo.domain.model.AshPurity
+import com.kinderman.sdo.domain.model.AshSource
+import com.kinderman.sdo.domain.model.withAddedAbility
+import com.kinderman.sdo.domain.model.withRemovedAbility
+import com.kinderman.sdo.domain.model.withUpdatedAbility
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.ArcanePanel
@@ -285,6 +298,10 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
 @Composable
 internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
     var selecting by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    fun applyChange(block: () -> Character) {
+        runCatching(block).onSuccess(onChange).onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
+    }
     TechPanel(accent = MaterialTheme.colorScheme.secondary) {
         SectionHeader("12", "Magias, runas e cinzas")
         Text(
@@ -293,50 +310,76 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
             style = MaterialTheme.typography.bodySmall,
         )
         character.mysticAbilities.forEachIndexed { index, ability ->
-            MysticEditor(index, ability, enabled,
-                onRemove = { onChange(character.copy(mysticAbilities = character.mysticAbilities.filterIndexed { itemIndex, _ -> itemIndex != index })) },
-                onValue = { onChange(character.copy(mysticAbilities = character.mysticAbilities.replace(index, it))) },
+            MysticEditor(index, ability, character, enabled,
+                onRemove = { applyChange { character.withRemovedAbility(ability.id) } },
+                onValue = { value -> applyChange { character.withUpdatedAbility(value.copy(revision = ability.revision + 1)) } },
             )
         }
         AddButton("Selecionar magia, cinza ou runa", enabled && catalog.isNotEmpty()) { selecting = true }
-        AddButton("Adicionar efeito manualmente", enabled) { onChange(character.copy(mysticAbilities = character.mysticAbilities + MysticAbility())) }
+        AddButton("Adicionar efeito manualmente", enabled) { applyChange { character.withAddedAbility(MysticAbility(type = "Magia")) } }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR EFEITO MÍSTICO", catalog, { selecting = false }) { entry ->
-        onChange(character.copy(mysticAbilities = character.mysticAbilities + entry.toMysticAbility()))
+        applyChange { character.withAddedAbility(entry.toMysticAbility(), reuseExistingAsh = true) }
         selecting = false
     }
 }
 
 @Composable
-private fun MysticEditor(index: Int, ability: MysticAbility, enabled: Boolean, onRemove: () -> Unit, onValue: (MysticAbility) -> Unit) {
+private fun MysticEditor(index: Int, ability: MysticAbility, character: Character, enabled: Boolean, onRemove: () -> Unit, onValue: (MysticAbility) -> Unit) {
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
             Text("EFEITO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover efeito", onRemove)
         }
         TwoFields(
-            { HudTextField("Tipo", ability.type, it, enabled = enabled) { value -> onValue(ability.copy(type = value)) } },
+            { ChoiceField("Tipo", ability.type.ifBlank { "Magia" }, listOf("Magia", "Runa", "Cinza"), enabled, it) { value -> onValue(ability.copy(type = value, costType = if (value == "Cinza") AbilityCostType.DOSE else AbilityCostType.NONE, costValue = 0)) } },
             { HudTextField("Nome", ability.name, it, enabled = enabled) { value -> onValue(ability.copy(name = value)) } },
         )
-        if (ability.category.isNotBlank() || ability.source.isNotBlank()) {
-            Text(
-                listOf(ability.category, ability.source).filter(String::isNotBlank).joinToString(" // "),
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
+        if (ability.type.equals("Cinza", true)) {
+            TwoFields(
+                { ChoiceField("Fonte", ability.ashSource, AshSource.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(ashSource = value)) } },
+                { ChoiceField("Pureza", ability.ashPurity, AshPurity.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(ashPurity = value)) } },
             )
+        } else {
+            ChoiceField("Fonte", ability.canonicalSource, AbilitySource.entries, enabled, display = { it.label }) {
+                onValue(ability.copy(canonicalSource = it, knowledgeId = "", knowledgeLevel = null))
+            }
+            if (ability.canonicalSource == AbilitySource.KNOWLEDGE) {
+                val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques
+                if (knowledges.isEmpty()) Text("Adicione um Conhecimento à ficha antes de selecionar esta fonte.", color = MaterialTheme.colorScheme.error)
+                else {
+                    val selected = knowledges.firstOrNull { it.id == ability.knowledgeId } ?: knowledges.first()
+                    ChoiceField("Conhecimento", selected, knowledges, enabled, display = { it.name }) {
+                        onValue(ability.copy(knowledgeId = it.id, knowledgeLevel = (ability.knowledgeLevel ?: 0).coerceIn(0, it.value)))
+                    }
+                    ChoiceField("Nível", (ability.knowledgeLevel ?: 0).coerceIn(0, selected.value), (0..selected.value).toList(), enabled) {
+                        onValue(ability.copy(knowledgeId = selected.id, knowledgeLevel = it))
+                    }
+                }
+            }
         }
         TwoFields(
-            { HudTextField("Custo", ability.cost, it, enabled = enabled) { value -> onValue(ability.copy(cost = value)) } },
-            { HudTextField("Ação", ability.action, it, enabled = enabled) { value -> onValue(ability.copy(action = value)) } },
+            { when {
+                ability.type.equals("Cinza", true) -> ChoiceField("Custo", AbilityCostType.DOSE, listOf(AbilityCostType.DOSE), false, it, display = { value -> value.label }) { }
+                ability.type.equals("Runa", true) -> ChoiceField("Custo", AbilityCostType.ARCANE, listOf(AbilityCostType.ARCANE), false, it, display = { value -> value.label }) { }
+                else -> ChoiceField("Custo", ability.costType, AbilityCostType.entries.filterNot { value -> value == AbilityCostType.DOSE }, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(costType = value, costValue = if (value == AbilityCostType.NONE) 0 else ability.costValue, cost = value.label)) }
+            } },
+            { if (ability.costType != AbilityCostType.NONE || ability.type.equals("Cinza", true)) IntegerField("Valor do custo", ability.costValue, enabled, it) { value -> onValue(ability.copy(costValue = value.coerceAtLeast(0))) } },
         )
         TwoFields(
-            { HudTextField("Alcance", ability.range, it, enabled = enabled) { value -> onValue(ability.copy(range = value)) } },
-            { HudTextField("Duração", ability.duration, it, enabled = enabled) { value -> onValue(ability.copy(duration = value)) } },
+            { ChoiceField("Execução", ability.executionType, AbilityExecution.entries.filterNot { value -> value == AbilityExecution.PASSIVE }, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(executionType = value, action = value.label)) } },
+            { ChoiceField("Alcance", ability.rangeType, AbilityRange.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(rangeType = value, range = value.label)) } },
+        )
+        if (ability.type.equals("Runa", true) && ability.executionType == AbilityExecution.TIME) TwoFields(
+            { IntegerField("Tempo de inscrição", ability.timeValue, enabled, it) { value -> onValue(ability.copy(timeValue = value.coerceAtLeast(0))) } },
+            { ChoiceField("Unidade", ability.timeUnit, AbilityTimeUnit.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(timeUnit = value)) } },
+        )
+        HudTextField("Alvo / Área (opcional)", ability.targetArea, enabled = enabled) { onValue(ability.copy(targetArea = it)) }
+        TwoFields(
+            { ChoiceField("Duração", ability.durationType, AbilityDuration.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(durationType = value, duration = value.label)) } },
+            { ChoiceField("Resistência", ability.resistance, AbilityResistance.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(resistance = value)) } },
         )
         HudTextField("Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
-        if (ability.ruleReference.isNotBlank()) {
-            Text("REFERÊNCIA // ${ability.ruleReference}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        }
         AbilityAvailabilityEditor(ability.favorite, ability.available, enabled) { favorite, available ->
             onValue(ability.copy(favorite = favorite, available = available))
         }

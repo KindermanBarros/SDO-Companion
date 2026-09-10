@@ -22,9 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemBonus
@@ -34,6 +36,10 @@ import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.effectiveLoad
+import com.kinderman.sdo.domain.model.withRemovedAbility
+import com.kinderman.sdo.domain.model.withAddedAbility
+import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
 import com.kinderman.sdo.ui.HudTextField
@@ -51,6 +57,7 @@ internal fun PhaseOneStrictInventorySection(
     onChange: (Character) -> Unit,
 ) {
     var dialog by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
     val hasInitialShopping = character.inventory.any { it.participatesInInitialCreation() }
     val remainingHeritage = when {
@@ -61,6 +68,8 @@ internal fun PhaseOneStrictInventorySection(
         .map(SpecialKnowledge::name)
         .filter(String::isNotBlank)
         .distinct()
+    val itemCatalog = catalog.filter { it.kind == CatalogKind.ITEM }
+    val ashCatalog = catalog.filter { it.kind == CatalogKind.ASH }
 
     TechPanel {
         SectionHeader("09", "Inventário")
@@ -81,10 +90,23 @@ internal fun PhaseOneStrictInventorySection(
             ) {
                 Row(Modifier.fillMaxWidth()) {
                     Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                    RemoveButton(enabled, "Remover item") { onChange(character.removeInventoryItem(item.id)) }
+                    RemoveButton(enabled, "Remover item") {
+                        runCatching {
+                            if (item.linkedAshId.isNotBlank()) character.withRemovedAbility(item.linkedAshId)
+                            else character.removeInventoryItem(item.id)
+                        }.onSuccess(onChange).onFailure {
+                            android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
                 Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.load} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                if (item.linkedAshId.isNotBlank()) {
+                    IntegerField("Doses", item.quantity, enabled) { doses ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = doses.coerceAtLeast(0)))))
+                    }
+                    Text("PUREZA // ${item.ashPurity.label}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                }
                 if (item.bonuses.isNotEmpty()) {
                     item.bonuses.forEach { bonus ->
                         Text(
@@ -106,10 +128,11 @@ internal fun PhaseOneStrictInventorySection(
         AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
         if (remainingHeritage > 0) {
             Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
-            AddButton("Selecionar item pronto", enabled && catalog.isNotEmpty()) { dialog = "initial_catalog" }
+            AddButton("Selecionar item pronto", enabled && itemCatalog.isNotEmpty()) { dialog = "initial_catalog" }
             AddButton("Construir item com PH", enabled) { dialog = "initial_builder" }
         } else {
-            AddButton("Selecionar item do catálogo", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
+            AddButton("Selecionar item do catálogo", enabled && itemCatalog.isNotEmpty()) { dialog = "catalog" }
+            AddButton("Adicionar Cinza do catálogo", enabled && ashCatalog.isNotEmpty()) { dialog = "ash_catalog" }
             AddButton("Construtor de item", enabled) { dialog = "builder" }
             AddButton("Adicionar objeto narrativo", enabled) {
                 onChange(character.copy(inventory = character.inventory + InventoryItem()))
@@ -121,7 +144,7 @@ internal fun PhaseOneStrictInventorySection(
         "glossary" -> EquipmentGlossaryDialog { dialog = null }
         "initial_catalog" -> ItemCatalogDialog(
             title = "LOJA INICIAL // ITENS PRONTOS",
-            entries = catalog,
+            entries = itemCatalog,
             remainingHeritage = remainingHeritage,
             onDismiss = { dialog = null },
         ) { item ->
@@ -130,7 +153,7 @@ internal fun PhaseOneStrictInventorySection(
         }
         "catalog" -> ItemCatalogDialog(
             title = "CATÁLOGO DE ITENS",
-            entries = catalog,
+            entries = itemCatalog,
             remainingHeritage = null,
             onDismiss = { dialog = null },
         ) { item ->
@@ -151,6 +174,10 @@ internal fun PhaseOneStrictInventorySection(
             onDismiss = { dialog = null },
         ) { item ->
             onChange(character.copy(inventory = character.inventory + item))
+            dialog = null
+        }
+        "ash_catalog" -> CatalogPickerDialog("CATÁLOGO DE CINZAS", ashCatalog, { dialog = null }) { entry ->
+            onChange(character.withAddedAbility(entry.toMysticAbility(), reuseExistingAsh = true))
             dialog = null
         }
     }

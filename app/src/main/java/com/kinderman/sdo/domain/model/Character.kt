@@ -61,6 +61,8 @@ data class SpecialKnowledge(
     val keywords: List<String> = emptyList(),
     val repeatable: Boolean = false,
     val adjustment: Int = 0,
+    val milestoneLevels: List<Int> = emptyList(),
+    val specializationParentId: String = "",
 ) {
     val isCatalogEntry: Boolean get() = catalogEntryId.isNotBlank()
 }
@@ -87,6 +89,23 @@ data class Power(
     val catalogVersion: Int = 0,
     val favorite: Boolean = false,
     val available: Boolean = true,
+    val canonicalSource: AbilitySource = AbilitySource.NARRATIVE,
+    val knowledgeId: String = "",
+    val knowledgeLevel: Int? = null,
+    val costType: AbilityCostType = AbilityCostType.NONE,
+    val costValue: Int = 0,
+    val executionType: AbilityExecution = AbilityExecution.ACTION,
+    val rangeType: AbilityRange = AbilityRange.PERSONAL,
+    val targetArea: String = "",
+    val durationType: AbilityDuration = AbilityDuration.INSTANT,
+    val resistance: AbilityResistance = AbilityResistance.NONE,
+    val timeValue: Int = 0,
+    val timeUnit: AbilityTimeUnit = AbilityTimeUnit.MINUTES,
+    val grantsPermanentBonus: Boolean = false,
+    val modifiers: List<AbilityModifier> = emptyList(),
+    val active: Boolean = false,
+    val linkedItemId: String = "",
+    val revision: Int = 1,
 )
 
 data class InventoryItem(
@@ -103,6 +122,9 @@ data class InventoryItem(
     val agilityLimit: Int? = null,
     val quality: String = "Comum",
     val bonuses: List<ItemBonus> = emptyList(),
+    val quantity: Int = 0,
+    val linkedAshId: String = "",
+    val ashPurity: AshPurity = AshPurity.RAW,
 )
 
 data class BodyRegion(
@@ -141,6 +163,25 @@ data class MysticAbility(
     val ruleReference: String = "",
     val catalogEntryId: String = "",
     val catalogVersion: Int = 0,
+    val canonicalSource: AbilitySource = AbilitySource.NARRATIVE,
+    val knowledgeId: String = "",
+    val knowledgeLevel: Int? = null,
+    val costType: AbilityCostType = AbilityCostType.NONE,
+    val costValue: Int = 0,
+    val executionType: AbilityExecution = AbilityExecution.ACTION,
+    val rangeType: AbilityRange = AbilityRange.PERSONAL,
+    val targetArea: String = "",
+    val durationType: AbilityDuration = AbilityDuration.INSTANT,
+    val resistance: AbilityResistance = AbilityResistance.NONE,
+    val timeValue: Int = 0,
+    val timeUnit: AbilityTimeUnit = AbilityTimeUnit.MINUTES,
+    val ashSource: AshSource = AshSource.FIRE,
+    val ashPurity: AshPurity = AshPurity.RAW,
+    val linkedInventoryItemId: String = "",
+    val inscriberId: String = "",
+    val inscriberPower: Int = 0,
+    val inscriberRunicKnowledge: Int = 0,
+    val revision: Int = 1,
 )
 
 data class ConditionEffect(
@@ -229,7 +270,7 @@ data class Character(
     val deleted: Boolean = false,
 ) {
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
-    val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.load }
+    val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.effectiveLoad() }
     val maximumLoad: Int get() = 2 + attributeValue("FOR") + containerCapacity
 
     val lifeBase: Int get() = 10 + skillValue("VIG", "Vitalidade")
@@ -237,15 +278,16 @@ data class Character(
     val arcaneBase: Int get() = attributeValue("POD") + skillValue("POD", "Arcano")
     val energyBase: Int get() = attributeValue("VIG") + skillValue("VIG", "Energia")
 
-    val lifeMaximum: Int get() = (lifeBase + life.adjustment).coerceAtLeast(0)
-    val sanityMaximum: Int get() = (sanityBase + sanity.adjustment).coerceAtLeast(0)
-    val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment).coerceAtLeast(0)
-    val energyMaximum: Int get() = (energyBase + energy.adjustment).coerceAtLeast(0)
+    val lifeMaximum: Int get() = (lifeBase + life.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE")).coerceAtLeast(0)
+    val sanityMaximum: Int get() = (sanityBase + sanity.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY")).coerceAtLeast(0)
+    val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE")).coerceAtLeast(0)
+    val energyMaximum: Int get() = (energyBase + energy.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY")).coerceAtLeast(0)
+    val destinyMaximum: Int get() = (destiny.maximum + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "DESTINY")).coerceAtLeast(0)
 
-    fun lifeCalculation() = CalculatedValue(lifeBase, life.adjustment)
-    fun sanityCalculation() = CalculatedValue(sanityBase, sanity.adjustment)
-    fun arcaneCalculation() = CalculatedValue(arcaneBase, arcane.adjustment)
-    fun energyCalculation() = CalculatedValue(energyBase, energy.adjustment)
+    fun lifeCalculation() = CalculatedValue(lifeBase, life.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE"))
+    fun sanityCalculation() = CalculatedValue(sanityBase, sanity.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY"))
+    fun arcaneCalculation() = CalculatedValue(arcaneBase, arcane.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE"))
+    fun energyCalculation() = CalculatedValue(energyBase, energy.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY"))
 
     fun protectionBase(name: String): Int = when (name) {
         "Geral" -> 10 + equippedGeneralProtection
@@ -257,7 +299,7 @@ data class Character(
     }
 
     fun protectionTotal(name: String): Int =
-        (protectionBase(name) + (protectionAdjustments[name] ?: 0)).coerceAtLeast(0)
+        (protectionBase(name) + (protectionAdjustments[name] ?: 0) + powerModifier(AbilityModifierTarget.PROTECTION, name)).coerceAtLeast(0)
 
     fun protectionCalculation(name: String) = CalculatedValue(
         base = protectionBase(name),
@@ -317,18 +359,20 @@ data class Character(
     }
 
     fun acquiredKnowledgeValue(name: String): Int {
-        val matching = (learnedKnowledges + arcaneKnowledges + battleTechniques)
-            .filter { it.name.equals(name, true) }
-        return matching.sumOf { it.value + it.adjustment } + equippedBonus(ItemBonusType.ACQUIRED_KNOWLEDGE, name)
+        return acquiredKnowledgeCalculation(name).total.coerceAtLeast(0)
     }
 
     fun acquiredKnowledgeCalculation(name: String): CalculatedValue {
         val matching = (learnedKnowledges + arcaneKnowledges + battleTechniques)
             .filter { it.name.equals(name, true) }
         return CalculatedValue(
-            base = matching.sumOf { it.value },
+            base = matching.sumOf { knowledge ->
+                val permanentAttribute = attributes.firstOrNull { it.acronym.equals(knowledge.attribute, true) }?.value
+                    ?: knowledge.value // Legacy entries without an attribute remain readable until explicitly migrated.
+                minOf(knowledge.value.coerceIn(0, 5), permanentAttribute.coerceAtLeast(0))
+            },
             adjustment = matching.sumOf { it.adjustment },
-            modifiers = equippedModifiers(ItemBonusType.ACQUIRED_KNOWLEDGE, name),
+            modifiers = equippedModifiers(ItemBonusType.ACQUIRED_KNOWLEDGE, name) + powerValueModifiers(AbilityModifierTarget.KNOWLEDGE, matching.firstOrNull()?.id ?: name),
         )
     }
 
@@ -339,7 +383,7 @@ data class Character(
         return CalculatedValue(
             base = attribute?.value ?: 0,
             adjustment = attribute?.modifier ?: 0,
-            modifiers = equippedModifiers(ItemBonusType.ATTRIBUTE, acronym),
+            modifiers = equippedModifiers(ItemBonusType.ATTRIBUTE, acronym) + powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym),
         )
     }
 
@@ -363,6 +407,14 @@ data class Character(
     private fun skillValue(attributeAcronym: String, skillName: String): Int = basicKnowledgeTotal(attributeAcronym, skillName)
 
     private fun equippedBonus(type: ItemBonusType, target: String): Int = equippedModifiers(type, target).sumOf { it.value }
+
+    private fun powerModifier(type: AbilityModifierTarget, target: String): Int =
+        activePowerModifiers().filter { (_, modifier) -> modifier.targetType == type && modifier.targetId.equals(target, true) }.sumOf { it.second.value }
+
+    internal fun powerValueModifiers(type: AbilityModifierTarget, target: String): List<ValueModifier> =
+        activePowerModifiers().filter { (_, modifier) -> modifier.targetType == type && modifier.targetId.equals(target, true) }.map { (power, modifier) ->
+            ValueModifier(ModifierSourceType.TRAIT, power.id, power.name.ifBlank { "Poder passivo" }, modifier.value)
+        }
 
     private fun equippedModifiers(type: ItemBonusType, target: String, legacyTarget: String = target): List<ValueModifier> =
         equippedItems().flatMap { item ->

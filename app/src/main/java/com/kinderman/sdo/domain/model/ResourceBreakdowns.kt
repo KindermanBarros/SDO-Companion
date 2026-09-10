@@ -5,7 +5,7 @@ fun Character.lifeMaximumBreakdown(): CalculatedValue {
     return CalculatedValue(
         base = 10 + vitality.base,
         adjustment = life.adjustment + vitality.adjustment,
-        modifiers = vitality.modifiers,
+        modifiers = vitality.modifiers + powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE"),
     )
 }
 
@@ -14,7 +14,7 @@ fun Character.sanityMaximumBreakdown(): CalculatedValue {
     return CalculatedValue(
         base = 10 + sanitySkill.base,
         adjustment = sanity.adjustment + sanitySkill.adjustment,
-        modifiers = sanitySkill.modifiers,
+        modifiers = sanitySkill.modifiers + powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY"),
     )
 }
 
@@ -24,7 +24,7 @@ fun Character.arcaneMaximumBreakdown(): CalculatedValue {
     return CalculatedValue(
         base = power.base + arcaneSkill.base,
         adjustment = arcane.adjustment + power.adjustment + arcaneSkill.adjustment,
-        modifiers = power.modifiers + arcaneSkill.modifiers,
+        modifiers = power.modifiers + arcaneSkill.modifiers + powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE"),
     )
 }
 
@@ -34,7 +34,7 @@ fun Character.energyMaximumBreakdown(): CalculatedValue {
     return CalculatedValue(
         base = vigor.base + energySkill.base,
         adjustment = energy.adjustment + vigor.adjustment + energySkill.adjustment,
-        modifiers = vigor.modifiers + energySkill.modifiers,
+        modifiers = vigor.modifiers + energySkill.modifiers + powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY"),
     )
 }
 

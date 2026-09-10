@@ -2,6 +2,7 @@ package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CutCornerShape
@@ -13,6 +14,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -85,3 +89,32 @@ internal fun TwoFields(
 }
 
 internal fun <T> List<T>.replace(index: Int, value: T): List<T> = toMutableList().also { it[index] = value }
+
+@Composable
+internal fun <T> ChoiceField(
+    label: String,
+    value: T,
+    options: List<T>,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    display: (T) -> String = { it.toString() },
+    onValue: (T) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(modifier) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+        ) { Text("$label // ${display(value)}", maxLines = 2) }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(display(option)) },
+                    onClick = { onValue(option); expanded = false },
+                )
+            }
+        }
+    }
+}

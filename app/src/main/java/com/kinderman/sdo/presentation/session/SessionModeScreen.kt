@@ -56,6 +56,8 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 
+private data class SessionAbilityEntry(val kind: String, val id: String, val description: String, val available: Boolean)
+
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun SessionModeScreen(
@@ -184,7 +186,7 @@ private fun SessionContent(
                 ResourceControl("ENERGIA", character.energy.current, character.energyMaximum, !readOnly) {
                     onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ENERGY, amount = it - character.energy.current))
                 }
-                ResourceControl("DESTINO", character.destiny.current, character.destiny.maximum, !readOnly) {
+                ResourceControl("DESTINO", character.destiny.current, character.destinyMaximum, !readOnly) {
                     onCommand(character, SessionCommand(type = SessionOperationType.DESTINY, resource = SessionResource.DESTINY, amount = it - character.destiny.current))
                 }
                 ResourceControl("EXAUSTÃO", character.exhaustion.current, character.exhaustion.maximum, !readOnly) {
@@ -209,21 +211,27 @@ private fun SessionContent(
         }
         item {
             val entries = buildList {
-                character.powers.sortedByDescending { it.favorite }.forEach { add(Triple("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}")) }
-                character.mysticAbilities.sortedByDescending { it.favorite }.forEach { add(Triple(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // ${it.cost.ifBlank { "SEM CUSTO" }}\n${it.effect}")) }
+                character.powers.sortedByDescending { it.favorite }.forEach {
+                    val cost = if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "SEM CUSTO"
+                    add(SessionAbilityEntry("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // $cost\n${it.effect}", it.available))
+                }
+                character.mysticAbilities.sortedByDescending { it.favorite }.forEach {
+                    val cost = if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "SEM CUSTO"
+                    add(SessionAbilityEntry(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // $cost\n${it.effect}", it.available))
+                }
             }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("ABILITIES.READY")
                 Text("Poderes, magias, cinzas e runas", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                entries.forEach { (kind, id, description) ->
+                entries.forEach { entry ->
                     Column(Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(6.dp)).padding(10.dp)) {
-                        Text(kind, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                        Text(description, color = MaterialTheme.colorScheme.onSurface)
+                        Text(entry.kind, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        Text(entry.description, color = if (entry.available) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
                         TextButton(
-                            onClick = { pendingAbilityId = id },
-                            enabled = !readOnly,
-                        ) { Text("USAR") }
+                            onClick = { pendingAbilityId = entry.id },
+                            enabled = !readOnly && entry.available,
+                        ) { Text(if (entry.available) "USAR" else "INDISPONÍVEL") }
                     }
                 }
             }
@@ -252,11 +260,12 @@ private fun SessionContent(
         val power = character.powers.firstOrNull { it.id == id }
         val ability = character.mysticAbilities.firstOrNull { it.id == id }
         val name = power?.name ?: ability?.name.orEmpty()
-        val cost = power?.cost ?: ability?.cost.orEmpty()
+        val cost = power?.let { if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "sem custo" }
+            ?: ability?.let { if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "sem custo" }.orEmpty()
         AlertDialog(
             onDismissRequest = { pendingAbilityId = null },
             title = { Text("CONFIRMAR USO") },
-            text = { Text("$name // ${cost.ifBlank { "sem custo" }}. Custos fixos em PV, PS, PM, PE ou Destino serão descontados; custos em dados continuam sob controle da mesa.") },
+            text = { Text("$name // ${cost.ifBlank { "sem custo" }}. O custo será descontado antes da ação e o recurso nunca ficará negativo.") },
             confirmButton = { TextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
             dismissButton = { TextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
         )

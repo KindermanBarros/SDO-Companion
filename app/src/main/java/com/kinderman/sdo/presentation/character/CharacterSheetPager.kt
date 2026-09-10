@@ -11,10 +11,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +30,8 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.abilityDuplicates
+import com.kinderman.sdo.domain.model.resolveAbilityDuplicate
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
@@ -125,6 +129,28 @@ internal fun CharacterSheetPager(
             )
         }
     }
+    character.abilityDuplicates().firstOrNull()?.let { duplicate ->
+        var keepId by remember(duplicate.key) { mutableStateOf(duplicate.entries.first().first) }
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("DUPLICATA // ${duplicate.type.uppercase()}") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Escolha qual registro manter. Cada duplicata precisa ser resolvida separadamente.")
+                    duplicate.entries.forEachIndexed { index, (id, name) ->
+                        TextButton(onClick = { keepId = id }) {
+                            Text("${if (keepId == id) "[ MANTER ]" else "MANTER"} ${index + 1}. $name")
+                        }
+                    }
+                    Text("Ao confirmar, os outros registros e estoques vinculados serão apagados definitivamente. Essa exclusão não pode ser desfeita.", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { onChange(character.resolveAbilityDuplicate(duplicate, keepId)) }) { Text("CONFIRMAR EXCLUSÃO") }
+            },
+            dismissButton = {},
+        )
+    }
 }
 
 @Composable
@@ -171,7 +197,7 @@ private fun SheetPageContent(
 
             SheetPage.BODY -> {
                 item("inventory") {
-                    com.kinderman.sdo.ui.CollapsibleSection("Inventário") { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM }, editable, onChange) }
+                    com.kinderman.sdo.ui.CollapsibleSection("Inventário") { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, editable, onChange) }
                 }
                 item("body") { BodySection(character, editable, onChange) }
                 itemsIndexed(
