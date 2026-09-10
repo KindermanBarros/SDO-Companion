@@ -16,7 +16,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Arremesso a 4 m contra PA; causa 1d6 de fogo. Após o uso, aplique o risco de Cinza Bruta."
@@ -31,7 +31,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Arremesso a 6 m contra PA; causa 2d6 de fogo. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -46,7 +46,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Arremesso a 9 m contra PA; causa 3d6 de fogo. O usuário controla onde a combustão termina."
@@ -61,7 +61,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. Após o uso, aplique o risco de Cinza Bruta."
@@ -76,7 +76,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -91,7 +91,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. O usuário controla onde a combustão termina."
@@ -151,7 +151,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Acende instantaneamente material inflamável tocado. Após o uso, aplique o risco de Cinza Bruta."
@@ -166,7 +166,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Acende instantaneamente material inflamável tocado. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -181,7 +181,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Acende instantaneamente material inflamável tocado. O usuário controla onde a combustão termina."
@@ -196,7 +196,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Concede resistência a frio e ambiente gelado por uma cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -211,7 +211,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Concede resistência a frio e ambiente gelado por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -226,7 +226,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Concede resistência a frio e ambiente gelado por uma cena. O usuário controla onde a combustão termina."
@@ -241,7 +241,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque a 4 m contra PA; causa 1d6 frio e −1 m Movimento por rodada. Após o uso, aplique o risco de Cinza Bruta."
@@ -256,7 +256,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque a 6 m contra PA; causa 2d6 frio e −2 m Movimento por rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -271,7 +271,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque a 9 m contra PA; causa 3d6 frio e −3 m Movimento por rodada. O usuário escolhe uma superfície que não será congelada."
@@ -286,7 +286,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
@@ -303,7 +303,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
@@ -320,7 +320,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
@@ -433,7 +433,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Congela e apaga rastros numa faixa de 7 m. Após o uso, aplique o risco de Cinza Bruta."
@@ -448,7 +448,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Médio",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Congela e apaga rastros numa faixa de 10 m. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -463,7 +463,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Médio",
-      "targetArea": "",
+      "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Congela e apaga rastros numa faixa de 15 m. O usuário escolhe uma superfície que não será congelada."
@@ -523,7 +523,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. Após o uso, aplique o risco de Cinza Bruta."
@@ -538,7 +538,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -553,7 +553,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. O usuário escolhe não deixar cicatriz visível."
@@ -613,7 +613,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Remove veneno fraco ou condição física leve. Após o uso, aplique o risco de Cinza Bruta."
@@ -628,7 +628,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Remove veneno fraco ou condição física leve. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -643,7 +643,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Remove veneno fraco ou condição física leve. O usuário escolhe não deixar cicatriz visível."
@@ -658,7 +658,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. Após o uso, aplique o risco de Cinza Bruta."
@@ -673,7 +673,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -688,7 +688,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. O usuário escolhe não deixar cicatriz visível."
@@ -703,7 +703,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Cria imagem estática de até 1 m por uma cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -718,7 +718,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Cria imagem estática de até 2 m por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -733,7 +733,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Uma criatura ou alvo válido no alcance",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Cria imagem estática de até 3 m por uma cena. O usuário escolhe uma criatura que reconhece a ilusão."
@@ -748,7 +748,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Repete perfeitamente um som curto ouvido recentemente. Após o uso, aplique o risco de Cinza Bruta."
@@ -763,7 +763,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Repete perfeitamente um som curto ouvido recentemente. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -778,7 +778,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Repete perfeitamente um som curto ouvido recentemente. O usuário percebe se o alvo resistiu."
@@ -793,7 +793,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
       "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. Após o uso, aplique o risco de Cinza Bruta."
@@ -808,7 +808,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
       "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -823,7 +823,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
       "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. O usuário percebe se o alvo resistiu."
@@ -838,7 +838,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -853,7 +853,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -868,7 +868,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. O usuário controla o brilho sem ofuscar aliados."
@@ -883,7 +883,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Postura",
       "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -898,7 +898,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Postura",
       "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -913,7 +913,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Postura",
       "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. O usuário percebe se o alvo resistiu."
@@ -976,7 +976,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "+4 Furtividade em penumbra durante uma cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -991,7 +991,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "+4 Furtividade em penumbra durante uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1006,7 +1006,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "+4 Furtividade em penumbra durante uma cena. O usuário enxerga através das trevas criadas."
@@ -1069,7 +1069,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
@@ -1085,7 +1085,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
@@ -1101,7 +1101,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
@@ -1168,7 +1168,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. Após o uso, aplique o risco de Cinza Bruta."
@@ -1183,7 +1183,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1198,7 +1198,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. O usuário distingue a manifestação de um sonho comum."
@@ -1213,7 +1213,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
       "effect": "+4 PA ou PMental contra um efeito onírico. Após o uso, aplique o risco de Cinza Bruta."
@@ -1228,7 +1228,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
       "effect": "+4 PA ou PMental contra um efeito onírico. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1243,7 +1243,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
       "effect": "+4 PA ou PMental contra um efeito onírico. O usuário distingue a manifestação de um sonho comum."
@@ -1306,7 +1306,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. Após o uso, aplique o risco de Cinza Bruta."
@@ -1321,7 +1321,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1336,7 +1336,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. O usuário distingue a manifestação de um sonho comum."
@@ -1351,7 +1351,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Teleporta usuário até 4 m para ponto visível. Após o uso, aplique o risco de Cinza Bruta."
@@ -1366,7 +1366,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Teleporta usuário até 4 m para ponto visível. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1381,7 +1381,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Teleporta usuário até 6 m para ponto visível. O usuário distingue a manifestação de um sonho comum."
@@ -1441,7 +1441,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. Após o uso, aplique o risco de Cinza Bruta."
@@ -1456,7 +1456,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1471,7 +1471,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. Outros cadáveres ou espíritos não são perturbados."
@@ -1486,7 +1486,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque a 4 m contra PA; 1d6 necrótico. Após o uso, aplique o risco de Cinza Bruta."
@@ -1501,7 +1501,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque a 6 m contra PA; 2d6 necrótico. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1516,7 +1516,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Curto",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque a 9 m contra PA; 3d6 necrótico. Outros cadáveres ou espíritos não são perturbados."
@@ -1531,7 +1531,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Cadáver recente responde uma pergunta com memória fragmentária. Após o uso, aplique o risco de Cinza Bruta."
@@ -1546,7 +1546,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Cadáver recente responde uma pergunta com memória fragmentária. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1561,7 +1561,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Cadáver recente responde uma pergunta com memória fragmentária. O usuário controla o brilho sem ofuscar aliados."
@@ -1576,7 +1576,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
@@ -1593,7 +1593,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
@@ -1610,7 +1610,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Dias",
@@ -1675,7 +1675,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -1690,7 +1690,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1705,7 +1705,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. O usuário controla com precisão os limites descritos."
@@ -1765,7 +1765,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Médio",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reduz a zero o dano de uma queda de até 11 m. Após o uso, aplique o risco de Cinza Bruta."
@@ -1780,7 +1780,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Médio",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reduz a zero o dano de uma queda de até 15 m. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1795,7 +1795,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Médio",
-      "targetArea": "",
+      "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reduz a zero o dano de uma queda de até 23 m. O usuário controla com precisão os limites descritos."
@@ -1855,7 +1855,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Forma ferramenta metálica simples por uma cena. Após o uso, aplique o risco de Cinza Bruta."
@@ -1870,7 +1870,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Forma ferramenta metálica simples por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1885,7 +1885,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Forma ferramenta metálica simples por uma cena. A forma criada permanece estável até o fim da duração."
@@ -1948,7 +1948,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reduz o próximo dano físico recebido em 1d6. Após o uso, aplique o risco de Cinza Bruta."
@@ -1963,7 +1963,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reduz o próximo dano físico recebido em 2d6. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -1978,7 +1978,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reduz o próximo dano físico recebido em 3d6. A forma criada permanece estável até o fim da duração."
@@ -1993,7 +1993,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. Após o uso, aplique o risco de Cinza Bruta."
@@ -2008,7 +2008,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -2023,7 +2023,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. A forma criada permanece estável até o fim da duração."
@@ -2038,7 +2038,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Faz planta comum crescer até maturidade funcional em minutos. Após o uso, aplique o risco de Cinza Bruta."
@@ -2053,7 +2053,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Faz planta comum crescer até maturidade funcional em minutos. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -2068,7 +2068,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Faz planta comum crescer até maturidade funcional em minutos. O usuário controla com precisão os limites descritos."
@@ -2176,7 +2176,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Identifica parentesco direto entre duas amostras. Após o uso, aplique o risco de Cinza Bruta."
@@ -2191,7 +2191,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Identifica parentesco direto entre duas amostras. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -2206,7 +2206,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Identifica parentesco direto entre duas amostras. O efeito não mistura vínculos diferentes."
@@ -2221,7 +2221,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Horas",
@@ -2238,7 +2238,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Horas",
@@ -2255,7 +2255,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Tempo",
       "durationValue": 1,
       "durationUnit": "Horas",
@@ -2272,7 +2272,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. Após o uso, aplique o risco de Cinza Bruta."
@@ -2287,7 +2287,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. A manifestação é estável e não aplica o risco das Cinzas Brutas."
@@ -2302,7 +2302,7 @@
       "costValue": 1,
       "execution": "Ação",
       "range": "Pessoal",
-      "targetArea": "",
+      "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. O dispositivo afetado não sofre dano."

@@ -16,6 +16,12 @@ FIELDS = {
     'mechanicalEffect': str, 'ruleReference': str, 'keywords': list,
     'repeatable': bool, 'limit': str, 'activationCondition': str,
     'enhancements': str, 'deactivationCondition': str,
+    'abilitySource': str, 'sourceKnowledge': str,
+    'sourceLevel': (int, type(None)), 'abilityCostType': str,
+    'abilityCostValue': int, 'abilityExecution': str, 'executionValue': int,
+    'executionUnit': str, 'abilityRange': str, 'targetArea': str,
+    'abilityDuration': str, 'durationValue': int, 'durationUnit': str,
+    'abilityResistance': str,
 }
 KNOWLEDGE_FIELDS = {
     'id': str, 'type': str, 'name': str, 'category': str, 'description': str,
@@ -148,7 +154,8 @@ def load_abilities(name, doc):
         assert entry['range'] in RANGE_VALUES
         assert entry['duration'] in DURATION_VALUES
         assert entry['resistance'] in RESISTANCE_VALUES
-        assert entry['name'].strip() and entry['effect'].strip()
+        assert entry['name'].strip() and entry['targetArea'].strip() and entry['effect'].strip()
+        assert not entry['effect'].lower().startswith('suporte e gatilho:'), (entry['id'], 'effect metadata')
         if entry['execution'] == 'Tempo':
             assert entry.get('executionValue', 0) > 0 and entry.get('executionUnit') in TIME_UNIT_VALUES
         else:
@@ -195,6 +202,15 @@ def load_catalog(directory):
             if entry['kind'] in ('POWER', 'MAGIC', 'ASH', 'RUNE'):
                 for key in ('cost', 'action', 'range', 'duration', 'activationCondition', 'deactivationCondition'):
                     assert entry[key].strip(), (entry['id'], key)
+                assert entry['activationCondition'].strip() != entry['mechanicalEffect'].strip(), (entry['id'], 'duplicated activation')
+                assert 'Profissão:' not in entry['mechanicalEffect'] and 'Categoria:' not in entry['mechanicalEffect'], (entry['id'], 'effect metadata')
+                assert entry['targetArea'].strip(), (entry['id'], 'targetArea')
+                assert entry['abilitySource'] in SOURCE_VALUES.values(), (entry['id'], 'abilitySource')
+                assert entry['abilityCostType'] in COST_VALUES.values(), (entry['id'], 'abilityCostType')
+                assert entry['abilityExecution'] in EXECUTION_VALUES.values(), (entry['id'], 'abilityExecution')
+                assert entry['abilityRange'] in RANGE_VALUES.values(), (entry['id'], 'abilityRange')
+                assert entry['abilityDuration'] in DURATION_VALUES.values(), (entry['id'], 'abilityDuration')
+                assert entry['abilityResistance'] in RESISTANCE_VALUES.values(), (entry['id'], 'abilityResistance')
             else:
                 assert entry['relatedAttribute'] in ('FOR', 'AGI', 'VIG', 'INT', 'POD', 'CAR')
                 assert entry['initialValue'] == 1

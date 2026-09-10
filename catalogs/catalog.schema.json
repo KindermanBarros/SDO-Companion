@@ -54,6 +54,10 @@
           "activationCondition",
           "enhancements",
           "deactivationCondition"
+          ,"abilitySource", "sourceKnowledge", "sourceLevel", "abilityCostType",
+          "abilityCostValue", "abilityExecution", "executionValue", "executionUnit",
+          "abilityRange", "targetArea", "abilityDuration", "durationValue",
+          "durationUnit", "abilityResistance"
         ],
         "properties": {
           "id": {
@@ -146,9 +150,23 @@
           },
           "deactivationCondition": {
             "type": "string"
+          },
+          "abilitySource": { "type": "string" },
+          "sourceKnowledge": { "type": "string" },
+          "sourceLevel": { "type": ["integer", "null"] },
+          "abilityCostType": { "type": "string" },
+          "abilityCostValue": { "type": "integer" },
+          "abilityExecution": { "type": "string" },
+          "executionValue": { "type": "integer" },
+          "executionUnit": { "type": "string" },
+          "abilityRange": { "type": "string" },
+          "targetArea": { "type": "string" },
+          "abilityDuration": { "type": "string" },
+          "durationValue": { "type": "integer" },
+          "durationUnit": { "type": "string" },
+          "abilityResistance": { "type": "string" }
           }
         }
       }
     }
   }
-}

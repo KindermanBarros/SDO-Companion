@@ -127,6 +127,11 @@ private fun FilterButton(label: String, selected: String, options: List<String>,
 
 @Composable
 private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
+    val isKnowledge = entry.kind in setOf(
+        com.kinderman.sdo.domain.model.CatalogKind.ACQUIRED_KNOWLEDGE,
+        com.kinderman.sdo.domain.model.CatalogKind.ARCANE_KNOWLEDGE,
+        com.kinderman.sdo.domain.model.CatalogKind.BATTLE_TECHNIQUE,
+    )
     Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         if (alreadyAdded) Text(if (entry.repeatable) "JÁ ADICIONADO // REPETÍVEL" else "JÁ ADICIONADO", color = MaterialTheme.colorScheme.error)
@@ -136,15 +141,17 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
         DetailLine("CUSTO", entry.cost)
         DetailLine("AÇÃO", entry.action)
         DetailLine("ALCANCE", entry.range)
+        DetailLine("ALVO / ÁREA", entry.targetArea)
         DetailLine("DURAÇÃO", entry.duration)
+        DetailLine("RESISTÊNCIA", entry.abilityResistance?.label.orEmpty())
         DetailLine("LIMITE", entry.limit)
         DetailLine("ATIVAÇÃO", entry.activationCondition)
         DetailLine("APRIMORAMENTOS", entry.enhancements)
         DetailLine("ENCERRAMENTO", entry.deactivationCondition)
-        DetailLine("PRÉ-REQUISITOS", entry.prerequisites.joinToString("; "))
-        DetailLine("EFEITO MECÂNICO", entry.mechanicalEffect)
+        if (!isKnowledge) DetailLine("PRÉ-REQUISITOS", entry.prerequisites.joinToString("; "))
+        if (entry.mechanicalEffect != entry.summary) DetailLine("EFEITO MECÂNICO", entry.mechanicalEffect)
         DetailLine("FONTE", entry.source)
-        DetailLine("REFERÊNCIA", entry.ruleReference)
+        if (!isKnowledge) DetailLine("REFERÊNCIA", entry.ruleReference)
         DetailLine("PALAVRAS-CHAVE", entry.keywords.joinToString(", "))
         DetailLine("VERSÃO", entry.version.toString())
     }
