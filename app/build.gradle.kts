@@ -48,6 +48,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Firebase/Google Sign-In recognizes the production certificate SHAs. CI debug
+            // artifacts therefore use the same keystore while local builds retain the
+            // standard debug certificate when protected credentials are unavailable.
+            signingConfigs.findByName("release")?.let { signingConfig = it }
+        }
         release {
             optimization {
                 enable = true

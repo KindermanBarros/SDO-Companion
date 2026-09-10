@@ -3,21 +3,54 @@ name: SDO Companion Android release
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   pull_request:
-    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: android-release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  verify:
+    name: Verify Android pull request
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Validate canonical catalog contract
+        run: python3 tools/generate_catalog.py --check
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.7.1'
+
+      # Pull requests never receive signing/Firebase secrets and do not produce an APK.
+      # Packaging is restricted to the trusted main-branch release job below.
+      - name: Run debug checks
+        run: gradle lintDebug testDebugUnitTest --build-cache --stacktrace
+
+  release:
+    name: Build and publish Android release
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
       SDO_KEYSTORE_BASE64: ${{ secrets.SDO_KEYSTORE_BASE64 }}
@@ -36,7 +69,6 @@ jobs:
 
       - name: Calculate semantic version
         id: version
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -81,33 +113,10 @@ jobs:
           gradle-version: '9.7.1'
 
       - name: Restore protected build files
-        shell: bash
-        run: |
-          set -euo pipefail
-          for secret_name in \
-            GOOGLE_SERVICES_JSON \
-            SDO_KEYSTORE_BASE64 \
-            SDO_KEYSTORE_PASSWORD \
-            SDO_KEY_ALIAS \
-            SDO_KEY_PASSWORD
-          do
-            if [[ -z "${!secret_name:-}" ]]; then
-              echo "::error::Missing ${secret_name} repository secret."
-              exit 1
-            fi
-          done
-          if printf '%s' "$GOOGLE_SERVICES_JSON" | jq -e . > /dev/null 2>&1; then
-            printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
-          else
-            printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
-          fi
-          jq -e '.project_info.project_id == "sdo-companion" and
-            .client[0].client_info.android_client_info.package_name == "com.kinderman.sdo"' \
-            app/google-services.json > /dev/null
-          printf '%s' "$SDO_KEYSTORE_BASE64" | base64 --decode > "$SDO_KEYSTORE_FILE"
-          chmod 600 "$SDO_KEYSTORE_FILE"
+        uses: ./.github/actions/restore-android-secrets
 
       - name: Build and verify signed release APK
+        id: package
         shell: bash
         run: |
           set -euo pipefail
@@ -118,7 +127,7 @@ jobs:
               "-PreleaseCode=${{ steps.version.outputs.version_code }}"
             )
           fi
-          gradle clean lintRelease testDebugUnitTest assembleRelease --stacktrace "${version_args[@]}"
+          gradle assembleRelease --build-cache --stacktrace "${version_args[@]}"
           mkdir -p release
           if [[ "${{ steps.version.outputs.should_release }}" == "true" ]]; then
             apk_name="sdo-companion-v${{ steps.version.outputs.version }}.apk"
@@ -126,12 +135,12 @@ jobs:
             apk_name="sdo-companion-release.apk"
           fi
           cp app/build/outputs/apk/release/app-release.apk "release/$apk_name"
-          apksigner_path="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
-          if [[ -z "$apksigner_path" ]]; then
-            echo "::error::Android apksigner was not found."
-            exit 1
-          fi
-          "$apksigner_path" verify --verbose --print-certs "release/$apk_name"
+          echo "apk_path=release/$apk_name" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release APK certificate
+        uses: ./.github/actions/verify-android-signature
+        with:
+          apk: ${{ steps.package.outputs.apk_path }}
 
       - name: Upload signed APK artifact
         uses: actions/upload-artifact@v4
@@ -140,7 +149,7 @@ jobs:
           path: release/*.apk
 
       - name: Publish GitHub Release
-        if: github.event_name != 'pull_request' && steps.version.outputs.should_release == 'true'
+        if: steps.version.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version }}
