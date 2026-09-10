@@ -23,6 +23,7 @@ import com.kinderman.sdo.domain.model.defaultProtections
 import com.kinderman.sdo.domain.model.canonicalized
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.domain.catalog.withRefreshedPresetPowers
 
 @Entity(tableName = "characters")
 data class CharacterRecord(
@@ -150,7 +151,7 @@ fun CharacterRecord.toDomain() = Character(
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
-)
+).withRefreshedPresetPowers()
 
 fun Character.toRecord() = CharacterRecord(
     id = id,
