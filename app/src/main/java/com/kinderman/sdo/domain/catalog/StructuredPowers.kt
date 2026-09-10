@@ -134,7 +134,7 @@ fun CatalogEntry.toMysticAbility(character: Character): MysticAbility {
     return ability.copy(knowledgeId = knowledge.id, knowledgeLevel = requiredLevel)
 }
 
-private fun PathPower.toStructuredPower(path: CatalogEntry): Power = Power(
+internal fun PathPower.toStructuredPower(path: CatalogEntry): Power = Power(
     name = name,
     origin = "Caminho — ${path.name}",
     cost = cost,
@@ -164,6 +164,48 @@ private fun PathPower.toStructuredPower(path: CatalogEntry): Power = Power(
     durationUnit = durationUnit,
     resistance = resistance,
 )
+
+fun Character.withRefreshedPresetPowers(): Character {
+    val currentPathPreset = PathPresets.entries.firstOrNull { preset ->
+        preset.catalogId == powers.firstOrNull { it.sourceType == PowerSourceType.PATH }?.sourceId ||
+            BuiltInCatalog.entries.any { entry ->
+                entry.id == preset.catalogId && entry.name.equals(pathName, ignoreCase = true)
+            }
+    }
+    val currentPathEntry = currentPathPreset?.let { preset ->
+        BuiltInCatalog.entries.firstOrNull { it.id == preset.catalogId }
+    }
+    val racialPresets = buildList {
+        RaceCatalog.race(race)?.powers?.let(::addAll)
+        RaceCatalog.subRaces.firstOrNull { it.name.equals(subRace, ignoreCase = true) }?.powers?.let(::addAll)
+    }
+
+    return copy(powers = powers.map { stored ->
+        val refreshed = when {
+            stored.sourceType == PowerSourceType.PATH ||
+                stored.origin.startsWith("Caminho — ", ignoreCase = true) -> {
+                val preset = currentPathPreset?.powers?.firstOrNull { it.name.equals(stored.name, ignoreCase = true) }
+                if (preset != null && currentPathEntry != null) preset.toStructuredPower(currentPathEntry) else null
+            }
+            stored.sourceType == PowerSourceType.RACE ||
+                stored.origin.startsWith("Raça — ", ignoreCase = true) ||
+                stored.origin.startsWith("Sub-raça — ", ignoreCase = true) -> {
+                racialPresets.firstOrNull { it.name.equals(stored.name, ignoreCase = true) }
+                    ?.toStructuredPower(stored.origin)
+            }
+            else -> null
+        }
+
+        refreshed?.copy(
+            id = stored.id,
+            favorite = stored.favorite,
+            available = stored.available,
+            active = stored.active,
+            linkedItemId = stored.linkedItemId,
+            revision = maxOf(stored.revision, refreshed.revision),
+        )?.canonicalized() ?: stored.canonicalized()
+    })
+}
 
 private fun PowerSourceType.toCanonicalSource(): AbilitySource = when (this) {
     PowerSourceType.PATH -> AbilitySource.PATH
