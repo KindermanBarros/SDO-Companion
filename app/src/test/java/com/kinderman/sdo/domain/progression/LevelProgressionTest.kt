@@ -4,7 +4,7 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ProgressionReward
 import com.kinderman.sdo.domain.model.ProgressionRewardType
 import org.junit.Assert.assertEquals
-import kotlin.test.assertFailsWith
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class LevelProgressionTest {
@@ -28,7 +28,7 @@ class LevelProgressionTest {
 
     @Test fun `rejects incomplete selection without changing source character`() {
         val character = Character()
-        assertFailsWith<IllegalArgumentException> {
+        assertThrows(IllegalArgumentException::class.java) {
             LevelProgression.apply(character, 2, listOf(ProgressionReward(2, ProgressionRewardType.RESOURCE, "ENERGY")), emptyList())
         }
         assertEquals(1, character.level)
