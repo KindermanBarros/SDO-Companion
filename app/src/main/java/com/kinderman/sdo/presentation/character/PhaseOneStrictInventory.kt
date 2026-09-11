@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -94,7 +96,7 @@ internal fun PhaseOneStrictInventorySection(
             }
             if (inventoryGroup == "Todos" || inventoryGroup == group) {
                 Text("$group // ${groupItems.size} // CARGA ${groupItems.sumOf { it.effectiveLoad() }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
-                if (groupItems.isEmpty()) AddButton("Adicionar primeiro item em $group", enabled) { dialog = if (group == "Armas" || group == "Armaduras") "builder" else "catalog" }
+                if (groupItems.isEmpty()) Text("Nenhum item nesta categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
             visible.forEach { item ->
             val index = character.inventory.indexOfFirst { it.id == item.id }
@@ -141,22 +143,21 @@ internal fun PhaseOneStrictInventorySection(
             }
         }
 
-        AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
+        AddButton("Adicionar item", enabled) { dialog = "add" }
+        TextButton(onClick = { dialog = "glossary" }, modifier = Modifier.fillMaxWidth()) { Text("CONSULTAR GLOSSÁRIOS") }
         if (remainingHeritage > 0) {
             Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
-            AddButton("Selecionar item pronto", enabled && itemCatalog.isNotEmpty()) { dialog = "initial_catalog" }
-            AddButton("Construir item com PH", enabled) { dialog = "initial_builder" }
-        } else {
-            AddButton("Selecionar item do catálogo", enabled && itemCatalog.isNotEmpty()) { dialog = "catalog" }
-            AddButton("Adicionar Cinza do catálogo", enabled && ashCatalog.isNotEmpty()) { dialog = "ash_catalog" }
-            AddButton("Construtor de item", enabled) { dialog = "builder" }
-            AddButton("Adicionar objeto narrativo", enabled) {
-                onChange(character.copy(inventory = character.inventory + InventoryItem()))
-            }
         }
     }
 
     when (dialog) {
+        "add" -> AddInventoryChoiceDialog(
+            initialCreation = remainingHeritage > 0,
+            canUseCatalog = itemCatalog.isNotEmpty(),
+            canAddAsh = ashCatalog.isNotEmpty() && remainingHeritage == 0,
+            onDismiss = { dialog = null },
+            onChoice = { dialog = it },
+        )
         "glossary" -> EquipmentGlossaryDialog(
             onDismiss = { dialog = null },
             onUse = { entry ->
@@ -202,7 +203,30 @@ internal fun PhaseOneStrictInventorySection(
             onChange(character.withAddedAbility(entry.toMysticAbility(), reuseExistingAsh = true))
             dialog = null
         }
+        "narrative" -> {
+            onChange(character.copy(inventory = character.inventory + InventoryItem(category = "Item", quantity = 1)))
+            dialog = null
+        }
     }
+}
+
+@Composable
+private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Boolean, canAddAsh: Boolean, onDismiss: () -> Unit, onChoice: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("ADICIONAR AO INVENTÁRIO") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Escolha como o item será adicionado.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AddButton("Do catálogo", canUseCatalog) { onChoice(if (initialCreation) "initial_catalog" else "catalog") }
+                AddButton("Criar personalizado", true) { onChoice(if (initialCreation) "initial_builder" else "builder") }
+                if (canAddAsh) AddButton("Adicionar Cinzas", true) { onChoice("ash_catalog") }
+                if (!initialCreation) TextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
 }
 
 private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<InventoryItem>> = linkedMapOf(
@@ -230,6 +254,8 @@ private fun StrictItemBuilderDialog(
     onDismiss: () -> Unit,
     onAdd: (InventoryItem) -> Unit,
 ) {
+    var step by remember { mutableIntStateOf(1) }
+    var category by remember { mutableStateOf("Arma") }
     var weapon by remember { mutableStateOf(true) }
     var base by remember { mutableStateOf(ItemCreationRules.weaponBases.first()) }
     var material by remember { mutableStateOf(ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }) }
@@ -241,6 +267,10 @@ private fun StrictItemBuilderDialog(
     var bonuses by remember { mutableStateOf(emptyList<ItemBonus>()) }
     var gems by remember { mutableStateOf(emptyList<ItemPart>()) }
     var manualPrice by remember { mutableStateOf("") }
+    var commonName by remember { mutableStateOf("") }
+    var commonEffect by remember { mutableStateOf("") }
+    var commonLoad by remember { mutableIntStateOf(0) }
+    var commonQuantity by remember { mutableIntStateOf(1) }
 
     val initialCreation = remainingHeritage != null
     val bases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
@@ -265,30 +295,54 @@ private fun StrictItemBuilderDialog(
     val allowedByBudget = remainingHeritage == null || (built.creationCost != null && built.creationCost <= remainingHeritage)
     val requiresPrice = !initialCreation && built.creationCost == null && manualPrice.isBlank()
     val bonusesComplete = bonuses.all(ItemBonus::isComplete)
+    val commonItem = InventoryItem(name = commonName.trim(), category = "Item", effect = commonEffect, load = commonLoad, quantity = commonQuantity)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (initialCreation) "CONSTRUTOR // CRIAÇÃO INICIAL" else "CONSTRUTOR DE ITEM") },
+        modifier = Modifier.fillMaxSize(),
+        properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
+        title = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(if (initialCreation) "CRIAR ITEM // $remainingHeritage PH" else "CRIAR ITEM")
+                Text("$step DE 4  //  ${listOf("CATEGORIA", "BASE", "PERSONALIZAÇÃO", "REVISÃO")[step - 1]}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+            }
+        },
         text = {
             Column(
-                Modifier.fillMaxWidth().heightIn(max = 590.dp).verticalScroll(rememberScrollState()),
+                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                remainingHeritage?.let { Text("PH RESTANTES // $it", color = MaterialTheme.colorScheme.primary) }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    TextButton(onClick = {
+                if (step == 1) {
+                Text("O que você quer criar? As próximas opções serão adaptadas à categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                        category = "Arma"
                         weapon = true
                         base = ItemCreationRules.weaponBases.first()
                         material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
-                    }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
-                    TextButton(onClick = {
+                    }) { Text(if (category == "Arma") "[ ARMA ]" else "ARMA") }
+                    TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                        category = "Armadura"
                         weapon = false
                         base = ItemCreationRules.armorBases.first()
                         material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
-                    }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
+                    }) { Text(if (category == "Armadura") "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
+                    TextButton(modifier = Modifier.fillMaxWidth(), onClick = { category = "Item" }) { Text(if (category == "Item") "[ ITEM COMUM ]" else "ITEM COMUM") }
                 }
+                Text(when (category) { "Arma" -> "Armas possuem dano, material e modificações de combate."; "Armadura" -> "Armaduras e acessórios possuem proteção, região e limitações."; else -> "Itens comuns usam apenas nome, quantidade, carga e efeito." }, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (step == 2) {
+                if (category == "Item") {
+                    HudTextField("Nome do item", commonName) { commonName = it }
+                    TwoFields(
+                        { IntegerField("Quantidade", commonQuantity, true, it) { value -> commonQuantity = value.coerceAtLeast(1) } },
+                        { IntegerField("Carga total", commonLoad, true, it) { value -> commonLoad = value.coerceAtLeast(0) } },
+                    )
+                    HudTextField("Descrição ou efeito", commonEffect, multiline = true) { commonEffect = it }
+                    if (!initialCreation) HudTextField("Preço em E$ (opcional)", manualPrice) { manualPrice = it.filter(Char::isDigit) }
+                } else {
                 HudTextField("Nome personalizado", customName) { customName = it }
                 CyclePartButton("TIPO", base, bases) { selected ->
                     base = selected
@@ -301,8 +355,19 @@ private fun StrictItemBuilderDialog(
                     onClick = { quality = ItemQuality.entries[(quality.ordinal + 1) % ItemQuality.entries.size] },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("QUALIDADE // ${quality.label}") }
+                Text("PRÉVIA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(built.name, style = MaterialTheme.typography.titleMedium)
+                Text("PG ${built.pg} // PL ${built.pl} // CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                }
 
+                if (step == 3) {
+                if (category == "Item") {
+                    Text("ITEM COMUM", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                    Text("Itens comuns não recebem modificações de arma, proteção, gemas ou bônus de equipamento.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
                 Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(if (modifications.isEmpty()) "Nenhuma selecionada" else modifications.joinToString(" // ") { it.name }, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 availableModifications.forEach { modification ->
                     val checked = modification in modifications
                     Row(Modifier.fillMaxWidth().clickable { modifications = strictToggleModification(modifications, modification) }) {
@@ -375,25 +440,37 @@ private fun StrictItemBuilderDialog(
                     onClick = { bonuses = bonuses + ItemBonus(type = ItemBonusType.ATTRIBUTE, target = "FOR") },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("+ ADICIONAR BÔNUS") }
+                }
+                }
 
-                if (!initialCreation) {
+                if (step == 4) {
+                Text("REVISE ANTES DE CRIAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
+                if (category == "Item") Text("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
+                else Text("${if (weapon) "Arma" else "Armadura / Acessório"} // ${material.name} // ${quality.label}")
+                if (modifications.isNotEmpty()) Text("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (!initialCreation && category != "Item") {
                     HudTextField("Preço final em E$", manualPrice) { manualPrice = it.filter(Char::isDigit) }
                 }
-                Text("CUSTO // ${built.creationCost ?: "#"} PH // PREÇO ${built.price} E$", color = MaterialTheme.colorScheme.primary)
-                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
-                Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
-                if (requiresPrice) Text("Este material exige preço manual.", color = MaterialTheme.colorScheme.error)
-                if (!bonusesComplete) Text("Todos os bônus precisam de um destino válido.", color = MaterialTheme.colorScheme.error)
+                if (category != "Item") {
+                    Text("CUSTO // ${built.creationCost ?: "#"} PH // PREÇO ${built.price} E$", color = MaterialTheme.colorScheme.primary)
+                    Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
+                    Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
+                    if (requiresPrice) Text("Este material exige preço manual.", color = MaterialTheme.colorScheme.error)
+                    if (!bonusesComplete) Text("Todos os bônus precisam de um destino válido.", color = MaterialTheme.colorScheme.error)
+                }
+                }
             }
         },
         confirmButton = {
             TextButton(
-                enabled = allowedByBudget && !requiresPrice && bonusesComplete,
-                onClick = { onAdd(built.toInventoryItem(initialCreation = initialCreation)) },
-            ) { Text("ADICIONAR") }
+                enabled = step < 4 || if (category == "Item") commonName.isNotBlank() else allowedByBudget && !requiresPrice && bonusesComplete,
+                onClick = { if (step < 4) step++ else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
+            ) { Text(if (step < 4) "CONTINUAR" else "CRIAR ITEM") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { TextButton(onClick = { if (step > 1) step-- else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
     )
 }
 
