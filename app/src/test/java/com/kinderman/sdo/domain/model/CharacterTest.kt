@@ -4,6 +4,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CharacterTest {
+    @Test fun inventoryStateUsesTypedSemanticsWithLegacyStorageCodes() {
+        assertEquals(InventoryState.WIELDED, InventoryItem(state = "W").inventoryState)
+        assertEquals("G", InventoryItem().withInventoryState(InventoryState.STORED).state)
+        assertEquals(InventoryState.BACKPACK, InventoryItem(state = "unknown").inventoryState)
+    }
     @Test fun canonicalDefaultsArePresent() {
         val character = Character()
         assertEquals(listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR"), character.attributes.map { it.acronym })

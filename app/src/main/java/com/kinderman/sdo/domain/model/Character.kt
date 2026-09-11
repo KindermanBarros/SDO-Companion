@@ -64,10 +64,20 @@ data class SpecialKnowledge(
     val repeatable: Boolean = false,
     val adjustment: Int = 0,
     val milestoneLevels: List<Int> = emptyList(),
+    val milestoneRewards: List<KnowledgeMilestoneReward> = emptyList(),
     val specializationParentId: String = "",
 ) {
     val isCatalogEntry: Boolean get() = catalogEntryId.isNotBlank()
 }
+
+enum class KnowledgeMilestoneRewardType { POWER, MYSTIC_ABILITY, SPECIALIZATION }
+
+data class KnowledgeMilestoneReward(
+    val level: Int = 3,
+    val type: KnowledgeMilestoneRewardType = KnowledgeMilestoneRewardType.POWER,
+    val rewardCatalogId: String = "",
+    val grantedEntityId: String = "",
+)
 
 data class Power(
     val id: String = UUID.randomUUID().toString(),
@@ -143,6 +153,24 @@ data class InventoryItem(
     val gemIds: List<String> = emptyList(),
     val mechanicalEffects: List<ItemEffect> = emptyList(),
 )
+
+enum class InventoryState(val storageCode: String, val label: String) {
+    BACKPACK("M", "Mochila"),
+    EQUIPPED("E", "Equipado"),
+    WIELDED("W", "Empunhado"),
+    CONTAINER("R", "Recipiente"),
+    STORED("G", "Guardado");
+
+    companion object {
+        fun fromStorage(value: String): InventoryState = entries.firstOrNull {
+            it.storageCode.equals(value, true) || it.name.equals(value, true)
+        } ?: BACKPACK
+    }
+}
+
+val InventoryItem.inventoryState: InventoryState get() = InventoryState.fromStorage(state)
+
+fun InventoryItem.withInventoryState(value: InventoryState): InventoryItem = copy(state = value.storageCode)
 
 enum class ItemAcquisitionSource { HERITAGE, PURCHASE, REWARD, NARRATIVE }
 
@@ -300,6 +328,7 @@ data class Character(
     val pathPillars: List<String> = listOf("", "", ""),
     val powers: List<Power> = emptyList(),
     val inventory: List<InventoryItem> = emptyList(),
+    val itemCreationDraft: ItemCreationDraft? = null,
     val containerCapacity: Int = 0,
     val bodyRegions: List<BodyRegion> = defaultBodyRegions(),
     val agilityLimit: String = "",
@@ -320,7 +349,7 @@ data class Character(
 ) {
     val isInCreation: Boolean get() = creationStatus == CharacterCreationStatus.DRAFT
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
-    val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.effectiveLoad() }
+    val currentLoad: Int get() = inventory.filterNot { it.inventoryState == InventoryState.STORED }.sumOf { it.effectiveLoad() }
     val maximumLoad: Int get() = 2 + attributeValue("FOR") + containerCapacity
 
     val lifeBase: Int get() = 10 + skillValue("VIG", "Vitalidade")
@@ -388,8 +417,11 @@ data class Character(
         val affectedIds = previouslyAssignedIds + selectedIds
         val updatedInventory = inventory.map { item ->
             when {
-                item.id in allEquippedIds -> item.copy(state = "E")
-                item.id in affectedIds && item.state == "E" -> item.copy(state = "M")
+                item.id in allEquippedIds -> item.withInventoryState(
+                    if (item.inventoryState == InventoryState.WIELDED) InventoryState.WIELDED else InventoryState.EQUIPPED,
+                )
+                item.id in affectedIds && item.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED) ->
+                    item.withInventoryState(InventoryState.BACKPACK)
                 else -> item
             }
         }
@@ -417,7 +449,8 @@ data class Character(
             .filter { it.name.equals(name, true) }
         return CalculatedValue(
             base = matching.sumOf { knowledge ->
-                val permanentAttribute = attributes.firstOrNull { it.acronym.equals(knowledge.attribute, true) }?.value
+                val permanentAttribute = attributes.firstOrNull { it.acronym.equals(knowledge.attribute, true) }
+                    ?.let { permanentAttributeValue(it.acronym) }
                     ?: knowledge.value // Legacy entries without an attribute remain readable until explicitly migrated.
                 minOf(knowledge.value.coerceIn(0, 5), permanentAttribute.coerceAtLeast(0))
             },
@@ -433,9 +466,20 @@ data class Character(
         return CalculatedValue(
             base = attribute?.value ?: 0,
             adjustment = attribute?.modifier ?: 0,
-            modifiers = equippedModifiers(ItemBonusType.ATTRIBUTE, acronym) + powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym),
+            modifiers = racialAttributeModifiers(acronym) + equippedModifiers(ItemBonusType.ATTRIBUTE, acronym) + powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym),
         )
     }
+
+    fun permanentAttributeValue(acronym: String): Int {
+        val attribute = attributes.firstOrNull { it.acronym.equals(acronym, true) }
+        return ((attribute?.value ?: 0) + (attribute?.modifier ?: 0) + racialAttributeModifiers(acronym).sumOf { it.value })
+            .coerceAtLeast(0)
+    }
+
+    private fun racialAttributeModifiers(acronym: String): List<ValueModifier> =
+        if (raceAttribute.equals(acronym, true) && raceAttribute.isNotBlank()) {
+            listOf(ValueModifier(ModifierSourceType.RACE, race, race.ifBlank { "Bônus racial" }, 1))
+        } else emptyList()
 
     fun basicKnowledgeTotal(attributeAcronym: String, skillName: String): Int =
         basicKnowledgeCalculation(attributeAcronym, skillName).total

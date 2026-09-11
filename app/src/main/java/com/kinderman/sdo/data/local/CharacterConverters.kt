@@ -22,6 +22,10 @@ import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
+import com.kinderman.sdo.domain.model.ItemCreationDraft
+import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
@@ -42,12 +46,38 @@ private const val BONUS_FIELD = "\u001a"
 private const val NESTED = "\u0019"
 private const val MODIFIER_ROW = "\u0018"
 private const val MODIFIER_FIELD = "\u0017"
+private const val MILESTONE_ROW = "\u0016"
+private const val MILESTONE_FIELD = "\u0015"
 private fun String.parts() = split(FIELD)
 private fun List<String>.row() = joinToString(FIELD)
 private fun List<String>.nested() = joinToString(NESTED)
 private fun String.toNestedList() = if (isBlank()) emptyList() else split(NESTED)
 
 class CharacterConverters {
+    @TypeConverter fun itemCreationDraftToString(value: ItemCreationDraft?): String? = value?.let {
+        listOf(
+            it.step.toString(), it.category, it.baseId, it.materialId, it.quality.name,
+            it.modificationIds.nested(), it.gemIds.nested(), it.gemSlots.toString(),
+            it.technologySlots.toString(), it.customName,
+        ).row()
+    }
+
+    @TypeConverter fun stringToItemCreationDraft(value: String?): ItemCreationDraft? =
+        value?.takeIf(String::isNotBlank)?.parts()?.let { fields ->
+            ItemCreationDraft(
+                step = fields.getOrNull(0)?.toIntOrNull()?.coerceIn(1, 4) ?: 1,
+                category = fields.getOrElse(1) { "Arma" },
+                baseId = fields.getOrElse(2) { "" },
+                materialId = fields.getOrElse(3) { "" },
+                quality = runCatching { ItemQuality.valueOf(fields.getOrElse(4) { "" }) }.getOrDefault(ItemQuality.COMMON),
+                modificationIds = fields.getOrElse(5) { "" }.toNestedList(),
+                gemIds = fields.getOrElse(6) { "" }.toNestedList(),
+                gemSlots = fields.getOrNull(7)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                technologySlots = fields.getOrNull(8)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                customName = fields.getOrElse(9) { "" },
+            )
+        }
+
     @TypeConverter fun progressionToString(value: List<ProgressionRecord>) = value.joinToString(ROW) { record ->
         listOf(record.id, record.previousLevel.toString(), record.newLevel.toString(), record.appliedAt.toString(),
             record.rewards.joinToString(BONUS_ROW) { reward ->
@@ -284,7 +314,10 @@ class CharacterConverters {
             it.keywords.nested(),
             it.repeatable.toString(),
             it.adjustment.toString(),
-            "canonical-v1", it.milestoneLevels.joinToString(","), it.specializationParentId,
+            "canonical-v2", it.milestoneLevels.joinToString(","), it.specializationParentId,
+            it.milestoneRewards.joinToString(MILESTONE_ROW) { reward ->
+                listOf(reward.level.toString(), reward.type.name, reward.rewardCatalogId, reward.grantedEntityId).joinToString(MILESTONE_FIELD)
+            },
         ).row()
     }
 
@@ -306,8 +339,19 @@ class CharacterConverters {
                 keywords = p.getOrElse(12) { "" }.toNestedList(),
                 repeatable = p.getOrNull(13)?.toBooleanStrictOrNull() ?: false,
                 adjustment = p.getOrNull(14)?.toIntOrNull() ?: 0,
-                milestoneLevels = p.getOrElse(16) { "" }.takeIf { p.getOrNull(15) == "canonical-v1" }.orEmpty().split(',').mapNotNull(String::toIntOrNull),
-                specializationParentId = p.getOrElse(17) { "" }.takeIf { p.getOrNull(15) == "canonical-v1" }.orEmpty(),
+                milestoneLevels = p.getOrElse(16) { "" }.takeIf { p.getOrNull(15)?.startsWith("canonical-") == true }.orEmpty().split(',').mapNotNull(String::toIntOrNull),
+                specializationParentId = p.getOrElse(17) { "" }.takeIf { p.getOrNull(15)?.startsWith("canonical-") == true }.orEmpty(),
+                milestoneRewards = p.getOrElse(18) { "" }.takeIf { p.getOrNull(15) == "canonical-v2" }
+                    .orEmpty().split(MILESTONE_ROW).filter(String::isNotBlank).map { encoded ->
+                        val fields = encoded.split(MILESTONE_FIELD)
+                        KnowledgeMilestoneReward(
+                            level = fields.getOrNull(0)?.toIntOrNull() ?: 3,
+                            type = runCatching { KnowledgeMilestoneRewardType.valueOf(fields.getOrElse(1) { "" }) }
+                                .getOrDefault(KnowledgeMilestoneRewardType.POWER),
+                            rewardCatalogId = fields.getOrElse(2) { "" },
+                            grantedEntityId = fields.getOrElse(3) { "" },
+                        )
+                    },
             )
         }
     }

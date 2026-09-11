@@ -33,6 +33,9 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.InventoryState
+import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.withInventoryState
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.model.effectiveLoad
@@ -81,7 +84,7 @@ internal fun PhaseOneStrictInventorySection(
         inventoryGroups(character.inventory).forEach { (group, groupItems) ->
             val visible = groupItems.filter { item ->
                 (inventoryGroup == "Todos" || inventoryGroup == group) &&
-                    (inventoryQuery.isBlank() || listOf(item.name, item.category, item.quality, item.effect, itemStateLabel(item.state)).any { it.contains(inventoryQuery, true) })
+                    (inventoryQuery.isBlank() || listOf(item.name, item.category, item.quality, item.effect, item.inventoryState.label).any { it.contains(inventoryQuery, true) })
             }
             if (inventoryGroup == "Todos" || inventoryGroup == group) {
                 Text("$group // ${groupItems.size} // CARGA ${groupItems.sumOf { it.effectiveLoad() }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
@@ -122,8 +125,8 @@ internal fun PhaseOneStrictInventorySection(
                     }
                 }
                 val states = validItemStates(item)
-                ChoiceField("Estado", item.state, states, enabled, display = ::itemStateLabel) { value ->
-                    onChange(character.copy(inventory = character.inventory.replace(index, item.copy(state = value))))
+                ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
+                    onChange(character.copy(inventory = character.inventory.replace(index, item.withInventoryState(value))))
                 }
                 HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { value ->
                     onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
@@ -222,16 +225,12 @@ private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<Invent
     "Itens" to items.filterNot { it.category.contains("arma", true) },
 ).let { groups -> groups + ("Itens" to groups.getValue("Itens").filterNot { it.category.contains("armadura", true) || it.category.contains("acessório", true) }) }
 
-private fun validItemStates(item: InventoryItem): List<String> = buildList {
-    if (item.category.contains("arma", true) || item.category.contains("armadura", true) || item.category.contains("acessório", true)) add("E")
-    add("R"); add("M"); add("G")
-}
-
-private fun itemStateLabel(state: String): String = when (state) {
-    "E" -> "Equipado"
-    "R" -> "Recipiente"
-    "G" -> "Guardado"
-    else -> "Mochila"
+private fun validItemStates(item: InventoryItem): List<InventoryState> = buildList {
+    if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
+    if (item.category.contains("armadura", true) || item.category.contains("acessório", true)) add(InventoryState.EQUIPPED)
+    add(InventoryState.CONTAINER)
+    add(InventoryState.BACKPACK)
+    add(InventoryState.STORED)
 }
 
 @Composable

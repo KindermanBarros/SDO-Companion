@@ -5,6 +5,7 @@ import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 
 data class InitialKnowledgeAllocation(
     val selections: List<SpecialKnowledge>,
@@ -12,7 +13,7 @@ data class InitialKnowledgeAllocation(
 ) {
     fun validate() {
         require(selections.size == 5) { "A criação exige exatamente 5 escolhas de Conhecimentos e Técnicas." }
-        require(selections.all { it.value == 1 }) { "Cada escolha inicial deve começar no nível 1." }
+        require(selections.all { it.value == 0 }) { "Cada escolha inicial deve começar gratuitamente no nível 0." }
         require(selections.all { it.attribute.isNotBlank() }) { "Cada escolha exige um Atributo base permanente." }
         require(distributedPoints == 15) { "Os 15 Pontos de Conhecimento devem ser gastos integralmente na criação." }
     }
@@ -20,8 +21,7 @@ data class InitialKnowledgeAllocation(
 
 fun Character.withKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catalog: List<CatalogEntry>): Character {
     val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId } ?: return this
-    val attributeLimit = attributes.firstOrNull { it.acronym.equals(current.attribute, true) }
-        ?.value?.coerceAtLeast(0) ?: 0
+    val attributeLimit = permanentAttributeValue(current.attribute)
     val level = requestedLevel.coerceIn(0, minOf(5, attributeLimit))
     val reached = buildSet {
         addAll(current.milestoneLevels)
@@ -54,6 +54,24 @@ fun Character.withKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catal
         }
     }
     return result
+}
+
+fun Character.withKnowledgeMilestoneReward(
+    knowledgeId: String,
+    reward: KnowledgeMilestoneReward,
+): Character {
+    require(reward.level == 3 || reward.level == 5) { "Marcos de Conhecimento válidos existem apenas nos níveis 3 e 5." }
+    require(reward.rewardCatalogId.isNotBlank() && reward.grantedEntityId.isNotBlank()) { "A recompensa do marco precisa estar vinculada ao catálogo e ao registro concedido." }
+    val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId }
+        ?: error("Conhecimento do marco não encontrado.")
+    require(current.value >= reward.level) { "O Conhecimento ainda não atingiu o nível desta recompensa." }
+    require(current.milestoneRewards.none { it.level == reward.level }) { "Este marco já possui uma recompensa registrada." }
+    val updated = current.copy(milestoneRewards = current.milestoneRewards + reward)
+    return copy(
+        learnedKnowledges = learnedKnowledges.replaceKnowledge(updated),
+        arcaneKnowledges = arcaneKnowledges.replaceKnowledge(updated),
+        battleTechniques = battleTechniques.replaceKnowledge(updated),
+    )
 }
 
 private fun Character.allSpecialKnowledges() = learnedKnowledges + arcaneKnowledges + battleTechniques

@@ -3,6 +3,16 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.Power
 
+fun Character.withMigratedCreationRules(): Character {
+    if (creationRulesVersion >= 2) return this
+    val migratedAttributes = if (raceAttribute.isBlank()) attributes else attributes.map { attribute ->
+        if (attribute.acronym.equals(raceAttribute, true) && attribute.value > 0) {
+            attribute.copy(value = attribute.value - 1)
+        } else attribute
+    }
+    return copy(attributes = migratedAttributes, creationRulesVersion = 2)
+}
+
 fun Character.withRaceSelection(
     raceDefinition: RaceDefinition,
     subRaceDefinition: SubRaceDefinition?,
@@ -22,10 +32,6 @@ fun Character.withRaceSelection(
     val selectedSubRacePower = subRaceDefinition?.let { subRace ->
         subRacePower?.takeIf { it in subRace.powers } ?: subRace.powers.first()
     }
-    val updatedAttributes = attributes.map { value ->
-        val withoutOld = if (value.acronym == raceAttribute) value.value - 1 else value.value
-        value.copy(value = (withoutOld + if (value.acronym == selectedAttribute) 1 else 0).coerceAtLeast(0))
-    }
     val retainedPowers = powers.filterNot {
         it.origin.startsWith("Raça — ") || it.origin.startsWith("Sub-raça — ")
     }
@@ -40,7 +46,7 @@ fun Character.withRaceSelection(
         race = raceDefinition.name,
         subRace = subRaceDefinition?.name.orEmpty(),
         raceAttribute = selectedAttribute,
-        attributes = updatedAttributes,
+        creationRulesVersion = maxOf(creationRulesVersion, 2),
         life = life.copy(adjustment = life.adjustment - previous(oldRace?.hp ?: 0) + raceDefinition.hp),
         sanity = sanity.copy(adjustment = sanity.adjustment - previous(oldRace?.sanity ?: 0) + raceDefinition.sanity),
         arcane = arcane.copy(adjustment = arcane.adjustment - previous(oldRace?.arcane ?: 0) + raceDefinition.arcane),
