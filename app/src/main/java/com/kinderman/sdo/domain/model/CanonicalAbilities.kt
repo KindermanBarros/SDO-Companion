@@ -72,6 +72,13 @@ enum class AshPurity(val label: String, val dosesPerLoad: Int) {
     RAW("Bruta", 1), REFINED("Refinada", 2), PURE("Pura", 3),
 }
 
+val AshPurity.heritageCostPerDose: Int
+    get() = when (this) {
+        AshPurity.RAW -> 1
+        AshPurity.REFINED -> 2
+        AshPurity.PURE -> 4
+    }
+
 enum class AbilityModifierTarget(val label: String) {
     ATTRIBUTE("Atributo"), KNOWLEDGE("Conhecimento"), RESOURCE_MAXIMUM("Máximo de recurso"),
     PROTECTION("Proteção"),
@@ -111,6 +118,37 @@ fun Character.withAddedAbility(ability: MysticAbility, reuseExistingAsh: Boolean
     )
     return copy(
         mysticAbilities = mysticAbilities + ability.canonicalized().copy(linkedInventoryItemId = item.id),
+        inventory = inventory + item,
+    )
+}
+
+fun Character.withAddedAsh(ability: MysticAbility, doses: Int, initialCreation: Boolean): Character {
+    require(ability.isAsh) { "A habilidade selecionada não é uma Cinza" }
+    val safeDoses = doses.coerceAtLeast(1)
+    val cost = safeDoses * ability.ashPurity.heritageCostPerDose
+    val existing = mysticAbilities.firstOrNull { it.uniqueKey == ability.uniqueKey }
+    if (existing != null) return copy(inventory = inventory.map { item ->
+        if (item.id == existing.linkedInventoryItemId || item.linkedAshId == existing.id) item.copy(
+            quantity = item.quantity + safeDoses,
+            acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else item.acquisitionSource,
+            heritageCost = if (initialCreation) (item.heritageCost ?: 0) + cost else item.heritageCost,
+        ) else item
+    })
+
+    val canonical = ability.canonicalized()
+    val item = InventoryItem(
+        name = canonical.name,
+        category = "Cinza",
+        linkedAshId = canonical.id,
+        ashPurity = canonical.ashPurity,
+        quantity = safeDoses,
+        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.NARRATIVE,
+        heritageCost = cost.takeIf { initialCreation },
+        catalogEntryId = canonical.catalogEntryId,
+        canonical = canonical.catalogEntryId.isNotBlank(),
+    )
+    return copy(
+        mysticAbilities = mysticAbilities + canonical.copy(linkedInventoryItemId = item.id),
         inventory = inventory + item,
     )
 }
