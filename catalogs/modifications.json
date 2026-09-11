@@ -1,0 +1,19 @@
+{
+  "$schema": "./item-components.schema.json",
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "kind": "MODIFICATION",
+  "entries": [
+    {"id":"cruel","name":"Cruel","compatibleItemTypes":["Arma"],"creationCost":0,"price":10,"effect":{"type":"RULE","value":0,"target":"death_door","condition":"WIELDED","description":"Alvo a 0 PV entra nas Portas da Morte."}},
+    {"id":"equilibrada","name":"Equilibrada","compatibleItemTypes":["Arma"],"creationCost":2,"price":45,"effect":{"type":"RULE","value":1,"target":"attack_damage","condition":"WIELDED","description":"+1 Ataque e +1 dano."}},
+    {"id":"afiada","name":"Afiada","compatibleItemTypes":["Arma"],"creationCost":2,"price":50,"effect":{"type":"RULE","value":2,"target":"attack","condition":"WIELDED","description":"+2 Ataque."}},
+    {"id":"brutal","name":"Brutal","compatibleItemTypes":["Arma"],"creationCost":2,"price":55,"effect":{"type":"RULE","value":2,"target":"damage","condition":"WIELDED","description":"+2 dano."}},
+    {"id":"raptora","name":"Raptora","compatibleItemTypes":["Arma"],"creationCost":4,"price":280,"effect":{"type":"RULE","value":1,"target":"bleeding","condition":"WIELDED","description":"Aplica Sangramento 1 contra PL 0 ou armadura não metálica."}},
+    {"id":"acumuladora","name":"Acumuladora","compatibleItemTypes":["Arma"],"creationCost":10,"price":3200,"effect":{"type":"MAGIC_DAMAGE","value":0,"target":"charges","condition":"WIELDED","description":"Acumula até 5 cargas; cada uma causa +1d4 arcano."}},
+    {"id":"chamativa","name":"Chamativa","compatibleItemTypes":["Armadura","Acessório"],"creationCost":1,"price":20,"effect":{"type":"RULE","value":1,"target":"presence","condition":"EQUIPPED","description":"+1 presença quando percebida."}},
+    {"id":"robusta","name":"Robusta","compatibleItemTypes":["Armadura"],"creationCost":4,"price":65,"effect":{"type":"RULE","value":3,"target":"general_protection","condition":"EQUIPPED","description":"+3 PG; Carga +1; LA -1."}},
+    {"id":"ajustada","name":"Ajustada","compatibleItemTypes":["Armadura"],"creationCost":2,"price":45,"effect":{"type":"RULE","value":1,"target":"agility_limit","condition":"EQUIPPED","description":"Carga -1, mínimo 1; LA +1."}},
+    {"id":"nobre","name":"Nobre","compatibleItemTypes":["Armadura","Acessório"],"creationCost":1,"price":60,"effect":{"type":"RULE","value":2,"target":"posture","condition":"EQUIPPED","description":"+2 Postura contra não nobres."}},
+    {"id":"sob_medida","name":"Sob Medida","compatibleItemTypes":["Armadura"],"creationCost":4,"price":130,"effect":{"type":"RULE","value":2,"target":"agility_limit","condition":"EQUIPPED","description":"Exige Ajustada; LA +2 adicional."}}
+  ]
+}

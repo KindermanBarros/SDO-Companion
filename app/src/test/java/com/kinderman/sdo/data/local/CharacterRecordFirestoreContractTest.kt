@@ -3,12 +3,28 @@ package com.kinderman.sdo.data.local
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.PropertyName
 import com.kinderman.sdo.domain.model.defaultAttributes
+import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemEffect
+import com.kinderman.sdo.domain.model.ItemEffectType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterRecordFirestoreContractTest {
+    @Test fun normalizedItemFieldsSurviveRoomConversion() {
+        val item = InventoryItem(
+            id = "weapon-1",
+            baseId = "faca",
+            materialId = "madeira",
+            modificationIds = listOf("afiada"),
+            gemIds = listOf("gema_menor_aleatoria"),
+            mechanicalEffects = listOf(ItemEffect("gema_menor_aleatoria", ItemEffectType.KNOWLEDGE, 1, "*")),
+        )
+        val converters = CharacterConverters()
+        assertEquals(item, converters.stringToInventory(converters.inventoryToString(listOf(item))).single())
+    }
+
     @Test
     fun lastSyncedRevisionStaysOnlyInTheLocalDatabase() {
         val getterAnnotation = CharacterRecord::class.java

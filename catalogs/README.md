@@ -9,6 +9,8 @@ Os JSONs são a fonte estruturada dos 500 registros. A mesma edição é propost
 | ashes.json | 150 cinzas: 50 nomes × 3 purezas |
 | runes.json | 50 runas |
 | knowledge.json | 50 adquiridos + 50 arcanos + 50 técnicas, no contrato especializado v2 |
+| gems.json | Gemas menores, maiores e de aprimoramento com efeitos tipados por empunhadura |
+| modifications.json | Modificações compatíveis por tipo de equipamento e efeitos normalizados |
 
 ## Contrato
 

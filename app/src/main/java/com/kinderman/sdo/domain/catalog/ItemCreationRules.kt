@@ -6,6 +6,8 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemBonus
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.ItemEffect
+import com.kinderman.sdo.domain.model.ItemEffectType
 import kotlin.math.roundToInt
 
 object ItemCreationRules {
@@ -203,7 +205,20 @@ object ItemCreationRules {
             agilityLimit = baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) },
             quality = quality,
             bonuses = bonuses.filter { it.target.isNotBlank() && it.value != 0 },
+            baseId = base.id,
+            materialId = material.id,
+            modificationIds = modifications.map { it.id },
+            gemIds = installedComponents.map { it.id },
+            mechanicalEffects = installedComponents.mapNotNull(::gemEffect),
         )
+    }
+
+    private fun gemEffect(gem: ItemPart): ItemEffect? = when (gem.id) {
+        "gema_menor_aleatoria" -> ItemEffect(gem.id, ItemEffectType.KNOWLEDGE, value = 1, target = "*", description = "+1 em um Conhecimento determinado pela gema.")
+        "gema_aprimoramento_menor" -> ItemEffect(gem.id, ItemEffectType.MAGIC_DAMAGE, value = 1, description = "+1 de dano mágico sutil.")
+        "gema_aleatoria" -> ItemEffect(gem.id, ItemEffectType.ATTRIBUTE, value = 1, target = "*", description = "+1 em um Atributo determinado pela gema.")
+        "gema_aprimoramento_maior" -> ItemEffect(gem.id, ItemEffectType.GEM_POWER, description = "Libera um Poder de Combate específico da gema.")
+        else -> null
     }
 
     fun complexity(cost: Int?): String = when (cost) {

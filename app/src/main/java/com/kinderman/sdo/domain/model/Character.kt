@@ -137,6 +137,11 @@ data class InventoryItem(
     val catalogVersion: Int = 0,
     val acquiredAt: Long = System.currentTimeMillis(),
     val canonical: Boolean = false,
+    val baseId: String = "",
+    val materialId: String = "",
+    val modificationIds: List<String> = emptyList(),
+    val gemIds: List<String> = emptyList(),
+    val mechanicalEffects: List<ItemEffect> = emptyList(),
 )
 
 enum class ItemAcquisitionSource { HERITAGE, PURCHASE, REWARD, NARRATIVE }
@@ -463,7 +468,16 @@ data class Character(
 
     private fun equippedModifiers(type: ItemBonusType, target: String, legacyTarget: String = target): List<ValueModifier> =
         equippedItems().flatMap { item ->
-            item.bonuses
+            val normalized = item.mechanicalEffects.filter { effect ->
+                when (type) {
+                    ItemBonusType.ATTRIBUTE -> effect.type == ItemEffectType.ATTRIBUTE &&
+                        (effect.target.equals(target, true) || effect.target == "*" && randomTarget(item.id, attributes.map { it.acronym }) == target)
+                    ItemBonusType.ACQUIRED_KNOWLEDGE -> effect.type == ItemEffectType.KNOWLEDGE &&
+                        (effect.target.equals(target, true) || effect.target == "*" && randomTarget(item.id, (learnedKnowledges + arcaneKnowledges + battleTechniques).map { it.name }) == target)
+                    ItemBonusType.BASIC_KNOWLEDGE -> effect.type == ItemEffectType.KNOWLEDGE && effect.target.equals(target, true)
+                }
+            }.map { effect -> ValueModifier(ModifierSourceType.ITEM, item.id, item.name.ifBlank { "Item sem nome" }, effect.value) }
+            normalized + item.bonuses
                 .filter { bonus ->
                     bonus.type == type &&
                         (bonus.target.equals(target, true) || bonus.target.equals(legacyTarget, true))
@@ -476,6 +490,11 @@ data class Character(
                         value = bonus.value,
                     )
                 }
+        }
+
+    private fun randomTarget(seed: String, options: List<String>): String =
+        options.filter(String::isNotBlank).let { values ->
+            if (values.isEmpty()) "" else values[Math.floorMod(seed.hashCode(), values.size)]
         }
 }
 

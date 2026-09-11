@@ -35,7 +35,6 @@ import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
-import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.effectiveLoad
 import com.kinderman.sdo.domain.model.withRemovedAbility
 import com.kinderman.sdo.domain.model.withAddedAbility
