@@ -198,6 +198,7 @@ internal fun PhaseOneStrictInventorySection(
         }
         "initial_weapon", "initial_armor", "initial_accessory" -> StrictItemBuilderDialog(
             remainingHeritage = remainingHeritage,
+            regionOptions = character.bodyRegions.map { it.name },
             draft = (character.itemCreationDraft ?: ItemCreationDraft()).copy(category = when (dialog) {
                 "initial_weapon" -> "Arma"
                 "initial_accessory" -> "Acessório"
@@ -211,6 +212,7 @@ internal fun PhaseOneStrictInventorySection(
         }
         "builder_weapon", "builder_armor", "builder_accessory", "builder_item" -> StrictItemBuilderDialog(
             remainingHeritage = null,
+            regionOptions = character.bodyRegions.map { it.name },
             draft = (character.itemCreationDraft ?: ItemCreationDraft()).copy(category = when (dialog) {
                 "builder_weapon" -> "Arma"
                 "builder_armor" -> "Armadura"
@@ -333,11 +335,13 @@ private fun validItemStates(character: Character, item: InventoryItem): List<Inv
 @Composable
 private fun StrictItemBuilderDialog(
     remainingHeritage: Int?,
+    regionOptions: List<String>,
     draft: ItemCreationDraft,
     onDraftChange: (ItemCreationDraft) -> Unit,
     onDismiss: () -> Unit,
     onAdd: (InventoryItem) -> Unit,
 ) {
+    var componentQuery by rememberSaveable { mutableStateOf("") }
     val step = draft.step
     val category = draft.category
     val weapon = category == "Arma"
@@ -397,7 +401,7 @@ private fun StrictItemBuilderDialog(
         name = commonName.trim(), category = commonCategory, effect = commonEffect,
         load = commonLoad, quantity = commonQuantity, region = draft.commonRegion,
         durabilityCurrent = draft.commonDurability, durabilityMax = draft.commonDurability,
-        pg = draft.commonPg, pl = draft.commonPl, agilityLimit = draft.commonAgilityLimit,
+        pg = draft.commonPg, pl = draft.commonPl, agilityLimit = draft.commonAgilityLimit, quality = quality,
         mechanicalEffects = commonEffects,
     )
 
@@ -442,13 +446,17 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 2 && category == "Item") {
                     ChoiceField("Categoria", commonCategory, listOf("Arma", "Armadura", "Acessório", "Escudo", "Consumível", "Munição", "Ferramenta", "Recipiente de Carga", "Item"), true) { onDraftChange(draft.copy(commonCategory = it)) }
+                    ChoiceField("Qualidade", quality, ItemQuality.entries, true, display = { it.label }) { onDraftChange(draft.copy(quality = it)) }
                     HudTextField("Nome do item", commonName) { onDraftChange(draft.copy(commonName = it)) }
                     TwoFields(
                         { IntegerField("Quantidade", commonQuantity, true, it) { value -> onDraftChange(draft.copy(commonQuantity = value.coerceAtLeast(1))) } },
                         { IntegerField("Carga total", commonLoad, true, it) { value -> onDraftChange(draft.copy(commonLoad = value.coerceAtLeast(0))) } },
                     )
                     HudTextField("Descrição ou efeito", commonEffect, multiline = true) { onDraftChange(draft.copy(commonEffect = it)) }
-                    HudTextField("Região corporal", draft.commonRegion) { onDraftChange(draft.copy(commonRegion = it)) }
+                    val regions = listOf("Nenhuma") + regionOptions.distinct()
+                    ChoiceField("Região corporal", draft.commonRegion.ifBlank { "Nenhuma" }, regions, true) {
+                        onDraftChange(draft.copy(commonRegion = it.takeUnless { value -> value == "Nenhuma" }.orEmpty()))
+                    }
                     TwoFields(
                         { IntegerField("Durabilidade", draft.commonDurability, true, it) { value -> onDraftChange(draft.copy(commonDurability = value.coerceAtLeast(0))) } },
                         { IntegerField("Alcance", draft.commonRange, true, it) { value -> onDraftChange(draft.copy(commonRange = value.coerceAtLeast(0))) } },
@@ -481,7 +489,12 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 5 && category != "Item") {
                     Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                    availableModifications.forEach { modification: ItemPart ->
+                    HudTextField("Filtrar por nome, grupo ou efeito", componentQuery) { componentQuery = it }
+                    availableModifications.filter { modification ->
+                        componentQuery.isBlank() || listOf(modification.name, modification.group, modification.effect).any { it.contains(componentQuery, true) }
+                    }.groupBy { it.group }.forEach { (group, groupModifications) ->
+                        Text(group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        groupModifications.forEach { modification: ItemPart ->
                         val checked = modification in modifications
                         Row(Modifier.fillMaxWidth().clickable { onDraftChange(draft.copy(modificationIds = strictToggleModification(modifications, modification).map { it.id })) }) {
                             Checkbox(checked, onCheckedChange = { onDraftChange(draft.copy(modificationIds = strictToggleModification(modifications, modification).map { it.id })) })
@@ -490,6 +503,7 @@ private fun StrictItemBuilderDialog(
                                 if (modification.effect.isNotBlank()) Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                             }
                         }
+                    }
                     }
                 }
                 if (step == 6 && category != "Item") {
