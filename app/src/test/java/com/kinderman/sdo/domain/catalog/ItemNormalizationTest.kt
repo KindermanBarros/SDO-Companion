@@ -12,12 +12,50 @@ import com.kinderman.sdo.domain.model.EquipmentEffectEngine
 import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.withItemInventoryState
 import com.kinderman.sdo.domain.model.activeItemEffects
+import com.kinderman.sdo.domain.model.damageInventoryItem
+import com.kinderman.sdo.domain.model.ItemCondition
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ItemNormalizationTest {
+    @Test fun durabilityLossTransitionsFromNormalToScrapThenBroken() {
+        val effect = ItemEffect("power", ItemEffectType.GEM_POWER, condition = ItemEffectCondition.WIELDED)
+        val item = InventoryItem(
+            id = "weapon", name = "Espada", category = "Arma", state = "W",
+            durabilityCurrent = 1, durabilityMax = 3, mechanicalEffects = listOf(effect),
+        )
+
+        val scrap = Character(inventory = listOf(item)).damageInventoryItem("weapon")
+        assertEquals(ItemCondition.SCRAP, scrap.inventory.single().itemCondition)
+        assertTrue(scrap.activeItemEffects().isEmpty())
+
+        val broken = scrap.damageInventoryItem("weapon")
+        assertEquals(ItemCondition.BROKEN, broken.inventory.single().itemCondition)
+        assertEquals(broken, broken.withItemInventoryState("weapon", InventoryState.EQUIPPED))
+    }
+
+    @Test fun inventoryStatesEnforceQuickAccessAndBackpackCapacity() {
+        val first = InventoryItem(id = "first", load = 1, state = "R", durabilityCurrent = 1, durabilityMax = 1)
+        val second = InventoryItem(id = "second", load = 1, state = "R", durabilityCurrent = 1, durabilityMax = 1)
+        val third = InventoryItem(id = "third", load = 1, state = "G", durabilityCurrent = 1, durabilityMax = 1)
+        val heavy = InventoryItem(id = "heavy", load = 2, state = "G", durabilityCurrent = 1, durabilityMax = 1)
+        val withoutBackpack = Character(inventory = listOf(first, second, third, heavy))
+
+        assertEquals(withoutBackpack, withoutBackpack.withItemInventoryState("third", InventoryState.QUICK_ACCESS))
+        assertEquals(withoutBackpack, withoutBackpack.withItemInventoryState("heavy", InventoryState.QUICK_ACCESS))
+        assertEquals(withoutBackpack, withoutBackpack.withItemInventoryState("third", InventoryState.BACKPACK))
+
+        val container = InventoryItem(
+            id = "bag", state = "E", category = "Recipiente de Carga", backpackCapacity = 5,
+            durabilityCurrent = 1, durabilityMax = 1,
+        )
+        val withBackpack = withoutBackpack.copy(inventory = withoutBackpack.inventory + container)
+        assertEquals(InventoryState.BACKPACK, withBackpack.withItemInventoryState("third", InventoryState.BACKPACK)
+            .inventory.first { it.id == "third" }.inventoryState)
+    }
+
     @Test fun randomKnowledgeTargetIsResolvedOnceAndSurvivesStateChanges() {
         val effect = ItemEffect("random", ItemEffectType.KNOWLEDGE, 1, "*", ItemEffectCondition.WIELDED)
         val item = InventoryItem(id = "item-1", name = "Gema", state = "W", mechanicalEffects = listOf(effect))
