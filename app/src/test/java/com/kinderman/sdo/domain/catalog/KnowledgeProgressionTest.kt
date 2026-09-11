@@ -20,7 +20,10 @@ class KnowledgeProgressionTest {
 
     @Test fun runicGrantsEachCanonicalPackageOnceAtItsThreshold() {
         val runic = SpecialKnowledge(id = "runic", name = "Rúnico", attribute = "POD", value = 0)
-        val character = Character(arcaneKnowledges = listOf(runic))
+        val character = Character(
+            attributes = Character().attributes.map { if (it.acronym == "POD") it.copy(value = 5) else it },
+            arcaneKnowledges = listOf(runic),
+        )
         val catalog = BuiltInCatalog.entries.filter { it.kind == CatalogKind.RUNE }
 
         val levelOne = character.withKnowledgeLevel("runic", 1, catalog)

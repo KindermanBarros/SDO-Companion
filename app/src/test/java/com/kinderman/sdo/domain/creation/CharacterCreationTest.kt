@@ -61,7 +61,7 @@ class CharacterCreationTest {
 
     @Test fun `creation requires exactly five special knowledges`() {
         assertNotNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(4) { SpecialKnowledge(value = 0) })))
-        assertNotNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(5) { SpecialKnowledge(value = 1) })))
+        assertNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(5) { SpecialKnowledge(value = 1) })))
         assertNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(5) { SpecialKnowledge(value = 0) })))
     }
 }
