@@ -8,6 +8,7 @@ import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
+import com.kinderman.sdo.domain.model.CharacterCreationStatus
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -38,6 +39,10 @@ data class CharacterRecord(
     val occupation: String = "",
     val age: String = "",
     val level: Int = 1,
+    val creationStatus: String = CharacterCreationStatus.COMPLETED.name,
+    val creationStep: Int = 1,
+    val creationCompletedAt: Long? = null,
+    val creationRulesVersion: Int = 1,
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -106,6 +111,10 @@ fun CharacterRecord.toDomain() = Character(
     sex = sex,
     size = size,
     level = level,
+    creationStatus = runCatching { CharacterCreationStatus.valueOf(creationStatus) }.getOrDefault(CharacterCreationStatus.COMPLETED),
+    creationStep = creationStep.coerceIn(1, 13),
+    creationCompletedAt = creationCompletedAt,
+    creationRulesVersion = creationRulesVersion,
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -175,6 +184,10 @@ fun Character.toRecord() = CharacterRecord(
     occupation = occupation,
     age = age,
     level = level,
+    creationStatus = creationStatus.name,
+    creationStep = creationStep,
+    creationCompletedAt = creationCompletedAt,
+    creationRulesVersion = creationRulesVersion,
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,

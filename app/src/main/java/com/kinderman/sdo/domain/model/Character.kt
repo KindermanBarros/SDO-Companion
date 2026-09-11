@@ -6,6 +6,8 @@ enum class UserRole { USER, ADMIN, PLAYER, MASTER }
 
 enum class CharacterLock { NONE, PLAYER, HISTORIAN }
 
+enum class CharacterCreationStatus { DRAFT, COMPLETED }
+
 enum class PowerSourceType {
     PATH,
     RACE,
@@ -128,7 +130,16 @@ data class InventoryItem(
     val quantity: Int = 0,
     val linkedAshId: String = "",
     val ashPurity: AshPurity = AshPurity.RAW,
+    val acquisitionSource: ItemAcquisitionSource = ItemAcquisitionSource.NARRATIVE,
+    val heritageCost: Int? = null,
+    val purchasePrice: Int? = null,
+    val catalogEntryId: String = "",
+    val catalogVersion: Int = 0,
+    val acquiredAt: Long = System.currentTimeMillis(),
+    val canonical: Boolean = false,
 )
+
+enum class ItemAcquisitionSource { HERITAGE, PURCHASE, REWARD, NARRATIVE }
 
 data class BodyRegion(
     val roll: Int = 0,
@@ -208,6 +219,10 @@ enum class ProgressionRewardType { RESOURCE, ATTRIBUTE, KNOWLEDGE, NEW_KNOWLEDGE
 
 data class ProgressionReward(
     val level: Int = 1,
+    val creationStatus: CharacterCreationStatus = CharacterCreationStatus.DRAFT,
+    val creationStep: Int = 1,
+    val creationCompletedAt: Long? = null,
+    val creationRulesVersion: Int = 1,
     val type: ProgressionRewardType = ProgressionRewardType.RESOURCE,
     val targetId: String = "",
     val catalogEntryId: String = "",
@@ -236,6 +251,7 @@ data class CalculatedValue(
     val adjustment: Int = 0,
     val modifiers: List<ValueModifier> = emptyList(),
 ) {
+    val isInCreation: Boolean get() = creationStatus == CharacterCreationStatus.DRAFT
     val total: Int get() = base + adjustment + modifiers.sumOf { it.value }
 }
 

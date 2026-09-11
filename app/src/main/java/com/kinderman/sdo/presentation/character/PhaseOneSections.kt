@@ -66,7 +66,12 @@ internal fun PhaseOneKnowledgeSection(
     catalog: List<CatalogEntry>,
     enabled: Boolean,
     onChange: (Character) -> Unit,
+    selectionLimit: Int? = null,
+    lockLevels: Boolean = false,
+    allowEntryChanges: Boolean = true,
 ) {
+    val totalEntries = character.learnedKnowledges.size + character.arcaneKnowledges.size + character.battleTechniques.size
+    val canAddEntry = allowEntryChanges && (selectionLimit == null || totalEntries < selectionLimit)
     TechPanel {
         SectionHeader("05", "Conhecimentos especiais")
         PhaseOneKnowledgeList(
@@ -77,7 +82,10 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
-            onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            canAddEntry = canAddEntry,
+            allowEntryChanges = allowEntryChanges,
+            initialLevel = if (lockLevels) 1 else null,
         ) { onChange(character.copy(learnedKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Conhecimentos arcanos",
@@ -87,7 +95,10 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
-            onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            canAddEntry = canAddEntry,
+            allowEntryChanges = allowEntryChanges,
+            initialLevel = if (lockLevels) 1 else null,
         ) { onChange(character.copy(arcaneKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Técnicas de batalha",
@@ -97,7 +108,10 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
-            onLevelChange = { knowledge, level -> onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            canAddEntry = canAddEntry,
+            allowEntryChanges = allowEntryChanges,
+            initialLevel = if (lockLevels) 1 else null,
         ) { onChange(character.copy(battleTechniques = it)) }
     }
 }
@@ -112,6 +126,9 @@ private fun PhaseOneKnowledgeList(
     totalValue: (String) -> Int,
     attributeOptions: List<Pair<String, String>>,
     onLevelChange: (SpecialKnowledge, Int) -> Unit,
+    canAddEntry: Boolean,
+    allowEntryChanges: Boolean,
+    initialLevel: Int?,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
     var selecting by remember { mutableStateOf(false) }
@@ -130,7 +147,7 @@ private fun PhaseOneKnowledgeList(
                 TextButton(onClick = { expandedKnowledgeId = knowledge.id.takeUnless { it == expandedKnowledgeId } }) {
                     Text(if (expandedKnowledgeId == knowledge.id) "FECHAR" else "EDITAR")
                 }
-                RemoveButton(enabled, "Remover conhecimento") {
+                if (allowEntryChanges) RemoveButton(enabled, "Remover conhecimento") {
                     onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index })
                 }
             }
@@ -143,7 +160,7 @@ private fun PhaseOneKnowledgeList(
                 onValues(values.replace(index, knowledge.copy(attribute = value)))
             }
             TwoFields(
-                { IntegerField("Valor (0–5)", knowledge.value, enabled, it) { value -> onLevelChange(knowledge, value) } },
+                { IntegerField("Valor (0–5)", knowledge.value, enabled && initialLevel == null, it) { value -> onLevelChange(knowledge, value) } },
                 { IntegerField("Modificador", knowledge.adjustment, enabled, it) { value ->
                     onValues(values.replace(index, knowledge.copy(adjustment = value)))
                 } },
@@ -156,9 +173,9 @@ private fun PhaseOneKnowledgeList(
             }
         }
     }
-    AddButton("Selecionar do catálogo", enabled && options.isNotEmpty()) { selecting = true }
-    AddButton("Adicionar manualmente", enabled) {
-        val knowledge = SpecialKnowledge(attribute = attributeOptions.firstOrNull()?.first.orEmpty())
+    AddButton("Selecionar do catálogo", enabled && canAddEntry && options.isNotEmpty()) { selecting = true }
+    AddButton("Adicionar manualmente", enabled && canAddEntry) {
+        val knowledge = SpecialKnowledge(attribute = attributeOptions.firstOrNull()?.first.orEmpty(), value = initialLevel ?: 0)
         expandedKnowledgeId = knowledge.id
         onValues(values + knowledge)
     }
@@ -169,7 +186,7 @@ private fun PhaseOneKnowledgeList(
             onDismiss = { selecting = false },
             alreadyAddedCatalogIds = values.mapNotNull { it.catalogEntryId.takeIf(String::isNotBlank) }.toSet(),
             onSelect = { entry ->
-                if (values.canAddCatalogEntry(entry)) onValues(values + entry.toSpecialKnowledge())
+                if (values.canAddCatalogEntry(entry)) onValues(values + entry.toSpecialKnowledge().copy(value = initialLevel ?: entry.initialValue ?: 0))
                 selecting = false
             },
         )
