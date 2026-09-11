@@ -37,13 +37,8 @@ def entry(identifier, name, tier, cost, price, payload):
 def build(catalog_dir):
     knowledge = json.loads((catalog_dir / 'knowledge.json').read_text())['knowledges']
     entries = []
-    for acronym, names in BASIC.items():
-        for name in names:
-            entries.append(entry(f'gema_conhecimento_basico_{slug(acronym + "_" + name)}', f'Gema de {name}', 'MINOR', 2, 45,
-                effect('KNOWLEDGE', 1, f'{acronym}:{name}', f'+1 em {name} enquanto a arma estiver empunhada.')))
-    for item in knowledge:
-        entries.append(entry(f'gema_conhecimento_{slug(item["id"])}', f'Gema de {item["name"]}', 'MINOR', 2, 45,
-            effect('KNOWLEDGE', 1, item['name'], f'+1 em {item["name"]} enquanto a arma estiver empunhada.')))
+    entries.append(entry('gema_menor_conhecimento_aleatorio', 'Gema Menor de Conhecimento', 'MINOR', 2, 45,
+        effect('KNOWLEDGE', 1, '*', '+1 em um Conhecimento aleatório, definido permanentemente ao instalar a gema.')))
     for acronym, name in ATTRIBUTES.items():
         entries.append(entry(f'gema_atributo_{acronym.lower()}', f'Gema de {name}', 'MAJOR', 4, 150,
             effect('ATTRIBUTE', 1, acronym, f'+1 em {name} enquanto a arma estiver empunhada.')))

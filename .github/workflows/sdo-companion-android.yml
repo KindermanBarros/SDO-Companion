@@ -48,6 +48,21 @@ jobs:
       - name: Run debug checks
         run: gradle lintDebug testDebugUnitTest --build-cache --stacktrace
 
+      - name: Enable KVM for Android emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: gradle connectedDebugAndroidTest --build-cache --stacktrace
+
   release:
     name: Build and publish Android release
     if: github.event_name != 'pull_request'

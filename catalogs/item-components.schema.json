@@ -34,7 +34,7 @@
             "additionalProperties": false,
             "required": ["type", "value", "target", "condition", "description"],
             "properties": {
-              "type": { "enum": ["ATTRIBUTE", "KNOWLEDGE", "MAGIC_DAMAGE", "DURABILITY", "GEM_POWER", "RULE"] },
+              "type": { "enum": ["ATTRIBUTE", "KNOWLEDGE", "ATTACK", "PHYSICAL_DAMAGE", "MAGIC_DAMAGE", "PG", "PL", "AGILITY_LIMIT", "DURABILITY", "GEM_POWER", "RULE"] },
               "value": { "type": "integer" },
               "target": { "type": "string" },
               "condition": { "enum": ["EQUIPPED", "WIELDED"] },

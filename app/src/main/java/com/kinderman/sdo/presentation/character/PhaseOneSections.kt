@@ -18,6 +18,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +30,10 @@ import com.kinderman.sdo.domain.catalog.toStructuredPower
 import com.kinderman.sdo.domain.catalog.withStructuredPathPreset
 import com.kinderman.sdo.domain.catalog.withKnowledgeLevel
 import com.kinderman.sdo.domain.catalog.withKnowledgeMilestoneReward
+import com.kinderman.sdo.domain.catalog.requestKnowledgeLevel
+import com.kinderman.sdo.domain.catalog.resolveKnowledgeMilestone
+import com.kinderman.sdo.domain.catalog.cancelKnowledgeLevelRequest
+import com.kinderman.sdo.domain.catalog.eligibleMilestoneRewards
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -75,7 +80,8 @@ internal fun PhaseOneKnowledgeSection(
     lockLevels: Boolean = false,
     allowEntryChanges: Boolean = true,
 ) {
-    var pendingMilestone by remember { mutableStateOf<Pair<SpecialKnowledge, Int>?>(null) }
+    val pendingKnowledge = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
+        .firstOrNull { it.pendingMilestoneLevels.isNotEmpty() }
     val totalEntries = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
         .count { it.specializationParentId.isBlank() }
     val canAddEntry = allowEntryChanges && (selectionLimit == null || totalEntries < selectionLimit)
@@ -90,8 +96,7 @@ internal fun PhaseOneKnowledgeSection(
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
-                if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
-                else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
+                onChange(character.requestKnowledgeLevel(knowledge.id, level, catalog))
             } },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
@@ -106,8 +111,7 @@ internal fun PhaseOneKnowledgeSection(
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
-                if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
-                else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
+                onChange(character.requestKnowledgeLevel(knowledge.id, level, catalog))
             } },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
@@ -122,70 +126,25 @@ internal fun PhaseOneKnowledgeSection(
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
-                if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
-                else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
+                onChange(character.requestKnowledgeLevel(knowledge.id, level, catalog))
             } },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
         ) { onChange(character.copy(battleTechniques = it)) }
     }
-    pendingMilestone?.let { (knowledge, level) ->
-        val rewards = milestoneRewards(knowledge, catalog)
+    pendingKnowledge?.let { knowledge ->
+        val level = knowledge.pendingMilestoneLevels.first()
+        val rewards = eligibleMilestoneRewards(knowledge, catalog)
         CatalogPickerDialog(
             title = "RECOMPENSA DE DOMÍNIO // NÍVEL $level",
             entries = rewards,
-            onDismiss = { pendingMilestone = null },
+            onDismiss = { onChange(character.cancelKnowledgeLevelRequest(knowledge.id)) },
             onSelect = { reward ->
-                var updated = character.withKnowledgeLevel(knowledge.id, level, catalog)
-                val milestoneReward = when (reward.kind) {
-                    CatalogKind.POWER -> {
-                        val granted = reward.toStructuredPower(PowerSourceType.KNOWLEDGE, knowledge.id)
-                        updated = updated.withAddedPower(granted)
-                        KnowledgeMilestoneReward(level, KnowledgeMilestoneRewardType.POWER, reward.id, granted.id)
-                    }
-                    CatalogKind.MAGIC, CatalogKind.RUNE -> {
-                        val granted = reward.toMysticAbility()
-                        updated = updated.withAddedAbility(granted)
-                        KnowledgeMilestoneReward(level, KnowledgeMilestoneRewardType.MYSTIC_ABILITY, reward.id, granted.id)
-                    }
-                    CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE -> {
-                        val granted = reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id)
-                        updated = when (reward.kind) {
-                            CatalogKind.ACQUIRED_KNOWLEDGE -> updated.copy(learnedKnowledges = updated.learnedKnowledges + granted)
-                            CatalogKind.ARCANE_KNOWLEDGE -> updated.copy(arcaneKnowledges = updated.arcaneKnowledges + granted)
-                            else -> updated.copy(battleTechniques = updated.battleTechniques + granted)
-                        }
-                        KnowledgeMilestoneReward(level, KnowledgeMilestoneRewardType.SPECIALIZATION, reward.id, granted.id)
-                    }
-                    else -> null
-                }
-                if (milestoneReward != null) updated = updated.withKnowledgeMilestoneReward(knowledge.id, milestoneReward)
-                onChange(updated)
-                pendingMilestone = null
+                onChange(character.resolveKnowledgeMilestone(knowledge.id, reward, catalog))
             },
         )
     }
-}
-
-private fun SpecialKnowledge.nextMilestone(requestedLevel: Int): Int? =
-    listOf(3, 5).firstOrNull { requestedLevel >= it && value < it && it !in milestoneLevels }
-
-private fun milestoneRewards(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): List<CatalogEntry> {
-    val linked = catalog.filter { entry ->
-        entry.sourceKnowledge.equals(knowledge.name, true) ||
-            entry.group.equals(knowledge.name, true) ||
-            entry.keywords.any { it.equals(knowledge.name, true) }
-    }
-    val sourceKind = catalog.firstOrNull { it.id == knowledge.catalogEntryId }?.kind
-    val allowedKinds = when (sourceKind) {
-        CatalogKind.ARCANE_KNOWLEDGE -> setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ARCANE_KNOWLEDGE)
-        CatalogKind.BATTLE_TECHNIQUE -> setOf(CatalogKind.POWER, CatalogKind.BATTLE_TECHNIQUE)
-        else -> setOf(CatalogKind.POWER, CatalogKind.ACQUIRED_KNOWLEDGE)
-    }
-    return (linked.filter { it.kind in allowedKinds } + catalog.filter {
-        it.kind in allowedKinds && it.kind in setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE) && it.id != knowledge.catalogEntryId
-    }).distinctBy { it.id }
 }
 
 @Composable
@@ -203,8 +162,8 @@ private fun PhaseOneKnowledgeList(
     initialLevel: Int?,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
-    var selecting by remember { mutableStateOf(false) }
-    var expandedKnowledgeId by remember { mutableStateOf<String?>(null) }
+    var selecting by rememberSaveable { mutableStateOf(false) }
+    var expandedKnowledgeId by rememberSaveable { mutableStateOf<String?>(null) }
     val options = remember(catalog, kind) { catalog.filter { it.kind == kind } }
     Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->

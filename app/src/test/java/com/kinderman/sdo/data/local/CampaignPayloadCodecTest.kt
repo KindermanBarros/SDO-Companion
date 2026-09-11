@@ -9,8 +9,6 @@ import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemBonus
-import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.Power
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -23,7 +21,7 @@ class CampaignPayloadCodecTest {
             id = "item-1", state = "E", name = "Armadura", load = 4, durability = "3/5",
             region = "Torso", effect = "Reduz dano", pg = 2, pl = 5, category = "Armadura",
             agilityLimit = 3, quality = "Raro",
-            bonuses = listOf(ItemBonus(ItemBonusType.ATTRIBUTE, "FOR", 2)), quantity = 1,
+            quantity = 1,
         )
         val entry = CampaignLibraryEntry(
             kind = CampaignContentKind.ITEM,

@@ -4,18 +4,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.CutCornerShape
 import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -31,25 +32,25 @@ private val creationSteps = listOf(
 internal fun CharacterCreationWizard(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit, modifier: Modifier = Modifier) {
     val step = character.creationStep.coerceIn(1, CharacterCreation.STEP_COUNT)
     val error = CharacterCreation.stepError(step, character)
-    LazyColumn(
-        modifier.fillMaxSize(),
-        contentPadding = PaddingValues(14.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item("creation-header") {
-            TechPanel {
-                Text("CRIAÇÃO DE PERSONAGEM", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
-                Text("ETAPA $step DE ${CharacterCreation.STEP_COUNT} // ${creationSteps[step - 1].uppercase()}", style = MaterialTheme.typography.labelLarge)
-                LinearProgressIndicator(progress = { step / CharacterCreation.STEP_COUNT.toFloat() }, modifier = Modifier.fillMaxWidth())
-                when (step) {
-                    2 -> Text("PONTOS DE ATRIBUTO // ${CharacterCreation.attributePointsSpent(character)} / 10")
-                    3 -> Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.initialSpecialKnowledges(character).size} / 5 // NÍVEL INICIAL 0")
-                    4 -> Text("PONTOS DISTRIBUÍDOS // ${CharacterCreation.knowledgePointsSpent(character)} / 15")
-                    7 -> Text("PONTOS DE HERANÇA // ${CharacterCreation.heritageSpent(character)} / 30")
-                }
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+    Column(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("ETAPA $step/${CharacterCreation.STEP_COUNT} // ${creationSteps[step - 1].uppercase()}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+            LinearProgressIndicator(progress = { step / CharacterCreation.STEP_COUNT.toFloat() }, modifier = Modifier.fillMaxWidth())
+            val balance = when (step) {
+                2 -> "ATRIBUTOS ${CharacterCreation.attributePointsSpent(character)}/10"
+                3 -> "ESPECIAIS ${CharacterCreation.initialSpecialKnowledges(character).size}/5 // NÍVEL 0"
+                4 -> "CONHECIMENTOS ${CharacterCreation.knowledgePointsSpent(character)}/15"
+                7 -> "HERANÇA ${CharacterCreation.heritageSpent(character)}/30 PH"
+                else -> null
             }
+            balance?.let { Text(it, style = MaterialTheme.typography.labelSmall) }
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("creation-error")) }
         }
+        LazyColumn(
+            Modifier.fillMaxWidth().weight(1f),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
         when (step) {
             1 -> item { IdentitySection(character, catalog, enabled, onChange) }
             2 -> item { AttributeSection(character, enabled, onChange, showBasicKnowledges = false) }
@@ -67,27 +68,28 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
             8 -> item { BodySection(character, enabled, onChange) }
             9 -> item { CreationReview(character) }
         }
-        item("creation-navigation") {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                OutlinedButton(
-                    enabled = step > 1,
-                    shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                    onClick = { onChange(character.copy(creationStep = step - 1)) },
-                ) { Text("VOLTAR") }
-                if (step < CharacterCreation.STEP_COUNT) {
-                    Button(
-                        enabled = error == null,
-                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                        onClick = { onChange(character.copy(creationStep = step + 1)) },
-                    ) { Text("CONTINUAR") }
-                } else {
-                    val allValid = CharacterCreation.validate(character).isEmpty()
-                    Button(
-                        enabled = allValid,
-                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                        onClick = { onChange(CharacterCreation.finish(character)) },
-                    ) { Text("FINALIZAR PERSONAGEM") }
-                }
+        }
+        BoxWithConstraints(Modifier.fillMaxWidth().navigationBarsPadding().padding(14.dp).testTag("creation-navigation")) {
+            val narrow = maxWidth < 420.dp
+            val layoutModifier = Modifier.fillMaxWidth()
+            val content: @Composable (Modifier, Modifier) -> Unit = { backModifier, forwardModifier ->
+                    CharacterActionButton("Voltar", step > 1, CharacterActionStyle.SECONDARY, backModifier.testTag("creation-back")) {
+                        onChange(character.copy(creationStep = step - 1))
+                    }
+                    if (step < CharacterCreation.STEP_COUNT) {
+                        CharacterActionButton("Continuar", error == null, CharacterActionStyle.PRIMARY, forwardModifier.testTag("creation-forward")) {
+                            onChange(character.copy(creationStep = step + 1))
+                        }
+                    } else {
+                        CharacterActionButton("Finalizar personagem", CharacterCreation.validate(character).isEmpty(), CharacterActionStyle.PRIMARY, forwardModifier.testTag("creation-forward")) {
+                            onChange(CharacterCreation.finish(character))
+                        }
+                    }
+            }
+            if (narrow) Column(layoutModifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                content(Modifier.fillMaxWidth(), Modifier.fillMaxWidth())
+            } else Row(layoutModifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                content(Modifier.weight(1f), Modifier.weight(1f))
             }
         }
     }

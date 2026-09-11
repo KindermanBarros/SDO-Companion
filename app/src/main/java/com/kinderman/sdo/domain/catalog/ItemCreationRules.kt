@@ -3,25 +3,36 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.BuiltItem
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.ItemEffect
+import com.kinderman.sdo.domain.model.ItemEffectCondition
+import com.kinderman.sdo.domain.model.ItemEffectType
 import kotlin.math.roundToInt
+import java.util.Locale
 
 object ItemCreationRules {
     const val HERITAGE_BUDGET = 30
 
-    val weaponMaterials = GeneratedItemParts.weaponMaterials
-    val armorMaterials = GeneratedItemParts.armorMaterials
-    val weaponBases = GeneratedItemParts.weaponBases
-    val armorBases = GeneratedItemParts.armorBases
-    val weaponModifications = GeneratedItemParts.weaponModifications
-    val armorModifications = GeneratedItemParts.armorModifications
+    val weaponMaterials = CanonicalItemCatalog.weaponMaterials
+    val armorMaterials = CanonicalItemCatalog.armorMaterials
+    val weaponBases = CanonicalItemCatalog.weaponBases
+    val armorBases = CanonicalItemCatalog.armorBases
+    val weaponModifications = CanonicalItemCatalog.modifications
+        .filter { "Arma" in it.compatibleItemTypes }.map { it.part.copy(group = "Modificação de arma") }
+    val armorModifications = CanonicalItemCatalog.modifications
+        .filter { definition -> definition.compatibleItemTypes.any { it in setOf("Armadura", "Acessório", "Escudo") } }
+        .map { it.part.copy(group = "Modificação de armadura") }
 
     fun compatibleModifications(base: ItemPart, weapon: Boolean): List<ItemPart> =
         (if (weapon) weaponModifications else armorModifications)
-            .filter { GeneratedItemParts.modificationSupports(it.id, base) }
+            .filter { modification ->
+                CanonicalItemCatalog.modifications.first { it.part.id == modification.id }.supports(base)
+            }
 
-    val gemComponents = GeneratedGemCatalog.entries.map { it.part }
+    val gemComponents = CanonicalItemCatalog.gems.map { it.part }
 
     fun build(
         base: ItemPart,
@@ -99,7 +110,9 @@ object ItemCreationRules {
             materialId = material.id,
             modificationIds = modifications.map { it.id },
             gemIds = installedComponents.map { it.id },
-            mechanicalEffects = installedComponents.mapNotNull { GeneratedGemCatalog.effect(it.id) },
+            mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id)) +
+                equipmentEffects(base.id, pg, pl, baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) }, quality, armor))
+                .distinctBy(ItemEffect::id),
         )
     }
 
@@ -134,7 +147,12 @@ object ItemCreationRules {
         ItemQuality.ANCIENT -> "Anciã: habilidade única; exige Maestria 7 para criação."
     }
 
-    val catalog: List<CatalogEntry> by lazy {
+    private data class CatalogBundle(
+        val entries: List<CatalogEntry>,
+        val inventoryTemplates: Map<String, BuiltItem>,
+    )
+
+    private val catalogBundle: CatalogBundle by lazy {
         val commonWeapon = weaponMaterials.first { it.id == "ligas_comuns" }
         val commonArmor = armorMaterials.first { it.id == "ligas_comuns" }
         val built = weaponBases.map { build(it, commonWeapon, emptyList(), 0, 0) } +
@@ -143,18 +161,108 @@ object ItemCreationRules {
                 build(base, material, emptyList(), 0, 0)
             }
         val regular = built.mapIndexed { index, item -> item.catalogEntry("item.regular_$index") }
-        val starters = GeneratedItemParts.catalogItems
-        (regular + starters).distinctBy { it.name }
+        val starterItems = CanonicalItemCatalog.catalogItems.map { definition ->
+            definition.part.toBuiltItem()
+        }
+        val starters = CanonicalItemCatalog.catalogItems.zip(starterItems).map { (definition, item) ->
+            item.catalogEntry(definition.part.id, definition.source, definition.ruleReference)
+        }
+        val entries = (regular + starters).distinctBy { it.name }
+        CatalogBundle(
+            entries = entries,
+            inventoryTemplates = (regular.zip(built) + starters.zip(starterItems)).associate { (entry, item) -> entry.id to item },
+        )
     }
 
-    private fun BuiltItem.catalogEntry(id: String) = CatalogEntry(
+    val catalog: List<CatalogEntry> get() = catalogBundle.entries
+
+    internal fun inventoryTemplate(catalogEntryId: String): BuiltItem? =
+        catalogBundle.inventoryTemplates[catalogEntryId]
+
+    internal fun componentEffects(modificationIds: List<String>, gemIds: List<String>) =
+        (CanonicalItemCatalog.modifications.filter { it.part.id in modificationIds }.map { it.effect } +
+            CanonicalItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect })
+            .distinctBy { it.id }
+
+    private fun equipmentEffects(baseId: String, pg: Int, pl: Int, agilityLimit: Int?, quality: ItemQuality, armor: Boolean) = buildList {
+        if (pg != 0) add(ItemEffect("$baseId:pg", ItemEffectType.PG, pg, condition = ItemEffectCondition.EQUIPPED, description = "Proteção geral do item."))
+        if (pl != 0) add(ItemEffect("$baseId:pl", ItemEffectType.PL, pl, condition = ItemEffectCondition.EQUIPPED, description = "Proteção local do item."))
+        agilityLimit?.let { add(ItemEffect("$baseId:la", ItemEffectType.AGILITY_LIMIT, it, condition = ItemEffectCondition.EQUIPPED, description = "Limite de Agilidade do item.")) }
+        if (!armor) {
+            val bonus = when (quality) {
+                ItemQuality.IMPROVED, ItemQuality.ICONIC -> 1
+                ItemQuality.MASTERPIECE, ItemQuality.ARTIFACT, ItemQuality.ANCIENT -> 2
+                else -> 0
+            }
+            if (bonus > 0) {
+                add(ItemEffect("$baseId:quality:attack", ItemEffectType.ATTACK, bonus, condition = ItemEffectCondition.WIELDED, description = "Ataque concedido pela qualidade ${quality.label}."))
+                add(ItemEffect("$baseId:quality:damage", ItemEffectType.PHYSICAL_DAMAGE, bonus, condition = ItemEffectCondition.WIELDED, description = "Dano concedido pela qualidade ${quality.label}."))
+            }
+        }
+    }
+
+    internal fun inventoryTemplate(catalogEntryId: String, name: String): Pair<CatalogEntry, BuiltItem>? {
+        val entry = catalogBundle.entries.firstOrNull { it.id == catalogEntryId }
+            ?: catalogBundle.entries.firstOrNull { it.name.normalizedItemName() == name.normalizedItemName() }
+            ?: return null
+        return entry to (catalogBundle.inventoryTemplates[entry.id] ?: return null)
+    }
+
+    private fun BuiltItem.catalogEntry(
+        id: String,
+        source: String = "Tabelas canônicas de equipamentos",
+        ruleReference: String = "03 - Regras/Balanceamento de Criação e Equipamentos.md",
+    ) = CatalogEntry(
         id = id, kind = CatalogKind.ITEM, name = name, group = category, summary = effect,
-        source = "Tabelas canônicas de equipamentos", creationCost = creationCost?.toString() ?: "#",
+        source = source, creationCost = creationCost?.toString() ?: "#",
         price = price, load = load, durability = durability.takeIf { it > 0 }?.let { "$it/$it" }.orEmpty(), region = region,
         version = BuiltInCatalog.VERSION,
-        ruleReference = "03 - Regras/Balanceamento de Criação e Equipamentos.md",
+        ruleReference = ruleReference,
     )
 
+    private fun ItemPart.toBuiltItem() = BuiltItem(
+        name = name,
+        category = group,
+        creationCost = creationCost,
+        price = price,
+        load = load,
+        durability = durability,
+        region = region,
+        effect = effect,
+        pg = pg,
+        pl = pl,
+        agilityLimit = agilityLimit,
+    )
+}
 
+private fun String.normalizedItemName(): String = trim().lowercase(Locale.ROOT)
 
+fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryItem {
+    val template = ItemCreationRules.inventoryTemplate(id)
+    if (template != null) {
+        return template.toInventoryItem(initialCreation).copy(
+            catalogEntryId = id,
+            catalogVersion = version,
+            canonical = true,
+        )
+    }
+    return InventoryItem(
+        name = name,
+        load = load,
+        durability = durability,
+        region = region,
+        effect = listOfNotNull(
+            "Categoria: $group".takeIf { group.isNotBlank() },
+            "Preço de referência: ${price} E$".takeIf { price > 0 },
+            summary.takeIf(String::isNotBlank),
+        ).joinToString("\n"),
+        category = group,
+        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
+        heritageCost = creationCost.toIntOrNull().takeIf { initialCreation },
+        purchasePrice = price.takeIf { !initialCreation },
+        catalogEntryId = id,
+        catalogVersion = version,
+        canonical = true,
+        dataVersion = com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION,
+    )
 }

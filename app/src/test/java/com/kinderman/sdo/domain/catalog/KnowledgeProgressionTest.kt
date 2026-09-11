@@ -1,6 +1,8 @@
 package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
@@ -11,6 +13,39 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KnowledgeProgressionTest {
+    private val knowledgeEntry = CatalogEntry("knowledge.music", CatalogKind.ACQUIRED_KNOWLEDGE, "Música", "Arte", "")
+    private val rewardThree = CatalogEntry("power.rhythm", CatalogKind.POWER, "Ritmo", "", "", sourceKnowledge = "Música")
+    private val rewardFive = CatalogEntry("power.harmony", CatalogKind.POWER, "Harmonia", "", "", sourceKnowledge = "Música")
+
+    @Test fun levelJumpWaitsForEveryCrossedMilestoneAndResolvesInOrder() {
+        val knowledge = SpecialKnowledge(id = "music", name = "Música", catalogEntryId = knowledgeEntry.id, attribute = "CAR", value = 2)
+        val character = Character(attributes = listOf(AttributeValue("Carisma", "CAR", 5)), learnedKnowledges = listOf(knowledge))
+        val catalog = listOf(knowledgeEntry, rewardThree, rewardFive)
+
+        val pending = character.requestKnowledgeLevel("music", 5, catalog)
+        assertEquals(2, pending.learnedKnowledges.single().value)
+        assertEquals(listOf(3, 5), pending.learnedKnowledges.single().pendingMilestoneLevels)
+
+        val afterThree = pending.resolveKnowledgeMilestone("music", rewardThree, catalog)
+        assertEquals(2, afterThree.learnedKnowledges.single().value)
+        assertEquals(listOf(5), afterThree.learnedKnowledges.single().pendingMilestoneLevels)
+
+        val completed = afterThree.resolveKnowledgeMilestone("music", rewardFive, catalog)
+        assertEquals(5, completed.learnedKnowledges.single().value)
+        assertEquals(listOf(3, 5), completed.learnedKnowledges.single().milestoneRewards.map { it.level })
+        assertTrue(completed.learnedKnowledges.single().pendingMilestoneLevels.isEmpty())
+    }
+
+    @Test fun cancelledTransitionDoesNotGrantOrphanReward() {
+        val knowledge = SpecialKnowledge(id = "music", name = "Música", catalogEntryId = knowledgeEntry.id, attribute = "CAR", value = 2)
+        val character = Character(attributes = listOf(AttributeValue("Carisma", "CAR", 5)), learnedKnowledges = listOf(knowledge))
+        val cancelled = character.requestKnowledgeLevel("music", 3, listOf(knowledgeEntry, rewardThree))
+            .cancelKnowledgeLevelRequest("music")
+
+        assertEquals(2, cancelled.learnedKnowledges.single().value)
+        assertTrue(cancelled.learnedKnowledges.single().milestoneRewards.isEmpty())
+        assertTrue(cancelled.powers.isEmpty())
+    }
     @Test fun knowledgeLevelCannotExceedItsPermanentAttribute() {
         val music = SpecialKnowledge(id = "music", name = "Música", attribute = "CAR")
         val character = Character(

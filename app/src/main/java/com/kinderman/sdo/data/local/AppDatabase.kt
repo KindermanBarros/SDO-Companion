@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 21,
+    version = 22,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -296,6 +296,14 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_20_21 = object : Migration(20, 21) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN itemCreationDraft TEXT DEFAULT NULL")
+            }
+        }
+
+        val MIGRATION_21_22 = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // The marker is intentionally zero. The repository performs the content-aware,
+                // idempotent conversion with the canonical catalogs on first read.
+                db.execSQL("ALTER TABLE characters ADD COLUMN itemSchemaVersion INTEGER NOT NULL DEFAULT 0")
             }
         }
     }
