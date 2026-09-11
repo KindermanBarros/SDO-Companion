@@ -75,6 +75,17 @@ data class ActiveItemEffect(
     val effect: ItemEffect,
 )
 
+private val TWO_HANDED_WEAPON_BASES = setOf(
+    "espada_bastarda", "guarda_dupla", "montante", "clava", "glaive", "arco_composto",
+    "besta_pesada", "fuzil_vapor", "estilhacadora", "fuzil_tesla",
+)
+
+/** Canonical hand requirement extracted from the Pesado characteristic. */
+fun InventoryItem.handsRequired(): Int = if (baseId in TWO_HANDED_WEAPON_BASES && materialId != "ossos_comuns") 2 else 1
+
+val Character.wieldedHandsUsed: Int get() = inventory.filter { it.inventoryState == InventoryState.WIELDED }
+    .sumOf(InventoryItem::handsRequired)
+
 fun Character.activeItemEffects(): List<ActiveItemEffect> = inventory.flatMap { item ->
     if (item.isBroken) return@flatMap emptyList()
     item.mechanicalEffects.filter { effect ->
@@ -155,11 +166,34 @@ fun Character.withItemInventoryState(itemId: String, state: InventoryState): Cha
             it.id != itemId && it.inventoryState == InventoryState.QUICK_ACCESS
         } >= 2)) return this
     if (state == InventoryState.BACKPACK && backpackCapacity == 0) return this
-    if (state == InventoryState.WIELDED && inventory.count {
+    if (state == InventoryState.WIELDED && inventory.filter {
             it.id != itemId && it.inventoryState == InventoryState.WIELDED
-        } >= 2) return this
+        }.sumOf(InventoryItem::handsRequired) + item.handsRequired() > 2) return this
     return copy(inventory = inventory.map { if (it.id == itemId) it.withInventoryState(state) else it })
         .synchronizeItemPowers()
+}
+
+/** Repairs invalid persisted states without changing the item order or deleting valid items. */
+fun Character.withValidInventoryStates(): Character {
+    val usableContainerId = inventory
+        .filter { !it.isBroken && it.catalogEntryId.isNotBlank() && it.inventoryState == InventoryState.EQUIPPED && it.category.equals("Recipiente de Carga", true) }
+        .maxByOrNull(InventoryItem::backpackCapacity)?.id
+    var quickSlots = 0
+    var hands = 0
+    val hasBackpack = usableContainerId != null
+    val sanitized = inventory.map { item ->
+        val state = item.inventoryState
+        val valid = when {
+            item.isBroken && state in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED) -> false
+            state == InventoryState.EQUIPPED && item.category.equals("Recipiente de Carga", true) -> item.catalogEntryId.isNotBlank() && item.id == usableContainerId
+            state == InventoryState.BACKPACK -> hasBackpack
+            state == InventoryState.QUICK_ACCESS -> item.effectiveLoad() <= 1 && quickSlots++ < 2
+            state == InventoryState.WIELDED -> (hands + item.handsRequired() <= 2).also { if (it) hands += item.handsRequired() }
+            else -> true
+        }
+        if (valid) item.withInventoryState(state) else item.withInventoryState(InventoryState.STORED)
+    }
+    return if (sanitized == inventory) this else copy(inventory = sanitized).synchronizeItemPowers()
 }
 
 /** Applies durability loss following the equipment rules: zero creates Scrap and
