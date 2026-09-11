@@ -131,14 +131,16 @@ data class InventoryItem(
     val name: String = "",
     val load: Int = 0,
     val backpackCapacity: Int = 0,
-    val durability: String = "",
+    val durabilityCurrent: Int = 0,
+    val durabilityMax: Int = 0,
+    val itemCondition: ItemCondition = ItemCondition.NORMAL,
     val region: String = "",
     val effect: String = "",
     val pg: Int = 0,
     val pl: Int = 0,
     val category: String = "",
     val agilityLimit: Int? = null,
-    val quality: String = "Comum",
+    val quality: ItemQuality = ItemQuality.COMMON,
     val quantity: Int = 0,
     val linkedAshId: String = "",
     val ashPurity: AshPurity = AshPurity.RAW,
@@ -154,8 +156,14 @@ data class InventoryItem(
     val modificationIds: List<String> = emptyList(),
     val gemIds: List<String> = emptyList(),
     val mechanicalEffects: List<ItemEffect> = emptyList(),
-    val dataVersion: Int = 0,
+    val dataVersion: Int = CURRENT_ITEM_DATA_VERSION,
 )
+
+enum class ItemCondition { NORMAL, SCRAP, BROKEN }
+
+val InventoryItem.isScrap: Boolean get() = itemCondition == ItemCondition.SCRAP || durabilityMax > 0 && durabilityCurrent == 0
+val InventoryItem.isBroken: Boolean get() = itemCondition == ItemCondition.BROKEN
+val InventoryItem.durabilityLabel: String get() = "$durabilityCurrent/$durabilityMax"
 
 enum class InventoryState(val storageCode: String, val label: String) {
     BACKPACK("M", "Mochila"),

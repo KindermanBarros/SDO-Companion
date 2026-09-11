@@ -27,6 +27,7 @@ import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.InventoryState
 import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.durabilityLabel
 import com.kinderman.sdo.domain.model.withInventoryState
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
@@ -163,8 +164,8 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             { ChoiceField("Estado", item.inventoryState, InventoryState.entries, enabled, it, InventoryState::label) { value -> onValue(item.withInventoryState(value)) } },
             { IntegerField("Carga", item.load, enabled, it) { value -> onValue(item.copy(load = value.coerceAtLeast(0))) } },
         )
-        HudTextField("Durabilidade", item.durability, enabled = enabled) { value -> onValue(item.copy(durability = value)) }
-        Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.uppercase()}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        IntegerField("Durabilidade atual", item.durabilityCurrent, enabled) { value -> onValue(item.copy(durabilityCurrent = value.coerceIn(0, item.durabilityMax))) }
+        Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.label.uppercase()} // ${item.durabilityLabel}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         Text("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
         if (item.mechanicalEffects.isNotEmpty()) Text(
             "EFEITOS // " + item.mechanicalEffects.joinToString { "${it.type.name} ${if (it.value > 0) "+" else ""}${it.value} ${it.resolvedTargetId.ifBlank { it.target }}" },

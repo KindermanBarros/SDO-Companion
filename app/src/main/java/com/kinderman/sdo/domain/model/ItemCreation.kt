@@ -32,6 +32,15 @@ data class ItemCreationDraft(
     val commonEffect: String = "",
     val commonLoad: Int = 0,
     val commonQuantity: Int = 1,
+    val commonCategory: String = "Item",
+    val commonRegion: String = "",
+    val commonDurability: Int = 0,
+    val commonPg: Int = 0,
+    val commonPl: Int = 0,
+    val commonAgilityLimit: Int? = null,
+    val commonAttack: Int = 0,
+    val commonDamage: Int = 0,
+    val commonRange: Int = 0,
 )
 
 enum class ItemEffectType {
@@ -67,12 +76,23 @@ data class ActiveItemEffect(
 )
 
 fun Character.activeItemEffects(): List<ActiveItemEffect> = inventory.flatMap { item ->
+    if (item.isBroken) return@flatMap emptyList()
     item.mechanicalEffects.filter { effect ->
+        if (item.isScrap && (effect.id in item.modificationIds || effect.type in setOf(ItemEffectType.ATTACK, ItemEffectType.GEM_POWER))) return@filter false
         when (effect.condition) {
             ItemEffectCondition.EQUIPPED -> item.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
             ItemEffectCondition.WIELDED -> item.inventoryState == InventoryState.WIELDED
         }
-    }.map { effect -> ActiveItemEffect(item.id, item.name, effect) }
+    }.map { effect ->
+        val effective = if (item.isScrap && effect.type in setOf(ItemEffectType.PG, ItemEffectType.PL)) {
+            effect.copy(value = effect.value / 2)
+        } else effect
+        ActiveItemEffect(item.id, item.name, effective)
+    }
+}
+
+val Character.hasScrapAttackDisadvantage: Boolean get() = inventory.any {
+    it.inventoryState == InventoryState.WIELDED && it.isScrap && it.category.contains("arma", true)
 }
 
 data class EquipmentEffectAudit(
@@ -125,9 +145,19 @@ fun Character.addInventoryItem(item: InventoryItem): Character {
     return copy(inventory = inventory + resolved).synchronizeItemPowers()
 }
 
-fun Character.withItemInventoryState(itemId: String, state: InventoryState): Character = copy(
-    inventory = inventory.map { if (it.id == itemId) it.withInventoryState(state) else it },
-).synchronizeItemPowers()
+fun Character.withItemInventoryState(itemId: String, state: InventoryState): Character {
+    val item = inventory.firstOrNull { it.id == itemId } ?: return this
+    if (item.isBroken && state in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)) return this
+    if (state == InventoryState.QUICK_ACCESS && (item.effectiveLoad() > 1 || inventory.count {
+            it.id != itemId && it.inventoryState == InventoryState.QUICK_ACCESS
+        } >= 2)) return this
+    if (state == InventoryState.BACKPACK && backpackCapacity == 0) return this
+    if (state == InventoryState.WIELDED && inventory.count {
+            it.id != itemId && it.inventoryState == InventoryState.WIELDED
+        } >= 2) return this
+    return copy(inventory = inventory.map { if (it.id == itemId) it.withInventoryState(state) else it })
+        .synchronizeItemPowers()
+}
 
 fun Character.synchronizeItemPowers(): Character {
     val gemEffects = activeItemEffects().filter { it.effect.type == ItemEffectType.GEM_POWER }
@@ -187,7 +217,9 @@ data class BuiltItem(
         name = name,
         load = load,
         backpackCapacity = backpackCapacity,
-        durability = durability.takeIf { it > 0 }?.let { "$it/$it" }.orEmpty(),
+        durabilityCurrent = durability,
+        durabilityMax = durability,
+        itemCondition = if (durability == 0) ItemCondition.SCRAP else ItemCondition.NORMAL,
         region = region,
         effect = listOfNotNull(
             "Categoria: $category",
@@ -198,7 +230,7 @@ data class BuiltItem(
         pl = pl,
         category = category,
         agilityLimit = agilityLimit,
-        quality = quality.label,
+        quality = quality,
         baseId = baseId,
         materialId = materialId,
         modificationIds = modificationIds,
@@ -211,7 +243,7 @@ data class BuiltItem(
     )
 }
 
-const val CURRENT_ITEM_DATA_VERSION = 4
+const val CURRENT_ITEM_DATA_VERSION = 5
 
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 

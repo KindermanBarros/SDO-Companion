@@ -83,7 +83,7 @@ class ItemNormalizationTest {
         assertEquals(migrated, Character(inventory = listOf(migrated)).withNormalizedInventory().inventory.single())
     }
 
-    @Test fun unrecognizedLegacyItemBecomesNarrativeWithoutAssumedBonus() {
+    @Test fun unrecognizedLegacyItemWithoutValidDurabilityIsRemoved() {
         val legacy = InventoryItem(
             id = "legacy-weapon",
             state = "WIELDED",
@@ -92,12 +92,8 @@ class ItemNormalizationTest {
         )
 
         val character = Character(inventory = listOf(legacy)).withNormalizedInventory()
-        val migrated = character.inventory.single()
-
-        assertTrue(migrated.mechanicalEffects.isEmpty())
-        assertEquals("LEGACY_NARRATIVE", migrated.category)
+        assertTrue(character.inventory.isEmpty())
         assertEquals(0, character.attributeTotal("FOR"))
-        assertEquals(migrated, Character(inventory = listOf(migrated)).withNormalizedInventory().inventory.single())
     }
 
     @Test fun effectConditionFollowsEquipmentState() {

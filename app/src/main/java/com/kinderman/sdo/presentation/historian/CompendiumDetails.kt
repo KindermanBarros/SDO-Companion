@@ -23,6 +23,7 @@ import com.kinderman.sdo.domain.model.formattedAbilityCost
 import com.kinderman.sdo.domain.model.formattedAbilityDuration
 import com.kinderman.sdo.domain.model.formattedAbilityExecution
 import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.durabilityLabel
 
 @Composable
 internal fun CompendiumDetails(entry: CatalogEntry) {
@@ -109,7 +110,7 @@ internal fun characterReferences(characters: List<Character>): List<CatalogEntry
             prerequisites = knowledge.prerequisites, ruleReference = knowledge.ruleReference, keywords = knowledge.keywords)
     } + character.inventory.map { item ->
         CatalogEntry("${character.id}:item:${item.id}", CatalogKind.ITEM, item.name, item.category,
-            item.effect, source = source, load = item.load, durability = item.durability, region = item.region,
-            mechanicalEffect = "${item.effect}\nPG: ${item.pg}; PL: ${item.pl}; Qualidade: ${item.quality}; Estado: ${item.inventoryState.label}\nLimite de AGI: ${item.agilityLimit ?: "—"}\nEfeitos: ${item.mechanicalEffects.joinToString()}")
+            item.effect, source = source, load = item.load, durability = item.durabilityLabel, region = item.region,
+            mechanicalEffect = "${item.effect}\nPG: ${item.pg}; PL: ${item.pl}; Qualidade: ${item.quality.label}; Estado: ${item.inventoryState.label}\nLimite de AGI: ${item.agilityLimit ?: "—"}\nEfeitos: ${item.mechanicalEffects.joinToString()}")
     }
 }

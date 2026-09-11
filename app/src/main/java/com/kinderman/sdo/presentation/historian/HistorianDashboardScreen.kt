@@ -556,7 +556,11 @@ private fun LibraryEditorDialog(
                             val item = value.itemSnapshot ?: InventoryItem(name = value.name, effect = value.summary)
                             HudTextField("Categoria", item.category, onValue = { value = value.copy(itemSnapshot = item.copy(category = it)) })
                             HudTextField("Carga", item.load.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(load = raw.toIntOrNull()?.coerceAtLeast(0) ?: 0)) })
-                            HudTextField("Durabilidade", item.durability, onValue = { value = value.copy(itemSnapshot = item.copy(durability = it)) })
+                            HudTextField("Durabilidade atual", item.durabilityCurrent.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(durabilityCurrent = raw.toIntOrNull()?.coerceIn(0, item.durabilityMax) ?: 0)) })
+                            HudTextField("Durabilidade máxima", item.durabilityMax.toString(), onValue = { raw ->
+                                val maximum = raw.toIntOrNull()?.coerceAtLeast(0) ?: 0
+                                value = value.copy(itemSnapshot = item.copy(durabilityMax = maximum, durabilityCurrent = item.durabilityCurrent.coerceAtMost(maximum)))
+                            })
                             HudTextField("PG", item.pg.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(pg = raw.toIntOrNull() ?: 0)) })
                             HudTextField("PL", item.pl.toString(), onValue = { raw -> value = value.copy(itemSnapshot = item.copy(pl = raw.toIntOrNull() ?: 0)) })
                             HudTextField("Efeito estruturado", item.effect, multiline = true, onValue = { value = value.copy(itemSnapshot = item.copy(name = value.name, effect = it)) })
