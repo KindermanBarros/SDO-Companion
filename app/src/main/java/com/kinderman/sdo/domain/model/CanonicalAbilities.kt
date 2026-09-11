@@ -298,8 +298,10 @@ fun formattedAbilityDuration(type: AbilityDuration, value: Int, unit: AbilityTim
 }
 
 fun Character.isPowerActive(power: Power): Boolean = when (power.canonicalSource) {
-    AbilitySource.ITEM -> inventory.any {
-        it.id == power.linkedItemId && it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
+    AbilitySource.ITEM -> activeItemEffects().any {
+        it.itemId == power.linkedItemId &&
+            it.effect.type == ItemEffectType.GEM_POWER &&
+            it.effect.id == power.catalogEntryId
     }
     else -> power.active
 }

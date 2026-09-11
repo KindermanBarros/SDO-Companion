@@ -452,12 +452,15 @@ data class Character(
     }
 
     fun equippedItems(region: BodyRegion): List<InventoryItem> =
-        inventory.filter { it.id in region.equippedItemIds }
+        inventory.filter {
+            it.id in region.equippedItemIds && !it.isBroken &&
+                it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
+        }
 
     fun equipItems(regionIndex: Int, itemIds: Set<String>): Character {
         if (regionIndex !in bodyRegions.indices) return this
         val regionName = bodyRegions[regionIndex].name
-        val candidates = inventory.filter { it.id in itemIds && it.matchesRegion(regionName) }
+        val candidates = inventory.filter { it.id in itemIds && !it.isBroken && it.matchesRegion(regionName) }
         val armor = candidates.filter { it.category.equals("Armadura", true) }.takeLast(1)
         val accessories = candidates.filter { it.category.equals("Acessório", true) }.takeLast(1)
         val other = candidates.filterNot {
@@ -492,7 +495,10 @@ data class Character(
 
     private fun equippedItems(): List<InventoryItem> {
         val equippedIds = bodyRegions.flatMap { it.equippedItemIds }.toSet()
-        return inventory.filter { it.id in equippedIds }
+        return inventory.filter {
+            it.id in equippedIds && !it.isBroken &&
+                it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
+        }
     }
 
     fun acquiredKnowledgeValue(name: String): Int {

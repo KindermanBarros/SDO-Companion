@@ -193,7 +193,15 @@ fun Character.withValidInventoryStates(): Character {
         }
         if (valid) item.withInventoryState(state) else item.withInventoryState(InventoryState.STORED)
     }
-    return if (sanitized == inventory) this else copy(inventory = sanitized).synchronizeItemPowers()
+    val activeEquipmentIds = sanitized.asSequence()
+        .filterNot(InventoryItem::isBroken)
+        .filter { it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED) }
+        .mapTo(hashSetOf(), InventoryItem::id)
+    val sanitizedRegions = bodyRegions.map { region ->
+        region.copy(equippedItemIds = region.equippedItemIds.filter(activeEquipmentIds::contains))
+    }
+    return if (sanitized == inventory && sanitizedRegions == bodyRegions) this
+    else copy(inventory = sanitized, bodyRegions = sanitizedRegions).synchronizeItemPowers()
 }
 
 /** Applies durability loss following the equipment rules: zero creates Scrap and
@@ -203,7 +211,11 @@ fun Character.damageInventoryItem(itemId: String, amount: Int = 1): Character {
     val current = inventory.firstOrNull { it.id == itemId } ?: return this
     val damaged = when {
         current.isBroken -> current
-        current.isScrap -> current.copy(itemCondition = ItemCondition.BROKEN, durabilityCurrent = 0)
+        current.isScrap -> current.copy(
+            itemCondition = ItemCondition.BROKEN,
+            durabilityCurrent = 0,
+            state = InventoryState.STORED.storageCode,
+        )
         else -> {
             val durability = (current.durabilityCurrent - amount).coerceAtLeast(0)
             current.copy(
@@ -212,7 +224,13 @@ fun Character.damageInventoryItem(itemId: String, amount: Int = 1): Character {
             )
         }
     }
-    return copy(inventory = inventory.map { item -> if (item.id == itemId) damaged else item })
+    val brokenItemIds = setOfNotNull(itemId.takeIf { damaged.isBroken })
+    return copy(
+        inventory = inventory.map { item -> if (item.id == itemId) damaged else item },
+        bodyRegions = bodyRegions.map { region ->
+            region.copy(equippedItemIds = region.equippedItemIds.filterNot(brokenItemIds::contains))
+        },
+    )
         .synchronizeItemPowers()
 }
 
