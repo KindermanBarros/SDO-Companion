@@ -14,12 +14,40 @@ import com.kinderman.sdo.domain.model.withItemInventoryState
 import com.kinderman.sdo.domain.model.activeItemEffects
 import com.kinderman.sdo.domain.model.damageInventoryItem
 import com.kinderman.sdo.domain.model.ItemCondition
+import com.kinderman.sdo.domain.model.hasScrapAttackDisadvantage
+import com.kinderman.sdo.domain.model.scrapDamageDieCategoryPenalty
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ItemNormalizationTest {
+    @Test fun scrapWeaponAppliesEveryRulesPenalty() {
+        val effects = listOf(
+            ItemEffect("attack", ItemEffectType.ATTACK, 3, condition = ItemEffectCondition.WIELDED),
+            ItemEffect("damage", ItemEffectType.PHYSICAL_DAMAGE, 2, condition = ItemEffectCondition.WIELDED),
+            ItemEffect("mod", ItemEffectType.RULE, description = "Modificação", condition = ItemEffectCondition.WIELDED),
+            ItemEffect("gem", ItemEffectType.GEM_POWER, condition = ItemEffectCondition.WIELDED),
+            ItemEffect("pg", ItemEffectType.PG, 5, condition = ItemEffectCondition.EQUIPPED),
+            ItemEffect("pl", ItemEffectType.PL, 3, condition = ItemEffectCondition.EQUIPPED),
+        )
+        val scrap = InventoryItem(
+            id = "scrap", name = "Espada", category = "Arma", state = "W",
+            durabilityCurrent = 0, durabilityMax = 4, itemCondition = ItemCondition.SCRAP,
+            modificationIds = listOf("mod"), gemIds = listOf("gem"), mechanicalEffects = effects,
+        )
+        val character = Character(inventory = listOf(scrap))
+        val active = character.activeItemEffects()
+
+        assertTrue(character.hasScrapAttackDisadvantage)
+        assertEquals(1, character.scrapDamageDieCategoryPenalty)
+        assertEquals(0, character.equipmentAttackBonus)
+        assertEquals(2, character.equipmentPhysicalDamageBonus)
+        assertEquals(2, active.single { it.effect.id == "pg" }.effect.value)
+        assertEquals(1, active.single { it.effect.id == "pl" }.effect.value)
+        assertFalse(active.any { it.effect.id in setOf("attack", "mod", "gem") })
+    }
+
     @Test fun durabilityLossTransitionsFromNormalToScrapThenBroken() {
         val effect = ItemEffect("power", ItemEffectType.GEM_POWER, condition = ItemEffectCondition.WIELDED)
         val item = InventoryItem(
