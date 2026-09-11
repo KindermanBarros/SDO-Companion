@@ -7,10 +7,11 @@ import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.withValidInventoryStates
 
 fun Character.withNormalizedInventory(): Character {
     val normalized = inventory.mapNotNull(InventoryItem::normalized)
-    return if (normalized == inventory) this else copy(inventory = normalized)
+    return (if (normalized == inventory) this else copy(inventory = normalized)).withValidInventoryStates()
 }
 
 internal fun InventoryItem.normalized(): InventoryItem? {
