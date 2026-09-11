@@ -42,7 +42,7 @@ fun Character.loadCapacityBreakdown(): CalculatedValue {
     val strength = attributeCalculation("FOR")
     return CalculatedValue(
         base = 2 + strength.base,
-        adjustment = containerCapacity + strength.adjustment,
+        adjustment = backpackCapacity + strength.adjustment,
         modifiers = strength.modifiers,
     )
 }

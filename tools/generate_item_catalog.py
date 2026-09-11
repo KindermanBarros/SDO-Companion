@@ -22,7 +22,7 @@ def item_part(entry, group=None):
         f'{quote(entry["id"])}, {quote(entry["name"])}, {quote(group or entry["group"])}, '
         f'{creation_cost}, {entry["price"]}, {entry.get("load", 0)}, {entry.get("durability", 0)}, '
         f'{quote(entry.get("region", ""))}, {quote(effect)}, {entry.get("pg", 0)}, '
-        f'{entry.get("pl", 0)}, {agility_limit})'
+        f'{entry.get("pl", 0)}, {agility_limit}, {entry.get("backpackCapacity", 0)})'
     )
 
 
@@ -85,6 +85,7 @@ def kotlin(items, modifications):
             f'{quote(entry["id"])}, CatalogKind.ITEM, {quote(entry["name"])}, {quote(entry["group"])}, '
             f'{quote(entry["effect"])}, source = {quote(entry["source"])}, version = BuiltInCatalog.VERSION, '
             f'creationCost = {cost}, price = {entry["price"]}, load = {entry["load"]}, region = {quote(entry["region"])}, '
+            f'backpackCapacity = {entry.get("backpackCapacity", 0)}, '
             f'ruleReference = {quote(entry["ruleReference"])}),'
         )
     lines.append("    )")
@@ -112,6 +113,7 @@ def validate(items, modifications):
     for entry in items["entries"]:
         if entry["kind"] == "CATALOG_ITEM":
             assert "source" in entry and "ruleReference" in entry
+            assert isinstance(entry.get("backpackCapacity", 0), int) and entry.get("backpackCapacity", 0) >= 0
     for entry in modifications["entries"]:
         assert "compatibleBaseGroups" in entry and "compatibleBaseIds" in entry
         known_groups = {item["group"] for item in items["entries"] if item["kind"].endswith("_BASE")}

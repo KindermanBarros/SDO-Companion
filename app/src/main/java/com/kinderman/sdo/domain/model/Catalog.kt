@@ -27,6 +27,7 @@ data class CatalogEntry(
     val creationCost: String = "",
     val price: Int = 0,
     val load: Int = 0,
+    val backpackCapacity: Int = 0,
     val durability: String = "",
     val region: String = "",
     val relatedAttribute: String = "",

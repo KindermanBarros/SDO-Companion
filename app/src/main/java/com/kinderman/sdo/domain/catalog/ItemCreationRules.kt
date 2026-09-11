@@ -229,6 +229,7 @@ object ItemCreationRules {
         creationCost = creationCost,
         price = price,
         load = load,
+        backpackCapacity = backpackCapacity,
         durability = durability,
         region = region,
         effect = effect,
@@ -252,6 +253,7 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
     return InventoryItem(
         name = name,
         load = load,
+        backpackCapacity = backpackCapacity,
         durability = durability,
         region = region,
         effect = listOfNotNull(

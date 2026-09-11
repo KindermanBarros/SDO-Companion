@@ -13,6 +13,7 @@ data class ItemPart(
     val pg: Int = 0,
     val pl: Int = 0,
     val agilityLimit: Int? = null,
+    val backpackCapacity: Int = 0,
 )
 
 data class ItemCreationDraft(
@@ -168,6 +169,7 @@ data class BuiltItem(
     val creationCost: Int?,
     val price: Int,
     val load: Int,
+    val backpackCapacity: Int = 0,
     val durability: Int,
     val region: String,
     val effect: String,
@@ -184,6 +186,7 @@ data class BuiltItem(
     fun toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
         name = name,
         load = load,
+        backpackCapacity = backpackCapacity,
         durability = durability.takeIf { it > 0 }?.let { "$it/$it" }.orEmpty(),
         region = region,
         effect = listOfNotNull(

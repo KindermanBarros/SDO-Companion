@@ -107,7 +107,6 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
             Text("CRIAÇÃO INICIAL OBRIGATÓRIA // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             Text("Finalize os PH para liberar o catálogo comum, o construtor livre e itens manuais.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
-        IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) { onChange(character.copy(containerCapacity = it.coerceAtLeast(0))) }
         character.inventory.forEachIndexed { index, item ->
             InventoryEditor(index, item, enabled,
                 onRemove = { onChange(character.removeInventoryItem(item.id)) },

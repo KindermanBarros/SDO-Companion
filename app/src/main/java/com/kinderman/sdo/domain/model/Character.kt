@@ -130,6 +130,7 @@ data class InventoryItem(
     val state: String = "M",
     val name: String = "",
     val load: Int = 0,
+    val backpackCapacity: Int = 0,
     val durability: String = "",
     val region: String = "",
     val effect: String = "",
@@ -160,13 +161,16 @@ enum class InventoryState(val storageCode: String, val label: String) {
     BACKPACK("M", "Mochila"),
     EQUIPPED("E", "Equipado"),
     WIELDED("W", "Empunhado"),
-    CONTAINER("R", "Recipiente"),
+    QUICK_ACCESS("R", "Acesso Rápido"),
     STORED("G", "Guardado");
 
     companion object {
-        fun fromStorage(value: String): InventoryState = entries.firstOrNull {
+        fun fromStorage(value: String): InventoryState {
+            if (value.equals("CONTAINER", true)) return EQUIPPED
+            return entries.firstOrNull {
             it.storageCode.equals(value, true) || it.name.equals(value, true)
-        } ?: BACKPACK
+            } ?: BACKPACK
+        }
     }
 }
 
@@ -332,7 +336,6 @@ data class Character(
     val powers: List<Power> = emptyList(),
     val inventory: List<InventoryItem> = emptyList(),
     val itemCreationDraft: ItemCreationDraft? = null,
-    val containerCapacity: Int = 0,
     val bodyRegions: List<BodyRegion> = defaultBodyRegions(),
     val agilityLimit: String = "",
     val organs: List<OrganStatus> = emptyList(),
@@ -353,7 +356,11 @@ data class Character(
     val isInCreation: Boolean get() = creationStatus == CharacterCreationStatus.DRAFT
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.inventoryState == InventoryState.STORED }.sumOf { it.effectiveLoad() }
-    val maximumLoad: Int get() = 2 + attributeValue("FOR") + containerCapacity
+    val backpackCapacity: Int get() = inventory
+        .filter { it.inventoryState == InventoryState.EQUIPPED }
+        .filter { it.catalogEntryId.isNotBlank() && it.category.equals("Recipiente de Carga", true) }
+        .maxOfOrNull(InventoryItem::backpackCapacity) ?: 0
+    val maximumLoad: Int get() = 2 + attributeValue("FOR") + backpackCapacity
 
     val lifeBase: Int get() = 10 + skillValue("VIG", "Vitalidade")
     val sanityBase: Int get() = 10 + skillValue("INT", "Sanidade")
