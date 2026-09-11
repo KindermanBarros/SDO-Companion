@@ -43,7 +43,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 LinearProgressIndicator(progress = { step / CharacterCreation.STEP_COUNT.toFloat() }, modifier = Modifier.fillMaxWidth())
                 when (step) {
                     2 -> Text("PONTOS DE ATRIBUTO // ${CharacterCreation.attributePointsSpent(character)} / 10")
-                    3 -> Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.specialKnowledges(character).size} / 5 // NÍVEL INICIAL 0")
+                    3 -> Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.initialSpecialKnowledges(character).size} / 5 // NÍVEL INICIAL 0")
                     4 -> Text("PONTOS DISTRIBUÍDOS // ${CharacterCreation.knowledgePointsSpent(character)} / 15")
                     7 -> Text("PONTOS DE HERANÇA // ${CharacterCreation.heritageSpent(character)} / 30")
                 }
@@ -81,7 +81,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                         onClick = { onChange(character.copy(creationStep = step + 1)) },
                     ) { Text("CONTINUAR") }
                 } else {
-                    val allValid = (1 until CharacterCreation.STEP_COUNT).all { CharacterCreation.stepError(it, character) == null }
+                    val allValid = CharacterCreation.validate(character).isEmpty()
                     Button(
                         enabled = allValid,
                         shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
@@ -99,7 +99,7 @@ private fun CreationReview(character: Character) {
         Text(character.name.uppercase(), style = MaterialTheme.typography.titleLarge)
         Text("${character.race} // ${character.occupation} // NÍVEL ${character.level}")
         Text("ATRIBUTOS // ${CharacterCreation.attributePointsSpent(character)} / 10")
-        Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.specialKnowledges(character).size} / 5")
+        Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.initialSpecialKnowledges(character).size} / 5")
         Text("PONTOS DE CONHECIMENTO // ${CharacterCreation.knowledgePointsSpent(character)} / 15")
         Text("PONTOS DE HERANÇA // ${CharacterCreation.heritageSpent(character)} / 30")
         Text("CAMINHO // ${character.pathName.ifBlank { "PENDENTE" }}")

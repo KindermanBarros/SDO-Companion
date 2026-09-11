@@ -15,6 +15,19 @@ data class ItemPart(
     val agilityLimit: Int? = null,
 )
 
+data class ItemCreationDraft(
+    val step: Int = 1,
+    val category: String = "Arma",
+    val baseId: String = "",
+    val materialId: String = "",
+    val quality: ItemQuality = ItemQuality.COMMON,
+    val modificationIds: List<String> = emptyList(),
+    val gemIds: List<String> = emptyList(),
+    val gemSlots: Int = 0,
+    val technologySlots: Int = 0,
+    val customName: String = "",
+)
+
 enum class ItemEffectType {
     ATTRIBUTE,
     KNOWLEDGE,

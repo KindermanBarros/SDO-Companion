@@ -24,6 +24,9 @@ import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.InventoryState
+import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.withInventoryState
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
@@ -157,7 +160,7 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
         }
         HudTextField("Nome", item.name, enabled = enabled) { onValue(item.copy(name = it)) }
         TwoFields(
-            { HudTextField("Estado E/R/M/G", item.state, it, enabled = enabled) { value -> onValue(item.copy(state = value.uppercase().take(1))) } },
+            { ChoiceField("Estado", item.inventoryState, InventoryState.entries, enabled, it, InventoryState::label) { value -> onValue(item.withInventoryState(value)) } },
             { IntegerField("Carga", item.load, enabled, it) { value -> onValue(item.copy(load = value.coerceAtLeast(0))) } },
         )
         HudTextField("Durabilidade", item.durability, enabled = enabled) { value -> onValue(item.copy(durability = value)) }

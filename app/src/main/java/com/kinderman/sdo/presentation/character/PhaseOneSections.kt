@@ -28,6 +28,7 @@ import com.kinderman.sdo.domain.catalog.toSpecialKnowledge
 import com.kinderman.sdo.domain.catalog.toStructuredPower
 import com.kinderman.sdo.domain.catalog.withStructuredPathPreset
 import com.kinderman.sdo.domain.catalog.withKnowledgeLevel
+import com.kinderman.sdo.domain.catalog.withKnowledgeMilestoneReward
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -35,6 +36,8 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.AbilityCostType
 import com.kinderman.sdo.domain.model.AbilityDuration
 import com.kinderman.sdo.domain.model.AbilityExecution
@@ -73,7 +76,8 @@ internal fun PhaseOneKnowledgeSection(
     allowEntryChanges: Boolean = true,
 ) {
     var pendingMilestone by remember { mutableStateOf<Pair<SpecialKnowledge, Int>?>(null) }
-    val totalEntries = character.learnedKnowledges.size + character.arcaneKnowledges.size + character.battleTechniques.size
+    val totalEntries = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
+        .count { it.specializationParentId.isBlank() }
     val canAddEntry = allowEntryChanges && (selectionLimit == null || totalEntries < selectionLimit)
     TechPanel {
         SectionHeader("05", "Conhecimentos especiais")
@@ -134,14 +138,29 @@ internal fun PhaseOneKnowledgeSection(
             onDismiss = { pendingMilestone = null },
             onSelect = { reward ->
                 var updated = character.withKnowledgeLevel(knowledge.id, level, catalog)
-                updated = when (reward.kind) {
-                    CatalogKind.POWER -> updated.withAddedPower(reward.toStructuredPower(PowerSourceType.KNOWLEDGE, knowledge.id))
-                    CatalogKind.MAGIC, CatalogKind.RUNE -> updated.withAddedAbility(reward.toMysticAbility())
-                    CatalogKind.ACQUIRED_KNOWLEDGE -> updated.copy(learnedKnowledges = updated.learnedKnowledges + reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id))
-                    CatalogKind.ARCANE_KNOWLEDGE -> updated.copy(arcaneKnowledges = updated.arcaneKnowledges + reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id))
-                    CatalogKind.BATTLE_TECHNIQUE -> updated.copy(battleTechniques = updated.battleTechniques + reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id))
-                    else -> updated
+                val milestoneReward = when (reward.kind) {
+                    CatalogKind.POWER -> {
+                        val granted = reward.toStructuredPower(PowerSourceType.KNOWLEDGE, knowledge.id)
+                        updated = updated.withAddedPower(granted)
+                        KnowledgeMilestoneReward(level, KnowledgeMilestoneRewardType.POWER, reward.id, granted.id)
+                    }
+                    CatalogKind.MAGIC, CatalogKind.RUNE -> {
+                        val granted = reward.toMysticAbility()
+                        updated = updated.withAddedAbility(granted)
+                        KnowledgeMilestoneReward(level, KnowledgeMilestoneRewardType.MYSTIC_ABILITY, reward.id, granted.id)
+                    }
+                    CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE -> {
+                        val granted = reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id)
+                        updated = when (reward.kind) {
+                            CatalogKind.ACQUIRED_KNOWLEDGE -> updated.copy(learnedKnowledges = updated.learnedKnowledges + granted)
+                            CatalogKind.ARCANE_KNOWLEDGE -> updated.copy(arcaneKnowledges = updated.arcaneKnowledges + granted)
+                            else -> updated.copy(battleTechniques = updated.battleTechniques + granted)
+                        }
+                        KnowledgeMilestoneReward(level, KnowledgeMilestoneRewardType.SPECIALIZATION, reward.id, granted.id)
+                    }
+                    else -> null
                 }
+                if (milestoneReward != null) updated = updated.withKnowledgeMilestoneReward(knowledge.id, milestoneReward)
                 onChange(updated)
                 pendingMilestone = null
             },

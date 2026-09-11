@@ -27,7 +27,8 @@ class RaceSelectionTest {
         val selectedElf = selectedHuman.withRaceSelection(elf, null, "POD", elf.powers, null)
 
         assertEquals(0, selectedElf.attributes.first { it.acronym == "FOR" }.value)
-        assertEquals(1, selectedElf.attributes.first { it.acronym == "POD" }.value)
+        assertEquals(0, selectedElf.attributes.first { it.acronym == "POD" }.value)
+        assertEquals(1, selectedElf.attributeTotal("POD"))
         assertEquals(0, selectedElf.life.adjustment)
         assertEquals(1, selectedElf.sanity.adjustment)
         assertEquals(2, selectedElf.arcane.adjustment)
@@ -62,7 +63,8 @@ class RaceSelectionTest {
             selected.energy.adjustment,
         ))
         assertEquals("AGI", selected.raceAttribute)
-        assertEquals(1, selected.attributes.first { it.acronym == "AGI" }.value)
+        assertEquals(0, selected.attributes.first { it.acronym == "AGI" }.value)
+        assertEquals(1, selected.attributeTotal("AGI"))
         assertEquals(1, selected.powers.count { it.origin.startsWith("Raça — ") })
         assertEquals(1, selected.powers.count { it.origin.startsWith("Sub-raça — ") })
     }

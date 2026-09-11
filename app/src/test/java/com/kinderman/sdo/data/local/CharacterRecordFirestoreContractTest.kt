@@ -6,12 +6,49 @@ import com.kinderman.sdo.domain.model.defaultAttributes
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectType
+import com.kinderman.sdo.domain.model.ItemCreationDraft
+import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
+import com.kinderman.sdo.domain.model.SpecialKnowledge
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterRecordFirestoreContractTest {
+    @Test fun itemCreationDraftSurvivesRoomAndRecordMapping() {
+        val draft = ItemCreationDraft(
+            step = 3, category = "Armadura", baseId = "elmo", materialId = "ligas_comuns",
+            quality = ItemQuality.IMPROVED, modificationIds = listOf("robusta"), gemIds = listOf("gema_atributo_for"),
+            gemSlots = 1, technologySlots = 2, customName = "Elmo da Aurora",
+        )
+        val converters = CharacterConverters()
+
+        assertEquals(draft, converters.stringToItemCreationDraft(converters.itemCreationDraftToString(draft)))
+        assertEquals(draft, CharacterRecord(itemCreationDraft = draft, creationRulesVersion = 2).toDomain().toRecord().itemCreationDraft)
+    }
+
+    @Test fun knowledgeMilestoneRewardsSurviveRoomConversion() {
+        val reward = KnowledgeMilestoneReward(3, KnowledgeMilestoneRewardType.POWER, "power.rhythm", "instance-1")
+        val knowledge = SpecialKnowledge(name = "Música", milestoneLevels = listOf(3), milestoneRewards = listOf(reward))
+        val converters = CharacterConverters()
+
+        assertEquals(knowledge, converters.stringToKnowledges(converters.knowledgesToString(listOf(knowledge))).single())
+    }
+
+    @Test fun legacyEmbeddedRacialBonusMovesToDerivedModifierOnce() {
+        val attributes = defaultAttributes().map { if (it.acronym == "CAR") it.copy(value = 3) else it }
+        val migrated = CharacterRecord(race = "Humanos", raceAttribute = "CAR", attributes = attributes, creationRulesVersion = 1).toDomain()
+
+        assertEquals(2, migrated.attributes.first { it.acronym == "CAR" }.value)
+        assertEquals(3, migrated.attributeTotal("CAR"))
+        assertEquals(2, migrated.creationRulesVersion)
+        val reloaded = migrated.toRecord().toDomain()
+        assertEquals(2, reloaded.attributes.first { it.acronym == "CAR" }.value)
+        assertEquals(3, reloaded.attributeTotal("CAR"))
+    }
+
     @Test fun normalizedItemFieldsSurviveRoomConversion() {
         val item = InventoryItem(
             id = "weapon-1",

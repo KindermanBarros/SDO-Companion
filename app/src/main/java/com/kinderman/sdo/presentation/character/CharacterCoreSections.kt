@@ -235,17 +235,18 @@ internal fun AttributeSection(
 private fun AttributeEditor(character: Character, attribute: AttributeValue, enabled: Boolean, showAttributes: Boolean, showBasicKnowledges: Boolean, onValue: (AttributeValue) -> Unit) {
     Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
     if (showAttributes) TwoFields(
-        { IntegerField("Valor", attribute.value, enabled, it) { value -> onValue(attribute.copy(value = value)) } },
+        { IntegerField("Valor-base", attribute.value, enabled, it) { value -> onValue(attribute.copy(value = value.coerceAtLeast(0))) } },
         { IntegerField("Modificador", attribute.modifier, enabled, it) { value -> onValue(attribute.copy(modifier = value)) } },
     )
     if (character.attributeTotal(attribute.acronym) != attribute.value) {
         Text("TOTAL EQUIPADO // ${character.attributeTotal(attribute.acronym)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
     }
+    val permanentAttributeLimit = character.permanentAttributeValue(attribute.acronym).coerceIn(0, 5)
     if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
-            IntegerField("Valor (máx. ${attribute.value.coerceAtLeast(0)})", skill.value, enabled, Modifier.weight(1f)) { value ->
-                onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value.coerceIn(0, attribute.value.coerceAtLeast(0))))))
+            IntegerField("Valor (máx. $permanentAttributeLimit)", skill.value, enabled, Modifier.weight(1f)) { value ->
+                onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value.coerceIn(0, permanentAttributeLimit)))))
             }
             IntegerField("Mod.", skill.modifier, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(modifier = value)))) }
         }

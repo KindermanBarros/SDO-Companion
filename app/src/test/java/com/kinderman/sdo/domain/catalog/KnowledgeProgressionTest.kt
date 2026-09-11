@@ -3,6 +3,8 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -37,10 +39,21 @@ class KnowledgeProgressionTest {
     }
 
     @Test fun creationAllocationIsEphemeralAndRequiresAllCanonicalChoices() {
-        val choices = List(5) { SpecialKnowledge(name = "K$it", attribute = "INT", value = 1) }
+        val choices = List(5) { SpecialKnowledge(name = "K$it", attribute = "INT", value = 0) }
         InitialKnowledgeAllocation(choices, 15).validate()
         assertTrue(runCatching { InitialKnowledgeAllocation(choices.take(4), 15).validate() }.isFailure)
         assertTrue(runCatching { InitialKnowledgeAllocation(choices, 14).validate() }.isFailure)
+    }
+
+    @Test fun milestoneRewardIsRecordedOnceWithItsGrantedEntity() {
+        val knowledge = SpecialKnowledge(id = "music", name = "Música", attribute = "CAR", value = 3)
+        val character = Character(learnedKnowledges = listOf(knowledge))
+        val reward = KnowledgeMilestoneReward(3, KnowledgeMilestoneRewardType.POWER, "power.rhythm", "instance-1")
+
+        val updated = character.withKnowledgeMilestoneReward("music", reward)
+
+        assertEquals(reward, updated.learnedKnowledges.single().milestoneRewards.single())
+        assertTrue(runCatching { updated.withKnowledgeMilestoneReward("music", reward.copy(grantedEntityId = "instance-2")) }.isFailure)
     }
 
     @Test fun runeCatalogNeverRequestsAshDoses() {

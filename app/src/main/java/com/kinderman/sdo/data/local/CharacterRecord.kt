@@ -11,6 +11,7 @@ import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterCreationStatus
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
@@ -26,6 +27,7 @@ import com.kinderman.sdo.domain.model.canonicalized
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.catalog.withRefreshedPresetPowers
+import com.kinderman.sdo.domain.catalog.withMigratedCreationRules
 
 @Entity(tableName = "characters")
 data class CharacterRecord(
@@ -65,6 +67,7 @@ data class CharacterRecord(
     val pathMotto: String = "",
     val powers: List<Power> = emptyList(),
     val inventory: List<InventoryItem> = emptyList(),
+    val itemCreationDraft: ItemCreationDraft? = null,
     val story: String = "",
     val notes: String = "",
     val personalNotes: List<PersonalNote> = emptyList(),
@@ -146,6 +149,7 @@ fun CharacterRecord.toDomain() = Character(
     pathPillars = pathPillars.ifEmpty { listOf("", "", "") },
     powers = powers.map(Power::canonicalized),
     inventory = inventory,
+    itemCreationDraft = itemCreationDraft,
     containerCapacity = containerCapacity,
     bodyRegions = normalizeBodyRegions(bodyRegions),
     agilityLimit = agilityLimit,
@@ -171,7 +175,7 @@ fun CharacterRecord.toDomain() = Character(
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
-).withRefreshedPresetPowers()
+).withMigratedCreationRules().withRefreshedPresetPowers()
 
 fun Character.toRecord() = CharacterRecord(
     id = id,
@@ -210,6 +214,7 @@ fun Character.toRecord() = CharacterRecord(
     pathMotto = pathMotto,
     powers = powers.map(Power::canonicalized),
     inventory = inventory,
+    itemCreationDraft = itemCreationDraft,
     story = story,
     notes = "",
     personalNotes = personalNotes,
