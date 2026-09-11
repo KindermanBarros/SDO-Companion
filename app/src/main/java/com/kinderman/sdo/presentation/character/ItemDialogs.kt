@@ -27,8 +27,6 @@ import com.kinderman.sdo.domain.catalog.EquipmentGlossary
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemBonus
-import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.matchesRegion
@@ -138,7 +136,6 @@ internal fun ItemBuilderDialog(
     var technologySlots by remember { mutableIntStateOf(0) }
     var customName by remember { mutableStateOf("") }
     var quality by remember { mutableStateOf(ItemQuality.COMMON) }
-    var bonuses by remember { mutableStateOf(emptyList<ItemBonus>()) }
     var gems by remember { mutableStateOf(emptyList<ItemPart>()) }
     var manualPrice by remember { mutableStateOf("") }
     var picker by remember { mutableStateOf<String?>(null) }
@@ -150,9 +147,9 @@ internal fun ItemBuilderDialog(
     }
     val initialCreation = remainingHeritage != null
     val availableMaterials = if (initialCreation) allMaterials.filter { it.creationCost != null } else allMaterials
-    val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
+    val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
     val built = ItemCreationRules.build(
-        base, material, modifications, gemSlots, technologySlots, customName, quality, bonuses,
+        base, material, modifications, gemSlots, technologySlots, customName, quality,
         components = gems,
         priceOverride = manualPrice.toIntOrNull().takeIf { !initialCreation },
     )
@@ -232,32 +229,6 @@ internal fun ItemBuilderDialog(
                         }
                     }
                 }
-                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                Text("Bônus positivos custam PH; penalidades não concedem desconto.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                bonuses.forEachIndexed { index, bonus ->
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = {
-                                val nextType = ItemBonusType.entries[(bonus.type.ordinal + 1) % ItemBonusType.entries.size]
-                                bonuses = bonuses.replace(index, bonus.copy(type = nextType, target = defaultBonusTarget(nextType)))
-                            }) { Text(bonus.type.label.uppercase()) }
-                            TextButton(onClick = { bonuses = bonuses.filterIndexed { itemIndex, _ -> itemIndex != index } }) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
-                        }
-                        if (bonus.type == ItemBonusType.ACQUIRED_KNOWLEDGE) {
-                            HudTextField("Conhecimento adquirido", bonus.target) { value -> bonuses = bonuses.replace(index, bonus.copy(target = value)) }
-                        } else {
-                            TextButton(onClick = {
-                                val options = bonusTargets(bonus.type)
-                                val next = (options.indexOf(bonus.target).coerceAtLeast(0) + 1) % options.size
-                                bonuses = bonuses.replace(index, bonus.copy(target = options[next]))
-                            }, modifier = Modifier.fillMaxWidth()) { Text("ALVO // ${bonus.target}") }
-                        }
-                        IntegerField("Valor (-5 a +5)", bonus.value, true) { value -> bonuses = bonuses.replace(index, bonus.copy(value = value.coerceIn(-5, 5))) }
-                    }
-                }
-                TextButton(onClick = { bonuses = bonuses + ItemBonus(target = defaultBonusTarget(ItemBonusType.ATTRIBUTE)) }, modifier = Modifier.fillMaxWidth()) {
-                    Text("+ ADICIONAR BÔNUS")
-                }
                 if (initialCreation) {
                     Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)
                 } else {
@@ -297,6 +268,7 @@ internal fun ItemBuilderDialog(
     ) { part ->
         if (picker == "base") {
             base = part
+            modifications = modifications.filter { it in ItemCreationRules.compatibleModifications(part, weapon) }
             if (!weapon && part.id == "gibao") {
                 material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
             }
@@ -357,17 +329,6 @@ private fun toggleModification(current: List<ItemPart>, item: ItemPart): List<It
     return next
 }
 
-private fun defaultBonusTarget(type: ItemBonusType): String = bonusTargets(type).first()
-
-private fun bonusTargets(type: ItemBonusType): List<String> = when (type) {
-    ItemBonusType.ATTRIBUTE -> listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR")
-    ItemBonusType.BASIC_KNOWLEDGE -> listOf(
-        "Atletismo", "Brutalidade", "Luta", "Arremesso", "Energia", "Vitalidade", "Tolerância", "Regeneração",
-        "Furtividade", "Reflexos", "Movimento", "Pontaria", "Arcano", "Sentidos", "Controle", "Recuperação",
-        "Sanidade", "Intuição", "Religião", "Raciocínio", "Política", "Lábia", "Enganação", "Intimidação",
-    )
-    ItemBonusType.ACQUIRED_KNOWLEDGE -> listOf("")
-}
 
 @Composable
 internal fun EquipmentGlossaryDialog(onUse: ((com.kinderman.sdo.domain.catalog.GlossaryEntry) -> Unit)? = null, onDismiss: () -> Unit) {
