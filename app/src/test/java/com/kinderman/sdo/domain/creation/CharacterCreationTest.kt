@@ -2,6 +2,11 @@ package com.kinderman.sdo.domain.creation
 
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemAcquisitionSource
+import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.PowerSourceType
+import com.kinderman.sdo.domain.model.CharacterCreationStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -18,6 +23,23 @@ class CharacterCreationTest {
 
     @Test fun `heritage budget must be spent completely`() {
         assertNotNull(CharacterCreation.stepError(7, Character()))
+    }
+
+    @Test fun `valid review can finish the character`() {
+        val base = Character()
+        val character = base.copy(
+            name = "Iria",
+            race = "Humanos",
+            attributes = base.attributes.mapIndexed { index, attribute -> attribute.copy(value = if (index == 0) 10 else 0) },
+            learnedKnowledges = List(5) { index -> SpecialKnowledge(name = "K$index", value = if (index < 3) 5 else 0) },
+            pathName = "Caminho",
+            pathPillars = listOf("Um", "Dois", "Três"),
+            powers = listOf(Power(sourceType = PowerSourceType.PATH), Power(sourceType = PowerSourceType.PATH)),
+            inventory = listOf(InventoryItem(acquisitionSource = ItemAcquisitionSource.HERITAGE, heritageCost = 30)),
+            creationStep = CharacterCreation.STEP_COUNT,
+        )
+
+        assertEquals(CharacterCreationStatus.COMPLETED, CharacterCreation.finish(character).creationStatus)
     }
 
     @Test fun `five special knowledges start free and fifteen points may be split across any knowledge`() {

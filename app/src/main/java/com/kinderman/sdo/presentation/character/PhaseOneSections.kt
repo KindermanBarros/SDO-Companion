@@ -86,7 +86,7 @@ internal fun PhaseOneKnowledgeSection(
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
-                if (knowledge.requiresMilestoneChoice(level)) pendingMilestone = knowledge to level
+                if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
                 else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
             } },
             canAddEntry = canAddEntry,
@@ -102,7 +102,7 @@ internal fun PhaseOneKnowledgeSection(
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
-                if (knowledge.requiresMilestoneChoice(level)) pendingMilestone = knowledge to level
+                if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
                 else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
             } },
             canAddEntry = canAddEntry,
@@ -118,7 +118,7 @@ internal fun PhaseOneKnowledgeSection(
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
-                if (knowledge.requiresMilestoneChoice(level)) pendingMilestone = knowledge to level
+                if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
                 else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
             } },
             canAddEntry = canAddEntry,
@@ -149,8 +149,8 @@ internal fun PhaseOneKnowledgeSection(
     }
 }
 
-private fun SpecialKnowledge.requiresMilestoneChoice(requestedLevel: Int): Boolean =
-    listOf(3, 5).any { requestedLevel >= it && value < it && it !in milestoneLevels }
+private fun SpecialKnowledge.nextMilestone(requestedLevel: Int): Int? =
+    listOf(3, 5).firstOrNull { requestedLevel >= it && value < it && it !in milestoneLevels }
 
 private fun milestoneRewards(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): List<CatalogEntry> {
     val linked = catalog.filter { entry ->
