@@ -25,8 +25,10 @@ data class InitialKnowledgeAllocation(
 }
 
 fun Character.withKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catalog: List<CatalogEntry>): Character {
-    val level = requestedLevel.coerceIn(0, 5)
     val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId } ?: return this
+    val attributeLimit = attributes.firstOrNull { it.acronym.equals(current.attribute, true) }
+        ?.value?.coerceAtLeast(0) ?: 0
+    val level = requestedLevel.coerceIn(0, minOf(5, attributeLimit))
     val reached = buildSet {
         addAll(current.milestoneLevels)
         if (level >= 3) add(3)

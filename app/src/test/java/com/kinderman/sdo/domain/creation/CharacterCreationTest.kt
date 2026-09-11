@@ -8,6 +8,18 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CharacterCreationTest {
+    @Test fun `racial attribute bonus does not spend one of the ten creation points`() {
+        val character = Character(raceAttribute = "CAR", attributes = Character().attributes.map {
+            it.copy(value = if (it.acronym == "CAR") 3 else if (it.acronym == "FOR") 8 else 0)
+        })
+        assertEquals(10, CharacterCreation.attributePointsSpent(character))
+        assertNull(CharacterCreation.stepError(2, character))
+    }
+
+    @Test fun `heritage budget must be spent completely`() {
+        assertNotNull(CharacterCreation.stepError(7, Character()))
+    }
+
     @Test fun `five special knowledges start free and fifteen points may be split across any knowledge`() {
         val specials = (1..5).map { SpecialKnowledge(name = "Especial $it", value = 0) }
         val base = Character(learnedKnowledges = specials)
