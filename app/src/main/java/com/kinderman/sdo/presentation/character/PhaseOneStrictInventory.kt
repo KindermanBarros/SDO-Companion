@@ -55,6 +55,7 @@ import com.kinderman.sdo.domain.model.withRemovedAbility
 import com.kinderman.sdo.domain.model.withAddedAsh
 import com.kinderman.sdo.domain.model.AshPurity
 import com.kinderman.sdo.domain.model.heritageCostPerDose
+import com.kinderman.sdo.domain.model.handsRequired
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
@@ -124,6 +125,7 @@ internal fun PhaseOneStrictInventorySection(
                 }
                 Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality.label} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) Text("EMPUNHADURA // ${item.handsRequired()} MÃO(S)", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 Text("DURABILIDADE ${item.durabilityLabel}${when { item.isBroken -> " // [QUEBRADO]"; item.isScrap -> " // [SUCATA]"; else -> "" }}", color = if (item.isScrap || item.isBroken) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                 if (item.isScrap && item.category.contains("arma", true)) Text(
                     "SUCATA // DESVANTAGEM NO ATAQUE // DADO DE DANO −1 CATEGORIA // BÔNUS E MODIFICAÇÕES INATIVOS",
@@ -533,6 +535,7 @@ private fun StrictItemBuilderDialog(
                 Text(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
                 if (category == "Item") Text("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
                 else Text("${if (weapon) "Arma" else "Armadura / Acessório"} // ${material.name} // ${quality.label}")
+                if (weapon) Text("EMPUNHADURA // ${built.toInventoryItem().handsRequired()} MÃO(S)")
                 if (modifications.isNotEmpty()) Text("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (!initialCreation && category != "Item") {
