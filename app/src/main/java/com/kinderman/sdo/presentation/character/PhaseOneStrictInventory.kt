@@ -122,7 +122,7 @@ internal fun PhaseOneStrictInventorySection(
                 item.mechanicalEffects.forEach { effect ->
                     Text("${effect.type.name}: ${if (effect.value > 0) "+" else ""}${effect.value} ${effect.resolvedTargetId.ifBlank { effect.target }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                 }
-                val states = validItemStates(item)
+                val states = validItemStates(character, item)
                 ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
                     onChange(character.withItemInventoryState(item.id, value))
                 }
@@ -227,10 +227,13 @@ private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<Invent
     "Itens" to items.filterNot { it.category.contains("arma", true) },
 ).let { groups -> groups + ("Itens" to groups.getValue("Itens").filterNot { it.category.contains("armadura", true) || it.category.contains("acessório", true) }) }
 
-private fun validItemStates(item: InventoryItem): List<InventoryState> = buildList {
+private fun validItemStates(character: Character, item: InventoryItem): List<InventoryState> = buildList {
     if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
     if (item.category.contains("armadura", true) || item.category.contains("acessório", true)) add(InventoryState.EQUIPPED)
-    add(InventoryState.CONTAINER)
+    val quickAccessCount = character.inventory.count { it.inventoryState == InventoryState.CONTAINER && it.id != item.id }
+    if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.CONTAINER || quickAccessCount < 2)) {
+        add(InventoryState.CONTAINER)
+    }
     add(InventoryState.BACKPACK)
     add(InventoryState.STORED)
 }

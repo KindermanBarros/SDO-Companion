@@ -12,18 +12,33 @@ data class LimitBreakdown(
 )
 
 fun Character.generalProtectionBreakdown(): CalculatedValue {
-    val equipped = equippedInventoryItemsForBreakdown()
+    val typed = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }
+    val itemModifiers = if (typed.isNotEmpty()) {
+        typed.map { audit ->
+            ValueModifier(
+                sourceType = ModifierSourceType.ITEM,
+                sourceId = audit.itemId,
+                label = audit.itemName.ifBlank { "Item sem nome" },
+                value = audit.value,
+            )
+        }
+    } else {
+        val equipped = equippedInventoryItemsForBreakdown()
+        equipped.filterNot { it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
+            .filter { it.pg != 0 }
+            .map { item ->
+                ValueModifier(
+                    sourceType = ModifierSourceType.ITEM,
+                    sourceId = item.id,
+                    label = item.name.ifBlank { "Item sem nome" },
+                    value = item.pg,
+                )
+            }
+    }
     return CalculatedValue(
         base = 10,
         adjustment = protectionAdjustments["Geral"] ?: 0,
-        modifiers = equipped.filter { it.pg != 0 }.map { item ->
-            ValueModifier(
-                sourceType = ModifierSourceType.ITEM,
-                sourceId = item.id,
-                label = item.name.ifBlank { "Item sem nome" },
-                value = item.pg,
-            )
-        } + powerValueModifiers(AbilityModifierTarget.PROTECTION, "Geral"),
+        modifiers = itemModifiers + powerValueModifiers(AbilityModifierTarget.PROTECTION, "Geral"),
     )
 }
 

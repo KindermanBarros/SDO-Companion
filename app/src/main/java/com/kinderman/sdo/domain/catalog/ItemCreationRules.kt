@@ -111,7 +111,7 @@ object ItemCreationRules {
             modificationIds = modifications.map { it.id },
             gemIds = installedComponents.map { it.id },
             mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id)) +
-                equipmentEffects(base.id, pg, pl, baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) }, quality, armor))
+                equipmentEffects(base.id, pg, pl, baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) }, quality, armor, isShield = base.group == "Escudo"))
                 .distinctBy(ItemEffect::id),
         )
     }
@@ -184,8 +184,11 @@ object ItemCreationRules {
             CanonicalItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect })
             .distinctBy { it.id }
 
-    private fun equipmentEffects(baseId: String, pg: Int, pl: Int, agilityLimit: Int?, quality: ItemQuality, armor: Boolean) = buildList {
-        if (pg != 0) add(ItemEffect("$baseId:pg", ItemEffectType.PG, pg, condition = ItemEffectCondition.EQUIPPED, description = "Proteção geral do item."))
+    private fun equipmentEffects(baseId: String, pg: Int, pl: Int, agilityLimit: Int?, quality: ItemQuality, armor: Boolean, isShield: Boolean = false) = buildList {
+        if (pg != 0) {
+            val condition = if (isShield) ItemEffectCondition.WIELDED else ItemEffectCondition.EQUIPPED
+            add(ItemEffect("$baseId:pg", ItemEffectType.PG, pg, condition = condition, description = "Proteção geral do item."))
+        }
         if (pl != 0) add(ItemEffect("$baseId:pl", ItemEffectType.PL, pl, condition = ItemEffectCondition.EQUIPPED, description = "Proteção local do item."))
         agilityLimit?.let { add(ItemEffect("$baseId:la", ItemEffectType.AGILITY_LIMIT, it, condition = ItemEffectCondition.EQUIPPED, description = "Limite de Agilidade do item.")) }
         if (!armor) {

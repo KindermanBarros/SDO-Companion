@@ -393,7 +393,8 @@ data class Character(
     val equippedGeneralProtection: Int
         get() {
             val typed = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }
-            return if (typed.isNotEmpty()) typed.sumOf { it.value } else equippedItems().sumOf { it.pg }
+            return if (typed.isNotEmpty()) typed.sumOf { it.value }
+            else equippedItems().filterNot { it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }.sumOf { it.pg }
         }
 
     val equippedAgilityLimit: Int?
