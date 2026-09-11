@@ -1,9 +1,9 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
@@ -17,7 +17,7 @@ class CharacterCreationWizardResponsiveTest {
 
     @Test fun navigationStacksOnNarrowScreens() {
         compose.setContent {
-            Box(Modifier.width(360.dp)) {
+            Box(Modifier.requiredWidth(360.dp)) {
                 CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
             }
         }
@@ -29,7 +29,7 @@ class CharacterCreationWizardResponsiveTest {
 
     @Test fun navigationSharesARowOnWideScreens() {
         compose.setContent {
-            Box(Modifier.width(700.dp)) {
+            Box(Modifier.requiredWidth(700.dp)) {
                 CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
             }
         }
