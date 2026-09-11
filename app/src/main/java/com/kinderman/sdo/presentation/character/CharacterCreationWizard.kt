@@ -22,16 +22,15 @@ import com.kinderman.sdo.ui.TechPanel
 
 private val creationSteps = listOf(
     "Conceito e raça", "Atributos", "5 Conhecimentos Especiais", "15 Pontos de Conhecimento",
-    "Raça e origem", "Recursos", "Proteções", "Preparação do Caminho", "Caminho e Poderes",
-    "Equipamento inicial", "Inventário e corpo", "Traços", "Revisão",
+    "Preparação do Caminho", "Caminho e Poderes", "Equipamento inicial", "Inventário e corpo", "Revisão",
 )
 
 @Composable
-internal fun CharacterCreationWizard(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun CharacterCreationWizard(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit, modifier: Modifier = Modifier) {
     val step = character.creationStep.coerceIn(1, CharacterCreation.STEP_COUNT)
     val error = CharacterCreation.stepError(step, character)
     LazyColumn(
-        Modifier.fillMaxSize(),
+        modifier.fillMaxSize(),
         contentPadding = PaddingValues(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -44,7 +43,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                     2 -> Text("PONTOS DE ATRIBUTO // ${CharacterCreation.attributePointsSpent(character)} / 10")
                     3 -> Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.specialKnowledges(character).size} / 5 // NÍVEL INICIAL 0")
                     4 -> Text("PONTOS DISTRIBUÍDOS // ${CharacterCreation.knowledgePointsSpent(character)} / 15")
-                    10 -> Text("PONTOS DE HERANÇA // ${CharacterCreation.heritageSpent(character)} / 30")
+                    7 -> Text("PONTOS DE HERANÇA // ${CharacterCreation.heritageSpent(character)} / 30")
                 }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
@@ -57,18 +56,14 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 item { AttributeSection(character, enabled, onChange, showAttributes = false) }
                 item { PhaseOneKnowledgeSection(character, catalog, enabled, onChange, allowEntryChanges = false) }
             }
-            5 -> item { IdentitySection(character, catalog, enabled, onChange) }
-            6 -> item { ResourceSection(character, enabled, onChange) }
-            7 -> item { ProtectionSection(character, enabled, onChange) }
-            8 -> item { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, enabled, onChange) }
-            9 -> {
+            5 -> item { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, enabled, onChange) }
+            6 -> {
                 item { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, enabled, onChange) }
                 item { PhaseOnePowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, enabled, onChange) }
             }
-            10 -> item { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, enabled, onChange) }
-            11 -> item { BodySection(character, enabled, onChange) }
-            12 -> item { TraitSection(character, enabled, onChange) }
-            13 -> item { CreationReview(character) }
+            7 -> item { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, enabled, onChange) }
+            8 -> item { BodySection(character, enabled, onChange) }
+            9 -> item { CreationReview(character) }
         }
         item("creation-navigation") {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -76,7 +71,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 if (step < CharacterCreation.STEP_COUNT) {
                     TextButton(enabled = error == null, onClick = { onChange(character.copy(creationStep = step + 1)) }) { Text("CONTINUAR") }
                 } else {
-                    val allValid = (1..12).all { CharacterCreation.stepError(it, character) == null }
+                    val allValid = (1 until CharacterCreation.STEP_COUNT).all { CharacterCreation.stepError(it, character) == null }
                     TextButton(enabled = allValid, onClick = { onChange(CharacterCreation.finish(character)) }) { Text("FINALIZAR PERSONAGEM") }
                 }
             }

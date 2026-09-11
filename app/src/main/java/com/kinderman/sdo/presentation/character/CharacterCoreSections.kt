@@ -244,7 +244,9 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
     if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
-            IntegerField("Valor", skill.value, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value)))) }
+            IntegerField("Valor (máx. ${attribute.value.coerceAtLeast(0)})", skill.value, enabled, Modifier.weight(1f)) { value ->
+                onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value.coerceIn(0, attribute.value.coerceAtLeast(0))))))
+            }
             IntegerField("Mod.", skill.modifier, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(modifier = value)))) }
         }
         if (character.basicKnowledgeTotal(attribute.acronym, skill.name) != skill.value) {

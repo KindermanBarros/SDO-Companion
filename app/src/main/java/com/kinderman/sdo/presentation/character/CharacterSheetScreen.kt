@@ -168,6 +168,7 @@ fun CharacterSheetScreen(
                 catalog = catalog,
                 enabled = editable,
                 onChange = changeCharacter,
+                modifier = Modifier.padding(padding),
             ) else CharacterSheetPager(
                 character = current,
                 saveError = saveError,

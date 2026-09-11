@@ -9,7 +9,7 @@ import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.initialCreationCost
 
 object CharacterCreation {
-    const val STEP_COUNT = 13
+    const val STEP_COUNT = 9
     const val SPECIAL_KNOWLEDGE_CHOICES = 5
     const val KNOWLEDGE_POINTS = 15
 
@@ -19,7 +19,11 @@ object CharacterCreation {
         character.attributes.sumOf { attribute -> attribute.skills.sumOf { it.value.coerceAtLeast(0) } } +
             specialKnowledges(character).sumOf { it.value.coerceAtLeast(0) }
 
-    fun attributePointsSpent(character: Character): Int = character.attributes.sumOf { it.value }
+    fun attributePointsSpent(character: Character): Int =
+        character.attributes.sumOf { it.value.coerceAtLeast(0) } -
+            if (character.raceAttribute.isNotBlank() && character.attributes.any {
+                    it.acronym.equals(character.raceAttribute, true) && it.value > 0
+                }) 1 else 0
 
     fun heritageSpent(character: Character): Int = character.inventory.sumOf { it.initialCreationCost() }
 
@@ -30,16 +34,17 @@ object CharacterCreation {
             specialKnowledges(character).size != SPECIAL_KNOWLEDGE_CHOICES || specialKnowledges(character).any { it.value != 0 }
         }
         4 -> "Distribua exatamente 15 pontos entre qualquer Conhecimento.".takeIf { knowledgePointsSpent(character) != KNOWLEDGE_POINTS }
-        9 -> "Defina o Caminho, os 3 Pilares e os 2 Poderes iniciais.".takeIf {
+        6 -> "Defina o Caminho, os 3 Pilares e os 2 Poderes iniciais.".takeIf {
             character.pathName.isBlank() || character.pathPillars.count(String::isNotBlank) != 3 || character.powers.count { it.sourceType == PowerSourceType.PATH } < 2
         }
-        10 -> "O equipamento inicial ultrapassa os ${ItemCreationRules.HERITAGE_BUDGET} PH.".takeIf { heritageSpent(character) > ItemCreationRules.HERITAGE_BUDGET }
-        12 -> "Escolha um Traço Positivo e um Traço Negativo.".takeIf { character.positiveTraits.none(String::isNotBlank) || character.negativeTraits.none(String::isNotBlank) }
+        7 -> "Use exatamente os ${ItemCreationRules.HERITAGE_BUDGET} Pontos de Herança antes de continuar.".takeIf {
+            heritageSpent(character) != ItemCreationRules.HERITAGE_BUDGET
+        }
         else -> null
     }
 
     fun finish(character: Character, now: Long = System.currentTimeMillis()): Character {
-        val error = (1..12).firstNotNullOfOrNull { stepError(it, character) }
+        val error = (1 until STEP_COUNT).firstNotNullOfOrNull { stepError(it, character) }
         require(error == null) { error.orEmpty() }
         val startingItems = buildList {
             if (character.inventory.none { it.name.equals("Roupas simples", true) }) add(InventoryItem(name = "Roupas simples", category = "Item", quantity = 1, acquisitionSource = ItemAcquisitionSource.NARRATIVE))
