@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.PathPresets
 import com.kinderman.sdo.domain.catalog.RaceCatalog
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.userFacingSource
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.formattedAbilityCost
@@ -35,7 +36,7 @@ internal fun CompendiumDetails(entry: CatalogEntry) {
             "Ativação" to entry.activationCondition, "Encerramento" to entry.deactivationCondition,
             "Aprimoramentos" to entry.enhancements, "Efeito mecânico" to entry.mechanicalEffect,
             "Atributo" to entry.relatedAttribute, "Valor inicial" to entry.initialValue?.toString().orEmpty(),
-            "Pré-requisitos" to entry.prerequisites.joinToString("; "), "Fonte" to entry.source,
+            "Pré-requisitos" to entry.prerequisites.joinToString("; "), "Fonte" to entry.userFacingSource(),
             "Referência" to entry.ruleReference, "Versão" to entry.version.toString(),
             "Palavras-chave" to entry.keywords.joinToString(", "),
         )

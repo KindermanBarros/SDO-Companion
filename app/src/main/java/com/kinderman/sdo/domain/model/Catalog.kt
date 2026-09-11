@@ -90,3 +90,7 @@ data class CatalogEntry(
         ).joinToString(" "))
     }
 }
+
+fun CatalogEntry.userFacingSource(): String = source
+    .replace(Regex("^\\s*\\d+\\s+Exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")
+    .replace(Regex("^\\s*Exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")

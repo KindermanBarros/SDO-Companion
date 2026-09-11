@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.userFacingSource
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice
@@ -46,14 +47,14 @@ internal fun CatalogPickerDialog(
 
     val attributes = remember(entries) { entries.map(CatalogEntry::relatedAttribute).filter(String::isNotBlank).distinct().sorted() }
     val categories = remember(entries) { entries.map(CatalogEntry::group).filter(String::isNotBlank).distinct().sorted() }
-    val sources = remember(entries) { entries.map(CatalogEntry::source).filter(String::isNotBlank).distinct().sorted() }
+    val sources = remember(entries) { entries.map(CatalogEntry::userFacingSource).filter(String::isNotBlank).distinct().sorted() }
     val filtered = remember(entries, query, selectedAttribute, selectedCategory, selectedSource) {
         val needle = query.trim()
         entries.filter { entry ->
             (needle.isEmpty() || entry.searchableText().contains(needle, true)) &&
                 (selectedAttribute.isEmpty() || entry.relatedAttribute.equals(selectedAttribute, true)) &&
                 (selectedCategory.isEmpty() || entry.group.equals(selectedCategory, true)) &&
-                (selectedSource.isEmpty() || entry.source.equals(selectedSource, true))
+                (selectedSource.isEmpty() || entry.userFacingSource().equals(selectedSource, true))
         }
     }
 
@@ -150,7 +151,7 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
         DetailLine("ENCERRAMENTO", entry.deactivationCondition)
         if (!isKnowledge) DetailLine("PRÉ-REQUISITOS", entry.prerequisites.joinToString("; "))
         if (entry.mechanicalEffect != entry.summary) DetailLine("EFEITO MECÂNICO", entry.mechanicalEffect)
-        DetailLine("FONTE", entry.source)
+        DetailLine("FONTE", entry.userFacingSource())
         if (!isKnowledge) DetailLine("REFERÊNCIA", entry.ruleReference)
         DetailLine("PALAVRAS-CHAVE", entry.keywords.joinToString(", "))
         DetailLine("VERSÃO", entry.version.toString())
