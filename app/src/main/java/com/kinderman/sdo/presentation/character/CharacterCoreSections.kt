@@ -244,8 +244,9 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
     if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
-            IntegerField("Valor (máx. ${attribute.value.coerceAtLeast(0)})", skill.value, enabled, Modifier.weight(1f)) { value ->
-                onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value.coerceIn(0, attribute.value.coerceAtLeast(0))))))
+            val valueLimit = attribute.value.coerceIn(0, 5)
+            ChoiceField("Valor (máx. $valueLimit)", skill.value.coerceIn(0, valueLimit), (0..valueLimit).toList(), enabled, Modifier.weight(1f)) { value ->
+                onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value))))
             }
             IntegerField("Mod.", skill.modifier, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(modifier = value)))) }
         }
@@ -259,9 +260,10 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
 internal fun SpecialKnowledgeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
         SectionHeader("05", "Conhecimentos especiais")
-        KnowledgeList("Aprendidos", character.learnedKnowledges, enabled, character::acquiredKnowledgeValue) { onChange(character.copy(learnedKnowledges = it)) }
-        KnowledgeList("Arcanos", character.arcaneKnowledges, enabled, character::acquiredKnowledgeValue) { onChange(character.copy(arcaneKnowledges = it)) }
-        KnowledgeList("Técnicas de batalha", character.battleTechniques, enabled, character::acquiredKnowledgeValue) { onChange(character.copy(battleTechniques = it)) }
+        val attributeLimits = character.attributes.associate { it.acronym to it.value.coerceIn(0, 5) }
+        KnowledgeList("Aprendidos", character.learnedKnowledges, enabled, character::acquiredKnowledgeValue, attributeLimits) { onChange(character.copy(learnedKnowledges = it)) }
+        KnowledgeList("Arcanos", character.arcaneKnowledges, enabled, character::acquiredKnowledgeValue, attributeLimits) { onChange(character.copy(arcaneKnowledges = it)) }
+        KnowledgeList("Técnicas de batalha", character.battleTechniques, enabled, character::acquiredKnowledgeValue, attributeLimits) { onChange(character.copy(battleTechniques = it)) }
     }
 }
 
@@ -271,6 +273,7 @@ private fun KnowledgeList(
     values: List<SpecialKnowledge>,
     enabled: Boolean,
     totalValue: (String) -> Int,
+    attributeLimits: Map<String, Int>,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
     Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
@@ -281,9 +284,12 @@ private fun KnowledgeList(
                 RemoveButton(enabled, "Remover conhecimento") { onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index }) }
             }
             HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
+            val attributes = attributeLimits.keys.toList()
+            val selectedAttribute = knowledge.attribute.takeIf { it in attributes } ?: attributes.firstOrNull().orEmpty()
+            val valueLimit = attributeLimits[selectedAttribute] ?: 0
             TwoFields(
-                { HudTextField("Atributo", knowledge.attribute, it, enabled = enabled) { value -> onValues(values.replace(index, knowledge.copy(attribute = value.uppercase()))) } },
-                { IntegerField("Valor", knowledge.value, enabled, it) { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
+                { ChoiceField("Atributo", selectedAttribute, attributes, enabled, it) { value -> onValues(values.replace(index, knowledge.copy(attribute = value, value = knowledge.value.coerceAtMost(attributeLimits[value] ?: 0)))) } },
+                { ChoiceField("Valor (máx. $valueLimit)", knowledge.value.coerceIn(0, valueLimit), (0..valueLimit).toList(), enabled, it) { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
             )
             if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value) {
                 Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
