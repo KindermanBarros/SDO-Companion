@@ -246,19 +246,19 @@ private fun StrictItemBuilderDialog(
     val step = draft.step
     val category = draft.category
     val weapon = category == "Arma"
-    val basePool = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
-    val base = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.first()
-    val materialPool = if (weapon) ItemCreationRules.weaponMaterials else ItemCreationRules.armorMaterials
-    val material = materialPool.firstOrNull { it.id == draft.materialId }
+    val basePool: List<ItemPart> = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
+    val base: ItemPart = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.first()
+    val materialPool: List<ItemPart> = if (weapon) ItemCreationRules.weaponMaterials else ItemCreationRules.armorMaterials
+    val material: ItemPart = materialPool.firstOrNull { it.id == draft.materialId }
         ?: materialPool.firstOrNull { it.id == if (!weapon && base.id == "gibao") "organico" else "ligas_comuns" }
         ?: materialPool.first()
-    val modifications = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
+    val modifications: List<ItemPart> = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
         .filter { it.id in draft.modificationIds }
     val gemSlots = draft.gemSlots
     val technologySlots = draft.technologySlots
     val customName = draft.customName
     val quality = draft.quality
-    val gems = ItemCreationRules.gemComponents.filter { it.id in draft.gemIds }
+    val gems: List<ItemPart> = ItemCreationRules.gemComponents.filter { it.id in draft.gemIds }
     val manualPrice = draft.manualPrice
     val commonName = draft.commonName
     val commonEffect = draft.commonEffect
@@ -266,14 +266,14 @@ private fun StrictItemBuilderDialog(
     val commonQuantity = draft.commonQuantity
 
     val initialCreation = remainingHeritage != null
-    val bases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
-    val materials = when {
+    val bases: List<ItemPart> = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
+    val materials: List<ItemPart> = when {
         weapon -> ItemCreationRules.weaponMaterials
         base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
         else -> ItemCreationRules.armorMaterials
     }.let { list -> if (initialCreation) list.filter { it.creationCost != null } else list }
-    val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
-    val built = ItemCreationRules.build(
+    val availableModifications: List<ItemPart> = ItemCreationRules.compatibleModifications(base, weapon)
+    val built: BuiltItem = ItemCreationRules.build(
         base = base,
         material = material,
         modifications = modifications,
@@ -325,23 +325,23 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 2 && category != "Item") {
                     HudTextField("Nome personalizado", customName) { onDraftChange(draft.copy(customName = it)) }
-                    ChoiceField("Tipo", base.id, bases.map { it.id }, true, display = { id -> bases.first { it.id == id }.name }) { id ->
+                    ChoiceField<String>("Tipo", base.id, bases.map { it.id }, true, display = { id: String -> bases.first { it.id == id }.name }) { id: String ->
                         val selected = bases.first { it.id == id }
                         val nextMaterialId = if (!weapon && selected.id == "gibao") "organico" else draft.materialId
                         onDraftChange(draft.copy(baseId = id, materialId = nextMaterialId, modificationIds = modifications.filter { it in ItemCreationRules.compatibleModifications(selected, weapon) }.map { it.id }))
                     }
                 }
                 if (step == 3 && category != "Item") {
-                    ChoiceField("Material", material.id, materials.map { it.id }, true, display = { id -> materials.first { it.id == id }.name }) { id -> onDraftChange(draft.copy(materialId = id)) }
+                    ChoiceField<String>("Material", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String -> onDraftChange(draft.copy(materialId = id)) }
                     Text(material.effect, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (step == 4 && category != "Item") {
-                    ChoiceField("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { ItemQuality.valueOf(it).label }) { onDraftChange(draft.copy(quality = ItemQuality.valueOf(it))) }
+                    ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
                     Text("CUSTO ATUAL // ${built.creationCost ?: "#"} PH // SALDO ${remainingHeritage?.minus(built.creationCost ?: 0) ?: "—"}", color = MaterialTheme.colorScheme.primary)
                 }
                 if (step == 5 && category != "Item") {
                     Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                    availableModifications.forEach { modification ->
+                    availableModifications.forEach { modification: ItemPart ->
                         val checked = modification in modifications
                         Row(Modifier.fillMaxWidth().clickable { onDraftChange(draft.copy(modificationIds = strictToggleModification(modifications, modification).map { it.id })) }) {
                             Checkbox(checked, onCheckedChange = { onDraftChange(draft.copy(modificationIds = strictToggleModification(modifications, modification).map { it.id })) })
@@ -357,13 +357,13 @@ private fun StrictItemBuilderDialog(
                         { IntegerField("Espaços de Gema", gemSlots, true, it) { value -> onDraftChange(draft.copy(gemSlots = value.coerceIn(gems.size, 5))) } },
                         { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> onDraftChange(draft.copy(technologySlots = value.coerceIn(0, 5))) } },
                     )
-                    val availableGems = ItemCreationRules.gemComponents.filterNot { candidate -> gems.any { it.id == candidate.id } }
+                    val availableGems: List<ItemPart> = ItemCreationRules.gemComponents.filterNot { candidate: ItemPart -> gems.any { it.id == candidate.id } }
                     if (quality != ItemQuality.MUNDANE && gems.size < gemSlots && availableGems.isNotEmpty()) {
-                        ChoiceField("Adicionar gema", "", availableGems.map { it.id }, true, display = { id -> availableGems.firstOrNull { it.id == id }?.name ?: "Selecionar" }) { id ->
+                        ChoiceField<String>("Adicionar gema", "", availableGems.map { it.id }, true, display = { id: String -> availableGems.firstOrNull { it.id == id }?.name ?: "Selecionar" }) { id: String ->
                             onDraftChange(draft.copy(gemIds = draft.gemIds + id))
                         }
                     }
-                    gems.forEach { gem ->
+                    gems.forEach { gem: ItemPart ->
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Column(Modifier.weight(1f)) { Text(gem.name); Text(gem.effect, style = MaterialTheme.typography.bodySmall) }
                             RemoveButton(true, "Remover ${gem.name}") { onDraftChange(draft.copy(gemIds = draft.gemIds - gem.id)) }
