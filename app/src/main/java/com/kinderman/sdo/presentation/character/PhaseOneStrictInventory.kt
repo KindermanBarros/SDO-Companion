@@ -71,7 +71,7 @@ internal fun PhaseOneStrictInventorySection(
             color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleLarge,
         )
-        Text("Bônus mecânicos usam somente seletores controlados de tipo e destino.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        Text("Efeitos são definidos pelos componentes do item e aplicados automaticamente quando equipado.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) {
             onChange(character.copy(containerCapacity = it.coerceAtLeast(0)))
         }
@@ -264,7 +264,7 @@ private fun StrictItemBuilderDialog(
         base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
         else -> ItemCreationRules.armorMaterials
     }.let { list -> if (initialCreation) list.filter { it.creationCost != null } else list }
-    val availableModifications = if (weapon) ItemCreationRules.weaponModifications else ItemCreationRules.armorModifications
+    val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
     val built = ItemCreationRules.build(
         base = base,
         material = material,
@@ -273,7 +273,6 @@ private fun StrictItemBuilderDialog(
         technologySlots = technologySlots,
         customName = customName,
         quality = quality,
-        bonuses = emptyList(),
         components = gems,
         priceOverride = manualPrice.toIntOrNull().takeIf { !initialCreation },
     )
@@ -331,6 +330,7 @@ private fun StrictItemBuilderDialog(
                 ChoiceField("Tipo", base.id, bases.map { it.id }, true, display = { id -> bases.first { it.id == id }.name }) { id ->
                     base = bases.first { it.id == id }
                     val selected = base
+                    modifications = modifications.filter { it in ItemCreationRules.compatibleModifications(selected, weapon) }
                     if (!weapon && selected.id == "gibao") {
                         material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
                     }
