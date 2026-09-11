@@ -15,21 +15,27 @@ import org.junit.Test
 class CharacterCreationWizardResponsiveTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun navigationStacksOnNarrowScreensAndSharesARowOnWideScreens() {
-        fun positions(width: Int): Pair<Float, Float> {
-            compose.setContent {
-                Box(Modifier.width(width.dp)) {
-                    CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
-                }
+    @Test fun navigationStacksOnNarrowScreens() {
+        compose.setContent {
+            Box(Modifier.width(360.dp)) {
+                CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
             }
-            val back = compose.onNodeWithTag("creation-back").fetchSemanticsNode().boundsInRoot.top
-            val forward = compose.onNodeWithTag("creation-forward").fetchSemanticsNode().boundsInRoot.top
-            return back to forward
         }
+        val back = compose.onNodeWithTag("creation-back").fetchSemanticsNode().boundsInRoot.top
+        val forward = compose.onNodeWithTag("creation-forward").fetchSemanticsNode().boundsInRoot.top
 
-        val narrow = positions(360)
-        assertNotEquals(narrow.first, narrow.second)
-        val wide = positions(700)
-        assertEquals(wide.first, wide.second, 1f)
+        assertNotEquals(back, forward)
+    }
+
+    @Test fun navigationSharesARowOnWideScreens() {
+        compose.setContent {
+            Box(Modifier.width(700.dp)) {
+                CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
+            }
+        }
+        val back = compose.onNodeWithTag("creation-back").fetchSemanticsNode().boundsInRoot.top
+        val forward = compose.onNodeWithTag("creation-forward").fetchSemanticsNode().boundsInRoot.top
+
+        assertEquals(back, forward, 1f)
     }
 }
