@@ -10,10 +10,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CutCornerShape
 import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -67,12 +69,24 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
         }
         item("creation-navigation") {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                TextButton(enabled = step > 1, onClick = { onChange(character.copy(creationStep = step - 1)) }) { Text("VOLTAR") }
+                OutlinedButton(
+                    enabled = step > 1,
+                    shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                    onClick = { onChange(character.copy(creationStep = step - 1)) },
+                ) { Text("VOLTAR") }
                 if (step < CharacterCreation.STEP_COUNT) {
-                    TextButton(enabled = error == null, onClick = { onChange(character.copy(creationStep = step + 1)) }) { Text("CONTINUAR") }
+                    Button(
+                        enabled = error == null,
+                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                        onClick = { onChange(character.copy(creationStep = step + 1)) },
+                    ) { Text("CONTINUAR") }
                 } else {
                     val allValid = (1 until CharacterCreation.STEP_COUNT).all { CharacterCreation.stepError(it, character) == null }
-                    TextButton(enabled = allValid, onClick = { onChange(CharacterCreation.finish(character)) }) { Text("FINALIZAR PERSONAGEM") }
+                    Button(
+                        enabled = allValid,
+                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                        onClick = { onChange(CharacterCreation.finish(character)) },
+                    ) { Text("FINALIZAR PERSONAGEM") }
                 }
             }
         }
