@@ -4,6 +4,7 @@ import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.ItemBonus
 import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.ItemEffectType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -85,5 +86,10 @@ class ItemCreationRulesTest {
         assertEquals(4, item.creationCost)
         assertTrue(item.effect.contains(gem.name))
         assertTrue(item.effect.contains("Espaços de Gema: 1"))
+        assertEquals(gem.id, item.gemIds.single())
+        assertEquals(ItemEffectType.KNOWLEDGE, item.mechanicalEffects.single().type)
+        assertEquals("*", item.mechanicalEffects.single().target)
+        assertEquals("faca", item.baseId)
+        assertEquals("madeira", item.materialId)
     }
 }

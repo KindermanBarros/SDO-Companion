@@ -19,6 +19,9 @@ import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemBonus
 import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemAcquisitionSource
+import com.kinderman.sdo.domain.model.ItemEffect
+import com.kinderman.sdo.domain.model.ItemEffectCondition
+import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
@@ -207,9 +210,13 @@ class CharacterConverters {
             item.bonuses.joinToString(BONUS_ROW) { bonus ->
                 listOf(bonus.type.name, bonus.target, bonus.value.toString()).joinToString(BONUS_FIELD)
             },
-            "canonical-v2", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            "canonical-v3", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
             item.acquisitionSource.name, item.heritageCost?.toString().orEmpty(), item.purchasePrice?.toString().orEmpty(),
             item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
+            item.baseId, item.materialId, item.modificationIds.nested(), item.gemIds.nested(),
+            item.mechanicalEffects.joinToString(MODIFIER_ROW) { effect ->
+                listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description).joinToString(MODIFIER_FIELD)
+            },
         ).row()
     }
 
@@ -234,12 +241,28 @@ class CharacterConverters {
                 linkedAshId = p.getOrElse(15) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
                 ashPurity = p.enumAt(16, AshPurity.RAW),
                 acquisitionSource = p.enumAt(17, ItemAcquisitionSource.NARRATIVE),
-                heritageCost = p.getOrNull(18)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v2" },
-                purchasePrice = p.getOrNull(19)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v2" },
-                catalogEntryId = p.getOrElse(20) { "" }.takeIf { p.getOrNull(13) == "canonical-v2" }.orEmpty(),
-                catalogVersion = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v2" } ?: 0,
-                acquiredAt = p.getOrNull(22)?.toLongOrNull().takeIf { p.getOrNull(13) == "canonical-v2" } ?: 0,
-                canonical = p.getOrNull(23)?.toBooleanStrictOrNull().takeIf { p.getOrNull(13) == "canonical-v2" } ?: false,
+                heritageCost = p.getOrNull(18)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true },
+                purchasePrice = p.getOrNull(19)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true },
+                catalogEntryId = p.getOrElse(20) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
+                catalogVersion = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
+                acquiredAt = p.getOrNull(22)?.toLongOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
+                canonical = p.getOrNull(23)?.toBooleanStrictOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: false,
+                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }.orEmpty(),
+                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }.orEmpty(),
+                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }?.toNestedList().orEmpty(),
+                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }?.toNestedList().orEmpty(),
+                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }
+                    ?.split(MODIFIER_ROW)?.filter(String::isNotBlank)?.map { encoded ->
+                        val fields = encoded.split(MODIFIER_FIELD)
+                        ItemEffect(
+                            id = fields.getOrElse(0) { "" },
+                            type = runCatching { ItemEffectType.valueOf(fields.getOrElse(1) { "" }) }.getOrDefault(ItemEffectType.DURABILITY),
+                            value = fields.getOrNull(2)?.toIntOrNull() ?: 0,
+                            target = fields.getOrElse(3) { "" },
+                            condition = runCatching { ItemEffectCondition.valueOf(fields.getOrElse(4) { "" }) }.getOrDefault(ItemEffectCondition.WIELDED),
+                            description = fields.getOrElse(5) { "" },
+                        )
+                    }.orEmpty(),
             )
         }
     }

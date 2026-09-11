@@ -1,0 +1,12 @@
+{
+  "$schema": "./item-components.schema.json",
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "kind": "GEM",
+  "entries": [
+    {"id":"gema_menor_aleatoria","name":"Gema Menor","compatibleItemTypes":["Arma"],"creationCost":2,"price":45,"effect":{"type":"KNOWLEDGE","value":1,"target":"*","condition":"WIELDED","description":"+1 em um Conhecimento aleatório enquanto a arma estiver empunhada."}},
+    {"id":"gema_aprimoramento_menor","name":"Gema de Aprimoramento Menor","compatibleItemTypes":["Arma"],"creationCost":3,"price":90,"effect":{"type":"MAGIC_DAMAGE","value":1,"target":"damage","condition":"WIELDED","description":"A arma causa +1 de dano mágico enquanto estiver empunhada."}},
+    {"id":"gema_aleatoria","name":"Gema Maior","compatibleItemTypes":["Arma"],"creationCost":4,"price":150,"effect":{"type":"ATTRIBUTE","value":1,"target":"*","condition":"WIELDED","description":"+1 em um Atributo aleatório enquanto a arma estiver empunhada."}},
+    {"id":"gema_aprimoramento_maior","name":"Gema de Aprimoramento Maior","compatibleItemTypes":["Arma"],"creationCost":6,"price":400,"effect":{"type":"GEM_POWER","value":0,"target":"gem_power","condition":"WIELDED","description":"Libera um Poder de Combate específico de gema enquanto a arma estiver empunhada."}}
+  ]
+}

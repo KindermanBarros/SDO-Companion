@@ -15,6 +15,25 @@ data class ItemPart(
     val agilityLimit: Int? = null,
 )
 
+enum class ItemEffectType {
+    ATTRIBUTE,
+    KNOWLEDGE,
+    MAGIC_DAMAGE,
+    DURABILITY,
+    GEM_POWER,
+}
+
+enum class ItemEffectCondition { EQUIPPED, WIELDED }
+
+data class ItemEffect(
+    val id: String,
+    val type: ItemEffectType,
+    val value: Int = 0,
+    val target: String = "",
+    val condition: ItemEffectCondition = ItemEffectCondition.WIELDED,
+    val description: String = "",
+)
+
 enum class ItemBonusType(val label: String, val heritageCost: Int) {
     ATTRIBUTE("Atributo", 3),
     BASIC_KNOWLEDGE("Conhecimento básico", 2),
@@ -68,6 +87,11 @@ data class BuiltItem(
     val agilityLimit: Int? = null,
     val quality: ItemQuality = ItemQuality.COMMON,
     val bonuses: List<ItemBonus> = emptyList(),
+    val baseId: String = "",
+    val materialId: String = "",
+    val modificationIds: List<String> = emptyList(),
+    val gemIds: List<String> = emptyList(),
+    val mechanicalEffects: List<ItemEffect> = emptyList(),
 ) {
     fun toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
         name = name,
@@ -85,6 +109,11 @@ data class BuiltItem(
         agilityLimit = agilityLimit,
         quality = quality.label,
         bonuses = bonuses,
+        baseId = baseId,
+        materialId = materialId,
+        modificationIds = modificationIds,
+        gemIds = gemIds,
+        mechanicalEffects = mechanicalEffects,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
         heritageCost = creationCost.takeIf { initialCreation },
         purchasePrice = price.takeIf { !initialCreation },
