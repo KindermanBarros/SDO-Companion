@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SDO item bases and materials catalog v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "catalogVersion", "entries"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "catalogVersion": { "type": "integer", "minimum": 1 },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "group", "kind", "creationCost", "price", "load", "durability", "region", "effect", "pg", "pl", "agilityLimit"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "group": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["WEAPON_MATERIAL", "ARMOR_MATERIAL", "WEAPON_BASE", "ARMOR_BASE"] },
+          "creationCost": { "type": ["integer", "null"], "minimum": 0 },
+          "price": { "type": "integer", "minimum": 0 },
+          "load": { "type": "integer" },
+          "durability": { "type": "integer", "minimum": 0 },
+          "region": { "type": "string" },
+          "effect": { "type": "string" },
+          "pg": { "type": "integer" },
+          "pl": { "type": "integer" },
+          "agilityLimit": { "type": ["integer", "null"], "minimum": 0 }
+        }
+      }
+    }
+  }
+}
