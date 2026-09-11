@@ -34,6 +34,7 @@ enum class ItemEffectType {
     MAGIC_DAMAGE,
     DURABILITY,
     GEM_POWER,
+    RULE,
 }
 
 enum class ItemEffectCondition { EQUIPPED, WIELDED }
@@ -132,31 +133,6 @@ data class BuiltItem(
         purchasePrice = price.takeIf { !initialCreation },
     )
 }
-
-fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
-    name = name,
-    load = load,
-    durability = durability,
-    region = region,
-    effect = listOfNotNull(
-        "Categoria: $group".takeIf { group.isNotBlank() },
-        "Preço de referência: ${price} E$".takeIf { price > 0 },
-        summary.takeIf(String::isNotBlank),
-    ).joinToString("\n"),
-    pg = protectionValue("PG"),
-    pl = protectionValue("PL"),
-    category = group,
-    agilityLimit = Regex("LA\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull(),
-    acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
-    heritageCost = creationCost.toIntOrNull().takeIf { initialCreation },
-    purchasePrice = price.takeIf { !initialCreation },
-    catalogEntryId = id,
-    catalogVersion = version,
-    canonical = true,
-)
-
-private fun CatalogEntry.protectionValue(label: String): Int =
-    Regex("(?:^|[;\\n]\\s*)$label\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull() ?: 0
 
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 

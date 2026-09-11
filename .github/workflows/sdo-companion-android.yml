@@ -3,9 +3,9 @@ name: SDO Companion Android release
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'catalogs/**', 'tools/**', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   pull_request:
-    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'catalogs/**', 'tools/**', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   workflow_dispatch:
 
 permissions:

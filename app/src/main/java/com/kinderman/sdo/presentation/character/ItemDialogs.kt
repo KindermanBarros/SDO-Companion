@@ -25,12 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.EquipmentGlossary
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
+import com.kinderman.sdo.domain.catalog.toInventoryItem
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.matchesRegion
-import com.kinderman.sdo.domain.model.toInventoryItem
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice

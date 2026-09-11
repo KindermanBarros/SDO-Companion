@@ -29,7 +29,13 @@
           "agilityLimit": { "type": ["integer", "null"], "minimum": 0 }
           ,"source": { "type": "string" }
           ,"ruleReference": { "type": "string" }
-        }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "kind": { "const": "CATALOG_ITEM" } } },
+            "then": { "required": ["source", "ruleReference"] }
+          }
+        ]
       }
     }
   }

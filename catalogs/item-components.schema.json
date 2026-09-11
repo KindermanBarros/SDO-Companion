@@ -44,5 +44,15 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "GEM" } } },
+      "then": { "properties": { "entries": { "items": { "required": ["tier"] } } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "MODIFICATION" } } },
+      "then": { "properties": { "entries": { "items": { "required": ["compatibleBaseGroups", "compatibleBaseIds", "load", "durability", "region", "pg", "pl", "agilityLimit"] } } } }
+    }
+  ]
 }
