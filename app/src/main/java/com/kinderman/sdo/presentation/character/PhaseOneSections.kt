@@ -28,6 +28,7 @@ import com.kinderman.sdo.domain.catalog.toSpecialKnowledge
 import com.kinderman.sdo.domain.catalog.toStructuredPower
 import com.kinderman.sdo.domain.catalog.withStructuredPathPreset
 import com.kinderman.sdo.domain.catalog.withKnowledgeLevel
+import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
@@ -47,6 +48,7 @@ import com.kinderman.sdo.domain.model.formattedAbilityCost
 import com.kinderman.sdo.domain.model.formattedAbilityExecution
 import com.kinderman.sdo.domain.model.withAddedPower
 import com.kinderman.sdo.domain.model.withUpdatedPower
+import com.kinderman.sdo.domain.model.withAddedAbility
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.ArcanePanel
 import com.kinderman.sdo.ui.Carbon
@@ -70,6 +72,7 @@ internal fun PhaseOneKnowledgeSection(
     lockLevels: Boolean = false,
     allowEntryChanges: Boolean = true,
 ) {
+    var pendingMilestone by remember { mutableStateOf<Pair<SpecialKnowledge, Int>?>(null) }
     val totalEntries = character.learnedKnowledges.size + character.arcaneKnowledges.size + character.battleTechniques.size
     val canAddEntry = allowEntryChanges && (selectionLimit == null || totalEntries < selectionLimit)
     TechPanel {
@@ -82,7 +85,10 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
-            onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            onLevelChange = { knowledge, level -> if (!lockLevels) {
+                if (knowledge.requiresMilestoneChoice(level)) pendingMilestone = knowledge to level
+                else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
+            } },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
@@ -95,7 +101,10 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
-            onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            onLevelChange = { knowledge, level -> if (!lockLevels) {
+                if (knowledge.requiresMilestoneChoice(level)) pendingMilestone = knowledge to level
+                else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
+            } },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
@@ -108,12 +117,56 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
-            onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
+            onLevelChange = { knowledge, level -> if (!lockLevels) {
+                if (knowledge.requiresMilestoneChoice(level)) pendingMilestone = knowledge to level
+                else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
+            } },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
         ) { onChange(character.copy(battleTechniques = it)) }
     }
+    pendingMilestone?.let { (knowledge, level) ->
+        val rewards = milestoneRewards(knowledge, catalog)
+        CatalogPickerDialog(
+            title = "RECOMPENSA DE DOMÍNIO // NÍVEL $level",
+            entries = rewards,
+            onDismiss = { pendingMilestone = null },
+            onSelect = { reward ->
+                var updated = character.withKnowledgeLevel(knowledge.id, level, catalog)
+                updated = when (reward.kind) {
+                    CatalogKind.POWER -> updated.withAddedPower(reward.toStructuredPower(PowerSourceType.KNOWLEDGE, knowledge.id))
+                    CatalogKind.MAGIC, CatalogKind.RUNE -> updated.withAddedAbility(reward.toMysticAbility())
+                    CatalogKind.ACQUIRED_KNOWLEDGE -> updated.copy(learnedKnowledges = updated.learnedKnowledges + reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id))
+                    CatalogKind.ARCANE_KNOWLEDGE -> updated.copy(arcaneKnowledges = updated.arcaneKnowledges + reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id))
+                    CatalogKind.BATTLE_TECHNIQUE -> updated.copy(battleTechniques = updated.battleTechniques + reward.toSpecialKnowledge().copy(value = 1, specializationParentId = knowledge.id))
+                    else -> updated
+                }
+                onChange(updated)
+                pendingMilestone = null
+            },
+        )
+    }
+}
+
+private fun SpecialKnowledge.requiresMilestoneChoice(requestedLevel: Int): Boolean =
+    listOf(3, 5).any { requestedLevel >= it && value < it && it !in milestoneLevels }
+
+private fun milestoneRewards(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): List<CatalogEntry> {
+    val linked = catalog.filter { entry ->
+        entry.sourceKnowledge.equals(knowledge.name, true) ||
+            entry.group.equals(knowledge.name, true) ||
+            entry.keywords.any { it.equals(knowledge.name, true) }
+    }
+    val sourceKind = catalog.firstOrNull { it.id == knowledge.catalogEntryId }?.kind
+    val allowedKinds = when (sourceKind) {
+        CatalogKind.ARCANE_KNOWLEDGE -> setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ARCANE_KNOWLEDGE)
+        CatalogKind.BATTLE_TECHNIQUE -> setOf(CatalogKind.POWER, CatalogKind.BATTLE_TECHNIQUE)
+        else -> setOf(CatalogKind.POWER, CatalogKind.ACQUIRED_KNOWLEDGE)
+    }
+    return (linked.filter { it.kind in allowedKinds } + catalog.filter {
+        it.kind in allowedKinds && it.kind in setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE) && it.id != knowledge.catalogEntryId
+    }).distinctBy { it.id }
 }
 
 @Composable
