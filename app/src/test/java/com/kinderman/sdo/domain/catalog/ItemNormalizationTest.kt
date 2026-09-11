@@ -17,6 +17,7 @@ import com.kinderman.sdo.domain.model.ItemCondition
 import com.kinderman.sdo.domain.model.hasScrapAttackDisadvantage
 import com.kinderman.sdo.domain.model.scrapDamageDieCategoryPenalty
 import com.kinderman.sdo.domain.model.handsRequired
+import com.kinderman.sdo.domain.model.inventoryState
 import com.kinderman.sdo.domain.model.wieldedHandsUsed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -89,7 +90,29 @@ class ItemNormalizationTest {
 
         val broken = scrap.damageInventoryItem("weapon")
         assertEquals(ItemCondition.BROKEN, broken.inventory.single().itemCondition)
+        assertEquals(InventoryState.STORED, broken.inventory.single().inventoryState)
         assertEquals(broken, broken.withItemInventoryState("weapon", InventoryState.EQUIPPED))
+    }
+
+    @Test fun brokenItemCannotRemainEquippedThroughBodyReferences() {
+        val broken = InventoryItem(
+            id = "armor", name = "Peitoral", category = "Armadura", state = "E",
+            region = "torso", pg = 4, pl = 2, durabilityCurrent = 0, durabilityMax = 3,
+            itemCondition = ItemCondition.BROKEN,
+        )
+        val character = Character(
+            inventory = listOf(broken),
+            bodyRegions = com.kinderman.sdo.domain.model.defaultBodyRegions().mapIndexed { index, region ->
+                if (index == 1) region.copy(equippedItemIds = listOf(broken.id)) else region
+            },
+        )
+
+        val normalized = character.withNormalizedInventory()
+
+        assertEquals(InventoryState.STORED, normalized.inventory.single().inventoryState)
+        assertTrue(normalized.bodyRegions[1].equippedItemIds.isEmpty())
+        assertEquals(10, normalized.protectionBase("Geral"))
+        assertEquals(0, normalized.localProtection(normalized.bodyRegions[1]))
     }
 
     @Test fun inventoryStatesEnforceQuickAccessAndBackpackCapacity() {
