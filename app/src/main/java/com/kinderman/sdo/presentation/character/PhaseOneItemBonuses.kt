@@ -1,5 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,9 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.CalculatedValue
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ModifierSourceType
+import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.agilityLimitBreakdown
 import com.kinderman.sdo.domain.model.arcaneMaximumBreakdown
 import com.kinderman.sdo.domain.model.energyMaximumBreakdown
