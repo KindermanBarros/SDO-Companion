@@ -13,14 +13,22 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "tier", "compatibleItemTypes", "creationCost", "price", "effect"],
+        "required": ["id", "name", "compatibleItemTypes", "creationCost", "price", "effect"],
         "properties": {
           "id": { "type": "string", "minLength": 1 },
           "name": { "type": "string", "minLength": 1 },
           "tier": { "enum": ["MINOR", "MAJOR"] },
           "compatibleItemTypes": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "compatibleBaseGroups": { "type": "array", "items": { "type": "string" } },
+          "compatibleBaseIds": { "type": "array", "items": { "type": "string" } },
           "creationCost": { "type": "integer", "minimum": 0 },
           "price": { "type": "integer", "minimum": 0 },
+          "load": { "type": "integer" },
+          "durability": { "type": "integer", "minimum": 0 },
+          "region": { "type": "string" },
+          "pg": { "type": "integer" },
+          "pl": { "type": "integer" },
+          "agilityLimit": { "type": ["integer", "null"], "minimum": 0 },
           "effect": {
             "type": "object",
             "additionalProperties": false,
