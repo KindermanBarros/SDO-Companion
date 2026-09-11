@@ -17,7 +17,7 @@
           "id": { "type": "string", "minLength": 1 },
           "name": { "type": "string", "minLength": 1 },
           "group": { "type": "string", "minLength": 1 },
-          "kind": { "enum": ["WEAPON_MATERIAL", "ARMOR_MATERIAL", "WEAPON_BASE", "ARMOR_BASE"] },
+          "kind": { "enum": ["WEAPON_MATERIAL", "ARMOR_MATERIAL", "WEAPON_BASE", "ARMOR_BASE", "CATALOG_ITEM"] },
           "creationCost": { "type": ["integer", "null"], "minimum": 0 },
           "price": { "type": "integer", "minimum": 0 },
           "load": { "type": "integer" },
@@ -27,6 +27,8 @@
           "pg": { "type": "integer" },
           "pl": { "type": "integer" },
           "agilityLimit": { "type": ["integer", "null"], "minimum": 0 }
+          ,"source": { "type": "string" }
+          ,"ruleReference": { "type": "string" }
         }
       }
     }
