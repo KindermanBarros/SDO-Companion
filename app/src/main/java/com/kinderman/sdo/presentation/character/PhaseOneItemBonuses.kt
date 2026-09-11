@@ -1,24 +1,15 @@
 package com.kinderman.sdo.presentation.character
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.CalculatedValue
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemBonus
-import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ModifierSourceType
-import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.agilityLimitBreakdown
 import com.kinderman.sdo.domain.model.arcaneMaximumBreakdown
 import com.kinderman.sdo.domain.model.energyMaximumBreakdown
@@ -43,103 +34,6 @@ internal fun PhaseOneInventoryWithBonusSection(
     onChange: (Character) -> Unit,
 ) {
     PhaseOneStrictInventorySection(character, catalog, enabled, onChange)
-}
-
-@Composable
-private fun ItemBonusAuditSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = MaterialTheme.colorScheme.primary) {
-        SectionHeader("09.B", "Bônus mecânicos dos itens")
-        Text(
-            "Todo bônus abaixo usa tipo e destino controlados. O efeito só entra no cálculo enquanto o item estiver equipado.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
-        if (character.inventory.isEmpty()) {
-            Text("Nenhum item no inventário.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        character.inventory.forEachIndexed { itemIndex, item ->
-            ControlledItemBonusEditor(
-                character = character,
-                item = item,
-                enabled = enabled,
-                onItem = { updated ->
-                    onChange(character.copy(inventory = character.inventory.replace(itemIndex, updated)))
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ControlledItemBonusEditor(
-    character: Character,
-    item: InventoryItem,
-    enabled: Boolean,
-    onItem: (InventoryItem) -> Unit,
-) {
-    Column(
-        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-    ) {
-        Text(item.name.ifBlank { "ITEM SEM NOME" }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
-        if (item.bonuses.isEmpty()) Text("SEM BÔNUS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-        item.bonuses.forEachIndexed { bonusIndex, bonus ->
-            val options = controlledBonusTargets(character, bonus.type)
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TextButton(
-                        enabled = enabled,
-                        onClick = {
-                            val nextType = ItemBonusType.entries[(bonus.type.ordinal + 1) % ItemBonusType.entries.size]
-                            val nextTarget = controlledBonusTargets(character, nextType).firstOrNull().orEmpty()
-                            onItem(item.copy(bonuses = item.bonuses.replace(bonusIndex, bonus.copy(type = nextType, target = nextTarget))))
-                        },
-                    ) { Text("TIPO // ${bonus.type.label.uppercase()}") }
-                    TextButton(
-                        enabled = enabled,
-                        onClick = { onItem(item.copy(bonuses = item.bonuses.filterIndexed { index, _ -> index != bonusIndex })) },
-                    ) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
-                }
-                TextButton(
-                    enabled = enabled && options.isNotEmpty(),
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        val current = options.indexOf(bonus.target)
-                        val next = options[(current.coerceAtLeast(-1) + 1) % options.size]
-                        onItem(item.copy(bonuses = item.bonuses.replace(bonusIndex, bonus.copy(target = next))))
-                    },
-                ) {
-                    Text("APLICAR EM // ${bonus.displayTarget().ifBlank { if (options.isEmpty()) "SEM OPÇÕES" else "SELECIONAR" }}")
-                }
-                IntegerField("Valor", bonus.value, enabled) { value ->
-                    onItem(item.copy(bonuses = item.bonuses.replace(bonusIndex, bonus.copy(value = value.coerceIn(-99, 99)))))
-                }
-                if (bonus.target.isBlank()) Text("Selecione um destino antes de considerar o bônus configurado.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-        }
-        AddButton("Adicionar bônus", enabled) {
-            onItem(
-                item.copy(
-                    bonuses = item.bonuses + ItemBonus(
-                        type = ItemBonusType.ATTRIBUTE,
-                        target = controlledBonusTargets(character, ItemBonusType.ATTRIBUTE).first(),
-                        value = 0,
-                    ),
-                ),
-            )
-        }
-    }
-}
-
-private fun controlledBonusTargets(character: Character, type: ItemBonusType): List<String> = when (type) {
-    ItemBonusType.ATTRIBUTE -> listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR")
-    ItemBonusType.BASIC_KNOWLEDGE -> character.attributes.flatMap { attribute ->
-        attribute.skills.map { skill -> ItemBonus.basicKnowledgeTarget(attribute.acronym, skill.name) }
-    }
-    ItemBonusType.ACQUIRED_KNOWLEDGE -> character.learnedKnowledges
-        .map(SpecialKnowledge::name)
-        .filter(String::isNotBlank)
-        .distinct()
 }
 
 @Composable
