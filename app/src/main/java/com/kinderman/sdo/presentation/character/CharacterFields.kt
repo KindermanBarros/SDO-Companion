@@ -3,8 +3,11 @@ package com.kinderman.sdo.presentation.character
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -125,9 +128,12 @@ internal fun <T> ChoiceField(
     enabled: Boolean,
     modifier: Modifier = Modifier,
     display: (T) -> String = { it.toString() },
+    searchable: Boolean = options.size > 8,
     onValue: (T) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val visibleOptions = if (query.isBlank()) options else options.filter { display(it).contains(query, ignoreCase = true) }
     Box(modifier) {
         OutlinedButton(
             onClick = { expanded = true },
@@ -135,12 +141,16 @@ internal fun <T> ChoiceField(
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
         ) { Text("$label // ${display(value)}", maxLines = 2) }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(display(option)) },
-                    onClick = { onValue(option); expanded = false },
-                )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false; query = "" }, modifier = Modifier.widthIn(min = 280.dp, max = 520.dp)) {
+            Column {
+                if (searchable) HudTextField("Buscar em $label", query, Modifier.fillMaxWidth().padding(horizontal = 8.dp)) { query = it }
+                visibleOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(display(option)) },
+                        onClick = { onValue(option); expanded = false; query = "" },
+                    )
+                }
+                if (visibleOptions.isEmpty()) Text("Nenhuma opção encontrada", modifier = Modifier.padding(12.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
