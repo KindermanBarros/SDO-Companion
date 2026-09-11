@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 19,
+    version = 20,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -281,6 +281,15 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE characters ADD COLUMN progressionArcaneBonus INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE characters ADD COLUMN progressionEnergyBonus INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE characters ADD COLUMN progressionHistory TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE characters ADD COLUMN creationStatus TEXT NOT NULL DEFAULT 'COMPLETED'")
+                db.execSQL("ALTER TABLE characters ADD COLUMN creationStep INTEGER NOT NULL DEFAULT 1")
+                db.execSQL("ALTER TABLE characters ADD COLUMN creationCompletedAt INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE characters ADD COLUMN creationRulesVersion INTEGER NOT NULL DEFAULT 1")
             }
         }
     }

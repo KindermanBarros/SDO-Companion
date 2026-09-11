@@ -78,7 +78,6 @@ data class BuiltItem(
             "Categoria: $category",
             "Preço de referência: ${price} E$".takeIf { price > 0 },
             effect.takeIf(String::isNotBlank),
-            creationCost?.takeIf { initialCreation }?.let { initialCreationMarker(it) },
         ).joinToString("\n"),
         pg = pg,
         pl = pl,
@@ -86,6 +85,9 @@ data class BuiltItem(
         agilityLimit = agilityLimit,
         quality = quality.label,
         bonuses = bonuses,
+        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
+        heritageCost = creationCost.takeIf { initialCreation },
+        purchasePrice = price.takeIf { !initialCreation },
     )
 }
 
@@ -98,21 +100,22 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false) = InventoryIt
         "Categoria: $group".takeIf { group.isNotBlank() },
         "Preço de referência: ${price} E$".takeIf { price > 0 },
         summary.takeIf(String::isNotBlank),
-        creationCost.toIntOrNull()?.takeIf { initialCreation }?.let(::initialCreationMarker),
     ).joinToString("\n"),
     pg = protectionValue("PG"),
     pl = protectionValue("PL"),
     category = group,
     agilityLimit = Regex("LA\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull(),
+    acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
+    heritageCost = creationCost.toIntOrNull().takeIf { initialCreation },
+    purchasePrice = price.takeIf { !initialCreation },
+    catalogEntryId = id,
+    catalogVersion = version,
+    canonical = true,
 )
 
 private fun CatalogEntry.protectionValue(label: String): Int =
     Regex("(?:^|[;\\n]\\s*)$label\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull() ?: 0
 
-fun InventoryItem.initialCreationCost(): Int =
-    Regex("\\[Criação inicial: (\\d+) PH]").find(effect)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 
-fun InventoryItem.participatesInInitialCreation(): Boolean =
-    Regex("\\[Criação inicial: \\d+ PH]").containsMatchIn(effect)
-
-private fun initialCreationMarker(cost: Int) = "[Criação inicial: $cost PH]"
+fun InventoryItem.participatesInInitialCreation(): Boolean = acquisitionSource == ItemAcquisitionSource.HERITAGE

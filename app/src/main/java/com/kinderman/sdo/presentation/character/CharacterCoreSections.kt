@@ -65,7 +65,7 @@ internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, 
         )
         HudTextField("Sexo", character.sex, enabled = enabled) { value -> onChange(character.copy(sex = value)) }
         TwoFields(
-            { AddButton("Nível ${character.level} — alterar", enabled) { selectingLevel = true } },
+            { if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else AddButton("Nível ${character.level} — alterar", enabled) { selectingLevel = true } },
             { IntegerField("Dinheiro (E$)", character.money, enabled, it) { value -> onChange(character.copy(money = value)) } },
         )
     }
@@ -215,27 +215,33 @@ private fun TraitList(title: String, values: List<String>, enabled: Boolean, onV
 }
 
 @Composable
-internal fun AttributeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun AttributeSection(
+    character: Character,
+    enabled: Boolean,
+    onChange: (Character) -> Unit,
+    showAttributes: Boolean = true,
+    showBasicKnowledges: Boolean = true,
+) {
     TechPanel(accent = MaterialTheme.colorScheme.outlineVariant) {
         SectionHeader("04", "Atributos e conhecimentos")
         character.attributes.forEachIndexed { attributeIndex, attribute ->
-            AttributeEditor(character, attribute, enabled) { updated -> onChange(character.copy(attributes = character.attributes.replace(attributeIndex, updated))) }
+            AttributeEditor(character, attribute, enabled, showAttributes, showBasicKnowledges) { updated -> onChange(character.copy(attributes = character.attributes.replace(attributeIndex, updated))) }
             if (attributeIndex != character.attributes.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }
 
 @Composable
-private fun AttributeEditor(character: Character, attribute: AttributeValue, enabled: Boolean, onValue: (AttributeValue) -> Unit) {
+private fun AttributeEditor(character: Character, attribute: AttributeValue, enabled: Boolean, showAttributes: Boolean, showBasicKnowledges: Boolean, onValue: (AttributeValue) -> Unit) {
     Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-    TwoFields(
+    if (showAttributes) TwoFields(
         { IntegerField("Valor", attribute.value, enabled, it) { value -> onValue(attribute.copy(value = value)) } },
         { IntegerField("Modificador", attribute.modifier, enabled, it) { value -> onValue(attribute.copy(modifier = value)) } },
     )
     if (character.attributeTotal(attribute.acronym) != attribute.value) {
         Text("TOTAL EQUIPADO // ${character.attributeTotal(attribute.acronym)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
     }
-    attribute.skills.forEachIndexed { index, skill ->
+    if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
             IntegerField("Valor", skill.value, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value)))) }

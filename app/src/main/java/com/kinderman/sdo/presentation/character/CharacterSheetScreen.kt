@@ -156,23 +156,26 @@ fun CharacterSheetScreen(
                 )
             },
         ) { padding ->
-            CharacterSheetPager(
+            val changeCharacter: (Character) -> Unit = {
+                if (!readOnly) {
+                    val draft = it.copy(updatedAt = maxOf(System.currentTimeMillis(), current.updatedAt + 1), dirty = true)
+                    current = draft
+                    onAutosave(draft)
+                }
+            }
+            if (current.isInCreation) CharacterCreationWizard(
+                character = current,
+                catalog = catalog,
+                enabled = editable,
+                onChange = changeCharacter,
+            ) else CharacterSheetPager(
                 character = current,
                 saveError = saveError,
                 session = session,
                 catalog = catalog,
                 editable = editable,
                 showCalculationAudit = showCalculationAudit,
-                onChange = {
-                    if (!readOnly) {
-                        val draft = it.copy(
-                            updatedAt = maxOf(System.currentTimeMillis(), current.updatedAt + 1),
-                            dirty = true,
-                        )
-                        current = draft
-                        onAutosave(draft)
-                    }
-                },
+                onChange = changeCharacter,
                 modifier = Modifier.padding(padding).fillMaxSize(),
             )
         }

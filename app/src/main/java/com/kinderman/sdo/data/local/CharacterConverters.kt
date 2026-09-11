@@ -18,6 +18,7 @@ import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemBonus
 import com.kinderman.sdo.domain.model.ItemBonusType
+import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.PersonalNote
@@ -206,7 +207,9 @@ class CharacterConverters {
             item.bonuses.joinToString(BONUS_ROW) { bonus ->
                 listOf(bonus.type.name, bonus.target, bonus.value.toString()).joinToString(BONUS_FIELD)
             },
-            "canonical-v1", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            "canonical-v2", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            item.acquisitionSource.name, item.heritageCost?.toString().orEmpty(), item.purchasePrice?.toString().orEmpty(),
+            item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
         ).row()
     }
 
@@ -227,9 +230,16 @@ class CharacterConverters {
                         value = fields.getOrNull(2)?.toIntOrNull() ?: 0,
                     )
                 },
-                quantity = p.getOrNull(14)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v1" } ?: 0,
-                linkedAshId = p.getOrElse(15) { "" }.takeIf { p.getOrNull(13) == "canonical-v1" }.orEmpty(),
+                quantity = p.getOrNull(14)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
+                linkedAshId = p.getOrElse(15) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
                 ashPurity = p.enumAt(16, AshPurity.RAW),
+                acquisitionSource = p.enumAt(17, ItemAcquisitionSource.NARRATIVE),
+                heritageCost = p.getOrNull(18)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v2" },
+                purchasePrice = p.getOrNull(19)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v2" },
+                catalogEntryId = p.getOrElse(20) { "" }.takeIf { p.getOrNull(13) == "canonical-v2" }.orEmpty(),
+                catalogVersion = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v2" } ?: 0,
+                acquiredAt = p.getOrNull(22)?.toLongOrNull().takeIf { p.getOrNull(13) == "canonical-v2" } ?: 0,
+                canonical = p.getOrNull(23)?.toBooleanStrictOrNull().takeIf { p.getOrNull(13) == "canonical-v2" } ?: false,
             )
         }
     }

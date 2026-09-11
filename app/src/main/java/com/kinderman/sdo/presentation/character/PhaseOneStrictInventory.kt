@@ -63,11 +63,7 @@ internal fun PhaseOneStrictInventorySection(
     var inventoryGroup by remember { mutableStateOf("Todos") }
     val context = LocalContext.current
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
-    val hasInitialShopping = character.inventory.any { it.participatesInInitialCreation() }
-    val remainingHeritage = when {
-        hasInitialShopping || character.inventory.isEmpty() -> (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0)
-        else -> 0
-    }
+    val remainingHeritage = if (character.isInCreation) (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0) else 0
     val acquiredTargets = character.learnedKnowledges
         .map(SpecialKnowledge::name)
         .filter(String::isNotBlank)
@@ -329,7 +325,7 @@ private fun StrictItemBuilderDialog(
                         material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
                     }) { Text(if (category == "Armadura") "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
-                    TextButton(modifier = Modifier.fillMaxWidth(), onClick = { category = "Item" }) { Text(if (category == "Item") "[ ITEM COMUM ]" else "ITEM COMUM") }
+                    if (!initialCreation) TextButton(modifier = Modifier.fillMaxWidth(), onClick = { category = "Item" }) { Text(if (category == "Item") "[ ITEM COMUM ]" else "ITEM COMUM") }
                 }
                 Text(when (category) { "Arma" -> "Armas possuem dano, material e modificações de combate."; "Armadura" -> "Armaduras e acessórios possuem proteção, região e limitações."; else -> "Itens comuns usam apenas nome, quantidade, carga e efeito." }, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
