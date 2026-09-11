@@ -30,7 +30,7 @@ import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.matchesRegion
-import com.kinderman.sdo.domain.model.toInventoryItem
+import com.kinderman.sdo.domain.catalog.toInventoryItem
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice

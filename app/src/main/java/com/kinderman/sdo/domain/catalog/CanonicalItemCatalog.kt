@@ -20,8 +20,6 @@ internal enum class ItemPartKind {
     CATALOG_ITEM,
 }
 
-internal enum class GemTier { MINOR, MAJOR }
-
 internal data class CatalogItemDefinition(
     val part: ItemPart,
     val source: String,
