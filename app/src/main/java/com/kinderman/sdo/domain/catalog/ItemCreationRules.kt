@@ -143,42 +143,7 @@ object ItemCreationRules {
                 build(base, material, emptyList(), 0, 0)
             }
         val regular = built.mapIndexed { index, item -> item.catalogEntry("item.regular_$index") }
-        val starters = listOf(
-            build(armorBases.first { it.id == "jaqueta_revestida" }, armorMaterials.first { it.id == "aco_negro" }, emptyList(), 0, 0).catalogEntry("item.jaqueta_aco_negro"),
-            build(weaponBases.first { it.id == "arco_curto" }, weaponMaterials.first { it.id == "madeira" }, emptyList(), 0, 0).catalogEntry("item.arco_curto_madeira"),
-            simple("item.mochila_viajante", "Mochila de Viajante", "Recipiente", 2, 45, 1, "", "Capacidade de Carga +10."),
-            simple("item.kit_sutura", "Kit de Sutura", "Consumível", 3, 100, 1, "", "Ferramentas para sutura e tratamento de campo."),
-            simple("item.granada_fumaca", "Granada de Fumaça", "Consumível", 2, 45, 1, "", "Cria uma área de fumaça que bloqueia visão."),
-            simple("item.morfina", "Morfina", "Consumível", 2, 45, 1, "", "Analgésico de uso médico."),
-            simple("item.alcool", "Álcool", "Consumível", 1, 20, 1, "", "Dose de bebida alcoólica."),
-            simple("item.tabaco", "Tabaco", "Consumível", 1, 20, 1, "", "Porção de tabaco."),
-            simple("item.rede", "Rede", "Consumível", 2, 45, 1, "", "Imobiliza ou restringe um alvo conforme o ataque."),
-            simple("item.cogumelo_dourado", "Cogumelo Dourado", "Consumível", 3, 90, 1, "", "Reagente medicinal raro."),
-            simple("item.sussurros", "Sussurros", "Consumível", 3, 90, 1, "", "Composto de efeito mental."),
-            simple("item.granada_veneno", "Granada de Veneno", "Consumível", 3, 90, 1, "", "Cria uma área venenosa."),
-            simple("item.granada_incendiaria", "Granada Incendiária", "Consumível", 3, 90, 1, "", "Explode e aplica fogo."),
-            simple("item.granada_sucata", "Granada de Sucata", "Consumível", 3, 90, 1, "", "Explode em estilhaços improvisados."),
-            simple("item.granada_fogo_palido", "Granada de Fogo Pálido", "Consumível", 4, 150, 1, "", "Espalha fogo pálido."),
-            simple("item.primeiros_socorros", "Kit de Primeiros Socorros", "Consumível", 5, 250, 1, "", "Tratamento completo de campo."),
-            simple("item.estaca_voltaica", "Estaca Voltaica", "Consumível", 6, 400, 1, "", "Descarga elétrica concentrada."),
-            simple("item.destilado_divino", "Destilado Divino", "Consumível", 6, 400, 1, "", "Reagente sagrado refinado."),
-            simple("item.veneno_basilisco", "Veneno de Basilisco", "Consumível", 6, 400, 1, "", "Veneno de alta potência."),
-            simple("item.macula_morte", "Mácula da Morte", "Consumível", 7, 600, 1, "", "Substância necromântica perigosa."),
-            simple("item.mochila_pequena", "Mochila Pequena", "Recipiente", 1, 20, 1, "", "Capacidade de Carga +5."),
-            simple("item.mochila_mercador", "Mochila de Mercador", "Recipiente", 3, 90, 2, "", "Capacidade de Carga +15."),
-            simple("item.saco_frutas", "Saco de Frutas", "Recipiente", 4, 150, 2, "", "Recipiente amplo para provisões."),
-            simple("item.mochila_mensageiro", "Mochila de Mensageiro", "Recipiente", 5, 250, 1, "", "Capacidade e acesso rápido a documentos."),
-            simple("item.ferramenta_improvisada", "Ferramenta Improvisada", "Ferramenta", 0, 5, 1, "", "Permite uma tarefa simples com penalidade narrativa."),
-            simple("item.ferramenta_comum", "Ferramenta Comum", "Ferramenta", 2, 45, 1, "", "Ferramenta adequada para um ofício."),
-            simple("item.ferramenta_profissional", "Ferramenta Profissional", "Ferramenta", 4, 150, 2, "", "Conjunto profissional para um ofício."),
-            simple("item.cinza_bruta", "Dose de Cinza Bruta", "Consumível arcano", 1, 20, 0, "", "Uma dose de cinza bruta."),
-            simple("item.cinza_refinada", "Dose de Cinza Refinada", "Consumível arcano", 2, 45, 0, "", "Uma dose de cinza refinada."),
-            simple("item.cinza_pura", "Dose de Cinza Pura", "Consumível arcano", 4, 150, 0, "", "Uma dose de cinza pura."),
-            simple("item.gema_menor_aleatoria", "Gema Menor Aleatória", "Componente arcano", 2, 45, 0, "", "Para instalar em um Espaço de Gema."),
-            simple("item.gema_aprimoramento_menor", "Gema de Aprimoramento Menor", "Componente arcano", 3, 90, 0, "", "Para instalar em um Espaço de Gema."),
-            simple("item.gema_aleatoria", "Gema Aleatória", "Componente arcano", 4, 150, 0, "", "Para instalar em um Espaço de Gema."),
-            simple("item.gema_aprimoramento_maior", "Gema de Aprimoramento Maior", "Componente arcano", 6, 400, 0, "", "Para instalar em um Espaço de Gema."),
-        )
+        val starters = GeneratedItemParts.catalogItems
         (regular + starters).distinctBy { it.name }
     }
 
@@ -190,13 +155,6 @@ object ItemCreationRules {
         ruleReference = "03 - Regras/Balanceamento de Criação e Equipamentos.md",
     )
 
-    private fun simple(id: String, name: String, group: String, cost: Int, price: Int, load: Int, region: String, effect: String) =
-        CatalogEntry(
-            id, CatalogKind.ITEM, name, group, effect,
-            source = "Criação de Personagem", version = BuiltInCatalog.VERSION,
-            creationCost = cost.toString(), price = price, load = load, region = region,
-            ruleReference = "03 - Regras/Criação de Personagem/Criação de Personagem.md#10-pontos-de-herança",
-        )
 
 
 }
