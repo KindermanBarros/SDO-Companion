@@ -52,7 +52,9 @@ import com.kinderman.sdo.domain.model.effectiveLoad
 import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.withItemInventoryState
 import com.kinderman.sdo.domain.model.withRemovedAbility
-import com.kinderman.sdo.domain.model.withAddedAbility
+import com.kinderman.sdo.domain.model.withAddedAsh
+import com.kinderman.sdo.domain.model.AshPurity
+import com.kinderman.sdo.domain.model.heritageCostPerDose
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
@@ -163,9 +165,9 @@ internal fun PhaseOneStrictInventorySection(
 
     when (dialog) {
         "add" -> AddInventoryChoiceDialog(
-            initialCreation = remainingHeritage > 0,
+            initialCreation = character.isInCreation,
             canUseCatalog = itemCatalog.isNotEmpty(),
-            canAddAsh = ashCatalog.isNotEmpty() && remainingHeritage == 0,
+            canAddAsh = ashCatalog.isNotEmpty(),
             onDismiss = { dialog = null },
             onChoice = { dialog = it },
         )
@@ -221,8 +223,12 @@ internal fun PhaseOneStrictInventorySection(
             onChange(character.addInventoryItem(item).copy(itemCreationDraft = null))
             dialog = null
         }
-        "ash_catalog" -> CatalogPickerDialog("CATÁLOGO DE CINZAS", ashCatalog, { dialog = null }) { entry ->
-            onChange(character.withAddedAbility(entry.toMysticAbility(), reuseExistingAsh = true))
+        "ash_builder" -> AshBuilderDialog(
+            entries = ashCatalog,
+            remainingHeritage = remainingHeritage.takeIf { character.isInCreation },
+            onDismiss = { dialog = null },
+        ) { entry, doses ->
+            onChange(character.withAddedAsh(entry.toMysticAbility(), doses, character.isInCreation))
             dialog = null
         }
         "narrative" -> {
@@ -245,11 +251,64 @@ private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Bo
                 AddButton("Construir armadura", true) { onChoice(if (initialCreation) "initial_armor" else "builder_armor") }
                 AddButton("Construir acessório", true) { onChoice(if (initialCreation) "initial_accessory" else "builder_accessory") }
                 if (!initialCreation) AddButton("Construir item comum", true) { onChoice("builder_item") }
-                if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_catalog") }
+                if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_builder") }
                 if (!initialCreation) TextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
             }
         },
         confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
+}
+
+@Composable
+private fun AshBuilderDialog(
+    entries: List<CatalogEntry>,
+    remainingHeritage: Int?,
+    onDismiss: () -> Unit,
+    onAdd: (CatalogEntry, Int) -> Unit,
+) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var source by rememberSaveable { mutableStateOf("Todas") }
+    var selectedId by rememberSaveable { mutableStateOf(entries.firstOrNull()?.id.orEmpty()) }
+    var doses by rememberSaveable { mutableIntStateOf(1) }
+    val sources = listOf("Todas") + entries.mapNotNull { it.catalogAshSource?.label }.distinct().sorted()
+    val filtered = entries.filter { entry ->
+        (source == "Todas" || entry.catalogAshSource?.label == source) &&
+            (query.isBlank() || entry.searchableText().contains(query, ignoreCase = true))
+    }
+    val selected = filtered.firstOrNull { it.id == selectedId } ?: filtered.firstOrNull()
+    val purity = selected?.catalogAshPurity ?: AshPurity.RAW
+    val preview = doses.coerceAtLeast(1) * purity.heritageCostPerDose
+    val allowed = selected != null && (remainingHeritage == null || preview <= remainingHeritage)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxSize(),
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        title = { Text("PREPARAR CINZAS") },
+        text = {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                remainingHeritage?.let { remaining ->
+                    val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
+                    Text("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                    LinearProgressIndicator(progress = { ((spent + preview).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                }
+                HudTextField("Buscar por nome, fonte ou efeito", query) { query = it }
+                ChoiceField("Fonte", source, sources, true) { source = it }
+                ChoiceField<String>(
+                    "Cinza", selected?.id.orEmpty(), filtered.map { it.id }, filtered.isNotEmpty(),
+                    display = { id -> filtered.firstOrNull { it.id == id }?.let { "${it.name} // ${it.catalogAshPurity?.label}" } ?: "Selecionar" },
+                ) { selectedId = it }
+                IntegerField("Doses", doses, true) { doses = it.coerceAtLeast(1) }
+                selected?.let { entry ->
+                    Text("${entry.catalogAshSource?.label ?: "Fonte desconhecida"} // ${purity.label}", color = MaterialTheme.colorScheme.primary)
+                    Text("CARGA ${kotlin.math.ceil(doses.toDouble() / purity.dosesPerLoad).toInt()} // ${purity.dosesPerLoad} DOSE(S) POR CARGA")
+                    if (remainingHeritage != null) Text("CUSTO // $preview PH", color = MaterialTheme.colorScheme.primary)
+                    Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { selected?.let { onAdd(it, doses) } }, enabled = allowed) { Text(if (allowed) "ADICIONAR" else "SALDO INSUFICIENTE") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
