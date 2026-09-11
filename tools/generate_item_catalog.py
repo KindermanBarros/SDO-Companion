@@ -28,8 +28,12 @@ def item_part(entry, group=None):
 
 def kotlin(items, modifications):
     grouped = {kind: [] for kind in ("WEAPON_MATERIAL", "ARMOR_MATERIAL", "WEAPON_BASE", "ARMOR_BASE")}
+    catalog_items = []
     for entry in items["entries"]:
-        grouped[entry["kind"]].append(entry)
+        if entry["kind"] == "CATALOG_ITEM":
+            catalog_items.append(entry)
+        else:
+            grouped[entry["kind"]].append(entry)
     weapon_mods = []
     armor_mods = []
     for entry in modifications["entries"]:
@@ -52,6 +56,8 @@ def kotlin(items, modifications):
         "package com.kinderman.sdo.domain.catalog",
         "",
         "import com.kinderman.sdo.domain.model.ItemPart",
+        "import com.kinderman.sdo.domain.model.CatalogEntry",
+        "import com.kinderman.sdo.domain.model.CatalogKind",
         "",
         "internal object GeneratedItemParts {",
     ]
@@ -71,6 +77,18 @@ def kotlin(items, modifications):
         lines.append(f'        {quote(entry["id"])} to setOf({identifiers}),')
     lines.append("    )")
     lines.append("")
+    lines.append("    val catalogItems = listOf(")
+    for entry in catalog_items:
+        cost = "null" if entry["creationCost"] is None else quote(str(entry["creationCost"]))
+        lines.append(
+            "        CatalogEntry("
+            f'{quote(entry["id"])}, CatalogKind.ITEM, {quote(entry["name"])}, {quote(entry["group"])}, '
+            f'{quote(entry["effect"])}, source = {quote(entry["source"])}, version = BuiltInCatalog.VERSION, '
+            f'creationCost = {cost}, price = {entry["price"]}, load = {entry["load"]}, region = {quote(entry["region"])}, '
+            f'ruleReference = {quote(entry["ruleReference"])}),'
+        )
+    lines.append("    )")
+    lines.append("")
     lines.append("    fun modificationSupports(modificationId: String, base: ItemPart): Boolean {")
     lines.append("        val groups = modificationBaseGroups[modificationId].orEmpty()")
     lines.append("        val ids = modificationBaseIds[modificationId].orEmpty()")
@@ -83,7 +101,7 @@ def kotlin(items, modifications):
 
 def validate(items, modifications):
     expected_kinds = {"WEAPON_MATERIAL", "ARMOR_MATERIAL", "WEAPON_BASE", "ARMOR_BASE"}
-    assert {entry["kind"] for entry in items["entries"]} == expected_kinds
+    assert {entry["kind"] for entry in items["entries"]} == expected_kinds | {"CATALOG_ITEM"}
     identifiers = [f'{entry["kind"]}:{entry["id"]}' for entry in items["entries"]]
     assert len(identifiers) == len(set(identifiers)), "duplicate item-part identifiers"
     modification_ids = [entry["id"] for entry in modifications["entries"]]
@@ -91,6 +109,9 @@ def validate(items, modifications):
     for entry in items["entries"] + modifications["entries"]:
         for field in ("id", "name", "creationCost", "price", "load", "durability", "region", "pg", "pl", "agilityLimit"):
             assert field in entry, f'{entry.get("id", "unknown")} lacks typed field {field}'
+    for entry in items["entries"]:
+        if entry["kind"] == "CATALOG_ITEM":
+            assert "source" in entry and "ruleReference" in entry
     for entry in modifications["entries"]:
         assert "compatibleBaseGroups" in entry and "compatibleBaseIds" in entry
         known_groups = {item["group"] for item in items["entries"] if item["kind"].endswith("_BASE")}
