@@ -298,6 +298,11 @@ private fun KnowledgeList(
 internal fun ProtectionSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = MaterialTheme.colorScheme.secondary) {
         SectionHeader("06", "Proteções")
+        when (character.loadCondition) {
+            com.kinderman.sdo.domain.model.LoadCondition.OVERLOADED -> Text("SOBRECARREGADO // −2 aplicado à Esquiva", color = MaterialTheme.colorScheme.error)
+            com.kinderman.sdo.domain.model.LoadCondition.IMMOBILE -> Text("IMÓVEL // não pode usar Esquiva", color = MaterialTheme.colorScheme.error)
+            else -> Unit
+        }
         val formulas = linkedMapOf(
             "Geral" to "10 + PG DOS EQUIPAMENTOS",
             "Esquiva" to "PG + AGI + REFLEXOS",
