@@ -9,7 +9,7 @@ import org.junit.Test
 
 class CharacterCreationTest {
     @Test fun `five special knowledges start free and fifteen points may be split across any knowledge`() {
-        val specials = (1..5).map { SpecialKnowledge(name = "Especial $it", value = 1) }
+        val specials = (1..5).map { SpecialKnowledge(name = "Especial $it", value = 0) }
         val base = Character(learnedKnowledges = specials)
         assertEquals(0, CharacterCreation.knowledgePointsSpent(base))
 
@@ -19,14 +19,15 @@ class CharacterCreationTest {
             }) else attribute
         })
         val distributed = withBasicPoints.copy(learnedKnowledges = withBasicPoints.learnedKnowledges.mapIndexed { index, knowledge ->
-            if (index < 2) knowledge.copy(value = 5) else if (index == 2) knowledge.copy(value = 3) else knowledge
+            if (index < 2) knowledge.copy(value = 5) else knowledge
         })
         assertEquals(15, CharacterCreation.knowledgePointsSpent(distributed))
         assertNull(CharacterCreation.stepError(4, distributed))
     }
 
     @Test fun `creation requires exactly five special knowledges`() {
-        assertNotNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(4) { SpecialKnowledge(value = 1) })))
-        assertNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(5) { SpecialKnowledge(value = 1) })))
+        assertNotNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(4) { SpecialKnowledge(value = 0) })))
+        assertNotNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(5) { SpecialKnowledge(value = 1) })))
+        assertNull(CharacterCreation.stepError(3, Character(learnedKnowledges = List(5) { SpecialKnowledge(value = 0) })))
     }
 }
