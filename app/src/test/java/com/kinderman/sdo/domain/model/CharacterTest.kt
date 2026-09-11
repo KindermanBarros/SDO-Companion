@@ -8,6 +8,8 @@ class CharacterTest {
         assertEquals(InventoryState.WIELDED, InventoryItem(state = "W").inventoryState)
         assertEquals("G", InventoryItem().withInventoryState(InventoryState.STORED).state)
         assertEquals(InventoryState.BACKPACK, InventoryItem(state = "unknown").inventoryState)
+        assertEquals(InventoryState.QUICK_ACCESS, InventoryItem(state = "R").inventoryState)
+        assertEquals(InventoryState.EQUIPPED, InventoryItem(state = "CONTAINER").inventoryState)
     }
     @Test fun canonicalDefaultsArePresent() {
         val character = Character()

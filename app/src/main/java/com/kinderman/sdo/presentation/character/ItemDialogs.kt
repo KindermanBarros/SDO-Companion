@@ -441,7 +441,7 @@ private fun toggleEquipment(selected: Set<String>, item: InventoryItem, inventor
 private fun InventoryItem.usesExclusiveRegionSlot(): Boolean = exclusiveSlot().isNotBlank()
 
 private fun InventoryItem.exclusiveSlot(): String = when {
-    category.equals("Armadura", true) || (category.isBlank() && effect.contains("Categoria: Armadura", true)) -> "armadura"
-    category.equals("Acessório", true) || (category.isBlank() && effect.contains("Categoria: Acessório", true)) -> "acessório"
+    category.equals("Armadura", true) -> "armadura"
+    category.equals("Acessório", true) -> "acessório"
     else -> ""
 }
