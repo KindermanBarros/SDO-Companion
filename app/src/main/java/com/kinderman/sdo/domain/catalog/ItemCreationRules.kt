@@ -55,7 +55,8 @@ object ItemCreationRules {
             numericCosts.filterNotNull().sum() + effectiveGemSlots + effectiveTechnologySlots * 2
         val creationCost = componentCost?.let { (it + quality.creationAdjustment).coerceAtLeast(0) }
         val armor = base.group == "Armadura" || base.group == "Escudo" || base.group == "Acessório"
-        val qualityPg = if (armor) when (quality) {
+        val protective = base.group == "Armadura" || base.group == "Escudo"
+        val qualityPg = if (protective) when (quality) {
             ItemQuality.IMPROVED, ItemQuality.ICONIC -> 1
             ItemQuality.MASTERPIECE, ItemQuality.ARTIFACT, ItemQuality.ANCIENT -> 2
             else -> 0
@@ -65,7 +66,7 @@ object ItemCreationRules {
             ItemQuality.MASTERPIECE, ItemQuality.ARTIFACT, ItemQuality.ANCIENT -> 2
             else -> 0
         } else 0
-        val rawPg = base.pg + material.pg + modifications.sumOf { it.pg } + qualityPg
+        val rawPg = base.pg + (if (protective) material.pg else 0) + modifications.sumOf { it.pg } + qualityPg
         val rawPl = if (quality == ItemQuality.MUNDANE) 0 else base.pl + material.pl + modifications.sumOf { it.pl } + qualityPl
         val pg = if (armor && material.id == "sucata") rawPg / 2 else rawPg
         val pl = if (armor && material.id == "sucata") rawPl / 2 else rawPl

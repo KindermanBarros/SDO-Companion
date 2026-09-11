@@ -73,6 +73,17 @@ class ItemCreationRulesTest {
         assertEquals(2, item.pl)
     }
 
+    @Test fun accessoryDoesNotInheritPgFromMaterialOrQuality() {
+        val item = ItemCreationRules.build(
+            base = ItemCreationRules.armorBases.first { it.group == "Acessório" && it.pg == 0 },
+            material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" },
+            modifications = emptyList(), gemSlots = 0, technologySlots = 0,
+            quality = ItemQuality.MASTERPIECE,
+        )
+
+        assertEquals(0, item.pg)
+    }
+
     @Test fun installedGemRequiresAndConsumesItsOwnSlotAndCost() {
         val gem = ItemCreationRules.gemComponents.first()
         val item = ItemCreationRules.build(

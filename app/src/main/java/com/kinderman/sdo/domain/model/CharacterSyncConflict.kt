@@ -1,5 +1,7 @@
 package com.kinderman.sdo.domain.model
 
+import com.kinderman.sdo.domain.catalog.withNormalizedInventory
+
 data class CharacterConflictField(
     val id: String,
     val label: String,
@@ -135,7 +137,7 @@ fun mergeCharacterConflict(
         lockedBy = lock.by,
         lockedAt = lock.at,
         deleted = false,
-    )
+    ).withNormalizedInventory().synchronizeItemPowers()
 }
 
 private data class LockSnapshot(val type: CharacterLock, val by: String, val at: Long?)
