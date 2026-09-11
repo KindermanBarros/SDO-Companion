@@ -16,12 +16,40 @@ import com.kinderman.sdo.domain.model.damageInventoryItem
 import com.kinderman.sdo.domain.model.ItemCondition
 import com.kinderman.sdo.domain.model.hasScrapAttackDisadvantage
 import com.kinderman.sdo.domain.model.scrapDamageDieCategoryPenalty
+import com.kinderman.sdo.domain.model.handsRequired
+import com.kinderman.sdo.domain.model.wieldedHandsUsed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ItemNormalizationTest {
+    @Test fun heavyWeaponConsumesTwoHandsAndBlocksAnotherWieldedItem() {
+        val heavy = InventoryItem(id = "heavy", baseId = "montante", materialId = "ligas_comuns", state = "G", durabilityCurrent = 2, durabilityMax = 2)
+        val dagger = InventoryItem(id = "dagger", baseId = "adaga", state = "W", durabilityCurrent = 1, durabilityMax = 1)
+        val character = Character(inventory = listOf(heavy, dagger))
+
+        assertEquals(2, heavy.handsRequired())
+        assertEquals(character, character.withItemInventoryState("heavy", InventoryState.WIELDED))
+        val wieldedHeavy = character.withItemInventoryState("dagger", InventoryState.STORED)
+            .withItemInventoryState("heavy", InventoryState.WIELDED)
+        assertEquals(2, wieldedHeavy.wieldedHandsUsed)
+        assertEquals(1, heavy.copy(materialId = "ossos_comuns").handsRequired())
+    }
+
+    @Test fun normalizationSanitizesDuplicateContainersAndInvalidStates() {
+        val small = InventoryItem(id = "small", state = "E", category = "Recipiente de Carga", catalogEntryId = "legacy.small", backpackCapacity = 5, durabilityCurrent = 1, durabilityMax = 1, dataVersion = 4)
+        val large = InventoryItem(id = "large", state = "E", category = "Recipiente de Carga", catalogEntryId = "legacy.large", backpackCapacity = 10, durabilityCurrent = 1, durabilityMax = 1, dataVersion = 4)
+        val invalidQuick = InventoryItem(id = "quick", state = "R", load = 2, durabilityCurrent = 1, durabilityMax = 1, dataVersion = 4)
+
+        val normalized = Character(inventory = listOf(small, large, invalidQuick)).withNormalizedInventory()
+
+        assertEquals(InventoryState.STORED, normalized.inventory.first { it.id == "small" }.inventoryState)
+        assertEquals(InventoryState.EQUIPPED, normalized.inventory.first { it.id == "large" }.inventoryState)
+        assertEquals(InventoryState.STORED, normalized.inventory.first { it.id == "quick" }.inventoryState)
+        assertEquals(10, normalized.backpackCapacity)
+    }
+
     @Test fun scrapWeaponAppliesEveryRulesPenalty() {
         val effects = listOf(
             ItemEffect("attack", ItemEffectType.ATTACK, 3, condition = ItemEffectCondition.WIELDED),
