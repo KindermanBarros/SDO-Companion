@@ -13,7 +13,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -92,7 +92,7 @@ internal fun CharacterSheetPager(
                 }
             }
         }
-        ScrollableTabRow(
+        PrimaryScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.primary,

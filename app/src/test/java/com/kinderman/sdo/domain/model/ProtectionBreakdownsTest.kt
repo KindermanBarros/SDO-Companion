@@ -35,7 +35,6 @@ class ProtectionBreakdownsTest {
             name = "Escudo Leve",
             category = "Escudo",
             pg = 2,
-            inventoryState = InventoryState.EQUIPPED,
         )
         val charEquipped = Character(inventory = listOf(shield)).equipItems(2, setOf(shield.id))
         assertEquals(10, charEquipped.equippedGeneralProtection + 10)
@@ -52,7 +51,6 @@ class ProtectionBreakdownsTest {
             name = "Escudo Redondo",
             category = "Escudo",
             pg = 3,
-            inventoryState = InventoryState.EQUIPPED,
             mechanicalEffects = listOf(
                 ItemEffect("shield:pg", ItemEffectType.PG, 3, condition = ItemEffectCondition.WIELDED),
             ),

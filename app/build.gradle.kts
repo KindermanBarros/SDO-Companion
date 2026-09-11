@@ -30,7 +30,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_25
     }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
-    sourceSets.getByName("main").resources.srcDir(rootProject.file("catalogs"))
+    sourceSets.getByName("main").resources.directories.add(rootProject.file("catalogs"))
 
     signingConfigs {
         if (
