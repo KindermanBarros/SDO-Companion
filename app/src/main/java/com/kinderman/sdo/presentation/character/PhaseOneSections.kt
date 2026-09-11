@@ -85,7 +85,7 @@ internal fun PhaseOneKnowledgeSection(
             onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
-            initialLevel = if (lockLevels) 1 else null,
+            initialLevel = if (lockLevels) 0 else null,
         ) { onChange(character.copy(learnedKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Conhecimentos arcanos",
@@ -98,7 +98,7 @@ internal fun PhaseOneKnowledgeSection(
             onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
-            initialLevel = if (lockLevels) 1 else null,
+            initialLevel = if (lockLevels) 0 else null,
         ) { onChange(character.copy(arcaneKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Técnicas de batalha",
@@ -111,7 +111,7 @@ internal fun PhaseOneKnowledgeSection(
             onLevelChange = { knowledge, level -> if (!lockLevels) onChange(character.withKnowledgeLevel(knowledge.id, level, catalog)) },
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
-            initialLevel = if (lockLevels) 1 else null,
+            initialLevel = if (lockLevels) 0 else null,
         ) { onChange(character.copy(battleTechniques = it)) }
     }
 }

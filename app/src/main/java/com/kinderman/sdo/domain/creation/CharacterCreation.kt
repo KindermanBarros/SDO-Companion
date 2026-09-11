@@ -17,7 +17,7 @@ object CharacterCreation {
 
     fun knowledgePointsSpent(character: Character): Int =
         character.attributes.sumOf { attribute -> attribute.skills.sumOf { it.value.coerceAtLeast(0) } } +
-            specialKnowledges(character).sumOf { (it.value - 1).coerceAtLeast(0) }
+            specialKnowledges(character).sumOf { it.value.coerceAtLeast(0) }
 
     fun attributePointsSpent(character: Character): Int = character.attributes.sumOf { it.value }
 
@@ -26,8 +26,8 @@ object CharacterCreation {
     fun stepError(step: Int, character: Character): String? = when (step) {
         1 -> "Informe o nome e selecione a raça.".takeIf { character.name.isBlank() || character.race.isBlank() }
         2 -> "Distribua exatamente 10 pontos entre os Atributos.".takeIf { attributePointsSpent(character) != 10 }
-        3 -> "Escolha exatamente 5 Conhecimentos Especiais, todos no nível mínimo 1.".takeIf {
-            specialKnowledges(character).size != SPECIAL_KNOWLEDGE_CHOICES || specialKnowledges(character).any { it.value < 1 }
+        3 -> "Escolha exatamente 5 Conhecimentos Especiais. Eles começam gratuitamente no nível 0.".takeIf {
+            specialKnowledges(character).size != SPECIAL_KNOWLEDGE_CHOICES || specialKnowledges(character).any { it.value != 0 }
         }
         4 -> "Distribua exatamente 15 pontos entre qualquer Conhecimento.".takeIf { knowledgePointsSpent(character) != KNOWLEDGE_POINTS }
         9 -> "Defina o Caminho, os 3 Pilares e os 2 Poderes iniciais.".takeIf {

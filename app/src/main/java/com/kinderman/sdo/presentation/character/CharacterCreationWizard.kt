@@ -42,7 +42,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 LinearProgressIndicator(progress = { step / CharacterCreation.STEP_COUNT.toFloat() }, modifier = Modifier.fillMaxWidth())
                 when (step) {
                     2 -> Text("PONTOS DE ATRIBUTO // ${CharacterCreation.attributePointsSpent(character)} / 10")
-                    3 -> Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.specialKnowledges(character).size} / 5")
+                    3 -> Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.specialKnowledges(character).size} / 5 // NÍVEL INICIAL 0")
                     4 -> Text("PONTOS DISTRIBUÍDOS // ${CharacterCreation.knowledgePointsSpent(character)} / 15")
                     10 -> Text("PONTOS DE HERANÇA // ${CharacterCreation.heritageSpent(character)} / 30")
                 }
