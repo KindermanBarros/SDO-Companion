@@ -31,8 +31,6 @@ import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemBonus
-import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.initialCreationCost
@@ -64,10 +62,6 @@ internal fun PhaseOneStrictInventorySection(
     val context = LocalContext.current
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
     val remainingHeritage = if (character.isInCreation) (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0) else 0
-    val acquiredTargets = character.learnedKnowledges
-        .map(SpecialKnowledge::name)
-        .filter(String::isNotBlank)
-        .distinct()
     val itemCatalog = catalog.filter { it.kind == CatalogKind.ITEM }
     val ashCatalog = catalog.filter { it.kind == CatalogKind.ASH }
 
@@ -181,7 +175,6 @@ internal fun PhaseOneStrictInventorySection(
         }
         "initial_builder" -> StrictItemBuilderDialog(
             remainingHeritage = remainingHeritage,
-            acquiredKnowledgeTargets = acquiredTargets,
             onDismiss = { dialog = null },
         ) { item ->
             onChange(character.copy(inventory = character.inventory + item))
@@ -189,7 +182,6 @@ internal fun PhaseOneStrictInventorySection(
         }
         "builder" -> StrictItemBuilderDialog(
             remainingHeritage = null,
-            acquiredKnowledgeTargets = acquiredTargets,
             onDismiss = { dialog = null },
         ) { item ->
             onChange(character.copy(inventory = character.inventory + item))
@@ -246,7 +238,6 @@ private fun itemStateLabel(state: String): String = when (state) {
 @Composable
 private fun StrictItemBuilderDialog(
     remainingHeritage: Int?,
-    acquiredKnowledgeTargets: List<String>,
     onDismiss: () -> Unit,
     onAdd: (InventoryItem) -> Unit,
 ) {
@@ -260,7 +251,6 @@ private fun StrictItemBuilderDialog(
     var technologySlots by remember { mutableIntStateOf(0) }
     var customName by remember { mutableStateOf("") }
     var quality by remember { mutableStateOf(ItemQuality.COMMON) }
-    var bonuses by remember { mutableStateOf(emptyList<ItemBonus>()) }
     var gems by remember { mutableStateOf(emptyList<ItemPart>()) }
     var manualPrice by remember { mutableStateOf("") }
     var commonName by remember { mutableStateOf("") }
@@ -284,13 +274,12 @@ private fun StrictItemBuilderDialog(
         technologySlots = technologySlots,
         customName = customName,
         quality = quality,
-        bonuses = bonuses,
+        bonuses = emptyList(),
         components = gems,
         priceOverride = manualPrice.toIntOrNull().takeIf { !initialCreation },
     )
     val allowedByBudget = remainingHeritage == null || (built.creationCost != null && built.creationCost <= remainingHeritage)
     val requiresPrice = !initialCreation && built.creationCost == null && manualPrice.isBlank()
-    val bonusesComplete = bonuses.all(ItemBonus::isComplete)
     val commonItem = InventoryItem(name = commonName.trim(), category = "Item", effect = commonEffect, load = commonLoad, quantity = commonQuantity)
 
     AlertDialog(
@@ -310,22 +299,22 @@ private fun StrictItemBuilderDialog(
             ) {
                 if (step == 1) {
                 Text("O que você quer criar? As próximas opções serão adaptadas à categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
-                        category = "Arma"
+                ChoiceField("Categoria", category, if (initialCreation) listOf("Arma", "Armadura") else listOf("Arma", "Armadura", "Item"), true) { selected ->
+                    category = selected
+                    when (selected) {
+                    "Arma" -> {
                         weapon = true
                         base = ItemCreationRules.weaponBases.first()
                         material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
-                    }) { Text(if (category == "Arma") "[ ARMA ]" else "ARMA") }
-                    TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
-                        category = "Armadura"
+                    }
+                    "Armadura" -> {
                         weapon = false
                         base = ItemCreationRules.armorBases.first()
                         material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
                         modifications = emptyList()
-                    }) { Text(if (category == "Armadura") "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
-                    if (!initialCreation) TextButton(modifier = Modifier.fillMaxWidth(), onClick = { category = "Item" }) { Text(if (category == "Item") "[ ITEM COMUM ]" else "ITEM COMUM") }
+                    }
+                    }
                 }
                 Text(when (category) { "Arma" -> "Armas possuem dano, material e modificações de combate."; "Armadura" -> "Armaduras e acessórios possuem proteção, região e limitações."; else -> "Itens comuns usam apenas nome, quantidade, carga e efeito." }, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -340,17 +329,16 @@ private fun StrictItemBuilderDialog(
                     if (!initialCreation) HudTextField("Preço em E$ (opcional)", manualPrice) { manualPrice = it.filter(Char::isDigit) }
                 } else {
                 HudTextField("Nome personalizado", customName) { customName = it }
-                CyclePartButton("TIPO", base, bases) { selected ->
-                    base = selected
+                ChoiceField("Tipo", base.id, bases.map { it.id }, true, display = { id -> bases.first { it.id == id }.name }) { id ->
+                    base = bases.first { it.id == id }
+                    val selected = base
                     if (!weapon && selected.id == "gibao") {
                         material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
                     }
                 }
-                CyclePartButton("MATERIAL", material, materials) { material = it }
-                TextButton(
-                    onClick = { quality = ItemQuality.entries[(quality.ordinal + 1) % ItemQuality.entries.size] },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("QUALIDADE // ${quality.label}") }
+                ChoiceField("Material", material.id, materials.map { it.id }, true, display = { id -> materials.first { it.id == id }.name }) { id -> material = materials.first { it.id == id } }
+                ChoiceField("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { ItemQuality.valueOf(it).label }) { quality = ItemQuality.valueOf(it) }
+                Text("CUSTO ATUAL // ${built.creationCost ?: "#"} PH // SALDO ${remainingHeritage?.minus(built.creationCost ?: 0) ?: "—"}", color = MaterialTheme.colorScheme.primary)
                 Text("PRÉVIA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text(built.name, style = MaterialTheme.typography.titleMedium)
                 Text("PG ${built.pg} // PL ${built.pl} // CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -394,48 +382,6 @@ private fun StrictItemBuilderDialog(
                     }
                 }
 
-                Text("BÔNUS CONCEDIDOS AO EQUIPAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                bonuses.forEachIndexed { index, bonus ->
-                    val targets = strictBonusTargets(bonus.type, acquiredKnowledgeTargets)
-                    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(7.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = {
-                                val nextType = ItemBonusType.entries[(bonus.type.ordinal + 1) % ItemBonusType.entries.size]
-                                val target = strictBonusTargets(nextType, acquiredKnowledgeTargets).firstOrNull().orEmpty()
-                                bonuses = bonuses.replace(index, bonus.copy(type = nextType, target = target))
-                            }) { Text("TIPO // ${bonus.type.label.uppercase()}") }
-                            TextButton(onClick = { bonuses = bonuses.filterIndexed { itemIndex, _ -> itemIndex != index } }) {
-                                Text("REMOVER", color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                        TextButton(
-                            enabled = targets.isNotEmpty(),
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = {
-                                val current = targets.indexOf(bonus.target)
-                                val next = targets[(current.coerceAtLeast(-1) + 1) % targets.size]
-                                bonuses = bonuses.replace(index, bonus.copy(target = next))
-                            },
-                        ) {
-                            Text("APLICAR EM // ${bonus.displayTarget().ifBlank { if (targets.isEmpty()) "SEM OPÇÕES" else "SELECIONAR" }}")
-                        }
-                        IntegerField("Valor (-5 a +5)", bonus.value, true) { value ->
-                            bonuses = bonuses.replace(index, bonus.copy(value = value.coerceIn(-5, 5)))
-                        }
-                        if (bonus.target.isBlank()) {
-                            Text(
-                                if (bonus.type == ItemBonusType.ACQUIRED_KNOWLEDGE) "A ficha não possui Conhecimentos Adquiridos disponíveis para este bônus."
-                                else "Selecione um destino para o bônus.",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                    }
-                }
-                TextButton(
-                    onClick = { bonuses = bonuses + ItemBonus(type = ItemBonusType.ATTRIBUTE, target = "FOR") },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("+ ADICIONAR BÔNUS") }
                 }
                 }
 
@@ -451,49 +397,22 @@ private fun StrictItemBuilderDialog(
                 }
                 if (category != "Item") {
                     Text("CUSTO // ${built.creationCost ?: "#"} PH // PREÇO ${built.price} E$", color = MaterialTheme.colorScheme.primary)
-                    Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
+                    Text("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
                     Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
                     if (requiresPrice) Text("Este material exige preço manual.", color = MaterialTheme.colorScheme.error)
-                    if (!bonusesComplete) Text("Todos os bônus precisam de um destino válido.", color = MaterialTheme.colorScheme.error)
                 }
                 }
             }
         },
         confirmButton = {
             TextButton(
-                enabled = step < 4 || if (category == "Item") commonName.isNotBlank() else allowedByBudget && !requiresPrice && bonusesComplete,
+                enabled = step < 4 || if (category == "Item") commonName.isNotBlank() else allowedByBudget && !requiresPrice,
                 onClick = { if (step < 4) step++ else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
             ) { Text(if (step < 4) "CONTINUAR" else "CRIAR ITEM") }
         },
         dismissButton = { TextButton(onClick = { if (step > 1) step-- else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
     )
-}
-
-@Composable
-private fun CyclePartButton(label: String, current: ItemPart, options: List<ItemPart>, onSelected: (ItemPart) -> Unit) {
-    TextButton(
-        enabled = options.isNotEmpty(),
-        modifier = Modifier.fillMaxWidth(),
-        onClick = {
-            if (options.isEmpty()) return@TextButton
-            val currentIndex = options.indexOfFirst { it.id == current.id }
-            onSelected(options[(currentIndex.coerceAtLeast(-1) + 1) % options.size])
-        },
-    ) { Text("$label // ${current.name}") }
-}
-
-private fun strictBonusTargets(type: ItemBonusType, acquiredKnowledgeTargets: List<String>): List<String> = when (type) {
-    ItemBonusType.ATTRIBUTE -> listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR")
-    ItemBonusType.BASIC_KNOWLEDGE -> listOf(
-        "FOR" to listOf("Atletismo", "Brutalidade", "Luta", "Arremesso"),
-        "VIG" to listOf("Energia", "Vitalidade", "Tolerância", "Regeneração"),
-        "AGI" to listOf("Furtividade", "Reflexos", "Movimento", "Pontaria"),
-        "POD" to listOf("Arcano", "Sentidos", "Controle", "Recuperação"),
-        "INT" to listOf("Sanidade", "Intuição", "Religião", "Raciocínio"),
-        "CAR" to listOf("Política", "Lábia", "Enganação", "Intimidação"),
-    ).flatMap { (attribute, skills) -> skills.map { ItemBonus.basicKnowledgeTarget(attribute, it) } }
-    ItemBonusType.ACQUIRED_KNOWLEDGE -> acquiredKnowledgeTargets
 }
 
 private fun strictToggleModification(current: List<ItemPart>, item: ItemPart): List<ItemPart> {

@@ -42,10 +42,7 @@ internal fun PhaseOneInventoryWithBonusSection(
     enabled: Boolean,
     onChange: (Character) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        PhaseOneStrictInventorySection(character, catalog, enabled, onChange)
-        ItemBonusAuditSection(character, enabled, onChange)
-    }
+    PhaseOneStrictInventorySection(character, catalog, enabled, onChange)
 }
 
 @Composable
