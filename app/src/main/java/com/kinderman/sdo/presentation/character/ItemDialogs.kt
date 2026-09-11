@@ -104,9 +104,9 @@ internal fun ItemCatalogDialog(
                             Text(entry.name, color = if (allowed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
                             Text(
                                 if (remainingHeritage != null) {
-                                    "${entry.group} // CRIAÇÃO ${entry.creationCost.ifBlank { "—" }} PH // ${entry.price} E$ // CARGA ${entry.load}"
+                                    "${entry.group} // CRIAÇÃO ${entry.creationCost.ifBlank { "—" }} PH // CARGA ${entry.load}"
                                 } else {
-                                    "${entry.group} // ${entry.price} E$ // CARGA ${entry.load}"
+                                    "${entry.group} // CARGA ${entry.load}"
                                 },
                                 color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.labelSmall,
@@ -138,7 +138,6 @@ internal fun ItemBuilderDialog(
     var customName by remember { mutableStateOf("") }
     var quality by remember { mutableStateOf(ItemQuality.COMMON) }
     var gems by remember { mutableStateOf(emptyList<ItemPart>()) }
-    var manualPrice by remember { mutableStateOf("") }
     var picker by remember { mutableStateOf<String?>(null) }
     val availableBases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
     val allMaterials = when {
@@ -152,11 +151,9 @@ internal fun ItemBuilderDialog(
     val built = ItemCreationRules.build(
         base, material, modifications, gemSlots, technologySlots, customName, quality,
         components = gems,
-        priceOverride = manualPrice.toIntOrNull().takeIf { !initialCreation },
     )
     val allowed = remainingHeritage == null || built.creationCost != null && built.creationCost <= remainingHeritage
     val overBudget = remainingHeritage != null && (built.creationCost == null || built.creationCost > remainingHeritage)
-    val missingHistorianPrice = !initialCreation && built.creationCost == null && manualPrice.isBlank()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -210,7 +207,7 @@ internal fun ItemBuilderDialog(
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(
                                 if (initialCreation) "${modification.name} // ${modification.creationCost ?: "#"} PH"
-                                else "${modification.name} // ${modification.price} E$",
+                                else modification.name,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -240,11 +237,7 @@ internal fun ItemBuilderDialog(
                 }
                 if (initialCreation) {
                     Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)
-                } else {
-                    HudTextField("Preço final em E$ (Historiador pode ajustar)", manualPrice) { manualPrice = it.filter(Char::isDigit) }
                 }
-                Text("PREÇO // ${built.price} E$", color = MaterialTheme.colorScheme.onSurface)
-                if (missingHistorianPrice) Text("Materiais # exigem que jogador e Historiador definam um preço.", color = MaterialTheme.colorScheme.error)
                 Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.primary)
                 Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(built.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -257,9 +250,8 @@ internal fun ItemBuilderDialog(
         confirmButton = {
             TextButton(onClick = {
                 if (allowed) onAdd(built.toInventoryItem(initialCreation = initialCreation))
-            }, enabled = !overBudget && !missingHistorianPrice) {
+            }, enabled = !overBudget) {
                 Text(when {
-                    missingHistorianPrice -> "DEFINIR PREÇO"
                     allowed -> "ADICIONAR"
                     overBudget -> "SALDO INSUFICIENTE"
                     else -> "REVISAR E ADICIONAR"
@@ -306,11 +298,9 @@ private fun ItemPartPickerDialog(
                         Text(part.name, color = MaterialTheme.colorScheme.onSurface)
                         Text(
                             if (showHeritageCost) {
-                                "CRIAÇÃO ${part.creationCost ?: "#"} PH // ${part.price} E$"
-                            } else if (part.creationCost == null) {
-                                "CUSTO # // PREÇO MANUAL"
+                                "CRIAÇÃO ${part.creationCost ?: "#"} PH"
                             } else {
-                                "${part.price} E$"
+                                part.group
                             },
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelSmall,

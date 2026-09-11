@@ -432,12 +432,14 @@ data class Character(
         get() {
             val typed = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }
             return if (typed.isNotEmpty()) typed.sumOf { it.value }
-            else equippedItems().filterNot { it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }.sumOf { it.pg }
+            else activeEquippedItems()
+                .filterNot { it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
+                .sumOf { if (it.isScrap) it.pg / 2 else it.pg }
         }
 
     val equippedAgilityLimit: Int?
         get() = EquipmentEffectEngine.resolve(this).agilityLimit
-            ?: equippedItems().mapNotNull { it.agilityLimit }.minOrNull()
+            ?: activeEquippedItems().mapNotNull { it.agilityLimit }.minOrNull()
 
     val equipmentAttackBonus: Int get() = EquipmentEffectEngine.resolve(this).attackBonus
     val equipmentPhysicalDamageBonus: Int get() = EquipmentEffectEngine.resolve(this).physicalDamageBonus
@@ -448,7 +450,8 @@ data class Character(
     fun localProtection(region: BodyRegion): Int {
         val typed = EquipmentEffectEngine.resolve(this).entries
             .filter { it.type == ItemEffectType.PL && (it.targetId.isBlank() || it.targetId.equals(region.name, true)) }
-        return region.localProtection + if (typed.isNotEmpty()) typed.sumOf { it.value } else equippedItems(region).sumOf { it.pl }
+        return region.localProtection + if (typed.isNotEmpty()) typed.sumOf { it.value }
+        else equippedItems(region).sumOf { if (it.isScrap) it.pl / 2 else it.pl }
     }
 
     fun equippedItems(region: BodyRegion): List<InventoryItem> =
@@ -493,12 +496,8 @@ data class Character(
         },
     ).synchronizeItemPowers()
 
-    private fun equippedItems(): List<InventoryItem> {
-        val equippedIds = bodyRegions.flatMap { it.equippedItemIds }.toSet()
-        return inventory.filter {
-            it.id in equippedIds && !it.isBroken &&
-                it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
-        }
+    private fun activeEquippedItems(): List<InventoryItem> = inventory.filter {
+        !it.isBroken && it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
     }
 
     fun acquiredKnowledgeValue(name: String): Int {

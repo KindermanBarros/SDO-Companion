@@ -12,7 +12,10 @@ fun CharacterRecord.requiresStructuredMigration(): Boolean =
 
 fun CharacterRecord.migratedStructuredRecord(markDirty: Boolean): CharacterRecord {
     if (!requiresStructuredMigration()) return this
-    return toDomain().copy(
+    val migrationSource = if (itemSchemaVersion < CURRENT_ITEM_DATA_VERSION) {
+        copy(inventory = inventory.map { item -> item.copy(dataVersion = minOf(item.dataVersion, itemSchemaVersion)) })
+    } else this
+    return migrationSource.toDomain().copy(
         itemSchemaVersion = CURRENT_ITEM_DATA_VERSION,
         creationRulesVersion = maxOf(creationRulesVersion, CURRENT_CREATION_RULES_VERSION),
     ).toRecord().copy(
