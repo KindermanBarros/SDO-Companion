@@ -6,8 +6,6 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemBonus
 import com.kinderman.sdo.domain.model.ItemQuality
-import com.kinderman.sdo.domain.model.ItemEffect
-import com.kinderman.sdo.domain.model.ItemEffectType
 import kotlin.math.roundToInt
 
 object ItemCreationRules {
@@ -121,12 +119,7 @@ object ItemCreationRules {
         part("sob_medida", "Sob Medida", "Modificação de armadura", 4, 130, effect = "Exige Ajustada; LA +2 adicional."),
     )
 
-    val gemComponents = listOf(
-        part("gema_menor_aleatoria", "Gema Menor Aleatória", "Gema", 2, 45, effect = "Ocupa 1 Espaço de Gema; efeito sorteado ou definido pelo Historiador."),
-        part("gema_aprimoramento_menor", "Gema de Aprimoramento Menor", "Gema", 3, 90, effect = "Ocupa 1 Espaço de Gema; aprimoramento menor."),
-        part("gema_aleatoria", "Gema Aleatória", "Gema", 4, 150, effect = "Ocupa 1 Espaço de Gema; efeito sorteado ou definido pelo Historiador."),
-        part("gema_aprimoramento_maior", "Gema de Aprimoramento Maior", "Gema", 6, 400, effect = "Ocupa 1 Espaço de Gema; aprimoramento maior."),
-    )
+    val gemComponents = GeneratedGemCatalog.entries.map { it.part }
 
     fun build(
         base: ItemPart,
@@ -209,16 +202,8 @@ object ItemCreationRules {
             materialId = material.id,
             modificationIds = modifications.map { it.id },
             gemIds = installedComponents.map { it.id },
-            mechanicalEffects = installedComponents.mapNotNull(::gemEffect),
+            mechanicalEffects = installedComponents.mapNotNull { GeneratedGemCatalog.effect(it.id) },
         )
-    }
-
-    private fun gemEffect(gem: ItemPart): ItemEffect? = when (gem.id) {
-        "gema_menor_aleatoria" -> ItemEffect(gem.id, ItemEffectType.KNOWLEDGE, value = 1, target = "*", description = "+1 em um Conhecimento determinado pela gema.")
-        "gema_aprimoramento_menor" -> ItemEffect(gem.id, ItemEffectType.MAGIC_DAMAGE, value = 1, description = "+1 de dano mágico sutil.")
-        "gema_aleatoria" -> ItemEffect(gem.id, ItemEffectType.ATTRIBUTE, value = 1, target = "*", description = "+1 em um Atributo determinado pela gema.")
-        "gema_aprimoramento_maior" -> ItemEffect(gem.id, ItemEffectType.GEM_POWER, description = "Libera um Poder de Combate específico da gema.")
-        else -> null
     }
 
     fun complexity(cost: Int?): String = when (cost) {
