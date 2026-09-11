@@ -472,7 +472,7 @@ data class Character(
 
     fun permanentAttributeValue(acronym: String): Int {
         val attribute = attributes.firstOrNull { it.acronym.equals(acronym, true) }
-        return ((attribute?.value ?: 0) + (attribute?.modifier ?: 0) + racialAttributeModifiers(acronym).sumOf { it.value })
+        return ((attribute?.value ?: 0) + racialAttributeModifiers(acronym).sumOf { it.value })
             .coerceAtLeast(0)
     }
 
