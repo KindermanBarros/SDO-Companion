@@ -1,6 +1,8 @@
 package com.kinderman.sdo.ui
 
-import android.app.Activity
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,7 +50,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.R
-import androidx.core.view.WindowCompat
 
 // --- Fundo de Tela e Superfícies Estruturais (Dark Canvas) ---
 val Void: Color @Composable get() = MaterialTheme.colorScheme.background
@@ -294,13 +295,17 @@ fun SdoTheme(
     )
     val view = LocalView.current
     if (!view.isInEditMode) SideEffect {
-        val window = (view.context as? Activity)?.window ?: return@SideEffect
-        window.statusBarColor = colors.background.toArgb()
-        window.navigationBarColor = colors.surface.toArgb()
-        WindowCompat.getInsetsController(window, view).apply {
-            isAppearanceLightStatusBars = colors.background.luminance() > 0.5f
-            isAppearanceLightNavigationBars = colors.surface.luminance() > 0.5f
-        }
+        val activity = view.context as? ComponentActivity ?: return@SideEffect
+        activity.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                colors.background.toArgb(),
+                colors.background.toArgb(),
+            ) { colors.background.luminance() <= 0.5f },
+            navigationBarStyle = SystemBarStyle.auto(
+                colors.surface.toArgb(),
+                colors.surface.toArgb(),
+            ) { colors.surface.luminance() <= 0.5f },
+        )
     }
     MaterialTheme(
         colorScheme = colors,

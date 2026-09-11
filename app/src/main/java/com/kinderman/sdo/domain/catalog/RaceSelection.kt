@@ -38,7 +38,7 @@ fun Character.withRaceSelection(
     val racialPowers = selectedBasePowers.map {
         it.toStructuredPower("Raça — ${raceDefinition.name}")
     } + listOfNotNull(selectedSubRacePower?.let {
-        it.toStructuredPower("Sub-raça — ${subRaceDefinition?.name}")
+        it.toStructuredPower("Sub-raça — ${requireNotNull(subRaceDefinition).name}")
     })
     fun previous(value: Int) = if (hadManagedRace) value else 0
 
