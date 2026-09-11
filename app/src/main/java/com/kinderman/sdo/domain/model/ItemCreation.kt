@@ -159,6 +159,26 @@ fun Character.withItemInventoryState(itemId: String, state: InventoryState): Cha
         .synchronizeItemPowers()
 }
 
+/** Applies durability loss following the equipment rules: zero creates Scrap and
+ * any further loss dealt to Scrap makes the item Broken. */
+fun Character.damageInventoryItem(itemId: String, amount: Int = 1): Character {
+    if (amount <= 0) return this
+    val current = inventory.firstOrNull { it.id == itemId } ?: return this
+    val damaged = when {
+        current.isBroken -> current
+        current.isScrap -> current.copy(itemCondition = ItemCondition.BROKEN, durabilityCurrent = 0)
+        else -> {
+            val durability = (current.durabilityCurrent - amount).coerceAtLeast(0)
+            current.copy(
+                durabilityCurrent = durability,
+                itemCondition = if (durability == 0) ItemCondition.SCRAP else ItemCondition.NORMAL,
+            )
+        }
+    }
+    return copy(inventory = inventory.map { item -> if (item.id == itemId) damaged else item })
+        .synchronizeItemPowers()
+}
+
 fun Character.synchronizeItemPowers(): Character {
     val gemEffects = activeItemEffects().filter { it.effect.type == ItemEffectType.GEM_POWER }
     val activeKeys = gemEffects.mapTo(hashSetOf()) { "${it.itemId}:${it.effect.id}" }
