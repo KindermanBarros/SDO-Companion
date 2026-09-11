@@ -6,12 +6,6 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 
-private val runicPackages = linkedMapOf(
-    1 to listOf("Centelha", "Solo Firme", "Frescor", "Mensagem de Eco"),
-    3 to listOf("Armadilha de Geada", "Selo de Estabilização", "Ruptura Harmônica", "Cerca Espinhosa"),
-    5 to listOf("Memória da Rocha", "Santuário Regenerativo", "Arquivo Inexistente", "Âncora Onírica"),
-)
-
 data class InitialKnowledgeAllocation(
     val selections: List<SpecialKnowledge>,
     val distributedPoints: Int,
@@ -43,8 +37,10 @@ fun Character.withKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catal
     )
     if (current.isRunic()) {
         val newlyReached = reached - current.milestoneLevels.toSet()
-        val grantedNames = newlyReached.flatMap { runicPackages[it].orEmpty() }
-        val granted = catalog.filter { it.kind == CatalogKind.RUNE && it.name in grantedNames }
+        val granted = catalog.filter { entry ->
+            entry.kind == CatalogKind.RUNE && entry.runePackage.isNotBlank() &&
+                newlyReached.any { milestone -> entry.sourceLevel == when (milestone) { 1 -> 1; 3 -> 2; 5 -> 3; else -> -1 } }
+        }
         granted.forEach { entry ->
             if (result.mysticAbilities.none { it.catalogEntryId == entry.id || it.name.equals(entry.name, true) }) {
                 result = result.copy(
