@@ -23,7 +23,9 @@ fun Character.generalProtectionBreakdown(): CalculatedValue {
             )
         }
     } else {
-        val equipped = equippedInventoryItemsForBreakdown()
+        val equipped = inventory.filter {
+            !it.isBroken && it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
+        }
         equipped.filterNot { it.isBroken || it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
             .filter { it.pg != 0 }
             .map { item ->
