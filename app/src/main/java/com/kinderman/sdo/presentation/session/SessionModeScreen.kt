@@ -47,6 +47,7 @@ import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperationType
 import com.kinderman.sdo.domain.model.SessionResource
 import com.kinderman.sdo.domain.model.localProtectionBreakdown
+import com.kinderman.sdo.domain.model.LoadCondition
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.HudBackground
@@ -159,6 +160,11 @@ private fun SessionContent(
                     )
                 }
                 Text("Ações de combate", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                when (character.loadCondition) {
+                    LoadCondition.OVERLOADED -> Text("SOBRECARREGADO // MOVIMENTO −5 m // ESQUIVA −2 // CORRIDA +1 PE // DESVANTAGEM: Movimento, Furtividade e Atletismo", color = MaterialTheme.colorScheme.error)
+                    LoadCondition.IMMOBILE -> Text("IMÓVEL // MOVIMENTO E ESQUIVA INDISPONÍVEIS", color = MaterialTheme.colorScheme.error)
+                    else -> Unit
+                }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { damageDialog = true }, enabled = !readOnly, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.Shield, null)
