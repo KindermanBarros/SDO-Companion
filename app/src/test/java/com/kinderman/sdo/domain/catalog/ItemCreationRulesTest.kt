@@ -1,8 +1,6 @@
 package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.initialCreationCost
-import com.kinderman.sdo.domain.model.ItemBonus
-import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemEffectType
 import org.junit.Assert.assertEquals
@@ -43,7 +41,7 @@ class ItemCreationRulesTest {
         assertNull(item.creationCost)
     }
 
-    @Test fun builderUsesOnePredominantMaterialAndStructuredBonuses() {
+    @Test fun builderUsesOnePredominantMaterial() {
         val common = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
         val item = ItemCreationRules.build(
             base = ItemCreationRules.weaponBases.first { it.id == "lanca" },
@@ -51,13 +49,12 @@ class ItemCreationRulesTest {
             modifications = emptyList(),
             gemSlots = 0,
             technologySlots = 0,
-            bonuses = listOf(ItemBonus(ItemBonusType.ATTRIBUTE, "FOR", 1)),
         )
 
-        assertEquals(9, item.creationCost)
+        assertEquals(6, item.creationCost)
         assertEquals(2, item.durability)
         assertTrue(item.effect.contains("Material predominante: Ligas Comuns"))
-        assertEquals("FOR", item.bonuses.single().target)
+        assertTrue(item.bonuses.isEmpty())
     }
 
     @Test fun qualityChangesCostPriceAndArmorProtection() {
@@ -88,7 +85,7 @@ class ItemCreationRulesTest {
         assertTrue(item.effect.contains("Espaços de Gema: 1"))
         assertEquals(gem.id, item.gemIds.single())
         assertEquals(ItemEffectType.KNOWLEDGE, item.mechanicalEffects.single().type)
-        assertEquals("*", item.mechanicalEffects.single().target)
+        assertEquals("FOR:Atletismo", item.mechanicalEffects.single().target)
         assertEquals("faca", item.baseId)
         assertEquals("madeira", item.materialId)
     }
