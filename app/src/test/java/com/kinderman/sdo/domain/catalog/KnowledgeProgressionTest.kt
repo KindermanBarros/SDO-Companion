@@ -18,6 +18,15 @@ class KnowledgeProgressionTest {
         assertEquals(3, character.withKnowledgeLevel("music", 5, emptyList()).learnedKnowledges.single().value)
     }
 
+    @Test fun knowledgeLevelKeepsSystemCapWhenAttributeIsHigher() {
+        val music = SpecialKnowledge(id = "music", name = "Música", attribute = "CAR")
+        val character = Character(
+            attributes = Character().attributes.map { if (it.acronym == "CAR") it.copy(value = 8) else it },
+            learnedKnowledges = listOf(music),
+        )
+        assertEquals(5, character.withKnowledgeLevel("music", 8, emptyList()).learnedKnowledges.single().value)
+    }
+
     @Test fun runicGrantsEachCanonicalPackageOnceAtItsThreshold() {
         val runic = SpecialKnowledge(id = "runic", name = "Rúnico", attribute = "POD", value = 0)
         val character = Character(
