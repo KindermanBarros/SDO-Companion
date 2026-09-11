@@ -123,6 +123,16 @@ internal fun PhaseOneStrictInventorySection(
                 Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality.label} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 Text("DURABILIDADE ${item.durabilityLabel}${when { item.isBroken -> " // [QUEBRADO]"; item.isScrap -> " // [SUCATA]"; else -> "" }}", color = if (item.isScrap || item.isBroken) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                if (item.isScrap && item.category.contains("arma", true)) Text(
+                    "SUCATA // DESVANTAGEM NO ATAQUE // DADO DE DANO −1 CATEGORIA // BÔNUS E MODIFICAÇÕES INATIVOS",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                if (item.isScrap && (item.pg != 0 || item.pl != 0)) Text(
+                    "SUCATA // PG ${item.pg / 2} // PL ${item.pl / 2}",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall,
+                )
                 if (item.linkedAshId.isNotBlank()) {
                     IntegerField("Doses", item.quantity, enabled) { doses ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = doses.coerceAtLeast(0)))))
