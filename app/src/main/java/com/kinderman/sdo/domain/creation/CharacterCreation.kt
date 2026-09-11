@@ -31,7 +31,7 @@ object CharacterCreation {
         1 -> "Informe o nome e selecione a raça.".takeIf { character.name.isBlank() || character.race.isBlank() }
         2 -> "Distribua exatamente 10 pontos entre os Atributos.".takeIf { attributePointsSpent(character) != 10 }
         3 -> "Escolha exatamente 5 Conhecimentos Especiais. Eles começam gratuitamente no nível 0.".takeIf {
-            specialKnowledges(character).size != SPECIAL_KNOWLEDGE_CHOICES || specialKnowledges(character).any { it.value != 0 }
+            specialKnowledges(character).size != SPECIAL_KNOWLEDGE_CHOICES
         }
         4 -> "Distribua exatamente 15 pontos entre qualquer Conhecimento.".takeIf { knowledgePointsSpent(character) != KNOWLEDGE_POINTS }
         6 -> "Defina o Caminho, os 3 Pilares e os 2 Poderes iniciais.".takeIf {
