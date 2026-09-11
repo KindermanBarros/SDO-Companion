@@ -152,7 +152,11 @@ fun CharacterRecord.toDomain() = Character(
     pathKeywords = pathKeywords.ifEmpty { listOf("", "", "") },
     pathPillars = pathPillars.ifEmpty { listOf("", "", "") },
     powers = powers.map(Power::canonicalized),
-    inventory = inventory,
+    inventory = inventory.map { item ->
+        if (itemSchemaVersion < com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION) {
+            item.copy(dataVersion = minOf(item.dataVersion, itemSchemaVersion))
+        } else item
+    },
     itemCreationDraft = itemCreationDraft,
     bodyRegions = normalizeBodyRegions(bodyRegions),
     agilityLimit = agilityLimit,

@@ -574,7 +574,11 @@ data class Character(
     private fun equippedKnowledgeModifiers(targetId: String, displayName: String): List<ValueModifier> =
         EquipmentEffectEngine.resolve(this).entries.filter { active ->
             active.type == ItemEffectType.KNOWLEDGE &&
-                (active.targetId.equals(targetId, true) || active.targetId.equals(displayName, true))
+                (
+                    active.targetId.equals(targetId, true) ||
+                        active.targetId.equals(targetId.removePrefix("basic:"), true) ||
+                        active.targetId.equals(displayName, true)
+                )
         }.map { active ->
             ValueModifier(ModifierSourceType.ITEM, active.itemId, active.itemName.ifBlank { "Item sem nome" }, active.value)
         }
