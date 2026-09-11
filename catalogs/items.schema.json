@@ -21,6 +21,7 @@
           "creationCost": { "type": ["integer", "null"], "minimum": 0 },
           "price": { "type": "integer", "minimum": 0 },
           "load": { "type": "integer" },
+          "backpackCapacity": { "type": "integer", "minimum": 0 },
           "durability": { "type": "integer", "minimum": 0 },
           "region": { "type": "string" },
           "effect": { "type": "string" },

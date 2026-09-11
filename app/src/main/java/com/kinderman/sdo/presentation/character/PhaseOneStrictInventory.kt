@@ -80,9 +80,6 @@ internal fun PhaseOneStrictInventorySection(
             style = MaterialTheme.typography.titleLarge,
         )
         Text("Efeitos são definidos pelos componentes do item e aplicados automaticamente quando equipado.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        IntegerField("Capacidade do recipiente equipado", character.containerCapacity, enabled) {
-            onChange(character.copy(containerCapacity = it.coerceAtLeast(0)))
-        }
         HudTextField("Buscar por nome, categoria, material ou estado", inventoryQuery) { inventoryQuery = it }
         ChoiceField("Grupo", inventoryGroup, listOf("Todos", "Armas", "Armaduras", "Itens"), true) { inventoryGroup = it }
 
@@ -231,11 +228,11 @@ private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<Invent
 private fun validItemStates(character: Character, item: InventoryItem): List<InventoryState> = buildList {
     if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
     if (item.category.contains("armadura", true) || item.category.contains("acessório", true)) add(InventoryState.EQUIPPED)
-    val quickAccessCount = character.inventory.count { it.inventoryState == InventoryState.CONTAINER && it.id != item.id }
-    if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.CONTAINER || quickAccessCount < 2)) {
-        add(InventoryState.CONTAINER)
+    val quickAccessCount = character.inventory.count { it.inventoryState == InventoryState.QUICK_ACCESS && it.id != item.id }
+    if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.QUICK_ACCESS || quickAccessCount < 2)) {
+        add(InventoryState.QUICK_ACCESS)
     }
-    add(InventoryState.BACKPACK)
+    if (character.backpackCapacity > 0) add(InventoryState.BACKPACK)
     add(InventoryState.STORED)
 }
 

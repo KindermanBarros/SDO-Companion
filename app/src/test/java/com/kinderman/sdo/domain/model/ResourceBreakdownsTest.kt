@@ -45,8 +45,10 @@ class ResourceBreakdownsTest {
         val attributes = defaultAttributes().map { if (it.acronym == "FOR") it.copy(value = 3) else it }
         val character = Character(
             attributes = attributes,
-            containerCapacity = 5,
-            inventory = listOf(item),
+            inventory = listOf(
+                item,
+                InventoryItem(state = "E", category = "Recipiente de Carga", catalogEntryId = "item.mochila_pequena", backpackCapacity = 5),
+            ),
         ).equipItems(1, setOf(item.id))
 
         val value = character.loadCapacityBreakdown()

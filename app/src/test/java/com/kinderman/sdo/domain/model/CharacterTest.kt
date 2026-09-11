@@ -23,8 +23,8 @@ class CharacterTest {
         val attributes = defaultAttributes().map { if (it.acronym == "FOR") it.copy(value = 3) else it }
         val character = Character(
             attributes = attributes,
-            containerCapacity = 10,
             inventory = listOf(
+                InventoryItem(state = "E", category = "Recipiente de Carga", catalogEntryId = "item.mochila_viajante", backpackCapacity = 10),
                 InventoryItem(state = "E", load = 3),
                 InventoryItem(state = "M", load = 2),
                 InventoryItem(state = "G", load = 8),

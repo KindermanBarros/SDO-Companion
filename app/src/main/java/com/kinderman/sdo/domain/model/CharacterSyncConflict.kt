@@ -59,7 +59,6 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("pathPillars", "Pilares do Caminho", local.pathPillars, remote.pathPillars, ::stringListSummary)
     changed("powers", "Poderes", local.powers, remote.powers) { values -> namedListSummary(values) { it.name } }
     changed("inventory", "Inventário", local.inventory, remote.inventory) { values -> namedListSummary(values) { it.name } }
-    changed("containerCapacity", "Capacidade do recipiente", local.containerCapacity, remote.containerCapacity)
     changed("bodyRegions", "Corpo e armadura", local.bodyRegions, remote.bodyRegions) { values ->
         values.joinToString(" • ") { "${it.name}: ${it.failures} falhas, PL ${it.localProtection}, PG ${it.generalProtection}" }
     }
@@ -124,7 +123,6 @@ fun mergeCharacterConflict(
         pathPillars = selected("pathPillars", local.pathPillars, remote.pathPillars),
         powers = selected("powers", local.powers, remote.powers),
         inventory = selected("inventory", local.inventory, remote.inventory),
-        containerCapacity = selected("containerCapacity", local.containerCapacity, remote.containerCapacity),
         bodyRegions = selected("bodyRegions", local.bodyRegions, remote.bodyRegions),
         agilityLimit = selected("agilityLimit", local.agilityLimit, remote.agilityLimit),
         organs = selected("organs", local.organs, remote.organs),
