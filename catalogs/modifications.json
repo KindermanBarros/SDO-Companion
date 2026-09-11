@@ -1,19 +1,750 @@
 {
   "$schema": "./item-components.schema.json",
   "schemaVersion": 1,
-  "catalogVersion": 1,
+  "catalogVersion": 2,
   "kind": "MODIFICATION",
   "entries": [
-    {"id":"cruel","name":"Cruel","compatibleItemTypes":["Arma"],"creationCost":0,"price":10,"effect":{"type":"RULE","value":0,"target":"death_door","condition":"WIELDED","description":"Alvo a 0 PV entra nas Portas da Morte."}},
-    {"id":"equilibrada","name":"Equilibrada","compatibleItemTypes":["Arma"],"creationCost":2,"price":45,"effect":{"type":"RULE","value":1,"target":"attack_damage","condition":"WIELDED","description":"+1 Ataque e +1 dano."}},
-    {"id":"afiada","name":"Afiada","compatibleItemTypes":["Arma"],"creationCost":2,"price":50,"effect":{"type":"RULE","value":2,"target":"attack","condition":"WIELDED","description":"+2 Ataque."}},
-    {"id":"brutal","name":"Brutal","compatibleItemTypes":["Arma"],"creationCost":2,"price":55,"effect":{"type":"RULE","value":2,"target":"damage","condition":"WIELDED","description":"+2 dano."}},
-    {"id":"raptora","name":"Raptora","compatibleItemTypes":["Arma"],"creationCost":4,"price":280,"effect":{"type":"RULE","value":1,"target":"bleeding","condition":"WIELDED","description":"Aplica Sangramento 1 contra PL 0 ou armadura não metálica."}},
-    {"id":"acumuladora","name":"Acumuladora","compatibleItemTypes":["Arma"],"creationCost":10,"price":3200,"effect":{"type":"MAGIC_DAMAGE","value":0,"target":"charges","condition":"WIELDED","description":"Acumula até 5 cargas; cada uma causa +1d4 arcano."}},
-    {"id":"chamativa","name":"Chamativa","compatibleItemTypes":["Armadura","Acessório"],"creationCost":1,"price":20,"effect":{"type":"RULE","value":1,"target":"presence","condition":"EQUIPPED","description":"+1 presença quando percebida."}},
-    {"id":"robusta","name":"Robusta","compatibleItemTypes":["Armadura"],"creationCost":4,"price":65,"effect":{"type":"RULE","value":3,"target":"general_protection","condition":"EQUIPPED","description":"+3 PG; Carga +1; LA -1."}},
-    {"id":"ajustada","name":"Ajustada","compatibleItemTypes":["Armadura"],"creationCost":2,"price":45,"effect":{"type":"RULE","value":1,"target":"agility_limit","condition":"EQUIPPED","description":"Carga -1, mínimo 1; LA +1."}},
-    {"id":"nobre","name":"Nobre","compatibleItemTypes":["Armadura","Acessório"],"creationCost":1,"price":60,"effect":{"type":"RULE","value":2,"target":"posture","condition":"EQUIPPED","description":"+2 Postura contra não nobres."}},
-    {"id":"sob_medida","name":"Sob Medida","compatibleItemTypes":["Armadura"],"creationCost":4,"price":130,"effect":{"type":"RULE","value":2,"target":"agility_limit","condition":"EQUIPPED","description":"Exige Ajustada; LA +2 adicional."}}
+    {
+      "id": "cruel",
+      "name": "Cruel",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "creationCost": 0,
+      "price": 5,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "death_door",
+        "condition": "WIELDED",
+        "description": "Alvo a 0 PV entra nas Portas da Morte."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média",
+        "Arma grande",
+        "Arma de haste",
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla",
+        "Arma especial"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "equilibrada",
+      "name": "Equilibrada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "effect": {
+        "type": "RULE",
+        "value": 1,
+        "target": "attack_damage",
+        "condition": "WIELDED",
+        "description": "+1 Ataque e +1 dano."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média",
+        "Arma grande",
+        "Arma de haste",
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla",
+        "Arma especial"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "afiada",
+      "name": "Afiada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "effect": {
+        "type": "RULE",
+        "value": 2,
+        "target": "attack",
+        "condition": "WIELDED",
+        "description": "+2 Ataque."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média",
+        "Arma grande",
+        "Arma de haste",
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla",
+        "Arma especial"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "brutal",
+      "name": "Brutal",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "effect": {
+        "type": "RULE",
+        "value": 2,
+        "target": "damage",
+        "condition": "WIELDED",
+        "description": "+2 dano."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média",
+        "Arma grande",
+        "Arma de haste",
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla",
+        "Arma especial"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "raptora",
+      "name": "Raptora",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "effect": {
+        "type": "RULE",
+        "value": 1,
+        "target": "bleeding",
+        "condition": "WIELDED",
+        "description": "Aplica Sangramento 1 contra PL 0 ou armadura não metálica."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média",
+        "Arma grande",
+        "Arma de haste",
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla",
+        "Arma especial"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "acumuladora",
+      "name": "Acumuladora",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "creationCost": 10,
+      "price": 1700,
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 0,
+        "target": "charges",
+        "condition": "WIELDED",
+        "description": "Acumula até 5 cargas; cada uma causa +1d4 arcano."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média",
+        "Arma grande",
+        "Arma de haste",
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla",
+        "Arma especial"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "chamativa",
+      "name": "Chamativa",
+      "compatibleItemTypes": [
+        "Armadura",
+        "Acessório"
+      ],
+      "creationCost": 1,
+      "price": 20,
+      "effect": {
+        "type": "RULE",
+        "value": 1,
+        "target": "presence",
+        "condition": "EQUIPPED",
+        "description": "+1 presença quando percebida."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Armadura",
+        "Escudo",
+        "Acessório"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "robusta",
+      "name": "Robusta",
+      "compatibleItemTypes": [
+        "Armadura"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "effect": {
+        "type": "RULE",
+        "value": 3,
+        "target": "general_protection",
+        "condition": "EQUIPPED",
+        "description": "+3 PG; Carga +1; LA -1."
+      },
+      "load": 1,
+      "durability": 0,
+      "region": "",
+      "pg": 3,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Armadura",
+        "Escudo",
+        "Acessório"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "ajustada",
+      "name": "Ajustada",
+      "compatibleItemTypes": [
+        "Armadura"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "effect": {
+        "type": "RULE",
+        "value": 1,
+        "target": "agility_limit",
+        "condition": "EQUIPPED",
+        "description": "Carga -1, mínimo 1; LA +1."
+      },
+      "load": -1,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Armadura",
+        "Escudo",
+        "Acessório"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "nobre",
+      "name": "Nobre",
+      "compatibleItemTypes": [
+        "Armadura",
+        "Acessório"
+      ],
+      "creationCost": 1,
+      "price": 20,
+      "effect": {
+        "type": "RULE",
+        "value": 2,
+        "target": "posture",
+        "condition": "EQUIPPED",
+        "description": "+2 Postura contra não nobres."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Armadura",
+        "Escudo",
+        "Acessório"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "sob_medida",
+      "name": "Sob Medida",
+      "compatibleItemTypes": [
+        "Armadura"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "effect": {
+        "type": "RULE",
+        "value": 2,
+        "target": "agility_limit",
+        "condition": "EQUIPPED",
+        "description": "Exige Ajustada; LA +2 adicional."
+      },
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [
+        "Armadura",
+        "Escudo",
+        "Acessório"
+      ],
+      "compatibleBaseIds": []
+    },
+    {
+      "id": "serrilhada",
+      "name": "Serrilhada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma curta",
+        "Arma média"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "bleeding_edge",
+        "condition": "WIELDED",
+        "description": "Em crítico, aplica Sangramento 1."
+      }
+    },
+    {
+      "id": "contrapesada",
+      "name": "Contrapesada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma grande",
+        "Arma de haste"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "heavy_balance",
+        "condition": "WIELDED",
+        "description": "Remove a penalidade do primeiro ataque com uma arma Pesada na cena."
+      }
+    },
+    {
+      "id": "gancho_de_guarda",
+      "name": "Gancho de Guarda",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma de haste"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "disarm",
+        "condition": "WIELDED",
+        "description": "Após um bloqueio, recebe +2 no próximo teste para desarmar."
+      }
+    },
+    {
+      "id": "mira_calibrada",
+      "name": "Mira Calibrada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arco ou besta",
+        "Arma de vapor",
+        "Arma de Tesla"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "aim",
+        "condition": "WIELDED",
+        "description": "Mirar concede +1 adicional no ataque."
+      }
+    },
+    {
+      "id": "corda_reforcada",
+      "name": "Corda Reforçada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arco ou besta"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "reload",
+        "condition": "WIELDED",
+        "description": "A primeira Recarga de cada cena exige uma ação menor."
+      }
+    },
+    {
+      "id": "camara_pressurizada",
+      "name": "Câmara Pressurizada",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma de vapor"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "steam_overload",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, ignora o primeiro resultado de Sobrecarga."
+      }
+    },
+    {
+      "id": "isolamento_galvanico",
+      "name": "Isolamento Galvânico",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma de Tesla"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "tesla_feedback",
+        "condition": "WIELDED",
+        "description": "Impede o primeiro dano de retorno elétrico de cada cena."
+      }
+    },
+    {
+      "id": "revestimento_refratario",
+      "name": "Revestimento Refratário",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma especial"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "special_heat",
+        "condition": "WIELDED",
+        "description": "Reduz em 1 o desgaste provocado por calor ou ácido."
+      }
+    },
+    {
+      "id": "pomo_oculto",
+      "name": "Pomo Oculto",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [
+        "Arma curta"
+      ],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "concealment",
+        "condition": "WIELDED",
+        "description": "Concede +2 para ocultar a arma em uma revista."
+      }
+    },
+    {
+      "id": "placas_laminadas",
+      "name": "Placas Laminadas",
+      "compatibleItemTypes": [
+        "Armadura"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [
+        "peitoral_comum",
+        "peitoral_segmentado"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "impact_reduction",
+        "condition": "EQUIPPED",
+        "description": "Uma vez por rodada, reduz em 1 o dano de impacto absorvido."
+      }
+    },
+    {
+      "id": "malha_flexivel",
+      "name": "Malha Flexível",
+      "compatibleItemTypes": [
+        "Armadura"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [
+        "peitoral_malha",
+        "gibao",
+        "jaqueta_revestida"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "mobility",
+        "condition": "EQUIPPED",
+        "description": "Ignora a primeira penalidade circunstancial de movimento da armadura."
+      }
+    },
+    {
+      "id": "viseira_articulada",
+      "name": "Viseira Articulada",
+      "compatibleItemTypes": [
+        "Armadura"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [
+        "elmo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "head_guard",
+        "condition": "EQUIPPED",
+        "description": "Abrir ou fechar a viseira é uma ação livre."
+      }
+    },
+    {
+      "id": "sola_tracionada",
+      "name": "Sola Tracionada",
+      "compatibleItemTypes": [
+        "Acessório"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [
+        "botas",
+        "botas_viagem",
+        "sapatilhas"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "terrain_grip",
+        "condition": "EQUIPPED",
+        "description": "Ignora o primeiro quadrado de terreno difícil por turno."
+      }
+    },
+    {
+      "id": "encaixe_oculto",
+      "name": "Encaixe Oculto",
+      "compatibleItemTypes": [
+        "Acessório"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [
+        "manto_negro",
+        "manto_elite",
+        "bracadeira"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "concealed_slot",
+        "condition": "EQUIPPED",
+        "description": "Permite ocultar um objeto de Carga 0 no acessório."
+      }
+    },
+    {
+      "id": "aro_defletor",
+      "name": "Aro Defletor",
+      "compatibleItemTypes": [
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [
+        "escudo_leve",
+        "escudo_pesado"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "projectile_guard",
+        "condition": "EQUIPPED",
+        "description": "Uma vez por cena, recebe +2 PG contra um projétil."
+      }
+    }
   ]
 }
