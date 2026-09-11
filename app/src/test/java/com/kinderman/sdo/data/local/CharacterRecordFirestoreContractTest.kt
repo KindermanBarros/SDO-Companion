@@ -103,10 +103,8 @@ class CharacterRecordFirestoreContractTest {
             .getDeclaredField("isLocked")
             .getAnnotation(PropertyName::class.java)
 
-        assertNotNull(getterAnnotation)
-        assertNotNull(fieldAnnotation)
-        assertEquals("isLocked", getterAnnotation.value)
-        assertEquals("isLocked", fieldAnnotation.value)
+        assertEquals("isLocked", requireNotNull(getterAnnotation).value)
+        assertEquals("isLocked", requireNotNull(fieldAnnotation).value)
     }
 
     @Test
