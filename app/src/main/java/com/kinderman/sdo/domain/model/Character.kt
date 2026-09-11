@@ -182,6 +182,12 @@ enum class InventoryState(val storageCode: String, val label: String) {
     }
 }
 
+enum class LoadCondition {
+    NORMAL,
+    OVERLOADED,
+    IMMOBILE,
+}
+
 val InventoryItem.inventoryState: InventoryState get() = InventoryState.fromStorage(state)
 
 fun InventoryItem.withInventoryState(value: InventoryState): InventoryItem = copy(state = value.storageCode)
@@ -369,6 +375,22 @@ data class Character(
         .filter { it.catalogEntryId.isNotBlank() && it.category.equals("Recipiente de Carga", true) }
         .maxOfOrNull(InventoryItem::backpackCapacity) ?: 0
     val maximumLoad: Int get() = 2 + attributeValue("FOR") + backpackCapacity
+    val excessLoad: Int get() = (currentLoad - maximumLoad).coerceAtLeast(0)
+    val loadCondition: LoadCondition get() = when {
+        excessLoad >= 4 -> LoadCondition.IMMOBILE
+        excessLoad > 0 -> LoadCondition.OVERLOADED
+        else -> LoadCondition.NORMAL
+    }
+    val canMove: Boolean get() = loadCondition != LoadCondition.IMMOBILE
+    val canDodge: Boolean get() = loadCondition != LoadCondition.IMMOBILE
+    val movementPenaltyMeters: Int get() = if (loadCondition == LoadCondition.OVERLOADED) -5 else 0
+    val dodgeLoadAdjustment: Int get() = if (loadCondition == LoadCondition.OVERLOADED) -2 else 0
+    val runningEnergySurcharge: Int get() = if (loadCondition == LoadCondition.OVERLOADED) 1 else 0
+    fun hasLoadDisadvantage(attribute: String, skill: String): Boolean =
+        loadCondition == LoadCondition.OVERLOADED && when (attribute.uppercase() to skill.lowercase()) {
+            "AGI" to "movimento", "AGI" to "furtividade", "FOR" to "atletismo" -> true
+            else -> false
+        }
 
     val lifeBase: Int get() = 10 + skillValue("VIG", "Vitalidade")
     val sanityBase: Int get() = 10 + skillValue("INT", "Sanidade")
@@ -396,11 +418,12 @@ data class Character(
     }
 
     fun protectionTotal(name: String): Int =
-        (protectionBase(name) + (protectionAdjustments[name] ?: 0) + powerModifier(AbilityModifierTarget.PROTECTION, name)).coerceAtLeast(0)
+        (protectionBase(name) + (protectionAdjustments[name] ?: 0) + powerModifier(AbilityModifierTarget.PROTECTION, name) +
+            dodgeLoadAdjustment.takeIf { name == "Esquiva" }.orZero()).coerceAtLeast(0)
 
     fun protectionCalculation(name: String) = CalculatedValue(
         base = protectionBase(name),
-        adjustment = protectionAdjustments[name] ?: 0,
+        adjustment = (protectionAdjustments[name] ?: 0) + dodgeLoadAdjustment.takeIf { name == "Esquiva" }.orZero(),
     )
 
     fun calculatedProtections(): Map<String, Int> = defaultProtectionNames.associateWith(::protectionTotal)
