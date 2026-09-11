@@ -6,6 +6,30 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CanonicalAbilitiesTest {
+    @Test fun ashBuilderCalculatesHeritageAndLoadFromPurityAndMergesDoses() {
+        val ash = MysticAbility(type = "Cinza", name = "Brasa Rubra", ashPurity = AshPurity.REFINED, catalogEntryId = "ash.brasa.refinada")
+
+        val created = Character(creationStatus = CharacterCreationStatus.DRAFT).withAddedAsh(ash, doses = 3, initialCreation = true)
+        val item = created.inventory.single()
+        assertEquals(3, item.quantity)
+        assertEquals(2, item.effectiveLoad())
+        assertEquals(6, item.heritageCost)
+        assertEquals(ItemAcquisitionSource.HERITAGE, item.acquisitionSource)
+
+        val merged = created.withAddedAsh(ash, doses = 2, initialCreation = true)
+        assertEquals(5, merged.inventory.single().quantity)
+        assertEquals(10, merged.inventory.single().heritageCost)
+        assertEquals(1, merged.mysticAbilities.size)
+    }
+
+    @Test fun ashAddedAfterCreationNeverReceivesHeritageCost() {
+        val ash = MysticAbility(type = "Cinza", name = "Bruma", ashPurity = AshPurity.PURE)
+        val item = Character().withAddedAsh(ash, doses = 2, initialCreation = false).inventory.single()
+
+        assertEquals(null, item.heritageCost)
+        assertEquals(ItemAcquisitionSource.NARRATIVE, item.acquisitionSource)
+    }
+
     @Test fun eachAbilityFamilyOwnsExactlyOneCostResource() {
         val activePower = Power(costType = AbilityCostType.ARCANE, costValue = 2).canonicalized()
         val passivePower = Power(executionType = AbilityExecution.PASSIVE, costType = AbilityCostType.LIFE, costValue = 3).canonicalized()
