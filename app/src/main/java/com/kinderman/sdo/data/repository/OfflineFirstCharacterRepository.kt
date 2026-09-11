@@ -8,6 +8,7 @@ import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.OwnerDao
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
+import com.kinderman.sdo.data.local.migratedStructuredRecord
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
@@ -35,9 +36,21 @@ class OfflineFirstCharacterRepository(
 
     override fun observe(session: UserSession): Flow<List<Character>> =
         (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
-            .map { records -> records.map(CharacterRecord::toDomain) }
+            .map { records ->
+                records.map { record ->
+                    val migrated = record.migratedStructuredRecord(markDirty = true)
+                    if (migrated != record) dao.upsert(migrated)
+                    migrated.toDomain()
+                }
+            }
 
-    override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { it?.toDomain() }
+    override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { record ->
+        record?.let {
+            val migrated = it.migratedStructuredRecord(markDirty = true)
+            if (migrated != it) dao.upsert(migrated)
+            migrated.toDomain()
+        }
+    }
 
     override suspend fun create(session: UserSession, ownerId: String, campaignId: String): Character {
         val normalizedCampaignId = normalizeCampaignId(campaignId)
@@ -176,7 +189,13 @@ class OfflineFirstCharacterRepository(
                 campaignScopeComplete = false
             }
         }
-        val remoteRecords = remoteById.values.toList()
+        val remoteRecords = remoteById.values.map { remote ->
+            val migrated = remote.migratedStructuredRecord(markDirty = false)
+            if (migrated != remote) runCatching {
+                collection.document(remote.id).set(migrated.copy(dirty = false)).await()
+            }
+            migrated
+        }
         val remoteIds = remoteById.keys
 
         val dirtyRecords = dao.dirty().filter { record ->

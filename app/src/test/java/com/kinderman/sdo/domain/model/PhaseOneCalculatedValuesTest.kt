@@ -11,7 +11,7 @@ class PhaseOneCalculatedValuesTest {
             name = "Óculos de Precisão",
             region = "cabeça",
             category = "Acessório",
-            bonuses = listOf(ItemBonus(ItemBonusType.ATTRIBUTE, "AGI", 2)),
+            mechanicalEffects = listOf(ItemEffect("agility", ItemEffectType.ATTRIBUTE, 2, "AGI", ItemEffectCondition.EQUIPPED)),
         )
         val attributes = defaultAttributes().map {
             if (it.acronym == "AGI") it.copy(value = 3, modifier = -1) else it
@@ -34,9 +34,7 @@ class PhaseOneCalculatedValuesTest {
             name = "Reflex Booster",
             region = "cabeça",
             category = "Acessório",
-            bonuses = listOf(
-                ItemBonus(ItemBonusType.BASIC_KNOWLEDGE, ItemBonus.basicKnowledgeTarget("AGI", "Reflexos"), 2),
-            ),
+            mechanicalEffects = listOf(ItemEffect("reflex", ItemEffectType.KNOWLEDGE, 2, "AGI:Reflexos", ItemEffectCondition.EQUIPPED)),
         )
         val character = Character(inventory = listOf(item)).equipItems(0, setOf(item.id))
 
@@ -50,7 +48,7 @@ class PhaseOneCalculatedValuesTest {
             name = "Amplificador",
             region = "torso",
             category = "Acessório",
-            bonuses = listOf(ItemBonus(ItemBonusType.ATTRIBUTE, "FOR", 3)),
+            mechanicalEffects = listOf(ItemEffect("strength", ItemEffectType.ATTRIBUTE, 3, "FOR", ItemEffectCondition.EQUIPPED)),
         )
         val equipped = Character(inventory = listOf(item)).equipItems(1, setOf(item.id))
         val unequipped = equipped.equipItems(1, emptySet())

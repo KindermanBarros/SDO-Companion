@@ -66,6 +66,8 @@ data class SpecialKnowledge(
     val milestoneLevels: List<Int> = emptyList(),
     val milestoneRewards: List<KnowledgeMilestoneReward> = emptyList(),
     val specializationParentId: String = "",
+    val pendingMilestoneLevels: List<Int> = emptyList(),
+    val pendingTargetLevel: Int? = null,
 ) {
     val isCatalogEntry: Boolean get() = catalogEntryId.isNotBlank()
 }
@@ -136,7 +138,6 @@ data class InventoryItem(
     val category: String = "",
     val agilityLimit: Int? = null,
     val quality: String = "Comum",
-    val bonuses: List<ItemBonus> = emptyList(),
     val quantity: Int = 0,
     val linkedAshId: String = "",
     val ashPurity: AshPurity = AshPurity.RAW,
@@ -152,6 +153,7 @@ data class InventoryItem(
     val modificationIds: List<String> = emptyList(),
     val gemIds: List<String> = emptyList(),
     val mechanicalEffects: List<ItemEffect> = emptyList(),
+    val dataVersion: Int = 0,
 )
 
 enum class InventoryState(val storageCode: String, val label: String) {
@@ -301,6 +303,7 @@ data class Character(
     val creationStep: Int = 1,
     val creationCompletedAt: Long? = null,
     val creationRulesVersion: Int = 1,
+    val itemSchemaVersion: Int = CURRENT_ITEM_DATA_VERSION,
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -388,13 +391,26 @@ data class Character(
     fun calculatedProtections(): Map<String, Int> = defaultProtectionNames.associateWith(::protectionTotal)
 
     val equippedGeneralProtection: Int
-        get() = equippedItems().sumOf { it.pg }
+        get() {
+            val typed = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }
+            return if (typed.isNotEmpty()) typed.sumOf { it.value } else equippedItems().sumOf { it.pg }
+        }
 
     val equippedAgilityLimit: Int?
-        get() = equippedItems().mapNotNull { it.agilityLimit }.minOrNull()
+        get() = EquipmentEffectEngine.resolve(this).agilityLimit
+            ?: equippedItems().mapNotNull { it.agilityLimit }.minOrNull()
 
-    fun localProtection(region: BodyRegion): Int =
-        region.localProtection + equippedItems(region).sumOf { it.pl }
+    val equipmentAttackBonus: Int get() = EquipmentEffectEngine.resolve(this).attackBonus
+    val equipmentPhysicalDamageBonus: Int get() = EquipmentEffectEngine.resolve(this).physicalDamageBonus
+    val equipmentMagicDamageBonus: Int get() = EquipmentEffectEngine.resolve(this).magicDamageBonus
+    fun equipmentDurabilityBonus(itemId: String): Int = EquipmentEffectEngine.resolve(this).durabilityBonus(itemId)
+    val activeEquipmentRules: List<EquipmentEffectAudit> get() = EquipmentEffectEngine.resolve(this).activeRules
+
+    fun localProtection(region: BodyRegion): Int {
+        val typed = EquipmentEffectEngine.resolve(this).entries
+            .filter { it.type == ItemEffectType.PL && (it.targetId.isBlank() || it.targetId.equals(region.name, true)) }
+        return region.localProtection + if (typed.isNotEmpty()) typed.sumOf { it.value } else equippedItems(region).sumOf { it.pl }
+    }
 
     fun equippedItems(region: BodyRegion): List<InventoryItem> =
         inventory.filter { it.id in region.equippedItemIds }
@@ -425,7 +441,7 @@ data class Character(
                 else -> item
             }
         }
-        return copy(bodyRegions = updatedRegions, inventory = updatedInventory)
+        return copy(bodyRegions = updatedRegions, inventory = updatedInventory).synchronizeItemPowers()
     }
 
     fun removeInventoryItem(itemId: String): Character = copy(
@@ -433,7 +449,7 @@ data class Character(
         bodyRegions = bodyRegions.map { region ->
             region.copy(equippedItemIds = region.equippedItemIds.filterNot { it == itemId })
         },
-    )
+    ).synchronizeItemPowers()
 
     private fun equippedItems(): List<InventoryItem> {
         val equippedIds = bodyRegions.flatMap { it.equippedItemIds }.toSet()
@@ -455,7 +471,7 @@ data class Character(
                 minOf(knowledge.value.coerceIn(0, 5), permanentAttribute.coerceAtLeast(0))
             },
             adjustment = matching.sumOf { it.adjustment },
-            modifiers = equippedModifiers(ItemBonusType.ACQUIRED_KNOWLEDGE, name) + powerValueModifiers(AbilityModifierTarget.KNOWLEDGE, matching.firstOrNull()?.id ?: name),
+            modifiers = equippedKnowledgeModifiers(matching.firstOrNull()?.id ?: name, name) + powerValueModifiers(AbilityModifierTarget.KNOWLEDGE, matching.firstOrNull()?.id ?: name),
         )
     }
 
@@ -466,7 +482,7 @@ data class Character(
         return CalculatedValue(
             base = attribute?.value ?: 0,
             adjustment = attribute?.modifier ?: 0,
-            modifiers = racialAttributeModifiers(acronym) + equippedModifiers(ItemBonusType.ATTRIBUTE, acronym) + powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym),
+            modifiers = racialAttributeModifiers(acronym) + equippedAttributeModifiers(acronym) + powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym),
         )
     }
 
@@ -492,15 +508,13 @@ data class Character(
         return CalculatedValue(
             base = skill?.value ?: 0,
             adjustment = skill?.modifier ?: 0,
-            modifiers = equippedModifiers(ItemBonusType.BASIC_KNOWLEDGE, ItemBonus.basicKnowledgeTarget(attributeAcronym, skillName), skillName),
+            modifiers = equippedKnowledgeModifiers(basicKnowledgeId(attributeAcronym, skillName), skillName),
         )
     }
 
     private fun attributeValue(acronym: String): Int = attributeTotal(acronym)
 
     private fun skillValue(attributeAcronym: String, skillName: String): Int = basicKnowledgeTotal(attributeAcronym, skillName)
-
-    private fun equippedBonus(type: ItemBonusType, target: String): Int = equippedModifiers(type, target).sumOf { it.value }
 
     private fun powerModifier(type: AbilityModifierTarget, target: String): Int =
         activePowerModifiers().filter { (_, modifier) -> modifier.targetType == type && modifier.targetId.equals(target, true) }.sumOf { it.second.value }
@@ -510,37 +524,25 @@ data class Character(
             ValueModifier(ModifierSourceType.TRAIT, power.id, power.name.ifBlank { "Poder passivo" }, modifier.value)
         }
 
-    private fun equippedModifiers(type: ItemBonusType, target: String, legacyTarget: String = target): List<ValueModifier> =
-        equippedItems().flatMap { item ->
-            val normalized = item.mechanicalEffects.filter { effect ->
-                when (type) {
-                    ItemBonusType.ATTRIBUTE -> effect.type == ItemEffectType.ATTRIBUTE &&
-                        (effect.target.equals(target, true) || effect.target == "*" && randomTarget(item.id, attributes.map { it.acronym }) == target)
-                    ItemBonusType.ACQUIRED_KNOWLEDGE -> effect.type == ItemEffectType.KNOWLEDGE &&
-                        (effect.target.equals(target, true) || effect.target == "*" && randomTarget(item.id, (learnedKnowledges + arcaneKnowledges + battleTechniques).map { it.name }) == target)
-                    ItemBonusType.BASIC_KNOWLEDGE -> effect.type == ItemEffectType.KNOWLEDGE && effect.target.equals(target, true)
-                }
-            }.map { effect -> ValueModifier(ModifierSourceType.ITEM, item.id, item.name.ifBlank { "Item sem nome" }, effect.value) }
-            normalized + item.bonuses
-                .filter { bonus ->
-                    bonus.type == type &&
-                        (bonus.target.equals(target, true) || bonus.target.equals(legacyTarget, true))
-                }
-                .map { bonus ->
-                    ValueModifier(
-                        sourceType = ModifierSourceType.ITEM,
-                        sourceId = item.id,
-                        label = item.name.ifBlank { "Item sem nome" },
-                        value = bonus.value,
-                    )
-                }
+    private fun equippedAttributeModifiers(targetId: String): List<ValueModifier> =
+        equipmentModifiers(ItemEffectType.ATTRIBUTE, targetId)
+
+    private fun equippedKnowledgeModifiers(targetId: String, displayName: String): List<ValueModifier> =
+        EquipmentEffectEngine.resolve(this).entries.filter { active ->
+            active.type == ItemEffectType.KNOWLEDGE &&
+                (active.targetId.equals(targetId, true) || active.targetId.equals(displayName, true))
+        }.map { active ->
+            ValueModifier(ModifierSourceType.ITEM, active.itemId, active.itemName.ifBlank { "Item sem nome" }, active.value)
         }
 
-    private fun randomTarget(seed: String, options: List<String>): String =
-        options.filter(String::isNotBlank).let { values ->
-            if (values.isEmpty()) "" else values[Math.floorMod(seed.hashCode(), values.size)]
+    private fun equipmentModifiers(type: ItemEffectType, targetId: String): List<ValueModifier> =
+        EquipmentEffectEngine.resolve(this).entries.filter { it.type == type && it.targetId.equals(targetId, true) }.map { active ->
+            ValueModifier(ModifierSourceType.ITEM, active.itemId, active.itemName.ifBlank { "Item sem nome" }, active.value)
         }
 }
+
+fun basicKnowledgeId(attributeAcronym: String, skillName: String): String =
+    "basic:${attributeAcronym.uppercase()}:${skillName.lowercase()}"
 
 private fun Int?.orZero() = this ?: 0
 

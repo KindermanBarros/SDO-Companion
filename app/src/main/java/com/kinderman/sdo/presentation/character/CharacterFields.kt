@@ -72,6 +72,33 @@ internal fun AddButton(label: String, enabled: Boolean, onClick: () -> Unit) {
     }
 }
 
+enum class CharacterActionStyle { PRIMARY, SECONDARY, DESTRUCTIVE }
+
+@Composable
+internal fun CharacterActionButton(
+    label: String,
+    enabled: Boolean,
+    style: CharacterActionStyle,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    when (style) {
+        CharacterActionStyle.PRIMARY -> Button(
+            onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
+            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+        ) { Text(label.uppercase()) }
+        CharacterActionStyle.SECONDARY -> OutlinedButton(
+            onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
+            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+        ) { Text(label.uppercase()) }
+        CharacterActionStyle.DESTRUCTIVE -> OutlinedButton(
+            onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
+            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+        ) { Text(label.uppercase()) }
+    }
+}
+
 @Composable
 internal fun RemoveButton(enabled: Boolean, description: String, onClick: () -> Unit) {
     IconButton(onClick = onClick, enabled = enabled) { Icon(Icons.Default.Close, description, tint = MaterialTheme.colorScheme.error) }

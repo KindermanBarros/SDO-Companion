@@ -25,6 +25,8 @@ class ItemCreationRulesTest {
         assertEquals(1, item.load)
         assertEquals(2, item.durability)
         assertTrue(item.effect.contains("Afiada"))
+        assertEquals(ItemEffectType.RULE, item.mechanicalEffects.single().type)
+        assertEquals("attack", item.mechanicalEffects.single().target)
         assertTrue(item.effect.contains("CD 15; 5 Progressos; 4 horas"))
         assertEquals(8, item.toInventoryItem(initialCreation = true).initialCreationCost())
         assertEquals(0, item.toInventoryItem(initialCreation = false).initialCreationCost())
@@ -54,7 +56,7 @@ class ItemCreationRulesTest {
         assertEquals(6, item.creationCost)
         assertEquals(2, item.durability)
         assertTrue(item.effect.contains("Material predominante: Ligas Comuns"))
-        assertTrue(item.bonuses.isEmpty())
+        assertTrue(item.mechanicalEffects.isEmpty())
     }
 
     @Test fun qualityChangesCostPriceAndArmorProtection() {
@@ -85,8 +87,28 @@ class ItemCreationRulesTest {
         assertTrue(item.effect.contains("Espaços de Gema: 1"))
         assertEquals(gem.id, item.gemIds.single())
         assertEquals(ItemEffectType.KNOWLEDGE, item.mechanicalEffects.single().type)
-        assertEquals("FOR:Atletismo", item.mechanicalEffects.single().target)
+        assertEquals("*", item.mechanicalEffects.single().target)
         assertEquals("faca", item.baseId)
         assertEquals("madeira", item.materialId)
+    }
+
+    @Test fun runtimeCatalogIsLoadedDirectlyFromCanonicalJson() {
+        val itemDefinitionCount = CanonicalItemCatalog.weaponMaterials.size +
+            CanonicalItemCatalog.armorMaterials.size + CanonicalItemCatalog.weaponBases.size +
+            CanonicalItemCatalog.armorBases.size + CanonicalItemCatalog.catalogItems.size
+
+        assertEquals(111, itemDefinitionCount)
+        assertEquals(26, CanonicalItemCatalog.modifications.size)
+        assertEquals(57, CanonicalItemCatalog.gems.size)
+    }
+
+    @Test fun catalogInventoryUsesTypedProtectionInsteadOfDescriptionParsing() {
+        val armor = ItemCreationRules.catalog.first { it.name.startsWith("Elmo de") }
+        val inventory = armor.toInventoryItem()
+
+        assertEquals(2, inventory.pg)
+        assertEquals(2, inventory.pl)
+        assertNull(inventory.agilityLimit)
+        assertEquals(armor.id, inventory.catalogEntryId)
     }
 }

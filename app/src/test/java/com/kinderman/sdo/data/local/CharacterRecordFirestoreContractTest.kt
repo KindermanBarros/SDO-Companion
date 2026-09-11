@@ -11,6 +11,7 @@ import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -22,6 +23,8 @@ class CharacterRecordFirestoreContractTest {
             step = 3, category = "Armadura", baseId = "elmo", materialId = "ligas_comuns",
             quality = ItemQuality.IMPROVED, modificationIds = listOf("robusta"), gemIds = listOf("gema_atributo_for"),
             gemSlots = 1, technologySlots = 2, customName = "Elmo da Aurora",
+            manualPrice = "120", commonName = "Kit", commonEffect = "Ferramentas",
+            commonLoad = 2, commonQuantity = 3,
         )
         val converters = CharacterConverters()
 
@@ -57,9 +60,26 @@ class CharacterRecordFirestoreContractTest {
             modificationIds = listOf("afiada"),
             gemIds = listOf("gema_menor_aleatoria"),
             mechanicalEffects = listOf(ItemEffect("gema_menor_aleatoria", ItemEffectType.KNOWLEDGE, 1, "*")),
+            dataVersion = CURRENT_ITEM_DATA_VERSION,
         )
         val converters = CharacterConverters()
         assertEquals(item, converters.stringToInventory(converters.inventoryToString(listOf(item))).single())
+    }
+
+    @Test fun legacyInventoryIsPersistedWithTheCurrentTypedContract() {
+        val legacy = InventoryItem(
+            id = "legacy-item",
+            state = "EQUIPPED",
+            name = "Objeto personalizado",
+            category = "Acessório",
+        )
+
+        val migrated = CharacterRecord(inventory = listOf(legacy)).toDomain().toRecord().inventory.single()
+
+        assertEquals(CURRENT_ITEM_DATA_VERSION, migrated.dataVersion)
+        assertEquals("E", migrated.state)
+        assertEquals("LEGACY_NARRATIVE", migrated.category)
+        assertTrue(migrated.mechanicalEffects.isEmpty())
     }
 
     @Test
@@ -165,9 +185,6 @@ class CharacterRecordFirestoreContractTest {
         val item = com.kinderman.sdo.domain.model.InventoryItem(
             id = "armor-1", pg = 4, pl = 3, category = "Armadura", agilityLimit = 3,
             quality = "Icônica",
-            bonuses = listOf(com.kinderman.sdo.domain.model.ItemBonus(
-                com.kinderman.sdo.domain.model.ItemBonusType.ATTRIBUTE, "VIG", 1,
-            )),
         )
         val region = com.kinderman.sdo.domain.model.BodyRegion(name = "Braço", equippedItemIds = listOf(item.id))
 

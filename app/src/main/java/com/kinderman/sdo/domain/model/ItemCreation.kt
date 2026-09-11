@@ -26,14 +26,25 @@ data class ItemCreationDraft(
     val gemSlots: Int = 0,
     val technologySlots: Int = 0,
     val customName: String = "",
+    val manualPrice: String = "",
+    val commonName: String = "",
+    val commonEffect: String = "",
+    val commonLoad: Int = 0,
+    val commonQuantity: Int = 1,
 )
 
 enum class ItemEffectType {
     ATTRIBUTE,
     KNOWLEDGE,
+    ATTACK,
+    PHYSICAL_DAMAGE,
     MAGIC_DAMAGE,
+    PG,
+    PL,
+    AGILITY_LIMIT,
     DURABILITY,
     GEM_POWER,
+    RULE,
 }
 
 enum class ItemEffectCondition { EQUIPPED, WIELDED }
@@ -45,31 +56,96 @@ data class ItemEffect(
     val target: String = "",
     val condition: ItemEffectCondition = ItemEffectCondition.WIELDED,
     val description: String = "",
+    val resolvedTargetId: String = "",
 )
 
-enum class ItemBonusType(val label: String, val heritageCost: Int) {
-    ATTRIBUTE("Atributo", 3),
-    BASIC_KNOWLEDGE("Conhecimento básico", 2),
-    ACQUIRED_KNOWLEDGE("Conhecimento adquirido", 2),
+data class ActiveItemEffect(
+    val itemId: String,
+    val itemName: String,
+    val effect: ItemEffect,
+)
+
+fun Character.activeItemEffects(): List<ActiveItemEffect> = inventory.flatMap { item ->
+    item.mechanicalEffects.filter { effect ->
+        when (effect.condition) {
+            ItemEffectCondition.EQUIPPED -> item.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
+            ItemEffectCondition.WIELDED -> item.inventoryState == InventoryState.WIELDED
+        }
+    }.map { effect -> ActiveItemEffect(item.id, item.name, effect) }
 }
 
-data class ItemBonus(
-    val type: ItemBonusType = ItemBonusType.ATTRIBUTE,
-    val target: String = "",
-    val value: Int = 0,
-) {
-    val creationCost: Int get() = value.coerceAtLeast(0) * type.heritageCost
-    val isComplete: Boolean get() = target.isNotBlank()
+data class EquipmentEffectAudit(
+    val itemId: String,
+    val itemName: String,
+    val effectId: String,
+    val type: ItemEffectType,
+    val targetId: String,
+    val value: Int,
+    val description: String,
+)
 
-    fun displayTarget(): String = when (type) {
-        ItemBonusType.BASIC_KNOWLEDGE -> target.substringAfter(':', target)
-        else -> target
-    }
+data class EquipmentEffectResolution(val entries: List<EquipmentEffectAudit>) {
+    fun total(type: ItemEffectType, targetId: String? = null): Int = entries
+        .filter { it.type == type && (targetId == null || it.targetId.equals(targetId, true)) }
+        .sumOf(EquipmentEffectAudit::value)
 
-    companion object {
-        fun basicKnowledgeTarget(attributeAcronym: String, skillName: String): String =
-            "${attributeAcronym.uppercase()}:$skillName"
+    val attackBonus: Int get() = total(ItemEffectType.ATTACK)
+    val physicalDamageBonus: Int get() = total(ItemEffectType.PHYSICAL_DAMAGE)
+    val magicDamageBonus: Int get() = total(ItemEffectType.MAGIC_DAMAGE)
+    val agilityLimit: Int? get() = entries.filter { it.type == ItemEffectType.AGILITY_LIMIT }.map { it.value }.minOrNull()
+    fun durabilityBonus(itemId: String): Int = entries.filter { it.type == ItemEffectType.DURABILITY && it.itemId == itemId }.sumOf { it.value }
+    val activeRules: List<EquipmentEffectAudit> get() = entries.filter { it.type == ItemEffectType.RULE }
+}
+
+object EquipmentEffectEngine {
+    fun resolve(character: Character): EquipmentEffectResolution = EquipmentEffectResolution(
+        character.activeItemEffects().map { active ->
+            EquipmentEffectAudit(
+                itemId = active.itemId,
+                itemName = active.itemName,
+                effectId = active.effect.id,
+                type = active.effect.type,
+                targetId = active.effect.resolvedTargetId.ifBlank { active.effect.target },
+                value = active.effect.value,
+                description = active.effect.description,
+            )
+        },
+    )
+}
+
+fun Character.addInventoryItem(item: InventoryItem): Character {
+    val targets = (attributes.flatMap { attribute -> attribute.skills.map { "${attribute.acronym}:${it.name}" } } +
+        learnedKnowledges.map { it.id } + arcaneKnowledges.map { it.id } + battleTechniques.map { it.id })
+        .filter(String::isNotBlank).sorted()
+    val resolved = item.copy(mechanicalEffects = item.mechanicalEffects.map { effect ->
+        if (effect.target != "*" || effect.resolvedTargetId.isNotBlank() || targets.isEmpty()) effect
+        else effect.copy(resolvedTargetId = targets[Math.floorMod("${item.id}:${effect.id}".hashCode(), targets.size)])
+    })
+    return copy(inventory = inventory + resolved).synchronizeItemPowers()
+}
+
+fun Character.withItemInventoryState(itemId: String, state: InventoryState): Character = copy(
+    inventory = inventory.map { if (it.id == itemId) it.withInventoryState(state) else it },
+).synchronizeItemPowers()
+
+fun Character.synchronizeItemPowers(): Character {
+    val gemEffects = activeItemEffects().filter { it.effect.type == ItemEffectType.GEM_POWER }
+    val activeKeys = gemEffects.mapTo(hashSetOf()) { "${it.itemId}:${it.effect.id}" }
+    val retained = powers.filterNot { it.sourceType == PowerSourceType.ITEM && it.linkedItemId.isNotBlank() && "${it.linkedItemId}:${it.catalogEntryId}" !in activeKeys }
+    val existingKeys = retained.mapTo(hashSetOf()) { "${it.linkedItemId}:${it.catalogEntryId}" }
+    val granted = gemEffects.filter { "${it.itemId}:${it.effect.id}" !in existingKeys }.map { active ->
+        Power(
+            id = "item:${active.itemId}:${active.effect.id}",
+            name = active.effect.description.substringBefore('.').ifBlank { "Poder de gema" },
+            effect = active.effect.description,
+            sourceType = PowerSourceType.ITEM,
+            sourceId = active.itemId,
+            catalogEntryId = active.effect.id,
+            canonicalSource = AbilitySource.ITEM,
+            linkedItemId = active.itemId,
+        )
     }
+    return copy(powers = retained + granted)
 }
 
 enum class ItemQuality(
@@ -99,7 +175,6 @@ data class BuiltItem(
     val pl: Int = 0,
     val agilityLimit: Int? = null,
     val quality: ItemQuality = ItemQuality.COMMON,
-    val bonuses: List<ItemBonus> = emptyList(),
     val baseId: String = "",
     val materialId: String = "",
     val modificationIds: List<String> = emptyList(),
@@ -121,42 +196,19 @@ data class BuiltItem(
         category = category,
         agilityLimit = agilityLimit,
         quality = quality.label,
-        bonuses = bonuses,
         baseId = baseId,
         materialId = materialId,
         modificationIds = modificationIds,
         gemIds = gemIds,
         mechanicalEffects = mechanicalEffects,
+        dataVersion = CURRENT_ITEM_DATA_VERSION,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
         heritageCost = creationCost.takeIf { initialCreation },
         purchasePrice = price.takeIf { !initialCreation },
     )
 }
 
-fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
-    name = name,
-    load = load,
-    durability = durability,
-    region = region,
-    effect = listOfNotNull(
-        "Categoria: $group".takeIf { group.isNotBlank() },
-        "Preço de referência: ${price} E$".takeIf { price > 0 },
-        summary.takeIf(String::isNotBlank),
-    ).joinToString("\n"),
-    pg = protectionValue("PG"),
-    pl = protectionValue("PL"),
-    category = group,
-    agilityLimit = Regex("LA\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull(),
-    acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
-    heritageCost = creationCost.toIntOrNull().takeIf { initialCreation },
-    purchasePrice = price.takeIf { !initialCreation },
-    catalogEntryId = id,
-    catalogVersion = version,
-    canonical = true,
-)
-
-private fun CatalogEntry.protectionValue(label: String): Int =
-    Regex("(?:^|[;\\n]\\s*)$label\\s+(\\d+)").find(summary)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+const val CURRENT_ITEM_DATA_VERSION = 4
 
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 

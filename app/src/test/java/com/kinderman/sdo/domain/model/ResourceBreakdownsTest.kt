@@ -11,13 +11,7 @@ class ResourceBreakdownsTest {
             name = "Colete Vital",
             region = "torso",
             category = "Acessório",
-            bonuses = listOf(
-                ItemBonus(
-                    ItemBonusType.BASIC_KNOWLEDGE,
-                    ItemBonus.basicKnowledgeTarget("VIG", "Vitalidade"),
-                    2,
-                ),
-            ),
+            mechanicalEffects = listOf(ItemEffect("vitality", ItemEffectType.KNOWLEDGE, 2, "VIG:Vitalidade", ItemEffectCondition.EQUIPPED)),
         )
         val attributes = defaultAttributes().map { attribute ->
             if (attribute.acronym != "VIG") attribute else attribute.copy(
@@ -46,7 +40,7 @@ class ResourceBreakdownsTest {
             name = "Exoesqueleto",
             region = "torso",
             category = "Acessório",
-            bonuses = listOf(ItemBonus(ItemBonusType.ATTRIBUTE, "FOR", 2)),
+            mechanicalEffects = listOf(ItemEffect("strength", ItemEffectType.ATTRIBUTE, 2, "FOR", ItemEffectCondition.EQUIPPED)),
         )
         val attributes = defaultAttributes().map { if (it.acronym == "FOR") it.copy(value = 3) else it }
         val character = Character(

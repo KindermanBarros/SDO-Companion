@@ -16,8 +16,6 @@ import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.BodyRegion
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemBonus
-import com.kinderman.sdo.domain.model.ItemBonusType
 import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
@@ -58,14 +56,15 @@ class CharacterConverters {
         listOf(
             it.step.toString(), it.category, it.baseId, it.materialId, it.quality.name,
             it.modificationIds.nested(), it.gemIds.nested(), it.gemSlots.toString(),
-            it.technologySlots.toString(), it.customName,
+            it.technologySlots.toString(), it.customName, it.manualPrice, it.commonName,
+            it.commonEffect, it.commonLoad.toString(), it.commonQuantity.toString(),
         ).row()
     }
 
     @TypeConverter fun stringToItemCreationDraft(value: String?): ItemCreationDraft? =
         value?.takeIf(String::isNotBlank)?.parts()?.let { fields ->
             ItemCreationDraft(
-                step = fields.getOrNull(0)?.toIntOrNull()?.coerceIn(1, 4) ?: 1,
+                step = fields.getOrNull(0)?.toIntOrNull()?.coerceIn(1, 7) ?: 1,
                 category = fields.getOrElse(1) { "Arma" },
                 baseId = fields.getOrElse(2) { "" },
                 materialId = fields.getOrElse(3) { "" },
@@ -75,6 +74,11 @@ class CharacterConverters {
                 gemSlots = fields.getOrNull(7)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
                 technologySlots = fields.getOrNull(8)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
                 customName = fields.getOrElse(9) { "" },
+                manualPrice = fields.getOrElse(10) { "" },
+                commonName = fields.getOrElse(11) { "" },
+                commonEffect = fields.getOrElse(12) { "" },
+                commonLoad = fields.getOrNull(13)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                commonQuantity = fields.getOrNull(14)?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
             )
         }
 
@@ -237,16 +241,15 @@ class CharacterConverters {
             item.id, item.state, item.name, item.load.toString(), item.durability, item.region,
             item.effect, item.pg.toString(), item.pl.toString(), item.category,
             item.agilityLimit?.toString().orEmpty(), item.quality,
-            item.bonuses.joinToString(BONUS_ROW) { bonus ->
-                listOf(bonus.type.name, bonus.target, bonus.value.toString()).joinToString(BONUS_FIELD)
-            },
-            "canonical-v3", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            "", // reserved legacy slot; ItemBonus is no longer part of the domain model
+            "canonical-v4", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
             item.acquisitionSource.name, item.heritageCost?.toString().orEmpty(), item.purchasePrice?.toString().orEmpty(),
             item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
             item.baseId, item.materialId, item.modificationIds.nested(), item.gemIds.nested(),
             item.mechanicalEffects.joinToString(MODIFIER_ROW) { effect ->
-                listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description).joinToString(MODIFIER_FIELD)
+                listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description, effect.resolvedTargetId).joinToString(MODIFIER_FIELD)
             },
+            item.dataVersion.toString(),
         ).row()
     }
 
@@ -259,14 +262,6 @@ class CharacterConverters {
                 pg = p.getOrNull(7)?.toIntOrNull() ?: 0, pl = p.getOrNull(8)?.toIntOrNull() ?: 0,
                 category = p.getOrElse(9) { "" }, agilityLimit = p.getOrNull(10)?.toIntOrNull(),
                 quality = p.getOrElse(11) { "Comum" },
-                bonuses = p.getOrElse(12) { "" }.split(BONUS_ROW).filter(String::isNotBlank).map { encoded ->
-                    val fields = encoded.split(BONUS_FIELD)
-                    ItemBonus(
-                        type = runCatching { ItemBonusType.valueOf(fields[0]) }.getOrDefault(ItemBonusType.ATTRIBUTE),
-                        target = fields.getOrElse(1) { "" },
-                        value = fields.getOrNull(2)?.toIntOrNull() ?: 0,
-                    )
-                },
                 quantity = p.getOrNull(14)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 linkedAshId = p.getOrElse(15) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
                 ashPurity = p.enumAt(16, AshPurity.RAW),
@@ -277,11 +272,11 @@ class CharacterConverters {
                 catalogVersion = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 acquiredAt = p.getOrNull(22)?.toLongOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 canonical = p.getOrNull(23)?.toBooleanStrictOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: false,
-                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }.orEmpty(),
-                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }.orEmpty(),
-                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }?.toNestedList().orEmpty(),
-                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }?.toNestedList().orEmpty(),
-                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13) == "canonical-v3" }
+                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }.orEmpty(),
+                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }.orEmpty(),
+                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }?.toNestedList().orEmpty(),
+                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }?.toNestedList().orEmpty(),
+                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }
                     ?.split(MODIFIER_ROW)?.filter(String::isNotBlank)?.map { encoded ->
                         val fields = encoded.split(MODIFIER_FIELD)
                         ItemEffect(
@@ -291,8 +286,10 @@ class CharacterConverters {
                             target = fields.getOrElse(3) { "" },
                             condition = runCatching { ItemEffectCondition.valueOf(fields.getOrElse(4) { "" }) }.getOrDefault(ItemEffectCondition.WIELDED),
                             description = fields.getOrElse(5) { "" },
+                            resolvedTargetId = fields.getOrElse(6) { "" },
                         )
                     }.orEmpty(),
+                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v4" } ?: 0,
             )
         }
     }
@@ -314,10 +311,10 @@ class CharacterConverters {
             it.keywords.nested(),
             it.repeatable.toString(),
             it.adjustment.toString(),
-            "canonical-v2", it.milestoneLevels.joinToString(","), it.specializationParentId,
+            "canonical-v3", it.milestoneLevels.joinToString(","), it.specializationParentId,
             it.milestoneRewards.joinToString(MILESTONE_ROW) { reward ->
                 listOf(reward.level.toString(), reward.type.name, reward.rewardCatalogId, reward.grantedEntityId).joinToString(MILESTONE_FIELD)
-            },
+            }, it.pendingMilestoneLevels.joinToString(","), it.pendingTargetLevel?.toString().orEmpty(),
         ).row()
     }
 
@@ -341,7 +338,7 @@ class CharacterConverters {
                 adjustment = p.getOrNull(14)?.toIntOrNull() ?: 0,
                 milestoneLevels = p.getOrElse(16) { "" }.takeIf { p.getOrNull(15)?.startsWith("canonical-") == true }.orEmpty().split(',').mapNotNull(String::toIntOrNull),
                 specializationParentId = p.getOrElse(17) { "" }.takeIf { p.getOrNull(15)?.startsWith("canonical-") == true }.orEmpty(),
-                milestoneRewards = p.getOrElse(18) { "" }.takeIf { p.getOrNull(15) == "canonical-v2" }
+                milestoneRewards = p.getOrElse(18) { "" }.takeIf { p.getOrNull(15) in setOf("canonical-v2", "canonical-v3") }
                     .orEmpty().split(MILESTONE_ROW).filter(String::isNotBlank).map { encoded ->
                         val fields = encoded.split(MILESTONE_FIELD)
                         KnowledgeMilestoneReward(
@@ -352,6 +349,9 @@ class CharacterConverters {
                             grantedEntityId = fields.getOrElse(3) { "" },
                         )
                     },
+                pendingMilestoneLevels = p.getOrElse(19) { "" }.takeIf { p.getOrNull(15) == "canonical-v3" }
+                    .orEmpty().split(',').mapNotNull(String::toIntOrNull),
+                pendingTargetLevel = p.getOrNull(20)?.takeIf { p.getOrNull(15) == "canonical-v3" }?.toIntOrNull(),
             )
         }
     }

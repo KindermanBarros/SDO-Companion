@@ -26,8 +26,10 @@ import com.kinderman.sdo.domain.model.defaultProtections
 import com.kinderman.sdo.domain.model.canonicalized
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.domain.model.synchronizeItemPowers
 import com.kinderman.sdo.domain.catalog.withRefreshedPresetPowers
 import com.kinderman.sdo.domain.catalog.withMigratedCreationRules
+import com.kinderman.sdo.domain.catalog.withNormalizedInventory
 
 @Entity(tableName = "characters")
 data class CharacterRecord(
@@ -45,6 +47,7 @@ data class CharacterRecord(
     val creationStep: Int = 1,
     val creationCompletedAt: Long? = null,
     val creationRulesVersion: Int = 1,
+    val itemSchemaVersion: Int = 0,
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -118,6 +121,7 @@ fun CharacterRecord.toDomain() = Character(
     creationStep = creationStep.coerceIn(1, com.kinderman.sdo.domain.creation.CharacterCreation.STEP_COUNT),
     creationCompletedAt = creationCompletedAt,
     creationRulesVersion = creationRulesVersion,
+    itemSchemaVersion = com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION,
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -175,7 +179,7 @@ fun CharacterRecord.toDomain() = Character(
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
-).withMigratedCreationRules().withRefreshedPresetPowers()
+).withMigratedCreationRules().withRefreshedPresetPowers().withNormalizedInventory().synchronizeItemPowers()
 
 fun Character.toRecord() = CharacterRecord(
     id = id,
@@ -192,6 +196,7 @@ fun Character.toRecord() = CharacterRecord(
     creationStep = creationStep,
     creationCompletedAt = creationCompletedAt,
     creationRulesVersion = creationRulesVersion,
+    itemSchemaVersion = itemSchemaVersion,
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -213,7 +218,7 @@ fun Character.toRecord() = CharacterRecord(
     pathName = pathName,
     pathMotto = pathMotto,
     powers = powers.map(Power::canonicalized),
-    inventory = inventory,
+    inventory = withNormalizedInventory().inventory,
     itemCreationDraft = itemCreationDraft,
     story = story,
     notes = "",

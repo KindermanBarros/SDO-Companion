@@ -10,6 +10,7 @@ import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.ProgressionRecord
 import com.kinderman.sdo.domain.model.ProgressionReward
 import com.kinderman.sdo.domain.model.ProgressionRewardType
+import com.kinderman.sdo.domain.model.basicKnowledgeId
 
 object LevelProgression {
     const val MIN_LEVEL = 1
@@ -33,8 +34,9 @@ object LevelProgression {
                 require(rewards.count { it.level == level && it.type == ProgressionRewardType.PATH_POWER } == 1)
             }
         }
-        val alreadyApplied = character.progressionHistory.flatMap { it.rewards }.map { Triple(it.level, it.type, it.catalogEntryId.ifBlank { it.targetId }) }.toSet()
-        require(rewards.none { Triple(it.level, it.type, it.catalogEntryId.ifBlank { it.targetId }) in alreadyApplied }) { "Esta recompensa já foi aplicada." }
+        require(rewards.all { it.stableId.isNotBlank() }) { "Toda recompensa precisa de um vínculo por ID." }
+        val alreadyApplied = character.progressionHistory.flatMap { it.rewards }.map { Triple(it.level, it.type, it.stableId) }.toSet()
+        require(rewards.none { Triple(it.level, it.type, it.stableId) in alreadyApplied }) { "Esta recompensa já foi aplicada." }
 
         var result = character
         levels.forEach { level ->
@@ -84,6 +86,12 @@ private fun Character.applyReward(reward: ProgressionReward, catalog: List<Catal
 
 private val knowledgeKinds = setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE)
 
+private val ProgressionReward.stableId: String
+    get() = when (type) {
+        ProgressionRewardType.NEW_KNOWLEDGE, ProgressionRewardType.PATH_POWER -> catalogEntryId
+        else -> targetId
+    }
+
 private fun List<AttributeValue>.increment(acronym: String): List<AttributeValue> = map {
     if (it.acronym == acronym) it.copy(value = (it.value + 1).coerceAtMost(10)) else it
 }.also { require(it.any { value -> value.acronym == acronym }) }
@@ -92,8 +100,12 @@ private fun Character.incrementKnowledge(id: String): Character {
     fun update(values: List<com.kinderman.sdo.domain.model.SpecialKnowledge>) = values.map {
         if (it.id == id) it.copy(value = (it.value + 1).coerceAtMost(5)) else it
     }
-    val basic = attributes.flatMap { it.skills }.any { it.name == id && it.value < 5 }
-    if (basic) return copy(attributes = attributes.map { attribute -> attribute.copy(skills = attribute.skills.map { if (it.name == id) it.copy(value = it.value + 1) else it }) })
+    val basic = attributes.any { attribute -> attribute.skills.any { basicKnowledgeId(attribute.acronym, it.name) == id && it.value < 5 } }
+    if (basic) return copy(attributes = attributes.map { attribute ->
+        attribute.copy(skills = attribute.skills.map { skill ->
+            if (basicKnowledgeId(attribute.acronym, skill.name) == id) skill.copy(value = skill.value + 1) else skill
+        })
+    })
     require((learnedKnowledges + arcaneKnowledges + battleTechniques).any { it.id == id && it.value < 5 }) { "Conhecimento inválido ou no máximo." }
     return copy(learnedKnowledges = update(learnedKnowledges), arcaneKnowledges = update(arcaneKnowledges), battleTechniques = update(battleTechniques))
 }

@@ -23,6 +23,7 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ProgressionReward
 import com.kinderman.sdo.domain.model.ProgressionRewardType
+import com.kinderman.sdo.domain.model.basicKnowledgeId
 import com.kinderman.sdo.domain.progression.LevelProgression
 
 @Composable
@@ -36,7 +37,7 @@ internal fun LevelProgressionDialog(
     var confirmedReduction by remember { mutableStateOf(false) }
     var choices by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     val levels = if (target > character.level) ((character.level + 1)..target).toList() else emptyList()
-    val known = character.attributes.flatMap { attribute -> attribute.skills.filter { it.value < 5 }.map { it.name to it.name } } +
+    val known = character.attributes.flatMap { attribute -> attribute.skills.filter { it.value < 5 }.map { basicKnowledgeId(attribute.acronym, it.name) to it.name } } +
         (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques).filter { it.value < 5 }.map { it.id to it.name }
     val knowledgeEntries = catalog.filter { entry ->
         entry.kind in knowledgeKinds && character.attributes.any { it.acronym == entry.relatedAttribute && it.value >= 1 } &&

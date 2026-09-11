@@ -6,6 +6,10 @@ import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
+import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
+import com.kinderman.sdo.domain.model.PowerSourceType
+import com.kinderman.sdo.domain.model.withAddedAbility
+import com.kinderman.sdo.domain.model.withAddedPower
 
 data class InitialKnowledgeAllocation(
     val selections: List<SpecialKnowledge>,
@@ -56,6 +60,61 @@ fun Character.withKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catal
     return result
 }
 
+/** Starts a level transition. Levels 3 and 5 are transactional: the value is only committed
+ * after every crossed milestone has a persisted reward. */
+fun Character.requestKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catalog: List<CatalogEntry>): Character {
+    val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId } ?: return this
+    require(current.pendingMilestoneLevels.isEmpty()) { "Resolva a recompensa pendente antes de alterar novamente o nível." }
+    val target = requestedLevel.coerceIn(0, minOf(5, permanentAttributeValue(current.attribute)))
+    val pending = listOf(3, 5).filter { it > current.value && it <= target && current.milestoneRewards.none { reward -> reward.level == it } }
+    if (pending.isEmpty()) return withKnowledgeLevel(knowledgeId, target, catalog)
+    return replaceKnowledge(current.copy(pendingMilestoneLevels = pending, pendingTargetLevel = target))
+}
+
+fun Character.cancelKnowledgeLevelRequest(knowledgeId: String): Character {
+    val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId } ?: return this
+    return replaceKnowledge(current.copy(pendingMilestoneLevels = emptyList(), pendingTargetLevel = null))
+}
+
+fun Character.resolveKnowledgeMilestone(knowledgeId: String, rewardEntry: CatalogEntry, catalog: List<CatalogEntry>): Character {
+    val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId }
+        ?: error("Conhecimento do marco não encontrado.")
+    val milestone = current.pendingMilestoneLevels.firstOrNull() ?: error("Não existe marco pendente.")
+    require(rewardEntry in eligibleMilestoneRewards(current, catalog)) { "A recompensa não é permitida para este Conhecimento." }
+    var result = this
+    val record = when (rewardEntry.kind) {
+        CatalogKind.POWER -> {
+            val granted = rewardEntry.toStructuredPower(PowerSourceType.KNOWLEDGE, current.id)
+            result = result.withAddedPower(granted)
+            KnowledgeMilestoneReward(milestone, KnowledgeMilestoneRewardType.POWER, rewardEntry.id, granted.id)
+        }
+        CatalogKind.MAGIC, CatalogKind.RUNE -> {
+            val granted = rewardEntry.toMysticAbility().copy(knowledgeId = current.id, knowledgeLevel = milestone)
+            result = result.withAddedAbility(granted)
+            KnowledgeMilestoneReward(milestone, KnowledgeMilestoneRewardType.MYSTIC_ABILITY, rewardEntry.id, granted.id)
+        }
+        else -> error("Tipo de recompensa de marco não suportado.")
+    }
+    val afterGrant = result.allSpecialKnowledges().first { it.id == knowledgeId }
+    val remaining = afterGrant.pendingMilestoneLevels.drop(1)
+    val target = afterGrant.pendingTargetLevel ?: milestone
+    val completed = afterGrant.copy(
+        milestoneRewards = afterGrant.milestoneRewards + record,
+        milestoneLevels = (afterGrant.milestoneLevels + milestone).distinct().sorted(),
+        pendingMilestoneLevels = remaining,
+        pendingTargetLevel = target.takeIf { remaining.isNotEmpty() },
+    )
+    result = result.replaceKnowledge(completed)
+    return if (remaining.isEmpty()) result.withKnowledgeLevel(knowledgeId, target, catalog) else result
+}
+
+fun eligibleMilestoneRewards(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): List<CatalogEntry> {
+    val canonicalName = catalog.firstOrNull { it.id == knowledge.catalogEntryId }?.name ?: knowledge.name
+    return catalog.filter {
+        it.sourceKnowledge.equals(canonicalName, true) && it.kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE)
+    }.distinctBy(CatalogEntry::id)
+}
+
 fun Character.withKnowledgeMilestoneReward(
     knowledgeId: String,
     reward: KnowledgeMilestoneReward,
@@ -73,6 +132,12 @@ fun Character.withKnowledgeMilestoneReward(
         battleTechniques = battleTechniques.replaceKnowledge(updated),
     )
 }
+
+private fun Character.replaceKnowledge(value: SpecialKnowledge) = copy(
+    learnedKnowledges = learnedKnowledges.replaceKnowledge(value),
+    arcaneKnowledges = arcaneKnowledges.replaceKnowledge(value),
+    battleTechniques = battleTechniques.replaceKnowledge(value),
+)
 
 private fun Character.allSpecialKnowledges() = learnedKnowledges + arcaneKnowledges + battleTechniques
 private fun SpecialKnowledge.isRunic() = name.equals("Rúnico", true) || name.equals("Runas", true)

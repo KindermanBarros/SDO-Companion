@@ -3,6 +3,7 @@ package com.kinderman.sdo.domain.progression
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ProgressionReward
 import com.kinderman.sdo.domain.model.ProgressionRewardType
+import com.kinderman.sdo.domain.model.basicKnowledgeId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -12,10 +13,10 @@ class LevelProgressionTest {
         val character = Character()
         val rewards = listOf(
             ProgressionReward(2, ProgressionRewardType.RESOURCE, "ENERGY"),
-            ProgressionReward(2, ProgressionRewardType.KNOWLEDGE, "Vitalidade"),
+            ProgressionReward(2, ProgressionRewardType.KNOWLEDGE, basicKnowledgeId("VIG", "Vitalidade")),
             ProgressionReward(2, ProgressionRewardType.ATTRIBUTE, "VIG"),
             ProgressionReward(3, ProgressionRewardType.RESOURCE, "ARCANE"),
-            ProgressionReward(3, ProgressionRewardType.KNOWLEDGE, "Sanidade"),
+            ProgressionReward(3, ProgressionRewardType.KNOWLEDGE, basicKnowledgeId("INT", "Sanidade")),
         )
         val result = LevelProgression.apply(character, 3, rewards, emptyList(), now = 42)
         assertEquals(3, result.level)

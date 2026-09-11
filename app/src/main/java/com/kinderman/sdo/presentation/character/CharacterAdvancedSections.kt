@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ConditionEffect
@@ -120,7 +121,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         if (remainingHeritage == 0) {
             AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
             AddButton("Construtor de item // criação durante o jogo", enabled) { dialog = "builder" }
-            AddButton("Adicionar objeto narrativo sem valores mecânicos", enabled) { onChange(character.copy(inventory = character.inventory + InventoryItem())) }
+            AddButton("Adicionar objeto narrativo sem valores mecânicos", enabled) { onChange(character.addInventoryItem(InventoryItem())) }
         }
     }
     when (dialog) {
@@ -133,19 +134,19 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
             onBuilder = { dialog = "initial_builder" },
         )
         "initial_builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
-            onChange(character.copy(inventory = character.inventory + item))
+            onChange(character.addInventoryItem(item))
             dialog = null
         }
         "builder" -> ItemBuilderDialog(null, { dialog = null }) { item ->
-            onChange(character.copy(inventory = character.inventory + item))
+            onChange(character.addInventoryItem(item))
             dialog = null
         }
         "initial_catalog" -> ItemCatalogDialog("LOJA INICIAL // ITENS PRONTOS", catalog, remainingHeritage, { dialog = "initial" }) { item ->
-            onChange(character.copy(inventory = character.inventory + item))
+            onChange(character.addInventoryItem(item))
             dialog = null
         }
         "catalog" -> ItemCatalogDialog("CATÁLOGO DE ITENS", catalog, null, { dialog = null }) { item ->
-            onChange(character.copy(inventory = character.inventory + item))
+            onChange(character.addInventoryItem(item))
             dialog = null
         }
     }
@@ -166,8 +167,8 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
         HudTextField("Durabilidade", item.durability, enabled = enabled) { value -> onValue(item.copy(durability = value)) }
         Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.uppercase()}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         Text("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
-        if (item.bonuses.isNotEmpty()) Text(
-            "BÔNUS // " + item.bonuses.joinToString { "${if (it.value > 0) "+" else ""}${it.value} ${it.target}" },
+        if (item.mechanicalEffects.isNotEmpty()) Text(
+            "EFEITOS // " + item.mechanicalEffects.joinToString { "${it.type.name} ${if (it.value > 0) "+" else ""}${it.value} ${it.resolvedTargetId.ifBlank { it.target }}" },
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodySmall,
         )

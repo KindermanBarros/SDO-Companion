@@ -201,10 +201,10 @@ class CharacterTest {
     @Test fun equippedBonusesAffectAttributesBasicAndAcquiredKnowledges() {
         val item = InventoryItem(
             id = "bonus", region = "torso", category = "Acessório",
-            bonuses = listOf(
-                ItemBonus(ItemBonusType.ATTRIBUTE, "FOR", 2),
-                ItemBonus(ItemBonusType.BASIC_KNOWLEDGE, "Vitalidade", 3),
-                ItemBonus(ItemBonusType.ACQUIRED_KNOWLEDGE, "Ferreiro", 1),
+            mechanicalEffects = listOf(
+                ItemEffect("strength", ItemEffectType.ATTRIBUTE, 2, "FOR", ItemEffectCondition.EQUIPPED),
+                ItemEffect("vitality", ItemEffectType.KNOWLEDGE, 3, "VIG:Vitalidade", ItemEffectCondition.EQUIPPED),
+                ItemEffect("smith", ItemEffectType.KNOWLEDGE, 1, "Ferreiro", ItemEffectCondition.EQUIPPED),
             ),
         )
         val character = Character(
