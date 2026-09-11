@@ -47,7 +47,9 @@ object CharacterCreation {
     fun attributePointsSpent(character: Character): Int =
         character.attributes.sumOf { it.value.coerceAtLeast(0) }
 
-    fun heritageSpent(character: Character): Int = character.inventory.sumOf { it.initialCreationCost() }
+    fun heritageSpent(character: Character): Int = if (!character.isInCreation) 0 else character.inventory
+        .filter { it.acquisitionSource == com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE }
+        .sumOf { it.initialCreationCost() }
 
     fun validate(character: Character): List<CharacterCreationError> =
         (1 until STEP_COUNT).flatMap { validateStep(it, character) }

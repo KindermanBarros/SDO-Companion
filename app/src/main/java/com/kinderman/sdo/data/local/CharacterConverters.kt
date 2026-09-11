@@ -21,6 +21,7 @@ import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.ItemCreationDraft
+import com.kinderman.sdo.domain.model.ItemCondition
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
@@ -58,6 +59,9 @@ class CharacterConverters {
             it.modificationIds.nested(), it.gemIds.nested(), it.gemSlots.toString(),
             it.technologySlots.toString(), it.customName, it.manualPrice, it.commonName,
             it.commonEffect, it.commonLoad.toString(), it.commonQuantity.toString(),
+            it.commonCategory, it.commonRegion, it.commonDurability.toString(), it.commonPg.toString(),
+            it.commonPl.toString(), it.commonAgilityLimit?.toString().orEmpty(), it.commonAttack.toString(),
+            it.commonDamage.toString(), it.commonRange.toString(),
         ).row()
     }
 
@@ -79,6 +83,15 @@ class CharacterConverters {
                 commonEffect = fields.getOrElse(12) { "" },
                 commonLoad = fields.getOrNull(13)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
                 commonQuantity = fields.getOrNull(14)?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
+                commonCategory = fields.getOrElse(15) { "Item" },
+                commonRegion = fields.getOrElse(16) { "" },
+                commonDurability = fields.getOrNull(17)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                commonPg = fields.getOrNull(18)?.toIntOrNull() ?: 0,
+                commonPl = fields.getOrNull(19)?.toIntOrNull() ?: 0,
+                commonAgilityLimit = fields.getOrNull(20)?.toIntOrNull(),
+                commonAttack = fields.getOrNull(21)?.toIntOrNull() ?: 0,
+                commonDamage = fields.getOrNull(22)?.toIntOrNull() ?: 0,
+                commonRange = fields.getOrNull(23)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
             )
         }
 
@@ -238,18 +251,19 @@ class CharacterConverters {
 
     @TypeConverter fun inventoryToString(value: List<InventoryItem>) = value.joinToString(ROW) { item ->
         listOf(
-            item.id, item.state, item.name, item.load.toString(), item.durability, item.region,
+            item.id, item.state, item.name, item.load.toString(), item.durabilityCurrent.toString(), item.region,
             item.effect, item.pg.toString(), item.pl.toString(), item.category,
-            item.agilityLimit?.toString().orEmpty(), item.quality,
+            item.agilityLimit?.toString().orEmpty(), item.quality.name,
             "", // reserved legacy slot; ItemBonus is no longer part of the domain model
-            "canonical-v4", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            "canonical-v5", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
             item.acquisitionSource.name, item.heritageCost?.toString().orEmpty(), item.purchasePrice?.toString().orEmpty(),
             item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
             item.baseId, item.materialId, item.modificationIds.nested(), item.gemIds.nested(),
             item.mechanicalEffects.joinToString(MODIFIER_ROW) { effect ->
                 listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description, effect.resolvedTargetId).joinToString(MODIFIER_FIELD)
             },
-            item.dataVersion.toString(),
+            item.dataVersion.toString(), item.durabilityMax.toString(), item.itemCondition.name,
+            item.backpackCapacity.toString(),
         ).row()
     }
 
@@ -257,11 +271,14 @@ class CharacterConverters {
         row.parts().let { p ->
             InventoryItem(
                 id = p[0], state = p.getOrElse(1) { "M" }, name = p.getOrElse(2) { "" },
-                load = p.getOrNull(3)?.toIntOrNull() ?: 0, durability = p.getOrElse(4) { "" },
+                load = p.getOrNull(3)?.toIntOrNull() ?: 0,
+                durabilityCurrent = if (p.getOrNull(13) == "canonical-v5") p.getOrNull(4)?.toIntOrNull() ?: 0 else legacyDurability(p.getOrElse(4) { "" }).first,
+                durabilityMax = if (p.getOrNull(13) == "canonical-v5") p.getOrNull(30)?.toIntOrNull() ?: 0 else legacyDurability(p.getOrElse(4) { "" }).second,
                 region = p.getOrElse(5) { "" }, effect = p.getOrElse(6) { "" },
                 pg = p.getOrNull(7)?.toIntOrNull() ?: 0, pl = p.getOrNull(8)?.toIntOrNull() ?: 0,
                 category = p.getOrElse(9) { "" }, agilityLimit = p.getOrNull(10)?.toIntOrNull(),
-                quality = p.getOrElse(11) { "Comum" },
+                quality = runCatching { ItemQuality.valueOf(p.getOrElse(11) { "COMMON" }) }
+                    .getOrElse { ItemQuality.entries.firstOrNull { it.label.equals(p.getOrElse(11) { "" }, true) } ?: ItemQuality.COMMON },
                 quantity = p.getOrNull(14)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 linkedAshId = p.getOrElse(15) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
                 ashPurity = p.enumAt(16, AshPurity.RAW),
@@ -272,11 +289,11 @@ class CharacterConverters {
                 catalogVersion = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 acquiredAt = p.getOrNull(22)?.toLongOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 canonical = p.getOrNull(23)?.toBooleanStrictOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: false,
-                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }.orEmpty(),
-                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }.orEmpty(),
-                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }?.toNestedList().orEmpty(),
-                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }?.toNestedList().orEmpty(),
-                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4") }
+                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }.orEmpty(),
+                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }.orEmpty(),
+                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }?.toNestedList().orEmpty(),
+                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }?.toNestedList().orEmpty(),
+                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }
                     ?.split(MODIFIER_ROW)?.filter(String::isNotBlank)?.map { encoded ->
                         val fields = encoded.split(MODIFIER_FIELD)
                         ItemEffect(
@@ -289,9 +306,18 @@ class CharacterConverters {
                             resolvedTargetId = fields.getOrElse(6) { "" },
                         )
                     }.orEmpty(),
-                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v4" } ?: 0,
+                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v4", "canonical-v5") } ?: 0,
+                itemCondition = p.enumAt(31, if (legacyDurability(p.getOrElse(4) { "" }).second == 0) ItemCondition.SCRAP else ItemCondition.NORMAL),
+                backpackCapacity = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v5" } ?: 0,
             )
         }
+    }
+
+    private fun legacyDurability(value: String): Pair<Int, Int> {
+        val parts = value.split('/')
+        val maximum = parts.getOrNull(1)?.toIntOrNull() ?: parts.firstOrNull()?.toIntOrNull() ?: 0
+        val current = parts.firstOrNull()?.toIntOrNull()?.coerceIn(0, maximum) ?: maximum
+        return current to maximum
     }
 
     @TypeConverter fun knowledgesToString(value: List<SpecialKnowledge>) = value.joinToString(ROW) {

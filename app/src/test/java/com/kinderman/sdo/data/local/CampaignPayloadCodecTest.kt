@@ -9,6 +9,7 @@ import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.Power
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -18,9 +19,9 @@ class CampaignPayloadCodecTest {
     @Test
     fun `item structure and notes survive the room and delivery payload round trip`() {
         val item = InventoryItem(
-            id = "item-1", state = "E", name = "Armadura", load = 4, durability = "3/5",
+            id = "item-1", state = "E", name = "Armadura", load = 4, durabilityCurrent = 3, durabilityMax = 5,
             region = "Torso", effect = "Reduz dano", pg = 2, pl = 5, category = "Armadura",
-            agilityLimit = 3, quality = "Raro",
+            agilityLimit = 3, quality = ItemQuality.ICONIC,
             quantity = 1,
         )
         val entry = CampaignLibraryEntry(

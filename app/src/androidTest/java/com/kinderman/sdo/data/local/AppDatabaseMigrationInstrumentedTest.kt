@@ -53,6 +53,20 @@ class AppDatabaseMigrationInstrumentedTest {
         migrated.close()
     }
 
+    @Test fun migration22To23MarksInventoryForTypedMigration() {
+        val name = "migration-22-23.db".also(databases::add)
+        openSqlite(name, 22, onCreate = { db ->
+            db.execSQL("CREATE TABLE characters (id TEXT NOT NULL PRIMARY KEY, itemSchemaVersion INTEGER NOT NULL DEFAULT 4)")
+            db.execSQL("INSERT INTO characters (id, itemSchemaVersion) VALUES ('fixture', 4)")
+        }).close()
+        val migrated = openSqlite(name, 23, onUpgrade = { db, _, _ -> AppDatabase.MIGRATION_22_23.migrate(db) })
+        migrated.writableDatabase.query("SELECT itemSchemaVersion FROM characters WHERE id = 'fixture'").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+        migrated.close()
+    }
+
     @Test fun structuredMigrationAndDerivedEffectsSurviveDatabaseRestart() = runBlocking {
         val name = "restart-acceptance.db".also(databases::add)
         val effect = ItemEffect(

@@ -24,14 +24,14 @@ fun Character.generalProtectionBreakdown(): CalculatedValue {
         }
     } else {
         val equipped = equippedInventoryItemsForBreakdown()
-        equipped.filterNot { it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
+        equipped.filterNot { it.isBroken || it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
             .filter { it.pg != 0 }
             .map { item ->
                 ValueModifier(
                     sourceType = ModifierSourceType.ITEM,
                     sourceId = item.id,
                     label = item.name.ifBlank { "Item sem nome" },
-                    value = item.pg,
+                    value = if (item.isScrap) item.pg / 2 else item.pg,
                 )
             }
     }
@@ -47,13 +47,13 @@ fun Character.localProtectionBreakdown(region: BodyRegion): CalculatedValue {
     return CalculatedValue(
         base = region.localProtection,
         modifiers = inventory
-            .filter { it.id in equippedIds && it.pl != 0 }
+            .filter { it.id in equippedIds && it.pl != 0 && !it.isBroken }
             .map { item ->
                 ValueModifier(
                     sourceType = ModifierSourceType.ITEM,
                     sourceId = item.id,
                     label = item.name.ifBlank { "Item sem nome" },
-                    value = item.pl,
+                    value = if (item.isScrap) item.pl / 2 else item.pl,
                 )
             },
     )

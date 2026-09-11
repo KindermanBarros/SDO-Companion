@@ -254,7 +254,8 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
         name = name,
         load = load,
         backpackCapacity = backpackCapacity,
-        durability = durability,
+        durabilityCurrent = durability.toDurabilityPair().first,
+        durabilityMax = durability.toDurabilityPair().second,
         region = region,
         effect = listOfNotNull(
             "Categoria: $group".takeIf { group.isNotBlank() },
@@ -270,4 +271,10 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
         canonical = true,
         dataVersion = com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION,
     )
+}
+
+private fun String.toDurabilityPair(): Pair<Int, Int> {
+    val values = split('/')
+    val maximum = values.getOrNull(1)?.toIntOrNull() ?: values.firstOrNull()?.toIntOrNull() ?: 0
+    return (values.firstOrNull()?.toIntOrNull() ?: maximum).coerceIn(0, maximum) to maximum
 }

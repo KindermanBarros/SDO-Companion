@@ -184,7 +184,7 @@ class CharacterRecordFirestoreContractTest {
         val converters = CharacterConverters()
         val item = com.kinderman.sdo.domain.model.InventoryItem(
             id = "armor-1", pg = 4, pl = 3, category = "Armadura", agilityLimit = 3,
-            quality = "Icônica",
+            quality = ItemQuality.ICONIC,
         )
         val region = com.kinderman.sdo.domain.model.BodyRegion(name = "Braço", equippedItemIds = listOf(item.id))
 

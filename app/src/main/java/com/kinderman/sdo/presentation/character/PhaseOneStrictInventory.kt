@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.window.DialogProperties
@@ -35,11 +36,17 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.ItemEffect
+import com.kinderman.sdo.domain.model.ItemEffectCondition
+import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.InventoryState
 import com.kinderman.sdo.domain.model.inventoryState
 import com.kinderman.sdo.domain.model.withInventoryState
 import com.kinderman.sdo.domain.model.initialCreationCost
+import com.kinderman.sdo.domain.model.durabilityLabel
+import com.kinderman.sdo.domain.model.isScrap
+import com.kinderman.sdo.domain.model.isBroken
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.model.effectiveLoad
 import com.kinderman.sdo.domain.model.addInventoryItem
@@ -79,6 +86,10 @@ internal fun PhaseOneStrictInventorySection(
             color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleLarge,
         )
+        when {
+            character.currentLoad >= character.maximumLoad + 4 -> Text("IMÓVEL // sem Movimento ou Esquiva; abandone Carga", color = MaterialTheme.colorScheme.error)
+            character.currentLoad > character.maximumLoad -> Text("SOBRECARREGADO // −5 m, −2 Esquiva, Desvantagem física e corrida +1 PE", color = MaterialTheme.colorScheme.error)
+        }
         Text("Efeitos são definidos pelos componentes do item e aplicados automaticamente quando equipado.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         HudTextField("Buscar por nome, categoria, material ou estado", inventoryQuery) { inventoryQuery = it }
         ChoiceField("Grupo", inventoryGroup, listOf("Todos", "Armas", "Armaduras", "Itens"), true) { inventoryGroup = it }
@@ -86,7 +97,7 @@ internal fun PhaseOneStrictInventorySection(
         inventoryGroups(character.inventory).forEach { (group, groupItems) ->
             val visible = groupItems.filter { item ->
                 (inventoryGroup == "Todos" || inventoryGroup == group) &&
-                    (inventoryQuery.isBlank() || listOf(item.name, item.category, item.quality, item.effect, item.inventoryState.label).any { it.contains(inventoryQuery, true) })
+                    (inventoryQuery.isBlank() || listOf(item.name, item.category, item.quality.label, item.effect, item.inventoryState.label).any { it.contains(inventoryQuery, true) })
             }
             if (inventoryGroup == "Todos" || inventoryGroup == group) {
                 Text("$group // ${groupItems.size} // CARGA ${groupItems.sumOf { it.effectiveLoad() }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
@@ -109,8 +120,9 @@ internal fun PhaseOneStrictInventorySection(
                         }
                     }
                 }
-                Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality.label} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                Text("DURABILIDADE ${item.durabilityLabel}${when { item.isBroken -> " // [QUEBRADO]"; item.isScrap -> " // [SUCATA]"; else -> "" }}", color = if (item.isScrap || item.isBroken) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                 if (item.linkedAshId.isNotBlank()) {
                     IntegerField("Doses", item.quantity, enabled) { doses ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = doses.coerceAtLeast(0)))))
@@ -124,7 +136,8 @@ internal fun PhaseOneStrictInventorySection(
                 ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
                     onChange(character.withItemInventoryState(item.id, value))
                 }
-                HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { value ->
+                if (item.canonical) Text(item.effect, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                else HudTextField("Efeito narrativo", item.effect, multiline = true, enabled = enabled) { value ->
                     onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
                 }
             }
@@ -171,18 +184,27 @@ internal fun PhaseOneStrictInventorySection(
             onChange(character.addInventoryItem(item))
             dialog = null
         }
-        "initial_builder" -> StrictItemBuilderDialog(
+        "initial_weapon", "initial_armor", "initial_accessory" -> StrictItemBuilderDialog(
             remainingHeritage = remainingHeritage,
-            draft = character.itemCreationDraft ?: ItemCreationDraft(),
+            draft = (character.itemCreationDraft ?: ItemCreationDraft()).copy(category = when (dialog) {
+                "initial_weapon" -> "Arma"
+                "initial_accessory" -> "Acessório"
+                else -> "Armadura"
+            }),
             onDraftChange = { onChange(character.copy(itemCreationDraft = it)) },
             onDismiss = { dialog = null },
         ) { item ->
             onChange(character.addInventoryItem(item).copy(itemCreationDraft = null))
             dialog = null
         }
-        "builder" -> StrictItemBuilderDialog(
+        "builder_weapon", "builder_armor", "builder_accessory", "builder_item" -> StrictItemBuilderDialog(
             remainingHeritage = null,
-            draft = character.itemCreationDraft ?: ItemCreationDraft(),
+            draft = (character.itemCreationDraft ?: ItemCreationDraft()).copy(category = when (dialog) {
+                "builder_weapon" -> "Arma"
+                "builder_armor" -> "Armadura"
+                "builder_accessory" -> "Acessório"
+                else -> "Item"
+            }),
             onDraftChange = { onChange(character.copy(itemCreationDraft = it)) },
             onDismiss = { dialog = null },
         ) { item ->
@@ -209,8 +231,11 @@ private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Bo
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Escolha como o item será adicionado.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 AddButton("Do catálogo", canUseCatalog) { onChoice(if (initialCreation) "initial_catalog" else "catalog") }
-                AddButton("Criar personalizado", true) { onChoice(if (initialCreation) "initial_builder" else "builder") }
-                if (canAddAsh) AddButton("Adicionar Cinzas", true) { onChoice("ash_catalog") }
+                AddButton("Construir arma", true) { onChoice(if (initialCreation) "initial_weapon" else "builder_weapon") }
+                AddButton("Construir armadura", true) { onChoice(if (initialCreation) "initial_armor" else "builder_armor") }
+                AddButton("Construir acessório", true) { onChoice(if (initialCreation) "initial_accessory" else "builder_accessory") }
+                if (!initialCreation) AddButton("Construir item comum", true) { onChoice("builder_item") }
+                if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_catalog") }
                 if (!initialCreation) TextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
             }
         },
@@ -247,7 +272,11 @@ private fun StrictItemBuilderDialog(
     val step = draft.step
     val category = draft.category
     val weapon = category == "Arma"
-    val basePool: List<ItemPart> = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
+    val basePool: List<ItemPart> = when (category) {
+        "Arma" -> ItemCreationRules.weaponBases
+        "Acessório" -> ItemCreationRules.armorBases.filter { it.group == "Acessório" }
+        else -> ItemCreationRules.armorBases.filterNot { it.group == "Acessório" }
+    }
     val base: ItemPart = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.first()
     val materialPool: List<ItemPart> = if (weapon) ItemCreationRules.weaponMaterials else ItemCreationRules.armorMaterials
     val material: ItemPart = materialPool.firstOrNull { it.id == draft.materialId }
@@ -265,9 +294,10 @@ private fun StrictItemBuilderDialog(
     val commonEffect = draft.commonEffect
     val commonLoad = draft.commonLoad
     val commonQuantity = draft.commonQuantity
+    val commonCategory = draft.commonCategory
 
     val initialCreation = remainingHeritage != null
-    val bases: List<ItemPart> = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
+    val bases: List<ItemPart> = basePool
     val materials: List<ItemPart> = when {
         weapon -> ItemCreationRules.weaponMaterials
         base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
@@ -287,7 +317,20 @@ private fun StrictItemBuilderDialog(
     )
     val allowedByBudget = remainingHeritage == null || (built.creationCost != null && built.creationCost <= remainingHeritage)
     val requiresPrice = !initialCreation && built.creationCost == null && manualPrice.isBlank()
-    val commonItem = InventoryItem(name = commonName.trim(), category = "Item", effect = commonEffect, load = commonLoad, quantity = commonQuantity)
+    val commonEffects = buildList {
+        if (draft.commonPg != 0) add(ItemEffect("custom:pg", ItemEffectType.PG, draft.commonPg, condition = ItemEffectCondition.EQUIPPED))
+        if (draft.commonPl != 0) add(ItemEffect("custom:pl", ItemEffectType.PL, draft.commonPl, target = draft.commonRegion, condition = ItemEffectCondition.EQUIPPED))
+        draft.commonAgilityLimit?.let { add(ItemEffect("custom:la", ItemEffectType.AGILITY_LIMIT, it, condition = ItemEffectCondition.EQUIPPED)) }
+        if (draft.commonAttack != 0) add(ItemEffect("custom:attack", ItemEffectType.ATTACK, draft.commonAttack, condition = ItemEffectCondition.WIELDED))
+        if (draft.commonDamage != 0) add(ItemEffect("custom:damage", ItemEffectType.PHYSICAL_DAMAGE, draft.commonDamage, condition = ItemEffectCondition.WIELDED))
+    }
+    val commonItem = InventoryItem(
+        name = commonName.trim(), category = commonCategory, effect = commonEffect,
+        load = commonLoad, quantity = commonQuantity, region = draft.commonRegion,
+        durabilityCurrent = draft.commonDurability, durabilityMax = draft.commonDurability,
+        pg = draft.commonPg, pl = draft.commonPl, agilityLimit = draft.commonAgilityLimit,
+        mechanicalEffects = commonEffects,
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -304,11 +347,24 @@ private fun StrictItemBuilderDialog(
                 Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                remainingHeritage?.let { remaining ->
+                    val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
+                    val preview = if (category == "Item") 0 else built.creationCost ?: 0
+                    Text("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = MaterialTheme.colorScheme.primary)
+                    LinearProgressIndicator(
+                        progress = { ((spent + preview).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
                 if (step == 1) {
                 Text("O que você quer criar? As próximas opções serão adaptadas à categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                ChoiceField("Categoria", category, if (initialCreation) listOf("Arma", "Armadura") else listOf("Arma", "Armadura", "Item"), true) { selected ->
+                ChoiceField("Categoria", category, if (initialCreation) listOf("Arma", "Armadura", "Acessório") else listOf("Arma", "Armadura", "Acessório", "Item"), true) { selected ->
                     val nextWeapon = selected == "Arma"
-                    val nextBase = if (nextWeapon) ItemCreationRules.weaponBases.first() else ItemCreationRules.armorBases.first()
+                    val nextBase = when (selected) {
+                        "Arma" -> ItemCreationRules.weaponBases.first()
+                        "Acessório" -> ItemCreationRules.armorBases.first { it.group == "Acessório" }
+                        else -> ItemCreationRules.armorBases.first { it.group != "Acessório" }
+                    }
                     val nextMaterial = if (nextWeapon) ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
                         else ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
                     onDraftChange(draft.copy(category = selected, baseId = nextBase.id, materialId = nextMaterial.id, modificationIds = emptyList()))
@@ -316,12 +372,26 @@ private fun StrictItemBuilderDialog(
                 Text(when (category) { "Arma" -> "Armas possuem dano, material e modificações de combate."; "Armadura" -> "Armaduras e acessórios possuem proteção, região e limitações."; else -> "Itens comuns usam apenas nome, quantidade, carga e efeito." }, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (step == 2 && category == "Item") {
+                    ChoiceField("Categoria", commonCategory, listOf("Arma", "Armadura", "Acessório", "Escudo", "Consumível", "Munição", "Ferramenta", "Recipiente de Carga", "Item"), true) { onDraftChange(draft.copy(commonCategory = it)) }
                     HudTextField("Nome do item", commonName) { onDraftChange(draft.copy(commonName = it)) }
                     TwoFields(
                         { IntegerField("Quantidade", commonQuantity, true, it) { value -> onDraftChange(draft.copy(commonQuantity = value.coerceAtLeast(1))) } },
                         { IntegerField("Carga total", commonLoad, true, it) { value -> onDraftChange(draft.copy(commonLoad = value.coerceAtLeast(0))) } },
                     )
                     HudTextField("Descrição ou efeito", commonEffect, multiline = true) { onDraftChange(draft.copy(commonEffect = it)) }
+                    HudTextField("Região corporal", draft.commonRegion) { onDraftChange(draft.copy(commonRegion = it)) }
+                    TwoFields(
+                        { IntegerField("Durabilidade", draft.commonDurability, true, it) { value -> onDraftChange(draft.copy(commonDurability = value.coerceAtLeast(0))) } },
+                        { IntegerField("Alcance", draft.commonRange, true, it) { value -> onDraftChange(draft.copy(commonRange = value.coerceAtLeast(0))) } },
+                    )
+                    TwoFields(
+                        { IntegerField("PG", draft.commonPg, true, it) { value -> onDraftChange(draft.copy(commonPg = value)) } },
+                        { IntegerField("PL", draft.commonPl, true, it) { value -> onDraftChange(draft.copy(commonPl = value)) } },
+                    )
+                    TwoFields(
+                        { IntegerField("Ataque", draft.commonAttack, true, it) { value -> onDraftChange(draft.copy(commonAttack = value)) } },
+                        { IntegerField("Dano", draft.commonDamage, true, it) { value -> onDraftChange(draft.copy(commonDamage = value)) } },
+                    )
                     if (!initialCreation) HudTextField("Preço em E$ (opcional)", manualPrice) { onDraftChange(draft.copy(manualPrice = it.filter(Char::isDigit))) }
                 }
                 if (step == 2 && category != "Item") {
