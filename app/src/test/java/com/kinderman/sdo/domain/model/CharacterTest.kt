@@ -1,9 +1,33 @@
 package com.kinderman.sdo.domain.model
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterTest {
+    @Test fun loadConditionAppliesOverloadedPenaltiesAndImmobility() {
+        val overloaded = Character(inventory = listOf(InventoryItem(load = 3, state = "E")))
+        assertEquals(1, overloaded.excessLoad)
+        assertEquals(LoadCondition.OVERLOADED, overloaded.loadCondition)
+        assertEquals(-5, overloaded.movementPenaltyMeters)
+        assertEquals(-2, overloaded.dodgeLoadAdjustment)
+        assertEquals(8, overloaded.protectionTotal("Esquiva"))
+        assertEquals(1, overloaded.runningEnergySurcharge)
+        assertTrue(overloaded.hasLoadDisadvantage("AGI", "Movimento"))
+        assertTrue(overloaded.hasLoadDisadvantage("AGI", "Furtividade"))
+        assertTrue(overloaded.hasLoadDisadvantage("FOR", "Atletismo"))
+        assertFalse(overloaded.hasLoadDisadvantage("FOR", "Luta"))
+        assertTrue(overloaded.canMove)
+        assertTrue(overloaded.canDodge)
+
+        val immobile = overloaded.copy(inventory = listOf(InventoryItem(load = 6, state = "E")))
+        assertEquals(LoadCondition.IMMOBILE, immobile.loadCondition)
+        assertFalse(immobile.canMove)
+        assertFalse(immobile.canDodge)
+        assertEquals(0, immobile.runningEnergySurcharge)
+    }
+
     @Test fun inventoryStateUsesTypedSemanticsWithLegacyStorageCodes() {
         assertEquals(InventoryState.WIELDED, InventoryItem(state = "W").inventoryState)
         assertEquals("G", InventoryItem().withInventoryState(InventoryState.STORED).state)
