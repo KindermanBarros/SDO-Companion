@@ -13,10 +13,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "compatibleItemTypes", "creationCost", "price", "effect"],
+        "required": ["id", "name", "tier", "compatibleItemTypes", "creationCost", "price", "effect"],
         "properties": {
           "id": { "type": "string", "minLength": 1 },
           "name": { "type": "string", "minLength": 1 },
+          "tier": { "enum": ["MINOR", "MAJOR"] },
           "compatibleItemTypes": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
           "creationCost": { "type": "integer", "minimum": 0 },
           "price": { "type": "integer", "minimum": 0 },
