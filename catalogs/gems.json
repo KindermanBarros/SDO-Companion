@@ -7,6 +7,7 @@
     {
       "id": "gema_conhecimento_basico_for_atletismo",
       "name": "Gema de Atletismo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -23,6 +24,7 @@
     {
       "id": "gema_conhecimento_basico_for_brutalidade",
       "name": "Gema de Brutalidade",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -39,6 +41,7 @@
     {
       "id": "gema_conhecimento_basico_for_luta",
       "name": "Gema de Luta",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -55,6 +58,7 @@
     {
       "id": "gema_conhecimento_basico_for_arremesso",
       "name": "Gema de Arremesso",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -71,6 +75,7 @@
     {
       "id": "gema_conhecimento_basico_vig_energia",
       "name": "Gema de Energia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -87,6 +92,7 @@
     {
       "id": "gema_conhecimento_basico_vig_vitalidade",
       "name": "Gema de Vitalidade",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -103,6 +109,7 @@
     {
       "id": "gema_conhecimento_basico_vig_tolerancia",
       "name": "Gema de Tolerância",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -119,6 +126,7 @@
     {
       "id": "gema_conhecimento_basico_vig_regeneracao",
       "name": "Gema de Regeneração",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -135,6 +143,7 @@
     {
       "id": "gema_conhecimento_basico_agi_furtividade",
       "name": "Gema de Furtividade",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -151,6 +160,7 @@
     {
       "id": "gema_conhecimento_basico_agi_reflexos",
       "name": "Gema de Reflexos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -167,6 +177,7 @@
     {
       "id": "gema_conhecimento_basico_agi_movimento",
       "name": "Gema de Movimento",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -183,6 +194,7 @@
     {
       "id": "gema_conhecimento_basico_agi_pontaria",
       "name": "Gema de Pontaria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -199,6 +211,7 @@
     {
       "id": "gema_conhecimento_basico_pod_arcano",
       "name": "Gema de Arcano",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -215,6 +228,7 @@
     {
       "id": "gema_conhecimento_basico_pod_sentidos",
       "name": "Gema de Sentidos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -231,6 +245,7 @@
     {
       "id": "gema_conhecimento_basico_pod_controle",
       "name": "Gema de Controle",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -247,6 +262,7 @@
     {
       "id": "gema_conhecimento_basico_pod_recuperacao",
       "name": "Gema de Recuperação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -263,6 +279,7 @@
     {
       "id": "gema_conhecimento_basico_int_sanidade",
       "name": "Gema de Sanidade",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -279,6 +296,7 @@
     {
       "id": "gema_conhecimento_basico_int_intuicao",
       "name": "Gema de Intuição",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -295,6 +313,7 @@
     {
       "id": "gema_conhecimento_basico_int_religiao",
       "name": "Gema de Religião",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -311,6 +330,7 @@
     {
       "id": "gema_conhecimento_basico_int_raciocinio",
       "name": "Gema de Raciocínio",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -327,6 +347,7 @@
     {
       "id": "gema_conhecimento_basico_car_politica",
       "name": "Gema de Política",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -343,6 +364,7 @@
     {
       "id": "gema_conhecimento_basico_car_labia",
       "name": "Gema de Lábia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -359,6 +381,7 @@
     {
       "id": "gema_conhecimento_basico_car_enganacao",
       "name": "Gema de Enganação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -375,6 +398,7 @@
     {
       "id": "gema_conhecimento_basico_car_intimidacao",
       "name": "Gema de Intimidação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -391,6 +415,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_engenhocaria",
       "name": "Gema de Engenhocaria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -407,6 +432,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_linguistica",
       "name": "Gema de Linguística",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -423,6 +449,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_culinaria",
       "name": "Gema de Culinária",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -439,6 +466,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_degustacao",
       "name": "Gema de Degustação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -455,6 +483,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_reparo",
       "name": "Gema de Reparo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -471,6 +500,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_exomathis",
       "name": "Gema de Exomathis",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -487,6 +517,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_runas",
       "name": "Gema de Rúnico",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -503,6 +534,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_cinzas",
       "name": "Gema de Cinzas",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -519,6 +551,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_sangromancia",
       "name": "Gema de Sangromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -535,6 +568,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_planos",
       "name": "Gema de Planos e Fenômenos Sobrenaturais",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -551,6 +585,7 @@
     {
       "id": "gema_conhecimento_knowledge_technique_laminas_gemeas",
       "name": "Gema de Lâminas Gêmeas",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -567,6 +602,7 @@
     {
       "id": "gema_conhecimento_knowledge_technique_postura_defensiva",
       "name": "Gema de Postura Defensiva",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -583,6 +619,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_arqueologia",
       "name": "Gema de Arqueologia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -599,6 +636,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_ferraria",
       "name": "Gema de Ferraria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -615,6 +653,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_medicina",
       "name": "Gema de Medicina",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -631,6 +670,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_mecanica",
       "name": "Gema de Mecânica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -647,6 +687,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_sobrevivencia",
       "name": "Gema de Sobrevivência",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -663,6 +704,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_atuacao",
       "name": "Gema de Atuação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -679,6 +721,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_cartografia",
       "name": "Gema de Cartografia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -695,6 +738,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_navegacao",
       "name": "Gema de Navegação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -711,6 +755,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_alquimia_pratica",
       "name": "Gema de Alquimia Prática",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -727,6 +772,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_botanica",
       "name": "Gema de Botânica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -743,6 +789,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_zoologia",
       "name": "Gema de Zoologia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -759,6 +806,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_geologia",
       "name": "Gema de Geologia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -775,6 +823,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_mineralogia",
       "name": "Gema de Mineralogia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -791,6 +840,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_historia_nulvara",
       "name": "Gema de História de Nulvara",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -807,6 +857,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_politica_capitais",
       "name": "Gema de Política das Capitais",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -823,6 +874,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_direito_marevon",
       "name": "Gema de Direito de Marevon",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -839,6 +891,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_comercio_skratz",
       "name": "Gema de Comércio de Skratz",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -855,6 +908,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_navegacao_dravan",
       "name": "Gema de Navegação Dravan",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -871,6 +925,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_engenharia_kaltoch",
       "name": "Gema de Engenharia Kaltoch",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -887,6 +942,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_cultura_goblin",
       "name": "Gema de Cultura Goblin",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -903,6 +959,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_tradicoes_anas",
       "name": "Gema de Tradições Anãs",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -919,6 +976,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_etiqueta_elfica",
       "name": "Gema de Etiqueta Élfica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -935,6 +993,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_cultos_menores",
       "name": "Gema de Cultos Menores",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -951,6 +1010,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_bestiologia",
       "name": "Gema de Bestiologia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -967,6 +1027,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_anatomia",
       "name": "Gema de Anatomia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -983,6 +1044,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_farmacia",
       "name": "Gema de Farmácia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -999,6 +1061,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_agricultura",
       "name": "Gema de Agricultura",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1015,6 +1078,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_pecuaria",
       "name": "Gema de Pecuária",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1031,6 +1095,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_pesca",
       "name": "Gema de Pesca",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1047,6 +1112,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_caca",
       "name": "Gema de Caça",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1063,6 +1129,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_rastreamento",
       "name": "Gema de Rastreamento",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1079,6 +1146,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_marcenaria",
       "name": "Gema de Marcenaria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1095,6 +1163,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_alvenaria",
       "name": "Gema de Alvenaria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1111,6 +1180,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_serralheria",
       "name": "Gema de Serralheria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1127,6 +1197,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_costura",
       "name": "Gema de Costura",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1143,6 +1214,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_joalheria",
       "name": "Gema de Joalheria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1159,6 +1231,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_cervejaria",
       "name": "Gema de Cervejaria",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1175,6 +1248,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_musica",
       "name": "Gema de Música",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1191,6 +1265,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_oratoria",
       "name": "Gema de Oratória",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1207,6 +1282,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_investigacao",
       "name": "Gema de Investigação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1223,6 +1299,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_criptografia",
       "name": "Gema de Criptografia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1239,6 +1316,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_arquivologia",
       "name": "Gema de Arquivologia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1255,6 +1333,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_demolicao",
       "name": "Gema de Demolição",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1271,6 +1350,7 @@
     {
       "id": "gema_conhecimento_knowledge_acquired_knowledge_pilotagem",
       "name": "Gema de Pilotagem",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1287,6 +1367,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_necromancia",
       "name": "Gema de Necromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1303,6 +1384,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_abjuracao",
       "name": "Gema de Abjuração",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1319,6 +1401,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_invocacao",
       "name": "Gema de Invocação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1335,6 +1418,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_encantamento",
       "name": "Gema de Encantamento",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1351,6 +1435,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_ilusao",
       "name": "Gema de Ilusão",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1367,6 +1452,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_transmutacao",
       "name": "Gema de Transmutação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1383,6 +1469,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_electromancia",
       "name": "Gema de Electromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1399,6 +1486,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_litomancia",
       "name": "Gema de Litomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1415,6 +1503,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_natureza_arcana",
       "name": "Gema de Natureza",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1431,6 +1520,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_piromancia",
       "name": "Gema de Piromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1447,6 +1537,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_aqueomancia",
       "name": "Gema de Aqueomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1463,6 +1554,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_arqueomancia",
       "name": "Gema de Arqueomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1479,6 +1571,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_aeromancia",
       "name": "Gema de Aeromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1495,6 +1588,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_geomancia",
       "name": "Gema de Geomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1511,6 +1605,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_criomancia",
       "name": "Gema de Criomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1527,6 +1622,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_umbramancia",
       "name": "Gema de Umbramancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1543,6 +1639,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_luminomancia",
       "name": "Gema de Luminomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1559,6 +1656,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_cronomancia",
       "name": "Gema de Cronomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1575,6 +1673,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_gravimancia",
       "name": "Gema de Gravimancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1591,6 +1690,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_espaciomancia",
       "name": "Gema de Espaciomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1607,6 +1707,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_sonoromancia",
       "name": "Gema de Sonoromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1623,6 +1724,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_ferromancia",
       "name": "Gema de Ferromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1639,6 +1741,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_biomancia",
       "name": "Gema de Biomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1655,6 +1758,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_alquimancia",
       "name": "Gema de Alquimancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1671,6 +1775,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_tecnomancia",
       "name": "Gema de Tecnomancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1687,6 +1792,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_astromancia",
       "name": "Gema de Astromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1703,6 +1809,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_adivinhacao",
       "name": "Gema de Adivinhação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1719,6 +1826,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_metamancia",
       "name": "Gema de Metamancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1735,6 +1843,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_espiritismo",
       "name": "Gema de Espiritismo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1751,6 +1860,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_oniromancia",
       "name": "Gema de Oniromancia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1767,6 +1877,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_cura_arcana",
       "name": "Gema de Cura",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1783,6 +1894,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_teoria_cinzas",
       "name": "Gema de Teoria da Pureza",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1799,6 +1911,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_coleta_cinzas",
       "name": "Gema de Coleta de Vestígios",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1815,6 +1928,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_refinamento_cinzas",
       "name": "Gema de Refinamento de Cinzas",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1831,6 +1945,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_sintaxe_runica",
       "name": "Gema de Sintaxe Rúnica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1847,6 +1962,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_desarme_runico",
       "name": "Gema de Desarme Rúnico",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1863,6 +1979,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_paleografia_arcana",
       "name": "Gema de Paleografia Arcana",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1879,6 +1996,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_cartografia_onirica",
       "name": "Gema de Cartografia Onírica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1895,6 +2013,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_manifestos_oniricos",
       "name": "Gema de Manifestos Oníricos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1911,6 +2030,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_materia_onirica",
       "name": "Gema de Matéria Onírica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1927,6 +2047,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_energia_onirica",
       "name": "Gema de Energia Onírica",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1943,6 +2064,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_corrupcao_divina",
       "name": "Gema de Corrupção Divina",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1959,6 +2081,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_pactos",
       "name": "Gema de Pactos e Vínculos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1975,6 +2098,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_reliquias",
       "name": "Gema de Relíquias de Nulvara",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -1991,6 +2115,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_contramagia",
       "name": "Gema de Contramagia",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2007,6 +2132,7 @@
     {
       "id": "gema_conhecimento_knowledge_arcane_knowledge_concentracao",
       "name": "Gema de Concentração Arcana",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2023,6 +2149,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_aparar",
       "name": "Gema de Aparar",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2039,6 +2166,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_contra_ataque",
       "name": "Gema de Contra-ataque",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2055,6 +2183,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_guarda_alta",
       "name": "Gema de Guarda Alta",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2071,6 +2200,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_guarda_baixa",
       "name": "Gema de Guarda Baixa",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2087,6 +2217,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_escudo_companheiro",
       "name": "Gema de Escudo do Companheiro",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2103,6 +2234,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_muralha_ana",
       "name": "Gema de Muralha Anã",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2119,6 +2251,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_faca_skratz",
       "name": "Gema de Faca de Skratz",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2135,6 +2268,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_lanca_dravan",
       "name": "Gema de Lança Dravan",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2151,6 +2285,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_arco_marevon",
       "name": "Gema de Arco de Marevon",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2167,6 +2302,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_martelo_caldera",
       "name": "Gema de Martelo de Caldera",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2183,6 +2319,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_duas_maos",
       "name": "Gema de Arma em Duas Mãos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2199,6 +2336,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_espada_escudo",
       "name": "Gema de Espada e Escudo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2215,6 +2353,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_tiro_preciso",
       "name": "Gema de Tiro Preciso",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2231,6 +2370,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_tiro_cobertura",
       "name": "Gema de Tiro de Cobertura",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2247,6 +2387,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_saque_rapido",
       "name": "Gema de Saque Rápido",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2263,6 +2404,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_desarme",
       "name": "Gema de Desarme",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2279,6 +2421,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_derrubar",
       "name": "Gema de Derrubar",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2295,6 +2438,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_agarrar",
       "name": "Gema de Agarrar",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2311,6 +2455,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_imobilizar",
       "name": "Gema de Imobilizar",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2327,6 +2472,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_empurrar",
       "name": "Gema de Empurrão Tático",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2343,6 +2489,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_romper_formacao",
       "name": "Gema de Romper Formação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2359,6 +2506,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_investida",
       "name": "Gema de Investida Controlada",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2375,6 +2523,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_passo_lateral",
       "name": "Gema de Passo Lateral",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2391,6 +2540,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_recuo_coberto",
       "name": "Gema de Recuo Coberto",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2407,6 +2557,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_salto_obstaculo",
       "name": "Gema de Salto de Obstáculo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2423,6 +2574,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_combate_cego",
       "name": "Gema de Combate às Cegas",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2439,6 +2591,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_leitura_oponente",
       "name": "Gema de Leitura do Oponente",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2455,6 +2608,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_finta",
       "name": "Gema de Finta",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2471,6 +2625,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_provocacao",
       "name": "Gema de Provocação",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2487,6 +2642,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_comando_campo",
       "name": "Gema de Comando de Campo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2503,6 +2659,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_manter_linha",
       "name": "Gema de Manter a Linha",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2519,6 +2676,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_avancar_juntos",
       "name": "Gema de Avançar Juntos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2535,6 +2693,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_troca_posicao",
       "name": "Gema de Troca de Posição",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2551,6 +2710,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_proteger_conjurador",
       "name": "Gema de Proteger Conjurador",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2567,6 +2727,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_cacador_monstros",
       "name": "Gema de Caçador de Monstros",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2583,6 +2744,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_quebrador_construtos",
       "name": "Gema de Quebrador de Construtos",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2599,6 +2761,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_duelista",
       "name": "Gema de Duelista",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2615,6 +2778,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_brigao_taverna",
       "name": "Gema de Brigão de Taverna",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2631,6 +2795,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_arma_improvisada",
       "name": "Gema de Arma Improvisada",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2647,6 +2812,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_combate_montado",
       "name": "Gema de Combate Montado",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2663,6 +2829,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_queda_segura",
       "name": "Gema de Queda Segura",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2679,6 +2846,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_resistencia_dor",
       "name": "Gema de Resistência à Dor",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2695,6 +2863,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_respiracao_tatica",
       "name": "Gema de Respiração Tática",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2711,6 +2880,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_vigilia",
       "name": "Gema de Vigília de Campanha",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2727,6 +2897,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_retirada",
       "name": "Gema de Retirada Ordenada",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2743,6 +2914,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_rendicao",
       "name": "Gema de Rendição Segura",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2759,6 +2931,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_captura",
       "name": "Gema de Captura sem Morte",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2775,6 +2948,7 @@
     {
       "id": "gema_conhecimento_knowledge_battle_technique_ultimo_bastiao",
       "name": "Gema de Último Bastião",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2791,6 +2965,7 @@
     {
       "id": "gema_atributo_for",
       "name": "Gema de Força",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2807,6 +2982,7 @@
     {
       "id": "gema_atributo_vig",
       "name": "Gema de Vigor",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2823,6 +2999,7 @@
     {
       "id": "gema_atributo_agi",
       "name": "Gema de Agilidade",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2839,6 +3016,7 @@
     {
       "id": "gema_atributo_pod",
       "name": "Gema de Poder",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2855,6 +3033,7 @@
     {
       "id": "gema_atributo_int",
       "name": "Gema de Intelecto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2871,6 +3050,7 @@
     {
       "id": "gema_atributo_car",
       "name": "Gema de Carisma",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2887,11 +3067,12 @@
     {
       "id": "gema_aprimoramento_aurora_fio",
       "name": "Fio de Aurora",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -2903,11 +3084,12 @@
     {
       "id": "gema_aprimoramento_aurora_guarda",
       "name": "Guarda de Aurora",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -2919,6 +3101,7 @@
     {
       "id": "gema_aprimoramento_aurora_pulso",
       "name": "Pulso de Aurora",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2935,6 +3118,7 @@
     {
       "id": "gema_aprimoramento_aurora_veu",
       "name": "Véu de Aurora",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2951,6 +3135,7 @@
     {
       "id": "gema_aprimoramento_aurora_eco",
       "name": "Eco de Aurora",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -2967,11 +3152,12 @@
     {
       "id": "gema_aprimoramento_basalto_fio",
       "name": "Fio de Basalto",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -2983,11 +3169,12 @@
     {
       "id": "gema_aprimoramento_basalto_guarda",
       "name": "Guarda de Basalto",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -2999,6 +3186,7 @@
     {
       "id": "gema_aprimoramento_basalto_pulso",
       "name": "Pulso de Basalto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3015,6 +3203,7 @@
     {
       "id": "gema_aprimoramento_basalto_veu",
       "name": "Véu de Basalto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3031,6 +3220,7 @@
     {
       "id": "gema_aprimoramento_basalto_eco",
       "name": "Eco de Basalto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3047,11 +3237,12 @@
     {
       "id": "gema_aprimoramento_carmesim_fio",
       "name": "Fio de Carmesim",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3063,11 +3254,12 @@
     {
       "id": "gema_aprimoramento_carmesim_guarda",
       "name": "Guarda de Carmesim",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3079,6 +3271,7 @@
     {
       "id": "gema_aprimoramento_carmesim_pulso",
       "name": "Pulso de Carmesim",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3095,6 +3288,7 @@
     {
       "id": "gema_aprimoramento_carmesim_veu",
       "name": "Véu de Carmesim",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3111,6 +3305,7 @@
     {
       "id": "gema_aprimoramento_carmesim_eco",
       "name": "Eco de Carmesim",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3127,11 +3322,12 @@
     {
       "id": "gema_aprimoramento_cobalto_fio",
       "name": "Fio de Cobalto",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3143,11 +3339,12 @@
     {
       "id": "gema_aprimoramento_cobalto_guarda",
       "name": "Guarda de Cobalto",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3159,6 +3356,7 @@
     {
       "id": "gema_aprimoramento_cobalto_pulso",
       "name": "Pulso de Cobalto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3175,6 +3373,7 @@
     {
       "id": "gema_aprimoramento_cobalto_veu",
       "name": "Véu de Cobalto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3191,6 +3390,7 @@
     {
       "id": "gema_aprimoramento_cobalto_eco",
       "name": "Eco de Cobalto",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3207,11 +3407,12 @@
     {
       "id": "gema_aprimoramento_crepusculo_fio",
       "name": "Fio de Crepúsculo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3223,11 +3424,12 @@
     {
       "id": "gema_aprimoramento_crepusculo_guarda",
       "name": "Guarda de Crepúsculo",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3239,6 +3441,7 @@
     {
       "id": "gema_aprimoramento_crepusculo_pulso",
       "name": "Pulso de Crepúsculo",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3255,6 +3458,7 @@
     {
       "id": "gema_aprimoramento_crepusculo_veu",
       "name": "Véu de Crepúsculo",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3271,6 +3475,7 @@
     {
       "id": "gema_aprimoramento_crepusculo_eco",
       "name": "Eco de Crepúsculo",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3287,11 +3492,12 @@
     {
       "id": "gema_aprimoramento_eter_fio",
       "name": "Fio de Éter",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3303,11 +3509,12 @@
     {
       "id": "gema_aprimoramento_eter_guarda",
       "name": "Guarda de Éter",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3319,6 +3526,7 @@
     {
       "id": "gema_aprimoramento_eter_pulso",
       "name": "Pulso de Éter",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3335,6 +3543,7 @@
     {
       "id": "gema_aprimoramento_eter_veu",
       "name": "Véu de Éter",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3351,6 +3560,7 @@
     {
       "id": "gema_aprimoramento_eter_eco",
       "name": "Eco de Éter",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3367,11 +3577,12 @@
     {
       "id": "gema_aprimoramento_ferrugem_fio",
       "name": "Fio de Ferrugem",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3383,11 +3594,12 @@
     {
       "id": "gema_aprimoramento_ferrugem_guarda",
       "name": "Guarda de Ferrugem",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3399,6 +3611,7 @@
     {
       "id": "gema_aprimoramento_ferrugem_pulso",
       "name": "Pulso de Ferrugem",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3415,6 +3628,7 @@
     {
       "id": "gema_aprimoramento_ferrugem_veu",
       "name": "Véu de Ferrugem",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3431,6 +3645,7 @@
     {
       "id": "gema_aprimoramento_ferrugem_eco",
       "name": "Eco de Ferrugem",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3447,11 +3662,12 @@
     {
       "id": "gema_aprimoramento_marfim_fio",
       "name": "Fio de Marfim",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3463,11 +3679,12 @@
     {
       "id": "gema_aprimoramento_marfim_guarda",
       "name": "Guarda de Marfim",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3479,6 +3696,7 @@
     {
       "id": "gema_aprimoramento_marfim_pulso",
       "name": "Pulso de Marfim",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3495,6 +3713,7 @@
     {
       "id": "gema_aprimoramento_marfim_veu",
       "name": "Véu de Marfim",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3511,6 +3730,7 @@
     {
       "id": "gema_aprimoramento_marfim_eco",
       "name": "Eco de Marfim",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3527,11 +3747,12 @@
     {
       "id": "gema_aprimoramento_tempestade_fio",
       "name": "Fio de Tempestade",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3543,11 +3764,12 @@
     {
       "id": "gema_aprimoramento_tempestade_guarda",
       "name": "Guarda de Tempestade",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3559,6 +3781,7 @@
     {
       "id": "gema_aprimoramento_tempestade_pulso",
       "name": "Pulso de Tempestade",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3575,6 +3798,7 @@
     {
       "id": "gema_aprimoramento_tempestade_veu",
       "name": "Véu de Tempestade",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3591,6 +3815,7 @@
     {
       "id": "gema_aprimoramento_tempestade_eco",
       "name": "Eco de Tempestade",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3607,11 +3832,12 @@
     {
       "id": "gema_aprimoramento_vidro_fio",
       "name": "Fio de Vidro",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
@@ -3623,11 +3849,12 @@
     {
       "id": "gema_aprimoramento_vidro_guarda",
       "name": "Guarda de Vidro",
+      "tier": "MINOR",
       "compatibleItemTypes": [
         "Arma"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "creationCost": 3,
+      "price": 90,
       "effect": {
         "type": "DURABILITY",
         "value": 1,
@@ -3639,6 +3866,7 @@
     {
       "id": "gema_aprimoramento_vidro_pulso",
       "name": "Pulso de Vidro",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3655,6 +3883,7 @@
     {
       "id": "gema_aprimoramento_vidro_veu",
       "name": "Véu de Vidro",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],
@@ -3671,6 +3900,7 @@
     {
       "id": "gema_aprimoramento_vidro_eco",
       "name": "Eco de Vidro",
+      "tier": "MAJOR",
       "compatibleItemTypes": [
         "Arma"
       ],

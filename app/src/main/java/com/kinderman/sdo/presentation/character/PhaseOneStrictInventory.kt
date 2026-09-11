@@ -367,17 +367,28 @@ private fun StrictItemBuilderDialog(
                     { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
                 )
                 Text("GEMAS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                ItemCreationRules.gemComponents.forEach { gem ->
-                    val checked = gem in gems
-                    Row(Modifier.fillMaxWidth().clickable(enabled = quality != ItemQuality.MUNDANE) {
-                        gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
-                        gemSlots = gemSlots.coerceAtLeast(gems.size)
-                    }) {
-                        Checkbox(checked, enabled = quality != ItemQuality.MUNDANE, onCheckedChange = {
-                            gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
+                val availableGems = ItemCreationRules.gemComponents.filterNot { candidate -> gems.any { it.id == candidate.id } }
+                if (quality != ItemQuality.MUNDANE && gems.size < 5 && availableGems.isNotEmpty()) {
+                    ChoiceField(
+                        label = "Adicionar gema",
+                        value = "",
+                        options = availableGems.map { it.id },
+                        enabled = true,
+                        display = { id -> availableGems.firstOrNull { it.id == id }?.name ?: "Selecionar no catálogo" },
+                    ) { id ->
+                        availableGems.firstOrNull { it.id == id }?.let { gem ->
+                            gems = gems + gem
                             gemSlots = gemSlots.coerceAtLeast(gems.size)
-                        })
-                        Text(gem.name, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 10.dp))
+                        }
+                    }
+                }
+                gems.forEach { gem ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column(Modifier.weight(1f)) {
+                            Text(gem.name, color = MaterialTheme.colorScheme.onSurface)
+                            Text(gem.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        }
+                        RemoveButton(true, "Remover ${gem.name}") { gems = gems - gem }
                     }
                 }
 

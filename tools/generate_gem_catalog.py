@@ -31,25 +31,26 @@ def slug(value):
 def effect(kind, value, target, description):
     return {'type': kind, 'value': value, 'target': target, 'condition': 'WIELDED', 'description': description}
 
-def entry(identifier, name, cost, price, payload):
-    return {'id': identifier, 'name': name, 'compatibleItemTypes': ['Arma'], 'creationCost': cost, 'price': price, 'effect': payload}
+def entry(identifier, name, tier, cost, price, payload):
+    return {'id': identifier, 'name': name, 'tier': tier, 'compatibleItemTypes': ['Arma'], 'creationCost': cost, 'price': price, 'effect': payload}
 
 def build(catalog_dir):
     knowledge = json.loads((catalog_dir / 'knowledge.json').read_text())['knowledges']
     entries = []
     for acronym, names in BASIC.items():
         for name in names:
-            entries.append(entry(f'gema_conhecimento_basico_{slug(acronym + "_" + name)}', f'Gema de {name}', 2, 45,
+            entries.append(entry(f'gema_conhecimento_basico_{slug(acronym + "_" + name)}', f'Gema de {name}', 'MINOR', 2, 45,
                 effect('KNOWLEDGE', 1, f'{acronym}:{name}', f'+1 em {name} enquanto a arma estiver empunhada.')))
     for item in knowledge:
-        entries.append(entry(f'gema_conhecimento_{slug(item["id"])}', f'Gema de {item["name"]}', 2, 45,
+        entries.append(entry(f'gema_conhecimento_{slug(item["id"])}', f'Gema de {item["name"]}', 'MINOR', 2, 45,
             effect('KNOWLEDGE', 1, item['name'], f'+1 em {item["name"]} enquanto a arma estiver empunhada.')))
     for acronym, name in ATTRIBUTES.items():
-        entries.append(entry(f'gema_atributo_{acronym.lower()}', f'Gema de {name}', 4, 150,
+        entries.append(entry(f'gema_atributo_{acronym.lower()}', f'Gema de {name}', 'MAJOR', 4, 150,
             effect('ATTRIBUTE', 1, acronym, f'+1 em {name} enquanto a arma estiver empunhada.')))
     for theme in THEMES:
         for form, kind, value, target, description in FORMS:
-            entries.append(entry(f'gema_aprimoramento_{slug(theme)}_{slug(form)}', f'{form} de {theme}', 6, 400,
+            tier = 'MINOR' if kind in ('MAGIC_DAMAGE', 'DURABILITY') else 'MAJOR'
+            entries.append(entry(f'gema_aprimoramento_{slug(theme)}_{slug(form)}', f'{form} de {theme}', tier, 3 if tier == 'MINOR' else 6, 90 if tier == 'MINOR' else 400,
                 effect(kind, value, target, description)))
     assert len(entries) == len({item['id'] for item in entries})
     assert len([item for item in entries if item['id'].startswith('gema_aprimoramento_')]) == 50
@@ -64,7 +65,8 @@ def kotlin(doc):
         'import com.kinderman.sdo.domain.model.ItemEffectCondition',
         'import com.kinderman.sdo.domain.model.ItemEffectType',
         'import com.kinderman.sdo.domain.model.ItemPart', '',
-        'internal data class GemDefinition(val part: ItemPart, val effect: ItemEffect)',
+        'internal enum class GemTier { MINOR, MAJOR }',
+        'internal data class GemDefinition(val part: ItemPart, val tier: GemTier, val effect: ItemEffect)',
         'internal object GeneratedGemCatalog {',
         '    val entries = listOf(',
     ]
@@ -73,6 +75,7 @@ def kotlin(doc):
         lines += [
             '        GemDefinition(',
             f'            ItemPart({q(item["id"])}, {q(item["name"])}, "Gema", {item["creationCost"]}, {item["price"]}, effect = {q(e["description"])}),',
+            f'            GemTier.{item["tier"]},',
             f'            ItemEffect({q(item["id"])}, ItemEffectType.{e["type"]}, {e["value"]}, {q(e["target"])}, ItemEffectCondition.{e["condition"]}, {q(e["description"])}),',
             '        ),',
         ]
