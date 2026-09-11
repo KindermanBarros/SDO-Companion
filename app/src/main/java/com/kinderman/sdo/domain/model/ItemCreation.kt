@@ -194,7 +194,7 @@ fun Character.withValidInventoryStates(): Character {
         if (valid) item.withInventoryState(state) else item.withInventoryState(InventoryState.STORED)
     }
     val activeEquipmentIds = sanitized.asSequence()
-        .filterNot(InventoryItem::isBroken)
+        .filterNot { it.isBroken }
         .filter { it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED) }
         .mapTo(hashSetOf(), InventoryItem::id)
     val sanitizedRegions = bodyRegions.map { region ->
@@ -232,6 +232,26 @@ fun Character.damageInventoryItem(itemId: String, amount: Int = 1): Character {
         },
     )
         .synchronizeItemPowers()
+}
+
+val InventoryItem.salvageValueEstribos: Int
+    get() = ((purchasePrice ?: 0) / 2).coerceAtLeast(1)
+
+/** Recycles a destroyed item into the amount of Sucata defined by its creation cost. */
+fun Character.recycleBrokenItem(itemId: String): Character {
+    val broken = inventory.firstOrNull { it.id == itemId && it.isBroken } ?: return this
+    val recoveredValue = broken.salvageValueEstribos
+    val withoutBroken = removeInventoryItem(itemId)
+    return withoutBroken.addInventoryItem(
+        InventoryItem(
+            name = "Sucata recuperada de ${broken.name.ifBlank { "item quebrado" }}",
+            category = "Material",
+            quantity = 1,
+            load = 1,
+            purchasePrice = recoveredValue,
+            acquisitionSource = ItemAcquisitionSource.NARRATIVE,
+        ),
+    )
 }
 
 fun Character.synchronizeItemPowers(): Character {
@@ -298,7 +318,6 @@ data class BuiltItem(
         region = region,
         effect = listOfNotNull(
             "Categoria: $category",
-            "Preço de referência: ${price} E$".takeIf { price > 0 },
             effect.takeIf(String::isNotBlank),
         ).joinToString("\n"),
         pg = pg,
@@ -314,7 +333,7 @@ data class BuiltItem(
         dataVersion = CURRENT_ITEM_DATA_VERSION,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
         heritageCost = creationCost.takeIf { initialCreation },
-        purchasePrice = price.takeIf { !initialCreation },
+        purchasePrice = price,
     )
 }
 

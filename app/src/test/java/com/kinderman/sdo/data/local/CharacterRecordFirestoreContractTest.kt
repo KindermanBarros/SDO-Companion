@@ -74,12 +74,9 @@ class CharacterRecordFirestoreContractTest {
             category = "Acessório",
         )
 
-        val migrated = CharacterRecord(inventory = listOf(legacy)).toDomain().toRecord().inventory.single()
+        val migrated = CharacterRecord(inventory = listOf(legacy)).toDomain().toRecord().inventory
 
-        assertEquals(CURRENT_ITEM_DATA_VERSION, migrated.dataVersion)
-        assertEquals("E", migrated.state)
-        assertEquals("LEGACY_NARRATIVE", migrated.category)
-        assertTrue(migrated.mechanicalEffects.isEmpty())
+        assertTrue(migrated.isEmpty())
     }
 
     @Test

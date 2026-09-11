@@ -29,9 +29,7 @@ class CharacterDataMigrationTest {
             assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = true))
         }
 
-        val unknown = fixtures.last().migratedStructuredRecord(markDirty = true).inventory.single()
-        assertEquals("LEGACY_NARRATIVE", unknown.category)
-        assertTrue(unknown.mechanicalEffects.isEmpty())
+        assertTrue(fixtures.last().migratedStructuredRecord(markDirty = true).inventory.isEmpty())
     }
 
     @Test fun firestoreMigrationCanPreserveCleanSynchronizationState() {

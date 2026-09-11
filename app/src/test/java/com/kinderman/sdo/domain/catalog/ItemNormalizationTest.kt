@@ -18,6 +18,7 @@ import com.kinderman.sdo.domain.model.hasScrapAttackDisadvantage
 import com.kinderman.sdo.domain.model.scrapDamageDieCategoryPenalty
 import com.kinderman.sdo.domain.model.handsRequired
 import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.recycleBrokenItem
 import com.kinderman.sdo.domain.model.wieldedHandsUsed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -115,6 +116,20 @@ class ItemNormalizationTest {
         assertEquals(0, normalized.localProtection(normalized.bodyRegions[1]))
     }
 
+    @Test fun brokenItemRecyclesIntoScrapWorthHalfItsEstribosValue() {
+        val expensive = InventoryItem(
+            id = "broken", name = "Montante", category = "Arma", purchasePrice = 90,
+            durabilityCurrent = 0, durabilityMax = 6, itemCondition = ItemCondition.BROKEN,
+        )
+
+        val recycled = Character(inventory = listOf(expensive)).recycleBrokenItem(expensive.id)
+
+        assertFalse(recycled.inventory.any { it.id == expensive.id })
+        val scrap = recycled.inventory.single { it.name.startsWith("Sucata recuperada") }
+        assertEquals(45, scrap.purchasePrice)
+        assertEquals(1, scrap.quantity)
+    }
+
     @Test fun inventoryStatesEnforceQuickAccessAndBackpackCapacity() {
         val first = InventoryItem(id = "first", load = 1, state = "R", durabilityCurrent = 1, durabilityMax = 1)
         val second = InventoryItem(id = "second", load = 1, state = "R", durabilityCurrent = 1, durabilityMax = 1)
@@ -128,7 +143,7 @@ class ItemNormalizationTest {
 
         val container = InventoryItem(
             id = "bag", state = "E", category = "Recipiente de Carga", backpackCapacity = 5,
-            durabilityCurrent = 1, durabilityMax = 1,
+            catalogEntryId = "item.mochila_pequena", durabilityCurrent = 1, durabilityMax = 1,
         )
         val withBackpack = withoutBackpack.copy(inventory = withoutBackpack.inventory + container)
         assertEquals(InventoryState.BACKPACK, withBackpack.withItemInventoryState("third", InventoryState.BACKPACK)
@@ -186,6 +201,7 @@ class ItemNormalizationTest {
             state = "EQUIPPED",
             name = "Elmo de Ligas Comuns",
             effect = "descrição antiga sem campos mecânicos",
+            dataVersion = 0,
         )
 
         val migrated = Character(inventory = listOf(legacy)).withNormalizedInventory().inventory.single()
@@ -206,6 +222,7 @@ class ItemNormalizationTest {
             state = "WIELDED",
             name = "Arma personalizada",
             category = "Arma",
+            dataVersion = 0,
         )
 
         val character = Character(inventory = listOf(legacy)).withNormalizedInventory()
@@ -235,6 +252,7 @@ class ItemNormalizationTest {
             materialId = "madeira",
             modificationIds = listOf("afiada"),
             gemIds = listOf("gema_atributo_for"),
+            dataVersion = 3,
         )
 
         val migrated = Character(inventory = listOf(legacy)).withNormalizedInventory().inventory.single()

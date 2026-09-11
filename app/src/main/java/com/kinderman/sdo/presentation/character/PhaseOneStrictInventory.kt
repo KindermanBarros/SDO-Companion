@@ -53,6 +53,7 @@ import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.withItemInventoryState
 import com.kinderman.sdo.domain.model.withRemovedAbility
 import com.kinderman.sdo.domain.model.withAddedAsh
+import com.kinderman.sdo.domain.model.recycleBrokenItem
 import com.kinderman.sdo.domain.model.AshPurity
 import com.kinderman.sdo.domain.model.heritageCostPerDose
 import com.kinderman.sdo.domain.model.handsRequired
@@ -137,6 +138,13 @@ internal fun PhaseOneStrictInventorySection(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                 )
+                if (item.isBroken) {
+                    Text("QUEBRADO // sem efeitos mecânicos e sem reparo normal", color = MaterialTheme.colorScheme.error)
+                    TextButton(
+                        onClick = { onChange(character.recycleBrokenItem(item.id)) },
+                        enabled = enabled,
+                    ) { Text("RECICLAR") }
+                }
                 if (item.linkedAshId.isNotBlank()) {
                     IntegerField("Doses", item.quantity, enabled) { doses ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = doses.coerceAtLeast(0)))))
@@ -364,7 +372,6 @@ private fun StrictItemBuilderDialog(
     val customName = draft.customName
     val quality = draft.quality
     val gems: List<ItemPart> = ItemCreationRules.gemComponents.filter { it.id in draft.gemIds }
-    val manualPrice = draft.manualPrice
     val commonName = draft.commonName
     val commonEffect = draft.commonEffect
     val commonLoad = draft.commonLoad
@@ -388,10 +395,8 @@ private fun StrictItemBuilderDialog(
         customName = customName,
         quality = quality,
         components = gems,
-        priceOverride = manualPrice.toIntOrNull().takeIf { !initialCreation },
     )
     val allowedByBudget = remainingHeritage == null || (built.creationCost != null && built.creationCost <= remainingHeritage)
-    val requiresPrice = !initialCreation && built.creationCost == null && manualPrice.isBlank()
     val commonEffects = buildList {
         if (draft.commonPg != 0) add(ItemEffect("custom:pg", ItemEffectType.PG, draft.commonPg, condition = ItemEffectCondition.EQUIPPED))
         if (draft.commonPl != 0) add(ItemEffect("custom:pl", ItemEffectType.PL, draft.commonPl, target = draft.commonRegion, condition = ItemEffectCondition.EQUIPPED))
@@ -471,7 +476,6 @@ private fun StrictItemBuilderDialog(
                         { IntegerField("Ataque", draft.commonAttack, true, it) { value -> onDraftChange(draft.copy(commonAttack = value)) } },
                         { IntegerField("Dano", draft.commonDamage, true, it) { value -> onDraftChange(draft.copy(commonDamage = value)) } },
                     )
-                    if (!initialCreation) HudTextField("Preço em E$ (opcional)", manualPrice) { onDraftChange(draft.copy(manualPrice = it.filter(Char::isDigit))) }
                 }
                 if (step == 2 && category != "Item") {
                     HudTextField("Nome personalizado", customName) { onDraftChange(draft.copy(customName = it)) }
@@ -538,22 +542,18 @@ private fun StrictItemBuilderDialog(
                 if (weapon) Text("EMPUNHADURA // ${built.toInventoryItem().handsRequired()} MÃO(S)")
                 if (modifications.isNotEmpty()) Text("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (!initialCreation && category != "Item") {
-                    HudTextField("Preço final em E$", manualPrice) { onDraftChange(draft.copy(manualPrice = it.filter(Char::isDigit))) }
-                }
                 if (category != "Item") {
-                    Text("CUSTO // ${built.creationCost ?: "#"} PH // PREÇO ${built.price} E$", color = MaterialTheme.colorScheme.primary)
+                    if (initialCreation) Text("CUSTO // ${built.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary)
                     Text("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
                     Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
-                    if (requiresPrice) Text("Este material exige preço manual.", color = MaterialTheme.colorScheme.error)
                 }
             }
             }
         },
         confirmButton = {
             TextButton(
-                enabled = step < 7 || if (category == "Item") commonName.isNotBlank() else allowedByBudget && !requiresPrice,
+                enabled = step < 7 || if (category == "Item") commonName.isNotBlank() else allowedByBudget,
                 onClick = { if (step < 7) onDraftChange(draft.copy(step = step + 1)) else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
             ) { Text(if (step < 7) "CONTINUAR" else "CRIAR ITEM") }
         },
