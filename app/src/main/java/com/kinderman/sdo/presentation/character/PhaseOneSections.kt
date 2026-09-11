@@ -85,6 +85,7 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
+            attributeLimits = character.attributes.associate { it.acronym to it.value.coerceIn(0, 5) },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
                 if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
                 else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
@@ -101,6 +102,7 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
+            attributeLimits = character.attributes.associate { it.acronym to it.value.coerceIn(0, 5) },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
                 if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
                 else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
@@ -117,6 +119,7 @@ internal fun PhaseOneKnowledgeSection(
             enabled = enabled,
             totalValue = character::acquiredKnowledgeValue,
             attributeOptions = character.attributes.map { it.acronym to it.name },
+            attributeLimits = character.attributes.associate { it.acronym to it.value.coerceIn(0, 5) },
             onLevelChange = { knowledge, level -> if (!lockLevels) {
                 if (knowledge.nextMilestone(level) != null) pendingMilestone = knowledge to knowledge.nextMilestone(level)!!
                 else onChange(character.withKnowledgeLevel(knowledge.id, level, catalog))
@@ -178,6 +181,7 @@ private fun PhaseOneKnowledgeList(
     enabled: Boolean,
     totalValue: (String) -> Int,
     attributeOptions: List<Pair<String, String>>,
+    attributeLimits: Map<String, Int>,
     onLevelChange: (SpecialKnowledge, Int) -> Unit,
     canAddEntry: Boolean,
     allowEntryChanges: Boolean,
@@ -210,10 +214,11 @@ private fun PhaseOneKnowledgeList(
                 ?: attributeOptions.firstOrNull()?.first.orEmpty()
             ChoiceField("Atributo", selectedAttribute, attributeOptions.map { it.first }, enabled,
                 display = { acronym -> attributeOptions.firstOrNull { option -> option.first == acronym }?.let { option -> "${option.first} — ${option.second}" }.orEmpty() }) { value ->
-                onValues(values.replace(index, knowledge.copy(attribute = value)))
+                onValues(values.replace(index, knowledge.copy(attribute = value, value = knowledge.value.coerceAtMost(attributeLimits[value] ?: 0))))
             }
+            val valueLimit = attributeLimits[selectedAttribute] ?: 0
             TwoFields(
-                { IntegerField("Valor (0–5)", knowledge.value, enabled && initialLevel == null, it) { value -> onLevelChange(knowledge, value) } },
+                { ChoiceField("Valor (máx. $valueLimit)", knowledge.value.coerceIn(0, valueLimit), (0..valueLimit).toList(), enabled && initialLevel == null, it) { value -> onLevelChange(knowledge, value) } },
                 { IntegerField("Modificador", knowledge.adjustment, enabled, it) { value ->
                     onValues(values.replace(index, knowledge.copy(adjustment = value)))
                 } },
