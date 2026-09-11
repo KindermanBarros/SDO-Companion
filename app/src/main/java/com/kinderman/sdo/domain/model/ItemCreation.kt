@@ -95,6 +95,9 @@ val Character.hasScrapAttackDisadvantage: Boolean get() = inventory.any {
     it.inventoryState == InventoryState.WIELDED && it.isScrap && it.category.contains("arma", true)
 }
 
+/** Number of damage-die categories lost by the active weapon because it is Scrap. */
+val Character.scrapDamageDieCategoryPenalty: Int get() = if (hasScrapAttackDisadvantage) 1 else 0
+
 data class EquipmentEffectAudit(
     val itemId: String,
     val itemName: String,
