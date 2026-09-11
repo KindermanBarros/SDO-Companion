@@ -219,10 +219,6 @@ enum class ProgressionRewardType { RESOURCE, ATTRIBUTE, KNOWLEDGE, NEW_KNOWLEDGE
 
 data class ProgressionReward(
     val level: Int = 1,
-    val creationStatus: CharacterCreationStatus = CharacterCreationStatus.DRAFT,
-    val creationStep: Int = 1,
-    val creationCompletedAt: Long? = null,
-    val creationRulesVersion: Int = 1,
     val type: ProgressionRewardType = ProgressionRewardType.RESOURCE,
     val targetId: String = "",
     val catalogEntryId: String = "",
@@ -251,7 +247,6 @@ data class CalculatedValue(
     val adjustment: Int = 0,
     val modifiers: List<ValueModifier> = emptyList(),
 ) {
-    val isInCreation: Boolean get() = creationStatus == CharacterCreationStatus.DRAFT
     val total: Int get() = base + adjustment + modifiers.sumOf { it.value }
 }
 
@@ -269,6 +264,10 @@ data class Character(
     val sex: String = "",
     val size: String = "",
     val level: Int = 1,
+    val creationStatus: CharacterCreationStatus = CharacterCreationStatus.DRAFT,
+    val creationStep: Int = 1,
+    val creationCompletedAt: Long? = null,
+    val creationRulesVersion: Int = 1,
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -314,6 +313,7 @@ data class Character(
     val deleted: Boolean = false,
     val appliedDeliveryIds: List<String> = emptyList(),
 ) {
+    val isInCreation: Boolean get() = creationStatus == CharacterCreationStatus.DRAFT
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.state == "G" }.sumOf { it.effectiveLoad() }
     val maximumLoad: Int get() = 2 + attributeValue("FOR") + containerCapacity
