@@ -7,3 +7,7 @@ app/google-services.json
 *.keystore
 /.idea/
 
+/firebase/node_modules/
+/firebase/package-lock.json
+/.gradle-user-home/
+/.kotlin/sessions/kotlin-compiler-8239411718982181713.salive

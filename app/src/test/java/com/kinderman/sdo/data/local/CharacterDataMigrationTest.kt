@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.local
 
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
+import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.InventoryItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -23,6 +24,7 @@ class CharacterDataMigrationTest {
         fixtures.forEach { fixture ->
             val migrated = fixture.migratedStructuredRecord(markDirty = true)
             assertEquals(CURRENT_ITEM_DATA_VERSION, migrated.itemSchemaVersion)
+            assertEquals(CANONICAL_SCHEMA_VERSION, migrated.canonicalSchemaVersion)
             assertEquals(CURRENT_CREATION_RULES_VERSION, migrated.creationRulesVersion)
             assertTrue(migrated.dirty)
             assertFalse(migrated.requiresStructuredMigration())
@@ -30,6 +32,7 @@ class CharacterDataMigrationTest {
         }
 
         assertTrue(fixtures.last().migratedStructuredRecord(markDirty = true).inventory.isEmpty())
+        assertTrue(fixtures.last().migratedStructuredRecord(markDirty = true).migrationReviewPayload.isNotBlank())
     }
 
     @Test fun firestoreMigrationCanPreserveCleanSynchronizationState() {
@@ -38,5 +41,19 @@ class CharacterDataMigrationTest {
 
         assertFalse(migrated.dirty)
         assertEquals(CURRENT_ITEM_DATA_VERSION, migrated.itemSchemaVersion)
+    }
+
+    @Test fun ambiguousMechanicsBecomeIdempotentReviewRecords() {
+        val legacy = CharacterRecord(
+            id = "legacy", canonicalSchemaVersion = 0,
+            conditions = listOf(com.kinderman.sdo.domain.model.ConditionEffect(id = "condition", duration = "até descansar")),
+        )
+        val migrated = legacy.migratedStructuredRecord(markDirty = true)
+        val reloaded = migrated.toDomain()
+
+        assertEquals(1, reloaded.migrationReviews.size)
+        assertEquals("até descansar", reloaded.migrationReviews.single().legacyValue)
+        assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = true))
+        assertEquals(reloaded.migrationReviews, reloaded.toRecord().toDomain().migrationReviews)
     }
 }

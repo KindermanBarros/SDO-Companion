@@ -171,7 +171,8 @@ class CharacterRecordFirestoreContractTest {
         assertEquals(9, character.protectionAdjustments.getValue("Geral"))
         assertEquals(0, character.protectionAdjustments.getValue("Esquiva"))
         assertEquals(23, character.protectionTotal("Esquiva"))
-        assertEquals(character.calculatedProtections(), character.toRecord().protections)
+        assertTrue(character.toRecord().protections.isEmpty())
+        assertEquals(character.calculatedProtections(), character.toRecord().toDomain().calculatedProtections())
     }
 
     @Test

@@ -69,7 +69,13 @@ enum class AshSource(val label: String) {
 }
 
 enum class AshPurity(val label: String, val dosesPerLoad: Int) {
-    RAW("Bruta", 1), REFINED("Refinada", 2), PURE("Pura", 3),
+    RAW("Bruta", 1), REFINED("Refinada", 2), PURE("Pura", 3);
+
+    companion object {
+        fun fromName(value: String): AshPurity = entries.firstOrNull {
+            it.name.equals(value, true) || it.label.equals(value, true)
+        } ?: RAW
+    }
 }
 
 val AshPurity.heritageCostPerDose: Int
@@ -96,8 +102,7 @@ data class AbilityDuplicateGroup(val key: String, val type: String, val entries:
 fun normalizeAbilityName(value: String): String = Normalizer.normalize(value.trim(), Normalizer.Form.NFD)
     .replace(Regex("\\p{M}+"), "")
     .lowercase()
-    .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
-    .trim()
+    .replace(Regex("[^\\p{L}\\p{N}]+"), "")
 
 fun InventoryItem.effectiveLoad(): Int = if (linkedAshId.isBlank()) load else {
     if (quantity <= 0) 0 else ceil(quantity.toDouble() / ashPurity.dosesPerLoad).toInt()

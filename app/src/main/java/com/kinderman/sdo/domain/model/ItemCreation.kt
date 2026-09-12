@@ -1,5 +1,7 @@
 package com.kinderman.sdo.domain.model
 
+import com.google.firebase.firestore.PropertyName
+
 data class ItemPart(
     val id: String,
     val name: String,
@@ -60,8 +62,8 @@ enum class ItemEffectType {
 enum class ItemEffectCondition { EQUIPPED, WIELDED }
 
 data class ItemEffect(
-    val id: String,
-    val type: ItemEffectType,
+    val id: String = "",
+    val type: ItemEffectType = ItemEffectType.RULE,
     val value: Int = 0,
     val target: String = "",
     val condition: ItemEffectCondition = ItemEffectCondition.WIELDED,
@@ -279,13 +281,13 @@ enum class ItemQuality(
     val creationAdjustment: Int,
     val priceMultiplier: Double,
 ) {
-    MUNDANE("Mundana", -1, 0.25),
-    COMMON("Comum", 0, 1.0),
-    IMPROVED("Aprimorada", 3, 1.5),
-    ICONIC("Icônica", 5, 2.0),
-    MASTERPIECE("Obra-Prima", 8, 5.0),
-    ARTIFACT("Artefato", 15, 100.0),
-    ANCIENT("Anciã", 25, 10_000.0),
+    @PropertyName("Mundana") MUNDANE("Mundana", -1, 0.25),
+    @PropertyName("Comum") COMMON("Comum", 0, 1.0),
+    @PropertyName("Aprimorada") IMPROVED("Aprimorada", 3, 1.5),
+    @PropertyName("Icônica") ICONIC("Icônica", 5, 2.0),
+    @PropertyName("Obra-Prima") MASTERPIECE("Obra-Prima", 8, 5.0),
+    @PropertyName("Artefato") ARTIFACT("Artefato", 15, 100.0),
+    @PropertyName("Anciã") ANCIENT("Anciã", 25, 10_000.0),
 }
 
 data class BuiltItem(

@@ -336,18 +336,30 @@ class AppViewModel(
             try {
                 val failures = mutableListOf<Pair<String, Throwable>>()
                 runCatching { campaignRepository.sync(session) }
-                    .onFailure { failures += "campanhas" to it }
+                    .onFailure {
+                        android.util.Log.e("SDO_SYNC", "campaignRepository.sync failed", it)
+                        failures += "campanhas" to it
+                    }
                 // Delivery acceptance claims and applies remote content atomically before the
                 // general character sync can upload an offline draft of the same sheet.
                 runCatching { operationsRepository.sync(session, manageableCampaignIds.value) }
-                    .onFailure { failures += "operações" to it }
+                    .onFailure {
+                        android.util.Log.e("SDO_SYNC", "operationsRepository.sync failed", it)
+                        failures += "operações" to it
+                    }
                 // Personal sync always runs, even if campaign authorization or queries fail.
                 // Keeping it after campaigns also lets a freshly accepted invite create its
                 // membership before the selected character is linked remotely.
                 runCatching { _conflicts.value = repository.sync(session) }
-                    .onFailure { failures += "fichas pessoais" to it }
+                    .onFailure {
+                        android.util.Log.e("SDO_SYNC", "characterRepository.sync failed", it)
+                        failures += "fichas pessoais" to it
+                    }
                 runCatching { ownerRepository.sync(session) }
-                    .onFailure { failures += "administração" to it }
+                    .onFailure {
+                        android.util.Log.e("SDO_SYNC", "ownerRepository.sync failed", it)
+                        failures += "administração" to it
+                    }
                 if (failures.isNotEmpty()) _message.value = syncFailureMessage(failures)
             } catch (cancelled: CancellationException) {
                 throw cancelled

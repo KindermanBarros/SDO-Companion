@@ -24,6 +24,8 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     }
 
     changed("ownerId", "Proprietário", local.ownerId, remote.ownerId, ::textSummary)
+    changed("canonicalSchemaVersion", "Versão do contrato", local.canonicalSchemaVersion, remote.canonicalSchemaVersion)
+    changed("migrationReviews", "Pendências de migração", local.migrationReviews, remote.migrationReviews) { "${it.size} pendência(s)" }
     changed("campaignId", "Campanha", local.campaignId, remote.campaignId, ::textSummary)
     changed("name", "Nome", local.name, remote.name, ::textSummary)
     changed("race", "Raça", local.race, remote.race, ::textSummary)
@@ -87,6 +89,8 @@ fun mergeCharacterConflict(
 
     val lock = selected("lock", local.lockSnapshot(), remote.lockSnapshot())
     return local.copy(
+        canonicalSchemaVersion = selected("canonicalSchemaVersion", local.canonicalSchemaVersion, remote.canonicalSchemaVersion),
+        migrationReviews = selected("migrationReviews", local.migrationReviews, remote.migrationReviews),
         ownerId = selected("ownerId", local.ownerId, remote.ownerId),
         campaignId = selected("campaignId", local.campaignId, remote.campaignId),
         name = selected("name", local.name, remote.name),

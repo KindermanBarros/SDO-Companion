@@ -10,6 +10,7 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterCreationStatus
 import com.kinderman.sdo.domain.model.ConditionEffect
+import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -19,6 +20,7 @@ import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.ProgressionRecord
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.NeedsReview
 import com.kinderman.sdo.domain.model.defaultAttributes
 import com.kinderman.sdo.domain.model.defaultBodyRegions
 import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
@@ -48,6 +50,8 @@ data class CharacterRecord(
     val creationCompletedAt: Long? = null,
     val creationRulesVersion: Int = 1,
     val itemSchemaVersion: Int = 0,
+    val canonicalSchemaVersion: Int = 0,
+    val migrationReviewPayload: String = "",
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -122,6 +126,8 @@ fun CharacterRecord.toDomain() = Character(
     creationCompletedAt = creationCompletedAt,
     creationRulesVersion = creationRulesVersion,
     itemSchemaVersion = com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION,
+    canonicalSchemaVersion = canonicalSchemaVersion,
+    migrationReviews = MigrationReviewCodec.decode(migrationReviewPayload),
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -200,21 +206,25 @@ fun Character.toRecord() = CharacterRecord(
     creationCompletedAt = creationCompletedAt,
     creationRulesVersion = creationRulesVersion,
     itemSchemaVersion = itemSchemaVersion,
+    canonicalSchemaVersion = canonicalSchemaVersion,
+    migrationReviewPayload = MigrationReviewCodec.encode(migrationReviews),
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
     progressionEnergyBonus = progressionEnergyBonus,
     progressionHistory = progressionHistory,
     money = money,
-    life = life.copy(maximum = lifeMaximum),
-    sanity = sanity.copy(maximum = sanityMaximum),
-    arcane = arcane.copy(maximum = arcaneMaximum),
-    energy = energy.copy(maximum = energyMaximum),
-    destiny = destiny,
+    // Maximums are projections of the canonical formulas, never persisted authority.
+    life = life.copy(maximum = 0),
+    sanity = sanity.copy(maximum = 0),
+    arcane = arcane.copy(maximum = 0),
+    energy = energy.copy(maximum = 0),
+    destiny = destiny.copy(maximum = 0),
     exhaustion = exhaustion,
     corruption = corruption,
     attributes = attributes,
-    protections = calculatedProtections(),
+    // Protection totals are derived from attributes, equipment and adjustments on read.
+    protections = emptyMap(),
     protectionAdjustments = protectionAdjustments,
     positiveTraits = positiveTraits,
     negativeTraits = negativeTraits,
@@ -249,6 +259,24 @@ fun Character.toRecord() = CharacterRecord(
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
 )
+
+private object MigrationReviewCodec {
+    private val encoder = java.util.Base64.getUrlEncoder().withoutPadding()
+    private val decoder = java.util.Base64.getUrlDecoder()
+
+    fun encode(reviews: List<NeedsReview>): String = reviews.joinToString(".") { review ->
+        listOf(review.field, review.legacyValue, review.reason).joinToString("~") {
+            encoder.encodeToString(it.toByteArray(Charsets.UTF_8))
+        }
+    }
+
+    fun decode(payload: String): List<NeedsReview> = payload.split('.').filter(String::isNotBlank).mapNotNull { row ->
+        val fields = row.split('~').mapNotNull { encoded ->
+            runCatching { decoder.decode(encoded).toString(Charsets.UTF_8) }.getOrNull()
+        }
+        fields.takeIf { it.size == 3 }?.let { NeedsReview(it[0], it[1], it[2]) }
+    }
+}
 
 private fun resolveProtectionAdjustments(
     attributes: List<AttributeValue>,

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -9,10 +11,33 @@ if (file("google-services.json").exists() || rootProject.file("google-services.j
 }
 
 android {
-    val signingStoreFile = providers.environmentVariable("SDO_KEYSTORE_FILE").orNull
-    val signingStorePassword = providers.environmentVariable("SDO_KEYSTORE_PASSWORD").orNull
-    val signingKeyAlias = providers.environmentVariable("SDO_KEY_ALIAS").orNull
-    val signingKeyPassword = providers.environmentVariable("SDO_KEY_PASSWORD").orNull
+    val localProperties = Properties().apply {
+        val localFile = rootProject.file("local.properties")
+        if (localFile.exists()) {
+            localFile.inputStream().use { load(it) }
+        }
+    }
+
+    fun propertyOrEnv(key: String, altKey: String? = null): String? =
+        providers.environmentVariable(key).orNull
+            ?: providers.gradleProperty(key).orNull
+            ?: localProperties.getProperty(key)
+            ?: altKey?.let {
+                providers.environmentVariable(it).orNull
+                    ?: providers.gradleProperty(it).orNull
+                    ?: localProperties.getProperty(it)
+            }
+
+    val signingStorePath = propertyOrEnv("SDO_KEYSTORE_FILE", "KEYSTORE_FILE")
+    val resolvedStoreFile = signingStorePath?.let { path ->
+        val candidate = file(path)
+        if (candidate.isFile) candidate
+        else rootProject.file(path).takeIf { it.isFile }
+    } ?: rootProject.file("firebase/sdo-companion-release.jks").takeIf { it.isFile }
+
+    val signingStorePassword = propertyOrEnv("SDO_KEYSTORE_PASSWORD", "KEYSTORE_PASSWORD")
+    val signingKeyAlias = propertyOrEnv("SDO_KEY_ALIAS", "KEY_ALIAS")
+    val signingKeyPassword = propertyOrEnv("SDO_KEY_PASSWORD", "KEY_PASSWORD")
 
     namespace = "com.kinderman.sdo"
     compileSdk = 37
@@ -34,13 +59,13 @@ android {
 
     signingConfigs {
         if (
-            signingStoreFile != null &&
+            resolvedStoreFile != null &&
             signingStorePassword != null &&
             signingKeyAlias != null &&
             signingKeyPassword != null
         ) {
             create("release") {
-                storeFile = file(signingStoreFile)
+                storeFile = resolvedStoreFile
                 storePassword = signingStorePassword
                 keyAlias = signingKeyAlias
                 keyPassword = signingKeyPassword

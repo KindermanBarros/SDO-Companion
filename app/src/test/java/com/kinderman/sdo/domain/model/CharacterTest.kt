@@ -126,22 +126,26 @@ class CharacterTest {
         assertEquals("Registro Pessoal 5", nextPersonalNoteTitle(notes))
     }
 
-    @Test fun aSingleTextCostDeductsEveryFixedResourceWithoutUsageCounters() {
+    @Test fun structuredResourceCommandDeductsOneExplicitResource() {
         val character = Character(
-            life = ResourceValue(current = 10),
             arcane = ResourceValue(current = 8, adjustment = 10),
         )
 
-        val paid = character.payFixedAbilityCosts("2 PM + 1 PV")
+        val paid = character.applySessionCommand(
+            SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ARCANE, amount = -2),
+            actorId = "actor",
+        ).character
 
         assertEquals(6, paid.arcane.current)
-        assertEquals(9, paid.life.current)
     }
 
-    @Test(expected = IllegalArgumentException::class) fun variableDiceCostsRemainUnderTableControl() {
-        val character = Character(life = ResourceValue(current = 10))
+    @Test(expected = IllegalArgumentException::class) fun structuredResourceCommandIsAtomicWhenBalanceIsInsufficient() {
+        val character = Character(arcane = ResourceValue(current = 1, adjustment = 10))
 
-        character.payFixedAbilityCosts("1d6 HP")
+        character.applySessionCommand(
+            SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ARCANE, amount = -2),
+            actorId = "actor",
+        )
     }
 
     @Test fun protectionsUseCanonicalFormulasAndManualAdjustments() {

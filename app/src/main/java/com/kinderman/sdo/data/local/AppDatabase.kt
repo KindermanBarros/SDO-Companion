@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 23,
+    version = 24,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -312,6 +312,19 @@ abstract class AppDatabase : RoomDatabase() {
                 // Forces the content-aware converter to rebuild typed durability, quality,
                 // inventory states and canonical container capacity on the first read.
                 db.execSQL("UPDATE characters SET itemSchemaVersion = 0")
+            }
+        }
+
+        /**
+         * Requirement: persist the canonical contract version and human-review queue.
+         * Legacy handling: version zero triggers the pure, idempotent content migration.
+         * Validation: repositories only mark the current version after conversion.
+         * Rollback: the two additive columns can be ignored safely by version 23 code.
+         */
+        val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE characters ADD COLUMN canonicalSchemaVersion INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE characters ADD COLUMN migrationReviewPayload TEXT NOT NULL DEFAULT ''")
             }
         }
     }
