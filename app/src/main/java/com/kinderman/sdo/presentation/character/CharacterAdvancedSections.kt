@@ -60,6 +60,7 @@ import com.kinderman.sdo.domain.model.Source
 import com.kinderman.sdo.domain.model.NarrativeSourceId
 import com.kinderman.sdo.domain.model.canonicalBodyState
 import com.kinderman.sdo.domain.model.withCanonicalBodyState
+import com.kinderman.sdo.domain.model.withOrganImplant
 import com.kinderman.sdo.domain.model.withCanonicalConditions
 import com.kinderman.sdo.domain.model.toCanonicalInstance
 import com.kinderman.sdo.domain.model.formattedAbilityCost
@@ -299,7 +300,7 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
                 )
                 ChoiceField("Implante", organ.implantInstanceId?.value.orEmpty(), implantOptions, enabled, display = { id ->
                     character.inventory.firstOrNull { it.id == id }?.name ?: "Nenhum"
-                }) { id -> updateOrgan(organ.copy(implantInstanceId = id.takeIf(String::isNotBlank)?.let(::ItemInstanceId))) }
+                }) { id -> onChange(character.withOrganImplant(index, id.takeIf(String::isNotBlank))) }
             }
             if (index != body.organs.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }

@@ -18,6 +18,7 @@ import com.kinderman.sdo.domain.model.ChoiceKind
 import com.kinderman.sdo.domain.model.EntityId
 import com.kinderman.sdo.domain.model.NarrativeSourceId
 import com.kinderman.sdo.domain.model.SourceRef
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
 
 object LevelProgression {
     const val MIN_LEVEL = 1
@@ -38,7 +39,7 @@ object LevelProgression {
             require(rewards.count { it.level == level && it.type == ProgressionRewardType.ATTRIBUTE } == (if (level % 2 == 0) 1 + if (level % 5 == 0) 1 else 0 else if (level % 5 == 0) 1 else 0))
             if (level % 5 == 0) {
                 require(rewards.count { it.level == level && it.type == ProgressionRewardType.NEW_KNOWLEDGE } == 1)
-                require(rewards.count { it.level == level && it.type == ProgressionRewardType.PATH_POWER } == 1)
+                require(rewards.count { it.level == level && it.type in setOf(ProgressionRewardType.PATH_POWER, ProgressionRewardType.PATH_ENHANCEMENT) } == 1)
             }
         }
         require(rewards.all { it.stableId.isNotBlank() }) { "Toda recompensa precisa de um vínculo por ID." }
@@ -101,6 +102,15 @@ private fun Character.applyReward(reward: ProgressionReward, catalog: List<Catal
         require(powers.none { it.catalogEntryId == entry.id })
         copy(powers = powers + entry.toStructuredPower(PowerSourceType.PATH, pathName))
     }
+    ProgressionRewardType.PATH_ENHANCEMENT -> {
+        val power = powers.single { it.id == reward.targetId && it.sourceType == PowerSourceType.PATH }
+        require(power.enhancements.isNotBlank() && !power.enhancements.equals("Sem aprimoramento publicado", true))
+        val enhancedEffect = power.effect + "\n\nAPRIMORAMENTO CONCEDIDO:\n" + power.enhancements
+        copy(
+            powers = powers.map { if (it.id == power.id) it.copy(effect = enhancedEffect, enhancements = "") else it },
+            abilities = allCanonicalAbilitiesSafely().map { if (it.id == power.id) it.copy(effect = enhancedEffect, revision = it.revision + 1) else it },
+        )
+    }
 }
 
 private val knowledgeKinds = setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE)
@@ -108,6 +118,7 @@ private val knowledgeKinds = setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.A
 private val ProgressionReward.stableId: String
     get() = when (type) {
         ProgressionRewardType.NEW_KNOWLEDGE, ProgressionRewardType.PATH_POWER -> catalogEntryId
+        ProgressionRewardType.PATH_ENHANCEMENT -> targetId
         else -> targetId
     }
 

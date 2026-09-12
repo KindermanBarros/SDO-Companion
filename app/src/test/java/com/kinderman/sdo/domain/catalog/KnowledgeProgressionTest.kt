@@ -46,6 +46,29 @@ class KnowledgeProgressionTest {
         assertTrue(cancelled.learnedKnowledges.single().milestoneRewards.isEmpty())
         assertTrue(cancelled.powers.isEmpty())
     }
+
+    @Test fun milestoneKindsAreRestrictedByKnowledgeCategory() {
+        val acquired = SpecialKnowledge(id = "acquired", name = "Música", catalogEntryId = knowledgeEntry.id)
+        val arcaneEntry = CatalogEntry("knowledge.arcane", CatalogKind.ARCANE_KNOWLEDGE, "Música", "Arcano", "")
+        val magic = CatalogEntry("magic.music", CatalogKind.MAGIC, "Canção", "", "", sourceKnowledge = "Música")
+        val rune = CatalogEntry("rune.music", CatalogKind.RUNE, "Marca", "", "", sourceKnowledge = "Música")
+        val catalog = listOf(knowledgeEntry, arcaneEntry, rewardThree, magic, rune)
+
+        assertEquals(setOf(CatalogKind.POWER), eligibleMilestoneRewards(acquired, catalog).map { it.kind }.toSet())
+        assertEquals(setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE),
+            eligibleMilestoneRewards(acquired.copy(catalogEntryId = arcaneEntry.id), catalog).map { it.kind }.toSet())
+    }
+
+    @Test fun milestoneCanCreateAFreeSpecializationInTheSameCategory() {
+        val knowledge = SpecialKnowledge(id = "music", name = "Música", catalogEntryId = knowledgeEntry.id, attribute = "CAR", value = 2,
+            pendingMilestoneLevels = listOf(3), pendingTargetLevel = 3)
+        val result = Character(attributes = listOf(AttributeValue("Carisma", "CAR", 5)), learnedKnowledges = listOf(knowledge))
+            .resolveKnowledgeSpecialization("music", "Composição", listOf(knowledgeEntry))
+        val specialization = result.learnedKnowledges.single { it.specializationParentId == "music" }
+        assertEquals(1, specialization.value)
+        assertEquals(KnowledgeMilestoneRewardType.SPECIALIZATION, result.learnedKnowledges.first().milestoneRewards.single().type)
+        assertEquals(3, result.learnedKnowledges.first().value)
+    }
     @Test fun knowledgeLevelCannotExceedItsPermanentAttribute() {
         val music = SpecialKnowledge(id = "music", name = "Música", attribute = "CAR")
         val character = Character(

@@ -15,6 +15,10 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CharacterCreationTest {
+    @Test fun `new character starts with one of five destiny`() {
+        assertEquals(1, Character().destiny.current)
+        assertEquals(5, Character().destiny.maximum)
+    }
     @Test fun `racial attribute bonus does not spend one of the ten creation points`() {
         val character = Character(raceAttribute = "CAR", attributes = Character().attributes.map {
             it.copy(value = when (it.acronym) { "CAR", "FOR" -> 5; else -> 0 })

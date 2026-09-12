@@ -32,9 +32,11 @@ import com.kinderman.sdo.domain.catalog.withKnowledgeLevel
 import com.kinderman.sdo.domain.catalog.withKnowledgeMilestoneReward
 import com.kinderman.sdo.domain.catalog.requestKnowledgeLevel
 import com.kinderman.sdo.domain.catalog.resolveKnowledgeMilestone
+import com.kinderman.sdo.domain.catalog.resolveKnowledgeSpecialization
 import com.kinderman.sdo.domain.catalog.cancelKnowledgeLevelRequest
 import com.kinderman.sdo.domain.catalog.eligibleMilestoneRewards
 import com.kinderman.sdo.domain.catalog.toMysticAbility
+import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
@@ -80,6 +82,8 @@ internal fun PhaseOneKnowledgeSection(
     lockLevels: Boolean = false,
     allowEntryChanges: Boolean = true,
 ) {
+    var specializationName by rememberSaveable { mutableStateOf("") }
+    var creatingSpecialization by rememberSaveable { mutableStateOf(false) }
     val pendingKnowledge = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
         .firstOrNull { it.pendingMilestoneLevels.isNotEmpty() }
     val totalEntries = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
@@ -102,6 +106,10 @@ internal fun PhaseOneKnowledgeSection(
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
             creationMode = character.isInCreation,
+            maximumLevel = { knowledge ->
+                val remaining = (CharacterCreation.KNOWLEDGE_POINTS - CharacterCreation.knowledgePointsSpent(character)).coerceAtLeast(0)
+                minOf(5, knowledge.value + remaining)
+            },
         ) { onChange(character.copy(learnedKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Conhecimentos arcanos",
@@ -118,6 +126,10 @@ internal fun PhaseOneKnowledgeSection(
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
             creationMode = character.isInCreation,
+            maximumLevel = { knowledge ->
+                val remaining = (CharacterCreation.KNOWLEDGE_POINTS - CharacterCreation.knowledgePointsSpent(character)).coerceAtLeast(0)
+                minOf(5, knowledge.value + remaining)
+            },
         ) { onChange(character.copy(arcaneKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Técnicas de batalha",
@@ -134,18 +146,38 @@ internal fun PhaseOneKnowledgeSection(
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
             creationMode = character.isInCreation,
+            maximumLevel = { knowledge ->
+                val remaining = (CharacterCreation.KNOWLEDGE_POINTS - CharacterCreation.knowledgePointsSpent(character)).coerceAtLeast(0)
+                minOf(5, knowledge.value + remaining)
+            },
         ) { onChange(character.copy(battleTechniques = it)) }
     }
     pendingKnowledge?.let { knowledge ->
         val level = knowledge.pendingMilestoneLevels.first()
         val rewards = eligibleMilestoneRewards(knowledge, catalog)
-        CatalogPickerDialog(
+        if (!creatingSpecialization) CatalogPickerDialog(
             title = "RECOMPENSA DE DOMÍNIO // NÍVEL $level",
             entries = rewards,
             onDismiss = { onChange(character.cancelKnowledgeLevelRequest(knowledge.id)) },
+            extraActionLabel = "+ ESPECIALIZAÇÃO",
+            onExtraAction = { creatingSpecialization = true },
             onSelect = { reward ->
                 onChange(character.resolveKnowledgeMilestone(knowledge.id, reward, catalog))
             },
+        )
+        if (creatingSpecialization) AlertDialog(
+            onDismissRequest = { creatingSpecialization = false; specializationName = "" },
+            title = { Text("CONHECIMENTO ESPECIALIZADO // NÍVEL $level") },
+            text = { HudTextField("Nome da especialização", specializationName) { specializationName = it } },
+            confirmButton = { TextButton(
+                enabled = specializationName.isNotBlank(),
+                onClick = {
+                    onChange(character.resolveKnowledgeSpecialization(knowledge.id, specializationName, catalog))
+                    creatingSpecialization = false
+                    specializationName = ""
+                },
+            ) { Text("CRIAR") } },
+            dismissButton = { TextButton(onClick = { creatingSpecialization = false; specializationName = "" }) { Text("CANCELAR") } },
         )
     }
 }
@@ -164,6 +196,7 @@ private fun PhaseOneKnowledgeList(
     allowEntryChanges: Boolean,
     initialLevel: Int?,
     creationMode: Boolean,
+    maximumLevel: (SpecialKnowledge) -> Int,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
     var selecting by rememberSaveable { mutableStateOf(false) }
@@ -203,7 +236,7 @@ private fun PhaseOneKnowledgeList(
             if (creationMode) ChoiceField(
                 "Valor-base",
                 knowledge.value.coerceIn(0, 5),
-                (0..5).toList(),
+                (0..maximumLevel(knowledge)).toList(),
                 enabled && initialLevel == null,
             ) { value -> onLevelChange(knowledge, value) }
             else ChoiceField("Valor-base", knowledge.value.coerceIn(0, 5), (0..5).toList(), enabled && initialLevel == null) { value -> onLevelChange(knowledge, value) }
@@ -220,7 +253,7 @@ private fun PhaseOneKnowledgeList(
     }
     AddButton("Selecionar do catálogo", enabled && canAddEntry && options.isNotEmpty()) { selecting = true }
     AddButton("Adicionar manualmente", enabled && canAddEntry) {
-        val knowledge = SpecialKnowledge(attribute = attributeOptions.firstOrNull()?.first.orEmpty(), value = initialLevel ?: 0)
+        val knowledge = SpecialKnowledge(attribute = attributeOptions.firstOrNull()?.first.orEmpty(), value = initialLevel ?: 0, category = kind.name)
         expandedKnowledgeId = knowledge.id
         onValues(values + knowledge)
     }

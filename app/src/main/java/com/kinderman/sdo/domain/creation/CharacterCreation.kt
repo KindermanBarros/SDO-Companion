@@ -99,6 +99,9 @@ object CharacterCreation {
                     error(CharacterCreationErrorCode.MILESTONE_REWARD_MISSING, "Escolha e confirme todas as recompensas obrigatórias dos níveis 3 e 5.")
                 }
             }
+            5 -> if (character.pathName.isBlank() || character.pathPillars.size != 3 || character.pathPillars.any(String::isBlank)) {
+                error(CharacterCreationErrorCode.PATH_INCOMPLETE, "Selecione o Caminho e confirme seus 3 Pilares.")
+            }
             6 -> if (
                 character.pathName.isBlank() ||
                 character.pathPillars.size != 3 ||
@@ -120,6 +123,9 @@ object CharacterCreation {
     }
 
     fun stepError(step: Int, character: Character): String? = validateStep(step, character).firstOrNull()?.message
+
+    fun flowError(step: Int, character: Character): String? =
+        (1..step.coerceAtMost(STEP_COUNT - 1)).firstNotNullOfOrNull { validateStep(it, character).firstOrNull()?.message }
 
     fun finish(character: Character, now: Long = System.currentTimeMillis()): Character {
         val errors = validate(character)

@@ -1963,6 +1963,25 @@ fun Character.withCanonicalBodyState(bodyState: BodyState): Character = copy(
     organs = bodyState.organs.map { it.toLegacyStatus() },
 )
 
+/** Associates an implant with an organ. Only an implant whose own text declares that it
+ * restores or replaces organ function clears failures; unlinking and relabelling never do. */
+fun Character.withOrganImplant(organIndex: Int, implantId: String?): Character {
+    val body = canonicalBodyState()
+    val implant = implantId?.let { id -> inventory.firstOrNull { it.id == id } }
+    val declaresRestoration = implant?.let {
+        val text = listOf(it.name, it.category, it.effect, it.mechanicalEffects.joinToString(" ") { effect -> effect.description }).joinToString(" ")
+        val function = text.contains(Regex("(?i)\\b(órgão|orgao|função|funcao)\\b"))
+        val restoration = text.contains(Regex("(?i)\\b(restaura|restaurar|restaurador|substitui|substituir|substitutiv[oa])\\b"))
+        function && restoration && !text.contains(Regex("(?i)não (remove|zera).{0,24}falhas"))
+    } == true
+    return withCanonicalBodyState(body.copy(organs = body.organs.mapIndexed { index, organ ->
+        if (index != organIndex) organ else organ.copy(
+            implantInstanceId = implantId?.let(::ItemInstanceId),
+            failures = if (declaresRestoration && organ.implantInstanceId?.value != implantId) 0 else organ.failures,
+        )
+    }))
+}
+
 fun Character.canonicalConditions(): List<ConditionInstance> =
     conditionInstances.ifEmpty { conditions.map { it.toCanonicalInstance() } }
 

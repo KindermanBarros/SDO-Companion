@@ -32,7 +32,7 @@ private val creationSteps = listOf(
 @Composable
 internal fun CharacterCreationWizard(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit, modifier: Modifier = Modifier) {
     val step = character.creationStep.coerceIn(1, CharacterCreation.STEP_COUNT)
-    val error = CharacterCreation.stepError(step, character)
+    val error = CharacterCreation.flowError(step, character)
     Column(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("ETAPA $step/${CharacterCreation.STEP_COUNT} // ${creationSteps[step - 1].uppercase()}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)

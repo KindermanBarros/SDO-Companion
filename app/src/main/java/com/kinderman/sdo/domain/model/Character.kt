@@ -289,7 +289,7 @@ data class PersonalNote(
     val text: String = "",
 )
 
-enum class ProgressionRewardType { RESOURCE, ATTRIBUTE, KNOWLEDGE, NEW_KNOWLEDGE, PATH_POWER }
+enum class ProgressionRewardType { RESOURCE, ATTRIBUTE, KNOWLEDGE, NEW_KNOWLEDGE, PATH_POWER, PATH_ENHANCEMENT }
 
 @IgnoreExtraProperties
 data class ProgressionReward(
@@ -357,7 +357,9 @@ data class Character(
     val sanity: ResourceValue = ResourceValue(),
     val arcane: ResourceValue = ResourceValue(),
     val energy: ResourceValue = ResourceValue(),
-    val destiny: ResourceValue = ResourceValue(5, 5),
+    // This is the new-character default. CharacterRecord deliberately keeps its legacy
+    // default so records written before this field existed are not silently migrated.
+    val destiny: ResourceValue = ResourceValue(1, 5),
     val exhaustion: ResourceValue = ResourceValue(0, 10),
     val corruption: ResourceValue = ResourceValue(0, 100),
     val attributes: List<AttributeValue> = defaultAttributes(),
