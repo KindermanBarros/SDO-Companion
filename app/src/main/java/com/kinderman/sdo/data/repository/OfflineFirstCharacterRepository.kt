@@ -10,6 +10,8 @@ import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.data.local.migratedStructuredRecord
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
+import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
@@ -84,6 +86,7 @@ class OfflineFirstCharacterRepository(
         check(CharacterAccessPolicy.canEdit(session, character, isCampaignHistorian(session, character))) {
             "Você não pode editar esta ficha."
         }
+        if (character.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
         dao.upsert(
             character.copy(
                 campaignId = normalizeCampaignId(character.campaignId),
@@ -122,6 +125,7 @@ class OfflineFirstCharacterRepository(
     }
 
     private suspend fun saveLock(character: Character, lockType: CharacterLock, actorId: String) {
+        if (character.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
         val locked = lockType != CharacterLock.NONE
         dao.upsert(
             character.copy(

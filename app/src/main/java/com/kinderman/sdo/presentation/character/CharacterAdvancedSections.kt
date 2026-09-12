@@ -412,6 +412,34 @@ internal fun ConditionSection(character: Character, enabled: Boolean, onChange: 
 }
 
 @Composable
+internal fun MigrationReviewSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    TechPanel(accent = MaterialTheme.colorScheme.error) {
+        SectionHeader("!", "Correções da migração")
+        Text(
+            "Campos mecânicos antigos não foram interpretados automaticamente. Corrija o registro correspondente e confirme cada pendência.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        character.migrationReviews.forEachIndexed { index, review ->
+            Column(
+                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                Text(review.field, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(review.legacyValue, color = MaterialTheme.colorScheme.onSurface)
+                Text(review.reason, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                TextButton(
+                    onClick = {
+                        onChange(character.copy(migrationReviews = character.migrationReviews.filterIndexed { itemIndex, _ -> itemIndex != index }))
+                    },
+                    enabled = enabled,
+                ) { Text("CONFIRMAR CORREÇÃO") }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boolean, onRemove: () -> Unit, onValue: (ConditionEffect) -> Unit) {
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {

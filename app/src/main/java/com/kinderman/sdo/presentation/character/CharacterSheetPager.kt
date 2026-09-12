@@ -223,6 +223,9 @@ private fun SheetPageContent(
             }
 
             SheetPage.RECORD -> {
+                if (character.migrationReviews.isNotEmpty()) item("migration-review") {
+                    MigrationReviewSection(character, editable, onChange)
+                }
                 item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições") { ConditionSection(character, editable, onChange) } }
                 item("narrative") { com.kinderman.sdo.ui.CollapsibleSection("História") { NarrativeSection(character, editable, onChange) } }
             }

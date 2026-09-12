@@ -69,7 +69,7 @@ data class SpecialKnowledge(
     val pendingMilestoneLevels: List<Int> = emptyList(),
     val pendingTargetLevel: Int? = null,
 ) {
-    val isCatalogEntry: Boolean get() = catalogEntryId.isNotBlank()
+    fun isCatalogEntry(): Boolean = catalogEntryId.isNotBlank()
 }
 
 enum class KnowledgeMilestoneRewardType { POWER, MYSTIC_ABILITY, SPECIALIZATION }
@@ -322,6 +322,8 @@ data class Character(
     val creationCompletedAt: Long? = null,
     val creationRulesVersion: Int = 1,
     val itemSchemaVersion: Int = CURRENT_ITEM_DATA_VERSION,
+    val canonicalSchemaVersion: Int = CANONICAL_SCHEMA_VERSION,
+    val migrationReviews: List<NeedsReview> = emptyList(),
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -401,7 +403,7 @@ data class Character(
     val sanityMaximum: Int get() = (sanityBase + sanity.adjustment + progressionSanityBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY")).coerceAtLeast(0)
     val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment + progressionArcaneBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE")).coerceAtLeast(0)
     val energyMaximum: Int get() = (energyBase + energy.adjustment + progressionEnergyBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY")).coerceAtLeast(0)
-    val destinyMaximum: Int get() = (destiny.maximum + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "DESTINY")).coerceAtLeast(0)
+    val destinyMaximum: Int get() = (5 + destiny.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "DESTINY")).coerceAtLeast(0)
 
     fun lifeCalculation() = CalculatedValue(lifeBase, life.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE"))
     fun sanityCalculation() = CalculatedValue(sanityBase, sanity.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY"))
