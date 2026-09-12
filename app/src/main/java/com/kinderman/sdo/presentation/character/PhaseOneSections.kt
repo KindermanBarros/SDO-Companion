@@ -101,6 +101,7 @@ internal fun PhaseOneKnowledgeSection(
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
+            creationMode = character.isInCreation,
         ) { onChange(character.copy(learnedKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Conhecimentos arcanos",
@@ -116,6 +117,7 @@ internal fun PhaseOneKnowledgeSection(
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
+            creationMode = character.isInCreation,
         ) { onChange(character.copy(arcaneKnowledges = it)) }
         PhaseOneKnowledgeList(
             title = "Técnicas de batalha",
@@ -131,6 +133,7 @@ internal fun PhaseOneKnowledgeSection(
             canAddEntry = canAddEntry,
             allowEntryChanges = allowEntryChanges,
             initialLevel = if (lockLevels) 0 else null,
+            creationMode = character.isInCreation,
         ) { onChange(character.copy(battleTechniques = it)) }
     }
     pendingKnowledge?.let { knowledge ->
@@ -160,6 +163,7 @@ private fun PhaseOneKnowledgeList(
     canAddEntry: Boolean,
     allowEntryChanges: Boolean,
     initialLevel: Int?,
+    creationMode: Boolean,
     onValues: (List<SpecialKnowledge>) -> Unit,
 ) {
     var selecting by rememberSaveable { mutableStateOf(false) }
@@ -168,11 +172,13 @@ private fun PhaseOneKnowledgeList(
     Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
         Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            val published = knowledge.catalogEntryId.isNotBlank()
+            val adjustedLevel = if (knowledge.name.isBlank()) (knowledge.value + knowledge.adjustment).coerceAtLeast(0)
+                else totalValue(knowledge.name)
             Row(Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
                     Text(knowledge.name.ifBlank { "REG.${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
-                    val adjustedLevel = (knowledge.value + knowledge.adjustment).coerceAtLeast(0)
-                    val modifier = knowledge.adjustment.takeUnless { it == 0 }?.let { if (it > 0) " // MOD +$it" else " // MOD $it" }.orEmpty()
+                    val modifier = knowledge.adjustment.takeUnless { creationMode || it == 0 }?.let { if (it > 0) " // MOD +$it" else " // MOD $it" }.orEmpty()
                     Text("${knowledge.attribute.ifBlank { "SEM ATRIBUTO" }} // NÍVEL $adjustedLevel$modifier", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 }
                 TextButton(onClick = { expandedKnowledgeId = knowledge.id.takeUnless { it == expandedKnowledgeId } }) {
@@ -183,23 +189,31 @@ private fun PhaseOneKnowledgeList(
                 }
             }
             if (expandedKnowledgeId != knowledge.id) return@Column
-            HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
+            if (published) Text("CATÁLOGO // ${knowledge.catalogEntryId}@${knowledge.catalogVersion}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            else {
+                Text("ID // ${knowledge.id}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
+            }
             val selectedAttribute = knowledge.attribute.takeIf { current -> attributeOptions.any { it.first == current } }
                 ?: attributeOptions.firstOrNull()?.first.orEmpty()
-            ChoiceField("Atributo", selectedAttribute, attributeOptions.map { it.first }, enabled,
+            ChoiceField("Atributo", selectedAttribute, attributeOptions.map { it.first }, enabled && !published,
                 display = { acronym -> attributeOptions.firstOrNull { option -> option.first == acronym }?.let { option -> "${option.first} — ${option.second}" }.orEmpty() }) { value ->
                 onValues(values.replace(index, knowledge.copy(attribute = value)))
             }
-            TwoFields(
-                { IntegerField("Valor (0–5)", knowledge.value, enabled && initialLevel == null, it) { value -> onLevelChange(knowledge, value) } },
-                { IntegerField("Modificador", knowledge.adjustment, enabled, it) { value ->
-                    onValues(values.replace(index, knowledge.copy(adjustment = value)))
-                } },
-            )
+            if (creationMode) ChoiceField(
+                "Valor-base",
+                knowledge.value.coerceIn(0, 5),
+                (0..5).toList(),
+                enabled && initialLevel == null,
+            ) { value -> onLevelChange(knowledge, value) }
+            else ChoiceField("Valor-base", knowledge.value.coerceIn(0, 5), (0..5).toList(), enabled && initialLevel == null) { value -> onLevelChange(knowledge, value) }
             if (knowledge.category.isNotBlank()) Text("CATEGORIA // ${knowledge.category}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            if (creationMode && adjustedLevel != knowledge.value) {
+                Text("TOTAL COM FONTES // $adjustedLevel", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            }
             val usefulDescription = knowledge.mechanicalEffect.ifBlank { knowledge.description }
             if (usefulDescription.isNotBlank()) Text(usefulDescription, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
-            if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value + knowledge.adjustment) {
+            if (!creationMode && knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value + knowledge.adjustment) {
                 Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             }
         }

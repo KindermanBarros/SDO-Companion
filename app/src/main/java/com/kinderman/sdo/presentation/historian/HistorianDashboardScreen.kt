@@ -7,11 +7,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -68,7 +70,12 @@ import com.kinderman.sdo.domain.model.AbilityRange
 import com.kinderman.sdo.domain.model.AbilityResistance
 import com.kinderman.sdo.domain.model.AbilitySource
 import com.kinderman.sdo.domain.model.AbilityTimeUnit
+import com.kinderman.sdo.domain.model.BodyRegionSlot
+import com.kinderman.sdo.domain.model.ConditionKind
+import com.kinderman.sdo.domain.model.ConditionPayload
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.domain.model.canonicalBodyState
+import com.kinderman.sdo.domain.model.canonicalConditions
 import com.kinderman.sdo.presentation.character.ChoiceField
 import com.kinderman.sdo.presentation.character.IntegerField
 import com.kinderman.sdo.ui.Acid
@@ -330,28 +337,35 @@ private fun OperationalCharacterCard(
     onQuickAction: () -> Unit,
 ) {
     var expanded by rememberSaveable(character.id) { mutableStateOf(true) }
+    val typedConditions = character.canonicalConditions()
+    val body = runCatching { character.canonicalBodyState() }.getOrNull()
+    val failedRegions = body?.regions.orEmpty().filter { it.failures > 0 }
+    val failedOrgans = body?.organs.orEmpty().filter { it.failures > 0 }
     val alerts = buildList {
         if (character.lifeMaximum > 0 && character.life.current * 100 <= character.lifeMaximum * settings.lifeThresholdPercent) add("VIDA CRÍTICA")
         if (character.sanityMaximum > 0 && character.sanity.current * 100 <= character.sanityMaximum * settings.sanityThresholdPercent) add("SANIDADE CRÍTICA")
         if (character.exhaustion.maximum > 0 && character.exhaustion.current * 100 >= character.exhaustion.maximum * settings.exhaustionThresholdPercent) add("EXAUSTÃO ALTA")
-        if (settings.alertConditions && character.conditions.isNotEmpty()) add("${character.conditions.size} CONDIÇÃO(ÕES)")
-        if (settings.alertBodyFailures && (character.bodyRegions.any { it.failures > 0 } || character.organs.any { it.failures > 0 })) add("FALHA CORPORAL")
+        if (settings.alertConditions && typedConditions.isNotEmpty()) add("${typedConditions.size} CONDIÇÃO(ÕES)")
+        if (settings.alertBodyFailures && (failedRegions.isNotEmpty() || failedOrgans.isNotEmpty())) add("FALHA CORPORAL")
         if (character.lastSyncedAt > 0 && System.currentTimeMillis() - character.lastSyncedAt > settings.staleAfterHours * 3_600_000L) add("SYNC ANTIGO")
         if (character.dirty) add("ALTERAÇÃO LOCAL")
     }
+    val initials = character.name.trim().split(Regex("\\s+")).filter(String::isNotBlank)
+        .take(2).mapNotNull { it.firstOrNull()?.uppercase() }.joinToString("").ifBlank { "?" }
     TechPanel(accent = if (alerts.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
         Row(
             Modifier.fillMaxWidth().clickable { expanded = !expanded },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Box(
+                Modifier.size(48.dp).border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)),
+                contentAlignment = Alignment.Center,
+            ) { Text(initials, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium) }
             Column(Modifier.weight(1f)) {
                 Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "VIDA ${character.life.current}/${character.lifeMaximum}  //  SAN ${character.sanity.current}/${character.sanityMaximum}  //  EXA ${character.exhaustion.current}/${character.exhaustion.maximum}",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                Text("${character.race.ifBlank { "SEM RAÇA" }} // ${character.pathName.ifBlank { "SEM CAMINHO" }} // NV ${character.level}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                Text("VIDA ${character.life.current}/${character.lifeMaximum}  //  SAN ${character.sanity.current}/${character.sanityMaximum}  //  EXA ${character.exhaustion.current}/${character.exhaustion.maximum}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
             TelemetryTag(if (character.dirty) "LOCAL_DELTA" else "SYNC_OK")
             Icon(
@@ -359,8 +373,33 @@ private fun OperationalCharacterCard(
                 if (expanded) "Recolher personagem" else "Expandir personagem",
             )
         }
+        if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
         if (expanded) {
-            if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+            Text(
+                "ARC ${character.arcane.current}/${character.arcaneMaximum} // ENE ${character.energy.current}/${character.energyMaximum} // DES ${character.destiny.current}/${character.destinyMaximum} // COR ${character.corruption.current}/${character.corruption.maximum}%",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                "PG/GERAL ${character.protectionTotal("Geral")} // ESQ ${character.protectionTotal("Esquiva")} // POS ${character.protectionTotal("Postura")} // MEN ${character.protectionTotal("Mental")} // ARC ${character.protectionTotal("Arcana")}",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Text(
+                "CONDIÇÕES // " + typedConditions.joinToString(" // ") { condition ->
+                    condition.name.uppercase() + condition.intensity?.let { " $it" }.orEmpty()
+                }.ifBlank { "NENHUMA" },
+                color = if (typedConditions.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                "CORPO // " + buildList {
+                    addAll(failedRegions.map { "${it.region.label.uppercase()} ${it.failures}/4" })
+                    addAll(failedOrgans.map { "${it.organ.label.uppercase()} ${it.failures}/3" })
+                }.joinToString(" // ").ifBlank { "SEM FALHAS" },
+                color = if (failedRegions.isEmpty() && failedOrgans.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
             androidx.compose.material3.Button(
                 onClick = { onOpenSession(character.id) },
                 modifier = Modifier.fillMaxWidth(),
@@ -394,6 +433,9 @@ private fun SessionOperationType.displayLabel(): String = when (this) {
     SessionOperationType.REGION_FAILURE -> "FALHA CORPORAL"
     SessionOperationType.ABILITY_USE -> "HABILIDADE"
     SessionOperationType.USAGE_RESET -> "REINÍCIO"
+    SessionOperationType.EFFECT_OPERATION -> "OPERAÇÃO CANÔNICA"
+    SessionOperationType.MODIFIER_APPLY -> "MODIFICADOR"
+    SessionOperationType.ITEM_CONSUME -> "CONSUMO"
 }
 
 @Composable
@@ -427,19 +469,21 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
     var amount by remember { mutableIntStateOf(1) }
     var label by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<QuickActionKind?>(null) }
+    var selectedCondition by remember { mutableStateOf(ConditionKind.Abalado) }
     var resource by remember { mutableStateOf(SessionResource.ENERGY) }
     var regionIndex by remember { mutableIntStateOf(0) }
-    val region = character.bodyRegions.getOrNull(regionIndex)
+    val regions = character.canonicalBodyState().regions
+    val region = regions.getOrNull(regionIndex)
     val command = when (selected) {
-        QuickActionKind.DAMAGE -> SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, regionId = region?.name.orEmpty(), reason = label)
+        QuickActionKind.DAMAGE -> SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, bodyRegion = region?.region, reason = label)
         QuickActionKind.HEAL -> SessionCommand(type = SessionOperationType.HEAL, amount = amount, resource = SessionResource.LIFE, reason = label)
         QuickActionKind.RESOURCE -> SessionCommand(type = SessionOperationType.RESOURCE, amount = amount, resource = resource, reason = label)
-        QuickActionKind.CONDITION -> SessionCommand(type = SessionOperationType.CONDITION_ADD, amount = amount, label = label.ifBlank { "Condição" }, detail = "Aplicada pelo Historiador", reason = label)
+        QuickActionKind.CONDITION -> SessionCommand(type = SessionOperationType.CONDITION_ADD, condition = ConditionPayload(kind = selectedCondition, intensity = amount), reason = label)
         QuickActionKind.MONEY -> SessionCommand(type = SessionOperationType.MONEY, amount = amount, reason = label)
         QuickActionKind.DESTINY -> SessionCommand(type = SessionOperationType.DESTINY, amount = amount, resource = SessionResource.DESTINY, reason = label)
         QuickActionKind.NOTE -> SessionCommand(type = SessionOperationType.NOTE, label = label.ifBlank { "Anotação do Historiador" }, detail = "Registro operacional", reason = label)
         QuickActionKind.REWARD -> SessionCommand(type = SessionOperationType.REWARD, label = label.ifBlank { "Recompensa" }, detail = amount.toString(), reason = label)
-        QuickActionKind.REGION -> SessionCommand(type = SessionOperationType.REGION_FAILURE, amount = amount, regionId = region?.name.orEmpty(), reason = label)
+        QuickActionKind.REGION -> SessionCommand(type = SessionOperationType.REGION_FAILURE, amount = amount, bodyRegion = region?.region, reason = label)
         null -> null
     }
     AlertDialog(
@@ -472,12 +516,17 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
                 }
                 if (selected == QuickActionKind.DAMAGE || selected == QuickActionKind.REGION) {
                     TextButton(onClick = {
-                        if (character.bodyRegions.isNotEmpty()) regionIndex = (regionIndex + 1) % character.bodyRegions.size
-                    }, enabled = character.bodyRegions.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+                        if (regions.isNotEmpty()) regionIndex = (regionIndex + 1) % regions.size
+                    }, enabled = regions.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
                         Text("REGIÃO // ${region?.name?.uppercase() ?: "NENHUMA"}")
                     }
                 }
-                HudTextField("Motivo / nome / anotação", label, onValue = { label = it })
+                if (selected == QuickActionKind.CONDITION) {
+                    ChoiceField("Condição", selectedCondition, ConditionKind.entries, true, display = { it.label }) {
+                        selectedCondition = it
+                    }
+                }
+                HudTextField("Motivo / anotação", label, onValue = { label = it })
                 Text("3. CONFIRME", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Text(selected?.let { "${it.label} // valor $amount // ${character.name}" } ?: "Selecione uma ação acima.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

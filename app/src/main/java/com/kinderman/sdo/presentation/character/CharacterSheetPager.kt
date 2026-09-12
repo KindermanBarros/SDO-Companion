@@ -27,11 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.canonicalBodyState
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.abilityDuplicates
 import com.kinderman.sdo.domain.model.resolveAbilityDuplicate
+import com.kinderman.sdo.domain.model.AbilityKind
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
@@ -44,9 +46,9 @@ internal enum class SheetPage(val code: String, val label: String) {
     APTITUDES("04—06", "APTIDÕES"),
     PATH("07", "CAMINHO"),
     POWERS("08", "PODERES"),
-    MYSTIC("12", "MÍSTICO"),
-    INVENTORY("09", "INVENTÁRIO"),
-    BODY("10—11", "CORPO"),
+    MYSTIC("09", "MÍSTICO"),
+    INVENTORY("10", "INVENTÁRIO"),
+    BODY("11—12", "CORPO"),
     RECORD("13—14", "REGISTRO"),
     NOTES("15", "ANOTAÇÕES"),
 }
@@ -194,11 +196,21 @@ private fun SheetPageContent(
             }
 
             SheetPage.POWERS -> item("powers") {
-                com.kinderman.sdo.ui.CollapsibleSection("Poderes") { PhaseOnePowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, editable, onChange) }
+                com.kinderman.sdo.ui.CollapsibleSection("Poderes") {
+                    CanonicalAbilitySection(character, catalog.filter { it.kind == CatalogKind.POWER }, setOf(AbilityKind.POWER), editable, onChange)
+                }
             }
 
             SheetPage.MYSTIC -> item("mystic") {
-                com.kinderman.sdo.ui.CollapsibleSection("Místico") { MysticSection(character, catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE }, editable, onChange) }
+                com.kinderman.sdo.ui.CollapsibleSection("Habilidades — Místicas") {
+                    CanonicalAbilitySection(
+                        character,
+                        catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE },
+                        setOf(AbilityKind.SPELL, AbilityKind.RUNE, AbilityKind.ASH),
+                        editable,
+                        onChange,
+                    )
+                }
             }
 
             SheetPage.INVENTORY -> item("inventory") {
@@ -207,8 +219,9 @@ private fun SheetPageContent(
 
             SheetPage.BODY -> {
                 item("body") { BodySection(character, editable, onChange) }
+                val canonicalRegions = character.canonicalBodyState().regions
                 itemsIndexed(
-                    items = character.bodyRegions,
+                    items = canonicalRegions,
                     key = { index, region -> "body-${region.roll}-${region.name}-$index" },
                 ) { index, _ ->
                     BodyRegionSection(
@@ -223,9 +236,6 @@ private fun SheetPageContent(
             }
 
             SheetPage.RECORD -> {
-                if (character.migrationReviews.isNotEmpty()) item("migration-review") {
-                    MigrationReviewSection(character, editable, onChange)
-                }
                 item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições") { ConditionSection(character, editable, onChange) } }
                 item("narrative") { com.kinderman.sdo.ui.CollapsibleSection("História") { NarrativeSection(character, editable, onChange) } }
             }
@@ -234,12 +244,12 @@ private fun SheetPageContent(
         }
     }
     if (page == SheetPage.BODY) equipmentRegionIndex?.let { index ->
-        val region = character.bodyRegions.getOrNull(index)
+        val region = runCatching { character.canonicalBodyState().regions.getOrNull(index) }.getOrNull()
         if (region != null) {
             EquipmentPickerDialog(
                 regionName = region.name,
                 inventory = character.inventory,
-                selectedIds = region.equippedItemIds.toSet(),
+                selectedIds = region.equippedItemIds.mapTo(mutableSetOf()) { it.value },
                 onDismiss = { equipmentRegionIndex = null },
             ) { selectedIds ->
                 onChange(character.equipItems(index, selectedIds))

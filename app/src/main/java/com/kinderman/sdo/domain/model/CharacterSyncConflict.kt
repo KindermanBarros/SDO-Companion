@@ -34,7 +34,7 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("occupation", "Ocupação", local.occupation, remote.occupation, ::textSummary)
     changed("height", "Altura", local.height, remote.height, ::textSummary)
     changed("age", "Idade", local.age, remote.age, ::textSummary)
-    changed("sex", "Sexo", local.sex, remote.sex, ::textSummary)
+    changed("sex", "Gênero", local.sex, remote.sex, ::textSummary)
     changed("level", "Nível", local.level, remote.level)
     changed("money", "Dinheiro", local.money, remote.money)
     changed("life", "Vida", local.life, remote.life, ::resourceSummary)
@@ -61,19 +61,30 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("pathMotto", "Lema do Caminho", local.pathMotto, remote.pathMotto, ::textSummary)
     changed("pathKeywords", "Palavras-chave do Caminho", local.pathKeywords, remote.pathKeywords, ::stringListSummary)
     changed("pathPillars", "Pilares do Caminho", local.pathPillars, remote.pathPillars, ::stringListSummary)
-    changed("powers", "Poderes", local.powers, remote.powers) { values -> namedListSummary(values) { it.name } }
+    if (local.abilities != remote.abilities || local.powers != remote.powers || local.mysticAbilities != remote.mysticAbilities) {
+        val localAbilities = local.abilities.ifEmpty { local.allCanonicalAbilitiesSafely() }
+        val remoteAbilities = remote.abilities.ifEmpty { remote.allCanonicalAbilitiesSafely() }
+        add(CharacterConflictField(
+            id = "abilities",
+            label = "Habilidades",
+            localSummary = localAbilities.takeIf { it.isNotEmpty() }?.let { namedListSummary(it) { ability -> ability.name } }
+                ?: "Poderes: ${namedListSummary(local.powers) { it.name }}; místicas: ${namedListSummary(local.mysticAbilities) { it.name }}",
+            remoteSummary = remoteAbilities.takeIf { it.isNotEmpty() }?.let { namedListSummary(it) { ability -> ability.name } }
+                ?: "Poderes: ${namedListSummary(remote.powers) { it.name }}; místicas: ${namedListSummary(remote.mysticAbilities) { it.name }}",
+        ))
+    }
     changed("inventory", "Inventário", local.inventory, remote.inventory) { values -> namedListSummary(values) { it.name } }
-    changed("bodyRegions", "Corpo e armadura", local.bodyRegions, remote.bodyRegions) { values ->
-        values.joinToString(" • ") { "${it.name}: ${it.failures} falhas, PL ${it.localProtection}, PG ${it.generalProtection}" }
+    changed("itemStates", "Estado canônico do inventário", local.itemStates, remote.itemStates) { "${it.size} item(ns)" }
+    changed("customItemCatalog", "Catálogo personalizado", local.customItemCatalog, remote.customItemCatalog) { "${it.size} entrada(s)" }
+    changed("progression", "Escolhas auditáveis", local.progression, remote.progression) { "${it.choices.size} escolha(s)" }
+    changed("bodyState", "Estado corporal", local.bodyState, remote.bodyState) { state ->
+        "${state?.regions?.size ?: 0} regiões, ${state?.organs?.size ?: 0} órgãos, ${state?.regions?.sumOf { it.injuries.size } ?: 0} lesão(ões)"
     }
     changed("agilityLimit", "Limitação de Agilidade", local.agilityLimit, remote.agilityLimit, ::textSummary)
-    changed("organs", "Órgãos", local.organs, remote.organs) { values ->
-        values.joinToString(" • ") { "${it.name}: ${it.failures} falhas" }
+    changed("conditionInstances", "Condições", local.conditionInstances, remote.conditionInstances) { values ->
+        values.joinToString(" • ") { "${it.name}${it.intensity?.let { level -> " $level" }.orEmpty()}" }.ifBlank { "Nenhuma" }
     }
-    changed("mysticAbilities", "Magias, runas e cinzas", local.mysticAbilities, remote.mysticAbilities) { values ->
-        namedListSummary(values) { it.name }
-    }
-    changed("conditions", "Condições", local.conditions, remote.conditions) { values -> namedListSummary(values) { it.name } }
+    changed("activeModifiers", "Modificadores ativos", local.activeModifiers, remote.activeModifiers) { "${it.size} modificador(es)" }
     changed("story", "História", local.story, remote.story, ::textSummary)
     changed("personalNotes", "Anotações", local.personalNotes, remote.personalNotes) { values -> namedListSummary(values) { it.title } }
     changed("lock", "Bloqueio da ficha", local.lockSnapshot(), remote.lockSnapshot(), ::lockSummary)
@@ -127,13 +138,20 @@ fun mergeCharacterConflict(
         pathMotto = selected("pathMotto", local.pathMotto, remote.pathMotto),
         pathKeywords = selected("pathKeywords", local.pathKeywords, remote.pathKeywords),
         pathPillars = selected("pathPillars", local.pathPillars, remote.pathPillars),
-        powers = selected("powers", local.powers, remote.powers),
+        abilities = selected("abilities", local.abilities, remote.abilities),
+        powers = if ("abilities" in remoteFieldIds) remote.powers else local.powers,
+        mysticAbilities = if ("abilities" in remoteFieldIds) remote.mysticAbilities else local.mysticAbilities,
         inventory = selected("inventory", local.inventory, remote.inventory),
-        bodyRegions = selected("bodyRegions", local.bodyRegions, remote.bodyRegions),
+        itemStates = selected("itemStates", local.itemStates, remote.itemStates),
+        customItemCatalog = selected("customItemCatalog", local.customItemCatalog, remote.customItemCatalog),
+        progression = selected("progression", local.progression, remote.progression),
+        bodyState = selected("bodyState", local.bodyState, remote.bodyState),
+        bodyRegions = if ("bodyState" in remoteFieldIds) remote.bodyRegions else local.bodyRegions,
         agilityLimit = selected("agilityLimit", local.agilityLimit, remote.agilityLimit),
-        organs = selected("organs", local.organs, remote.organs),
-        mysticAbilities = selected("mysticAbilities", local.mysticAbilities, remote.mysticAbilities),
-        conditions = selected("conditions", local.conditions, remote.conditions),
+        organs = if ("bodyState" in remoteFieldIds) remote.organs else local.organs,
+        conditionInstances = selected("conditionInstances", local.conditionInstances, remote.conditionInstances),
+        conditions = if ("conditionInstances" in remoteFieldIds) remote.conditions else local.conditions,
+        activeModifiers = selected("activeModifiers", local.activeModifiers, remote.activeModifiers),
         story = selected("story", local.story, remote.story),
         notes = remote.notes,
         personalNotes = selected("personalNotes", local.personalNotes, remote.personalNotes),

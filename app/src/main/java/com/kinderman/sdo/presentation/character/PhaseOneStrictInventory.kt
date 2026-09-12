@@ -17,6 +17,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.Icon
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
@@ -84,7 +89,7 @@ internal fun PhaseOneStrictInventorySection(
     val ashCatalog = catalog.filter { it.kind == CatalogKind.ASH }
 
     TechPanel {
-        SectionHeader("09", "Inventário")
+        SectionHeader("10", "Inventário")
         Text(
             "CARGA ${character.currentLoad} / ${character.maximumLoad}",
             color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
@@ -109,12 +114,25 @@ internal fun PhaseOneStrictInventorySection(
             }
             visible.forEach { item ->
             val index = character.inventory.indexOfFirst { it.id == item.id }
+            var expanded by rememberSaveable(item.id) { mutableStateOf(false) }
+            val compactDetails = buildList {
+                add(item.inventoryState.label.uppercase())
+                add("CARGA ${item.effectiveLoad()}")
+                if (item.quantity > 1 || item.linkedAshId.isNotBlank() || item.category.equals("Munição", true) || item.category.contains("Consumível", true)) {
+                    add("QTD ${item.quantity}")
+                }
+                add("DUR ${item.durabilityLabel}")
+            }.joinToString(" // ")
             Column(
                 Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Row(Modifier.fillMaxWidth()) {
-                    Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
+                        Text(compactDetails, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    }
+                    Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher ${item.name}" else "Expandir ${item.name}")
                     RemoveButton(enabled, "Remover item") {
                         runCatching {
                             if (item.linkedAshId.isNotBlank()) character.withRemovedAbility(item.linkedAshId)
@@ -125,6 +143,7 @@ internal fun PhaseOneStrictInventorySection(
                     }
                 }
                 Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality.label} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                if (!expanded) return@Column
                 Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) Text("EMPUNHADURA // ${item.handsRequired()} MÃO(S)", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 Text("DURABILIDADE ${item.durabilityLabel}${when { item.isBroken -> " // [QUEBRADO]"; item.isScrap -> " // [SUCATA]"; else -> "" }}", color = if (item.isScrap || item.isBroken) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
@@ -345,7 +364,7 @@ private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<Invent
 
 private fun validItemStates(character: Character, item: InventoryItem): List<InventoryState> = buildList {
     if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
-    if (item.category.contains("armadura", true) || item.category.contains("acessório", true)) add(InventoryState.EQUIPPED)
+    if (item.category.contains("armadura", true) || item.category.contains("acessório", true) || item.category.equals("Recipiente de Carga", true) || item.backpackCapacity > 0) add(InventoryState.EQUIPPED)
     val quickAccessCount = character.inventory.count { it.inventoryState == InventoryState.QUICK_ACCESS && it.id != item.id }
     if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.QUICK_ACCESS || quickAccessCount < 2)) {
         add(InventoryState.QUICK_ACCESS)
@@ -422,7 +441,7 @@ private fun StrictItemBuilderDialog(
     val commonItem = InventoryItem(
         name = commonName.trim(), category = commonCategory, effect = commonEffect,
         load = commonLoad, quantity = commonQuantity, region = draft.commonRegion,
-        durabilityCurrent = draft.commonDurability, durabilityMax = draft.commonDurability,
+        durabilityCurrent = draft.commonDurability.coerceAtLeast(1), durabilityMax = draft.commonDurability.coerceAtLeast(1),
         pg = draft.commonPg, pl = draft.commonPl, agilityLimit = draft.commonAgilityLimit, quality = quality,
         mechanicalEffects = commonEffects,
     )
@@ -465,7 +484,7 @@ private fun StrictItemBuilderDialog(
                         onDraftChange(draft.copy(commonRegion = it.takeUnless { value -> value == "Nenhuma" }.orEmpty()))
                     }
                     TwoFields(
-                        { IntegerField("Durabilidade", draft.commonDurability, true, it) { value -> onDraftChange(draft.copy(commonDurability = value.coerceAtLeast(0))) } },
+                        { IntegerField("Durabilidade", draft.commonDurability.coerceAtLeast(1), true, it) { value -> onDraftChange(draft.copy(commonDurability = value.coerceAtLeast(1))) } },
                         { IntegerField("Alcance", draft.commonRange, true, it) { value -> onDraftChange(draft.copy(commonRange = value.coerceAtLeast(0))) } },
                     )
                     TwoFields(

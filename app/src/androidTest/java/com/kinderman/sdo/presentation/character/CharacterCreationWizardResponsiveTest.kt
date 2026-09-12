@@ -18,7 +18,7 @@ class CharacterCreationWizardResponsiveTest {
     @Test fun navigationStacksOnNarrowScreens() {
         compose.setContent {
             Box(Modifier.requiredWidth(360.dp)) {
-                CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
+                CharacterCreationWizard(Character(creationStep = 8), emptyList(), true, {})
             }
         }
         val back = compose.onNodeWithTag("creation-back").fetchSemanticsNode().boundsInRoot.top
@@ -30,7 +30,7 @@ class CharacterCreationWizardResponsiveTest {
     @Test fun navigationSharesARowOnWideScreens() {
         compose.setContent {
             Box(Modifier.requiredWidth(700.dp)) {
-                CharacterCreationWizard(Character(creationStep = 9), emptyList(), true, {})
+                CharacterCreationWizard(Character(creationStep = 8), emptyList(), true, {})
             }
         }
         val back = compose.onNodeWithTag("creation-back").fetchSemanticsNode().boundsInRoot.top

@@ -3,6 +3,7 @@ package com.kinderman.sdo.domain.model
 import java.text.Normalizer
 import java.util.UUID
 import kotlin.math.ceil
+import kotlinx.serialization.Serializable
 
 enum class AbilitySource(val label: String) {
     KNOWLEDGE("Conhecimento"),
@@ -68,6 +69,7 @@ enum class AshSource(val label: String) {
     TECHNOLOGY("Tecnologia"), DECAY("Decadência"), DEATH("Morte"), DIVINE("Divino"),
 }
 
+@Serializable
 enum class AshPurity(val label: String, val dosesPerLoad: Int) {
     RAW("Bruta", 1), REFINED("Refinada", 2), PURE("Pura", 3);
 

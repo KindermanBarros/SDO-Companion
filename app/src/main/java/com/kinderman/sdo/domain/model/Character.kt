@@ -1,5 +1,7 @@
 package com.kinderman.sdo.domain.model
 
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 import java.util.UUID
 
 enum class UserRole { USER, ADMIN, PLAYER, MASTER }
@@ -27,18 +29,21 @@ data class UserSession(
     val isAdmin: Boolean get() = role == UserRole.ADMIN
 }
 
+@IgnoreExtraProperties
 data class ResourceValue(
     val current: Int = 0,
     val maximum: Int = 0,
     val adjustment: Int = 0,
 )
 
+@IgnoreExtraProperties
 data class SkillValue(
     val name: String = "",
     val value: Int = 0,
     val modifier: Int = 0,
 )
 
+@IgnoreExtraProperties
 data class AttributeValue(
     val name: String = "",
     val acronym: String = "",
@@ -47,6 +52,7 @@ data class AttributeValue(
     val skills: List<SkillValue> = emptyList(),
 )
 
+@IgnoreExtraProperties
 data class SpecialKnowledge(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
@@ -69,11 +75,13 @@ data class SpecialKnowledge(
     val pendingMilestoneLevels: List<Int> = emptyList(),
     val pendingTargetLevel: Int? = null,
 ) {
+    @Exclude
     fun isCatalogEntry(): Boolean = catalogEntryId.isNotBlank()
 }
 
 enum class KnowledgeMilestoneRewardType { POWER, MYSTIC_ABILITY, SPECIALIZATION }
 
+@IgnoreExtraProperties
 data class KnowledgeMilestoneReward(
     val level: Int = 3,
     val type: KnowledgeMilestoneRewardType = KnowledgeMilestoneRewardType.POWER,
@@ -81,6 +89,7 @@ data class KnowledgeMilestoneReward(
     val grantedEntityId: String = "",
 )
 
+@IgnoreExtraProperties
 data class Power(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
@@ -125,6 +134,7 @@ data class Power(
     val revision: Int = 1,
 )
 
+@IgnoreExtraProperties
 data class InventoryItem(
     val id: String = UUID.randomUUID().toString(),
     val state: String = "M",
@@ -194,6 +204,7 @@ fun InventoryItem.withInventoryState(value: InventoryState): InventoryItem = cop
 
 enum class ItemAcquisitionSource { HERITAGE, PURCHASE, REWARD, NARRATIVE }
 
+@IgnoreExtraProperties
 data class BodyRegion(
     val roll: Int = 0,
     val name: String = "",
@@ -204,16 +215,24 @@ data class BodyRegion(
     val localProtection: Int = 0,
     val generalProtection: Int = 0,
     val equippedItemIds: List<String> = emptyList(),
+    val state: BodyIntegrity = BodyIntegrity.Intact,
+    val implantInstanceIds: List<String> = emptyList(),
+    val prosthesisInstanceId: String = "",
 )
 
+@IgnoreExtraProperties
 data class OrganStatus(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
     val failures: Int = 0,
     val implant: String = "",
     val effect: String = "",
+    val slot: OrganSlot = OrganSlot.Other,
+    val state: BodyIntegrity = BodyIntegrity.Intact,
+    val implantInstanceId: String = "",
 )
 
+@IgnoreExtraProperties
 data class MysticAbility(
     val id: String = UUID.randomUUID().toString(),
     val type: String = "",
@@ -253,6 +272,7 @@ data class MysticAbility(
     val revision: Int = 1,
 )
 
+@IgnoreExtraProperties
 data class ConditionEffect(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
@@ -262,6 +282,7 @@ data class ConditionEffect(
     val summary: String = "",
 )
 
+@IgnoreExtraProperties
 data class PersonalNote(
     val id: String = UUID.randomUUID().toString(),
     val title: String = "",
@@ -270,6 +291,7 @@ data class PersonalNote(
 
 enum class ProgressionRewardType { RESOURCE, ATTRIBUTE, KNOWLEDGE, NEW_KNOWLEDGE, PATH_POWER }
 
+@IgnoreExtraProperties
 data class ProgressionReward(
     val level: Int = 1,
     val type: ProgressionRewardType = ProgressionRewardType.RESOURCE,
@@ -278,6 +300,7 @@ data class ProgressionReward(
     val canonical: Boolean = true,
 )
 
+@IgnoreExtraProperties
 data class ProgressionRecord(
     val id: String = UUID.randomUUID().toString(),
     val previousLevel: Int = 1,
@@ -334,7 +357,7 @@ data class Character(
     val sanity: ResourceValue = ResourceValue(),
     val arcane: ResourceValue = ResourceValue(),
     val energy: ResourceValue = ResourceValue(),
-    val destiny: ResourceValue = ResourceValue(1, 5),
+    val destiny: ResourceValue = ResourceValue(5, 5),
     val exhaustion: ResourceValue = ResourceValue(0, 10),
     val corruption: ResourceValue = ResourceValue(0, 100),
     val attributes: List<AttributeValue> = defaultAttributes(),
@@ -350,12 +373,21 @@ data class Character(
     val pathKeywords: List<String> = listOf("", "", ""),
     val pathPillars: List<String> = listOf("", "", ""),
     val powers: List<Power> = emptyList(),
+    /** Canonical authority; legacy lists above/below are read only during schema migration. */
+    val abilities: List<Ability> = emptyList(),
     val inventory: List<InventoryItem> = emptyList(),
+    /** Canonical inventory authority; inventory remains a compatibility projection during UI migration. */
+    val itemStates: List<ItemState> = emptyList(),
+    val customItemCatalog: List<ScopedItemDefinition> = emptyList(),
+    val progression: CharacterProgression = CharacterProgression(),
     val itemCreationDraft: ItemCreationDraft? = null,
     val bodyRegions: List<BodyRegion> = defaultBodyRegions(),
+    val bodyState: BodyState? = null,
     val agilityLimit: String = "",
     val organs: List<OrganStatus> = emptyList(),
     val mysticAbilities: List<MysticAbility> = emptyList(),
+    val conditionInstances: List<ConditionInstance> = emptyList(),
+    val activeModifiers: List<ActiveModifier> = emptyList(),
     val conditions: List<ConditionEffect> = emptyList(),
     val story: String = "",
     val notes: String = "",
@@ -374,7 +406,7 @@ data class Character(
     val currentLoad: Int get() = inventory.filterNot { it.inventoryState == InventoryState.STORED }.sumOf { it.effectiveLoad() }
     val backpackCapacity: Int get() = inventory
         .filter { it.inventoryState == InventoryState.EQUIPPED }
-        .filter { it.catalogEntryId.isNotBlank() && it.category.equals("Recipiente de Carga", true) }
+        .filter { it.category.equals("Recipiente de Carga", true) || it.backpackCapacity > 0 }
         .maxOfOrNull(InventoryItem::backpackCapacity) ?: 0
     val maximumLoad: Int get() = 2 + attributeValue("FOR") + backpackCapacity
     val excessLoad: Int get() = (currentLoad - maximumLoad).coerceAtLeast(0)
@@ -449,15 +481,30 @@ data class Character(
         return region.localProtection + typed.sumOf { it.value }
     }
 
+    fun localProtection(region: BodyRegionState): Int {
+        val equippedIds = region.equippedItemIds.mapTo(mutableSetOf()) { it.value }
+        val typed = EquipmentEffectEngine.resolve(this).entries
+            .filter { it.type == ItemEffectType.PL && it.itemId in equippedIds }
+        return region.protection.localProtection + typed.sumOf { it.value }
+    }
+
     fun equippedItems(region: BodyRegion): List<InventoryItem> =
         inventory.filter {
             it.id in region.equippedItemIds && !it.isBroken &&
                 it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
         }
 
+    fun equippedItems(region: BodyRegionState): List<InventoryItem> =
+        inventory.filter {
+            it.id in region.equippedItemIds.map(ItemInstanceId::value) && !it.isBroken &&
+                it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
+        }
+
     fun equipItems(regionIndex: Int, itemIds: Set<String>): Character {
-        if (regionIndex !in bodyRegions.indices) return this
-        val regionName = bodyRegions[regionIndex].name
+        val canonicalBody = runCatching { canonicalBodyState() }.getOrNull() ?: return this
+        if (regionIndex !in canonicalBody.regions.indices || regionIndex !in bodyRegions.indices) return this
+        val typedRegion = canonicalBody.regions[regionIndex]
+        val regionName = typedRegion.name
         val candidates = inventory.filter { it.id in itemIds && !it.isBroken && it.matchesRegion(regionName) }
         val armor = candidates.filter { it.category.equals("Armadura", true) }.takeLast(1)
         val accessories = candidates.filter { it.category.equals("Acessório", true) }.takeLast(1)
@@ -481,15 +528,34 @@ data class Character(
                 else -> item
             }
         }
-        return copy(bodyRegions = updatedRegions, inventory = updatedInventory).synchronizeItemPowers()
+        val updatedBody = canonicalBody.withUpdatedRegion(typedRegion.region) { current ->
+            current.copy(equippedItemIds = selectedIds.map(::ItemInstanceId))
+        }
+        return copy(bodyRegions = updatedRegions, bodyState = updatedBody, inventory = updatedInventory).synchronizeItemPowers()
     }
 
-    fun removeInventoryItem(itemId: String): Character = copy(
-        inventory = inventory.filterNot { it.id == itemId },
-        bodyRegions = bodyRegions.map { region ->
-            region.copy(equippedItemIds = region.equippedItemIds.filterNot { it == itemId })
-        },
-    ).synchronizeItemPowers()
+    fun removeInventoryItem(itemId: String): Character {
+        val currentBody = runCatching { canonicalBodyState() }.getOrNull()
+        val typedBody = currentBody?.copy(
+            regions = currentBody.regions.map { region ->
+                region.copy(
+                    equippedItemIds = region.equippedItemIds.filterNot { it.value == itemId },
+                    implantInstanceIds = region.implantInstanceIds.filterNot { it.value == itemId },
+                    prosthesisInstanceId = region.prosthesisInstanceId?.takeUnless { it.value == itemId },
+                )
+            },
+            organs = currentBody.organs.map { organ ->
+                organ.copy(implantInstanceId = organ.implantInstanceId?.takeUnless { it.value == itemId })
+            },
+        )
+        return copy(
+            inventory = inventory.filterNot { it.id == itemId },
+            bodyRegions = bodyRegions.map { region ->
+                region.copy(equippedItemIds = region.equippedItemIds.filterNot { it == itemId })
+            },
+            bodyState = typedBody,
+        ).synchronizeItemPowers()
+    }
 
     private fun activeEquippedItems(): List<InventoryItem> = inventory.filter {
         !it.isBroken && it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
@@ -504,10 +570,9 @@ data class Character(
             .filter { it.name.equals(name, true) }
         return CalculatedValue(
             base = matching.sumOf { knowledge ->
-                val permanentAttribute = attributes.firstOrNull { it.acronym.equals(knowledge.attribute, true) }
-                    ?.let { permanentAttributeValue(it.acronym) }
-                    ?: knowledge.value // Legacy entries without an attribute remain readable until explicitly migrated.
-                minOf(knowledge.value.coerceIn(0, 5), permanentAttribute.coerceAtLeast(0))
+                val permanentLimit = knowledge.attribute.takeIf(String::isNotBlank)
+                    ?.let(::permanentAttributeValue) ?: 5
+                knowledge.value.coerceIn(0, permanentLimit)
             },
             adjustment = matching.sumOf { it.adjustment },
             modifiers = equippedKnowledgeModifiers(matching.firstOrNull()?.id ?: name, name) + powerValueModifiers(AbilityModifierTarget.KNOWLEDGE, matching.firstOrNull()?.id ?: name),
@@ -518,10 +583,29 @@ data class Character(
 
     fun attributeCalculation(acronym: String): CalculatedValue {
         val attribute = attributes.firstOrNull { it.acronym.equals(acronym, true) }
+        val modifiers = racialAttributeModifiers(acronym) + equippedAttributeModifiers(acronym) +
+            powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym)
+        val base = attribute?.value ?: 0
+        val adjustment = attribute?.modifier ?: 0
+        val agilityLimitModifiers = if (acronym.equals("AGI", true)) {
+            val resolution = EquipmentEffectEngine.resolve(this)
+            val limit = resolution.agilityLimit
+            val unrestrictedTotal = base + adjustment + modifiers.sumOf(ValueModifier::value)
+            val penalty = limit?.let { (it - unrestrictedTotal).coerceAtMost(0) } ?: 0
+            if (penalty < 0) {
+                val sources = resolution.entries.filter { it.type == ItemEffectType.AGILITY_LIMIT && it.value == limit }
+                listOf(ValueModifier(
+                    sourceType = ModifierSourceType.ITEM,
+                    sourceId = sources.joinToString(",") { it.itemId },
+                    label = "LA — ${sources.joinToString { it.itemName.ifBlank { "Item sem nome" } }}",
+                    value = penalty,
+                ))
+            } else emptyList()
+        } else emptyList()
         return CalculatedValue(
-            base = attribute?.value ?: 0,
-            adjustment = attribute?.modifier ?: 0,
-            modifiers = racialAttributeModifiers(acronym) + equippedAttributeModifiers(acronym) + powerValueModifiers(AbilityModifierTarget.ATTRIBUTE, acronym),
+            base = base,
+            adjustment = adjustment,
+            modifiers = modifiers + agilityLimitModifiers,
         )
     }
 
@@ -555,13 +639,88 @@ data class Character(
 
     private fun skillValue(attributeAcronym: String, skillName: String): Int = basicKnowledgeTotal(attributeAcronym, skillName)
 
-    private fun powerModifier(type: AbilityModifierTarget, target: String): Int =
-        activePowerModifiers().filter { (_, modifier) -> modifier.targetType == type && modifier.targetId.equals(target, true) }.sumOf { it.second.value }
+    private fun powerModifier(type: AbilityModifierTarget, target: String): Int {
+        val legacy = activePowerModifiers()
+            .filter { (power, modifier) ->
+                abilities.none { it.id == power.id } && modifier.targetType == type && modifier.targetId.equals(target, true)
+            }
+            .sumOf { it.second.value }
+        return legacy + canonicalAbilityBonuses(type, target).sumOf { it.third } + activeModifierBonus(type, target)
+    }
 
-    internal fun powerValueModifiers(type: AbilityModifierTarget, target: String): List<ValueModifier> =
-        activePowerModifiers().filter { (_, modifier) -> modifier.targetType == type && modifier.targetId.equals(target, true) }.map { (power, modifier) ->
-            ValueModifier(ModifierSourceType.TRAIT, power.id, power.name.ifBlank { "Poder passivo" }, modifier.value)
+    private fun activeModifierBonus(type: AbilityModifierTarget, target: String): Int =
+        resolveStacking(activeModifiers.filter { it.activation == null && it.matches(type, target) }).sumOf(ActiveModifier::amount)
+
+    internal fun powerValueModifiers(type: AbilityModifierTarget, target: String): List<ValueModifier> {
+        val legacy = activePowerModifiers()
+            .filter { (power, modifier) ->
+                abilities.none { it.id == power.id } && modifier.targetType == type && modifier.targetId.equals(target, true)
+            }
+            .map { (power, modifier) ->
+                ValueModifier(ModifierSourceType.TRAIT, power.id, power.name.ifBlank { "Poder passivo" }, modifier.value)
+            }
+        val canonical = canonicalAbilityBonuses(type, target).map { (id, name, value) ->
+            ValueModifier(ModifierSourceType.TRAIT, id, name, value)
         }
+        val active = activeModifiers.filter { it.activation == null && it.matches(type, target) }
+            .let(::resolveStacking)
+            .map { modifier ->
+                ValueModifier(ModifierSourceType.TRAIT, modifier.modifierId, "Modificador ativo", modifier.amount)
+            }
+        return legacy + canonical + active
+    }
+
+    private fun canonicalAbilityBonuses(type: AbilityModifierTarget, target: String): List<Triple<String, String, Int>> =
+        abilities.asSequence()
+            .filter { ability ->
+                ability.kind == AbilityKind.POWER && ability.execution.kind == ExecutionKind.Passive &&
+                    ability.available && ability.powerData?.grantsPermanentBonus == true && ability.isCanonicalPowerActive()
+            }
+            .flatMap { ability -> ability.powerData?.permanentBonuses.orEmpty().asSequence().map { ability to it } }
+            .filter { (_, bonus) -> bonus.target.matches(type, target) }
+            .map { (ability, bonus) -> Triple(ability.id, ability.name, bonus.amount) }
+            .toList()
+
+    private fun Ability.isCanonicalPowerActive(): Boolean = when (val state = powerData?.passiveState) {
+        is PassiveState.ManualToggle -> state.active
+        PassiveState.ItemBound -> {
+            val itemId = (source?.sourceRef as? SourceRef.Item)?.itemInstanceId?.value
+            inventory.any { item -> item.id == itemId && !item.isBroken && item.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED) }
+        }
+        null -> false
+    }
+
+    private fun BonusTarget.matches(type: AbilityModifierTarget, target: String): Boolean = when (this) {
+        is BonusTarget.AttributeTarget -> type == AbilityModifierTarget.ATTRIBUTE && attribute.name.equals(target, true)
+        is BonusTarget.BasicKnowledgeTarget -> type == AbilityModifierTarget.KNOWLEDGE &&
+            (knowledge.name.equals(target, true) || normalizeAbilityName(knowledge.label) == normalizeAbilityName(target))
+        is BonusTarget.SpecialKnowledgeTarget -> type == AbilityModifierTarget.KNOWLEDGE && specialKnowledgeId.value.equals(target, true)
+        is BonusTarget.ResourceMaxTarget -> type == AbilityModifierTarget.RESOURCE_MAXIMUM && resource.characterResourceName().equals(target, true)
+        is BonusTarget.ProtectionTarget -> type == AbilityModifierTarget.PROTECTION && protection.name.equals(target, true)
+    }
+
+    private fun SpendableResource.characterResourceName(): String = when (this) {
+        SpendableResource.PV -> "LIFE"
+        SpendableResource.PS -> "SANITY"
+        SpendableResource.PM -> "ARCANE"
+        SpendableResource.PE -> "ENERGY"
+        SpendableResource.PD -> "DESTINY"
+    }
+
+    private fun ActiveModifier.matches(type: AbilityModifierTarget, target: String): Boolean = when (val value = this.target) {
+        is BonusTarget.AttributeTarget -> type == AbilityModifierTarget.ATTRIBUTE && value.attribute.name.equals(target, true)
+        is BonusTarget.BasicKnowledgeTarget -> type == AbilityModifierTarget.KNOWLEDGE &&
+            (value.knowledge.name.equals(target, true) || normalizeAbilityName(value.knowledge.label) == normalizeAbilityName(target))
+        is BonusTarget.SpecialKnowledgeTarget -> type == AbilityModifierTarget.KNOWLEDGE && value.specialKnowledgeId.value.equals(target, true)
+        is BonusTarget.ResourceMaxTarget -> type == AbilityModifierTarget.RESOURCE_MAXIMUM && value.resource.characterResourceName().equals(target, true)
+        is BonusTarget.ProtectionTarget -> type == AbilityModifierTarget.PROTECTION && value.protection.name.equals(target, true)
+    }
+
+    private fun resolveStacking(modifiers: List<ActiveModifier>): List<ActiveModifier> = buildList {
+        addAll(modifiers.filter { it.stacking == StackingRule.Add })
+        modifiers.filter { it.stacking == StackingRule.HighestOnly }.maxByOrNull(ActiveModifier::amount)?.let { add(it) }
+        addAll(modifiers.filter { it.stacking == StackingRule.ReplaceBySource }.distinctBy(ActiveModifier::source))
+    }
 
     private fun equippedAttributeModifiers(targetId: String): List<ValueModifier> =
         equipmentModifiers(ItemEffectType.ATTRIBUTE, targetId)
@@ -635,8 +794,8 @@ val defaultProtectionNames = listOf("Geral", "Esquiva", "Postura", "Mental", "Ar
 fun defaultProtectionAdjustments() = defaultProtectionNames.associateWith { 0 }
 
 fun defaultBodyRegions() = listOf(
-    "Cabeça", "Torso", "Braço direito", "Braço esquerdo", "Mão direita",
-    "Mão esquerda", "Perna direita", "Perna esquerda", "Pé direito", "Pé esquerdo",
+    "Cabeça", "Torso", "Braço esquerdo", "Braço direito", "Mão esquerda",
+    "Mão direita", "Perna esquerda", "Perna direita", "Pé esquerdo", "Pé direito",
 ).mapIndexed { index, name -> BodyRegion(roll = index + 1, name = name) }
 
 fun normalizeBodyRegions(regions: List<BodyRegion>): List<BodyRegion> {

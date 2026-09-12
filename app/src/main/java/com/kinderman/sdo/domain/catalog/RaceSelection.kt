@@ -2,6 +2,10 @@ package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.Power
+import com.kinderman.sdo.domain.model.RaceId
+import com.kinderman.sdo.domain.model.SourceKind
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
+import com.kinderman.sdo.domain.model.toCanonicalAbility
 
 fun Character.withMigratedCreationRules(): Character {
     if (creationRulesVersion >= 2) return this
@@ -35,10 +39,11 @@ fun Character.withRaceSelection(
     val retainedPowers = powers.filterNot {
         it.origin.startsWith("Raça — ") || it.origin.startsWith("Sub-raça — ")
     }
+    val raceId = raceDefinition.canonicalId()
     val racialPowers = selectedBasePowers.map {
-        it.toStructuredPower("Raça — ${raceDefinition.name}")
+        it.toStructuredPower("Raça — ${raceDefinition.name}", raceId)
     } + listOfNotNull(selectedSubRacePower?.let {
-        it.toStructuredPower("Sub-raça — ${requireNotNull(subRaceDefinition).name}")
+        it.toStructuredPower("Sub-raça — ${requireNotNull(subRaceDefinition).name}", raceId)
     })
     fun previous(value: Int) = if (hadManagedRace) value else 0
 
@@ -52,10 +57,12 @@ fun Character.withRaceSelection(
         arcane = arcane.copy(adjustment = arcane.adjustment - previous(oldRace?.arcane ?: 0) + raceDefinition.arcane),
         energy = energy.copy(adjustment = energy.adjustment - previous(oldRace?.energy ?: 0) + raceDefinition.energy),
         powers = retainedPowers + racialPowers,
+        abilities = allCanonicalAbilitiesSafely().filterNot { it.source?.kind == SourceKind.Race } +
+            racialPowers.map { it.toCanonicalAbility() },
     )
 }
 
-internal fun RacialPower.toStructuredPower(origin: String): Power = Power(
+internal fun RacialPower.toStructuredPower(origin: String, raceId: RaceId): Power = Power(
     name = name,
     origin = origin,
     effect = effect,
@@ -66,7 +73,7 @@ internal fun RacialPower.toStructuredPower(origin: String): Power = Power(
     limit = limit,
     category = "Poder racial",
     sourceType = com.kinderman.sdo.domain.model.PowerSourceType.RACE,
-    sourceId = origin,
+    sourceId = raceId.name,
     ruleReference = RaceCatalog.RULE_REFERENCE,
     activationCondition = activationCondition,
     deactivationCondition = deactivationCondition,
@@ -80,3 +87,26 @@ internal fun RacialPower.toStructuredPower(origin: String): Power = Power(
     rangeType = rangeType,
     durationType = durationType,
 )
+
+internal fun RaceDefinition.canonicalId(): RaceId = when (name) {
+    "Skayra" -> RaceId.Skayra
+    "Humanos" -> RaceId.Humano
+    "Elfos" -> RaceId.Elfo
+    "Ascendidos" -> RaceId.Ascendido
+    "Elfos do Crepúsculo" -> RaceId.ElfoDoCrepusculo
+    "Golms" -> RaceId.Golm
+    "Ciuvati" -> RaceId.Ciuvati
+    "Crias da Neblina" -> RaceId.CriaDaNeblina
+    "Kaltoch — Andarilho", "Kaltoch — Aumentado" -> RaceId.Kaltoch
+    "Anões" -> RaceId.Anao
+    "Sonaris" -> RaceId.Sonaris
+    "Goblins" -> RaceId.Goblin
+    "Ovaryn" -> RaceId.Ovaryn
+    "Orcs" -> RaceId.Orc
+    "Tritões" -> RaceId.Tritao
+    "Fadas" -> RaceId.Fada
+    "Sangue-Vil" -> RaceId.SangueVil
+    "Avianos" -> RaceId.Aviano
+    "Lúmens" -> RaceId.Lumen
+    else -> error("Raça canônica sem RaceId: $name")
+}

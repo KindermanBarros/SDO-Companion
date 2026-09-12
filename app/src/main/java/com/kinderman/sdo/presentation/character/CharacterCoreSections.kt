@@ -2,6 +2,7 @@ package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,8 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,8 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.AttributeValue
@@ -29,6 +34,7 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.agilityLimitBreakdown
 import com.kinderman.sdo.domain.catalog.withRaceSelection
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
@@ -60,12 +66,20 @@ internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, 
         AddButton("Selecionar raça, sub-raça e poderes", enabled) { selectingRace = true }
         HudTextField("Ocupação", character.occupation, enabled = enabled) { onChange(character.copy(occupation = it)) }
         TwoFields(
-            { HudTextField("Altura", character.height, it, enabled = enabled) { value -> onChange(character.copy(height = value)) } },
-            { HudTextField("Idade", character.age, it, enabled = enabled) { value -> onChange(character.copy(age = value)) } },
+            { IntegerField("Altura (cm)", character.height.toIntOrNull() ?: 0, enabled, it) { value -> onChange(character.copy(height = value.coerceAtLeast(0).toString())) } },
+            { IntegerField("Idade", character.age.toIntOrNull() ?: 0, enabled, it) { value -> onChange(character.copy(age = value.coerceAtLeast(0).toString())) } },
         )
-        HudTextField("Sexo", character.sex, enabled = enabled) { value -> onChange(character.copy(sex = value)) }
+        ChoiceField("Gênero", character.sex.takeIf { it in listOf("Masculino", "Feminino", "N/A") } ?: "N/A", listOf("Masculino", "Feminino", "N/A"), enabled) {
+            onChange(character.copy(sex = it))
+        }
         TwoFields(
-            { if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else AddButton("Nível ${character.level} — alterar", enabled) { selectingLevel = true } },
+            { if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                IconButton(onClick = { onChange(character.copy(level = (character.level - 1).coerceAtLeast(1))) }, enabled = enabled && character.level > 1) {
+                    Icon(Icons.Default.Remove, "Diminuir nível")
+                }
+                Text("NÍVEL ${character.level}", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp))
+                IconButton(onClick = { selectingLevel = true }, enabled = enabled) { Icon(Icons.Default.Add, "Aumentar nível") }
+            } },
             { IntegerField("Dinheiro (E$)", character.money, enabled, it) { value -> onChange(character.copy(money = value)) } },
         )
     }
@@ -119,9 +133,13 @@ internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (
             accent = MaterialTheme.colorScheme.secondary,
             enabled = enabled,
         ) { onChange(character.copy(energy = it)) }
-        ManualResourceEditor("DESTINO", character.destiny, MaterialTheme.colorScheme.secondary, enabled) { onChange(character.copy(destiny = it)) }
+        ManualResourceEditor("DESTINO", character.destiny.copy(maximum = character.destinyMaximum), MaterialTheme.colorScheme.secondary, enabled, fixedMaximum = character.destinyMaximum) {
+            onChange(character.copy(destiny = it.copy(maximum = 5)))
+        }
         ManualResourceEditor("EXAUSTÃO", character.exhaustion, MaterialTheme.colorScheme.error, enabled) { onChange(character.copy(exhaustion = it)) }
-        ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption, MaterialTheme.colorScheme.tertiary, enabled) { onChange(character.copy(corruption = it)) }
+        ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption.copy(maximum = 100), MaterialTheme.colorScheme.tertiary, enabled, fixedMaximum = 100) {
+            onChange(character.copy(corruption = it.copy(maximum = 100)))
+        }
     }
 }
 
@@ -136,60 +154,91 @@ private fun CalculatedResourceEditor(
     enabled: Boolean,
     onValue: (ResourceValue) -> Unit,
 ) {
+    var expanded by rememberSaveable(label) { mutableStateOf(false) }
     Column(
         Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-            Text("MÁXIMO $maximum", color = accent, style = MaterialTheme.typography.titleLarge)
-        }
-        Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-        IntegerField("Atual", resource.current, enabled) { value ->
-            onValue(resource.copy(current = value.coerceAtLeast(0)))
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            IconButton(
-                enabled = enabled && resource.adjustment > -base,
-                onClick = { onValue(resource.copy(adjustment = resource.adjustment - 1)) },
-            ) {
-                Icon(Icons.Default.Remove, "Diminuir ajuste de $label", tint = accent)
+        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+                ResourceSummary(resource.current, maximum, accent)
             }
-            IntegerField(
-                label = "Ajuste (+/-)",
-                value = resource.adjustment,
-                enabled = enabled,
-                modifier = Modifier.weight(1f),
-            ) { value ->
-                onValue(resource.copy(adjustment = value.coerceAtLeast(-base)))
-            }
-            IconButton(
-                enabled = enabled,
-                onClick = { onValue(resource.copy(adjustment = resource.adjustment + 1)) },
-            ) {
-                Icon(Icons.Default.Add, "Aumentar ajuste de $label", tint = accent)
-            }
+            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher $label" else "Expandir $label", tint = accent)
         }
-        val adjustmentLabel = if (resource.adjustment >= 0) "+${resource.adjustment}" else resource.adjustment.toString()
-        Text(
-            "BASE $base // AJUSTE $adjustmentLabel // TOTAL $maximum",
-            color = accent,
-            style = MaterialTheme.typography.labelSmall,
-        )
+        if (expanded) {
+            Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            ResourceCurrentControls(label, resource.current, maximum, accent, enabled) { onValue(resource.copy(current = it)) }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                IconButton(enabled = enabled && resource.adjustment > -base, onClick = { onValue(resource.copy(adjustment = resource.adjustment - 1)) }) {
+                    Icon(Icons.Default.Remove, "Diminuir ajuste de $label", tint = accent)
+                }
+                Text("AJUSTE ${resource.adjustment.signed()}", color = accent)
+                IconButton(enabled = enabled, onClick = { onValue(resource.copy(adjustment = resource.adjustment + 1)) }) {
+                    Icon(Icons.Default.Add, "Aumentar ajuste de $label", tint = accent)
+                }
+            }
+            Text("BASE $base // AJUSTE ${resource.adjustment.signed()} // TOTAL $maximum", color = accent, style = MaterialTheme.typography.labelSmall)
+        }
     }
 }
 
 @Composable
-private fun ManualResourceEditor(label: String, resource: ResourceValue, accent: Color, enabled: Boolean, onValue: (ResourceValue) -> Unit) {
+private fun ManualResourceEditor(
+    label: String,
+    resource: ResourceValue,
+    accent: Color,
+    enabled: Boolean,
+    fixedMaximum: Int? = null,
+    onValue: (ResourceValue) -> Unit,
+) {
+    var expanded by rememberSaveable(label) { mutableStateOf(false) }
     Column(
         Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-        TwoFields(
-            { IntegerField("Atual", resource.current, enabled, it) { value -> onValue(resource.copy(current = value)) } },
-            { IntegerField("Máximo", resource.maximum, enabled, it) { value -> onValue(resource.copy(maximum = value.coerceAtLeast(0))) } },
-        )
+        val maximum = fixedMaximum ?: resource.maximum.coerceAtLeast(0)
+        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+                ResourceSummary(resource.current, maximum, accent)
+            }
+            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher $label" else "Expandir $label", tint = accent)
+        }
+        if (expanded) {
+            ResourceCurrentControls(label, resource.current, maximum, accent, enabled) { onValue(resource.copy(current = it, maximum = maximum)) }
+            if (fixedMaximum == null) ChoiceField("Máximo", maximum.coerceIn(0, 100), (0..100).toList(), enabled) {
+                onValue(resource.copy(current = resource.current.coerceAtMost(it), maximum = it))
+            } else Text("MÁXIMO FIXO // $fixedMaximum", color = accent, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun ResourceSummary(current: Int, maximum: Int, accent: Color) {
+    val safeMaximum = maximum.coerceAtLeast(0)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+        Column {
+            Text("ATUAL", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Text(current.coerceIn(0, safeMaximum).toString(), color = accent, style = MaterialTheme.typography.titleLarge)
+        }
+        Column {
+            Text("MÁXIMO", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Text(safeMaximum.toString(), color = accent, style = MaterialTheme.typography.titleLarge)
+        }
+    }
+}
+
+@Composable
+private fun ResourceCurrentControls(label: String, current: Int, maximum: Int, accent: Color, enabled: Boolean, onCurrent: (Int) -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+        IconButton(enabled = enabled && current > 0, onClick = { onCurrent((current - 1).coerceAtLeast(0)) }) {
+            Icon(Icons.Default.Remove, "Diminuir $label", tint = accent)
+        }
+        ChoiceField("Atual", current.coerceIn(0, maximum), (0..maximum).toList(), enabled, Modifier.weight(1f)) { onCurrent(it) }
+        IconButton(enabled = enabled && current < maximum, onClick = { onCurrent((current + 1).coerceAtMost(maximum)) }) {
+            Icon(Icons.Default.Add, "Aumentar $label", tint = accent)
+        }
     }
 }
 
@@ -233,28 +282,66 @@ internal fun AttributeSection(
 
 @Composable
 private fun AttributeEditor(character: Character, attribute: AttributeValue, enabled: Boolean, showAttributes: Boolean, showBasicKnowledges: Boolean, onValue: (AttributeValue) -> Unit) {
-    Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-    if (showAttributes) TwoFields(
-        { IntegerField("Valor-base", attribute.value, enabled, it) { value -> onValue(attribute.copy(value = value.coerceAtLeast(0))) } },
-        { IntegerField("Modificador", attribute.modifier, enabled, it) { value -> onValue(attribute.copy(modifier = value)) } },
-    )
-    if (character.attributeTotal(attribute.acronym) != attribute.value) {
-        Text("TOTAL EQUIPADO // ${character.attributeTotal(attribute.acronym)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+    val creationMode = character.isInCreation
+    var expanded by rememberSaveable(attribute.acronym) { mutableStateOf(creationMode) }
+    val calculation = character.attributeCalculation(attribute.acronym)
+    val bonuses = buildList {
+        if (calculation.adjustment != 0) add("Ajuste da ficha ${calculation.adjustment.signed()}")
+        addAll(calculation.modifiers.filter { it.value != 0 && !it.label.startsWith("LA —") }.map { "${it.label} [${it.sourceType.name}] ${it.value.signed()}" })
     }
-    val permanentAttributeLimit = character.permanentAttributeValue(attribute.acronym).coerceIn(0, 5)
-    if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f).padding(top = 18.dp))
-            IntegerField("Valor (máx. $permanentAttributeLimit)", skill.value, enabled, Modifier.weight(1f)) { value ->
-                onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value.coerceIn(0, permanentAttributeLimit)))))
+    Column(
+        Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.outlineVariant, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("${attribute.acronym} // ${attribute.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                Text("VALOR TOTAL // ${calculation.total}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             }
-            IntegerField("Mod.", skill.modifier, enabled, Modifier.weight(1f)) { value -> onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(modifier = value)))) }
+            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher atributo" else "Expandir atributo")
         }
-        if (character.basicKnowledgeTotal(attribute.acronym, skill.name) != skill.value) {
-            Text("${skill.name.uppercase()} EQUIPADO // ${character.basicKnowledgeTotal(attribute.acronym, skill.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        if (bonuses.isNotEmpty()) Text("BÔNUS APLICADOS: ${bonuses.joinToString(" // ")}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        else Text("BÔNUS APLICADOS: NENHUM", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        if (attribute.acronym.equals("AGI", true)) {
+            val limit = character.agilityLimitBreakdown()
+            Text(
+                "LA // ${limit.total ?: "SEM LIMITE"}" + limit.contributions.joinToString(prefix = if (limit.contributions.isEmpty()) "" else " // ") { "${it.label}: ${it.value}" },
+                color = if (limit.total != null) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+            )
+            calculation.modifiers.firstOrNull { it.label.startsWith("LA —") }?.let { penalty ->
+                Text("PENALIDADE APLICADA // ${penalty.label} ${penalty.value.signed()}", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+        if (expanded) {
+            if (showAttributes) ChoiceField("Valor-base", attribute.value.coerceIn(0, 5), (0..5).toList(), enabled) { onValue(attribute.copy(value = it)) }
+            if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
+                val skillCalculation = character.basicKnowledgeCalculation(attribute.acronym, skill.name)
+                val skillBonuses = buildList {
+                    if (skillCalculation.adjustment != 0) add("Ajuste ${skillCalculation.adjustment.signed()}")
+                    addAll(skillCalculation.modifiers.filter { it.value != 0 }.map { "${it.label} [${it.sourceType.name}] ${it.value.signed()}" })
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1.35f)) {
+                        Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
+                        Text("TOTAL ${skillCalculation.total}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    }
+                    ChoiceField("Base", skill.value.coerceIn(0, 5), (0..5).toList(), enabled, Modifier.weight(1f)) { value ->
+                        onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value))))
+                    }
+                }
+                if (skillBonuses.isNotEmpty()) Text("Bônus aplicados: ${skillBonuses.joinToString(" // ")}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            }
         }
     }
 }
+
+private fun Int.signed(): String = if (this >= 0) "+$this" else toString()
 
 @Composable
 internal fun SpecialKnowledgeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
@@ -339,6 +426,7 @@ private fun ProtectionEditor(
     enabled: Boolean,
     onAdjustment: (Int) -> Unit,
 ) {
+    var expanded by rememberSaveable(name) { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -347,26 +435,23 @@ private fun ProtectionEditor(
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-            Text("TOTAL $total", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
+        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                Text(name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+                Text("TOTAL $total", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
+            }
+            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher $name" else "Expandir $name", tint = MaterialTheme.colorScheme.secondary)
         }
+        if (expanded) {
         Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 enabled = enabled && adjustment > -base,
                 onClick = { onAdjustment(adjustment - 1) },
             ) {
                 Icon(Icons.Default.Remove, "Diminuir ajuste de $name", tint = MaterialTheme.colorScheme.secondary)
             }
-            IntegerField(
-                label = "Ajuste (+/-)",
-                value = adjustment,
-                enabled = enabled,
-                modifier = Modifier.weight(1f),
-            ) { value ->
-                onAdjustment(value.coerceAtLeast(-base))
-            }
+            Text("AJUSTE ${adjustment.signed()}", color = MaterialTheme.colorScheme.secondary)
             IconButton(
                 enabled = enabled,
                 onClick = { onAdjustment(adjustment + 1) },
@@ -380,5 +465,6 @@ private fun ProtectionEditor(
             color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.labelSmall,
         )
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.kinderman.sdo.data.local
 import androidx.room.Entity
 import androidx.room.Index
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignInvite
 import com.kinderman.sdo.domain.model.CampaignMember
@@ -11,6 +12,7 @@ import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.CampaignSettings
 import com.kinderman.sdo.domain.model.CampaignState
 
+@IgnoreExtraProperties
 @Entity(tableName = "campaigns")
 data class CampaignRecord(
     @androidx.room.PrimaryKey val id: String = "",
@@ -26,6 +28,7 @@ data class CampaignRecord(
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
 )
 
+@IgnoreExtraProperties
 @Entity(
     tableName = "campaign_members",
     primaryKeys = ["campaignId", "userId"],
@@ -44,6 +47,7 @@ data class CampaignMemberRecord(
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
 )
 
+@IgnoreExtraProperties
 @Entity(
     tableName = "campaign_invites",
     indices = [Index(value = ["code"], unique = true), Index("campaignId")],

@@ -29,6 +29,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 
+private sealed interface CharacterSyncWrite {
+    data class Saved(val updatedAt: Long) : CharacterSyncWrite
+    data class Conflict(val value: CharacterSyncConflict) : CharacterSyncWrite
+}
+
 class OfflineFirstCharacterRepository(
     private val dao: CharacterDao,
     private val ownerDao: OwnerDao,
@@ -115,6 +120,7 @@ class OfflineFirstCharacterRepository(
             "Somente a responsável principal pode transferir uma ficha."
         }
         check(owner.uid.isNotBlank()) { "O novo owner é inválido." }
+        if (character.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
         dao.upsert(
             character.copy(
                 ownerId = owner.uid,
@@ -196,13 +202,25 @@ class OfflineFirstCharacterRepository(
         val remoteRecords = remoteById.values.map { remote ->
             val migrated = remote.migratedStructuredRecord(markDirty = false)
             if (migrated != remote) runCatching {
-                collection.document(remote.id).set(migrated.copy(dirty = false)).await()
+                val reference = collection.document(remote.id)
+                store.runTransaction { transaction ->
+                    val latest = transaction.get(reference).toObject(CharacterRecord::class.java)
+                        ?.copy(id = reference.id)
+                        ?: return@runTransaction
+                    val latestMigrated = latest.migratedStructuredRecord(markDirty = false)
+                    if (latestMigrated != latest) transaction.set(reference, latestMigrated.copy(dirty = false))
+                    Unit
+                }.await()
             }
             migrated
         }
         val remoteIds = remoteById.keys
 
-        val dirtyRecords = dao.dirty().filter { record ->
+        val dirtyRecords = dao.dirty().map { record ->
+            val migrated = record.migratedStructuredRecord(markDirty = true)
+            if (migrated != record) dao.upsert(migrated)
+            migrated
+        }.filter { record ->
             record.ownerId == session.uid ||
                 normalizeCampaignId(record.campaignId) in ownedCampaignIds ||
                 session.isAdmin
@@ -243,23 +261,38 @@ class OfflineFirstCharacterRepository(
                 }
             } else {
                 val normalizedRecord = record.copy(campaignId = normalizeCampaignId(record.campaignId))
-                val remote = remoteById[record.id]
-                if (remote != null && remote.updatedAt > record.lastSyncedAt) {
-                    val localCharacter = normalizedRecord.toDomain()
-                    val remoteCharacter = remote.toDomain()
-                    val fields = characterConflictFields(localCharacter, remoteCharacter)
-                    if (fields.isNotEmpty()) {
-                        conflicts += CharacterSyncConflict(
-                            local = localCharacter,
-                            remote = remoteCharacter,
-                            remoteUpdatedAt = remote.updatedAt,
-                            fields = fields,
-                        )
-                        return@forEach
+                val reference = collection.document(record.id)
+                val result = store.runTransaction { transaction ->
+                    val snapshot = transaction.get(reference)
+                    val remote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
+                        ?.migratedStructuredRecord(markDirty = false)
+                    if (remote != null && remote.updatedAt > normalizedRecord.lastSyncedAt) {
+                        val localCharacter = normalizedRecord.toDomain()
+                        val remoteCharacter = remote.toDomain()
+                        val fields = characterConflictFields(localCharacter, remoteCharacter)
+                        if (fields.isNotEmpty()) {
+                            return@runTransaction CharacterSyncWrite.Conflict(
+                                CharacterSyncConflict(
+                                    local = localCharacter,
+                                    remote = remoteCharacter,
+                                    remoteUpdatedAt = remote.updatedAt,
+                                    fields = fields,
+                                ),
+                            )
+                        }
                     }
+                    val writeTimestamp = maxOf(
+                        System.currentTimeMillis(),
+                        normalizedRecord.updatedAt,
+                        normalizedRecord.lastSyncedAt + 1,
+                    )
+                    transaction.set(reference, normalizedRecord.copy(updatedAt = writeTimestamp, dirty = false))
+                    CharacterSyncWrite.Saved(writeTimestamp)
+                }.await()
+                when (result) {
+                    is CharacterSyncWrite.Conflict -> conflicts += result.value
+                    is CharacterSyncWrite.Saved -> dao.markSynced(record.id, result.updatedAt)
                 }
-                collection.document(record.id).set(normalizedRecord.copy(dirty = false)).await()
-                dao.markSynced(record.id, normalizedRecord.updatedAt)
             }
         }
         conflicts

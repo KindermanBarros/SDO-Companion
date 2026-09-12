@@ -1,7 +1,9 @@
 package com.kinderman.sdo.domain.model
 
+import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.firestore.PropertyName
 
+@IgnoreExtraProperties
 data class ItemPart(
     val id: String,
     val name: String,
@@ -18,6 +20,7 @@ data class ItemPart(
     val backpackCapacity: Int = 0,
 )
 
+@IgnoreExtraProperties
 data class ItemCreationDraft(
     val step: Int = 1,
     val category: String = "Arma",
@@ -36,7 +39,7 @@ data class ItemCreationDraft(
     val commonQuantity: Int = 1,
     val commonCategory: String = "Item",
     val commonRegion: String = "",
-    val commonDurability: Int = 0,
+    val commonDurability: Int = 1,
     val commonPg: Int = 0,
     val commonPl: Int = 0,
     val commonAgilityLimit: Int? = null,
@@ -154,9 +157,11 @@ fun Character.addInventoryItem(item: InventoryItem): Character {
     val targets = (attributes.flatMap { attribute -> attribute.skills.map { "${attribute.acronym}:${it.name}" } } +
         learnedKnowledges.map { it.id } + arcaneKnowledges.map { it.id } + battleTechniques.map { it.id })
         .filter(String::isNotBlank).sorted()
-    val resolved = item.copy(mechanicalEffects = item.mechanicalEffects.map { effect ->
+    val itemWithDurability = if (item.durabilityMax <= 0) item.copy(durabilityCurrent = 1, durabilityMax = 1)
+        else item.copy(durabilityCurrent = item.durabilityCurrent.coerceIn(0, item.durabilityMax))
+    val resolved = itemWithDurability.copy(mechanicalEffects = itemWithDurability.mechanicalEffects.map { effect ->
         if (effect.target != "*" || effect.resolvedTargetId.isNotBlank() || targets.isEmpty()) effect
-        else effect.copy(resolvedTargetId = targets[Math.floorMod("${item.id}:${effect.id}".hashCode(), targets.size)])
+        else effect.copy(resolvedTargetId = targets[Math.floorMod("${itemWithDurability.id}:${effect.id}".hashCode(), targets.size)])
     })
     return copy(inventory = inventory + resolved).synchronizeItemPowers()
 }
@@ -178,7 +183,7 @@ fun Character.withItemInventoryState(itemId: String, state: InventoryState): Cha
 /** Repairs invalid persisted states without changing the item order or deleting valid items. */
 fun Character.withValidInventoryStates(): Character {
     val usableContainerId = inventory
-        .filter { !it.isBroken && it.catalogEntryId.isNotBlank() && it.inventoryState == InventoryState.EQUIPPED && it.category.equals("Recipiente de Carga", true) }
+        .filter { !it.isBroken && it.inventoryState == InventoryState.EQUIPPED && (it.category.equals("Recipiente de Carga", true) || it.backpackCapacity > 0) }
         .maxByOrNull(InventoryItem::backpackCapacity)?.id
     var quickSlots = 0
     var hands = 0
@@ -187,7 +192,7 @@ fun Character.withValidInventoryStates(): Character {
         val state = item.inventoryState
         val valid = when {
             item.isBroken && state in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED) -> false
-            state == InventoryState.EQUIPPED && item.category.equals("Recipiente de Carga", true) -> item.catalogEntryId.isNotBlank() && item.id == usableContainerId
+            state == InventoryState.EQUIPPED && (item.category.equals("Recipiente de Carga", true) || item.backpackCapacity > 0) -> item.id == usableContainerId
             state == InventoryState.BACKPACK -> hasBackpack
             state == InventoryState.QUICK_ACCESS -> item.effectiveLoad() <= 1 && quickSlots++ < 2
             state == InventoryState.WIELDED -> (hands + item.handsRequired() <= 2).also { if (it) hands += item.handsRequired() }
@@ -314,9 +319,9 @@ data class BuiltItem(
         name = name,
         load = load,
         backpackCapacity = backpackCapacity,
-        durabilityCurrent = durability,
-        durabilityMax = durability,
-        itemCondition = if (durability == 0) ItemCondition.SCRAP else ItemCondition.NORMAL,
+        durabilityCurrent = durability.coerceAtLeast(1),
+        durabilityMax = durability.coerceAtLeast(1),
+        itemCondition = ItemCondition.NORMAL,
         region = region,
         effect = listOfNotNull(
             "Categoria: $category",

@@ -65,7 +65,7 @@ fun Character.withKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catal
 fun Character.requestKnowledgeLevel(knowledgeId: String, requestedLevel: Int, catalog: List<CatalogEntry>): Character {
     val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId } ?: return this
     require(current.pendingMilestoneLevels.isEmpty()) { "Resolva a recompensa pendente antes de alterar novamente o nível." }
-    val target = requestedLevel.coerceIn(0, minOf(5, permanentAttributeValue(current.attribute)))
+    val target = requestedLevel.coerceIn(0, 5)
     val pending = listOf(3, 5).filter { it > current.value && it <= target && current.milestoneRewards.none { reward -> reward.level == it } }
     if (pending.isEmpty()) return withKnowledgeLevel(knowledgeId, target, catalog)
     return replaceKnowledge(current.copy(pendingMilestoneLevels = pending, pendingTargetLevel = target))

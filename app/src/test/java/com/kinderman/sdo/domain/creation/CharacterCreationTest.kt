@@ -17,11 +17,22 @@ import org.junit.Test
 class CharacterCreationTest {
     @Test fun `racial attribute bonus does not spend one of the ten creation points`() {
         val character = Character(raceAttribute = "CAR", attributes = Character().attributes.map {
-            it.copy(value = if (it.acronym == "CAR") 2 else if (it.acronym == "FOR") 8 else 0)
+            it.copy(value = when (it.acronym) { "CAR", "FOR" -> 5; else -> 0 })
         })
         assertEquals(10, CharacterCreation.attributePointsSpent(character))
-        assertEquals(3, character.permanentAttributeValue("CAR"))
+        assertEquals(6, character.permanentAttributeValue("CAR"))
         assertNull(CharacterCreation.stepError(2, character))
+    }
+
+    @Test fun `creation rejects an attribute above five`() {
+        val character = Character(attributes = Character().attributes.map {
+            it.copy(value = when (it.acronym) { "FOR" -> 6; "VIG" -> 4; else -> 0 })
+        })
+
+        assertEquals(
+            CharacterCreationErrorCode.ATTRIBUTE_VALUE_INVALID,
+            CharacterCreation.validateStep(2, character).first { it.code == CharacterCreationErrorCode.ATTRIBUTE_VALUE_INVALID }.code,
+        )
     }
 
     @Test fun `heritage budget must be spent completely`() {
@@ -84,13 +95,17 @@ class CharacterCreationTest {
         assertEquals(true, CharacterCreationErrorCode.SPECIAL_KNOWLEDGE_DUPLICATE in codes)
     }
 
-    @Test fun `knowledge cannot exceed permanent related attribute`() {
-        val character = Character(
+    @Test fun `knowledge base is capped at five independently from narrative bonuses`() {
+        val withinBaseLimit = Character(
             attributes = Character().attributes.map { if (it.acronym == "CAR") it.copy(value = 2) else it },
             raceAttribute = "CAR",
             learnedKnowledges = listOf(SpecialKnowledge(name = "Música", attribute = "CAR", value = 4)),
         )
-        assertEquals(CharacterCreationErrorCode.KNOWLEDGE_LIMIT, CharacterCreation.validateStep(4, character).first { it.code == CharacterCreationErrorCode.KNOWLEDGE_LIMIT }.code)
+        assertEquals(false, CharacterCreation.validateStep(4, withinBaseLimit).any { it.code == CharacterCreationErrorCode.KNOWLEDGE_LIMIT })
+        val aboveBaseLimit = withinBaseLimit.copy(
+            learnedKnowledges = listOf(SpecialKnowledge(name = "Música", attribute = "CAR", value = 6, adjustment = 2)),
+        )
+        assertEquals(true, CharacterCreation.validateStep(4, aboveBaseLimit).any { it.code == CharacterCreationErrorCode.KNOWLEDGE_LIMIT })
     }
 
     @Test fun `level three and five require persisted milestone rewards`() {

@@ -30,7 +30,7 @@ data class CharacterCreationError(
 )
 
 object CharacterCreation {
-    const val STEP_COUNT = 9
+    const val STEP_COUNT = 8
     const val SPECIAL_KNOWLEDGE_CHOICES = 5
     const val KNOWLEDGE_POINTS = 15
 
@@ -61,8 +61,8 @@ object CharacterCreation {
                 error(CharacterCreationErrorCode.IDENTITY_INCOMPLETE, "Informe o nome e selecione a raça.")
             }
             2 -> {
-                if (character.attributes.any { it.value < 0 }) {
-                    error(CharacterCreationErrorCode.ATTRIBUTE_VALUE_INVALID, "Atributos não podem possuir pontos-base negativos.")
+                if (character.attributes.any { it.value !in 0..5 }) {
+                    error(CharacterCreationErrorCode.ATTRIBUTE_VALUE_INVALID, "Atributos devem permanecer entre 0 e 5 durante a criação.")
                 }
                 if (attributePointsSpent(character) != 10) {
                     error(CharacterCreationErrorCode.ATTRIBUTE_BUDGET, "Distribua exatamente 10 pontos-base entre os Atributos; bônus raciais não consomem esse orçamento.")
@@ -85,16 +85,10 @@ object CharacterCreation {
                 if (knowledgePointsSpent(character) != KNOWLEDGE_POINTS) {
                     error(CharacterCreationErrorCode.KNOWLEDGE_BUDGET, "Distribua exatamente 15 pontos entre qualquer Conhecimento.")
                 }
-                val basicAboveLimit = character.attributes.any { attribute ->
-                    val limit = character.permanentAttributeValue(attribute.acronym).coerceAtMost(5)
-                    attribute.skills.any { it.value !in 0..limit }
-                }
-                val specialAboveLimit = specialKnowledges(character).any { knowledge ->
-                    val limit = character.permanentAttributeValue(knowledge.attribute).coerceAtMost(5)
-                    knowledge.value !in 0..limit
-                }
+                val basicAboveLimit = character.attributes.any { attribute -> attribute.skills.any { it.value !in 0..5 } }
+                val specialAboveLimit = specialKnowledges(character).any { knowledge -> knowledge.value !in 0..5 }
                 if (basicAboveLimit || specialAboveLimit) {
-                    error(CharacterCreationErrorCode.KNOWLEDGE_LIMIT, "Nenhum Conhecimento pode ultrapassar o Atributo permanente relacionado ou o nível 5.")
+                    error(CharacterCreationErrorCode.KNOWLEDGE_LIMIT, "Valores-base de Conhecimento devem permanecer entre 0 e 5; bônus narrativos são aplicados separadamente.")
                 }
                 val missingReward = specialKnowledges(character).any { knowledge ->
                     listOf(3, 5).any { level ->

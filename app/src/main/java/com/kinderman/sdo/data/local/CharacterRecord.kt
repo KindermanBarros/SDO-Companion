@@ -3,6 +3,7 @@ package com.kinderman.sdo.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.firestore.PropertyName
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.BodyRegion
@@ -21,11 +22,23 @@ import com.kinderman.sdo.domain.model.ProgressionRecord
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.NeedsReview
+import com.kinderman.sdo.domain.model.Ability
+import com.kinderman.sdo.domain.model.ActiveModifier
+import com.kinderman.sdo.domain.model.BodyState
+import com.kinderman.sdo.domain.model.ConditionInstance
 import com.kinderman.sdo.domain.model.defaultAttributes
 import com.kinderman.sdo.domain.model.defaultBodyRegions
 import com.kinderman.sdo.domain.model.defaultProtectionAdjustments
 import com.kinderman.sdo.domain.model.defaultProtections
 import com.kinderman.sdo.domain.model.canonicalized
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
+import com.kinderman.sdo.domain.model.canonicalBodyState
+import com.kinderman.sdo.domain.model.toCanonicalAbility
+import com.kinderman.sdo.domain.model.toCanonicalInstance
+import com.kinderman.sdo.domain.model.toCanonicalState
+import com.kinderman.sdo.domain.model.toLegacyRegion
+import com.kinderman.sdo.domain.model.toLegacyStatus
+import com.kinderman.sdo.domain.model.toLegacyEffect
 import com.kinderman.sdo.domain.model.normalizeBodyRegions
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.model.synchronizeItemPowers
@@ -33,6 +46,62 @@ import com.kinderman.sdo.domain.catalog.withRefreshedPresetPowers
 import com.kinderman.sdo.domain.catalog.withMigratedCreationRules
 import com.kinderman.sdo.domain.catalog.withNormalizedInventory
 
+private val canonicalConverters = CharacterConverters()
+
+private fun Character.abilitiesForPersistence(): List<Ability> {
+    val projected = allCanonicalAbilitiesSafely()
+    return (projected + abilities).groupBy(Ability::id).values.map { versions ->
+        versions.maxBy(Ability::revision)
+    }
+}
+
+private fun BodyRegion.canonicalSignature(): List<String> = listOf(
+    roll.toString(), name, failures.toString(), localProtection.toString(), generalProtection.toString(),
+    equippedItemIds.joinToString(","), state.name, implantInstanceIds.joinToString(","), prosthesisInstanceId,
+)
+
+private fun OrganStatus.canonicalSignature(): List<String> = listOf(
+    id, name, failures.toString(), slot.name, state.name, implantInstanceId,
+)
+
+private fun Character.bodyStateForPersistence(): BodyState? {
+    val saved = bodyState
+    val untouchedLegacyBody = normalizeBodyRegions(bodyRegions).map { it.canonicalSignature() } ==
+        normalizeBodyRegions(defaultBodyRegions()).map { it.canonicalSignature() } && organs.isEmpty()
+    if (saved != null && untouchedLegacyBody) return saved
+    if (saved != null && saved.regions.map { it.toLegacyRegion().canonicalSignature() } == normalizeBodyRegions(bodyRegions).map { it.canonicalSignature() } &&
+        saved.organs.map { it.toLegacyStatus().canonicalSignature() } == organs.map { it.canonicalSignature() }) return saved
+    return runCatching {
+        val savedRegions = saved?.regions.orEmpty().associateBy { it.region }
+        val savedOrgans = saved?.organs.orEmpty().associateBy { it.organ }
+        BodyState(
+            regions = normalizeBodyRegions(bodyRegions).map { legacy ->
+                val typed = legacy.toCanonicalState()
+                typed.copy(injuries = savedRegions[typed.region]?.injuries.orEmpty())
+            },
+            organs = organs.map { legacy ->
+                val typed = legacy.toCanonicalState()
+                typed.copy(
+                    injuries = savedOrgans[typed.organ]?.injuries.orEmpty(),
+                    effectNotes = savedOrgans[typed.organ]?.effectNotes.orEmpty(),
+                )
+            },
+        )
+    }.getOrNull() ?: saved
+}
+
+private fun Character.conditionsForPersistence(): List<ConditionInstance> {
+    val projected = conditions.mapNotNull { runCatching { it.toCanonicalInstance() }.getOrNull() }
+    if (conditions.isEmpty()) return conditionInstances
+    val unchanged = conditionInstances.isNotEmpty() && conditionInstances.map { instance ->
+        listOf(instance.instanceId.value, instance.name, instance.intensity?.toString().orEmpty(), instance.duration?.kind?.name.orEmpty())
+    } == projected.map { instance ->
+        listOf(instance.instanceId.value, instance.name, instance.intensity?.toString().orEmpty(), instance.duration?.kind?.name.orEmpty())
+    }
+    return if (unchanged) conditionInstances else projected
+}
+
+@IgnoreExtraProperties
 @Entity(tableName = "characters")
 data class CharacterRecord(
     @PrimaryKey val id: String = "",
@@ -52,6 +121,13 @@ data class CharacterRecord(
     val itemSchemaVersion: Int = 0,
     val canonicalSchemaVersion: Int = 0,
     val migrationReviewPayload: String = "",
+    val canonicalAbilitiesPayload: String = "",
+    val canonicalBodyPayload: String = "",
+    val canonicalConditionsPayload: String = "",
+    val activeModifiersPayload: String = "",
+    val canonicalItemsPayload: String = "",
+    val scopedItemCatalogPayload: String = "",
+    val canonicalProgressionPayload: String = "",
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,
@@ -62,7 +138,7 @@ data class CharacterRecord(
     val sanity: ResourceValue = ResourceValue(),
     val arcane: ResourceValue = ResourceValue(),
     val energy: ResourceValue = ResourceValue(),
-    val destiny: ResourceValue = ResourceValue(1, 5),
+    val destiny: ResourceValue = ResourceValue(5, 5),
     val exhaustion: ResourceValue = ResourceValue(0, 10),
     val corruption: ResourceValue = ResourceValue(0, 100),
     val attributes: List<AttributeValue> = defaultAttributes(),
@@ -127,6 +203,16 @@ fun CharacterRecord.toDomain() = Character(
     creationRulesVersion = creationRulesVersion,
     itemSchemaVersion = com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION,
     canonicalSchemaVersion = canonicalSchemaVersion,
+    abilities = if (canonicalAbilitiesPayload.isNotBlank()) canonicalConverters.stringToCanonicalAbilities(canonicalAbilitiesPayload)
+        else (powers.mapNotNull { runCatching { it.toCanonicalAbility() }.getOrNull() } + mysticAbilities.mapNotNull { runCatching { it.toCanonicalAbility() }.getOrNull() }),
+    bodyState = canonicalBodyPayload.takeIf(String::isNotBlank)?.let(canonicalConverters::stringToCanonicalBody)
+        ?: runCatching { Character(bodyRegions = normalizeBodyRegions(bodyRegions), organs = organs).canonicalBodyState() }.getOrNull(),
+    conditionInstances = if (canonicalConditionsPayload.isNotBlank()) canonicalConverters.stringToCanonicalConditions(canonicalConditionsPayload)
+        else conditions.mapNotNull { runCatching { it.toCanonicalInstance() }.getOrNull() },
+    activeModifiers = if (activeModifiersPayload.isNotBlank()) canonicalConverters.stringToActiveModifiers(activeModifiersPayload) else emptyList(),
+    itemStates = canonicalConverters.stringToCanonicalItems(canonicalItemsPayload),
+    customItemCatalog = canonicalConverters.stringToScopedItemCatalog(scopedItemCatalogPayload),
+    progression = canonicalConverters.stringToCanonicalProgression(canonicalProgressionPayload),
     migrationReviews = MigrationReviewCodec.decode(migrationReviewPayload),
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
@@ -140,7 +226,10 @@ fun CharacterRecord.toDomain() = Character(
     energy = energy,
     destiny = destiny,
     exhaustion = exhaustion,
-    corruption = corruption,
+    corruption = corruption.copy(
+        current = corruption.current.coerceIn(0, 100),
+        maximum = 100,
+    ),
     attributes = attributes.ifEmpty { defaultAttributes() },
     protections = protections.ifEmpty { defaultProtections() },
     protectionAdjustments = resolveProtectionAdjustments(
@@ -164,11 +253,26 @@ fun CharacterRecord.toDomain() = Character(
         } else item
     },
     itemCreationDraft = itemCreationDraft,
-    bodyRegions = normalizeBodyRegions(bodyRegions),
+    bodyRegions = (canonicalBodyPayload.takeIf(String::isNotBlank)?.let(canonicalConverters::stringToCanonicalBody)
+        ?.regions?.map { it.toLegacyRegion() } ?: normalizeBodyRegions(bodyRegions)).map { region ->
+        if (canonicalSchemaVersion >= 2) region else region.copy(state = when {
+            region.failures >= 4 -> com.kinderman.sdo.domain.model.BodyIntegrity.Destroyed
+            region.failures > 0 -> com.kinderman.sdo.domain.model.BodyIntegrity.Damaged
+            else -> com.kinderman.sdo.domain.model.BodyIntegrity.Intact
+        })
+    },
     agilityLimit = agilityLimit,
-    organs = organs,
+    organs = (canonicalBodyPayload.takeIf(String::isNotBlank)?.let(canonicalConverters::stringToCanonicalBody)
+        ?.organs?.map { it.toLegacyStatus() } ?: organs).map { organ ->
+        if (canonicalSchemaVersion >= 2) organ else organ.copy(state = when {
+            organ.failures >= 3 -> com.kinderman.sdo.domain.model.BodyIntegrity.Destroyed
+            organ.failures > 0 -> com.kinderman.sdo.domain.model.BodyIntegrity.Damaged
+            else -> com.kinderman.sdo.domain.model.BodyIntegrity.Intact
+        })
+    },
     mysticAbilities = mysticAbilities.map(MysticAbility::canonicalized),
-    conditions = conditions,
+    conditions = if (canonicalConditionsPayload.isBlank()) conditions else
+        canonicalConverters.stringToCanonicalConditions(canonicalConditionsPayload).map { it.toLegacyEffect() },
     story = story,
     notes = notes,
     personalNotes = personalNotes.ifEmpty {
@@ -190,7 +294,11 @@ fun CharacterRecord.toDomain() = Character(
     appliedDeliveryIds = appliedDeliveryIds,
 ).withMigratedCreationRules().withRefreshedPresetPowers().withNormalizedInventory().synchronizeItemPowers()
 
-fun Character.toRecord() = CharacterRecord(
+fun Character.toRecord(): CharacterRecord {
+    if (canonicalSchemaVersion != com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION) {
+        throw com.kinderman.sdo.domain.model.DomainError.LegacyWriteRejected()
+    }
+    return CharacterRecord(
     id = id,
     ownerId = ownerId,
     campaignId = normalizeCampaignId(campaignId),
@@ -208,6 +316,13 @@ fun Character.toRecord() = CharacterRecord(
     itemSchemaVersion = itemSchemaVersion,
     canonicalSchemaVersion = canonicalSchemaVersion,
     migrationReviewPayload = MigrationReviewCodec.encode(migrationReviews),
+    canonicalAbilitiesPayload = canonicalConverters.canonicalAbilitiesToString(abilitiesForPersistence()),
+    canonicalBodyPayload = canonicalConverters.canonicalBodyToString(bodyStateForPersistence()).orEmpty(),
+    canonicalConditionsPayload = canonicalConverters.canonicalConditionsToString(conditionsForPersistence()),
+    activeModifiersPayload = canonicalConverters.activeModifiersToString(activeModifiers),
+    canonicalItemsPayload = canonicalConverters.canonicalItemsToString(itemsForPersistence().first),
+    scopedItemCatalogPayload = canonicalConverters.scopedItemCatalogToString(itemsForPersistence().second),
+    canonicalProgressionPayload = canonicalConverters.progressionToString(progression),
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -221,7 +336,10 @@ fun Character.toRecord() = CharacterRecord(
     energy = energy.copy(maximum = 0),
     destiny = destiny.copy(maximum = 0),
     exhaustion = exhaustion,
-    corruption = corruption,
+    corruption = corruption.copy(
+        current = corruption.current.coerceIn(0, 100),
+        maximum = 100,
+    ),
     attributes = attributes,
     // Protection totals are derived from attributes, equipment and adjustments on read.
     protections = emptyMap(),
@@ -258,7 +376,39 @@ fun Character.toRecord() = CharacterRecord(
     lockedAt = lockedAt,
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
-)
+    )
+}
+
+private fun Character.itemsForPersistence(): Pair<List<com.kinderman.sdo.domain.model.ItemState>, List<com.kinderman.sdo.domain.model.ScopedItemDefinition>> {
+    val definitions = customItemCatalog.associateBy { it.reference }.toMutableMap()
+    val states = inventory.map { item ->
+        val existing = itemStates.firstOrNull { it.id.value == item.id }
+        val custom = item.catalogEntryId.isBlank()
+        val projectedReference = com.kinderman.sdo.domain.model.CatalogReference(
+            com.kinderman.sdo.domain.model.ItemCatalogId(if (custom) "character:$id:${item.id}" else item.catalogEntryId),
+            item.catalogVersion.coerceAtLeast(1),
+        )
+        val reference = existing?.definition?.takeIf {
+            custom || (it.id.value == item.catalogEntryId && it.revision == item.catalogVersion.coerceAtLeast(1))
+        } ?: projectedReference
+        if (custom) definitions.putIfAbsent(reference, com.kinderman.sdo.domain.model.ScopedItemDefinition(
+            reference, com.kinderman.sdo.domain.model.CatalogScope.Character, id,
+            item.name.ifBlank { "Item sem nome" }, item.effect,
+        ))
+        (existing ?: com.kinderman.sdo.domain.model.ItemState(
+            id = com.kinderman.sdo.domain.model.ItemInstanceId(item.id),
+            definition = reference,
+            scope = if (custom) com.kinderman.sdo.domain.model.CatalogScope.Character else com.kinderman.sdo.domain.model.CatalogScope.Canonical,
+        )).copy(
+            definition = reference,
+            stack = com.kinderman.sdo.domain.model.StackState(item.quantity.coerceAtLeast(0), existing?.stack?.groupingKey),
+            consumable = if (item.linkedAshId.isNotBlank())
+                (existing?.consumable ?: com.kinderman.sdo.domain.model.ConsumableState()).copy(doses = item.quantity.coerceAtLeast(0))
+            else existing?.consumable,
+        )
+    }
+    return states to definitions.values.toList()
+}
 
 private object MigrationReviewCodec {
     private val encoder = java.util.Base64.getUrlEncoder().withoutPadding()

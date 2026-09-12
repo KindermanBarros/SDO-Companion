@@ -58,6 +58,7 @@ class CharacterTest {
         assertEquals(0, character.organs.size)
         assertEquals(3, character.pathKeywords.size)
         assertEquals(3, character.pathPillars.size)
+        assertEquals(5, character.destinyMaximum)
     }
 
     @Test fun loadIgnoresStoredItemsAndUsesStrengthAndContainer() {
@@ -73,6 +74,33 @@ class CharacterTest {
         )
         assertEquals(5, character.currentLoad)
         assertEquals(15, character.maximumLoad)
+    }
+
+    @Test fun equippedCustomBackpackEnablesCapacityWithoutCatalogId() {
+        val character = Character(inventory = listOf(
+            InventoryItem(state = "E", category = "Recipiente de Carga", backpackCapacity = 6),
+        ))
+
+        assertEquals(6, character.backpackCapacity)
+        assertEquals(8, character.maximumLoad)
+    }
+
+    @Test fun ashDosesContributeToCarriedLoad() {
+        val character = Character(inventory = listOf(
+            InventoryItem(state = "M", linkedAshId = "ash-1", ashPurity = AshPurity.REFINED, quantity = 5),
+        ))
+
+        assertEquals(3, character.currentLoad)
+    }
+
+    @Test fun builtItemWithoutDurabilityDefaultsToOne() {
+        val inventory = BuiltItem(
+            name = "Item", category = "Item", creationCost = null, price = 0,
+            load = 0, durability = 0, region = "", effect = "",
+        ).toInventoryItem()
+
+        assertEquals(1, inventory.durabilityCurrent)
+        assertEquals(1, inventory.durabilityMax)
     }
 
     @Test fun calculatedResourcesUseCanonicalFormulasAndAdjustments() {
@@ -218,6 +246,7 @@ class CharacterTest {
 
         assertEquals(0, character.inventory.size)
         assertEquals(emptyList<String>(), character.bodyRegions[1].equippedItemIds)
+        assertEquals(emptyList<ItemInstanceId>(), character.bodyState?.region(BodyRegionSlot.Torso)?.equippedItemIds)
         assertEquals(10, character.protectionBase("Geral"))
     }
 
@@ -228,6 +257,7 @@ class CharacterTest {
         }
 
         assertEquals(listOf(item.id), character.bodyRegions[8].equippedItemIds)
+        assertEquals(listOf(ItemInstanceId(item.id)), character.bodyState?.region(BodyRegionSlot.FootLeft)?.equippedItemIds)
         assertEquals(listOf(item.id), character.bodyRegions[9].equippedItemIds)
         assertEquals(2, character.localProtection(character.bodyRegions[8]))
         assertEquals(2, character.localProtection(character.bodyRegions[9]))
@@ -274,7 +304,7 @@ class CharacterTest {
 
         assertEquals("Torso", normalized[1].name)
         assertEquals("ferido", normalized[1].damage)
-        assertEquals(listOf("brace"), normalized[3].equippedItemIds)
+        assertEquals(listOf("brace"), normalized[2].equippedItemIds)
         assertEquals((1..10).toList(), normalized.map { it.roll })
     }
 }

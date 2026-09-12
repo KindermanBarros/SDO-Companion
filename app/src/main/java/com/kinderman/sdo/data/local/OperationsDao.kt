@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import com.kinderman.sdo.domain.model.DomainError
 
 @Dao
 interface OperationsDao {
@@ -28,15 +29,23 @@ interface OperationsDao {
     @Upsert suspend fun upsertDelivery(value: CampaignDeliveryRecord)
     @Upsert suspend fun upsertAlertSettings(value: CampaignAlertSettingsRecord)
     @Query("SELECT * FROM characters WHERE id = :id LIMIT 1") suspend fun character(id: String): CharacterRecord?
+    @Query("SELECT * FROM session_operations WHERE idempotencyKey = :key LIMIT 1") suspend fun operationByIdempotencyKey(key: String): SessionOperationRecord?
     @Query("SELECT * FROM campaign_library_entries WHERE id = :id LIMIT 1") suspend fun library(id: String): CampaignLibraryRecord?
     @Query("UPDATE session_operations SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markOperationSynced(id: String, at: Long)
     @Query("UPDATE campaign_library_entries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markLibrarySynced(id: String, at: Long)
     @Query("UPDATE campaign_deliveries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markDeliverySynced(id: String, at: Long)
 
     @Transaction
-    suspend fun applyOnce(operation: SessionOperationRecord, character: CharacterRecord): Boolean {
+    suspend fun applyOnce(operation: SessionOperationRecord, updatedCharacter: CharacterRecord): Boolean {
+        if (operationByIdempotencyKey(operation.idempotencyKey) != null) return false
+        val current = character(updatedCharacter.id)
+        if (current != null && current.updatedAt != operation.baseCharacterUpdatedAt) {
+            throw DomainError.RevisionConflict(
+                "A ficha mudou desde a leitura da operação (${operation.baseCharacterUpdatedAt} → ${current.updatedAt}). Recarregue e reaplique.",
+            )
+        }
         if (insertOperation(operation) == -1L) return false
-        upsertCharacter(character)
+        upsertCharacter(updatedCharacter)
         return true
     }
 

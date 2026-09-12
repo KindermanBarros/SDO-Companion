@@ -23,7 +23,13 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
-import com.kinderman.sdo.domain.model.ConditionEffect
+import com.kinderman.sdo.domain.model.ConditionKind
+import com.kinderman.sdo.domain.model.ConditionInstance
+import com.kinderman.sdo.domain.model.ConditionPayload
+import com.kinderman.sdo.domain.model.DurationKind
+import com.kinderman.sdo.domain.model.Duration
+import com.kinderman.sdo.domain.model.DurationTimeUnit
+import com.kinderman.sdo.domain.model.TimedDuration
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.InventoryState
 import com.kinderman.sdo.domain.model.inventoryState
@@ -32,10 +38,9 @@ import com.kinderman.sdo.domain.model.withInventoryState
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
-import com.kinderman.sdo.domain.catalog.withPathPreset
+import com.kinderman.sdo.domain.catalog.withStructuredPathPreset
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.MysticAbility
-import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.AbilityCostType
 import com.kinderman.sdo.domain.model.AbilityDuration
 import com.kinderman.sdo.domain.model.AbilityExecution
@@ -45,6 +50,18 @@ import com.kinderman.sdo.domain.model.AbilitySource
 import com.kinderman.sdo.domain.model.AbilityTimeUnit
 import com.kinderman.sdo.domain.model.AshPurity
 import com.kinderman.sdo.domain.model.AshSource
+import com.kinderman.sdo.domain.model.BodyIntegrity
+import com.kinderman.sdo.domain.model.BodyRegionState
+import com.kinderman.sdo.domain.model.InjuryEvent
+import com.kinderman.sdo.domain.model.OrganSlot
+import com.kinderman.sdo.domain.model.OrganState
+import com.kinderman.sdo.domain.model.ItemInstanceId
+import com.kinderman.sdo.domain.model.Source
+import com.kinderman.sdo.domain.model.NarrativeSourceId
+import com.kinderman.sdo.domain.model.canonicalBodyState
+import com.kinderman.sdo.domain.model.withCanonicalBodyState
+import com.kinderman.sdo.domain.model.withCanonicalConditions
+import com.kinderman.sdo.domain.model.toCanonicalInstance
 import com.kinderman.sdo.domain.model.formattedAbilityCost
 import com.kinderman.sdo.domain.model.formattedAbilityExecution
 import com.kinderman.sdo.domain.model.withAddedAbility
@@ -83,7 +100,7 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
         }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR CAMINHO", catalog, { selecting = false }) { entry ->
-        onChange(character.withPathPreset(entry))
+        onChange(character.withStructuredPathPreset(entry))
         selecting = false
     }
 }
@@ -101,7 +118,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         if (remainingHeritage > 0 && dialog == null) dialog = "initial"
     }
     TechPanel {
-        SectionHeader("09", "Inventário")
+        SectionHeader("10", "Inventário")
         Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
         Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         if (remainingHeritage > 0) {
@@ -179,8 +196,7 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
 @Composable
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("10", "Corpo e armadura")
-        Text("LA DOS EQUIPAMENTOS // ${character.equippedAgilityLimit ?: "—"}", color = MaterialTheme.colorScheme.primary)
+        SectionHeader("11", "Corpo e armadura")
     }
 }
 
@@ -192,55 +208,103 @@ internal fun BodyRegionSection(
     onChange: (Character) -> Unit,
     onSelectEquipment: () -> Unit,
 ) {
-    val region = character.bodyRegions[index]
+    val body = character.canonicalBodyState()
+    val region = body.regions[index]
+    fun updateRegion(updated: BodyRegionState) = onChange(
+        character.withCanonicalBodyState(body.withUpdatedRegion(region.region) { updated }),
+    )
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+        ChoiceField("Estado", region.state, BodyIntegrity.entries, enabled, display = { it.label }) { state ->
+            updateRegion(region.copy(state = state))
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IntegerField("Falhas", region.failures, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(failures = value.coerceIn(0, 4))))) }
-            IntegerField("Ajuste PL", region.localProtection, enabled, Modifier.weight(1f)) { value -> onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(localProtection = value.coerceAtLeast(0))))) }
+            ChoiceField("Falhas", region.failures.coerceIn(0, 4), (0..4).toList(), enabled, Modifier.weight(1f)) { value ->
+                val state = when {
+                    value >= 4 -> BodyIntegrity.Destroyed
+                    value > 0 -> BodyIntegrity.Damaged
+                    region.state in setOf(BodyIntegrity.Damaged, BodyIntegrity.Destroyed) -> BodyIntegrity.Intact
+                    else -> region.state
+                }
+                updateRegion(region.copy(failures = value, state = state))
+            }
+            IntegerField("Ajuste PL", region.protection.localProtection, enabled, Modifier.weight(1f)) { value -> updateRegion(region.copy(protection = region.protection.copy(localProtection = value.coerceAtLeast(0)))) }
         }
         Text(
             "PL TOTAL ${character.localProtection(region)} // PG DO PERSONAGEM +${character.equippedGeneralProtection}",
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.labelLarge,
         )
-        HudTextField("Danos", region.damage, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(damage = it)))) }
-        HudTextField("Implantes", region.implants, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(implants = it)))) }
+        val implantNames = region.implantInstanceIds.mapNotNull { id -> character.inventory.firstOrNull { it.id == id.value }?.name }
+        Text("IMPLANTES // ${implantNames.joinToString().ifBlank { "NENHUM" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         val equippedNames = character.equippedItems(region).joinToString { it.name.ifBlank { "Item sem nome" } }
         Text("EQUIPAMENTOS // ${equippedNames.ifBlank { "NENHUM" }}", color = if (equippedNames.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
+        if (region.injuries.isNotEmpty()) {
+            Text("HISTÓRICO // ${region.injuries.size} evento(s)", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+            region.injuries.forEach { injury ->
+                val damage = injury.damage?.let { " • ${it.type.label} ${it.amount}" }.orEmpty()
+                Text("${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(injury.occurredAt))} • +${injury.failuresAdded} falha(s)$damage", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        AddButton("Registrar lesão", enabled && region.failures < 4) {
+            val nextFailures = (region.failures + 1).coerceAtMost(4)
+            updateRegion(region.copy(
+                failures = nextFailures,
+                state = if (nextFailures >= 4) BodyIntegrity.Destroyed else BodyIntegrity.Damaged,
+                injuries = region.injuries + InjuryEvent(
+                    source = Source.narrative(NarrativeSourceId("manual-injury")),
+                    failuresAdded = 1,
+                ),
+            ))
+        }
         AddButton("Selecionar equipamentos do inventário", enabled, onSelectEquipment)
-        HudTextField("Observações de equipamento", region.equipment, enabled = enabled) { onChange(character.copy(bodyRegions = character.bodyRegions.replace(index, region.copy(equipment = it)))) }
     }
 }
 
 @Composable
 internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    val body = character.canonicalBodyState()
     TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("11", "Órgãos")
-        if (character.organs.isEmpty()) {
+        SectionHeader("12", "Órgãos")
+        if (body.organs.isEmpty()) {
             Text(
                 "Registre apenas órgãos com dano, implante, parasita ou outra alteração relevante.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
-        character.organs.forEachIndexed { index, organ ->
+        body.organs.forEachIndexed { index, organ ->
+            val implantOptions = listOf("") + character.inventory.filter { it.category.contains("implante", true) }.map { it.id }
+            fun updateOrgan(updated: OrganState) {
+                onChange(character.withCanonicalBodyState(body.copy(organs = body.organs.mapIndexed { organIndex, current ->
+                    if (organIndex == index) updated else current
+                })))
+            }
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 Row(Modifier.fillMaxWidth()) {
                     Text("ALTERAÇÃO ${(index + 1).toString().padStart(2, '0')}", modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary)
                     RemoveButton(enabled, "Remover registro de órgão") {
-                        onChange(character.copy(organs = character.organs.filterNot { it.id == organ.id }))
+                        onChange(character.withCanonicalBodyState(body.copy(organs = body.organs.filterIndexed { organIndex, _ -> organIndex != index })))
                     }
                 }
-                HudTextField("Órgão", organ.name, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(name = it)))) }
-                IntegerField("Falhas", organ.failures, enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(failures = it.coerceIn(0, 3))))) }
-                HudTextField("Implante ou parasita", organ.implant, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(implant = it)))) }
-                HudTextField("Dano / efeito", organ.effect, multiline = true, enabled = enabled) { onChange(character.copy(organs = character.organs.replace(index, organ.copy(effect = it)))) }
+                ChoiceField("Órgão", organ.organ, OrganSlot.entries, enabled, display = { it.label }) { slot ->
+                    updateOrgan(organ.copy(organ = slot, customName = if (slot == OrganSlot.Other) organ.customName else ""))
+                }
+                if (organ.organ == OrganSlot.Other) HudTextField("Identificação", organ.customName, enabled = enabled) {
+                    updateOrgan(organ.copy(customName = it))
+                }
+                TwoFields(
+                    { ChoiceField("Estado", organ.state, BodyIntegrity.entries, enabled, it, display = { value -> value.label }) { value -> updateOrgan(organ.copy(state = value)) } },
+                    { ChoiceField("Falhas", organ.failures.coerceIn(0, 3), (0..3).toList(), enabled, it) { value -> updateOrgan(organ.copy(failures = value)) } },
+                )
+                ChoiceField("Implante", organ.implantInstanceId?.value.orEmpty(), implantOptions, enabled, display = { id ->
+                    character.inventory.firstOrNull { it.id == id }?.name ?: "Nenhum"
+                }) { id -> updateOrgan(organ.copy(implantInstanceId = id.takeIf(String::isNotBlank)?.let(::ItemInstanceId))) }
             }
-            if (index != character.organs.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            if (index != body.organs.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
         AddButton("Adicionar alteração de órgão", enabled) {
-            onChange(character.copy(organs = character.organs + OrganStatus()))
+            onChange(character.withCanonicalBodyState(body.copy(organs = body.organs + OrganState())))
         }
     }
 }
@@ -254,7 +318,7 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
         runCatching(block).onSuccess(onChange).onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
     }
     TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-        SectionHeader("12", "Magias, runas e cinzas")
+        SectionHeader("09", "Magias, runas e cinzas")
         Text(
             "CATÁLOGO EXPANSÍVEL // exemplos adicionais podem ser incluídos continuamente. Os procedimentos completos estão em Regras Arcanas Expandidas.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -399,60 +463,74 @@ private fun MysticEditor(
 
 @Composable
 internal fun ConditionSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    val instances = character.conditionInstances.ifEmpty {
+        character.conditions.mapNotNull { runCatching { it.toCanonicalInstance() }.getOrNull() }
+    }
+    val descriptions = character.conditions.associate { it.id to it.summary }
+    fun updateInstances(values: List<ConditionInstance>, editedId: String? = null, editedDescription: String? = null) {
+        val updated = character.withCanonicalConditions(values)
+        onChange(updated.copy(conditions = updated.conditions.map { legacy ->
+            legacy.copy(summary = if (legacy.id == editedId) editedDescription.orEmpty() else descriptions[legacy.id].orEmpty())
+        }))
+    }
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("13", "Condições")
-        character.conditions.forEachIndexed { index, condition ->
-            ConditionEditor(index, condition, enabled,
-                onRemove = { onChange(character.copy(conditions = character.conditions.filterIndexed { itemIndex, _ -> itemIndex != index })) },
-                onValue = { onChange(character.copy(conditions = character.conditions.replace(index, it))) },
+        instances.forEachIndexed { index, condition ->
+            ConditionEditor(index, condition, descriptions[condition.instanceId.value].orEmpty(), enabled,
+                onRemove = { updateInstances(instances.filterIndexed { itemIndex, _ -> itemIndex != index }) },
+                onValue = { updated, description ->
+                    updateInstances(
+                        instances.mapIndexed { itemIndex, current -> if (itemIndex == index) updated else current },
+                        editedId = updated.instanceId.value,
+                        editedDescription = description,
+                    )
+                },
             )
         }
-        AddButton("Adicionar condição", enabled) { onChange(character.copy(conditions = character.conditions + ConditionEffect())) }
-    }
-}
-
-@Composable
-internal fun MigrationReviewSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("!", "Correções da migração")
-        Text(
-            "Campos mecânicos antigos não foram interpretados automaticamente. Corrija o registro correspondente e confirme cada pendência.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
-        character.migrationReviews.forEachIndexed { index, review ->
-            Column(
-                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
-                verticalArrangement = Arrangement.spacedBy(7.dp),
-            ) {
-                Text(review.field, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                Text(review.legacyValue, color = MaterialTheme.colorScheme.onSurface)
-                Text(review.reason, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                TextButton(
-                    onClick = {
-                        onChange(character.copy(migrationReviews = character.migrationReviews.filterIndexed { itemIndex, _ -> itemIndex != index }))
-                    },
-                    enabled = enabled,
-                ) { Text("CONFIRMAR CORREÇÃO") }
-            }
+        AddButton("Adicionar condição", enabled) {
+            val condition = ConditionInstance(
+                payload = ConditionPayload(kind = ConditionKind.Abalado, duration = Duration(DurationKind.Instant)),
+                source = Source.narrative(NarrativeSourceId("manual-condition")),
+            )
+            updateInstances(instances + condition)
         }
     }
 }
 
 @Composable
-private fun ConditionEditor(index: Int, condition: ConditionEffect, enabled: Boolean, onRemove: () -> Unit, onValue: (ConditionEffect) -> Unit) {
+private fun ConditionEditor(index: Int, condition: ConditionInstance, description: String, enabled: Boolean, onRemove: () -> Unit, onValue: (ConditionInstance, String) -> Unit) {
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
             Text("CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover condição", onRemove)
         }
-        HudTextField("Condição", condition.name, enabled = enabled) { onValue(condition.copy(name = it)) }
+        ChoiceField("Condição", condition.kind, ConditionKind.entries, enabled, display = { it.label }) {
+            onValue(condition.copy(payload = condition.payload.copy(kind = it)), description)
+        }
+        val selectedDuration = condition.duration?.kind ?: DurationKind.Instant
         TwoFields(
-            { HudTextField("Intensidade", condition.intensity, it, enabled = enabled) { value -> onValue(condition.copy(intensity = value)) } },
-            { HudTextField("Duração", condition.duration, it, enabled = enabled) { value -> onValue(condition.copy(duration = value)) } },
+            { IntegerField("Intensidade", condition.intensity ?: 0, enabled, it) { value -> onValue(condition.copy(payload = condition.payload.copy(intensity = value.takeIf { it > 0 })), description) } },
+            { ChoiceField("Duração", selectedDuration, DurationKind.entries, enabled, it, display = { value -> value.label }) { value ->
+                val duration = when (value) {
+                    DurationKind.Instant, DurationKind.Scene, DurationKind.Session -> Duration(value)
+                    DurationKind.Turns -> Duration(value, turns = condition.duration?.turns ?: 1)
+                    DurationKind.Timed -> Duration(value, timed = condition.duration?.timed ?: TimedDuration(1, DurationTimeUnit.Hours))
+                }
+                onValue(condition.copy(payload = condition.payload.copy(duration = duration)), description)
+            } },
         )
-        HudTextField("Origem", condition.origin, enabled = enabled) { onValue(condition.copy(origin = it)) }
-        HudTextField("Resumo do efeito", condition.summary, multiline = true, enabled = enabled) { onValue(condition.copy(summary = it)) }
+        if (selectedDuration == DurationKind.Turns) IntegerField("Quantidade de turnos", condition.duration?.turns ?: 1, enabled) { value ->
+            onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Turns, turns = value.coerceAtLeast(1)))), description)
+        }
+        if (selectedDuration == DurationKind.Timed) TwoFields(
+            { IntegerField("Tempo", condition.duration?.timed?.amount ?: 1, enabled, it) { value ->
+                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), description)
+            } },
+            { ChoiceField("Unidade", condition.duration?.timed?.unit ?: DurationTimeUnit.Hours, DurationTimeUnit.entries, enabled, it, display = { unit -> unit.label }) { unit ->
+                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), description)
+            } },
+        )
+        HudTextField("Descrição", description, multiline = true, enabled = enabled) { onValue(condition, it) }
     }
 }
 

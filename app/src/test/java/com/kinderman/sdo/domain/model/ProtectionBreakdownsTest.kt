@@ -71,4 +71,41 @@ class ProtectionBreakdownsTest {
         assertEquals(13, charWielded.protectionTotal("Geral"))
         assertEquals(13, charWielded.generalProtectionBreakdown().total)
     }
+
+    @Test fun lowestEquippedAgilityLimitCapsAgilityAndExplainsThePenalty() {
+        fun armor(id: String, name: String, limit: Int) = InventoryItem(
+            id = id,
+            name = name,
+            category = "Armadura",
+            agilityLimit = limit,
+            mechanicalEffects = listOf(
+                ItemEffect("$id:la", ItemEffectType.AGILITY_LIMIT, limit, condition = ItemEffectCondition.EQUIPPED),
+            ),
+        )
+        val loose = armor("loose", "Armadura flexível", 4).withInventoryState(InventoryState.EQUIPPED)
+        val strict = armor("strict", "Armadura pesada", 3).withInventoryState(InventoryState.EQUIPPED)
+        val attributes = defaultAttributes().map { if (it.acronym == "AGI") it.copy(value = 5) else it }
+        val character = Character(attributes = attributes, inventory = listOf(loose, strict))
+
+        val agility = character.attributeCalculation("AGI")
+
+        assertEquals(3, agility.total)
+        assertEquals(-2, agility.modifiers.single { it.label.startsWith("LA —") }.value)
+        assertTrue(agility.modifiers.any { it.label.contains("Armadura pesada") })
+        assertEquals(13, character.protectionBase("Esquiva"))
+    }
+
+    @Test fun unequippedItemDoesNotLimitAgility() {
+        val armor = InventoryItem(
+            id = "stored",
+            name = "Armadura guardada",
+            agilityLimit = 2,
+            mechanicalEffects = listOf(
+                ItemEffect("stored:la", ItemEffectType.AGILITY_LIMIT, 2, condition = ItemEffectCondition.EQUIPPED),
+            ),
+        )
+        val attributes = defaultAttributes().map { if (it.acronym == "AGI") it.copy(value = 5) else it }
+
+        assertEquals(5, Character(attributes = attributes, inventory = listOf(armor)).attributeTotal("AGI"))
+    }
 }

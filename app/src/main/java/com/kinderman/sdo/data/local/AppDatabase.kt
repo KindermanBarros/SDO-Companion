@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 24,
+    version = 28,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -325,6 +325,73 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN canonicalSchemaVersion INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE characters ADD COLUMN migrationReviewPayload TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        /**
+         * Requirement: persist canonical ability, body, condition and modifier state.
+         * Legacy handling: empty payloads leave existing legacy columns available to the idempotent converter.
+         * Validation: the content migration writes schema 2 only after typed payload serialization succeeds.
+         * Rollback: the additive payload columns are ignored by version 24 clients.
+         */
+        val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val existingColumns = db.query("PRAGMA table_info(characters)").use { cursor ->
+                    val nameColumn = cursor.getColumnIndex("name")
+                    buildSet {
+                        while (cursor.moveToNext()) add(cursor.getString(nameColumn))
+                    }
+                }
+                listOf(
+                    "canonicalAbilitiesPayload" to "TEXT NOT NULL DEFAULT ''",
+                    "canonicalBodyPayload" to "TEXT NOT NULL DEFAULT ''",
+                    "canonicalConditionsPayload" to "TEXT NOT NULL DEFAULT ''",
+                    "activeModifiersPayload" to "TEXT NOT NULL DEFAULT ''",
+                ).filterNot { (column, _) -> column in existingColumns }
+                    .forEach { (column, declaration) ->
+                        db.execSQL("ALTER TABLE characters ADD COLUMN $column $declaration")
+                    }
+            }
+        }
+
+        val MIGRATION_25_26 = object : Migration(25, 26) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columns = db.query("PRAGMA table_info(session_operations)").use { cursor ->
+                    val nameColumn = cursor.getColumnIndex("name")
+                    buildSet {
+                        while (cursor.moveToNext()) add(cursor.getString(nameColumn))
+                    }
+                }
+                if ("canonicalPayload" !in columns) {
+                    db.execSQL("ALTER TABLE session_operations ADD COLUMN canonicalPayload TEXT NOT NULL DEFAULT ''")
+                }
+            }
+        }
+
+        val MIGRATION_26_27 = object : Migration(26, 27) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columns = db.query("PRAGMA table_info(session_operations)").use { cursor ->
+                    val nameColumn = cursor.getColumnIndex("name")
+                    buildSet {
+                        while (cursor.moveToNext()) add(cursor.getString(nameColumn))
+                    }
+                }
+                if ("baseCharacterUpdatedAt" !in columns) {
+                    db.execSQL("ALTER TABLE session_operations ADD COLUMN baseCharacterUpdatedAt INTEGER NOT NULL DEFAULT 0")
+                }
+            }
+        }
+
+        /** Adds the remaining canonical authorities without deleting compatibility projections. */
+        val MIGRATION_27_28 = object : Migration(27, 28) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columns = db.query("PRAGMA table_info(characters)").use { cursor ->
+                    val nameColumn = cursor.getColumnIndex("name")
+                    buildSet { while (cursor.moveToNext()) add(cursor.getString(nameColumn)) }
+                }
+                listOf("canonicalItemsPayload", "scopedItemCatalogPayload", "canonicalProgressionPayload")
+                    .filterNot(columns::contains)
+                    .forEach { column -> db.execSQL("ALTER TABLE characters ADD COLUMN $column TEXT NOT NULL DEFAULT ''") }
             }
         }
     }

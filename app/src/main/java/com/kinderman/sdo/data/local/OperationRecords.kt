@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 import com.kinderman.sdo.domain.model.CampaignAlertSettings
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignDelivery
@@ -11,7 +12,14 @@ import com.kinderman.sdo.domain.model.CampaignDeliveryState
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.SessionOperation
 import com.kinderman.sdo.domain.model.SessionOperationType
+import com.kinderman.sdo.domain.model.CanonicalSessionPayload
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
+private val operationPayloadJson = Json { encodeDefaults = true; ignoreUnknownKeys = true }
+
+@IgnoreExtraProperties
 @Entity(tableName = "session_operations", indices = [Index(value = ["idempotencyKey"], unique = true), Index("campaignId"), Index("characterId")])
 data class SessionOperationRecord(
     @PrimaryKey val id: String = "",
@@ -28,8 +36,11 @@ data class SessionOperationRecord(
     val createdAt: Long = 0,
     @get:Exclude @field:Exclude val dirty: Boolean = false,
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
+    val canonicalPayload: String = "",
+    @get:Exclude @field:Exclude val baseCharacterUpdatedAt: Long = 0,
 )
 
+@IgnoreExtraProperties
 @Entity(tableName = "campaign_library_entries", indices = [Index("campaignId")])
 data class CampaignLibraryRecord(
     @PrimaryKey val id: String = "",
@@ -49,6 +60,7 @@ data class CampaignLibraryRecord(
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
 )
 
+@IgnoreExtraProperties
 @Entity(tableName = "campaign_deliveries", indices = [Index("campaignId"), Index("recipientId"), Index("recipientCharacterId")])
 data class CampaignDeliveryRecord(
     @PrimaryKey val id: String = "",
@@ -70,6 +82,7 @@ data class CampaignDeliveryRecord(
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
 )
 
+@IgnoreExtraProperties
 @Entity(tableName = "campaign_alert_settings")
 data class CampaignAlertSettingsRecord(
     @PrimaryKey val campaignId: String = "",
@@ -81,8 +94,20 @@ data class CampaignAlertSettingsRecord(
     val alertBodyFailures: Boolean = true,
 )
 
-fun SessionOperationRecord.toDomain() = SessionOperation(id, idempotencyKey, campaignId, characterId, actorId, enumValue(type, SessionOperationType.RESOURCE), target, previousValue, newValue, amount, reason, createdAt, dirty, lastSyncedAt)
-fun SessionOperation.toRecord() = SessionOperationRecord(id, idempotencyKey, campaignId, characterId, actorId, type.name, target, previousValue, newValue, amount, reason, createdAt, dirty, lastSyncedAt)
+fun SessionOperationRecord.toDomain() = SessionOperation(
+    id, idempotencyKey, campaignId, characterId, actorId, enumValue(type, SessionOperationType.RESOURCE),
+    target, previousValue, newValue, amount, reason, createdAt, dirty, lastSyncedAt,
+    canonicalPayload = canonicalPayload.takeIf(String::isNotBlank)?.let { value ->
+        runCatching { operationPayloadJson.decodeFromString<CanonicalSessionPayload>(value) }.getOrNull()
+    },
+    baseCharacterUpdatedAt = baseCharacterUpdatedAt,
+)
+fun SessionOperation.toRecord() = SessionOperationRecord(
+    id, idempotencyKey, campaignId, characterId, actorId, type.name, target, previousValue, newValue,
+    amount, reason, createdAt, dirty, lastSyncedAt,
+    canonicalPayload = canonicalPayload?.let { operationPayloadJson.encodeToString(it) }.orEmpty(),
+    baseCharacterUpdatedAt = baseCharacterUpdatedAt,
+)
 fun CampaignLibraryRecord.toDomain(): CampaignLibraryEntry {
     val contentKind = enumValue(kind, CampaignContentKind.NOTE)
     val decoded = CampaignPayloadCodec.decode(contentKind, payload)

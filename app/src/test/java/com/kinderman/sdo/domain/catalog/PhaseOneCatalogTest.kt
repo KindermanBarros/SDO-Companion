@@ -6,6 +6,8 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.SourceKind
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -94,6 +96,7 @@ class PhaseOneCatalogTest {
 
         assertEquals(once.powers.count { it.sourceType == PowerSourceType.PATH }, twice.powers.count { it.sourceType == PowerSourceType.PATH })
         assertEquals(twice.powers.size, twice.powers.map { it.name to it.sourceType }.distinct().size)
+        assertEquals(2, twice.allCanonicalAbilitiesSafely().count { it.source?.kind == SourceKind.Path })
     }
     @Test fun loadingCharacterRefreshesManagedRacialAndPathPowers() {
         val stored = Character(
