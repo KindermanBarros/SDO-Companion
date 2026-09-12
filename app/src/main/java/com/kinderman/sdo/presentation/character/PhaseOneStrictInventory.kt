@@ -150,17 +150,26 @@ internal fun PhaseOneStrictInventorySection(
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = doses.coerceAtLeast(0)))))
                     }
                     Text("PUREZA // ${item.ashPurity.label}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                } else if (item.category.equals("Munição", true) || item.category.contains("Consumível", true)) {
+                    IntegerField(if (item.category.equals("Munição", true)) "Munição restante" else "Doses restantes", item.quantity, enabled) { quantity ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = quantity.coerceAtLeast(0)))))
+                    }
                 }
                 item.mechanicalEffects.forEach { effect ->
-                    Text("${effect.type.name}: ${if (effect.value > 0) "+" else ""}${effect.value} ${effect.resolvedTargetId.ifBlank { effect.target }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+                    Text(effect.presentationLabel(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                 }
                 val states = validItemStates(character, item)
                 ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
                     onChange(character.withItemInventoryState(item.id, value))
                 }
                 if (item.canonical) Text(item.effect, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                else HudTextField("Efeito narrativo", item.effect, multiline = true, enabled = enabled) { value ->
-                    onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
+                else {
+                    HudTextField("Nome", item.name, enabled = enabled) { value ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(name = value))))
+                    }
+                    HudTextField("Descrição", item.effect, multiline = true, enabled = enabled) { value ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
+                    }
                 }
             }
             }
@@ -179,7 +188,10 @@ internal fun PhaseOneStrictInventorySection(
             canUseCatalog = itemCatalog.isNotEmpty(),
             canAddAsh = ashCatalog.isNotEmpty(),
             onDismiss = { dialog = null },
-            onChoice = { dialog = it },
+            onChoice = { choice ->
+                onChange(character.copy(itemCreationDraft = null))
+                dialog = choice
+            },
         )
         "glossary" -> EquipmentGlossaryDialog(
             onDismiss = { dialog = null },
@@ -377,6 +389,9 @@ private fun StrictItemBuilderDialog(
     val commonLoad = draft.commonLoad
     val commonQuantity = draft.commonQuantity
     val commonCategory = draft.commonCategory
+    val totalSteps = if (category == "Item") 2 else 6
+    val stepTitle = if (category == "Item") listOf("DADOS", "REVISÃO")[step - 1]
+        else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")[step - 1]
 
     val initialCreation = remainingHeritage != null
     val bases: List<ItemPart> = basePool
@@ -419,7 +434,7 @@ private fun StrictItemBuilderDialog(
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(if (initialCreation) "CRIAR ITEM // $remainingHeritage PH" else "CRIAR ITEM")
-                Text("$step DE 7  //  ${listOf("CATEGORIA", "BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")[step - 1]}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text("$step DE $totalSteps  //  $stepTitle", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             }
         },
         text = {
@@ -436,22 +451,7 @@ private fun StrictItemBuilderDialog(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                if (step == 1) {
-                Text("O que você quer criar? As próximas opções serão adaptadas à categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                ChoiceField("Categoria", category, if (initialCreation) listOf("Arma", "Armadura", "Acessório") else listOf("Arma", "Armadura", "Acessório", "Item"), true) { selected ->
-                    val nextWeapon = selected == "Arma"
-                    val nextBase = when (selected) {
-                        "Arma" -> ItemCreationRules.weaponBases.first()
-                        "Acessório" -> ItemCreationRules.armorBases.first { it.group == "Acessório" }
-                        else -> ItemCreationRules.armorBases.first { it.group != "Acessório" }
-                    }
-                    val nextMaterial = if (nextWeapon) ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
-                        else ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
-                    onDraftChange(draft.copy(category = selected, baseId = nextBase.id, materialId = nextMaterial.id, modificationIds = emptyList()))
-                }
-                Text(when (category) { "Arma" -> "Armas possuem dano, material e modificações de combate."; "Armadura" -> "Armaduras e acessórios possuem proteção, região e limitações."; else -> "Itens comuns usam apenas nome, quantidade, carga e efeito." }, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                if (step == 2 && category == "Item") {
+                if (step == 1 && category == "Item") {
                     ChoiceField("Categoria", commonCategory, listOf("Arma", "Armadura", "Acessório", "Escudo", "Consumível", "Munição", "Ferramenta", "Recipiente de Carga", "Item"), true) { onDraftChange(draft.copy(commonCategory = it)) }
                     ChoiceField("Qualidade", quality, ItemQuality.entries, true, display = { it.label }) { onDraftChange(draft.copy(quality = it)) }
                     HudTextField("Nome do item", commonName) { onDraftChange(draft.copy(commonName = it)) }
@@ -477,7 +477,7 @@ private fun StrictItemBuilderDialog(
                         { IntegerField("Dano", draft.commonDamage, true, it) { value -> onDraftChange(draft.copy(commonDamage = value)) } },
                     )
                 }
-                if (step == 2 && category != "Item") {
+                if (step == 1 && category != "Item") {
                     HudTextField("Nome personalizado", customName) { onDraftChange(draft.copy(customName = it)) }
                     ChoiceField<String>("Tipo", base.id, bases.map { it.id }, true, display = { id: String -> bases.first { it.id == id }.name }) { id: String ->
                         val selected = bases.first { it.id == id }
@@ -485,15 +485,15 @@ private fun StrictItemBuilderDialog(
                         onDraftChange(draft.copy(baseId = id, materialId = nextMaterialId, modificationIds = modifications.filter { it in ItemCreationRules.compatibleModifications(selected, weapon) }.map { it.id }))
                     }
                 }
-                if (step == 3 && category != "Item") {
+                if (step == 2 && category != "Item") {
                     ChoiceField<String>("Material", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String -> onDraftChange(draft.copy(materialId = id)) }
                     Text(material.effect, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (step == 4 && category != "Item") {
+                if (step == 3 && category != "Item") {
                     ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
                     Text("CUSTO ATUAL // ${built.creationCost ?: "#"} PH // SALDO ${remainingHeritage?.minus(built.creationCost ?: 0) ?: "—"}", color = MaterialTheme.colorScheme.primary)
                 }
-                if (step == 5 && category != "Item") {
+                if (step == 4 && category != "Item") {
                     Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     HudTextField("Filtrar por nome, grupo ou efeito", componentQuery) { componentQuery = it }
                     availableModifications.filter { modification ->
@@ -512,7 +512,7 @@ private fun StrictItemBuilderDialog(
                     }
                     }
                 }
-                if (step == 6 && category != "Item") {
+                if (step == 5 && category != "Item") {
                     TwoFields(
                         { IntegerField("Espaços de Gema", gemSlots, true, it) { value -> onDraftChange(draft.copy(gemSlots = value.coerceIn(gems.size, 5))) } },
                         { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> onDraftChange(draft.copy(technologySlots = value.coerceIn(0, 5))) } },
@@ -530,11 +530,7 @@ private fun StrictItemBuilderDialog(
                         }
                     }
                 }
-                if (step in 3..6 && category == "Item") {
-                    Text("ITEM NARRATIVO // SEM COMPONENTES MECÂNICOS", color = MaterialTheme.colorScheme.primary)
-                    Text("Continue até a revisão. O rascunho permanece salvo durante a navegação.")
-                }
-                if (step == 7) {
+                if (step == totalSteps) {
                 Text("REVISE ANTES DE CRIAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
                 if (category == "Item") Text("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
@@ -553,12 +549,31 @@ private fun StrictItemBuilderDialog(
         },
         confirmButton = {
             TextButton(
-                enabled = step < 7 || if (category == "Item") commonName.isNotBlank() else allowedByBudget,
-                onClick = { if (step < 7) onDraftChange(draft.copy(step = step + 1)) else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
-            ) { Text(if (step < 7) "CONTINUAR" else "CRIAR ITEM") }
+                enabled = step < totalSteps || if (category == "Item") commonName.isNotBlank() else allowedByBudget,
+                onClick = { if (step < totalSteps) onDraftChange(draft.copy(step = step + 1)) else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
+            ) { Text(if (step < totalSteps) "CONTINUAR" else "CRIAR ITEM") }
         },
         dismissButton = { TextButton(onClick = { if (step > 1) onDraftChange(draft.copy(step = step - 1)) else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
     )
+}
+
+internal fun ItemEffect.presentationLabel(): String {
+    if (type == ItemEffectType.RULE) return description.ifBlank { "Regra especial" }
+    val typeLabel = when (type) {
+        ItemEffectType.ATTRIBUTE -> "Atributo"
+        ItemEffectType.KNOWLEDGE -> "Conhecimento"
+        ItemEffectType.ATTACK -> "Ataque"
+        ItemEffectType.PHYSICAL_DAMAGE -> "Dano físico"
+        ItemEffectType.MAGIC_DAMAGE -> "Dano mágico"
+        ItemEffectType.PG -> "Proteção geral"
+        ItemEffectType.PL -> "Proteção local"
+        ItemEffectType.AGILITY_LIMIT -> "Limite de Agilidade"
+        ItemEffectType.DURABILITY -> "Durabilidade"
+        ItemEffectType.GEM_POWER -> "Poder de gema"
+        ItemEffectType.RULE -> error("handled above")
+    }
+    val target = resolvedTargetId.ifBlank { target }.takeIf(String::isNotBlank)?.let { " · $it" }.orEmpty()
+    return "$typeLabel ${if (value > 0) "+" else ""}$value$target"
 }
 
 private fun strictToggleModification(current: List<ItemPart>, item: ItemPart): List<ItemPart> {

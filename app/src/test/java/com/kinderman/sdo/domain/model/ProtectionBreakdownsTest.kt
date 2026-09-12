@@ -14,6 +14,11 @@ class ProtectionBreakdownsTest {
             pg = 2,
             pl = 3,
             agilityLimit = 4,
+            mechanicalEffects = listOf(
+                ItemEffect("armor:pg", ItemEffectType.PG, 2, condition = ItemEffectCondition.EQUIPPED),
+                ItemEffect("armor:pl", ItemEffectType.PL, 3, target = "torso", condition = ItemEffectCondition.EQUIPPED),
+                ItemEffect("armor:la", ItemEffectType.AGILITY_LIMIT, 4, condition = ItemEffectCondition.EQUIPPED),
+            ),
         )
         val character = Character(inventory = listOf(armor)).equipItems(1, setOf(armor.id))
 
@@ -35,6 +40,9 @@ class ProtectionBreakdownsTest {
             name = "Escudo Leve",
             category = "Escudo",
             pg = 2,
+            mechanicalEffects = listOf(
+                ItemEffect("shield:pg", ItemEffectType.PG, 2, condition = ItemEffectCondition.WIELDED),
+            ),
         )
         val charEquipped = Character(inventory = listOf(shield)).equipItems(2, setOf(shield.id))
         assertEquals(10, charEquipped.equippedGeneralProtection + 10)

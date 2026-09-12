@@ -13,29 +13,13 @@ data class LimitBreakdown(
 
 fun Character.generalProtectionBreakdown(): CalculatedValue {
     val typed = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }
-    val itemModifiers = if (typed.isNotEmpty()) {
-        typed.map { audit ->
-            ValueModifier(
-                sourceType = ModifierSourceType.ITEM,
-                sourceId = audit.itemId,
-                label = audit.itemName.ifBlank { "Item sem nome" },
-                value = audit.value,
-            )
-        }
-    } else {
-        val equipped = inventory.filter {
-            !it.isBroken && it.inventoryState in setOf(InventoryState.EQUIPPED, InventoryState.WIELDED)
-        }
-        equipped.filterNot { it.isBroken || it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
-            .filter { it.pg != 0 }
-            .map { item ->
-                ValueModifier(
-                    sourceType = ModifierSourceType.ITEM,
-                    sourceId = item.id,
-                    label = item.name.ifBlank { "Item sem nome" },
-                    value = if (item.isScrap) item.pg / 2 else item.pg,
-                )
-            }
+    val itemModifiers = typed.map { audit ->
+        ValueModifier(
+            sourceType = ModifierSourceType.ITEM,
+            sourceId = audit.itemId,
+            label = audit.itemName.ifBlank { "Item sem nome" },
+            value = audit.value,
+        )
     }
     return CalculatedValue(
         base = 10,
@@ -46,31 +30,31 @@ fun Character.generalProtectionBreakdown(): CalculatedValue {
 
 fun Character.localProtectionBreakdown(region: BodyRegion): CalculatedValue {
     val equippedIds = region.equippedItemIds.toSet()
+    val typed = EquipmentEffectEngine.resolve(this).entries.filter {
+        it.type == ItemEffectType.PL && it.itemId in equippedIds
+    }
     return CalculatedValue(
         base = region.localProtection,
-        modifiers = inventory
-            .filter { it.id in equippedIds && it.pl != 0 && !it.isBroken }
-            .map { item ->
-                ValueModifier(
-                    sourceType = ModifierSourceType.ITEM,
-                    sourceId = item.id,
-                    label = item.name.ifBlank { "Item sem nome" },
-                    value = if (item.isScrap) item.pl / 2 else item.pl,
-                )
-            },
+        modifiers = typed.map { item ->
+            ValueModifier(
+                sourceType = ModifierSourceType.ITEM,
+                sourceId = item.itemId,
+                label = item.itemName.ifBlank { "Item sem nome" },
+                value = item.value,
+            )
+        },
     )
 }
 
 fun Character.agilityLimitBreakdown(): LimitBreakdown {
-    val contributions = equippedInventoryItemsForBreakdown()
-        .mapNotNull { item ->
-            item.agilityLimit?.let { limit ->
-                LimitContribution(
-                    sourceId = item.id,
-                    label = item.name.ifBlank { "Item sem nome" },
-                    value = limit,
-                )
-            }
+    val contributions = EquipmentEffectEngine.resolve(this).entries
+        .filter { it.type == ItemEffectType.AGILITY_LIMIT }
+        .map { item ->
+            LimitContribution(
+                sourceId = item.itemId,
+                label = item.itemName.ifBlank { "Item sem nome" },
+                value = item.value,
+            )
         }
     return LimitBreakdown(
         total = contributions.minOfOrNull(LimitContribution::value),

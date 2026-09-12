@@ -429,17 +429,10 @@ data class Character(
     fun calculatedProtections(): Map<String, Int> = defaultProtectionNames.associateWith(::protectionTotal)
 
     val equippedGeneralProtection: Int
-        get() {
-            val typed = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }
-            return if (typed.isNotEmpty()) typed.sumOf { it.value }
-            else activeEquippedItems()
-                .filterNot { it.category.equals("Escudo", true) && it.inventoryState != InventoryState.WIELDED }
-                .sumOf { if (it.isScrap) it.pg / 2 else it.pg }
-        }
+        get() = EquipmentEffectEngine.resolve(this).entries.filter { it.type == ItemEffectType.PG }.sumOf { it.value }
 
     val equippedAgilityLimit: Int?
         get() = EquipmentEffectEngine.resolve(this).agilityLimit
-            ?: activeEquippedItems().mapNotNull { it.agilityLimit }.minOrNull()
 
     val equipmentAttackBonus: Int get() = EquipmentEffectEngine.resolve(this).attackBonus
     val equipmentPhysicalDamageBonus: Int get() = EquipmentEffectEngine.resolve(this).physicalDamageBonus
@@ -448,10 +441,10 @@ data class Character(
     val activeEquipmentRules: List<EquipmentEffectAudit> get() = EquipmentEffectEngine.resolve(this).activeRules
 
     fun localProtection(region: BodyRegion): Int {
+        val equippedIds = region.equippedItemIds.toSet()
         val typed = EquipmentEffectEngine.resolve(this).entries
-            .filter { it.type == ItemEffectType.PL && (it.targetId.isBlank() || it.targetId.equals(region.name, true)) }
-        return region.localProtection + if (typed.isNotEmpty()) typed.sumOf { it.value }
-        else equippedItems(region).sumOf { if (it.isScrap) it.pl / 2 else it.pl }
+            .filter { it.type == ItemEffectType.PL && it.itemId in equippedIds }
+        return region.localProtection + typed.sumOf { it.value }
     }
 
     fun equippedItems(region: BodyRegion): List<InventoryItem> =
