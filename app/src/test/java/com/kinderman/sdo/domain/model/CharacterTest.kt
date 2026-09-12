@@ -5,6 +5,21 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+private fun typedProtectionItem(
+    id: String,
+    name: String = "",
+    pg: Int = 0,
+    pl: Int = 0,
+    region: String = "",
+    category: String = "",
+) = InventoryItem(
+    id = id, name = name, pg = pg, pl = pl, region = region, category = category,
+    mechanicalEffects = buildList {
+        if (pg != 0) add(ItemEffect("$id:pg", ItemEffectType.PG, pg, condition = ItemEffectCondition.EQUIPPED))
+        if (pl != 0) add(ItemEffect("$id:pl", ItemEffectType.PL, pl, target = region, condition = ItemEffectCondition.EQUIPPED))
+    },
+)
+
 class CharacterTest {
     @Test fun loadConditionAppliesOverloadedPenaltiesAndImmobility() {
         val overloaded = Character(inventory = listOf(InventoryItem(load = 3, state = "E")))
@@ -170,7 +185,7 @@ class CharacterTest {
     }
 
     @Test fun equippedArmorAddsPgToCharacterAndPlToSelectedBodyRegion() {
-        val armor = InventoryItem(id = "armor-1", name = "Peitoral", pg = 3, pl = 2, region = "torso", category = "Armadura")
+        val armor = typedProtectionItem("armor-1", "Peitoral", 3, 2, "torso", "Armadura")
         val initial = Character(inventory = listOf(armor))
         val equipped = initial.equipItems(regionIndex = 1, itemIds = setOf(armor.id))
 
@@ -181,7 +196,7 @@ class CharacterTest {
     }
 
     @Test fun theSameEquipmentContributesPgOnlyOnceAcrossMultipleRegions() {
-        val armor = InventoryItem(id = "armor-1", pg = 3, pl = 2, region = "braços", category = "Armadura")
+        val armor = typedProtectionItem("armor-1", pg = 3, pl = 2, region = "braços", category = "Armadura")
         val character = Character(inventory = listOf(armor))
             .equipItems(2, setOf(armor.id))
             .equipItems(3, setOf(armor.id))
@@ -203,7 +218,7 @@ class CharacterTest {
     }
 
     @Test fun equipmentCanBeAssignedToBothFeetAndEveryBodyRegion() {
-        val item = InventoryItem(id = "boots-1", name = "Botas", pg = 1, pl = 2, region = "pés")
+        val item = typedProtectionItem("boots-1", "Botas", 1, 2, "pés")
         val character = defaultBodyRegions().indices.fold(Character(inventory = listOf(item))) { current, index ->
             current.equipItems(index, setOf(item.id))
         }
@@ -216,8 +231,8 @@ class CharacterTest {
     }
 
     @Test fun onlyOneArmorCanOccupyTheSameBodyRegion() {
-        val first = InventoryItem(id = "a", region = "torso", category = "Armadura", pg = 1)
-        val second = InventoryItem(id = "b", region = "torso", category = "Armadura", pg = 2)
+        val first = typedProtectionItem("a", pg = 1, region = "torso", category = "Armadura")
+        val second = typedProtectionItem("b", pg = 2, region = "torso", category = "Armadura")
         val character = Character(inventory = listOf(first, second)).equipItems(1, setOf(first.id, second.id))
 
         assertEquals(listOf(second.id), character.bodyRegions[1].equippedItemIds)

@@ -181,7 +181,6 @@ internal fun BodySection(character: Character, enabled: Boolean, onChange: (Char
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("10", "Corpo e armadura")
         Text("LA DOS EQUIPAMENTOS // ${character.equippedAgilityLimit ?: "—"}", color = MaterialTheme.colorScheme.primary)
-        HudTextField("Ajuste excepcional de LA", character.agilityLimit, enabled = enabled) { onChange(character.copy(agilityLimit = it)) }
     }
 }
 
