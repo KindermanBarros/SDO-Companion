@@ -96,10 +96,10 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
         ) {
             Text(
                 if (ability.kind == AbilityKind.POWER) ability.name else "${ability.kind.label.uppercase()} // REV ${ability.revision}",
+                modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.primary,
                 style = if (ability.kind == AbilityKind.POWER) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
             )
-            Text(if (expanded) "FECHAR" else "EDITAR", modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher ${ability.name}" else "Expandir ${ability.name}")
             RemoveButton(enabled && !isRacial, if (isRacial) "Poder racial não pode ser removido" else "Remover habilidade") {
                 onChange(character.withRemovedCanonicalAbility(ability.id))
