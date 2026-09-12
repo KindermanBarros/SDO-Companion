@@ -3,6 +3,12 @@ package com.kinderman.sdo.data.local
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
 import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.InventoryItem
+import com.kinderman.sdo.domain.model.BodyRegion
+import com.kinderman.sdo.domain.model.DomainError
+import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.ProgressionRecord
+import com.kinderman.sdo.domain.model.ProgressionReward
+import com.kinderman.sdo.domain.model.ProgressionRewardType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -31,8 +37,10 @@ class CharacterDataMigrationTest {
             assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = true))
         }
 
-        assertTrue(fixtures.last().migratedStructuredRecord(markDirty = true).inventory.isEmpty())
-        assertTrue(fixtures.last().migratedStructuredRecord(markDirty = true).migrationReviewPayload.isNotBlank())
+        val custom = fixtures.last().migratedStructuredRecord(markDirty = true)
+        assertEquals("Relíquia caseira", custom.inventory.single().name)
+        assertEquals(1, custom.toDomain().itemStates.size)
+        assertEquals(1, custom.toDomain().customItemCatalog.size)
     }
 
     @Test fun firestoreMigrationCanPreserveCleanSynchronizationState() {
@@ -46,7 +54,7 @@ class CharacterDataMigrationTest {
     @Test fun ambiguousMechanicsBecomeIdempotentReviewRecords() {
         val legacy = CharacterRecord(
             id = "legacy", canonicalSchemaVersion = 0,
-            conditions = listOf(com.kinderman.sdo.domain.model.ConditionEffect(id = "condition", duration = "até descansar")),
+            conditions = listOf(com.kinderman.sdo.domain.model.ConditionEffect(id = "condition", name = "Abalado", duration = "até descansar")),
         )
         val migrated = legacy.migratedStructuredRecord(markDirty = true)
         val reloaded = migrated.toDomain()
@@ -55,5 +63,70 @@ class CharacterDataMigrationTest {
         assertEquals("até descansar", reloaded.migrationReviews.single().legacyValue)
         assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = true))
         assertEquals(reloaded.migrationReviews, reloaded.toRecord().toDomain().migrationReviews)
+    }
+
+    @Test fun missingCanonicalPayloadsMigrateAndUnmappedBodySlotsRemainReviewable() {
+        val legacy = CharacterRecord(
+            id = "legacy-body",
+            canonicalSchemaVersion = CANONICAL_SCHEMA_VERSION,
+            itemSchemaVersion = CURRENT_ITEM_DATA_VERSION,
+            creationRulesVersion = CURRENT_CREATION_RULES_VERSION,
+            bodyRegions = listOf(BodyRegion(roll = 11, name = "Membro protético")),
+        )
+
+        val migrated = legacy.migratedStructuredRecord(markDirty = false)
+
+        assertFalse(migrated.requiresStructuredMigration())
+        assertTrue(migrated.migrationReviewPayload.isNotBlank())
+        assertEquals("Membro protético", migrated.toDomain().migrationReviews.single { it.field.startsWith("body.region:") }.legacyValue)
+        assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = false))
+    }
+
+    @Test(expected = DomainError.UnsupportedSchemaVersion::class)
+    fun newerCanonicalSchemasAreNotDowngraded() {
+        CharacterRecord(canonicalSchemaVersion = CANONICAL_SCHEMA_VERSION + 1)
+            .migratedStructuredRecord(markDirty = false)
+    }
+
+    @Test fun malformedCanonicalPayloadsBecomeReviewItemsInsteadOfCrashingReads() {
+        val legacy = CharacterRecord(
+            id = "broken-canonical-payload",
+            canonicalAbilitiesPayload = "{not-json",
+        )
+
+        val migrated = legacy.migratedStructuredRecord(markDirty = false)
+        val review = migrated.toDomain().migrationReviews.single { it.field == "canonicalAbilitiesPayload" }
+
+        assertEquals("{not-json", review.legacyValue)
+        assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = false))
+    }
+
+    @Test fun inventoryAndProgressionBecomeCanonicalAuthoritiesWithoutTextInference() {
+        val legacy = CharacterRecord(
+            id = "migration-complete",
+            inventory = listOf(InventoryItem(
+                id = "custom-item", name = "Relíquia sem catálogo", effect = "Escolha da mesa",
+                quantity = 2, linkedAshId = "ash-1",
+            )),
+            progressionHistory = listOf(ProgressionRecord(
+                id = "level-2", previousLevel = 1, newLevel = 2, appliedAt = 42,
+                rewards = listOf(ProgressionReward(2, ProgressionRewardType.ATTRIBUTE, "AGI")),
+            )),
+        )
+
+        val migrated = legacy.migratedStructuredRecord(markDirty = false)
+        val character = migrated.toDomain()
+
+        assertEquals(2, character.itemStates.single().consumable?.doses)
+        assertEquals("Relíquia sem catálogo", character.customItemCatalog.single().name)
+        assertEquals("character:migration-complete:custom-item", character.itemStates.single().definition.id.value)
+        assertEquals(1, character.progression.choices.size)
+        assertTrue(character.migrationReviews.any { it.field == "inventory.mechanics:custom-item" })
+        assertEquals(migrated, migrated.migratedStructuredRecord(markDirty = false))
+    }
+
+    @Test(expected = DomainError.LegacyWriteRejected::class)
+    fun serializationBoundaryRejectsNewLegacyWrites() {
+        Character(canonicalSchemaVersion = 0).toRecord()
     }
 }

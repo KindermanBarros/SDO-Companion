@@ -275,6 +275,6 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
 
 private fun String.toDurabilityPair(): Pair<Int, Int> {
     val values = split('/')
-    val maximum = values.getOrNull(1)?.toIntOrNull() ?: values.firstOrNull()?.toIntOrNull() ?: 0
+    val maximum = values.getOrNull(1)?.toIntOrNull() ?: values.firstOrNull()?.toIntOrNull() ?: 1
     return (values.firstOrNull()?.toIntOrNull() ?: maximum).coerceIn(0, maximum) to maximum
 }

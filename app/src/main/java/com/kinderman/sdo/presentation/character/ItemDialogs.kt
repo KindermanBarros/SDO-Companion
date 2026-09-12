@@ -380,14 +380,14 @@ internal fun EquipmentPickerDialog(
 ) {
     var selected by remember(selectedIds) { mutableStateOf(selectedIds) }
     val orderedInventory = remember(inventory, regionName) {
-        inventory.sortedByDescending { it.matchesEquipmentRegion(regionName) }
+        inventory.filter { it.matchesEquipmentRegion(regionName) }
     }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("EQUIPAR // ${regionName.uppercase()}") },
         text = {
             Column(Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
-                if (inventory.isEmpty()) Text("Nenhum item pronto no inventário.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (orderedInventory.isEmpty()) Text("Nenhum item equipável nesta região.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 orderedInventory.forEach { item ->
                     val checked = item.id in selected
                     val compatible = item.matchesRegion(regionName)

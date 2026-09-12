@@ -2,6 +2,9 @@ package com.kinderman.sdo.domain.catalog
 
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ResourceValue
+import com.kinderman.sdo.domain.model.SourceKind
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
+import com.kinderman.sdo.domain.model.withRemovedCanonicalAbility
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -67,5 +70,16 @@ class RaceSelectionTest {
         assertEquals(1, selected.attributeTotal("AGI"))
         assertEquals(1, selected.powers.count { it.origin.startsWith("Raça — ") })
         assertEquals(1, selected.powers.count { it.origin.startsWith("Sub-raça — ") })
+    }
+
+    @Test fun racialPowersEnterCanonicalAbilitiesAndCannotBeRemoved() {
+        val race = RaceCatalog.race("Humanos")!!
+        val selected = Character().withRaceSelection(race, null, "FOR", race.powers, null)
+        val racial = selected.allCanonicalAbilitiesSafely().filter { it.source?.kind == SourceKind.Race }
+
+        assertEquals(2, racial.size)
+        val failure = runCatching { selected.withRemovedCanonicalAbility(racial.first().id) }.exceptionOrNull()
+        assertTrue(failure is IllegalArgumentException)
+        assertTrue(failure?.message.orEmpty().contains("raciais"))
     }
 }

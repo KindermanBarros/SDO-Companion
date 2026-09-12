@@ -15,17 +15,20 @@ fun Character.withNormalizedInventory(): Character {
 }
 
 internal fun InventoryItem.normalized(): InventoryItem? {
-    if (dataVersion >= CURRENT_ITEM_DATA_VERSION) return this
+    val durabilityWasNotDefined = durabilityMax <= 0
+    val durabilityNormalized = if (durabilityWasNotDefined) {
+        copy(durabilityCurrent = 1, durabilityMax = 1)
+    } else copy(durabilityCurrent = durabilityCurrent.coerceIn(0, durabilityMax))
+    if (dataVersion >= CURRENT_ITEM_DATA_VERSION) return durabilityNormalized
 
-    val normalizedState = inventoryState.storageCode
+    val normalizedState = durabilityNormalized.inventoryState.storageCode
     val retainedEffects = (
         ItemCreationRules.componentEffects(modificationIds, gemIds) + mechanicalEffects
     ).distinctBy(ItemEffect::id)
     val resolved = ItemCreationRules.inventoryTemplate(catalogEntryId, name)
 
     if (resolved == null) {
-        if (catalogEntryId.isBlank() && baseId.isBlank() && durabilityMax == 0) return null
-        return copy(
+        return durabilityNormalized.copy(
             state = normalizedState,
             category = "LEGACY_NARRATIVE".takeIf { catalogEntryId.isBlank() && baseId.isBlank() } ?: category,
             mechanicalEffects = retainedEffects,
@@ -35,6 +38,8 @@ internal fun InventoryItem.normalized(): InventoryItem? {
 
     val (entry, template) = resolved
     val canonical = template.toInventoryItem(acquisitionSource == com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE)
+    val finalDurabilityMax = if (durabilityWasNotDefined) canonical.durabilityMax else maxOf(durabilityNormalized.durabilityMax, canonical.durabilityMax)
+    val finalDurabilityCurrent = if (durabilityWasNotDefined) canonical.durabilityCurrent else durabilityNormalized.durabilityCurrent.coerceIn(0, finalDurabilityMax)
     return canonical.copy(
         id = id,
         state = normalizedState,
@@ -48,6 +53,8 @@ internal fun InventoryItem.normalized(): InventoryItem? {
         catalogVersion = entry.version,
         canonical = true,
         acquiredAt = acquiredAt,
+        durabilityCurrent = finalDurabilityCurrent,
+        durabilityMax = finalDurabilityMax,
         mechanicalEffects = (canonical.mechanicalEffects + retainedEffects).distinctBy(ItemEffect::id),
         dataVersion = CURRENT_ITEM_DATA_VERSION,
     )

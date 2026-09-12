@@ -41,11 +41,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.kinderman.sdo.domain.model.BodyRegion
+import com.kinderman.sdo.domain.model.Ability
+import com.kinderman.sdo.domain.model.AbilityCost
+import com.kinderman.sdo.domain.model.BodyRegionSlot
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.ConditionInstance
 import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperationType
 import com.kinderman.sdo.domain.model.SessionResource
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
+import com.kinderman.sdo.domain.model.canonicalBodyState
+import com.kinderman.sdo.domain.model.canonicalConditions
 import com.kinderman.sdo.domain.model.localProtectionBreakdown
 import com.kinderman.sdo.domain.model.LoadCondition
 import com.kinderman.sdo.ui.Acid
@@ -57,7 +63,7 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 
-private data class SessionAbilityEntry(val kind: String, val id: String, val description: String, val available: Boolean)
+private data class SessionAbilityEntry(val ability: Ability, val description: String)
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -216,39 +222,57 @@ private fun SessionContent(
             }
         }
         item {
-            val entries = buildList {
-                character.powers.sortedByDescending { it.favorite }.forEach {
-                    val cost = if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "SEM CUSTO"
-                    add(SessionAbilityEntry("PODER", it.id, "${if (it.favorite) "★ " else ""}${it.name} // $cost\n${it.effect}", it.available))
-                }
-                character.mysticAbilities.sortedByDescending { it.favorite }.forEach {
-                    val cost = if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "SEM CUSTO"
-                    add(SessionAbilityEntry(it.type.ifBlank { "ARCANO" }.uppercase(), it.id, "${if (it.favorite) "★ " else ""}${it.name} // $cost\n${it.effect}", it.available))
-                }
-            }
+            val entries = character.allCanonicalAbilitiesSafely()
+                .sortedWith(compareByDescending<Ability> { it.favorite }.thenBy { it.name })
+                .map { ability -> SessionAbilityEntry(ability, buildString {
+                    append(if (ability.favorite) "★ " else "")
+                    append(ability.name)
+                    append(" // ")
+                    append(abilityCostLabel(ability.cost))
+                    if (ability.effect.isNotBlank()) append("\n${ability.effect}")
+                    ability.mechanicalEffect?.operations.orEmpty().forEach { operation ->
+                        append("\n• ")
+                        append(operation.sessionLabel())
+                    }
+                }) }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                 TelemetryTag("ABILITIES.READY")
                 Text("Poderes, magias, cinzas e runas", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 entries.forEach { entry ->
                     Column(Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(6.dp)).padding(10.dp)) {
-                        Text(entry.kind, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                        Text(entry.description, color = if (entry.available) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(entry.ability.kind.label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        Text(entry.description, color = if (entry.ability.available) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
                         TextButton(
-                            onClick = { pendingAbilityId = entry.id },
-                            enabled = !readOnly && entry.available,
-                        ) { Text(if (entry.available) "USAR" else "INDISPONÍVEL") }
+                            onClick = { pendingAbilityId = entry.ability.id },
+                            enabled = !readOnly && entry.ability.available,
+                        ) { Text(if (entry.ability.available) "USAR" else "INDISPONÍVEL") }
                     }
                 }
             }
         }
         item {
-            TechPanel(accent = if (character.conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
-                TelemetryTag("CONDITIONS.${character.conditions.size}")
+            val conditions = character.canonicalConditions()
+            TechPanel(accent = if (conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
+                TelemetryTag("CONDITIONS.${conditions.size}")
                 Text("Condições", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-                if (character.conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                character.conditions.forEach { condition ->
-                    Text("${condition.name} // ${condition.intensity} // ${condition.duration}", color = MaterialTheme.colorScheme.onSurface)
+                if (conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                conditions.forEach { condition ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(condition.sessionLabel(), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                        TextButton(
+                            enabled = !readOnly,
+                            onClick = {
+                                onCommand(
+                                    character,
+                                    SessionCommand(
+                                        type = SessionOperationType.CONDITION_REMOVE,
+                                        conditionId = condition.instanceId,
+                                    ),
+                                )
+                            },
+                        ) { Text("REMOVER") }
+                    }
                 }
             }
         }
@@ -256,18 +280,16 @@ private fun SessionContent(
 
     if (damageDialog) DamageDialog(character, onDismiss = { damageDialog = false }) { amount, region ->
         damageDialog = false
-        onCommand(character, SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, regionId = region.name))
+        onCommand(character, SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, bodyRegion = region))
     }
     if (healingDialog) AmountDialog("APLICAR CURA", character.life.current, character.lifeMaximum, { healingDialog = false }) { amount ->
         healingDialog = false
         onCommand(character, SessionCommand(type = SessionOperationType.HEAL, resource = SessionResource.LIFE, amount = amount))
     }
     pendingAbilityId?.let { id ->
-        val power = character.powers.firstOrNull { it.id == id }
-        val ability = character.mysticAbilities.firstOrNull { it.id == id }
-        val name = power?.name ?: ability?.name.orEmpty()
-        val cost = power?.let { if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "sem custo" }
-            ?: ability?.let { if (it.costValue > 0) "${it.costValue} ${it.costType.label}" else "sem custo" }.orEmpty()
+        val ability = character.allCanonicalAbilitiesSafely().firstOrNull { it.id == id }
+        val name = ability?.name.orEmpty()
+        val cost = ability?.let { abilityCostLabel(it.cost) }.orEmpty()
         AlertDialog(
             onDismissRequest = { pendingAbilityId = null },
             title = { Text("CONFIRMAR USO") },
@@ -291,11 +313,12 @@ private fun ResourceControl(label: String, current: Int, maximum: Int, enabled: 
 }
 
 @Composable
-private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm: (Int, BodyRegion) -> Unit) {
+private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm: (Int, BodyRegionSlot) -> Unit) {
     var amount by remember { mutableIntStateOf(1) }
     var regionIndex by remember { mutableIntStateOf(0) }
-    val region = character.bodyRegions.getOrElse(regionIndex) { BodyRegion(name = "Geral") }
-    val protection = character.localProtectionBreakdown(region).total
+    val regions = character.canonicalBodyState().regions
+    val region = regions.getOrElse(regionIndex) { character.canonicalBodyState().region(BodyRegionSlot.Torso) }
+    val protection = character.localProtection(region)
     val applied = (amount - protection).coerceAtLeast(0)
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -306,16 +329,16 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
                 Stepper(amount, 0, 999) { amount = it }
                 Text("2. Escolha a região")
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton({ regionIndex = (regionIndex - 1).floorMod(character.bodyRegions.size) }) { Text("‹") }
+                    TextButton({ regionIndex = (regionIndex - 1).floorMod(regions.size) }) { Text("‹") }
                     Text(region.name, modifier = Modifier.weight(1f).align(Alignment.CenterVertically))
-                    TextButton({ regionIndex = (regionIndex + 1).floorMod(character.bodyRegions.size) }) { Text("›") }
+                    TextButton({ regionIndex = (regionIndex + 1).floorMod(regions.size) }) { Text("›") }
                 }
                 Text("3. P.L. local: $protection")
                 Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                 Text("Nada é alterado antes da confirmação.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         },
-        confirmButton = { TextButton({ onConfirm(amount, region) }) { Text("CONFIRMAR") } },
+        confirmButton = { TextButton({ onConfirm(amount, region.region) }) { Text("CONFIRMAR") } },
         dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
     )
 }
@@ -347,3 +370,25 @@ private fun Stepper(value: Int, minimum: Int, maximum: Int, onChange: (Int) -> U
 }
 
 private fun Int.floorMod(divisor: Int): Int = if (divisor <= 0) 0 else Math.floorMod(this, divisor)
+
+private fun abilityCostLabel(cost: AbilityCost): String = when (cost) {
+    is AbilityCost.PowerCost -> if (cost.amount == 0) "SEM CUSTO" else "${cost.amount} ${cost.resource}"
+    is AbilityCost.SpellCost -> "${cost.amount} PM"
+    is AbilityCost.RuneCost -> "${cost.amount} PM"
+    is AbilityCost.AshCost -> "${cost.amount} dose(s)"
+}
+
+private fun com.kinderman.sdo.domain.model.EffectOperation.sessionLabel(): String = when (this) {
+    is com.kinderman.sdo.domain.model.EffectOperation.Damage -> "Dano ${damageType.label} em ${target.kind}"
+    is com.kinderman.sdo.domain.model.EffectOperation.Healing -> "Recupera ${amount} de ${resource}"
+    is com.kinderman.sdo.domain.model.EffectOperation.ApplyCondition -> "Aplica ${condition.kind.label}"
+    is com.kinderman.sdo.domain.model.EffectOperation.AddModifier -> "Modificador ${modifier.target.kind} ${if (modifier.amount > 0) "+" else ""}${modifier.amount}"
+    is com.kinderman.sdo.domain.model.EffectOperation.SpendResource -> "Gasta ${amount} ${resource}"
+    is com.kinderman.sdo.domain.model.EffectOperation.ConsumeItemState -> "Consome ${amount} ${state}"
+}
+
+private fun ConditionInstance.sessionLabel(): String = buildString {
+    append(name)
+    intensity?.let { append(" // intensidade $it") }
+    duration?.let { append(" // ${it.kind.label}"); it.turns?.let { turns -> append(" ($turns turno(s))") } }
+}

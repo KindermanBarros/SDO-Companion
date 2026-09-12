@@ -13,6 +13,7 @@ import com.kinderman.sdo.data.local.OperationsDao
 import com.kinderman.sdo.data.local.SessionOperationRecord
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
+import com.kinderman.sdo.data.local.migratedStructuredRecord
 import com.kinderman.sdo.domain.model.CampaignAlertSettings
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignDelivery
@@ -115,7 +116,8 @@ class OfflineFirstOperationsRepository(
             dirty = true,
         )
         if (!accept) return dao.upsertDelivery(responded.toRecord())
-        val record = dao.character(delivery.recipientCharacterId) ?: error("Ficha destinatária não encontrada.")
+        val record = dao.character(delivery.recipientCharacterId)?.migratedStructuredRecord(markDirty = true)
+            ?: error("Ficha destinatária não encontrada.")
         val character = applyDelivery(record.toDomain(), delivery).copy(updatedAt = now, dirty = true)
         dao.acceptDeliveryOnce(responded.toRecord(), character.toRecord())
     }
@@ -194,7 +196,7 @@ class OfflineFirstOperationsRepository(
             require(remoteDelivery.state != CampaignDeliveryState.DECLINED.name) { "Esta entrega já foi recusada em outro aparelho." }
             val remoteRecord = transaction.get(characterReference).toObject(com.kinderman.sdo.data.local.CharacterRecord::class.java)
                 ?: error("Ficha destinatária remota não encontrada.")
-            val remoteCharacter = remoteRecord.toDomain()
+            val remoteCharacter = remoteRecord.migratedStructuredRecord(markDirty = false).toDomain()
             val applied = if (local.id in remoteCharacter.appliedDeliveryIds) remoteCharacter
                 else applyDelivery(remoteCharacter, local.toDomain()).copy(updatedAt = maxOf(local.updatedAt, System.currentTimeMillis()))
             transaction.set(characterReference, applied.toRecord().copy(dirty = false))

@@ -16,6 +16,9 @@ import com.kinderman.sdo.domain.model.AshPurity
 import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.canonicalized
 import com.kinderman.sdo.domain.model.AbilityTimeUnit
+import com.kinderman.sdo.domain.model.SourceKind
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
+import com.kinderman.sdo.domain.model.toCanonicalAbility
 
 data class PathChangePreview(
     val pathName: String,
@@ -44,6 +47,8 @@ fun Character.withStructuredPathPreset(entry: CatalogEntry): Character {
         pathKeywords = preset.keywords,
         pathPillars = preset.pillars,
         powers = retainedPowers + preview.added,
+        abilities = allCanonicalAbilitiesSafely().filterNot { it.source?.kind == SourceKind.Path } +
+            preview.added.map { it.toCanonicalAbility() },
     )
 }
 
@@ -191,8 +196,9 @@ fun Character.withRefreshedPresetPowers(): Character {
             stored.sourceType == PowerSourceType.RACE ||
                 stored.origin.startsWith("Raça — ", ignoreCase = true) ||
                 stored.origin.startsWith("Sub-raça — ", ignoreCase = true) -> {
+                val raceId = RaceCatalog.race(race)?.canonicalId()
                 racialPresets.firstOrNull { it.name.equals(stored.name, ignoreCase = true) }
-                    ?.toStructuredPower(stored.origin)
+                    ?.let { racialPower -> raceId?.let { racialPower.toStructuredPower(stored.origin, it) } }
             }
             else -> null
         }

@@ -216,7 +216,7 @@ class ItemNormalizationTest {
         assertEquals(migrated, Character(inventory = listOf(migrated)).withNormalizedInventory().inventory.single())
     }
 
-    @Test fun unrecognizedLegacyItemWithoutValidDurabilityIsRemoved() {
+    @Test fun unrecognizedLegacyItemWithoutValidDurabilityIsPreservedForScopedCatalogMigration() {
         val legacy = InventoryItem(
             id = "legacy-weapon",
             state = "WIELDED",
@@ -226,8 +226,23 @@ class ItemNormalizationTest {
         )
 
         val character = Character(inventory = listOf(legacy)).withNormalizedInventory()
-        assertTrue(character.inventory.isEmpty())
+        assertEquals("Arma personalizada", character.inventory.single().name)
+        assertEquals("LEGACY_NARRATIVE", character.inventory.single().category)
+        assertEquals(1, character.inventory.single().durabilityCurrent)
+        assertEquals(1, character.inventory.single().durabilityMax)
         assertEquals(0, character.attributeTotal("FOR"))
+    }
+
+    @Test fun newlyAddedItemWithoutDurabilityStartsAtOneWithoutRepairingRealWear() {
+        val newItem = Character().addInventoryItem(InventoryItem(id = "new", name = "Item sem durabilidade"))
+            .inventory.single()
+        assertEquals(1, newItem.durabilityCurrent)
+        assertEquals(1, newItem.durabilityMax)
+
+        val worn = Character().addInventoryItem(InventoryItem(id = "worn", durabilityCurrent = 0, durabilityMax = 3))
+            .inventory.single()
+        assertEquals(0, worn.durabilityCurrent)
+        assertEquals(3, worn.durabilityMax)
     }
 
     @Test fun effectConditionFollowsEquipmentState() {

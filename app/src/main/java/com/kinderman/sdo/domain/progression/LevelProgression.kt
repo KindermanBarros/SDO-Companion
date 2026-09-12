@@ -11,6 +11,13 @@ import com.kinderman.sdo.domain.model.ProgressionRecord
 import com.kinderman.sdo.domain.model.ProgressionReward
 import com.kinderman.sdo.domain.model.ProgressionRewardType
 import com.kinderman.sdo.domain.model.basicKnowledgeId
+import com.kinderman.sdo.domain.model.AuditableChoice
+import com.kinderman.sdo.domain.model.CatalogEntryId
+import com.kinderman.sdo.domain.model.CatalogReference
+import com.kinderman.sdo.domain.model.ChoiceKind
+import com.kinderman.sdo.domain.model.EntityId
+import com.kinderman.sdo.domain.model.NarrativeSourceId
+import com.kinderman.sdo.domain.model.SourceRef
 
 object LevelProgression {
     const val MIN_LEVEL = 1
@@ -52,9 +59,21 @@ object LevelProgression {
             add(ProgressionReward(level, ProgressionRewardType.RESOURCE, "SANITY"))
             if (level % 5 == 0) add(ProgressionReward(level, ProgressionRewardType.RESOURCE, "ENERGY_MILESTONE"))
         } }
+        val record = ProgressionRecord(previousLevel = character.level, newLevel = target, rewards = rewards + automaticRewards, appliedAt = now)
+        val auditChoice = AuditableChoice(
+            id = EntityId("progression:${record.id}"),
+            kind = ChoiceKind.PROGRESSION,
+            option = CatalogReference(CatalogEntryId("progression:${record.previousLevel}-${record.newLevel}"), 1),
+            source = SourceRef.Narrative(NarrativeSourceId("level-progression")),
+            grantedEntityIds = record.rewards.mapIndexed { index, reward ->
+                EntityId("progression:${record.id}:$index:${reward.type}:${reward.targetId}:${reward.catalogEntryId}")
+            },
+            chosenAt = now,
+        )
         return result.copy(
             level = target,
-            progressionHistory = result.progressionHistory + ProgressionRecord(previousLevel = character.level, newLevel = target, rewards = rewards + automaticRewards, appliedAt = now),
+            progressionHistory = result.progressionHistory + record,
+            progression = result.progression.register(auditChoice),
         )
     }
 }

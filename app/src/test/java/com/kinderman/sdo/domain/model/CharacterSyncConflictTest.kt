@@ -22,7 +22,7 @@ class CharacterSyncConflictTest {
         )
 
         assertEquals(
-            setOf("name", "money", "powers"),
+            setOf("name", "money", "abilities"),
             characterConflictFields(local, remote).mapTo(mutableSetOf()) { it.id },
         )
     }
@@ -48,13 +48,49 @@ class CharacterSyncConflictTest {
         val merged = mergeCharacterConflict(
             local = local,
             remote = remote,
-            remoteFieldIds = setOf("name", "powers"),
+            remoteFieldIds = setOf("name", "abilities"),
         )
 
         assertEquals("Nome online", merged.name)
         assertEquals("Raça local", merged.race)
         assertEquals(12, merged.money)
         assertEquals(listOf(remotePower), merged.powers)
+    }
+
+    @Test
+    fun typedOnlyChangesAreConflictsAndRemoteSelectionKeepsTypedAuthority() {
+        val local = Character(
+            id = "character-typed",
+            bodyState = BodyState(),
+            conditionInstances = emptyList(),
+            activeModifiers = emptyList(),
+        )
+        val remote = local.copy(
+            bodyState = BodyState().withInjury(
+                BodyRegionSlot.Torso,
+                InjuryEvent(failuresAdded = 1, source = Source.narrative(NarrativeSourceId("test"))),
+            ),
+            conditionInstances = listOf(ConditionInstance(
+                instanceId = ConditionInstanceId("condition-typed"),
+                payload = ConditionPayload(kind = ConditionKind.Abalado, intensity = 2),
+                source = Source.narrative(NarrativeSourceId("test")),
+            )),
+            activeModifiers = listOf(ActiveModifier(
+                modifierId = "modifier-typed",
+                target = BonusTarget.AttributeTarget(Attribute.FOR),
+                amount = 1,
+                source = Source.narrative(NarrativeSourceId("test")),
+            )),
+        )
+
+        val fields = characterConflictFields(local, remote).mapTo(mutableSetOf()) { it.id }
+        val merged = mergeCharacterConflict(local, remote, fields)
+
+        assertTrue(setOf("bodyState", "conditionInstances", "activeModifiers").all(fields::contains))
+        assertEquals(remote.bodyState, merged.bodyState)
+        assertEquals(remote.conditionInstances, merged.conditionInstances)
+        assertEquals(remote.activeModifiers, merged.activeModifiers)
+        assertTrue(characterConflictFields(merged, remote).isEmpty())
     }
 
     @Test

@@ -14,6 +14,7 @@ import com.kinderman.sdo.domain.model.AbilityTimeUnit
 import com.kinderman.sdo.domain.model.AshPurity
 import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.BodyRegion
+import com.kinderman.sdo.domain.model.BodyIntegrity
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemAcquisitionSource
@@ -27,6 +28,7 @@ import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
+import com.kinderman.sdo.domain.model.OrganSlot
 import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.ProgressionRecord
@@ -37,6 +39,26 @@ import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SkillValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.defaultAttributes
+import com.kinderman.sdo.domain.model.Ability
+import com.kinderman.sdo.domain.model.ActiveModifier
+import com.kinderman.sdo.domain.model.BodyState
+import com.kinderman.sdo.domain.model.ConditionInstance
+import com.kinderman.sdo.domain.model.ItemState
+import com.kinderman.sdo.domain.model.ScopedItemDefinition
+import com.kinderman.sdo.domain.model.AbilityCatalogId
+import com.kinderman.sdo.domain.model.AuditableChoice
+import com.kinderman.sdo.domain.model.CatalogEntryId
+import com.kinderman.sdo.domain.model.CatalogReference
+import com.kinderman.sdo.domain.model.CharacterProgression
+import com.kinderman.sdo.domain.model.ChoiceKind
+import com.kinderman.sdo.domain.model.EntityId
+import com.kinderman.sdo.domain.model.ItemCatalogId
+import com.kinderman.sdo.domain.model.SourceRef
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 private const val ROW = "\u001e"
 private const val FIELD = "\u001f"
@@ -53,6 +75,96 @@ private fun List<String>.nested() = joinToString(NESTED)
 private fun String.toNestedList() = if (isBlank()) emptyList() else split(NESTED)
 
 class CharacterConverters {
+    private val canonicalJson = Json { encodeDefaults = true; ignoreUnknownKeys = true }
+
+    @TypeConverter fun canonicalAbilitiesToString(value: List<Ability>): String =
+        canonicalJson.encodeToString(ListSerializer(Ability.serializer()), value)
+    @TypeConverter fun stringToCanonicalAbilities(value: String): List<Ability> = value.takeIf(String::isNotBlank)
+        ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(Ability.serializer()), it) }.getOrDefault(emptyList<Ability>()) }.orEmpty()
+    fun isCanonicalAbilitiesPayloadValid(value: String) = value.isBlank() ||
+        runCatching { canonicalJson.decodeFromString(ListSerializer(Ability.serializer()), value) }.isSuccess
+
+    @TypeConverter fun canonicalBodyToString(value: BodyState?): String? =
+        value?.let { canonicalJson.encodeToString(BodyState.serializer(), it) }
+    @TypeConverter fun stringToCanonicalBody(value: String?): BodyState? = value?.takeIf(String::isNotBlank)
+        ?.let { runCatching { canonicalJson.decodeFromString(BodyState.serializer(), it) }.getOrNull() }
+    fun isCanonicalBodyPayloadValid(value: String) = value.isBlank() ||
+        runCatching { canonicalJson.decodeFromString(BodyState.serializer(), value) }.isSuccess
+
+    @TypeConverter fun canonicalConditionsToString(value: List<ConditionInstance>): String =
+        canonicalJson.encodeToString(ListSerializer(ConditionInstance.serializer()), value)
+    @TypeConverter fun stringToCanonicalConditions(value: String): List<ConditionInstance> = value.takeIf(String::isNotBlank)
+        ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(ConditionInstance.serializer()), it) }.getOrDefault(emptyList<ConditionInstance>()) }.orEmpty()
+    fun isCanonicalConditionsPayloadValid(value: String) = value.isBlank() ||
+        runCatching { canonicalJson.decodeFromString(ListSerializer(ConditionInstance.serializer()), value) }.isSuccess
+
+    @TypeConverter fun activeModifiersToString(value: List<ActiveModifier>): String =
+        canonicalJson.encodeToString(ListSerializer(ActiveModifier.serializer()), value)
+    @TypeConverter fun stringToActiveModifiers(value: String): List<ActiveModifier> = value.takeIf(String::isNotBlank)
+        ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(ActiveModifier.serializer()), it) }.getOrDefault(emptyList<ActiveModifier>()) }.orEmpty()
+    fun isActiveModifiersPayloadValid(value: String) = value.isBlank() ||
+        runCatching { canonicalJson.decodeFromString(ListSerializer(ActiveModifier.serializer()), value) }.isSuccess
+
+    fun canonicalItemsToString(value: List<ItemState>): String =
+        canonicalJson.encodeToString(ListSerializer(ItemState.serializer()), value)
+    fun stringToCanonicalItems(value: String): List<ItemState> = value.takeIf(String::isNotBlank)
+        ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(ItemState.serializer()), it) }.getOrDefault(emptyList()) }.orEmpty()
+    fun isCanonicalItemsPayloadValid(value: String): Boolean = value.isBlank() ||
+        runCatching { canonicalJson.decodeFromString(ListSerializer(ItemState.serializer()), value) }.isSuccess
+
+    fun scopedItemCatalogToString(value: List<ScopedItemDefinition>): String =
+        canonicalJson.encodeToString(ListSerializer(ScopedItemDefinition.serializer()), value)
+    fun stringToScopedItemCatalog(value: String): List<ScopedItemDefinition> = value.takeIf(String::isNotBlank)
+        ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(ScopedItemDefinition.serializer()), it) }.getOrDefault(emptyList()) }.orEmpty()
+    fun isScopedItemCatalogPayloadValid(value: String): Boolean = value.isBlank() ||
+        runCatching { canonicalJson.decodeFromString(ListSerializer(ScopedItemDefinition.serializer()), value) }.isSuccess
+
+    @Serializable
+    private data class ChoicePayload(
+        val id: String,
+        val kind: String,
+        val optionType: String,
+        val optionId: String,
+        val optionRevision: Int,
+        val source: SourceRef,
+        val grantedEntityIds: List<String>,
+        val chosenAt: Long,
+    )
+
+    fun progressionToString(value: CharacterProgression): String = canonicalJson.encodeToString(
+        ListSerializer(ChoicePayload.serializer()),
+        value.choices.map { choice ->
+            val (type, id) = when (val optionId = choice.option.id) {
+                is AbilityCatalogId -> "ability" to optionId.value
+                is ItemCatalogId -> "item" to optionId.value
+                is CatalogEntryId -> "catalog" to optionId.value
+                is EntityId -> "entity" to optionId.value
+                else -> "entity" to optionId.toString()
+            }
+            ChoicePayload(choice.id.value, choice.kind.name, type, id, choice.option.revision, choice.source,
+                choice.grantedEntityIds.map(EntityId::value), choice.chosenAt)
+        },
+    )
+
+    fun stringToCanonicalProgression(value: String): CharacterProgression = value.takeIf(String::isNotBlank)?.let { payload ->
+        runCatching {
+            CharacterProgression(canonicalJson.decodeFromString(ListSerializer(ChoicePayload.serializer()), payload).map { choice ->
+                val option = when (choice.optionType) {
+                    "ability" -> CatalogReference(AbilityCatalogId(choice.optionId), choice.optionRevision)
+                    "item" -> CatalogReference(ItemCatalogId(choice.optionId), choice.optionRevision)
+                    "catalog" -> CatalogReference(CatalogEntryId(choice.optionId), choice.optionRevision)
+                    else -> CatalogReference(EntityId(choice.optionId), choice.optionRevision)
+                }
+                AuditableChoice(EntityId(choice.id), ChoiceKind.valueOf(choice.kind), option, choice.source,
+                    choice.grantedEntityIds.map(::EntityId), choice.chosenAt)
+            })
+        }.getOrDefault(CharacterProgression())
+    } ?: CharacterProgression()
+
+    fun isProgressionPayloadValid(value: String): Boolean = value.isBlank() || runCatching {
+        canonicalJson.decodeFromString(ListSerializer(ChoicePayload.serializer()), value)
+    }.isSuccess
+
     @TypeConverter fun itemCreationDraftToString(value: ItemCreationDraft?): String? = value?.let {
         listOf(
             it.step.toString(), it.category, it.baseId, it.materialId, it.quality.name,
@@ -85,7 +197,7 @@ class CharacterConverters {
                 commonQuantity = fields.getOrNull(14)?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
                 commonCategory = fields.getOrElse(15) { "Item" },
                 commonRegion = fields.getOrElse(16) { "" },
-                commonDurability = fields.getOrNull(17)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                commonDurability = fields.getOrNull(17)?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
                 commonPg = fields.getOrNull(18)?.toIntOrNull() ?: 0,
                 commonPl = fields.getOrNull(19)?.toIntOrNull() ?: 0,
                 commonAgilityLimit = fields.getOrNull(20)?.toIntOrNull(),
@@ -382,11 +494,11 @@ class CharacterConverters {
         }
     }
 
-    @TypeConverter fun bodyToString(value: List<BodyRegion>) = value.joinToString(ROW) { listOf(it.roll.toString(), it.name, it.failures.toString(), it.damage, it.implants, it.equipment, it.localProtection.toString(), it.generalProtection.toString(), it.equippedItemIds.joinToString(",")).row() }
-    @TypeConverter fun stringToBody(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> BodyRegion(p[0].toIntOrNull() ?: 0, p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrNull(6)?.toIntOrNull() ?: 0, p.getOrNull(7)?.toIntOrNull() ?: 0, p.getOrElse(8) { "" }.split(',').filter(String::isNotBlank)) } }
+    @TypeConverter fun bodyToString(value: List<BodyRegion>) = value.joinToString(ROW) { listOf(it.roll.toString(), it.name, it.failures.toString(), it.damage, it.implants, it.equipment, it.localProtection.toString(), it.generalProtection.toString(), it.equippedItemIds.joinToString(","), it.state.name, it.implantInstanceIds.joinToString(","), it.prosthesisInstanceId).row() }
+    @TypeConverter fun stringToBody(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> BodyRegion(p[0].toIntOrNull() ?: 0, p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }, p.getOrNull(6)?.toIntOrNull() ?: 0, p.getOrNull(7)?.toIntOrNull() ?: 0, p.getOrElse(8) { "" }.split(',').filter(String::isNotBlank), runCatching { BodyIntegrity.valueOf(p.getOrElse(9) { "Intact" }) }.getOrDefault(BodyIntegrity.Intact), p.getOrElse(10) { "" }.split(',').filter(String::isNotBlank), p.getOrElse(11) { "" }) } }
 
-    @TypeConverter fun organsToString(value: List<OrganStatus>) = value.joinToString(ROW) { listOf(it.id, it.name, it.failures.toString(), it.implant, it.effect).row() }
-    @TypeConverter fun stringToOrgans(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> OrganStatus(p[0], p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }) } }
+    @TypeConverter fun organsToString(value: List<OrganStatus>) = value.joinToString(ROW) { listOf(it.id, it.name, it.failures.toString(), it.implant, it.effect, it.slot.name, it.state.name, it.implantInstanceId).row() }
+    @TypeConverter fun stringToOrgans(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> OrganStatus(p[0], p.getOrElse(1) { "" }, p.getOrNull(2)?.toIntOrNull() ?: 0, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, runCatching { OrganSlot.valueOf(p.getOrElse(5) { "Other" }) }.getOrDefault(OrganSlot.Other), runCatching { BodyIntegrity.valueOf(p.getOrElse(6) { "Intact" }) }.getOrDefault(BodyIntegrity.Intact), p.getOrElse(7) { "" }) } }
 
     @TypeConverter fun abilitiesToString(value: List<MysticAbility>) = value.joinToString(ROW) {
         listOf(

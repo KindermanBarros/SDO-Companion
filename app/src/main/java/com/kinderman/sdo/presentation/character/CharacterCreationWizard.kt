@@ -20,12 +20,13 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.model.AbilityKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.ui.TechPanel
 
 private val creationSteps = listOf(
     "Conceito e raça", "Atributos", "5 Conhecimentos Especiais", "15 Pontos de Conhecimento",
-    "Preparação do Caminho", "Poderes", "Equipamento inicial", "Inventário e corpo", "Revisão",
+    "Preparação do Caminho", "Poderes", "Equipamento inicial", "Revisão",
 )
 
 @Composable
@@ -61,11 +62,10 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
             }
             5 -> item { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, enabled, onChange) }
             6 -> {
-                item { PhaseOnePowerSection(character, catalog.filter { it.kind == CatalogKind.POWER }, enabled, onChange) }
+                item { CanonicalAbilitySection(character, catalog.filter { it.kind == CatalogKind.POWER }, setOf(AbilityKind.POWER), enabled, onChange) }
             }
             7 -> item { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, enabled, onChange) }
-            8 -> item { BodySection(character, enabled, onChange) }
-            9 -> item { CreationReview(character) }
+            8 -> item { CreationReview(character) }
         }
         }
         BoxWithConstraints(Modifier.fillMaxWidth().navigationBarsPadding().padding(14.dp).testTag("creation-navigation")) {

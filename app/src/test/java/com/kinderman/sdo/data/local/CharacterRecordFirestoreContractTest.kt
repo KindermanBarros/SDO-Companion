@@ -11,6 +11,7 @@ import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.*
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -18,6 +19,58 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterRecordFirestoreContractTest {
+    @Test fun canonicalPayloadsSurviveRoomAndFirestoreRecordRoundTrip() {
+        val canonical = Character(
+            abilities = listOf(Ability(
+                id = "typed-power", name = "Pulso", kind = AbilityKind.POWER,
+                source = Source.narrative(NarrativeSourceId("choice-1")),
+                cost = AbilityCost.PowerCost(1, SpendableResource.PE),
+                mechanicalEffect = MechanicalEffect(listOf(EffectOperation.Damage(amount = DiceOrNumber.Roll(Dice(2, 6))))),
+            )),
+            bodyState = BodyState().withInjury(
+                BodyRegionSlot.Torso,
+                InjuryEvent(failuresAdded = 1, source = Source.narrative(NarrativeSourceId("combat-1"))),
+            ),
+            conditionInstances = listOf(ConditionInstance(
+                instanceId = ConditionInstanceId("condition-1"),
+                payload = ConditionPayload(kind = ConditionKind.Abalado, intensity = 2),
+                source = Source.narrative(NarrativeSourceId("power-1")),
+            )),
+            activeModifiers = listOf(ActiveModifier(
+                modifierId = "modifier-1", target = BonusTarget.AttributeTarget(Attribute.AGI), amount = 1,
+                source = Source.narrative(NarrativeSourceId("condition-1")), duration = Duration(DurationKind.Scene),
+            )),
+        )
+
+        val record = canonical.toRecord()
+        val decoded = record.toDomain()
+
+        assertEquals(canonical.abilities, decoded.abilities)
+        assertEquals(canonical.bodyState, decoded.bodyState)
+        assertEquals(canonical.conditionInstances, decoded.conditionInstances)
+        assertEquals(canonical.activeModifiers, decoded.activeModifiers)
+        assertEquals(record.canonicalAbilitiesPayload, decoded.toRecord().canonicalAbilitiesPayload)
+    }
+
+    @Test fun legacyBodyEditorChangesPreserveCanonicalInjuryHistory() {
+        val injured = Character().let { character ->
+            character.copy(bodyState = BodyState().withInjury(
+                BodyRegionSlot.Torso,
+                InjuryEvent(failuresAdded = 1, source = Source.narrative(NarrativeSourceId("combat-1"))),
+            ))
+        }
+        val legacyEdited = injured.copy(
+            bodyRegions = injured.bodyRegions.map { region ->
+                if (region.name == BodyRegionSlot.Torso.label) region.copy(failures = 2, state = BodyIntegrity.Damaged) else region
+            },
+        )
+
+        val persisted = legacyEdited.toRecord().toDomain()
+
+        assertEquals(2, persisted.bodyState?.region(BodyRegionSlot.Torso)?.failures)
+        assertEquals(1, persisted.bodyState?.region(BodyRegionSlot.Torso)?.injuries?.size)
+    }
+
     @Test fun itemCreationDraftSurvivesRoomAndRecordMapping() {
         val draft = ItemCreationDraft(
             step = 3, category = "Armadura", baseId = "elmo", materialId = "ligas_comuns",
@@ -29,7 +82,8 @@ class CharacterRecordFirestoreContractTest {
         val converters = CharacterConverters()
 
         assertEquals(draft, converters.stringToItemCreationDraft(converters.itemCreationDraftToString(draft)))
-        assertEquals(draft, CharacterRecord(itemCreationDraft = draft, creationRulesVersion = 2).toDomain().toRecord().itemCreationDraft)
+        assertEquals(draft, CharacterRecord(itemCreationDraft = draft, creationRulesVersion = 2)
+            .migratedStructuredRecord(markDirty = false).toDomain().toRecord().itemCreationDraft)
     }
 
     @Test fun knowledgeMilestoneRewardsSurviveRoomConversion() {
@@ -42,7 +96,8 @@ class CharacterRecordFirestoreContractTest {
 
     @Test fun legacyEmbeddedRacialBonusMovesToDerivedModifierOnce() {
         val attributes = defaultAttributes().map { if (it.acronym == "CAR") it.copy(value = 3) else it }
-        val migrated = CharacterRecord(race = "Humanos", raceAttribute = "CAR", attributes = attributes, creationRulesVersion = 1).toDomain()
+        val migrated = CharacterRecord(race = "Humanos", raceAttribute = "CAR", attributes = attributes, creationRulesVersion = 1)
+            .migratedStructuredRecord(markDirty = false).toDomain()
 
         assertEquals(2, migrated.attributes.first { it.acronym == "CAR" }.value)
         assertEquals(3, migrated.attributeTotal("CAR"))
@@ -74,9 +129,12 @@ class CharacterRecordFirestoreContractTest {
             category = "Acessório",
         )
 
-        val migrated = CharacterRecord(inventory = listOf(legacy)).toDomain().toRecord().inventory
+        val record = CharacterRecord(inventory = listOf(legacy)).migratedStructuredRecord(markDirty = false)
+        val migrated = record.toDomain().toRecord()
 
-        assertTrue(migrated.isEmpty())
+        assertEquals("Objeto personalizado", migrated.inventory.single().name)
+        assertEquals(1, migrated.toDomain().itemStates.size)
+        assertEquals(1, migrated.toDomain().customItemCatalog.size)
     }
 
     @Test
@@ -91,7 +149,8 @@ class CharacterRecordFirestoreContractTest {
         assertNotNull(getterAnnotation)
         assertNotNull(fieldAnnotation)
         assertEquals(456L, CharacterRecord(lastSyncedAt = 456L).toDomain().lastSyncedAt)
-        assertEquals(456L, CharacterRecord(lastSyncedAt = 456L).toDomain().toRecord().lastSyncedAt)
+        assertEquals(456L, CharacterRecord(lastSyncedAt = 456L)
+            .migratedStructuredRecord(markDirty = false).toDomain().toRecord().lastSyncedAt)
     }
 
     @Test
@@ -109,7 +168,8 @@ class CharacterRecordFirestoreContractTest {
 
     @Test
     fun legacyNotesAreMigratedToTheFirstPersonalRecord() {
-        val character = CharacterRecord(id = "character-1", notes = "Pista antiga").toDomain()
+        val character = CharacterRecord(id = "character-1", notes = "Pista antiga")
+            .migratedStructuredRecord(markDirty = false).toDomain()
 
         assertEquals(1, character.personalNotes.size)
         assertEquals("Registro Pessoal 1", character.personalNotes.single().title)
@@ -121,7 +181,8 @@ class CharacterRecordFirestoreContractTest {
     fun deliveryApplicationMarkersSurviveLocalAndFirestoreMapping() {
         val markers = listOf("delivery-a", "delivery-b")
 
-        assertEquals(markers, CharacterRecord(appliedDeliveryIds = markers).toDomain().toRecord().appliedDeliveryIds)
+        assertEquals(markers, CharacterRecord(appliedDeliveryIds = markers)
+            .migratedStructuredRecord(markDirty = false).toDomain().toRecord().appliedDeliveryIds)
     }
 
     @Test
@@ -166,7 +227,7 @@ class CharacterRecordFirestoreContractTest {
                 "Mental" to 10,
                 "Arcana" to 10,
             ),
-        ).toDomain()
+        ).migratedStructuredRecord(markDirty = false).toDomain()
 
         assertEquals(9, character.protectionAdjustments.getValue("Geral"))
         assertEquals(0, character.protectionAdjustments.getValue("Esquiva"))
@@ -193,6 +254,6 @@ class CharacterRecordFirestoreContractTest {
         val record = CharacterRecord(race = "Humanos", subRace = "Oráculo", raceAttribute = "AGI")
 
         assertEquals("AGI", record.toDomain().raceAttribute)
-        assertEquals("AGI", record.toDomain().toRecord().raceAttribute)
+        assertEquals("AGI", record.migratedStructuredRecord(markDirty = false).toDomain().toRecord().raceAttribute)
     }
 }

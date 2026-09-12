@@ -9,6 +9,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kinderman.sdo.data.repository.OfflineFirstCharacterRepository
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
+import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
@@ -18,6 +19,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -80,6 +82,87 @@ class AppDatabaseMigrationInstrumentedTest {
             assertEquals("", cursor.getString(1))
         }
         migrated.close()
+    }
+
+    @Test fun migration24To25AddsTypedCanonicalPayloadsIdempotently() {
+        val name = "migration-24-25.db".also(databases::add)
+        openSqlite(name, 24, onCreate = { db ->
+            db.execSQL("CREATE TABLE characters (id TEXT NOT NULL PRIMARY KEY)")
+            db.execSQL("INSERT INTO characters (id) VALUES ('fixture')")
+        }).close()
+        val migrated = openSqlite(name, 25, onUpgrade = { db, _, _ -> AppDatabase.MIGRATION_24_25.migrate(db) })
+        AppDatabase.MIGRATION_24_25.migrate(migrated.writableDatabase)
+        migrated.writableDatabase.query(
+            "SELECT canonicalAbilitiesPayload, canonicalBodyPayload, canonicalConditionsPayload, activeModifiersPayload FROM characters WHERE id = 'fixture'",
+        ).use { cursor ->
+            cursor.moveToFirst()
+            repeat(4) { assertEquals("", cursor.getString(it)) }
+        }
+        migrated.close()
+    }
+
+    @Test fun sessionContractMigrationsAddStructuredPayloadAndRevisionIdempotently() {
+        val name = "migration-25-27.db".also(databases::add)
+        openSqlite(name, 25, onCreate = { db ->
+            db.execSQL("CREATE TABLE session_operations (id TEXT NOT NULL PRIMARY KEY)")
+        }).close()
+        val migrated = openSqlite(name, 27, onUpgrade = { db, oldVersion, _ ->
+            assertEquals(25, oldVersion)
+            AppDatabase.MIGRATION_25_26.migrate(db)
+            AppDatabase.MIGRATION_26_27.migrate(db)
+        })
+        AppDatabase.MIGRATION_25_26.migrate(migrated.writableDatabase)
+        AppDatabase.MIGRATION_26_27.migrate(migrated.writableDatabase)
+        migrated.writableDatabase.query("PRAGMA table_info(session_operations)").use { cursor ->
+            val nameColumn = cursor.getColumnIndex("name")
+            val columns = buildSet { while (cursor.moveToNext()) add(cursor.getString(nameColumn)) }
+            assertEquals(true, "canonicalPayload" in columns)
+            assertEquals(true, "baseCharacterUpdatedAt" in columns)
+        }
+        migrated.close()
+    }
+
+    @Test fun migration27To28AddsRemainingCanonicalPayloadsIdempotently() {
+        val name = "migration-27-28.db".also(databases::add)
+        openSqlite(name, 27, onCreate = { db ->
+            db.execSQL("CREATE TABLE characters (id TEXT NOT NULL PRIMARY KEY)")
+            db.execSQL("INSERT INTO characters (id) VALUES ('fixture')")
+        }).close()
+        val migrated = openSqlite(name, 28, onUpgrade = { db, oldVersion, newVersion ->
+            assertEquals(27, oldVersion)
+            assertEquals(28, newVersion)
+            AppDatabase.MIGRATION_27_28.migrate(db)
+        })
+        AppDatabase.MIGRATION_27_28.migrate(migrated.writableDatabase)
+        migrated.writableDatabase.query(
+            "SELECT canonicalItemsPayload, scopedItemCatalogPayload, canonicalProgressionPayload FROM characters WHERE id = 'fixture'",
+        ).use { cursor ->
+            cursor.moveToFirst()
+            repeat(3) { assertEquals("", cursor.getString(it)) }
+        }
+        migrated.close()
+    }
+
+    @Test fun sessionOperationAndCharacterWriteAreAtomicAndRejectStaleRevision() = runBlocking {
+        val name = "session-operation-atomicity.db".also(databases::add)
+        val database = openRoom(name)
+        val character = CharacterRecord(id = "character", updatedAt = 12)
+        database.characterDao().upsert(character)
+
+        val stale = SessionOperationRecord(
+            id = "stale-operation", idempotencyKey = "stale-key", campaignId = "campaign",
+            characterId = "character", baseCharacterUpdatedAt = 11,
+        )
+        val staleResult = runCatching { database.operationsDao().applyOnce(stale, character.copy(name = "Não deve gravar")) }
+        assertTrue(staleResult.exceptionOrNull() is DomainError.RevisionConflict)
+        assertEquals("Novo personagem", database.characterDao().get("character")!!.name)
+        assertEquals(emptyList<SessionOperationRecord>(), database.operationsDao().observeAudit(setOf("campaign")).first())
+
+        val current = stale.copy(id = "current-operation", idempotencyKey = "current-key", baseCharacterUpdatedAt = 12)
+        assertEquals(true, database.operationsDao().applyOnce(current, character.copy(name = "Aplicado")))
+        assertEquals("Aplicado", database.characterDao().get("character")!!.name)
+        assertEquals(1, database.operationsDao().observeAudit(setOf("campaign")).first().size)
+        database.close()
     }
 
     @Test fun structuredMigrationAndDerivedEffectsSurviveDatabaseRestart() = runBlocking {

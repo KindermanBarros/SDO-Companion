@@ -3,6 +3,8 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemEffectType
+import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.CatalogKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -121,5 +123,18 @@ class ItemCreationRulesTest {
         assertEquals(2, inventory.pl)
         assertNull(inventory.agilityLimit)
         assertEquals(armor.id, inventory.catalogEntryId)
+    }
+
+    @Test fun catalogItemWithoutDeclaredDurabilityDefaultsToOne() {
+        val inventory = CatalogEntry(
+            id = "item.sem_durabilidade",
+            kind = CatalogKind.ITEM,
+            name = "Item",
+            group = "Item",
+            summary = "",
+        ).toInventoryItem()
+
+        assertEquals(1, inventory.durabilityCurrent)
+        assertEquals(1, inventory.durabilityMax)
     }
 }
