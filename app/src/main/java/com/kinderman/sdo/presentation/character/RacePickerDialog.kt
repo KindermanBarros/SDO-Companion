@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -83,9 +84,19 @@ internal fun RacePickerDialog(
                 Text("HP +${race.hp} // SAN +${race.sanity} // ARC +${race.arcane} // ENE +${race.energy}", color = MaterialTheme.colorScheme.onSurface)
                 Text("ATRIBUTO // ${race.attribute} +1", color = MaterialTheme.colorScheme.primary)
                 if (race.attribute == "Qualquer") {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR").forEach { option ->
-                            TextButton(onClick = { attribute = option }) { Text(if (attribute == option) "[$option]" else option) }
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR").chunked(3).forEach { rowOptions ->
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                rowOptions.forEach { option ->
+                                    TextButton(
+                                        onClick = { attribute = option },
+                                        modifier = Modifier.weight(1f),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                                    ) {
+                                        Text(if (attribute == option) "[$option]" else option, maxLines = 1)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
