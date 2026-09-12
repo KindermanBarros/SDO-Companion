@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.UserSession
@@ -74,7 +75,6 @@ fun CharacterSheetScreen(
     onHistorianLock: (Character, Boolean) -> Unit,
     onDelete: (Character) -> Unit,
 ) {
-    BackHandler(onBack = onBack)
     if (character == null || session == null) {
         MissingCharacterState(sessionAvailable = session != null, snackbarHost = snackbarHost, onBack = onBack)
         return
@@ -89,6 +89,8 @@ fun CharacterSheetScreen(
     val canDelete = CharacterAccessPolicy.canDelete(session, current, isCampaignHistorian)
     val canChangePlayerLock = !readOnly &&
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
+    val canLeaveCreation = !current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()
+    BackHandler { if (canLeaveCreation) onBack() }
 
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
@@ -123,7 +125,7 @@ fun CharacterSheetScreen(
                             )
                         }
                     },
-                    navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                    navigationIcon = { IconButton(onClick = onBack, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
                         IconButton({ onOpenSession(current.id) }) {
                             Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)

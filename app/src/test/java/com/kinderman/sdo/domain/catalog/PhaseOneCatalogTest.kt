@@ -3,17 +3,63 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.AshPurity
+import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.SourceKind
 import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
+import com.kinderman.sdo.domain.model.toCanonicalAbility
+import com.kinderman.sdo.domain.model.userFacingSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PhaseOneCatalogTest {
+    @Test fun everyPublishedPowerCanBeAddedToTheCanonicalSheet() {
+        BuiltInCatalog.entries.filter { it.kind == CatalogKind.POWER }.forEach { entry ->
+            entry.toStructuredPower(PowerSourceType.NARRATIVE, entry.id).toCanonicalAbility()
+        }
+    }
+    @Test fun mysticCatalogOriginUsesRuleValuesInsteadOfInternalCatalogIds() {
+        val magic = CatalogEntry(
+            id = "magic.test",
+            kind = CatalogKind.MAGIC,
+            name = "Magia",
+            group = "Arcanismo",
+            summary = "",
+            source = "CATALOGO;; magic.test",
+            abilitySource = AbilitySource.KNOWLEDGE,
+            sourceKnowledge = "Arcanismo",
+            sourceLevel = 2,
+        )
+        val ash = CatalogEntry(
+            id = "ash.test",
+            kind = CatalogKind.ASH,
+            name = "Cinza",
+            group = "",
+            summary = "",
+            source = "CATALOGO;; ash.test",
+            catalogAshSource = AshSource.FIRE,
+            catalogAshPurity = AshPurity.REFINED,
+        )
+        val runeWithoutTypedSource = CatalogEntry(
+            id = "rune.test",
+            kind = CatalogKind.RUNE,
+            name = "Runa",
+            group = "",
+            summary = "",
+            source = "CATALOGO;; rune.test",
+        )
+
+        assertEquals("Conhecimento — Arcanismo (nível 2)", magic.userFacingSource())
+        assertEquals("Fogo — Refinada", ash.userFacingSource())
+        assertEquals("Catálogo", runeWithoutTypedSource.userFacingSource())
+    }
+
     @Test fun knowledgeCatalogContainsAllThreeIndependentKinds() {
         val kinds = KnowledgeCatalog.entries.map { it.kind }.toSet()
         assertTrue(CatalogKind.ACQUIRED_KNOWLEDGE in kinds)

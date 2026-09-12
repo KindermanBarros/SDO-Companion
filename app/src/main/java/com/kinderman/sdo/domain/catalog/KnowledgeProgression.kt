@@ -93,6 +93,22 @@ fun Character.resolveKnowledgeMilestone(knowledgeId: String, rewardEntry: Catalo
             result = result.withAddedAbility(granted)
             KnowledgeMilestoneReward(milestone, KnowledgeMilestoneRewardType.MYSTIC_ABILITY, rewardEntry.id, granted.id)
         }
+        CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE -> {
+            val parentKind = result.knowledgeKind(current, catalog)
+            require(rewardEntry.kind == parentKind && rewardEntry.group.contains("especializa", true)) {
+                "A especialização não pertence à categoria deste Conhecimento."
+            }
+            val granted = rewardEntry.toSpecialKnowledge().copy(
+                value = 1, attribute = current.attribute, specializationParentId = current.id,
+            )
+            require(result.allSpecialKnowledges().none { it.catalogEntryId == granted.catalogEntryId && it.specializationParentId == current.id })
+            result = when (parentKind) {
+                CatalogKind.ACQUIRED_KNOWLEDGE -> result.copy(learnedKnowledges = result.learnedKnowledges + granted)
+                CatalogKind.ARCANE_KNOWLEDGE -> result.copy(arcaneKnowledges = result.arcaneKnowledges + granted)
+                else -> result.copy(battleTechniques = result.battleTechniques + granted)
+            }
+            KnowledgeMilestoneReward(milestone, KnowledgeMilestoneRewardType.SPECIALIZATION, rewardEntry.id, granted.id)
+        }
         else -> error("Tipo de recompensa de marco não suportado.")
     }
     val afterGrant = result.allSpecialKnowledges().first { it.id == knowledgeId }
@@ -108,11 +124,60 @@ fun Character.resolveKnowledgeMilestone(knowledgeId: String, rewardEntry: Catalo
     return if (remaining.isEmpty()) result.withKnowledgeLevel(knowledgeId, target, catalog) else result
 }
 
+fun Character.resolveKnowledgeSpecialization(knowledgeId: String, name: String, catalog: List<CatalogEntry>): Character {
+    val current = allSpecialKnowledges().firstOrNull { it.id == knowledgeId }
+        ?: error("Conhecimento do marco não encontrado.")
+    val milestone = current.pendingMilestoneLevels.firstOrNull() ?: error("Não existe marco pendente.")
+    require(name.isNotBlank()) { "Informe o nome da especialização." }
+    val kind = knowledgeKind(current, catalog)
+    require(kind in setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE))
+    require(allSpecialKnowledges().none { it.name.equals(name.trim(), true) }) { "Já existe um Conhecimento com esse nome." }
+    val specialization = SpecialKnowledge(
+        name = name.trim(), attribute = current.attribute, value = 1,
+        category = "Especialização", specializationParentId = current.id,
+        source = "Marco de ${current.name} — nível $milestone",
+    )
+    var result = when (kind) {
+        CatalogKind.ACQUIRED_KNOWLEDGE -> copy(learnedKnowledges = learnedKnowledges + specialization)
+        CatalogKind.ARCANE_KNOWLEDGE -> copy(arcaneKnowledges = arcaneKnowledges + specialization)
+        else -> copy(battleTechniques = battleTechniques + specialization)
+    }
+    val afterGrant = result.allSpecialKnowledges().first { it.id == knowledgeId }
+    val remaining = afterGrant.pendingMilestoneLevels.drop(1)
+    val target = afterGrant.pendingTargetLevel ?: milestone
+    result = result.replaceKnowledge(afterGrant.copy(
+        milestoneRewards = afterGrant.milestoneRewards + KnowledgeMilestoneReward(
+            milestone, KnowledgeMilestoneRewardType.SPECIALIZATION, "specialization:${specialization.id}", specialization.id,
+        ),
+        milestoneLevels = (afterGrant.milestoneLevels + milestone).distinct().sorted(),
+        pendingMilestoneLevels = remaining,
+        pendingTargetLevel = target.takeIf { remaining.isNotEmpty() },
+    ))
+    return if (remaining.isEmpty()) result.withKnowledgeLevel(knowledgeId, target, catalog) else result
+}
+
 fun eligibleMilestoneRewards(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): List<CatalogEntry> {
     val canonicalName = catalog.firstOrNull { it.id == knowledge.catalogEntryId }?.name ?: knowledge.name
+    val allowedKinds = when (catalogKnowledgeKind(knowledge, catalog)) {
+        CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE -> setOf(CatalogKind.POWER)
+        CatalogKind.ARCANE_KNOWLEDGE -> setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE)
+        else -> emptySet()
+    }
     return catalog.filter {
-        it.sourceKnowledge.equals(canonicalName, true) && it.kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE)
+        (it.kind in allowedKinds && it.sourceKnowledge.equals(canonicalName, true)) ||
+            (it.kind == catalogKnowledgeKind(knowledge, catalog) && it.group.contains("especializa", true))
     }.distinctBy(CatalogEntry::id)
+}
+
+private fun catalogKnowledgeKind(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): CatalogKind? =
+    catalog.firstOrNull { it.id == knowledge.catalogEntryId }?.kind
+        ?: runCatching { CatalogKind.valueOf(knowledge.category) }.getOrNull()
+
+private fun Character.knowledgeKind(knowledge: SpecialKnowledge, catalog: List<CatalogEntry>): CatalogKind? = when {
+    learnedKnowledges.any { it.id == knowledge.id } -> CatalogKind.ACQUIRED_KNOWLEDGE
+    arcaneKnowledges.any { it.id == knowledge.id } -> CatalogKind.ARCANE_KNOWLEDGE
+    battleTechniques.any { it.id == knowledge.id } -> CatalogKind.BATTLE_TECHNIQUE
+    else -> catalogKnowledgeKind(knowledge, catalog)
 }
 
 fun Character.withKnowledgeMilestoneReward(

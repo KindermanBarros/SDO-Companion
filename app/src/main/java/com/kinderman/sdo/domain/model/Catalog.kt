@@ -92,6 +92,31 @@ data class CatalogEntry(
     }
 }
 
-fun CatalogEntry.userFacingSource(): String = source
-    .replace(Regex("^\\s*\\d+\\s+Exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")
-    .replace(Regex("^\\s*Exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")
+fun CatalogEntry.userFacingSource(): String {
+    val canonicalSource = when (kind) {
+        CatalogKind.MAGIC, CatalogKind.RUNE -> abilitySource?.let { sourceKind ->
+            if (sourceKind == AbilitySource.KNOWLEDGE && sourceKnowledge.isNotBlank()) {
+                buildString {
+                    append(sourceKind.label)
+                    append(" — ")
+                    append(sourceKnowledge)
+                    sourceLevel?.let { append(" (nível $it)") }
+                }
+            } else sourceKind.label
+        }
+        CatalogKind.ASH -> listOfNotNull(
+            catalogAshSource?.label,
+            catalogAshPurity?.label,
+        ).joinToString(" — ").takeIf(String::isNotBlank)
+        else -> null
+    }
+    if (!canonicalSource.isNullOrBlank()) return canonicalSource
+
+    val readableSource = source
+        .replace(Regex("^\\s*\\d+\\s+Exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")
+        .replace(Regex("^\\s*Exemplos?\\s+de\\s+", RegexOption.IGNORE_CASE), "")
+        .trim()
+    return if (readableSource.matches(Regex("CAT[AÁ]LOGO\\s*;;.*", RegexOption.IGNORE_CASE))) {
+        "Catálogo"
+    } else readableSource
+}

@@ -37,6 +37,8 @@ internal fun CatalogPickerDialog(
     entries: List<CatalogEntry>,
     onDismiss: () -> Unit,
     alreadyAddedCatalogIds: Set<String> = emptySet(),
+    extraActionLabel: String? = null,
+    onExtraAction: (() -> Unit)? = null,
     onSelect: (CatalogEntry) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
@@ -105,9 +107,14 @@ internal fun CatalogPickerDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = {
-                if (details != null) details = null else onDismiss()
-            }) { Text(if (details != null) "VOLTAR" else "CANCELAR") }
+            Row {
+                if (details == null && extraActionLabel != null && onExtraAction != null) {
+                    TextButton(onClick = onExtraAction) { Text(extraActionLabel) }
+                }
+                TextButton(onClick = {
+                    if (details != null) details = null else onDismiss()
+                }) { Text(if (details != null) "VOLTAR" else "CANCELAR") }
+            }
         },
     )
 }

@@ -74,7 +74,9 @@ fun CatalogEntry.toStructuredPower(
     sourceId = sourceId,
     catalogEntryId = id,
     catalogVersion = version,
-    canonicalSource = abilitySource ?: sourceType.toCanonicalSource(),
+    canonicalSource = if (sourceType == PowerSourceType.NARRATIVE) AbilitySource.NARRATIVE
+        else abilitySource ?: sourceType.toCanonicalSource(),
+    knowledgeId = sourceId.takeIf { sourceType == PowerSourceType.KNOWLEDGE }.orEmpty(),
     knowledgeLevel = sourceLevel,
     costType = abilityCostType ?: canonicalCostType(cost),
     costValue = abilityCostValue ?: canonicalCostValue(cost),

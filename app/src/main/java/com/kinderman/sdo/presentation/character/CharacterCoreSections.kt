@@ -36,6 +36,7 @@ import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.agilityLimitBreakdown
 import com.kinderman.sdo.domain.catalog.withRaceSelection
+import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.AcidMagenta
@@ -273,6 +274,11 @@ internal fun AttributeSection(
 ) {
     TechPanel(accent = MaterialTheme.colorScheme.outlineVariant) {
         SectionHeader("04", "Atributos e conhecimentos")
+        if (character.isInCreation && showAttributes) Text(
+            "Distribua exatamente 10 pontos-base. O bônus de Humanos ou Sangue-Vis é aplicado depois e não consome pontos.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
         character.attributes.forEachIndexed { attributeIndex, attribute ->
             AttributeEditor(character, attribute, enabled, showAttributes, showBasicKnowledges) { updated -> onChange(character.copy(attributes = character.attributes.replace(attributeIndex, updated))) }
             if (attributeIndex != character.attributes.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -319,7 +325,11 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
             }
         }
         if (expanded) {
-            if (showAttributes) ChoiceField("Valor-base", attribute.value.coerceIn(0, 5), (0..5).toList(), enabled) { onValue(attribute.copy(value = it)) }
+            if (showAttributes) {
+                val otherPoints = character.attributes.sumOf { if (it.acronym == attribute.acronym) 0 else it.value.coerceAtLeast(0) }
+                val maximum = if (creationMode) minOf(5, (10 - otherPoints).coerceAtLeast(0)) else 5
+                ChoiceField("Valor-base", attribute.value.coerceIn(0, maximum), (0..maximum).toList(), enabled) { onValue(attribute.copy(value = it)) }
+            }
             if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->
                 val skillCalculation = character.basicKnowledgeCalculation(attribute.acronym, skill.name)
                 val skillBonuses = buildList {
@@ -331,7 +341,9 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
                         Text(skill.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
                         Text("TOTAL ${skillCalculation.total}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
-                    ChoiceField("Base", skill.value.coerceIn(0, 5), (0..5).toList(), enabled, Modifier.weight(1f)) { value ->
+                    val remaining = (CharacterCreation.KNOWLEDGE_POINTS - CharacterCreation.knowledgePointsSpent(character)).coerceAtLeast(0)
+                    val maximum = if (creationMode) minOf(5, skill.value + remaining) else 5
+                    ChoiceField("Base", skill.value.coerceIn(0, maximum), (0..maximum).toList(), enabled, Modifier.weight(1f)) { value ->
                         onValue(attribute.copy(skills = attribute.skills.replace(index, skill.copy(value = value))))
                     }
                 }

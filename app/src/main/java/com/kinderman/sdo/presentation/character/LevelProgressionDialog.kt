@@ -46,9 +46,15 @@ internal fun LevelProgressionDialog(
     val pathPowers = catalog.filter { entry ->
         val sourceKnowledge = (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques)
             .firstOrNull { it.name.equals(entry.sourceKnowledge, true) }
-        entry.kind == CatalogKind.POWER && character.powers.none { it.catalogEntryId == entry.id } &&
+        val belongsToCurrentPath = entry.group.equals(character.pathName, true) ||
+            entry.sourceKnowledge.equals(character.pathName, true)
+        entry.kind == CatalogKind.POWER && belongsToCurrentPath && character.powers.none { it.catalogEntryId == entry.id } &&
             (entry.sourceKnowledge.isBlank() || sourceKnowledge != null && sourceKnowledge.value >= (entry.sourceLevel ?: 0))
     }
+    val pathRewards = pathPowers.map { "power:${it.id}" to "Novo Poder — ${it.name}" } +
+        character.powers.filter { it.sourceType == com.kinderman.sdo.domain.model.PowerSourceType.PATH &&
+            it.enhancements.isNotBlank() && !it.enhancements.equals("Sem aprimoramento publicado", true) }
+            .map { "enhancement:${it.id}" to "Aprimoramento — ${it.name}" }
     val requiredKeys = levels.flatMap { level -> buildList {
         add("resource-$level"); add("knowledge-$level")
         repeat(attributeRewards(level)) { add("attribute-$level-$it") }
@@ -80,7 +86,7 @@ internal fun LevelProgressionDialog(
                     }
                     if (level % 5 == 0) {
                         Picker("Novo Conhecimento", choices["new-$level"], knowledgeEntries.map { it.id to "${it.name} — ${it.group}" }) { choices = choices + ("new-$level" to it) }
-                        Picker("Marco de Caminho", choices["power-$level"], pathPowers.map { it.id to it.name }) { choices = choices + ("power-$level" to it) }
+                        Picker("Marco específico do Caminho", choices["power-$level"], pathRewards) { choices = choices + ("power-$level" to it) }
                     }
                     val vitality = character.attributes.firstOrNull { it.acronym == "VIG" }?.skills?.firstOrNull { it.name == "Vitalidade" }?.let { it.value + it.modifier } ?: 0
                     Text("Vida +${1 + vitality.coerceAtLeast(0)} // Sanidade +1${if (level % 5 == 0) " // Energia +1 adicional" else ""}", style = MaterialTheme.typography.bodySmall)
@@ -113,7 +119,9 @@ private fun buildRewards(levels: List<Int>, choices: Map<String, String>) = leve
     repeat(attributeRewards(level)) { add(ProgressionReward(level, ProgressionRewardType.ATTRIBUTE, choices.getValue("attribute-$level-$it"))) }
     if (level % 5 == 0) {
         add(ProgressionReward(level, ProgressionRewardType.NEW_KNOWLEDGE, catalogEntryId = choices.getValue("new-$level")))
-        add(ProgressionReward(level, ProgressionRewardType.PATH_POWER, catalogEntryId = choices.getValue("power-$level")))
+        val pathReward = choices.getValue("power-$level")
+        if (pathReward.startsWith("enhancement:")) add(ProgressionReward(level, ProgressionRewardType.PATH_ENHANCEMENT, targetId = pathReward.removePrefix("enhancement:")))
+        else add(ProgressionReward(level, ProgressionRewardType.PATH_POWER, catalogEntryId = pathReward.removePrefix("power:")))
     }
 } }
 

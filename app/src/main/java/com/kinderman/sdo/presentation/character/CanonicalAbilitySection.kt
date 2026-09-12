@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.catalog.toStructuredPower
@@ -39,6 +40,7 @@ internal fun CanonicalAbilitySection(
     onChange: (Character) -> Unit,
 ) {
     var selecting by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     val abilities = character.allCanonicalAbilitiesSafely().filter { it.kind in kinds }
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         val powersOnly = kinds == setOf(AbilityKind.POWER)
@@ -61,12 +63,18 @@ internal fun CanonicalAbilitySection(
         }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR HABILIDADE", catalog, { selecting = false }) { entry ->
-        val ability = when (entry.kind) {
-            CatalogKind.POWER -> entry.toStructuredPower(PowerSourceType.CATALOG, entry.id).toCanonicalAbility()
-            else -> entry.toMysticAbility().toCanonicalAbility()
+        val result = runCatching {
+            when (entry.kind) {
+                CatalogKind.POWER -> entry.toStructuredPower(PowerSourceType.NARRATIVE, entry.id).toCanonicalAbility()
+                else -> entry.toMysticAbility().toCanonicalAbility()
+            }
         }
-        onChange(character.copy(abilities = character.allCanonicalAbilitiesSafely() + ability))
-        selecting = false
+        result.onSuccess { ability ->
+            onChange(character.copy(abilities = character.allCanonicalAbilitiesSafely() + ability))
+            selecting = false
+        }.onFailure { error ->
+            android.widget.Toast.makeText(context, error.message ?: "Entrada inválida no catálogo.", android.widget.Toast.LENGTH_LONG).show()
+        }
     }
 }
 
@@ -76,6 +84,7 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
     var expanded by rememberSaveable(ability.id) { mutableStateOf(false) }
     val isRacial = ability.source?.kind == SourceKind.Race
     val mechanicsEditable = enabled && !published && !isRacial
+    var nameDraft by rememberSaveable(ability.id, ability.name) { mutableStateOf(ability.name) }
     fun update(value: Ability) = onChange(character.copy(
         abilities = character.allCanonicalAbilitiesSafely().map { if (it.id == ability.id) value.copy(revision = ability.revision + 1) else it },
     ))
@@ -106,7 +115,10 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
             return@Column
         }
         if (published) Text("CATÁLOGO // ${ability.definition.id.value}@${ability.definition.revision}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        else HudTextField("Nome", ability.name, enabled = mechanicsEditable) { if (it.isNotBlank()) update(ability.copy(name = it)) }
+        else HudTextField("Nome", nameDraft, enabled = mechanicsEditable) { value ->
+            nameDraft = value
+            if (value.isNotBlank()) update(ability.copy(name = value))
+        }
         val durationKind = ability.duration?.kind ?: DurationKind.Instant
         val trigger = ability.mechanicalEffect?.trigger
         TwoFields(
