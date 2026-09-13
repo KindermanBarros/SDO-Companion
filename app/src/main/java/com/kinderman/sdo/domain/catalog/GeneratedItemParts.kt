@@ -9,7 +9,7 @@ internal object GeneratedItemParts {
     val weaponMaterials = listOf(
         ItemPart("sucata", "Sucata", "Material de arma", 0, 5, 0, 0, "", "Começa em Sucata; ataques com Desvantagem.", 0, 0, null, 0),
         ItemPart("madeira", "Madeira, Osso Simples ou Plástico", "Material de arma", 0, 5, 0, 1, "", "Dano cortante torna-se impacto quando incompatível.", 0, 0, null, 0),
-        ItemPart("ligas_comuns", "Ligas Comuns", "Material de arma", 1, 20, 0, 2, "", "", 0, 0, null, 0),
+        ItemPart("ligas_comuns", "Ligas Comuns", "Material de arma", 1, 20, 0, 2, "", "Padrão metálico.", 0, 0, null, 0),
         ItemPart("escamas_exoticas", "Escamas Exóticas", "Material de arma", 2, 45, 0, 2, "", "Orgânica e não metálica.", 0, 0, null, 0),
         ItemPart("ossos_comuns", "Ossos Trabalhados", "Material de arma", 3, 90, -1, 3, "", "Remove Pesado; Carga mínima 2.", 0, 0, null, 0),
         ItemPart("ligas_incomuns", "Ligas Incomuns", "Material de arma", 3, 90, 0, 5, "", "+1 dano.", 0, 0, null, 0),
