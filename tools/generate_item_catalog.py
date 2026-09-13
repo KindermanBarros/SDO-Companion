@@ -2,6 +2,8 @@
 """Generate Kotlin item-part adapters from the canonical JSON catalogs."""
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -126,6 +128,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
+    subprocess.run([sys.executable, str(ROOT / "tools/validate_item_catalogs.py")], check=True)
     items_path = ROOT / "catalogs/items.json"
     modifications_path = ROOT / "catalogs/modifications.json"
     output_path = ROOT / "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedItemParts.kt"
