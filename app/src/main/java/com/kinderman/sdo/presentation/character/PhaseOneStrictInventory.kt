@@ -574,13 +574,15 @@ private fun StrictItemBuilderDialog(
                         val nextMaterialId = if (!weapon && selected.id == "gibao") "organico" else draft.materialId
                         onDraftChange(draft.copy(baseId = id, materialId = nextMaterialId, modificationIds = modifications.filter { it in ItemCreationRules.compatibleModifications(selected, weapon) }.map { it.id }))
                     }
+                    ItemPartDetails("DETALHES DO TIPO", base, weapon, initialCreation)
                 }
                 if (step == 2 && category != "Item") {
                     ChoiceField<String>("Material", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String -> onDraftChange(draft.copy(materialId = id)) }
-                    MaterialDetails(material, weapon)
+                    ItemPartDetails("DETALHES DO MATERIAL", material, weapon, initialCreation)
                 }
                 if (step == 3 && category != "Item") {
                     ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
+                    QualityDetails(quality, weapon, initialCreation)
                     if (initialCreation) Text(
                         "CUSTO ATUAL // ${built.creationCost ?: "#"} PH // SALDO ${(remainingHeritage ?: 0) - (built.creationCost ?: 0)}",
                         color = MaterialTheme.colorScheme.primary,
@@ -600,6 +602,7 @@ private fun StrictItemBuilderDialog(
                             Column(Modifier.padding(top = 8.dp)) {
                                 Text(modification.name, color = MaterialTheme.colorScheme.onSurface)
                                 if (modification.effect.isNotBlank()) Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                                ItemPartStats(modification, initialCreation)
                             }
                         }
                     }
@@ -612,13 +615,17 @@ private fun StrictItemBuilderDialog(
                     )
                     val availableGems: List<ItemPart> = ItemCreationRules.gemComponents.filterNot { candidate: ItemPart -> gems.any { it.id == candidate.id } }
                     if (quality != ItemQuality.MUNDANE && gems.size < gemSlots && availableGems.isNotEmpty()) {
-                        ChoiceField<String>("Adicionar gema", "", availableGems.map { it.id }, true, display = { id: String -> availableGems.firstOrNull { it.id == id }?.name ?: "Selecionar" }) { id: String ->
+                        ChoiceField<String>("Adicionar gema", "", availableGems.map { it.id }, true, display = { id: String -> availableGems.firstOrNull { it.id == id }?.let { "${it.name} // ${it.effect}" } ?: "Selecionar" }) { id: String ->
                             onDraftChange(draft.copy(gemIds = draft.gemIds + id))
                         }
                     }
                     gems.forEach { gem: ItemPart ->
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Column(Modifier.weight(1f)) { Text(gem.name); Text(gem.effect, style = MaterialTheme.typography.bodySmall) }
+                            Column(Modifier.weight(1f)) {
+                                Text(gem.name)
+                                Text(gem.effect, style = MaterialTheme.typography.bodySmall)
+                                ItemPartStats(gem, initialCreation)
+                            }
                             RemoveButton(true, "Remover ${gem.name}") { onDraftChange(draft.copy(gemIds = draft.gemIds - gem.id)) }
                         }
                     }
@@ -632,9 +639,23 @@ private fun StrictItemBuilderDialog(
                 if (modifications.isNotEmpty()) Text("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (category != "Item") {
+                    val selectedEffects = buildList {
+                        add(base.effect)
+                        add(material.effect)
+                        ItemCreationRules.qualityEffect(quality, armor = !weapon)?.let(::add)
+                        modifications.mapTo(this) { "${it.name}: ${it.effect}" }
+                        gems.mapTo(this) { "${it.name}: ${it.effect}" }
+                    }.filter(String::isNotBlank).distinct()
+                    if (selectedEffects.isNotEmpty()) {
+                        Text("EFEITOS ESCOLHIDOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                        selectedEffects.forEach { effect -> Text("• $effect", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
+                    }
                     if (initialCreation) Text("CUSTO // ${built.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary)
+                    Text("PREÇO // E$ ${built.price}", color = MaterialTheme.colorScheme.primary)
                     Text("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
                     Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    built.agilityLimit?.let { Text("LIMITE DE AGILIDADE // $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    if (built.region.isNotBlank()) Text("REGIÃO // ${built.region}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -651,27 +672,56 @@ private fun StrictItemBuilderDialog(
 }
 
 @Composable
-private fun MaterialDetails(material: ItemPart, weapon: Boolean) {
+private fun ItemPartDetails(title: String, part: ItemPart, weapon: Boolean, showHeritageCost: Boolean) {
     Column(
         Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text("EFEITO DO MATERIAL", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-        Text(material.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
-        Text("DURABILIDADE // ${material.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        if (material.load != 0) Text(
-            "AJUSTE DE CARGA // ${if (material.load > 0) "+" else ""}${material.load}",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
+        Text(title, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        Text(part.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
+        ItemPartStats(part, showHeritageCost, includeProtection = false)
         if (!weapon) {
-            Text("PROTEÇÃO // PG ${material.pg} // PL ${material.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-            material.agilityLimit?.let { limit ->
+            Text("PROTEÇÃO // PG ${part.pg} // PL ${part.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            part.agilityLimit?.let { limit ->
                 Text("LIMITE DE AGILIDADE // $limit", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         }
+        if (part.region.isNotBlank()) Text("REGIÃO // ${part.region}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     }
 }
+
+@Composable
+private fun ItemPartStats(part: ItemPart, showHeritageCost: Boolean, includeProtection: Boolean = true) {
+    val load = if (part.load > 0) "+${part.load}" else part.load.toString()
+    Text(
+        buildList {
+            if (part.durability != 0) add("DURABILIDADE ${part.durability}")
+            if (part.load != 0) add("CARGA $load")
+            if (includeProtection && part.pg != 0) add("PG ${signed(part.pg)}")
+            if (includeProtection && part.pl != 0) add("PL ${signed(part.pl)}")
+            if (includeProtection) part.agilityLimit?.let { add("LA $it") }
+        }.ifEmpty { listOf("SEM AJUSTES NUMÉRICOS") }.joinToString(" // "),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Text("PREÇO DE REFERÊNCIA // E$ ${part.price}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+    if (showHeritageCost) Text("CUSTO // ${part.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+}
+
+@Composable
+private fun QualityDetails(quality: ItemQuality, weapon: Boolean, showHeritageCost: Boolean) {
+    Column(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text("EFEITO DA QUALIDADE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        Text(ItemCreationRules.qualityEffect(quality, armor = !weapon) ?: "Funcionamento padrão, sem bônus adicionais.")
+        Text("MULTIPLICADOR DE PREÇO // ×${quality.priceMultiplier}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (showHeritageCost) Text("AJUSTE DE CUSTO // ${signed(quality.creationAdjustment)} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+private fun signed(value: Int): String = if (value > 0) "+$value" else value.toString()
 
 internal fun ItemEffect.presentationLabel(): String {
     if (type == ItemEffectType.RULE) return description.ifBlank { "Regra especial" }
