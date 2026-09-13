@@ -19,9 +19,11 @@ class RaceSelectionTest {
         val humanSubRaces = RaceCatalog.subRacesFor(RaceCatalog.race("Humanos")!!).map { it.name }
         val golmSubRaces = RaceCatalog.subRacesFor(RaceCatalog.race("Golms")!!).map { it.name }
         assertTrue("Bestial — Contaminado" in humanSubRaces)
+        assertTrue("Aumentado" in humanSubRaces)
         assertFalse("Bestial — Contaminado" in golmSubRaces)
+        assertTrue("Aumentado" in golmSubRaces)
         assertTrue("Oráculo" in golmSubRaces)
-        assertEquals(listOf("Elfos do Crepúsculo", "Oráculo", "Bestial — Contaminado", "Bestial — Completo"),
+        assertEquals(listOf("Elfos do Crepúsculo", "Aumentado", "Oráculo", "Bestial — Contaminado", "Bestial — Completo"),
             RaceCatalog.subRacesFor(RaceCatalog.race("Elfos")!!).map { it.name })
         assertEquals(listOf("Aumentado", "Oráculo"),
             RaceCatalog.subRacesFor(RaceCatalog.race("Kaltoch")!!).map { it.name })
