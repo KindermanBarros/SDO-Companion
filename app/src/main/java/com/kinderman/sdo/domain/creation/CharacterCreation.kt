@@ -102,13 +102,22 @@ object CharacterCreation {
             5 -> if (character.pathName.isBlank() || character.pathPillars.size != 3 || character.pathPillars.any(String::isBlank)) {
                 error(CharacterCreationErrorCode.PATH_INCOMPLETE, "Selecione o Caminho e confirme seus 3 Pilares.")
             }
-            6 -> if (
-                character.pathName.isBlank() ||
-                character.pathPillars.size != 3 ||
-                character.pathPillars.any(String::isBlank) ||
-                character.powers.count { it.sourceType == PowerSourceType.PATH } != 2
-            ) {
-                error(CharacterCreationErrorCode.PATH_INCOMPLETE, "Defina o Caminho, os 3 Pilares e exatamente 2 Poderes iniciais.")
+            6 -> {
+                val catalogedPath = character.powers.any { it.sourceType == PowerSourceType.PATH }
+                val initialPowers = character.powers.count {
+                    it.sourceType != PowerSourceType.RACE && it.sourceType != PowerSourceType.PATH
+                }
+                val powerSelectionIsValid = if (catalogedPath) {
+                    character.powers.count { it.sourceType == PowerSourceType.PATH } == 2
+                } else initialPowers == 2
+                if (
+                    character.pathName.isBlank() ||
+                    character.pathPillars.size != 3 ||
+                    character.pathPillars.any(String::isBlank) ||
+                    !powerSelectionIsValid
+                ) {
+                    error(CharacterCreationErrorCode.PATH_INCOMPLETE, "Defina o Caminho, os 3 Pilares e exatamente 2 Poderes iniciais.")
+                }
             }
             7 -> {
                 val heritageItems = character.inventory.filter { it.acquisitionSource == ItemAcquisitionSource.HERITAGE }
