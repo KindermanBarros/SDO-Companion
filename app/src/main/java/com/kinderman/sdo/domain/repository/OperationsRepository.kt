@@ -22,5 +22,13 @@ interface OperationsRepository {
     suspend fun deliver(session: UserSession, entry: CampaignLibraryEntry, recipients: List<Character>, knowledgeMappings: Map<String, String>)
     suspend fun respondToDelivery(session: UserSession, delivery: CampaignDelivery, accept: Boolean)
     suspend fun saveAlertSettings(settings: CampaignAlertSettings)
-    suspend fun sync(session: UserSession, manageableCampaignIds: Set<String>)
+    /**
+     * [readableCampaignIds] contains every active campaign visible to the session.
+     * [writableCampaignIds] is restricted to campaigns managed by the Historian.
+     */
+    suspend fun sync(
+        session: UserSession,
+        readableCampaignIds: Set<String>,
+        writableCampaignIds: Set<String>,
+    )
 }
