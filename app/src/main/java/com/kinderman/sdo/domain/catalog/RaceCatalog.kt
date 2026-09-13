@@ -121,7 +121,7 @@ object RaceCatalog {
         SubRaceDefinition("Aumentado", listOf(
             power("Pós-Mortal", "Partes mecânicas são imunes a venenos; começa com 4 modificações ou implantes."),
             power("Tecnologia Aprimorada", "Escolha 1 Conhecimento Adquirido suportado por um implante."),
-        ), parentRace = "Kaltoch"),
+        )),
         SubRaceDefinition("Oráculo", listOf(
             power("Vislumbre do Possível", "Uma vez por cena, rerrole o d20 e escolha o resultado.", costValue = 2, destinyCostEligible = true, action = "Reação", limit = "Uma vez por cena"),
             power("Presságio", "Uma vez por cena, aplique +2 ou -2 ao primeiro teste de uma criatura.", costValue = 2, destinyCostEligible = true, range = "Indefinido", duration = "1 turno", limit = "Uma vez por cena"),
