@@ -1,0 +1,567 @@
+{
+  "schemaVersion": 1,
+  "materials": [
+    {
+      "id": "ligas_comuns",
+      "name": "Ligas Comuns",
+      "tier": "COMMON",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 8
+        },
+        "armor": {
+          "durability": 8
+        }
+      }
+    },
+    {
+      "id": "ligas_incomuns",
+      "name": "Ligas Incomuns",
+      "tier": "UNCOMMON",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 10,
+          "damageBonus": 1
+        },
+        "armor": {
+          "durability": 10,
+          "damageReduction": 1
+        }
+      }
+    },
+    {
+      "id": "ferrita_rubra",
+      "name": "Ferrita Rubra",
+      "tier": "RARE",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 11,
+          "damageBonus": 1,
+          "traitIds": [
+            "impactante"
+          ]
+        },
+        "armor": {
+          "durability": 12,
+          "damageReduction": 1
+        }
+      }
+    },
+    {
+      "id": "cristal_telurico",
+      "name": "Cristal Telúrico",
+      "tier": "RARE",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 9,
+          "traitIds": [
+            "canalizador"
+          ]
+        },
+        "armor": {
+          "durability": 9,
+          "traitIds": [
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "obsidiana_onirica",
+      "name": "Obsidiana Onírica",
+      "tier": "RARE",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 8,
+          "traitIds": [
+            "delicado",
+            "perfurante"
+          ]
+        },
+        "armor": {
+          "durability": 8,
+          "traitIds": [
+            "silencioso"
+          ]
+        }
+      }
+    },
+    {
+      "id": "minerio_tempestade",
+      "name": "Minério de Tempestade",
+      "tier": "RARE",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 9,
+          "traitIds": [
+            "condutor"
+          ]
+        },
+        "armor": {
+          "durability": 10,
+          "traitIds": [
+            "condutor"
+          ]
+        }
+      }
+    },
+    {
+      "id": "aco_negro",
+      "name": "Aço Negro",
+      "tier": "RARE",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "damageBonus": 1
+        },
+        "armor": {
+          "durability": 13,
+          "damageReduction": 1,
+          "agilityLimit": -1
+        }
+      }
+    },
+    {
+      "id": "prata_estelar",
+      "name": "Prata Estelar",
+      "tier": "RARE",
+      "origins": [
+        "MINERAL"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 10,
+          "traitIds": [
+            "canalizador"
+          ]
+        },
+        "armor": {
+          "durability": 10,
+          "traitIds": [
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "quitina_ferrifera",
+      "name": "Quitina Ferrífera",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 10,
+          "traitIds": [
+            "leve"
+          ]
+        },
+        "armor": {
+          "durability": 11,
+          "agilityLimit": 1,
+          "traitIds": [
+            "leve"
+          ]
+        }
+      }
+    },
+    {
+      "id": "placa_golem_kaltoch",
+      "name": "Placa de Golem Kaltoch",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER",
+        "KALTOCH"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "pesado"
+          ]
+        },
+        "armor": {
+          "durability": 14,
+          "damageReduction": 1,
+          "agilityLimit": -1
+        }
+      }
+    },
+    {
+      "id": "escama_medusa_vidro",
+      "name": "Escama de Medusa de Vidro",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 9,
+          "traitIds": [
+            "delicado"
+          ]
+        },
+        "armor": {
+          "durability": 10,
+          "traitIds": [
+            "reflexivo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nucleo_elemental_cinzas",
+      "name": "Núcleo de Elemental de Cinzas",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 8,
+          "traitIds": [
+            "canalizador"
+          ]
+        },
+        "armor": {
+          "durability": 8,
+          "traitIds": [
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "carapaca_leviata_rubro",
+      "name": "Carapaça de Leviatã Rubro",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 13,
+          "traitIds": [
+            "pesado"
+          ]
+        },
+        "armor": {
+          "durability": 15,
+          "damageReduction": 2,
+          "agilityLimit": -1
+        }
+      }
+    },
+    {
+      "id": "osso_predador_onirico",
+      "name": "Osso de Predador Onírico",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 10,
+          "traitIds": [
+            "perfurante"
+          ]
+        },
+        "armor": {
+          "durability": 10,
+          "traitIds": [
+            "silencioso"
+          ]
+        }
+      }
+    },
+    {
+      "id": "microtubos_carbono",
+      "name": "Microtubos de Carbono",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 14,
+          "traitIds": [
+            "leve"
+          ]
+        },
+        "armor": {
+          "durability": 14,
+          "agilityLimit": 2,
+          "traitIds": [
+            "leve"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nanorobos_reparo",
+      "name": "Nanorobôs de Reparo",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "autorregenerativo"
+          ]
+        },
+        "armor": {
+          "durability": 13,
+          "traitIds": [
+            "autorregenerativo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "luz_solida",
+      "name": "Luz Sólida",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 11,
+          "traitIds": [
+            "canalizador",
+            "leve"
+          ]
+        },
+        "armor": {
+          "durability": 11,
+          "agilityLimit": 2,
+          "traitIds": [
+            "reflexivo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "metal_memoria_kaltoch",
+      "name": "Metal de Memória Kaltoch",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 15,
+          "traitIds": [
+            "autorregenerativo"
+          ]
+        },
+        "armor": {
+          "durability": 16,
+          "damageReduction": 1,
+          "traitIds": [
+            "autorregenerativo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "vidro_arcano_autoestruturante",
+      "name": "Vidro Arcano Autoestruturante",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "canalizador",
+            "delicado"
+          ]
+        },
+        "armor": {
+          "durability": 12,
+          "traitIds": [
+            "isolante",
+            "reflexivo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "materia_fase",
+      "name": "Matéria de Fase",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 10,
+          "traitIds": [
+            "perfurante"
+          ]
+        },
+        "armor": {
+          "durability": 10,
+          "agilityLimit": 2,
+          "traitIds": [
+            "silencioso"
+          ]
+        }
+      }
+    },
+    {
+      "id": "circuito_luminoso_ancestral",
+      "name": "Circuito Luminoso Ancestral",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 11,
+          "traitIds": [
+            "condutor",
+            "canalizador"
+          ]
+        },
+        "armor": {
+          "durability": 11,
+          "traitIds": [
+            "condutor",
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "enxame_estrutural",
+      "name": "Enxame Estrutural",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 13,
+          "traitIds": [
+            "autorregenerativo"
+          ]
+        },
+        "armor": {
+          "durability": 14,
+          "damageReduction": 1,
+          "traitIds": [
+            "autorregenerativo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "fibra_ventre",
+      "name": "Fibra de Ventre",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "leve"
+          ]
+        },
+        "armor": {
+          "durability": 13,
+          "agilityLimit": 2,
+          "traitIds": [
+            "leve",
+            "silencioso"
+          ]
+        }
+      }
+    },
+    {
+      "id": "campo_inercia_condensado",
+      "name": "Campo de Inércia Condensado",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "impactante"
+          ]
+        },
+        "armor": {
+          "durability": 12,
+          "damageReduction": 2,
+          "traitIds": [
+            "isolante"
+          ]
+        }
+      }
+    }
+  ]
+}

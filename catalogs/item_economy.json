@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "costs": [
+    {
+      "id": "ligas_comuns",
+      "money": 25,
+      "ph": 1
+    },
+    {
+      "id": "ligas_incomuns",
+      "money": 130,
+      "ph": 3
+    },
+    {
+      "id": "ferrita_rubra",
+      "money": 300,
+      "ph": 5
+    },
+    {
+      "id": "cristal_telurico",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "obsidiana_onirica",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "minerio_tempestade",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "aco_negro",
+      "money": 300,
+      "ph": 5
+    },
+    {
+      "id": "prata_estelar",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "quitina_ferrifera",
+      "money": 300,
+      "ph": 5
+    },
+    {
+      "id": "placa_golem_kaltoch",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "escama_medusa_vidro",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "nucleo_elemental_cinzas",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "carapaca_leviata_rubro",
+      "money": 500,
+      "ph": 7
+    },
+    {
+      "id": "osso_predador_onirico",
+      "money": 360,
+      "ph": 5
+    },
+    {
+      "id": "microtubos_carbono",
+      "money": 900,
+      "ph": 9
+    },
+    {
+      "id": "nanorobos_reparo",
+      "money": 1000,
+      "ph": 9
+    },
+    {
+      "id": "luz_solida",
+      "money": 1100,
+      "ph": 9
+    },
+    {
+      "id": "metal_memoria_kaltoch",
+      "money": 1100,
+      "ph": 9
+    },
+    {
+      "id": "vidro_arcano_autoestruturante",
+      "money": 1000,
+      "ph": 9
+    },
+    {
+      "id": "materia_fase",
+      "money": 1200,
+      "ph": 9
+    },
+    {
+      "id": "circuito_luminoso_ancestral",
+      "money": 1000,
+      "ph": 9
+    },
+    {
+      "id": "enxame_estrutural",
+      "money": 1200,
+      "ph": 9
+    },
+    {
+      "id": "fibra_ventre",
+      "money": 900,
+      "ph": 9
+    },
+    {
+      "id": "campo_inercia_condensado",
+      "money": 1300,
+      "ph": 9
+    }
+  ]
+}
