@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -76,6 +78,7 @@ import com.kinderman.sdo.presentation.character.CharacterActionButton
 import com.kinderman.sdo.presentation.character.CharacterActionStyle
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
+import com.kinderman.sdo.ui.AdaptiveActionLabel
 import com.kinderman.sdo.ui.Barcode
 import com.kinderman.sdo.ui.CyberLoadingIndicator
 import com.kinderman.sdo.ui.HudBackground
@@ -1076,15 +1079,36 @@ private fun CharacterAccessCard(
                         style = MaterialTheme.typography.labelSmall,
                     )
                     if (master) {
+                        val ownerFirstName = owner?.firstName
+                            ?.trim()
+                            ?.takeIf(String::isNotBlank)
+                            ?: "SEM PERFIL"
                         OutlinedButton(
                             onClick = onOwnerClick,
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier
+                                .wrapContentWidth(Alignment.Start)
+                                .widthIn(max = if (compact) 176.dp else 224.dp)
+                                .heightIn(min = if (compact) 36.dp else 42.dp),
+                            shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = if (compact) 8.dp else 10.dp,
+                                vertical = 4.dp,
+                            ),
                         ) {
                             Column(horizontalAlignment = Alignment.Start) {
-                                Text("OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                                Text("UID.${character.ownerId.take(8)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                                Text(
+                                    "OWNER",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                                AdaptiveActionLabel(ownerFirstName.uppercase())
+                                if (!compact) {
+                                    Text(
+                                        "UID.${character.ownerId.take(8)}",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                }
                             }
                         }
                     }
