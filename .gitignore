@@ -9,5 +9,6 @@ app/google-services.json
 
 /firebase/node_modules/
 /firebase/package-lock.json
+/firestore-debug.log
 /.gradle-user-home/
-/.kotlin/sessions/kotlin-compiler-8239411718982181713.salive
+/.kotlin/

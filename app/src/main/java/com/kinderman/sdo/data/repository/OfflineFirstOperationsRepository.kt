@@ -125,7 +125,7 @@ class OfflineFirstOperationsRepository(
     override suspend fun saveAlertSettings(settings: CampaignAlertSettings) = dao.upsertAlertSettings(settings.toRecord())
 
     override suspend fun sync(session: UserSession, manageableCampaignIds: Set<String>) {
-        val store = runCatching { Firebase.firestore }.getOrNull() ?: return
+        val store = Firebase.firestore
         val operations = store.collection(OPERATIONS)
         val library = store.collection(LIBRARY)
         val deliveries = store.collection(DELIVERIES)

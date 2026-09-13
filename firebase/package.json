@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:rules": "cd .. && firebase/node_modules/.bin/firebase emulators:exec --config firebase.json --only firestore --project sdo-companion-test \"node --test firebase/tests/firestore.rules.test.mjs\""
+    "test:rules": "cd .. && node firebase/node_modules/firebase-tools/lib/bin/firebase.js emulators:exec --config firebase.json --only firestore --project sdo-companion-test \"node --test firebase/tests/firestore.rules.test.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.2",

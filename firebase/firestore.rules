@@ -7,8 +7,8 @@ service cloud.firestore {
 
     function isAdministrator() {
       return signedIn()
-        && request.auth.token.email_verified == true
-        && request.auth.token.email == 'kindbarros@gmail.com';
+        && request.auth.token.get('email_verified', false) == true
+        && request.auth.token.get('email', '') == 'kindbarros@gmail.com';
     }
 
     function memberPath(campaignId, uid) {
@@ -381,6 +381,14 @@ service cloud.firestore {
             && isCampaignResponsible(normalizedCampaignId(resource.data))
             && getAfter(campaignPath(normalizedCampaignId(resource.data))).data.state == 'DELETED'
             && normalizedCampaignId(request.resource.data) == ''
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
+          )
+          || (
+            normalizedCampaignId(resource.data) != ''
+            && isCampaignOwner(normalizedCampaignId(resource.data))
+            && normalizedCampaignId(request.resource.data) == ''
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
           )
           || (
