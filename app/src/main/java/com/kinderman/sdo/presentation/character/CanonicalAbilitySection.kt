@@ -95,7 +95,7 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                if (ability.kind == AbilityKind.POWER) ability.name else "${ability.kind.label.uppercase()} // REV ${ability.revision}",
+                if (ability.kind == AbilityKind.POWER) ability.name else ability.kind.label.uppercase(),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.primary,
                 style = if (ability.kind == AbilityKind.POWER) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
@@ -114,7 +114,6 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
             Text(ability.effect.ifBlank { "Sem descrição." }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 2)
             return@Column
         }
-        if (published) Text("CATÁLOGO // ${ability.definition.id.value}@${ability.definition.revision}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         else HudTextField("Nome", nameDraft, enabled = mechanicsEditable) { value ->
             nameDraft = value
             if (value.isNotBlank()) update(ability.copy(name = value))
@@ -162,7 +161,7 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
             val operations = ability.mechanicalEffect?.operations.orEmpty() + EffectOperation.Damage()
             update(ability.copy(mechanicalEffect = MechanicalEffect(operations, ability.mechanicalEffect?.usage, ability.mechanicalEffect?.trigger)))
         }
-        Text(if (published) "Revisões publicadas são imutáveis; duplique no catálogo para alterar mecânicas." else "Descrição não é interpretada como regra.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (!published) Text("Descrição não é interpretada como regra.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     }
 }
 

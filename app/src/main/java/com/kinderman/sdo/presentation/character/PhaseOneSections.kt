@@ -222,13 +222,7 @@ private fun PhaseOneKnowledgeList(
                 }
             }
             if (expandedKnowledgeId != knowledge.id) return@Column
-            if (published) Text(
-                "CATÁLOGO // ${knowledge.name.ifBlank { "ITEM PUBLICADO" }} // VERSÃO ${knowledge.catalogVersion}",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelSmall,
-            )
-            else {
-                Text("ID // ${knowledge.id}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            if (!published) {
                 HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
             }
             val selectedAttribute = knowledge.attribute.takeIf { current -> attributeOptions.any { it.first == current } }
