@@ -16,11 +16,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
@@ -102,26 +99,6 @@ internal fun CharacterSheetPager(
             onMenuExpandedChange = { pageMenu = it },
             onNavigate = { index -> scope.launch { pagerState.animateScrollToPage(index) } },
         )
-        PrimaryScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.primary,
-            edgePadding = 8.dp,
-            divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) },
-        ) {
-            pages.forEachIndexed { index, page ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                    text = {
-                        Text(page.label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
-                    },
-                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f),
