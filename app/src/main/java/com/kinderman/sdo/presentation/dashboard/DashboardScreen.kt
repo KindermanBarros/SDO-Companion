@@ -97,6 +97,7 @@ fun DashboardScreen(
     snackbarHost: @Composable () -> Unit,
     onAdd: () -> Unit,
     onAddToCampaign: (Campaign, String) -> Unit,
+    onLinkCharacter: (Character, Campaign) -> Unit,
     onOpen: (String) -> Unit,
     onOwnerTransfer: (Character, UserProfile) -> Unit,
     onCreateCampaign: (String, String) -> Unit,
@@ -131,6 +132,7 @@ fun DashboardScreen(
     var choosingStatus by remember { mutableStateOf(false) }
     var section by rememberSaveable { mutableStateOf(DashboardSection.CHARACTERS) }
     var assigningCampaign by remember { mutableStateOf<Campaign?>(null) }
+    var linkingCampaign by remember { mutableStateOf<Campaign?>(null) }
     var deletingCampaign by remember { mutableStateOf<Campaign?>(null) }
     val visibleCampaigns = remember(campaigns, campaignSearchQuery) {
         val needle = campaignSearchQuery.trim()
@@ -145,9 +147,10 @@ fun DashboardScreen(
     val filtersActive = searchQuery.isNotBlank() || ownerFilter != null ||
         campaignFilter != null || statusFilter != AdminCharacterStatus.ALL
     val filteredCharacters = remember(
-        characters, ownersById, campaigns, searchQuery, ownerFilter, campaignFilter, statusFilter, admin,
+        characters, ownersById, campaigns, searchQuery, ownerFilter, campaignFilter, statusFilter, admin, uid,
     ) {
         characters.filter { character ->
+            val visibleInPersonalList = admin || character.ownerId == uid
             val campaignId = normalizeCampaignId(character.campaignId)
             val owner = ownersById[character.ownerId]
             val campaign = campaigns.firstOrNull { it.id == campaignId }
@@ -172,10 +175,10 @@ fun DashboardScreen(
                 AdminCharacterStatus.PENDING -> character.dirty
                 AdminCharacterStatus.LOCKED -> character.isLocked
             }.let { !admin || it }
-            queryMatches && ownerMatches && campaignMatches && statusMatches
+            visibleInPersonalList && queryMatches && ownerMatches && campaignMatches && statusMatches
         }
     }
-    val standalone = filteredCharacters.filter { normalizeCampaignId(it.campaignId).isBlank() }
+    val standalone = characters.filter { it.ownerId == uid && normalizeCampaignId(it.campaignId).isBlank() }
 
     HudBackground {
         Scaffold(
@@ -352,9 +355,13 @@ fun DashboardScreen(
                                     role = rolesByCampaign[campaign.id],
                                     archived = false,
                                     inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
-                                    characterCount = characters.count { normalizeCampaignId(it.campaignId) == campaign.id },
+                                    characters = characters.filter { normalizeCampaignId(it.campaignId) == campaign.id },
                                     memberCount = campaignMembers.count { it.campaignId == campaign.id && it.isActive },
+                                    viewerId = uid,
+                                    canLink = standalone.any { it.ownerId == uid },
                                     initiallyExpanded = !collapseCampaignCards,
+                                    onOpenCharacter = { onOpen(it.id) },
+                                    onLink = { linkingCampaign = campaign },
                                     onAdd = {
                                         if (campaign.ownerId == uid || admin) assigningCampaign = campaign
                                         else onAddToCampaign(campaign, uid)
@@ -379,9 +386,13 @@ fun DashboardScreen(
                                     role = rolesByCampaign[campaign.id],
                                     archived = true,
                                     inviteCode = campaignInvites.firstOrNull { it.campaignId == campaign.id }?.code.orEmpty(),
-                                    characterCount = characters.count { normalizeCampaignId(it.campaignId) == campaign.id },
+                                    characters = characters.filter { normalizeCampaignId(it.campaignId) == campaign.id },
                                     memberCount = campaignMembers.count { it.campaignId == campaign.id && it.isActive },
+                                    viewerId = uid,
+                                    canLink = false,
                                     initiallyExpanded = !collapseCampaignCards,
+                                    onOpenCharacter = { onOpen(it.id) },
+                                    onLink = {},
                                     onAdd = {},
                                     onArchive = { onArchiveCampaign(campaign, false) },
                                     onDelete = { deletingCampaign = campaign },
@@ -485,6 +496,17 @@ fun DashboardScreen(
                 onSelect = { ownerId ->
                     assigningCampaign = null
                     onAddToCampaign(campaign, ownerId)
+                },
+            )
+        }
+        linkingCampaign?.let { campaign ->
+            LinkCharacterDialog(
+                campaign = campaign,
+                characters = standalone.filter { it.ownerId == uid },
+                onDismiss = { linkingCampaign = null },
+                onSelect = { character ->
+                    linkingCampaign = null
+                    onLinkCharacter(character, campaign)
                 },
             )
         }
@@ -624,6 +646,36 @@ private fun AssignCharacterDialog(
 }
 
 @Composable
+private fun LinkCharacterDialog(
+    campaign: Campaign,
+    characters: List<Character>,
+    onDismiss: () -> Unit,
+    onSelect: (Character) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("VINCULAR FICHA") },
+        text = {
+            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
+                item {
+                    Text(
+                        "Escolha uma ficha sua sem campanha para vincular a ${campaign.name}. A propriedade continuará sendo sua.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(characters, key = Character::id) { character ->
+                    TextButton(onClick = { onSelect(character) }, modifier = Modifier.fillMaxWidth()) {
+                        Text("${character.name.uppercase()} // ${character.race.uppercase()}")
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
+}
+
+@Composable
 private fun CampaignPanel(
     campaign: Campaign,
     owner: Boolean,
@@ -632,9 +684,13 @@ private fun CampaignPanel(
     role: CampaignRole?,
     archived: Boolean,
     inviteCode: String,
-    characterCount: Int,
+    characters: List<Character>,
     memberCount: Int,
+    viewerId: String,
+    canLink: Boolean,
     initiallyExpanded: Boolean,
+    onOpenCharacter: (Character) -> Unit,
+    onLink: () -> Unit,
     onAdd: () -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit,
@@ -686,12 +742,49 @@ private fun CampaignPanel(
                 Text(campaign.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CampaignMetric("FICHAS", characterCount.toString(), Modifier.weight(1f))
+                CampaignMetric("FICHAS", characters.size.toString(), Modifier.weight(1f))
                 CampaignMetric("PARTICIPANTES", memberCount.toString(), Modifier.weight(1f))
+            }
+            Text("PERSONAGENS DA CAMPANHA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+            if (characters.isEmpty()) {
+                Text("Nenhum personagem vinculado.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else characters.sortedBy { it.name }.forEach { character ->
+                val canOpen = administrator || owner || character.ownerId == viewerId
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
+                        .clickable(enabled = canOpen) { onOpenCharacter(character) }
+                        .padding(horizontal = 10.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(character.name.ifBlank { "PERSONAGEM SEM NOME" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            listOf(character.race, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    TelemetryTag(
+                        when {
+                            character.ownerId == viewerId -> "MINHA FICHA"
+                            administrator -> "ADMIN"
+                            owner -> "ACESSO MESTRE"
+                            else -> "SOMENTE VISUALIZAÇÃO"
+                        },
+                        if (canOpen) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline,
+                    )
+                    if (canOpen) Icon(Icons.Default.ChevronRight, "Abrir ficha", tint = MaterialTheme.colorScheme.primary)
+                }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (!archived && canAdd) {
                     androidx.compose.material3.Button(onClick = onAdd, modifier = Modifier.weight(1f)) { Text("NOVA FICHA") }
+                }
+                if (!archived && canLink) {
+                    TextButton(onClick = onLink, modifier = Modifier.weight(1f)) { Text("VINCULAR FICHA") }
                 }
                 if (owner || administrator) {
                     TextButton(onClick = onArchive, modifier = Modifier.weight(1f)) {
