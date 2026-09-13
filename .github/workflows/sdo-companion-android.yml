@@ -92,7 +92,7 @@ jobs:
             ((major+=1)); minor=0; patch=0
           elif grep -Eiq '^feat([[:space:]]*\([^)]*\))?[[:space:]]*:' <<< "$commits"; then
             ((minor+=1)); patch=0
-          elif grep -Eiq '^(fix|bugfix)([[:space:]]*\([^)]*\))?[[:space:]]*:' <<< "$commits"; then
+          elif grep -Eiq '^(fix|bugfix|perf)([[:space:]]*\([^)]*\))?[[:space:]]*:' <<< "$commits"; then
             ((patch+=1))
           else
             echo "No release-worthy commit since ${latest_tag:-the beginning}; skipping release."
