@@ -167,6 +167,7 @@ fun SdoApp(
                     snackbarHost = { SnackbarHost(snackbar) },
                     onAdd = appViewModel::add,
                     onAddToCampaign = appViewModel::addToCampaign,
+                    onLinkCharacter = appViewModel::linkCharacter,
                     onOpen = {
                         navigate(AppSurface.SHEET, it)
                     },
