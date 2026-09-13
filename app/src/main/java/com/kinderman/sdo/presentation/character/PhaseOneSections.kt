@@ -334,6 +334,7 @@ internal fun PhaseOnePowerSection(
     catalog: List<CatalogEntry>,
     enabled: Boolean,
     onChange: (Character) -> Unit,
+    selectionLimit: Int? = null,
 ) {
     var selecting by remember { mutableStateOf(false) }
     var expandedPowerId by remember(character.id) { mutableStateOf<String?>(null) }
@@ -341,9 +342,17 @@ internal fun PhaseOnePowerSection(
     fun applyPowerChange(block: () -> Character) {
         runCatching(block).onSuccess(onChange).onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
     }
+    val selectedInitialPowers = character.powers.count {
+        it.sourceType != PowerSourceType.RACE && it.sourceType != PowerSourceType.PATH
+    }
+    val canAddPower = selectionLimit == null || selectedInitialPowers < selectionLimit
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("08", "Poderes")
         Text("REGISTROS // ${character.powers.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        selectionLimit?.let { limit ->
+            Text("PODERES INICIAIS // $selectedInitialPowers / $limit", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+            Text("Poderes raciais não entram neste limite.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        }
         if (character.powers.isEmpty()) {
             Text(
                 "Nenhum poder registrado. Selecione um padrão do catálogo ou crie um registro manual.",
@@ -366,8 +375,8 @@ internal fun PhaseOnePowerSection(
                 onValue = { value -> applyPowerChange { character.withUpdatedPower(value.copy(revision = power.revision + 1)) } },
             )
         }
-        AddButton("Selecionar poder do catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
-        AddButton("Adicionar poder manualmente", enabled) {
+        AddButton("Selecionar poder do catálogo", enabled && canAddPower && catalog.isNotEmpty()) { selecting = true }
+        AddButton("Adicionar poder manualmente", enabled && canAddPower) {
             val power = Power(sourceType = PowerSourceType.MANUAL)
             expandedPowerId = power.id
             applyPowerChange { character.withAddedPower(power) }
@@ -380,7 +389,10 @@ internal fun PhaseOnePowerSection(
             onDismiss = { selecting = false },
             alreadyAddedCatalogIds = character.powers.mapNotNull { it.catalogEntryId.takeIf(String::isNotBlank) }.toSet(),
             onSelect = { entry ->
-                if (character.powers.none { it.catalogEntryId == entry.id } || entry.repeatable) {
+                val canSelect = selectionLimit == null || character.powers.count {
+                    it.sourceType != PowerSourceType.RACE && it.sourceType != PowerSourceType.PATH
+                } < selectionLimit
+                if (canSelect && (character.powers.none { it.catalogEntryId == entry.id } || entry.repeatable)) {
                     val power = entry.toStructuredPower()
                     expandedPowerId = power.id
                     applyPowerChange { character.withAddedPower(power) }
@@ -421,7 +433,7 @@ private fun StructuredPowerEditor(
                 )
             }
             TextButton(onClick = onToggle) { Text(if (expanded) "FECHAR" else "EDITAR") }
-            RemoveButton(enabled, "Remover poder", onRemove)
+            RemoveButton(enabled && power.sourceType != PowerSourceType.RACE && power.sourceType != PowerSourceType.PATH, "Remover poder", onRemove)
         }
         if (!expanded) {
             Text(
