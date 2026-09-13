@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "traits": [
+    {
+      "id": "antipessoal",
+      "name": "Antipessoal",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "anticavalaria",
+      "name": "Anticavalaria",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "leve",
+      "name": "Leve",
+      "appliesTo": [
+        "WEAPON",
+        "ARMOR"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "pesado",
+      "name": "Pesado",
+      "appliesTo": [
+        "WEAPON",
+        "ARMOR"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "delicado",
+      "name": "Delicado",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "dilaceracao",
+      "name": "Dilaceração",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "perfurante",
+      "name": "Perfurante",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "impactante",
+      "name": "Impactante",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "condutor",
+      "name": "Condutor",
+      "appliesTo": [
+        "WEAPON",
+        "ARMOR"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "canalizador",
+      "name": "Canalizador",
+      "appliesTo": [
+        "WEAPON"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "isolante",
+      "name": "Isolante",
+      "appliesTo": [
+        "ARMOR"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "silencioso",
+      "name": "Silencioso",
+      "appliesTo": [
+        "ARMOR"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "reflexivo",
+      "name": "Reflexivo",
+      "appliesTo": [
+        "ARMOR"
+      ],
+      "characterCreationVisible": true
+    },
+    {
+      "id": "autorregenerativo",
+      "name": "Autorregenerativo",
+      "appliesTo": [
+        "WEAPON",
+        "ARMOR"
+      ],
+      "characterCreationVisible": false,
+      "ancestral": true
+    }
+  ]
+}
