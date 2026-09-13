@@ -61,7 +61,12 @@ class CharacterCreationTest {
             creationStep = CharacterCreation.STEP_COUNT,
         )
 
-        assertEquals(CharacterCreationStatus.COMPLETED, CharacterCreation.finish(character).creationStatus)
+        val finished = CharacterCreation.finish(character)
+
+        assertEquals(CharacterCreationStatus.COMPLETED, finished.creationStatus)
+        val simpleClothes = finished.inventory.single { it.name == "Roupas simples" }
+        assertEquals("Acessório", simpleClothes.category)
+        assertEquals("Torso", simpleClothes.region)
     }
 
     @Test fun `five special knowledges start free and fifteen points may be split across any knowledge`() {
