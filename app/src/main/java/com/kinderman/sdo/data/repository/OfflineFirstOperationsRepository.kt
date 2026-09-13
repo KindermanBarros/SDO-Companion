@@ -131,7 +131,11 @@ class OfflineFirstOperationsRepository(
 
     override suspend fun saveAlertSettings(settings: CampaignAlertSettings) = dao.upsertAlertSettings(settings.toRecord())
 
-    override suspend fun sync(session: UserSession, manageableCampaignIds: Set<String>) {
+    override suspend fun sync(
+        session: UserSession,
+        readableCampaignIds: Set<String>,
+        writableCampaignIds: Set<String>,
+    ) {
         val store = Firebase.firestore
         val operations = store.collection(OPERATIONS)
         val library = store.collection(LIBRARY)
@@ -153,7 +157,7 @@ class OfflineFirstOperationsRepository(
             }
             dao.markOperationSynced(local.id, local.createdAt)
         }
-        dao.dirtyLibrary().filter { it.campaignId in manageableCampaignIds }.forEach { original ->
+        dao.dirtyLibrary().filter { it.campaignId in writableCampaignIds }.forEach { original ->
             val reference = library.document(original.id)
             val remote = reference.get().await().toObject(CampaignLibraryRecord::class.java)
             val local = if (remote != null && remote.campaignId != original.campaignId) {
@@ -170,11 +174,15 @@ class OfflineFirstOperationsRepository(
                 dao.markDeliverySynced(local.id, local.updatedAt)
             }
         }
-        manageableCampaignIds.forEach { campaignId ->
+        readableCampaignIds.forEach { campaignId ->
             operations.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(SessionOperationRecord::class.java) }
                 .forEach { dao.upsertOperation(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
             library.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(CampaignLibraryRecord::class.java) }
                 .forEach { dao.upsertLibrary(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
+        }
+        // A player may read only deliveries addressed to them. Querying a campaign's full
+        // delivery queue would expose other players' records and is therefore Historian-only.
+        writableCampaignIds.forEach { campaignId ->
             deliveries.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(CampaignDeliveryRecord::class.java) }
                 .forEach { dao.upsertDelivery(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
         }
