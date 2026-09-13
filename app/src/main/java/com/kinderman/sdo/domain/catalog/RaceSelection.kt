@@ -93,11 +93,10 @@ internal fun RaceDefinition.canonicalId(): RaceId = when (name) {
     "Humanos" -> RaceId.Humano
     "Elfos" -> RaceId.Elfo
     "Ascendidos" -> RaceId.Ascendido
-    "Elfos do Crepúsculo" -> RaceId.ElfoDoCrepusculo
     "Golms" -> RaceId.Golm
     "Ciuvati" -> RaceId.Ciuvati
     "Crias da Neblina" -> RaceId.CriaDaNeblina
-    "Kaltoch — Andarilho", "Kaltoch — Aumentado" -> RaceId.Kaltoch
+    "Kaltoch" -> RaceId.Kaltoch
     "Anões" -> RaceId.Anao
     "Sonaris" -> RaceId.Sonaris
     "Goblins" -> RaceId.Goblin

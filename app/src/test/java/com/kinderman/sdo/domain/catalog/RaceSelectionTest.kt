@@ -12,7 +12,7 @@ import org.junit.Test
 
 class RaceSelectionTest {
     @Test fun catalogContainsCanonicalRacesAndRestrictsOrganicSubRaces() {
-        assertEquals(20, RaceCatalog.races.size)
+        assertEquals(18, RaceCatalog.races.size)
         assertTrue(RaceCatalog.race("Humanos") != null)
         assertTrue(RaceCatalog.race("Lúmens") != null)
 
@@ -21,6 +21,14 @@ class RaceSelectionTest {
         assertTrue("Bestial — Contaminado" in humanSubRaces)
         assertFalse("Bestial — Contaminado" in golmSubRaces)
         assertTrue("Oráculo" in golmSubRaces)
+        assertEquals(listOf("Elfos do Crepúsculo", "Oráculo", "Bestial — Contaminado", "Bestial — Completo"),
+            RaceCatalog.subRacesFor(RaceCatalog.race("Elfos")!!).map { it.name })
+        assertEquals(listOf("Aumentado", "Oráculo"),
+            RaceCatalog.subRacesFor(RaceCatalog.race("Kaltoch")!!).map { it.name })
+        assertEquals("Kaltoch", RaceCatalog.race("Kaltoch — Aumentado")?.name)
+        assertEquals("Aumentado", RaceCatalog.legacySubRace("Kaltoch — Aumentado"))
+        assertEquals("Elfos", RaceCatalog.race("Elfos do Crepúsculo")?.name)
+        assertEquals("Elfos do Crepúsculo", RaceCatalog.legacySubRace("Elfos do Crepúsculo"))
     }
 
     @Test fun selectingAndChangingRaceDoesNotStackBonusesOrPowers() {
