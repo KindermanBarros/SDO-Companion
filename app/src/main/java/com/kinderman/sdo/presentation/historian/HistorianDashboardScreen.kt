@@ -19,10 +19,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.AlertDialog
@@ -84,6 +82,12 @@ import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
+import com.kinderman.sdo.ui.SdoActionButton
+import com.kinderman.sdo.ui.SdoActionStyle
+import com.kinderman.sdo.ui.SdoFilterChip
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoResponsiveGrid
+import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import java.text.DateFormat
@@ -93,6 +97,49 @@ private enum class HistorianSection(val label: String) {
     OPERATION("OPERAÇÃO"),
     LIBRARY("BIBLIOTECA"),
     AUDIT("HISTÓRICO"),
+}
+
+private enum class LibrarySource(val label: String) { ALL("TUDO"), CAMPAIGN("MODELOS"), CATALOG("CATÁLOGO") }
+
+private enum class LibraryCategory(val label: String) {
+    ALL("TODAS"), ITEM("ITENS"), ABILITY("HABILIDADES"), CONDITION("CONDIÇÕES"), KNOWLEDGE("CONHECIMENTOS"), NOTE("NOTAS")
+}
+
+private fun LibraryCategory.matches(kind: CampaignContentKind): Boolean = when (this) {
+    LibraryCategory.ALL -> true
+    LibraryCategory.ITEM -> kind == CampaignContentKind.ITEM
+    LibraryCategory.ABILITY -> kind == CampaignContentKind.POWER
+    LibraryCategory.CONDITION -> kind == CampaignContentKind.CONDITION
+    LibraryCategory.KNOWLEDGE -> false
+    LibraryCategory.NOTE -> kind in setOf(CampaignContentKind.NOTE, CampaignContentKind.REWARD, CampaignContentKind.TEMPLATE)
+}
+
+private fun LibraryCategory.matches(kind: CatalogKind): Boolean = when (this) {
+    LibraryCategory.ALL -> true
+    LibraryCategory.ITEM -> kind == CatalogKind.ITEM
+    LibraryCategory.ABILITY -> kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH, CatalogKind.BATTLE_TECHNIQUE)
+    LibraryCategory.CONDITION, LibraryCategory.NOTE -> false
+    LibraryCategory.KNOWLEDGE -> kind in setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE)
+}
+
+private fun CampaignLibraryEntry.matchesSearch(query: String): Boolean {
+    if (query.isBlank()) return true
+    val structured = listOfNotNull(
+        itemSnapshot?.let { listOf(it.name, it.category, it.effect).joinToString(" ") },
+        powerSnapshot?.let { listOf(it.name, it.category, it.effect, it.canonicalSource.label).joinToString(" ") },
+        conditionSnapshot?.let { listOf(it.name, it.summary, it.intensity, it.duration, it.origin).joinToString(" ") },
+    )
+    return (listOf(name, summary, payload, kind.name, catalogEntryId) + structured)
+        .any { it.contains(query.trim(), ignoreCase = true) }
+}
+
+private fun CampaignContentKind.displayLabel(): String = when (this) {
+    CampaignContentKind.ITEM -> "ITEM"
+    CampaignContentKind.POWER -> "HABILIDADE"
+    CampaignContentKind.NOTE -> "NOTA"
+    CampaignContentKind.REWARD -> "RECOMPENSA"
+    CampaignContentKind.CONDITION -> "CONDIÇÃO"
+    CampaignContentKind.TEMPLATE -> "MODELO"
 }
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -120,6 +167,9 @@ fun HistorianDashboardScreen(
     BackHandler(onBack = onBack)
     var section by rememberSaveable { mutableStateOf(HistorianSection.OPERATION) }
     var search by rememberSaveable { mutableStateOf("") }
+    var librarySource by rememberSaveable { mutableStateOf(LibrarySource.ALL) }
+    var libraryCategory by rememberSaveable { mutableStateOf(LibraryCategory.ALL) }
+    var showArchivedLibrary by rememberSaveable { mutableStateOf(false) }
     var actionTarget by remember { mutableStateOf<Character?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
@@ -226,7 +276,7 @@ fun HistorianDashboardScreen(
                                         TelemetryTag(if (campaign.isArchived) "ARCHIVED" else "LIVE")
                                         TelemetryTag("FILES.${campaignCharacters.size}")
                                     }
-                                    Text(campaign.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                                    SectionHeader("01", campaign.name)
                                     if (campaignCharacters.isEmpty()) Text("Nenhuma ficha vinculada.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     AlertSettingsRow(
                                         alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id),
@@ -249,34 +299,61 @@ fun HistorianDashboardScreen(
                         item {
                             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                                 TelemetryTag("LOCAL.CATALOG")
-                                Text("BIBLIOTECA DE REFERÊNCIA", color = Ice, style = MaterialTheme.typography.titleLarge)
+                                SectionHeader("02", "Biblioteca de referência")
+                                Text("Filtre modelos da campanha e referências canônicas por origem e categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 HudTextField(
-                                    label = "Buscar nome, grupo ou regra",
+                                    label = "Buscar nome, categoria, efeito ou regra",
                                     value = search,
                                     modifier = Modifier.fillMaxWidth(),
                                     onValue = { search = it },
                                 )
-                                TextButton({
+                                Text("ORIGEM", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                                SdoResponsiveGrid(LibrarySource.entries, minItemWidth = 104.dp) { source, modifier ->
+                                    SdoFilterChip(source.label, librarySource == source, { librarySource = source }, modifier)
+                                }
+                                Text("CATEGORIA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                                SdoResponsiveGrid(LibraryCategory.entries, minItemWidth = 128.dp) { category, modifier ->
+                                    SdoFilterChip(category.label, libraryCategory == category, { libraryCategory = category }, modifier)
+                                }
+                                SdoFilterChip("INCLUIR ARQUIVADOS", showArchivedLibrary, { showArchivedLibrary = !showArchivedLibrary })
+                                SdoActionButton("NOVO MODELO", {
                                     selectedCampaign?.takeUnless { it.isArchived }?.let { editingLibrary = CampaignLibraryEntry(campaignId = it.id, createdBy = session.uid) }
-                                }, enabled = libraryWritable) { Text("+ NOVO MODELO") }
+                                }, enabled = libraryWritable, style = SdoActionStyle.PRIMARY, modifier = Modifier.fillMaxWidth())
                                 if (!libraryWritable && selectedCampaign != null) {
                                     Text("Campanha arquivada: biblioteca disponível somente para leitura.", color = MaterialTheme.colorScheme.error)
                                 }
                             }
                         }
-                        val filteredLibrary = selectedLibrary.filter { entry -> search.isBlank() || listOf(entry.name, entry.summary, entry.kind.name).any { it.contains(search.trim(), true) } }
+                        val filteredLibrary = selectedLibrary.filter { entry ->
+                            (showArchivedLibrary || !entry.archived) &&
+                                libraryCategory.matches(entry.kind) &&
+                                entry.matchesSearch(search)
+                        }
+                        val filtered = (catalog + racialReferences() + characterReferences(selectedCharacters)).filter { entry ->
+                            libraryCategory.matches(entry.kind) && (search.isBlank() || entry.searchableText().contains(search.trim(), true))
+                        }
                         item {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("${filteredLibrary.size} MODELOS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                                Text("${if (librarySource == LibrarySource.CATALOG) 0 else filteredLibrary.size} MODELOS // ${if (librarySource == LibrarySource.CAMPAIGN) 0 else filtered.size} REFERÊNCIAS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                                 Text("${deliveries.count { it.campaignId == selectedCampaignId && it.state.name == "PENDING" }} ENTREGAS PENDENTES", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                             }
                         }
-                        items(filteredLibrary, key = { "library:${it.id}" }) { entry ->
-                            LibraryCard(entry, enabled = libraryWritable, onEdit = { editingLibrary = entry }, onDuplicate = { onDuplicateLibrary(entry) }, onArchive = { onArchiveLibrary(entry, !entry.archived) }, onDeliver = { delivering = entry })
+                        if (librarySource != LibrarySource.CATALOG) {
+                            item { SectionHeader("02.A", "Modelos da campanha") }
+                            items(filteredLibrary, key = { "library:${it.id}" }) { entry ->
+                                LibraryCard(entry, enabled = libraryWritable, onEdit = { editingLibrary = entry }, onDuplicate = { onDuplicateLibrary(entry) }, onArchive = { onArchiveLibrary(entry, !entry.archived) }, onDeliver = { delivering = entry })
+                            }
                         }
-                        item { Text("CATÁLOGO LOCAL DE REFERÊNCIA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
-                        val filtered = (catalog + racialReferences() + characterReferences(selectedCharacters)).filter { search.isBlank() || it.searchableText().contains(search.trim(), true) }
-                        items(filtered, key = { "catalog:${it.id}" }) { entry -> CatalogReferenceCard(entry) }
+                        if (librarySource != LibrarySource.CAMPAIGN) {
+                            item { SectionHeader("02.B", "Catálogo local de referência") }
+                            items(filtered, key = { "catalog:${it.id}" }) { entry -> CatalogReferenceCard(entry) }
+                        }
+                        val visibleResultCount =
+                            (if (librarySource == LibrarySource.CATALOG) 0 else filteredLibrary.size) +
+                                (if (librarySource == LibrarySource.CAMPAIGN) 0 else filtered.size)
+                        if (visibleResultCount == 0) item("library-empty") {
+                            SdoInsetCard { Text("Nenhum registro corresponde aos filtros.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        }
                     }
                     HistorianSection.AUDIT -> {
                         item {
@@ -400,20 +477,11 @@ private fun OperationalCharacterCard(
                 color = if (failedRegions.isEmpty() && failedOrgans.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
             )
-            androidx.compose.material3.Button(
-                onClick = { onOpenSession(character.id) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Default.PlayArrow, null)
-                com.kinderman.sdo.ui.AdaptiveActionLabel("ABRIR SESSÃO", color = MaterialTheme.colorScheme.onPrimary)
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onQuickAction, modifier = Modifier.weight(1f)) {
-                    com.kinderman.sdo.ui.AdaptiveActionLabel("AÇÃO")
-                }
-                TextButton({ onOpenSheet(character.id) }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.Description, null)
-                    com.kinderman.sdo.ui.AdaptiveActionLabel("FICHA")
+            SdoResponsiveGrid(listOf("SESSION", "ACTION", "SHEET"), minItemWidth = 136.dp) { action, modifier ->
+                when (action) {
+                    "SESSION" -> SdoActionButton("ABRIR SESSÃO", { onOpenSession(character.id) }, modifier, style = SdoActionStyle.PRIMARY)
+                    "ACTION" -> SdoActionButton("AÇÃO RÁPIDA", onQuickAction, modifier)
+                    else -> SdoActionButton("ABRIR FICHA", { onOpenSheet(character.id) }, modifier)
                 }
             }
         }
@@ -454,12 +522,14 @@ private fun CatalogReferenceCard(entry: CatalogEntry) {
 
 @Composable
 private fun AlertSettingsRow(settings: CampaignAlertSettings, onSave: (CampaignAlertSettings) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    SdoInsetCard(verticalSpacing = 8.dp) {
         Text("ALERTAS // VIDA ≤${settings.lifeThresholdPercent}% // SAN ≤${settings.sanityThresholdPercent}% // EXA ≥${settings.exhaustionThresholdPercent}%", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            TextButton({ onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent - 5).coerceAtLeast(5))) }, modifier = Modifier.weight(1f)) { Text("VIDA −") }
-            TextButton({ onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent + 5).coerceAtMost(95))) }, modifier = Modifier.weight(1f)) { Text("VIDA +") }
-            TextButton({ onSave(settings.copy(staleAfterHours = if (settings.staleAfterHours == 24) 48 else 24)) }, modifier = Modifier.weight(1f)) { Text("SYNC ${settings.staleAfterHours}H") }
+        SdoResponsiveGrid(listOf("LIFE_DOWN", "LIFE_UP", "SYNC"), minItemWidth = 112.dp) { action, modifier ->
+            when (action) {
+                "LIFE_DOWN" -> SdoActionButton("VIDA −", { onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent - 5).coerceAtLeast(5))) }, modifier)
+                "LIFE_UP" -> SdoActionButton("VIDA +", { onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent + 5).coerceAtMost(95))) }, modifier)
+                else -> SdoActionButton("SYNC ${settings.staleAfterHours}H", { onSave(settings.copy(staleAfterHours = if (settings.staleAfterHours == 24) 48 else 24)) }, modifier)
+            }
         }
     }
 }
@@ -492,15 +562,8 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("1. ESCOLHA A AÇÃO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                QuickActionKind.entries.chunked(3).forEach { row ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        row.forEach { action ->
-                            TextButton(
-                                onClick = { selected = action },
-                                modifier = Modifier.weight(1f).then(if (selected == action) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(4.dp)) else Modifier),
-                            ) { Text(action.label, maxLines = 1) }
-                        }
-                    }
+                SdoResponsiveGrid(QuickActionKind.entries, minItemWidth = 126.dp) { action, modifier ->
+                    SdoFilterChip(action.label, selected == action, { selected = action }, modifier)
                 }
                 Text("2. DEFINA OS DADOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -553,18 +616,63 @@ private fun LibraryCard(
 ) {
     TechPanel(accent = if (entry.archived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.secondary) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TelemetryTag(entry.kind.name)
-            TelemetryTag("V.${entry.version}")
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                TelemetryTag(entry.kind.displayLabel())
+                if (entry.archived) TelemetryTag("ARQUIVADO", MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            TelemetryTag(if (entry.dirty) "LOCAL_DELTA" else "V.${entry.version}")
         }
         Text(entry.name.ifBlank { "Modelo sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-        Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(entry.payload, style = MaterialTheme.typography.bodySmall)
-        if (entry.knowledgeBonus != 0) Text("Bônus de Conhecimento: ${entry.knowledgeBonus}")
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextButton(onEdit, enabled = enabled, modifier = Modifier.weight(1f)) { Text("EDITAR") }
-            TextButton(onDuplicate, enabled = enabled, modifier = Modifier.weight(1f)) { Text("DUPLICAR") }
-            TextButton(onArchive, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (entry.archived) "RESTAURAR" else "ARQUIVAR") }
-            TextButton(onDeliver, enabled = enabled && !entry.archived, modifier = Modifier.weight(1f)) { Text("ENTREGAR") }
+        if (entry.summary.isNotBlank()) Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        LibraryStructuredDetails(entry)
+        if (entry.payload.isNotBlank()) SdoInsetCard {
+            Text("NOTAS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            Text(entry.payload, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        }
+        if (entry.knowledgeBonus != 0) TelemetryTag("CONHECIMENTO ${if (entry.knowledgeBonus > 0) "+" else ""}${entry.knowledgeBonus}", MaterialTheme.colorScheme.secondary)
+        SdoResponsiveGrid(listOf("EDIT", "DUPLICATE", "ARCHIVE", "DELIVER"), minItemWidth = 128.dp) { action, modifier ->
+            when (action) {
+                "EDIT" -> SdoActionButton("EDITAR", onEdit, modifier, enabled)
+                "DUPLICATE" -> SdoActionButton("DUPLICAR", onDuplicate, modifier, enabled)
+                "ARCHIVE" -> SdoActionButton(if (entry.archived) "RESTAURAR" else "ARQUIVAR", onArchive, modifier, enabled, SdoActionStyle.DESTRUCTIVE)
+                else -> SdoActionButton("ENTREGAR", onDeliver, modifier, enabled && !entry.archived, SdoActionStyle.PRIMARY)
+            }
+        }
+    }
+}
+
+@Composable
+private fun LibraryStructuredDetails(entry: CampaignLibraryEntry) {
+    val fields = when (entry.kind) {
+        CampaignContentKind.ITEM -> entry.itemSnapshot?.let { item -> buildList {
+            add("Categoria" to item.category.ifBlank { "Item" })
+            add("Carga" to item.load.toString())
+            if (item.durabilityMax > 0) add("Durabilidade" to "${item.durabilityCurrent}/${item.durabilityMax}")
+            if (item.pg != 0 || item.pl != 0) add("Proteção" to "PG ${item.pg} // PL ${item.pl}")
+            if (item.effect.isNotBlank()) add("Efeito" to item.effect)
+        } }.orEmpty()
+        CampaignContentKind.POWER -> entry.powerSnapshot?.let { power -> buildList {
+            add("Categoria" to power.category.ifBlank { power.canonicalSource.label })
+            add("Custo" to "${power.costType.label} ${power.costValue}".trim())
+            add("Execução" to power.executionType.label)
+            add("Alcance" to power.rangeType.label)
+            if (power.targetArea.isNotBlank()) add("Alvo / Área" to power.targetArea)
+            add("Duração" to power.durationType.label)
+            add("Resistência" to power.resistance.label)
+            if (power.effect.isNotBlank()) add("Efeito" to power.effect)
+        } }.orEmpty()
+        CampaignContentKind.CONDITION -> entry.conditionSnapshot?.let { condition -> buildList {
+            if (condition.intensity.isNotBlank()) add("Intensidade" to condition.intensity)
+            if (condition.duration.isNotBlank()) add("Duração" to condition.duration)
+            if (condition.origin.isNotBlank()) add("Origem" to condition.origin)
+            if (condition.summary.isNotBlank()) add("Efeito" to condition.summary)
+        } }.orEmpty()
+        else -> emptyList()
+    }
+    if (fields.isNotEmpty()) SdoInsetCard {
+        fields.forEach { (label, value) ->
+            Text(label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            Text(value, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
