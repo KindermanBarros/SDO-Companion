@@ -74,6 +74,7 @@ class CharacterRecordFirestoreContractTest {
     @Test fun itemCreationDraftSurvivesRoomAndRecordMapping() {
         val draft = ItemCreationDraft(
             step = 3, category = "Armadura", baseId = "elmo", materialId = "ligas_comuns",
+            secondaryMaterialId = "ferrita_rubra",
             quality = ItemQuality.IMPROVED, modificationIds = listOf("robusta"), gemIds = listOf("gema_atributo_for"),
             gemSlots = 1, technologySlots = 2, customName = "Elmo da Aurora",
             manualPrice = "120", commonName = "Kit", commonEffect = "Ferramentas",
@@ -112,6 +113,7 @@ class CharacterRecordFirestoreContractTest {
             id = "weapon-1",
             baseId = "faca",
             materialId = "madeira",
+            secondaryMaterialId = "ferrita_rubra",
             modificationIds = listOf("afiada"),
             gemIds = listOf("gema_menor_aleatoria"),
             mechanicalEffects = listOf(ItemEffect("gema_menor_aleatoria", ItemEffectType.KNOWLEDGE, 1, "*")),

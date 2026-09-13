@@ -26,6 +26,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ItemNormalizationTest {
+    @Test fun invalidSecondaryMaterialIsRemovedWithoutChangingThePrimaryMaterial() {
+        val item = InventoryItem(
+            materialId = "ferrita_rubra",
+            secondaryMaterialId = "ferrita_rubra",
+            durabilityCurrent = 4,
+            durabilityMax = 8,
+            dataVersion = CURRENT_ITEM_DATA_VERSION,
+        )
+
+        val normalized = Character(inventory = listOf(item)).withNormalizedInventory().inventory.single()
+        assertEquals("ferrita_rubra", normalized.materialId)
+        assertEquals("", normalized.secondaryMaterialId)
+        assertEquals(4, normalized.durabilityCurrent)
+        assertEquals(8, normalized.durabilityMax)
+    }
+
     @Test fun heavyWeaponConsumesTwoHandsAndBlocksAnotherWieldedItem() {
         val heavy = InventoryItem(id = "heavy", baseId = "montante", materialId = "ligas_comuns", state = "G", durabilityCurrent = 2, durabilityMax = 2)
         val dagger = InventoryItem(id = "dagger", baseId = "adaga", state = "W", durabilityCurrent = 1, durabilityMax = 1)
