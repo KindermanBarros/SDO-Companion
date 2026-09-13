@@ -244,8 +244,19 @@ service cloud.firestore {
             && request.resource.data.role == resource.data.role
             && request.resource.data.joinedAt == resource.data.joinedAt
             && request.resource.data.joinedByInviteId == resource.data.joinedByInviteId
-            && request.resource.data.state == 'LEFT'
-            && request.resource.data.characterIds.size() == 0
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'state', 'updatedAt', 'characterIds'
+            ])
+            && (
+              (
+                request.resource.data.state == resource.data.state
+                && request.resource.data.state == 'ACTIVE'
+              )
+              || (
+                request.resource.data.state == 'LEFT'
+                && request.resource.data.characterIds.size() == 0
+              )
+            )
           )
         );
 
