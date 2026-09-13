@@ -1,6 +1,7 @@
 package com.kinderman.sdo.domain.catalog
 
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class EquipmentGlossaryTest {
@@ -37,5 +38,13 @@ class EquipmentGlossaryTest {
         ).flatten().map { it.name }
 
         assertTrue(catalogTerms.all { it in terms })
+    }
+
+    @Test fun playerGlossaryDoesNotExposeMoneyOrHeritageCosts() {
+        val definitions = EquipmentGlossary.entries.joinToString { it.definition }
+
+        assertFalse(definitions.contains("PH"))
+        assertFalse(definitions.contains("E$"))
+        assertFalse(definitions.contains("preço", ignoreCase = true))
     }
 }

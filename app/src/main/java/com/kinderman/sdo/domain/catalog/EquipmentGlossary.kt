@@ -25,9 +25,9 @@ object EquipmentGlossary {
         GlossaryEntry("Bobina", "Tecnologia", "Reserva operacional de uma arma de Tesla. O número indicado registra sua capacidade; gastos e recarga seguem o procedimento da arma."),
         GlossaryEntry("Passo de dado", "Dados", "É a quantidade de dados lançados. Em 1d8, o passo é 1; aumentar um passo transforma 1d8 em 2d8."),
         GlossaryEntry("Categoria de dado", "Dados", "É o tipo ou número de faces do dado. Em 1d8, a categoria é d8; aumentar uma categoria segue a escala de dados adotada pela regra."),
-        GlossaryEntry("Qualidade", "Equipamentos", "Classifica acabamento e poder em Mundana, Comum, Aprimorada, Icônica, Obra-Prima, Artefato ou Anciã. A qualidade altera PH, preço, proteções, espaços e efeitos conforme a categoria."),
+        GlossaryEntry("Qualidade", "Equipamentos", "Classifica acabamento e poder em Mundana, Comum, Aprimorada, Icônica, Obra-Prima, Artefato ou Anciã. A qualidade altera proteções, espaços e efeitos conforme a categoria."),
         GlossaryEntry("Durabilidade", "Equipamentos", "É registrada como atual/máxima e deriva do único material predominante. Qualidade e Durabilidade são informações diferentes."),
-        GlossaryEntry("Material predominante", "Equipamentos", "Cada arma ou armadura possui um único material predominante. Partes, camadas e ligas sob a mesma família não repetem custo, PG, PL ou Durabilidade."),
+        GlossaryEntry("Composição material", "Equipamentos", "Cada arma ou armadura pode usar um material puro ou uma liga de dois materiais diferentes. A ficha apresenta apenas os efeitos resultantes da composição."),
     )
 
     val entries: List<GlossaryEntry> by lazy {
@@ -59,11 +59,13 @@ object EquipmentGlossary {
     }
 
     private fun describe(part: ItemPart, includeDurability: Boolean): String = buildList {
-        add("Criação ${part.creationCost ?: "#"} PH; referência ${part.price} E$.")
         if (part.load != 0) add("Carga ${part.load}.")
         if (includeDurability) add("Durabilidade ${part.durability}.")
         if (part.pg != 0 || part.pl != 0) add("P.G. ${part.pg}; P.L. ${part.pl}.")
         if (part.region.isNotBlank()) add("Região: ${part.region}.")
+        if (part.traitIds.isNotEmpty()) add("Traços: ${part.traitIds.joinToString()}.")
+        if (part.damageBonus != 0) add("Bônus de dano ${part.damageBonus}.")
+        if (part.damageReduction != 0) add("Redução ${part.damageReduction}.")
         if (part.effect.isNotBlank()) add(part.effect)
     }.joinToString(" ")
 }
