@@ -2,9 +2,7 @@ package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -13,12 +11,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,11 +27,12 @@ import com.kinderman.sdo.domain.catalog.RaceDefinition
 import com.kinderman.sdo.domain.catalog.RacialPower
 import com.kinderman.sdo.domain.catalog.SubRaceDefinition
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.ui.Acid
-import com.kinderman.sdo.ui.Ice
-import com.kinderman.sdo.ui.Muted
-import com.kinderman.sdo.ui.Signal
-import com.kinderman.sdo.ui.TechCutDark
+import com.kinderman.sdo.ui.SdoActionButton
+import com.kinderman.sdo.ui.SdoActionStyle
+import com.kinderman.sdo.ui.SdoFilterChip
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoResponsiveGrid
+import com.kinderman.sdo.ui.SectionHeader
 
 @Composable
 internal fun RacePickerDialog(
@@ -69,9 +65,10 @@ internal fun RacePickerDialog(
         title = { Text("SELECIONAR RAÇA") },
         text = {
             Column(Modifier.fillMaxWidth().heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("RAÇA-BASE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                SectionHeader("02", "Raça-base")
                 SelectionMenu(
-                    label = race.name.uppercase(),
+                    title = "RAÇA",
+                    value = race,
                     options = RaceCatalog.races,
                     optionLabel = { it.name.uppercase() },
                 ) { option ->
@@ -83,29 +80,25 @@ internal fun RacePickerDialog(
                     }
                     basePowers = if (subRace == null) option.powers.toSet() else setOf(option.powers.first())
                 }
-                Text("HP +${race.hp} // SAN +${race.sanity} // ARC +${race.arcane} // ENE +${race.energy}", color = MaterialTheme.colorScheme.onSurface)
-                Text("ATRIBUTO // ${race.attribute} +1", color = MaterialTheme.colorScheme.primary)
+                SdoInsetCard {
+                    Text("RECURSOS RACIAIS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    Text("HP +${race.hp} // SAN +${race.sanity} // ARC +${race.arcane} // ENE +${race.energy}", color = MaterialTheme.colorScheme.onSurface)
+                    Text("ATRIBUTO // ${race.attribute} +1", color = MaterialTheme.colorScheme.primary)
+                }
                 if (race.attribute == "Qualquer") {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR").chunked(3).forEach { rowOptions ->
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                rowOptions.forEach { option ->
-                                    TextButton(
-                                        onClick = { attribute = option },
-                                        modifier = Modifier.weight(1f),
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-                                    ) {
-                                        Text(if (attribute == option) "[$option]" else option, maxLines = 1)
-                                    }
-                                }
-                            }
+                    SdoInsetCard(verticalSpacing = 8.dp) {
+                        Text("ESCOLHA O ATRIBUTO RACIAL", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                        Text("Humanos e Sangue-Vil recebem +1 no atributo selecionado.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        SdoResponsiveGrid(listOf("FOR", "VIG", "AGI", "POD", "INT", "CAR"), minItemWidth = 96.dp, maxColumns = 3) { option, modifier ->
+                            SdoFilterChip(option, attribute == option, { attribute = option }, modifier)
                         }
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Text("SUB-RAÇA // ADICIONAL OPCIONAL", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                SectionHeader("02.A", "Sub-raça opcional")
                 SelectionMenu(
-                    label = subRace?.name?.uppercase() ?: "NENHUMA",
+                    title = "SUB-RAÇA",
+                    value = subRace,
                     options = listOf<SubRaceDefinition?>(null) + RaceCatalog.subRacesFor(race),
                     optionLabel = { it?.name?.uppercase() ?: "NENHUMA" },
                 ) { option ->
@@ -114,7 +107,7 @@ internal fun RacePickerDialog(
                     subRacePower = option?.powers?.first()
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Text(if (needsReplacement) "MANTENHA 1 PODER RACIAL" else "PODERES RACIAIS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                SectionHeader("02.B", if (needsReplacement) "Mantenha 1 poder racial" else "Poderes raciais")
                 race.powers.forEach { power -> PowerChoice(power, power in basePowers) { checked ->
                     basePowers = if (checked) {
                         if (needsReplacement) setOf(power) else basePowers + power
@@ -129,47 +122,34 @@ internal fun RacePickerDialog(
                 if (!valid) Text("Selecione exatamente dois poderes: dois raciais, ou um racial e um de sub-raça.", color = MaterialTheme.colorScheme.error)
             }
         },
-        confirmButton = { TextButton(onClick = { onConfirm(race, subRace, attribute, basePowers.toList(), subRacePower) }, enabled = valid) { Text("APLICAR") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        confirmButton = { SdoActionButton("APLICAR", { onConfirm(race, subRace, attribute, basePowers.toList(), subRacePower) }, enabled = valid, style = SdoActionStyle.PRIMARY) },
+        dismissButton = { SdoActionButton("CANCELAR", onDismiss) },
     )
 }
 
 @Composable
 private fun PowerChoice(power: RacialPower, checked: Boolean, onChecked: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clickable { onChecked(!checked) }.padding(vertical = 4.dp),
-        verticalAlignment = Alignment.Top,
+    SdoInsetCard(
+        modifier = Modifier.clickable { onChecked(!checked) },
+        accent = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
     ) {
-        Checkbox(checked, onCheckedChange = null)
-        Column(Modifier.padding(top = 12.dp)) {
-            Text(power.name, color = MaterialTheme.colorScheme.onSurface)
-            Text(power.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        Row(verticalAlignment = Alignment.Top) {
+            Checkbox(checked, onCheckedChange = { onChecked(it) })
+            Column(Modifier.padding(top = 10.dp)) {
+                Text(power.name, color = MaterialTheme.colorScheme.onSurface)
+                Text(power.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }
 
 @Composable
 private fun <T> SelectionMenu(
-    label: String,
+    title: String,
+    value: T,
     options: List<T>,
     optionLabel: (T) -> String,
     onSelect: (T) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    Box(Modifier.fillMaxWidth()) {
-        TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-            Text("[ $label ▾ ]")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(optionLabel(option)) },
-                    onClick = {
-                        onSelect(option)
-                        expanded = false
-                    },
-                )
-            }
-        }
-    }
+    ChoiceField(title, value, options, true, display = optionLabel, onValue = onSelect)
 }
