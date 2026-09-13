@@ -1,6 +1,7 @@
 package com.kinderman.sdo
 
 import android.app.Application
+import android.util.Log
 import androidx.room.Room
 import com.google.firebase.FirebaseApp
 import com.kinderman.sdo.data.auth.FirebaseAuthRepository
@@ -34,6 +35,7 @@ class SdoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         runCatching { FirebaseApp.initializeApp(this) }
+            .onFailure { Log.e("SDO_FIREBASE", "Firebase initialization failed", it) }
         val db = Room.databaseBuilder(this, AppDatabase::class.java, "sdo.db")
             .addMigrations(
                 AppDatabase.MIGRATION_1_2,

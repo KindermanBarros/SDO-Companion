@@ -179,7 +179,7 @@ class OfflineFirstCampaignRepository(
         if (normalized.isBlank()) return null
         val local = dao.inviteByCode(normalized)?.toDomain()
         val invite = local ?: run {
-            val store = runCatching { Firebase.firestore }.getOrNull() ?: return null
+            val store = Firebase.firestore
             val document = store.collection(INVITES).document(normalized).get().await()
             document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)?.toDomain()
         } ?: return null
@@ -276,7 +276,7 @@ class OfflineFirstCampaignRepository(
     }
 
     override suspend fun sync(session: UserSession) = syncMutex.withLock {
-        val store = runCatching { Firebase.firestore }.getOrNull() ?: return@withLock
+        val store = Firebase.firestore
         val campaigns = store.collection(CAMPAIGNS)
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)

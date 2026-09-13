@@ -45,6 +45,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -1075,7 +1076,12 @@ private fun CharacterAccessCard(
                         style = MaterialTheme.typography.labelSmall,
                     )
                     if (master) {
-                        TextButton(onClick = onOwnerClick, contentPadding = PaddingValues(0.dp)) {
+                        OutlinedButton(
+                            onClick = onOwnerClick,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                        ) {
                             Column(horizontalAlignment = Alignment.Start) {
                                 Text("OWNER // ${owner?.firstName?.uppercase() ?: "SEM PERFIL"}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                                 Text("UID.${character.ownerId.take(8)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)

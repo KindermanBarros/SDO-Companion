@@ -1,14 +1,12 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
@@ -49,6 +47,7 @@ import com.kinderman.sdo.ui.LabelFunctional
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.NeonCoral
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.StatHeader
 import com.kinderman.sdo.ui.StatHeaderLight
@@ -156,10 +155,7 @@ private fun CalculatedResourceEditor(
     onValue: (ResourceValue) -> Unit,
 ) {
     var expanded by rememberSaveable(label) { mutableStateOf(false) }
-    Column(
-        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-    ) {
+    SdoInsetCard(accent = accent) {
         Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
@@ -194,10 +190,7 @@ private fun ManualResourceEditor(
     onValue: (ResourceValue) -> Unit,
 ) {
     var expanded by rememberSaveable(label) { mutableStateOf(false) }
-    Column(
-        Modifier.fillMaxWidth().border(1.dp, accent, CutCornerShape(topEnd = 12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
+    SdoInsetCard(accent = accent, verticalSpacing = 6.dp) {
         val maximum = fixedMaximum ?: resource.maximum.coerceAtLeast(0)
         Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -295,11 +288,7 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
         if (calculation.adjustment != 0) add("Ajuste da ficha ${calculation.adjustment.signed()}")
         addAll(calculation.modifiers.filter { it.value != 0 && !it.label.startsWith("LA —") }.map { "${it.label} [${it.sourceType.name}] ${it.value.signed()}" })
     }
-    Column(
-        Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.outlineVariant, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
+    SdoInsetCard(contentPadding = 9.dp, verticalSpacing = 6.dp) {
         Row(
             Modifier.fillMaxWidth().clickable { expanded = !expanded },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -445,14 +434,7 @@ private fun ProtectionEditor(
     onAdjustment: (Int) -> Unit,
 ) {
     var expanded by rememberSaveable(name) { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.secondary, CutCornerShape(topEnd = 12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-    ) {
+    SdoInsetCard(accent = MaterialTheme.colorScheme.secondary) {
         Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column {
                 Text(name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
