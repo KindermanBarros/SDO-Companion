@@ -275,13 +275,9 @@ fun Character.damageInventoryItem(itemId: String, amount: Int = 1): Character {
         .synchronizeItemPowers()
 }
 
-val InventoryItem.salvageValueEstribos: Int
-    get() = ((purchasePrice ?: 0) / 2).coerceAtLeast(1)
-
-/** Recycles a destroyed item into the amount of Sucata defined by its creation cost. */
+/** Recycles a destroyed item into one narrative unit of scrap, without hidden currency. */
 fun Character.recycleBrokenItem(itemId: String): Character {
     val broken = inventory.firstOrNull { it.id == itemId && it.isBroken } ?: return this
-    val recoveredValue = broken.salvageValueEstribos
     val withoutBroken = removeInventoryItem(itemId)
     return withoutBroken.addInventoryItem(
         InventoryItem(
@@ -289,7 +285,6 @@ fun Character.recycleBrokenItem(itemId: String): Character {
             category = "Material",
             quantity = 1,
             load = 1,
-            purchasePrice = recoveredValue,
             acquisitionSource = ItemAcquisitionSource.NARRATIVE,
         ),
     )
@@ -380,7 +375,7 @@ data class BuiltItem(
         dataVersion = CURRENT_ITEM_DATA_VERSION,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.CRAFTED,
         heritageCost = creationCost.takeIf { initialCreation },
-        purchasePrice = price,
+        purchasePrice = null,
     )
 }
 

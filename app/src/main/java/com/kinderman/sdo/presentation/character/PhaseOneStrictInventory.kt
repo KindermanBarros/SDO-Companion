@@ -504,6 +504,17 @@ private fun validItemStates(character: Character, item: InventoryItem): List<Inv
 }
 
 @Composable
+internal fun UnifiedItemBuilderDialog(
+    remainingHeritage: Int?,
+    regionOptions: List<String>,
+    onDismiss: () -> Unit,
+    onAdd: (InventoryItem) -> Unit,
+) {
+    var draft by remember { mutableStateOf(ItemCreationDraft()) }
+    StrictItemBuilderDialog(remainingHeritage, regionOptions, draft, { draft = it }, onDismiss, onAdd)
+}
+
+@Composable
 private fun StrictItemBuilderDialog(
     remainingHeritage: Int?,
     regionOptions: List<String>,
@@ -631,6 +642,9 @@ private fun StrictItemBuilderDialog(
                     )
                 }
                 if (step == 1 && category != "Item") {
+                    ChoiceField("Categoria", category, listOf("Arma", "Armadura", "Acessório"), true) { selected ->
+                        onDraftChange(draft.copy(category = selected, baseId = "", materialId = "", secondaryMaterialId = "", modificationIds = emptyList()))
+                    }
                     HudTextField("Nome personalizado", customName) { onDraftChange(draft.copy(customName = it)) }
                     ChoiceField<String>("Tipo", base.id, bases.map { it.id }, true, display = { id: String -> bases.first { it.id == id }.name }) { id: String ->
                         val selected = bases.first { it.id == id }

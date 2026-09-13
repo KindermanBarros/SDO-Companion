@@ -8,7 +8,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Especializado em enfrentar um alvo individual."
+      "description": "Marcador mecânico de arma contra um alvo individual; não concede bônus isoladamente, apenas quando uma técnica ou efeito citar Antipessoal."
     },
     {
       "id": "anticavalaria",
@@ -17,7 +17,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Preparado para deter montarias, cavaleiros e investidas."
+      "description": "Marcador mecânico de arma contra montarias, cavaleiros e investidas; não concede bônus isoladamente, apenas quando uma regra citar Anticavalaria."
     },
     {
       "id": "leve",
@@ -27,7 +27,7 @@
         "ARMOR"
       ],
       "characterCreationVisible": true,
-      "description": "Reduz impedimentos sem alterar a Carga automaticamente."
+      "description": "Marcador mecânico de equipamento leve; não altera Carga, empunhadura ou LA sozinho, e só produz o benefício da regra que citar Leve."
     },
     {
       "id": "pesado",
@@ -37,7 +37,7 @@
         "ARMOR"
       ],
       "characterCreationVisible": true,
-      "description": "Exige manejo compatível com o peso e a estrutura do item."
+      "description": "Marcador mecânico de equipamento pesado; não é sinônimo de Carga e aplica somente exigências ou efeitos que citem Pesado."
     },
     {
       "id": "delicado",
@@ -46,7 +46,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Pode perder Durabilidade quando uma regra interagir com este traço."
+      "description": "Marcador mecânico de fragilidade; a Durabilidade só é reduzida quando o próprio item ou outra regra citar Delicado."
     },
     {
       "id": "dilaceracao",
@@ -55,7 +55,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Interage com efeitos que ampliam ferimentos e sangramento."
+      "description": "Marcador mecânico de dano dilacerante; só amplia ferimentos ou sangramento na situação explicitamente indicada pelo item ou efeito, como um Crítico."
     },
     {
       "id": "perfurante",
@@ -64,7 +64,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Interage com efeitos próprios de perfuração e pontos vulneráveis."
+      "description": "Marcador mecânico de perfuração; só ignora ou reduz proteção quando uma regra compatível citar Perfurante."
     },
     {
       "id": "impactante",
@@ -73,7 +73,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Interage com empurrões, colisões e golpes de impacto."
+      "description": "Marcador mecânico de impacto; só provoca empurrão, colisão ou efeito adicional quando uma regra compatível citar Impactante."
     },
     {
       "id": "condutor",
@@ -83,7 +83,7 @@
         "ARMOR"
       ],
       "characterCreationVisible": true,
-      "description": "Conduz energia quando outro efeito usar essa propriedade."
+      "description": "Marcador mecânico de condução; permite interações de energia que citem Condutor, sem adicionar dano ou resistência por conta própria."
     },
     {
       "id": "canalizador",
@@ -92,7 +92,7 @@
         "WEAPON"
       ],
       "characterCreationVisible": true,
-      "description": "Pode servir de canal para efeitos arcanos compatíveis."
+      "description": "Marcador mecânico de canalização; permite usar o item como foco apenas quando uma magia, poder ou regra citar Canalizador."
     },
     {
       "id": "isolante",
@@ -101,7 +101,7 @@
         "ARMOR"
       ],
       "characterCreationVisible": true,
-      "description": "Resiste à condução de energia quando uma regra utilizar esse traço."
+      "description": "Marcador mecânico de isolamento; só reduz ou impede condução de energia quando uma regra compatível citar Isolante."
     },
     {
       "id": "silencioso",
@@ -110,7 +110,7 @@
         "ARMOR"
       ],
       "characterCreationVisible": true,
-      "description": "Reduz ruídos produzidos pelo uso normal do equipamento."
+      "description": "Marcador mecânico de silêncio; reduz ruído de uso apenas nas rolagens ou situações cuja regra citar Silencioso."
     },
     {
       "id": "reflexivo",
@@ -119,7 +119,7 @@
         "ARMOR"
       ],
       "characterCreationVisible": true,
-      "description": "Interage com luz, feixes e efeitos refletidos."
+      "description": "Marcador mecânico de reflexão; só desvia luz, feixes ou efeitos quando a regra correspondente citar Reflexivo."
     },
     {
       "id": "autorregenerativo",
@@ -130,7 +130,7 @@
       ],
       "characterCreationVisible": false,
       "ancestral": true,
-      "description": "Recupera sua estrutura conforme a regra ancestral que o concedeu."
+      "description": "Marcador mecânico ancestral de reparo; recupera Durabilidade somente na quantidade e no intervalo definidos pelo material ou efeito que concedeu Autorregenerativo."
     }
   ]
 }
