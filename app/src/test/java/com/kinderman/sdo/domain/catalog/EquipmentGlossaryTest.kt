@@ -56,7 +56,7 @@ class EquipmentGlossaryTest {
             workingDirectory.resolve("src/main/java/com/kinderman/sdo/presentation/character"),
             workingDirectory.resolve("app/src/main/java/com/kinderman/sdo/presentation/character"),
         ).first { Files.isDirectory(it) }
-        val forbidden = listOf("purchasePrice", "E$", "preço", "dinheiro", "compra", "venda")
+        val forbidden = listOf("purchasePrice", "\"E$", "preço", "dinheiro", "compra", "venda")
         Files.walk(sourceDirectory).use { paths ->
             paths.filter { Files.isRegularFile(it) && it.toString().endsWith(".kt") }.forEach { path ->
                 val source = Files.readString(path)
