@@ -651,7 +651,6 @@ private fun StrictItemBuilderDialog(
                         selectedEffects.forEach { effect -> Text("• $effect", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
                     }
                     if (initialCreation) Text("CUSTO // ${built.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary)
-                    Text("PREÇO // E$ ${built.price}", color = MaterialTheme.colorScheme.primary)
                     Text("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
                     Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     built.agilityLimit?.let { Text("LIMITE DE AGILIDADE // $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -704,7 +703,6 @@ private fun ItemPartStats(part: ItemPart, showHeritageCost: Boolean, includeProt
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.bodySmall,
     )
-    Text("PREÇO DE REFERÊNCIA // E$ ${part.price}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     if (showHeritageCost) Text("CUSTO // ${part.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
 }
 
@@ -716,7 +714,6 @@ private fun QualityDetails(quality: ItemQuality, weapon: Boolean, showHeritageCo
     ) {
         Text("EFEITO DA QUALIDADE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         Text(ItemCreationRules.qualityEffect(quality, armor = !weapon) ?: "Funcionamento padrão, sem bônus adicionais.")
-        Text("MULTIPLICADOR DE PREÇO // ×${quality.priceMultiplier}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         if (showHeritageCost) Text("AJUSTE DE CUSTO // ${signed(quality.creationAdjustment)} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
     }
 }
