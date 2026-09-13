@@ -196,8 +196,32 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
 
 @Composable
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("11", "Corpo e armadura")
+    var equipmentRegionIndex by remember(character.id) { mutableStateOf<Int?>(null) }
+    val regions = character.canonicalBodyState().regions
+    com.kinderman.sdo.ui.CollapsibleSection("Corpo e armadura") {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            regions.forEachIndexed { index, _ ->
+                BodyRegionSection(
+                    character = character,
+                    index = index,
+                    enabled = enabled,
+                    onChange = onChange,
+                    onSelectEquipment = { equipmentRegionIndex = index },
+                )
+            }
+        }
+    }
+    equipmentRegionIndex?.let { index ->
+        val region = regions.getOrNull(index)
+        if (region != null) EquipmentPickerDialog(
+            regionName = region.name,
+            inventory = character.inventory,
+            selectedIds = region.equippedItemIds.mapTo(mutableSetOf()) { it.value },
+            onDismiss = { equipmentRegionIndex = null },
+        ) { selectedIds ->
+            onChange(character.equipItems(index, selectedIds))
+            equipmentRegionIndex = null
+        }
     }
 }
 

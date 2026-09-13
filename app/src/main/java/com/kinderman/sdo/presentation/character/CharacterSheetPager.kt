@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -27,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.canonicalBodyState
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.UserSession
@@ -169,7 +167,6 @@ private fun SheetPageContent(
     scrollState: LazyListState,
     saveError: String?,
 ) {
-    var equipmentRegionIndex by remember(character.id) { mutableStateOf<Int?>(null) }
     LazyColumn(
         Modifier.fillMaxSize(),
         state = scrollState,
@@ -219,19 +216,6 @@ private fun SheetPageContent(
 
             SheetPage.BODY -> {
                 item("body") { BodySection(character, editable, onChange) }
-                val canonicalRegions = character.canonicalBodyState().regions
-                itemsIndexed(
-                    items = canonicalRegions,
-                    key = { index, region -> "body-${region.roll}-${region.name}-$index" },
-                ) { index, _ ->
-                    BodyRegionSection(
-                        character = character,
-                        index = index,
-                        enabled = editable,
-                        onChange = onChange,
-                        onSelectEquipment = { equipmentRegionIndex = index },
-                    )
-                }
                 item("organs") { com.kinderman.sdo.ui.CollapsibleSection("Órgãos") { OrganSection(character, editable, onChange) } }
             }
 
@@ -241,20 +225,6 @@ private fun SheetPageContent(
             }
 
             SheetPage.NOTES -> item("notes") { com.kinderman.sdo.ui.CollapsibleSection("Anotações") { NotesSection(character, editable, onChange) } }
-        }
-    }
-    if (page == SheetPage.BODY) equipmentRegionIndex?.let { index ->
-        val region = runCatching { character.canonicalBodyState().regions.getOrNull(index) }.getOrNull()
-        if (region != null) {
-            EquipmentPickerDialog(
-                regionName = region.name,
-                inventory = character.inventory,
-                selectedIds = region.equippedItemIds.mapTo(mutableSetOf()) { it.value },
-                onDismiss = { equipmentRegionIndex = null },
-            ) { selectedIds ->
-                onChange(character.equipItems(index, selectedIds))
-                equipmentRegionIndex = null
-            }
         }
     }
 }
