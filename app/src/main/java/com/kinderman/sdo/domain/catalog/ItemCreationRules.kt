@@ -33,6 +33,7 @@ object ItemCreationRules {
             }
 
     val gemComponents = CanonicalItemCatalog.gems.map { it.part }
+    val technologyComponents = CanonicalItemCatalog.technologies.map { it.part }
 
     fun build(
         base: ItemPart,
@@ -43,14 +44,16 @@ object ItemCreationRules {
         customName: String = "",
         quality: ItemQuality = ItemQuality.COMMON,
         components: List<ItemPart> = emptyList(),
+        technologies: List<ItemPart> = emptyList(),
         priceOverride: Int? = null,
     ): BuiltItem {
         val installedComponents = if (quality == ItemQuality.MUNDANE) emptyList() else components
         require(installedComponents.size <= gemSlots) { "Cada Gema selecionada precisa de um Espaço de Gema." }
+        require(technologies.size <= technologySlots) { "Cada melhoria selecionada precisa de um Espaço de Tecnologia." }
         val effectiveGemSlots = if (quality == ItemQuality.MUNDANE) 0 else gemSlots
         val effectiveTechnologySlots = if (quality == ItemQuality.MUNDANE) 0 else technologySlots
         val numericCosts = listOf(base.creationCost, material.creationCost) +
-            modifications.map { it.creationCost } + installedComponents.map { it.creationCost }
+            modifications.map { it.creationCost } + installedComponents.map { it.creationCost } + technologies.map { it.creationCost }
         val componentCost = if (numericCosts.any { it == null }) null else
             numericCosts.filterNotNull().sum() + effectiveGemSlots + effectiveTechnologySlots * 2
         val creationCost = componentCost?.let { (it + quality.creationAdjustment).coerceAtLeast(0) }
@@ -79,19 +82,12 @@ object ItemCreationRules {
             else -> 0
         } }
         val details = buildList {
-            add("Material predominante: ${material.name}.")
-            add("Partes e camadas seguem o molde de ${base.name}; ligas da mesma família usam um único material predominante.")
-            add("Qualidade: ${quality.label}.")
-            if (pg > 0 || pl > 0) add("PG $pg; PL $pl.")
             add(base.effect)
             if (material.effect.isNotBlank()) add(material.effect)
-            modifications.forEach { add("${it.name}: ${it.effect}") }
-            installedComponents.forEach { add("${it.name}: ${it.effect}") }
-            if (effectiveGemSlots > 0) add("Espaços de Gema: $effectiveGemSlots.")
-            if (effectiveTechnologySlots > 0) add("Espaços de Tecnologia: $effectiveTechnologySlots.")
+            modifications.forEach { add(it.effect) }
+            installedComponents.forEach { add(it.effect) }
+            technologies.forEach { add(it.effect) }
             qualityEffect(quality, armor)?.let(::add)
-            add("Complexidade: ${complexity(creationCost)}.")
-            if (creationCost == null) add("Custo da Criação: #; exige permissão do Historiador.")
         }.filter(String::isNotBlank).joinToString("\n")
         val referencePrice = componentCost?.let(::standardPrice)?.let { (it * quality.priceMultiplier).roundToInt() } ?: 0
         return BuiltItem(
@@ -111,7 +107,10 @@ object ItemCreationRules {
             materialId = material.id,
             modificationIds = modifications.map { it.id },
             gemIds = installedComponents.map { it.id },
-            mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id)) +
+            technologyIds = technologies.map { it.id },
+            gemSlots = effectiveGemSlots,
+            technologySlots = effectiveTechnologySlots,
+            mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id), technologies.map(ItemPart::id)) +
                 equipmentEffects(base.id, pg, pl, baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) }, quality, armor, isShield = base.group == "Escudo"))
                 .distinctBy(ItemEffect::id),
         )
@@ -180,9 +179,10 @@ object ItemCreationRules {
     internal fun inventoryTemplate(catalogEntryId: String): BuiltItem? =
         catalogBundle.inventoryTemplates[catalogEntryId]
 
-    internal fun componentEffects(modificationIds: List<String>, gemIds: List<String>) =
+    internal fun componentEffects(modificationIds: List<String>, gemIds: List<String>, technologyIds: List<String> = emptyList()) =
         (CanonicalItemCatalog.modifications.filter { it.part.id in modificationIds }.map { it.effect } +
-            CanonicalItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect })
+            CanonicalItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect } +
+            CanonicalItemCatalog.technologies.filter { it.part.id in technologyIds }.map { it.effect })
             .distinctBy { it.id }
 
     private fun equipmentEffects(baseId: String, pg: Int, pl: Int, agilityLimit: Int?, quality: ItemQuality, armor: Boolean, isShield: Boolean = false) = buildList {

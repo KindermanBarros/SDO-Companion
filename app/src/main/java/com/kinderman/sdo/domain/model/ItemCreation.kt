@@ -29,6 +29,7 @@ data class ItemCreationDraft(
     val quality: ItemQuality = ItemQuality.COMMON,
     val modificationIds: List<String> = emptyList(),
     val gemIds: List<String> = emptyList(),
+    val technologyIds: List<String> = emptyList(),
     val gemSlots: Int = 0,
     val technologySlots: Int = 0,
     val customName: String = "",
@@ -163,7 +164,31 @@ fun Character.addInventoryItem(item: InventoryItem): Character {
         if (effect.target != "*" || effect.resolvedTargetId.isNotBlank() || targets.isEmpty()) effect
         else effect.copy(resolvedTargetId = targets[Math.floorMod("${itemWithDurability.id}:${effect.id}".hashCode(), targets.size)])
     })
-    return copy(inventory = inventory + resolved).synchronizeItemPowers()
+    val ammunitionName = when (resolved.baseId) {
+        "arco_curto", "arco_longo", "arco_composto" -> "Flechas padrão"
+        "besta_leve", "besta_pesada", "besta_repeticao", "lancadora" -> "Virotes padrão"
+        "pistola_vapor", "rifle_vapor", "fuzil_vapor", "estilhacadora" -> "Projéteis de vapor padrão"
+        "pistola_tesla", "rifle_tesla", "fuzil_tesla" -> "Bobinas Tesla padrão"
+        "lanca_chamas" -> "Cargas incendiárias padrão"
+        "canhao_acido" -> "Cápsulas ácidas padrão"
+        "lanca_granadas" -> "Granadas padrão"
+        else -> null
+    }
+    val ammunition = ammunitionName?.let { name ->
+        InventoryItem(
+            name = name,
+            category = "Munição",
+            quantity = 10,
+            load = 1,
+            durabilityCurrent = 1,
+            durabilityMax = 1,
+            effect = "Munição compatível com ${resolved.name}.",
+            catalogEntryId = "ammo.standard.${resolved.baseId}",
+            canonical = true,
+            acquisitionSource = resolved.acquisitionSource,
+        )
+    }
+    return copy(inventory = inventory + resolved + listOfNotNull(ammunition)).synchronizeItemPowers()
 }
 
 fun Character.withItemInventoryState(itemId: String, state: InventoryState): Character {
@@ -313,6 +338,9 @@ data class BuiltItem(
     val materialId: String = "",
     val modificationIds: List<String> = emptyList(),
     val gemIds: List<String> = emptyList(),
+    val technologyIds: List<String> = emptyList(),
+    val gemSlots: Int = 0,
+    val technologySlots: Int = 0,
     val mechanicalEffects: List<ItemEffect> = emptyList(),
 ) {
     fun toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
@@ -323,19 +351,20 @@ data class BuiltItem(
         durabilityMax = durability.coerceAtLeast(1),
         itemCondition = ItemCondition.NORMAL,
         region = region,
-        effect = listOfNotNull(
-            "Categoria: $category",
-            effect.takeIf(String::isNotBlank),
-        ).joinToString("\n"),
+        effect = effect,
         pg = pg,
         pl = pl,
         category = category,
         agilityLimit = agilityLimit,
         quality = quality,
+        quantity = if (category.equals("Munição", true)) 10 else 0,
         baseId = baseId,
         materialId = materialId,
         modificationIds = modificationIds,
         gemIds = gemIds,
+        technologyIds = technologyIds,
+        gemSlots = gemSlots,
+        technologySlots = technologySlots,
         mechanicalEffects = mechanicalEffects,
         dataVersion = CURRENT_ITEM_DATA_VERSION,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
@@ -344,7 +373,7 @@ data class BuiltItem(
     )
 }
 
-const val CURRENT_ITEM_DATA_VERSION = 5
+const val CURRENT_ITEM_DATA_VERSION = 6
 
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 

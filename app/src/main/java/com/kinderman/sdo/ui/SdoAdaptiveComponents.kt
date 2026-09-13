@@ -1,12 +1,13 @@
 package com.kinderman.sdo.ui
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -39,7 +40,7 @@ fun AdaptiveActionLabel(text: String, color: Color = MaterialTheme.colorScheme.p
 }
 
 @Composable
-fun CollapsibleSection(title: String, content: @Composable () -> Unit) {
+fun CollapsibleSection(title: String, index: String = "", content: @Composable () -> Unit) {
     val collapsible = LocalSdoPreferences.current.collapseLongSections
     if (!collapsible) {
         content()
@@ -48,7 +49,6 @@ fun CollapsibleSection(title: String, content: @Composable () -> Unit) {
 
     var expanded by rememberSaveable(title) { mutableStateOf(false) }
     TechPanel(
-        modifier = Modifier.animateContentSize(),
         accent = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
     ) {
         Row(
@@ -59,13 +59,19 @@ fun CollapsibleSection(title: String, content: @Composable () -> Unit) {
                 }
                 .toggleable(
                     value = expanded,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
                     role = Role.Button,
                     onValueChange = { expanded = it },
                 )
                 .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+            if (index.isNotBlank()) {
+                TelemetryTag(index, if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
+                Spacer(Modifier.width(10.dp))
+            }
+            Text(title.uppercase(), modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
             Icon(
                 imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                 contentDescription = if (expanded) "Recolher $title" else "Expandir $title",
@@ -73,8 +79,10 @@ fun CollapsibleSection(title: String, content: @Composable () -> Unit) {
         }
         AnimatedVisibility(
             visible = expanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut(),
+            enter = expandVertically(animationSpec = tween(150), expandFrom = Alignment.Top) +
+                fadeIn(animationSpec = tween(90)),
+            exit = shrinkVertically(animationSpec = tween(130), shrinkTowards = Alignment.Top) +
+                fadeOut(animationSpec = tween(80)),
         ) {
             CompositionLocalProvider(
                 LocalFlattenCollapsiblePanel provides true,

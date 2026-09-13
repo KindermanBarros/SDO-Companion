@@ -366,10 +366,11 @@ fun TechPanel(
     accent: Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val compactCards = LocalSdoPreferences.current.compactCards
     if (LocalFlattenCollapsiblePanel.current) {
         CompositionLocalProvider(LocalFlattenCollapsiblePanel provides false) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
                 content = content,
             )
         }
@@ -393,8 +394,8 @@ fun TechPanel(
     ) {
         CompositionLocalProvider(LocalCollapsibleSectionTitle provides null) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(if (compactCards) 11.dp else 16.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
                 content = content,
             )
         }

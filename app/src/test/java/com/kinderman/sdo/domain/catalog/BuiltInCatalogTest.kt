@@ -9,9 +9,13 @@ import org.junit.Test
 
 class BuiltInCatalogTest {
     @Test fun containsAllPublishedExamplesAndPaths() {
-        assertEquals(100, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER })
+        assertEquals(150, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes Mágicos" })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes de Profissão e Conhecimento" })
+        assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == CombatPowerCatalog.SOURCE })
+        assertTrue(BuiltInCatalog.entries.any { it.kind == CatalogKind.POWER && it.name.startsWith("Jian //") })
+        assertTrue(BuiltInCatalog.entries.any { it.kind == CatalogKind.POWER && it.name.startsWith("Dao //") })
+        assertTrue(BuiltInCatalog.entries.any { it.kind == CatalogKind.POWER && "Ataque mágico" in it.keywords })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.MAGIC })
         assertEquals(150, BuiltInCatalog.entries.count { it.kind == CatalogKind.ASH })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.RUNE })
@@ -22,7 +26,8 @@ class BuiltInCatalogTest {
     @Test fun idsAreStableAndUnique() {
         val ids = BuiltInCatalog.entries.map { it.id }
         assertEquals(ids.size, ids.distinct().size)
-        assertTrue(ids.all { it.matches(Regex("[a-z]+(?:\\.[a-z0-9_]+)+")) })
+        val invalid = ids.filterNot { it.matches(Regex("[a-z]+(?:\\.[a-z0-9_]+)+")) }
+        assertTrue("IDs inválidos: $invalid", invalid.isEmpty())
     }
 
     @Test fun everyCatalogEntryTracksTheCurrentCanonicalRules() {

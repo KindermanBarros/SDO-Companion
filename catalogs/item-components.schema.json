@@ -7,7 +7,7 @@
   "properties": {
     "schemaVersion": { "const": 1 },
     "catalogVersion": { "type": "integer", "minimum": 1 },
-    "kind": { "enum": ["GEM", "MODIFICATION"] },
+    "kind": { "enum": ["GEM", "MODIFICATION", "TECHNOLOGY"] },
     "entries": {
       "type": "array",
       "items": {

@@ -69,7 +69,6 @@ internal fun CharacterSheetPager(
     session: UserSession,
     catalog: List<CatalogEntry>,
     editable: Boolean,
-    showCalculationAudit: Boolean,
     onChange: (Character) -> Unit,
     modifier: Modifier = Modifier,
     saveError: String? = null,
@@ -111,7 +110,6 @@ internal fun CharacterSheetPager(
                 session = session,
                 catalog = catalog,
                 editable = editable,
-                showCalculationAudit = showCalculationAudit,
                 onChange = onChange,
                 scrollState = pageScrollStates[pageIndex],
                 saveError = saveError,
@@ -231,44 +229,43 @@ private fun SheetPageContent(
     session: UserSession,
     catalog: List<CatalogEntry>,
     editable: Boolean,
-    showCalculationAudit: Boolean,
     onChange: (Character) -> Unit,
     scrollState: LazyListState,
     saveError: String?,
 ) {
+    val compactCards = com.kinderman.sdo.ui.LocalSdoPreferences.current.compactCards
     LazyColumn(
         Modifier.fillMaxSize(),
         state = scrollState,
-        contentPadding = PaddingValues(14.dp),
-        verticalArrangement = Arrangement.spacedBy(13.dp),
+        contentPadding = PaddingValues(if (compactCards) 9.dp else 14.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compactCards) 8.dp else 13.dp),
     ) {
         when (page) {
             SheetPage.PROFILE -> {
                 item("hero") { SheetHero(character, session, saveError) }
-                item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade") { IdentitySection(character, catalog, editable, onChange) } }
-                item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos") { ResourceSection(character, editable, onChange) } }
-                item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços") { TraitSection(character, editable, onChange) } }
+                item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade", "01") { IdentitySection(character, catalog, editable, onChange) } }
+                item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
+                item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços", "03") { TraitSection(character, editable, onChange) } }
             }
 
             SheetPage.APTITUDES -> {
-                item("attributes") { com.kinderman.sdo.ui.CollapsibleSection("Atributos") { AttributeSection(character, editable, onChange) } }
-                item("knowledge") { com.kinderman.sdo.ui.CollapsibleSection("Conhecimentos") { PhaseOneKnowledgeSection(character, catalog, editable, onChange) } }
-                item("protection") { com.kinderman.sdo.ui.CollapsibleSection("Proteções") { ProtectionSection(character, editable, onChange) } }
-                if (showCalculationAudit) item("calculation-audit") { com.kinderman.sdo.ui.CollapsibleSection("Auditoria de valores") { CalculatedValuesAuditSection(character) } }
+                item("attributes") { com.kinderman.sdo.ui.CollapsibleSection("Atributos e conhecimentos", "04") { AttributeSection(character, editable, onChange) } }
+                item("knowledge") { com.kinderman.sdo.ui.CollapsibleSection("Conhecimentos especiais", "05") { PhaseOneKnowledgeSection(character, catalog, editable, onChange) } }
+                item("protection") { com.kinderman.sdo.ui.CollapsibleSection("Proteções", "06") { ProtectionSection(character, editable, onChange) } }
             }
 
             SheetPage.PATH -> item("path") {
-                com.kinderman.sdo.ui.CollapsibleSection("Caminho") { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, editable, onChange) }
+                com.kinderman.sdo.ui.CollapsibleSection("Caminho", "07") { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, editable, onChange) }
             }
 
             SheetPage.POWERS -> item("powers") {
-                com.kinderman.sdo.ui.CollapsibleSection("Poderes") {
+                com.kinderman.sdo.ui.CollapsibleSection("Poderes", "08") {
                     CanonicalAbilitySection(character, catalog.filter { it.kind == CatalogKind.POWER }, setOf(AbilityKind.POWER), editable, onChange)
                 }
             }
 
             SheetPage.MYSTIC -> item("mystic") {
-                com.kinderman.sdo.ui.CollapsibleSection("Habilidades — Místicas") {
+                com.kinderman.sdo.ui.CollapsibleSection("Magias // Runas // Cinzas", "09") {
                     CanonicalAbilitySection(
                         character,
                         catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE },
@@ -280,22 +277,22 @@ private fun SheetPageContent(
             }
 
             SheetPage.INVENTORY -> item("inventory") {
-                com.kinderman.sdo.ui.CollapsibleSection("Inventário") { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, editable, onChange) }
+                com.kinderman.sdo.ui.CollapsibleSection("Inventário", "10") { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, editable, onChange) }
             }
 
             SheetPage.BODY -> {
                 item("body") { BodySection(character, editable, onChange) }
-                item("organs") { com.kinderman.sdo.ui.CollapsibleSection("Órgãos") { OrganSection(character, editable, onChange) } }
+                item("organs") { com.kinderman.sdo.ui.CollapsibleSection("Órgãos", "12") { OrganSection(character, editable, onChange) } }
             }
 
             SheetPage.RECORD -> {
-                item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições") { ConditionSection(character, editable, onChange) } }
+                item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições", "13") { ConditionSection(character, editable, onChange) } }
             }
 
-            SheetPage.NOTES -> item("notes") { com.kinderman.sdo.ui.CollapsibleSection("Anotações") { NotesSection(character, editable, onChange) } }
+            SheetPage.NOTES -> item("notes") { com.kinderman.sdo.ui.CollapsibleSection("Registros pessoais", "14") { NotesSection(character, editable, onChange) } }
 
             SheetPage.HISTORY -> item("narrative") {
-                com.kinderman.sdo.ui.CollapsibleSection("História") { NarrativeSection(character, editable, onChange) }
+                com.kinderman.sdo.ui.CollapsibleSection("História", "15") { NarrativeSection(character, editable, onChange) }
             }
         }
     }

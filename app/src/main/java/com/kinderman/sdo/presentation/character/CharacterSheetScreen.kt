@@ -65,7 +65,6 @@ fun CharacterSheetScreen(
     saveError: String? = null,
     isCampaignHistorian: Boolean = false,
     isCampaignResponsible: Boolean = false,
-    showCalculationAudit: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
     onOpenSession: (String) -> Unit,
@@ -177,7 +176,6 @@ fun CharacterSheetScreen(
                 session = session,
                 catalog = catalog,
                 editable = editable,
-                showCalculationAudit = showCalculationAudit,
                 onChange = changeCharacter,
                 modifier = Modifier.padding(padding).fillMaxSize(),
             )
