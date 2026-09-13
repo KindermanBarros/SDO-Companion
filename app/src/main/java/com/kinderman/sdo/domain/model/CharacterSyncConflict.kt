@@ -22,13 +22,13 @@ const val MAX_AUTOMATIC_CONFLICT_FIELDS = 5
  * Returns the online fields to select for a small last-write-wins conflict.
  *
  * Character documents currently carry one write timestamp, so every conflicting field from
- * the most recently written document wins together. Equal timestamps prefer the online copy;
- * this deterministic tie-break prevents the same conflict from being offered repeatedly.
+ * the most recently written document wins together. Equal timestamps preserve the local copy,
+ * avoiding the loss of an edit made at the same instant as the online write.
  * Large conflicts remain explicit because they are more likely to contain unrelated edits.
  */
 fun automaticRemoteFieldIds(conflict: CharacterSyncConflict): Set<String>? {
     if (conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS) return null
-    return if (conflict.remoteUpdatedAt >= conflict.local.updatedAt) {
+    return if (conflict.remoteUpdatedAt > conflict.local.updatedAt) {
         conflict.fields.mapTo(mutableSetOf(), CharacterConflictField::id)
     } else {
         emptySet()
