@@ -363,15 +363,24 @@ class OfflineFirstCampaignRepository(
             }
         }
 
-        val manageableIds = dao.allCampaigns()
-            .filter { it.state != CampaignState.DELETED.name && (session.isAdmin || it.ownerId == session.uid) }
+        val readableIds = dao.allCampaigns()
+            .filter { record ->
+                record.state != CampaignState.DELETED.name && (
+                    session.isAdmin ||
+                        record.ownerId == session.uid ||
+                        dao.member(record.id, session.uid)?.state == CampaignMemberState.ACTIVE.name
+                    )
+            }
             .mapTo(mutableSetOf()) { it.id }
-        manageableIds.forEach { campaignId ->
+        val writableIds = dao.allCampaigns()
+            .filter { record -> session.isAdmin || record.ownerId == session.uid }
+            .mapTo(hashSetOf()) { it.id }
+        readableIds.forEach { campaignId ->
             members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
                 document.toObject(CampaignMemberRecord::class.java)
             }.forEach { remote ->
                 val migrated = if (remote.role != CampaignRole.PLAYER.name) remote.copy(role = CampaignRole.PLAYER.name) else remote
-                if (remote.role != CampaignRole.PLAYER.name) {
+                if (campaignId in writableIds && remote.role != CampaignRole.PLAYER.name) {
                     members.document(memberId(remote.campaignId, remote.userId))
                         .set(migrated.copy(dirty = false), SetOptions.merge()).await()
                 }
