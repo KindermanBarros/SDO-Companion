@@ -277,7 +277,7 @@ internal fun PhaseOneStrictInventorySection(
             },
         )
         "initial_catalog" -> ItemCatalogDialog(
-            title = "LOJA INICIAL // ITENS PRONTOS",
+            title = "EQUIPAMENTOS INICIAIS // ITENS PRONTOS",
             entries = itemCatalog,
             remainingHeritage = remainingHeritage,
             onDismiss = { dialog = null },

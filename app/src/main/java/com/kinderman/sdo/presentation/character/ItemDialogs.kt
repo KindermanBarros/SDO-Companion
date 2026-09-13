@@ -50,7 +50,7 @@ internal fun InitialShopDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("LOJA INICIAL // $remainingHeritage PH") },
+        title = { Text("EQUIPAMENTOS INICIAIS // $remainingHeritage PH") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -255,7 +255,7 @@ internal fun ItemBuilderDialog(
                             gemSlots = gemSlots.coerceAtLeast(gems.size)
                         })
                         Column(Modifier.padding(top = 8.dp)) {
-                            Text("${gem.name} // ${gem.creationCost} PH", color = MaterialTheme.colorScheme.onSurface)
+                            Text(if (initialCreation) "${gem.name} // ${gem.creationCost} PH" else gem.name, color = MaterialTheme.colorScheme.onSurface)
                             Text(gem.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                     }

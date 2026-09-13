@@ -72,16 +72,13 @@ internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, 
         ChoiceField("Gênero", character.sex.takeIf { it in listOf("Masculino", "Feminino", "N/A") } ?: "N/A", listOf("Masculino", "Feminino", "N/A"), enabled) {
             onChange(character.copy(sex = it))
         }
-        TwoFields(
-            { if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 IconButton(onClick = { onChange(character.copy(level = (character.level - 1).coerceAtLeast(1))) }, enabled = enabled && character.level > 1) {
                     Icon(Icons.Default.Remove, "Diminuir nível")
                 }
                 Text("NÍVEL ${character.level}", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp))
                 IconButton(onClick = { selectingLevel = true }, enabled = enabled) { Icon(Icons.Default.Add, "Aumentar nível") }
-            } },
-            { IntegerField("Dinheiro (E$)", character.money, enabled, it) { value -> onChange(character.copy(money = value)) } },
-        )
+            }
     }
     if (selectingRace) RacePickerDialog(character, { selectingRace = false }) { race, subRace, attribute, basePowers, subRacePower ->
         onChange(character.withRaceSelection(race, subRace, attribute, basePowers, subRacePower))

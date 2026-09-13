@@ -142,7 +142,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         }
         AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
         if (remainingHeritage > 0) {
-            AddButton("Loja inicial // comprar ou construir com PH", enabled) { dialog = "initial" }
+            AddButton("Equipamentos iniciais // escolher ou construir", enabled) { dialog = "initial" }
         }
         if (remainingHeritage == 0) {
             AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
@@ -167,7 +167,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
             onChange(character.addInventoryItem(item))
             dialog = null
         }
-        "initial_catalog" -> ItemCatalogDialog("LOJA INICIAL // ITENS PRONTOS", catalog, remainingHeritage, { dialog = "initial" }) { item ->
+        "initial_catalog" -> ItemCatalogDialog("EQUIPAMENTOS INICIAIS // ITENS PRONTOS", catalog, remainingHeritage, { dialog = "initial" }) { item ->
             onChange(character.addInventoryItem(item))
             dialog = null
         }
