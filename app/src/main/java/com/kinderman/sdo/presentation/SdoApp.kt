@@ -25,6 +25,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.MainActivity
 import com.kinderman.sdo.SdoApplication
@@ -100,14 +102,16 @@ fun SdoApp(
         selectedId = previous?.substringAfter('|')?.takeIf(String::isNotBlank)
     }
 
-    LaunchedEffect(authenticatedSession, demo) {
+    LaunchedEffect(authenticatedSession, demo, preferences.autoSync) {
+        appViewModel.setAutomaticSync(preferences.autoSync)
         when {
             demo -> appViewModel.setDemoSession()
             authenticatedSession != null -> appViewModel.setSession(authenticatedSession!!)
             else -> appViewModel.clearSession()
         }
     }
-    LaunchedEffect(preferences.autoSync) { appViewModel.setAutomaticSync(preferences.autoSync) }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { appViewModel.onAppForegrounded() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { appViewModel.onAppBackgrounded() }
     LaunchedEffect(message) {
         message?.let {
             snackbar.showSnackbar(it)
@@ -128,7 +132,7 @@ fun SdoApp(
             onDemo = { demo = true },
         )
 
-        appSession == null || characterLoadState.initialLoading ->
+        appSession == null ->
             CyberLoadingScreen(CyberLoadingMode.CHARACTERS)
 
         else -> {
@@ -208,7 +212,12 @@ fun SdoApp(
                     isCampaignResponsible = isCampaignResponsible,
                     snackbarHost = { SnackbarHost(snackbar) },
                     onBack = { goBack() },
+                    onClose = {
+                        appViewModel.closeCharacter(it)
+                        goBack()
+                    },
                     onOpenSession = {
+                        selectedCharacter?.let(appViewModel::closeCharacter)
                         navigate(AppSurface.SESSION, it)
                     },
                     onSave = appViewModel::save,

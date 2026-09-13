@@ -24,7 +24,10 @@ import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import java.security.SecureRandom
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -39,18 +42,23 @@ class OfflineFirstCampaignRepository(
     override fun observe(session: UserSession): Flow<List<Campaign>> =
         (if (session.isAdmin) dao.observeAll() else dao.observeForUser(session.uid))
             .map { values -> values.map(CampaignRecord::toDomain).filterNot(Campaign::isDeleted) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeMembers(campaignId: String): Flow<List<CampaignMember>> =
         dao.observeMembers(campaignId).map { values -> values.map(CampaignMemberRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeMemberships(session: UserSession): Flow<List<CampaignMember>> =
         dao.observeMemberships(session.uid).map { values -> values.map(CampaignMemberRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeInvites(campaignId: String): Flow<List<CampaignInvite>> =
         dao.observeInvites(campaignId).map { values -> values.map(CampaignInviteRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeAllInvites(): Flow<List<CampaignInvite>> =
         dao.observeAllInvites().map { values -> values.map(CampaignInviteRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override suspend fun create(session: UserSession, name: String, description: String): Campaign {
         val now = System.currentTimeMillis()

@@ -31,7 +31,10 @@ import com.kinderman.sdo.domain.model.applySessionCommand
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 
 class OfflineFirstOperationsRepository(
@@ -40,15 +43,19 @@ class OfflineFirstOperationsRepository(
 ) : OperationsRepository {
     override fun observeAudit(campaignIds: Set<String>): Flow<List<SessionOperation>> =
         dao.observeAudit(campaignIds.ifEmpty { setOf("") }).map { it.map(SessionOperationRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeLibrary(campaignIds: Set<String>): Flow<List<CampaignLibraryEntry>> =
         dao.observeLibrary(campaignIds).map { it.map(CampaignLibraryRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeDeliveries(session: UserSession, campaignIds: Set<String>): Flow<List<CampaignDelivery>> =
         dao.observeDeliveries(session.uid, campaignIds).map { it.map(CampaignDeliveryRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override fun observeAlertSettings(campaignIds: Set<String>): Flow<List<CampaignAlertSettings>> =
         dao.observeAlertSettings(campaignIds).map { it.map(CampaignAlertSettingsRecord::toDomain) }
+            .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override suspend fun apply(session: UserSession, character: Character, command: SessionCommand): Boolean {
         val mutation = character.applySessionCommand(command, session.uid)

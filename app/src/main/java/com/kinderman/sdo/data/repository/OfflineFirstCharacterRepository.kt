@@ -25,7 +25,10 @@ import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -52,6 +55,8 @@ class OfflineFirstCharacterRepository(
                     migrated.toDomain()
                 }
             }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.Default)
 
     override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { record ->
         record?.let {
@@ -59,7 +64,7 @@ class OfflineFirstCharacterRepository(
             if (migrated != it) dao.upsert(migrated)
             migrated.toDomain()
         }
-    }
+    }.distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override suspend fun create(session: UserSession, ownerId: String, campaignId: String): Character {
         val normalizedCampaignId = normalizeCampaignId(campaignId)

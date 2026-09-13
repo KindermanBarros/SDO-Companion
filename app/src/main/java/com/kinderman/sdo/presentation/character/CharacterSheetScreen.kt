@@ -67,6 +67,7 @@ fun CharacterSheetScreen(
     isCampaignResponsible: Boolean = false,
     snackbarHost: @Composable () -> Unit,
     onBack: () -> Unit,
+    onClose: (Character) -> Unit,
     onOpenSession: (String) -> Unit,
     onSave: (Character) -> Unit,
     onAutosave: (Character) -> Unit,
@@ -89,7 +90,7 @@ fun CharacterSheetScreen(
     val canChangePlayerLock = !readOnly &&
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
     val canLeaveCreation = !current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()
-    BackHandler { if (canLeaveCreation) onBack() }
+    BackHandler { if (canLeaveCreation) onClose(current) }
 
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
@@ -124,7 +125,7 @@ fun CharacterSheetScreen(
                             )
                         }
                     },
-                    navigationIcon = { IconButton(onClick = onBack, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                    navigationIcon = { IconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
                         IconButton({ onOpenSession(current.id) }) {
                             Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
