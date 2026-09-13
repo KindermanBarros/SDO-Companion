@@ -328,21 +328,26 @@ class AppViewModel(
 
     private suspend fun persistLocally(character: Character, notify: Boolean) {
         val session = currentSession.value ?: return
-        runCatching { localSaveMutex.withLock { saveCharacter(session, character) } }
-            .onSuccess {
-                _saveErrors.value = _saveErrors.value - character.id
-                if (notify) _message.value = "Ficha salva localmente"
-                if (automaticSync) scheduleRemoteSync()
-            }
-            .onFailure {
-                val error = userMessage(it, "Falha ao salvar ficha localmente")
-                _saveErrors.value = _saveErrors.value + (character.id to error)
-                _message.value = error
-            }
+        try {
+            localSaveMutex.withLock { saveCharacter(session, character) }
+            _saveErrors.value = _saveErrors.value - character.id
+            if (notify) _message.value = "Ficha salva localmente"
+            if (automaticSync) scheduleRemoteSync()
+        } catch (cancelled: CancellationException) {
+            // Superseding an autosave is normal while the player is editing.
+            throw cancelled
+        } catch (error: Throwable) {
+            val message = userMessage(error, "Falha ao salvar ficha localmente")
+            _saveErrors.value = _saveErrors.value + (character.id to message)
+            _message.value = message
+        }
     }
 
     private suspend fun flushPendingAutosave(characterId: String, scheduleRemote: Boolean = true) {
-        autosaveJobs.remove(characterId)?.cancel()
+        // This function is normally called by the autosave job itself. Removing its
+        // reference is enough; cancelling it here interrupts the save and surfaces a
+        // misleading "was canceled" snackbar to the user.
+        autosaveJobs.remove(characterId)
         val character = pendingAutosaves.remove(characterId) ?: return
         persistLocally(character, notify = false)
         if (!scheduleRemote) remoteSyncDebounceJob?.cancel()
