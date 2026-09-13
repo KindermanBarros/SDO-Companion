@@ -163,6 +163,7 @@ data class InventoryItem(
     val canonical: Boolean = false,
     val baseId: String = "",
     val materialId: String = "",
+    val secondaryMaterialId: String = "",
     val modificationIds: List<String> = emptyList(),
     val gemIds: List<String> = emptyList(),
     val technologyIds: List<String> = emptyList(),

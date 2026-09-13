@@ -91,6 +91,35 @@ class ItemCreationRulesTest {
         assertEquals(1, armor.damageReduction)
     }
 
+    @Test fun alloyCombinesTwoDifferentMaterialsAndPersistsComposition() {
+        val common = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
+        val ferrite = ItemCreationRules.weaponMaterials.first { it.id == "ferrita_rubra" }
+        val alloy = ItemCreationRules.mixMaterials(common, ferrite)
+
+        assertEquals(6, alloy.creationCost)
+        assertEquals(7, alloy.durability)
+        assertEquals(1, alloy.damageBonus)
+        assertEquals(listOf("impactante"), alloy.traitIds)
+
+        val built = ItemCreationRules.build(
+            base = ItemCreationRules.weaponBases.first { it.id == "adaga" },
+            material = common,
+            secondaryMaterial = ferrite,
+            modifications = emptyList(),
+            gemSlots = 0,
+            technologySlots = 0,
+        )
+        val inventory = built.toInventoryItem(initialCreation = true)
+        assertEquals("ligas_comuns", inventory.materialId)
+        assertEquals("ferrita_rubra", inventory.secondaryMaterialId)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun alloyRejectsRepeatedMaterial() {
+        val material = ItemCreationRules.weaponMaterials.first { it.id == "ferrita_rubra" }
+        ItemCreationRules.mixMaterials(material, material)
+    }
+
     @Test fun everyNonCommonQualityExposesItsRuleEffect() {
         ItemQuality.entries.filterNot { it == ItemQuality.COMMON }.forEach { quality ->
             assertTrue(ItemCreationRules.qualityEffect(quality, armor = false).orEmpty().isNotBlank())

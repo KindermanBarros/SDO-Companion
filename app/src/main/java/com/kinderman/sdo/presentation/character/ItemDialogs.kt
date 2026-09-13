@@ -146,6 +146,7 @@ internal fun ItemBuilderDialog(
     var weapon by remember { mutableStateOf(true) }
     var base by remember { mutableStateOf(ItemCreationRules.weaponBases.first()) }
     var material by remember { mutableStateOf(ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }) }
+    var secondaryMaterial by remember { mutableStateOf<ItemPart?>(null) }
     var modifications by remember { mutableStateOf(emptyList<ItemPart>()) }
     var gemSlots by remember { mutableIntStateOf(0) }
     var technologySlots by remember { mutableIntStateOf(0) }
@@ -161,9 +162,11 @@ internal fun ItemBuilderDialog(
     }
     val initialCreation = remainingHeritage != null
     val availableMaterials = ItemCreationRules.materialsFor(allMaterials, initialCreation)
+    val availableSecondaryMaterials = availableMaterials.filter { it.id != material.id }
     val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
     val built = ItemCreationRules.build(
         base, material, modifications, gemSlots, technologySlots, customName, quality,
+        secondaryMaterial = secondaryMaterial,
         components = gems,
     )
     val allowed = remainingHeritage == null || built.creationCost != null && built.creationCost <= remainingHeritage
@@ -191,12 +194,14 @@ internal fun ItemBuilderDialog(
                         weapon = true
                         base = ItemCreationRules.weaponBases.first()
                         material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
+                        secondaryMaterial = null
                         modifications = emptyList()
                     }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
                     TextButton(onClick = {
                         weapon = false
                         base = ItemCreationRules.armorBases.first()
                         material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
+                        secondaryMaterial = null
                         modifications = emptyList()
                     }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
                 }
@@ -205,6 +210,12 @@ internal fun ItemBuilderDialog(
                 Text("MATERIAL PREDOMINANTE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text("Partes, camadas e ligas compatíveis pertencem à mesma composição; o material só é contabilizado uma vez.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
+                Text("LIGA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text("Combine um segundo material ou mantenha a composição pura.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = { picker = "secondaryMaterial" }, modifier = Modifier.fillMaxWidth()) {
+                    Text("SEGUNDO MATERIAL // ${secondaryMaterial?.name ?: "SEM MISTURA"}")
+                }
+                if (secondaryMaterial != null) TextButton(onClick = { secondaryMaterial = null }, modifier = Modifier.fillMaxWidth()) { Text("USAR MATERIAL PURO") }
                 TextButton(
                     onClick = { quality = ItemQuality.entries[(quality.ordinal + 1) % ItemQuality.entries.size] },
                     modifier = Modifier.fillMaxWidth(),
@@ -276,8 +287,16 @@ internal fun ItemBuilderDialog(
     )
 
     if (picker != null) ItemPartPickerDialog(
-        title = if (picker == "base") "SELECIONAR TIPO" else "SELECIONAR MATERIAL",
-        parts = if (picker == "base") availableBases else availableMaterials,
+        title = when (picker) {
+            "base" -> "SELECIONAR TIPO"
+            "secondaryMaterial" -> "MISTURAR SEGUNDO MATERIAL"
+            else -> "SELECIONAR MATERIAL"
+        },
+        parts = when (picker) {
+            "base" -> availableBases
+            "secondaryMaterial" -> availableSecondaryMaterials
+            else -> availableMaterials
+        },
         showHeritageCost = initialCreation,
         onDismiss = { picker = null },
     ) { part ->
@@ -287,8 +306,11 @@ internal fun ItemBuilderDialog(
             if (!weapon && part.id == "gibao") {
                 material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
             }
+        } else if (picker == "secondaryMaterial") {
+            secondaryMaterial = part
         } else {
             material = part
+            if (secondaryMaterial?.id == part.id) secondaryMaterial = null
         }
         picker = null
     }

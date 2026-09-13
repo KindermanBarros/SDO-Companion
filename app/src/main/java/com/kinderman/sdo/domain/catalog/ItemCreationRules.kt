@@ -68,6 +68,31 @@ object ItemCreationRules {
             !initialCreation || (material.creationCost != null && material.characterCreationVisible && material.materialTier != MaterialTier.ANCESTRAL.name)
         }
 
+    fun mixMaterials(primary: ItemPart, secondary: ItemPart?): ItemPart {
+        if (secondary == null) return primary
+        require(primary.id != secondary.id) { "Uma liga precisa de dois materiais diferentes." }
+        val creationCost = listOf(primary.creationCost, secondary.creationCost)
+            .takeUnless { costs -> costs.any { it == null } }
+            ?.filterNotNull()?.sum()
+        val tierOrder = listOf("", MaterialTier.COMMON.name, MaterialTier.UNCOMMON.name, MaterialTier.RARE.name, MaterialTier.ANCESTRAL.name)
+        val tier = listOf(primary.materialTier, secondary.materialTier).maxBy { tierOrder.indexOf(it) }
+        return primary.copy(
+            id = "${primary.id}+${secondary.id}",
+            name = "${primary.name} + ${secondary.name}",
+            group = "Liga ${tier.lowercase(Locale.ROOT)}",
+            creationCost = creationCost,
+            price = primary.price + secondary.price,
+            load = (primary.load + secondary.load + 1) / 2,
+            durability = (primary.durability + secondary.durability + 1) / 2,
+            agilityLimit = listOfNotNull(primary.agilityLimit, secondary.agilityLimit).minOrNull(),
+            materialTier = tier,
+            characterCreationVisible = primary.characterCreationVisible && secondary.characterCreationVisible && tier != MaterialTier.ANCESTRAL.name,
+            traitIds = (primary.traitIds + secondary.traitIds).distinct(),
+            damageBonus = (primary.damageBonus + secondary.damageBonus + 1) / 2,
+            damageReduction = (primary.damageReduction + secondary.damageReduction + 1) / 2,
+        )
+    }
+
     fun build(
         base: ItemPart,
         material: ItemPart,
@@ -79,13 +104,15 @@ object ItemCreationRules {
         components: List<ItemPart> = emptyList(),
         technologies: List<ItemPart> = emptyList(),
         priceOverride: Int? = null,
+        secondaryMaterial: ItemPart? = null,
     ): BuiltItem {
+        val effectiveMaterial = mixMaterials(material, secondaryMaterial)
         val installedComponents = if (quality == ItemQuality.MUNDANE) emptyList() else components
         require(installedComponents.size <= gemSlots) { "Cada Gema selecionada precisa de um Espaço de Gema." }
         require(technologies.size <= technologySlots) { "Cada melhoria selecionada precisa de um Espaço de Tecnologia." }
         val effectiveGemSlots = if (quality == ItemQuality.MUNDANE) 0 else gemSlots
         val effectiveTechnologySlots = if (quality == ItemQuality.MUNDANE) 0 else technologySlots
-        val numericCosts = listOf(base.creationCost, material.creationCost) +
+        val numericCosts = listOf(base.creationCost, effectiveMaterial.creationCost) +
             modifications.map { it.creationCost } + installedComponents.map { it.creationCost } + technologies.map { it.creationCost }
         val componentCost = if (numericCosts.any { it == null }) null else
             numericCosts.filterNotNull().sum() + effectiveGemSlots + effectiveTechnologySlots * 2
@@ -102,12 +129,12 @@ object ItemCreationRules {
             ItemQuality.MASTERPIECE, ItemQuality.ARTIFACT, ItemQuality.ANCIENT -> 2
             else -> 0
         } else 0
-        val rawPg = base.pg + (if (protective) material.pg + material.damageReduction else 0) + modifications.sumOf { it.pg } + qualityPg
-        val rawPl = if (quality == ItemQuality.MUNDANE) 0 else base.pl + material.pl + modifications.sumOf { it.pl } + qualityPl
-        val pg = if (armor && material.id == "sucata") rawPg / 2 else rawPg
-        val pl = if (armor && material.id == "sucata") rawPl / 2 else rawPl
+        val rawPg = base.pg + (if (protective) effectiveMaterial.pg + effectiveMaterial.damageReduction else 0) + modifications.sumOf { it.pg } + qualityPg
+        val rawPl = if (quality == ItemQuality.MUNDANE) 0 else base.pl + effectiveMaterial.pl + modifications.sumOf { it.pl } + qualityPl
+        val pg = if (armor && effectiveMaterial.id == "sucata") rawPg / 2 else rawPg
+        val pl = if (armor && effectiveMaterial.id == "sucata") rawPl / 2 else rawPl
         val baseAgilityLimit = if (base.id in setOf("jaqueta_revestida", "sapatilhas")) base.agilityLimit else
-            listOfNotNull(base.agilityLimit, material.agilityLimit).minOrNull()
+            listOfNotNull(base.agilityLimit, effectiveMaterial.agilityLimit).minOrNull()
         val agilityAdjustment = modifications.sumOf { modification -> when (modification.id) {
             "robusta" -> -1
             "ajustada" -> 1
@@ -116,7 +143,7 @@ object ItemCreationRules {
         } }
         val details = buildList {
             add(base.effect)
-            if (material.effect.isNotBlank()) add(material.effect)
+            if (effectiveMaterial.effect.isNotBlank()) add(effectiveMaterial.effect)
             modifications.forEach { add(it.effect) }
             installedComponents.forEach { add(it.effect) }
             technologies.forEach { add(it.effect) }
@@ -124,12 +151,12 @@ object ItemCreationRules {
         }.filter(String::isNotBlank).joinToString("\n")
         val referencePrice = componentCost?.let(::standardPrice)?.let { (it * quality.priceMultiplier).roundToInt() } ?: 0
         return BuiltItem(
-            name = customName.ifBlank { "${base.name} de ${material.name}" },
+            name = customName.ifBlank { "${base.name} de ${effectiveMaterial.name}" },
             category = base.group,
             creationCost = creationCost,
             price = priceOverride?.coerceAtLeast(0) ?: referencePrice,
-            load = (base.load + material.load + modifications.sumOf { it.load }).coerceAtLeast(1),
-            durability = material.durability,
+            load = (base.load + effectiveMaterial.load + modifications.sumOf { it.load }).coerceAtLeast(1),
+            durability = effectiveMaterial.durability,
             region = base.region,
             effect = details,
             pg = pg,
@@ -138,15 +165,16 @@ object ItemCreationRules {
             quality = quality,
             baseId = base.id,
             materialId = material.id,
+            secondaryMaterialId = secondaryMaterial?.id.orEmpty(),
             modificationIds = modifications.map { it.id },
             gemIds = installedComponents.map { it.id },
             technologyIds = technologies.map { it.id },
             gemSlots = effectiveGemSlots,
             technologySlots = effectiveTechnologySlots,
             mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id), technologies.map(ItemPart::id)) +
-                listOfNotNull(material.damageBonus.takeIf { it != 0 }?.let { bonus ->
+                listOfNotNull(effectiveMaterial.damageBonus.takeIf { it != 0 }?.let { bonus ->
                     ItemEffect(
-                        id = "material:${material.id}:damage",
+                        id = "material:${effectiveMaterial.id}:damage",
                         type = ItemEffectType.PHYSICAL_DAMAGE,
                         value = bonus,
                         condition = ItemEffectCondition.WIELDED,

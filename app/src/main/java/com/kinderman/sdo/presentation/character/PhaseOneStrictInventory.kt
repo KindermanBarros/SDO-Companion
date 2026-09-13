@@ -514,6 +514,7 @@ private fun StrictItemBuilderDialog(
     val step = draft.step
     val category = draft.category
     val weapon = category == "Arma"
+    val initialCreation = remainingHeritage != null
     val basePool: List<ItemPart> = when (category) {
         "Arma" -> ItemCreationRules.weaponBases
         "Acessório" -> ItemCreationRules.armorBases.filter { it.group == "Acessório" }
@@ -521,9 +522,14 @@ private fun StrictItemBuilderDialog(
     }
     val base: ItemPart = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.first()
     val materialPool: List<ItemPart> = if (weapon) ItemCreationRules.weaponMaterials else ItemCreationRules.armorMaterials
-    val material: ItemPart = materialPool.firstOrNull { it.id == draft.materialId }
-        ?: materialPool.firstOrNull { it.id == if (!weapon && base.id == "gibao") "organico" else "ligas_comuns" }
-        ?: materialPool.first()
+    val materials: List<ItemPart> = ItemCreationRules.materialsFor(
+        if (!weapon && base.id == "gibao") materialPool.filter { it.id == "organico" } else materialPool,
+        initialCreation,
+    )
+    val material: ItemPart = materials.firstOrNull { it.id == draft.materialId }
+        ?: materials.firstOrNull { it.id == if (!weapon && base.id == "gibao") "organico" else "ligas_comuns" }
+        ?: materials.first()
+    val secondaryMaterial: ItemPart? = materials.firstOrNull { it.id == draft.secondaryMaterialId && it.id != material.id }
     val modifications: List<ItemPart> = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
         .filter { it.id in draft.modificationIds }
     val gemSlots = draft.gemSlots
@@ -537,21 +543,16 @@ private fun StrictItemBuilderDialog(
     val commonLoad = draft.commonLoad
     val commonQuantity = draft.commonQuantity
     val commonCategory = draft.commonCategory
-    val totalSteps = if (category == "Item") 2 else 6
+    val totalSteps = if (category == "Item") 2 else 7
     val stepTitle = if (category == "Item") listOf("DADOS", "REVISÃO")[step - 1]
-        else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")[step - 1]
+        else listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")[step - 1]
 
-    val initialCreation = remainingHeritage != null
     val bases: List<ItemPart> = basePool
-    val materials: List<ItemPart> = when {
-        weapon -> ItemCreationRules.weaponMaterials
-        base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
-        else -> ItemCreationRules.armorMaterials
-    }.let { ItemCreationRules.materialsFor(it, initialCreation) }
     val availableModifications: List<ItemPart> = ItemCreationRules.compatibleModifications(base, weapon)
     val built: BuiltItem = ItemCreationRules.build(
         base = base,
         material = material,
+        secondaryMaterial = secondaryMaterial,
         modifications = modifications,
         gemSlots = gemSlots,
         technologySlots = technologySlots,
@@ -636,10 +637,22 @@ private fun StrictItemBuilderDialog(
                     ItemPartDetails("DETALHES DO TIPO", base, weapon, initialCreation)
                 }
                 if (step == 2 && category != "Item") {
-                    ChoiceField<String>("Material", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String -> onDraftChange(draft.copy(materialId = id)) }
+                    ChoiceField<String>("Material principal", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String ->
+                        onDraftChange(draft.copy(materialId = id, secondaryMaterialId = draft.secondaryMaterialId.takeUnless { it == id }.orEmpty()))
+                    }
                     ItemPartDetails("DETALHES DO MATERIAL", material, weapon, initialCreation)
                 }
                 if (step == 3 && category != "Item") {
+                    Text("COMPOSIÇÃO DA LIGA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                    Text("Use o material puro ou combine dois materiais diferentes. A liga reúne os traços e equilibra os valores dos dois.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val secondaryOptions = listOf("") + materials.filter { it.id != material.id }.map { it.id }
+                    ChoiceField<String>("Segundo material", secondaryMaterial?.id.orEmpty(), secondaryOptions, true, display = { id: String ->
+                        materials.firstOrNull { it.id == id }?.name ?: "Sem mistura — material puro"
+                    }) { id -> onDraftChange(draft.copy(secondaryMaterialId = id)) }
+                    val composition = ItemCreationRules.mixMaterials(material, secondaryMaterial)
+                    ItemPartDetails(if (secondaryMaterial == null) "COMPOSIÇÃO PURA" else "RESULTADO DA LIGA", composition, weapon, initialCreation)
+                }
+                if (step == 4 && category != "Item") {
                     ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
                     QualityDetails(quality, weapon, initialCreation)
                     if (initialCreation) Text(
@@ -647,7 +660,7 @@ private fun StrictItemBuilderDialog(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                if (step == 4 && category != "Item") {
+                if (step == 5 && category != "Item") {
                     Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     HudTextField("Filtrar por nome, grupo ou efeito", componentQuery) { componentQuery = it }
                     availableModifications.filter { modification ->
@@ -667,7 +680,7 @@ private fun StrictItemBuilderDialog(
                     }
                     }
                 }
-                if (step == 5 && category != "Item") {
+                if (step == 6 && category != "Item") {
                     TwoFields(
                         { IntegerField("Espaços de Gema", gemSlots, true, it) { value -> onDraftChange(draft.copy(gemSlots = value.coerceIn(gems.size, 5))) } },
                         { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> onDraftChange(draft.copy(technologySlots = value.coerceIn(technologies.size, 5))) } },
@@ -711,7 +724,7 @@ private fun StrictItemBuilderDialog(
                 Text("REVISE ANTES DE CRIAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
                 if (category == "Item") Text("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
-                else Text("${if (weapon) "Arma" else "Armadura / Acessório"} // ${material.name} // ${quality.label}")
+                else Text("${if (weapon) "Arma" else "Armadura / Acessório"} // ${ItemCreationRules.mixMaterials(material, secondaryMaterial).name} // ${quality.label}")
                 if (weapon) Text("EMPUNHADURA // ${built.toInventoryItem().handsRequired()} MÃO(S)")
                 if (modifications.isNotEmpty()) Text("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -757,6 +770,13 @@ private fun ItemPartDetails(title: String, part: ItemPart, weapon: Boolean, show
     ) {
         Text(title, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         Text(part.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
+        if (part.traitIds.isNotEmpty()) Text(
+            "TRAÇOS // ${part.traitIds.joinToString { it.replace('_', ' ').uppercase() }}",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        if (part.damageBonus != 0) Text("DANO // +${part.damageBonus}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (part.damageReduction != 0) Text("REDUÇÃO // +${part.damageReduction}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         ItemPartStats(part, showHeritageCost, includeProtection = false)
         if (!weapon) {
             Text("PROTEÇÃO // PG ${part.pg} // PL ${part.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
