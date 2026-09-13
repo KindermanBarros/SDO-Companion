@@ -30,8 +30,6 @@ Do not introduce older Android Views, LiveData, or callback-based Firebase APIs 
 - `catalogs/`: generated canonical JSON catalogs.
 - `tools/`: catalog generators and validators.
 - `firebase/`: Firestore rules, indexes, and rule tests.
-- `docs/`: audits and operational documentation.
-
 Read [README.md](README.md) for setup and [DESIGN_GUIDE.md](DESIGN_GUIDE.md) before UI work.
 
 ## Exact commands
@@ -53,8 +51,6 @@ python3 tools/generate_item_catalog.py --check
 # Same Android checks used for pull requests
 ./gradlew lintDebug testDebugUnitTest --build-cache --stacktrace
 
-# Debug APK
-./gradlew assembleDebug --stacktrace
 
 # Firestore rules (installs the pinned dependencies first)
 cd firebase
@@ -125,7 +121,6 @@ global administrator.
 
 - Inspect nearby code and existing tests before editing.
 - Keep changes scoped; preserve unrelated user work.
-- Use existing naming, formatting, and architecture.
 - Validate authority in code and Firebase rules, not only by hiding buttons.
 - Use one focused commit per checklist item.
 
@@ -142,7 +137,6 @@ global administrator.
 - Commit `google-services.json`, keystores, passwords, tokens, or local configuration.
 - Edit production secrets or deploy Firebase rules from an unreviewed branch.
 - Weaken Firestore rules to solve a client-side permission error.
-- Rewrite published Git history or discard unrelated changes.
 - Mark failed synchronization as successful or delete dirty local records after a failed sync.
 - Hand-edit generated catalog JSON without updating its source and generator.
 
