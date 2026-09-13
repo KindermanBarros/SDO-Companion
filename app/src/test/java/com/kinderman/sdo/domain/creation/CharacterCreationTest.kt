@@ -43,6 +43,21 @@ class CharacterCreationTest {
         assertNotNull(CharacterCreation.stepError(7, Character()))
     }
 
+    @Test fun `manual path requires exactly two initial powers beyond racial powers`() {
+        val path = Character(
+            pathName = "Caminho próprio",
+            pathPillars = listOf("Um", "Dois", "Três"),
+            powers = listOf(
+                Power(sourceType = PowerSourceType.RACE),
+                Power(sourceType = PowerSourceType.MANUAL),
+                Power(sourceType = PowerSourceType.CATALOG),
+            ),
+        )
+
+        assertNull(CharacterCreation.stepError(6, path))
+        assertNotNull(CharacterCreation.stepError(6, path.copy(powers = path.powers.dropLast(1))))
+    }
+
     @Test fun `valid review can finish the character`() {
         val base = Character()
         val milestone = { index: Int -> KnowledgeMilestoneReward(3, KnowledgeMilestoneRewardType.POWER, "reward-$index", "power-$index") }
