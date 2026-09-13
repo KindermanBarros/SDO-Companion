@@ -6,6 +6,52 @@ import org.junit.Test
 
 class CharacterSyncConflictTest {
     @Test
+    fun automaticallySelectsOnlineFieldsForAtMostFiveNewerConflicts() {
+        val local = Character(id = "character-auto-remote", name = "Local", money = 10, updatedAt = 100)
+        val remote = local.copy(name = "Online", money = 20, updatedAt = 200, dirty = false)
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+
+        assertEquals(setOf("name", "money"), automaticRemoteFieldIds(conflict))
+    }
+
+    @Test
+    fun automaticallyKeepsLocalFieldsForAtMostFiveNewerLocalConflicts() {
+        val local = Character(id = "character-auto-local", name = "Local", money = 10, updatedAt = 300)
+        val remote = local.copy(name = "Online", money = 20, updatedAt = 200, dirty = false)
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+
+        assertEquals(emptySet<String>(), automaticRemoteFieldIds(conflict))
+    }
+
+    @Test
+    fun requiresManualResolutionWhenMoreThanFiveFieldsConflict() {
+        val local = Character(id = "character-manual", updatedAt = 100)
+        val remote = local.copy(
+            name = "Online",
+            race = "Elfo",
+            subRace = "Noturno",
+            occupation = "Oráculo",
+            age = "40",
+            sex = "Não-binário",
+            updatedAt = 200,
+            dirty = false,
+        )
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+
+        assertTrue(conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS)
+        assertEquals(null, automaticRemoteFieldIds(conflict))
+    }
+
+    @Test
+    fun equalTimestampsPreferOnlineCopyDeterministically() {
+        val local = Character(id = "character-tie", name = "Local", updatedAt = 100)
+        val remote = local.copy(name = "Online", dirty = false)
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+
+        assertEquals(setOf("name"), automaticRemoteFieldIds(conflict))
+    }
+
+    @Test
     fun listsOnlyFieldsWhoseContentChanged() {
         val local = Character(
             id = "character-1",
