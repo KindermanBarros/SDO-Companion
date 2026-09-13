@@ -566,23 +566,25 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
                     SdoFilterChip(action.label, selected == action, { selected = action }, modifier)
                 }
                 Text("2. DEFINA OS DADOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TextButton({ amount = (amount - 1).coerceAtLeast(1) }) { Text("−") }
-                    Text("VALOR $amount", modifier = Modifier.padding(12.dp))
-                    TextButton({ amount += 1 }) { Text("+") }
+                SdoInsetCard(verticalSpacing = 8.dp) {
+                    Text("VALOR // $amount", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                    SdoResponsiveGrid(listOf("DECREASE", "INCREASE"), minItemWidth = 140.dp) { action, modifier ->
+                        when (action) {
+                            "DECREASE" -> SdoActionButton("DIMINUIR", { amount = (amount - 1).coerceAtLeast(1) }, modifier)
+                            else -> SdoActionButton("AUMENTAR", { amount += 1 }, modifier)
+                        }
+                    }
                 }
                 if (selected == QuickActionKind.RESOURCE) {
-                    TextButton(onClick = {
+                    SdoActionButton("RECURSO // ${resource.name}", {
                         val options = listOf(SessionResource.ENERGY, SessionResource.ARCANE, SessionResource.SANITY, SessionResource.LIFE)
                         resource = options[(options.indexOf(resource) + 1) % options.size]
-                    }, modifier = Modifier.fillMaxWidth()) { Text("RECURSO // ${resource.name}") }
+                    }, modifier = Modifier.fillMaxWidth())
                 }
                 if (selected == QuickActionKind.DAMAGE || selected == QuickActionKind.REGION) {
-                    TextButton(onClick = {
+                    SdoActionButton("REGIÃO // ${region?.name?.uppercase() ?: "NENHUMA"}", {
                         if (regions.isNotEmpty()) regionIndex = (regionIndex + 1) % regions.size
-                    }, enabled = regions.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
-                        Text("REGIÃO // ${region?.name?.uppercase() ?: "NENHUMA"}")
-                    }
+                    }, modifier = Modifier.fillMaxWidth(), enabled = regions.isNotEmpty())
                 }
                 if (selected == QuickActionKind.CONDITION) {
                     ChoiceField("Condição", selectedCondition, ConditionKind.entries, true, display = { it.label }) {
@@ -594,8 +596,8 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
                 Text(selected?.let { "${it.label} // valor $amount // ${character.name}" } ?: "Selecione uma ação acima.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(onClick = { command?.let(onApply) }, enabled = command != null) { Text("APLICAR") } },
-        dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
+        confirmButton = { SdoActionButton("APLICAR", { command?.let(onApply) }, enabled = command != null, style = SdoActionStyle.PRIMARY) },
+        dismissButton = { SdoActionButton("CANCELAR", onDismiss) },
     )
 }
 
