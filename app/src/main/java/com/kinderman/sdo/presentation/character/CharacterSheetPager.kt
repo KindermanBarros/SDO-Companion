@@ -47,7 +47,7 @@ internal enum class SheetPage(val code: String, val label: String) {
     MYSTIC("09", "MÍSTICO"),
     INVENTORY("10", "INVENTÁRIO"),
     BODY("11—12", "CORPO"),
-    RECORD("13—14", "REGISTRO"),
+    RECORD("13—14", "ESTADO"),
     NOTES("15", "ANOTAÇÕES"),
 }
 
