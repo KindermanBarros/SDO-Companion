@@ -66,6 +66,7 @@ class AppViewModel(
     private var syncJob: Job? = null
     private var syncRequested = false
     private var automaticSync = true
+    private var lastSyncFailure: String? = null
     private val localSaveMutex = Mutex()
     private val autosaveJobs = mutableMapOf<String, Job>()
 
@@ -118,6 +119,7 @@ class AppViewModel(
         syncRequested = false
         _conflicts.value = emptyList()
         _invitePreview.value = null
+        lastSyncFailure = null
         currentSession.value = session
         startSync(initial = true)
     }
@@ -140,6 +142,7 @@ class AppViewModel(
         _message.value = null
         _conflicts.value = emptyList()
         _invitePreview.value = null
+        lastSyncFailure = null
         _loadState.value = CharacterLoadState()
     }
 
@@ -360,7 +363,16 @@ class AppViewModel(
                         android.util.Log.e("SDO_SYNC", "ownerRepository.sync failed", it)
                         failures += "administração" to it
                     }
-                if (failures.isNotEmpty()) _message.value = syncFailureMessage(failures)
+                if (failures.isEmpty()) {
+                    lastSyncFailure = null
+                } else {
+                    val failureMessage = syncFailureMessage(failures)
+                    // Automatic saves can trigger several sync cycles while the user moves
+                    // through the sheet. Report one persistent failure once, instead of
+                    // showing the same global snackbar on every screen.
+                    if (failureMessage != lastSyncFailure) _message.value = failureMessage
+                    lastSyncFailure = failureMessage
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Throwable) {

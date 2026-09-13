@@ -524,6 +524,10 @@ internal fun ConditionSection(character: Character, enabled: Boolean, onChange: 
 
 @Composable
 private fun ConditionEditor(index: Int, condition: ConditionInstance, description: String, enabled: Boolean, onRemove: () -> Unit, onValue: (ConditionInstance, String) -> Unit) {
+    var draftDescription by remember(condition.instanceId.value) { mutableStateOf(description) }
+    LaunchedEffect(description) {
+        if (description != draftDescription) draftDescription = description
+    }
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(Modifier.fillMaxWidth()) {
             Text("CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
@@ -555,7 +559,10 @@ private fun ConditionEditor(index: Int, condition: ConditionInstance, descriptio
                 onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), description)
             } },
         )
-        HudTextField("Descrição", description, multiline = true, enabled = enabled) { onValue(condition, it) }
+        HudTextField("Descrição", draftDescription, multiline = true, enabled = enabled) {
+            draftDescription = it
+            onValue(condition, it)
+        }
     }
 }
 

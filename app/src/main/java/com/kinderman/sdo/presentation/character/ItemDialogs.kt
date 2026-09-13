@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.EquipmentGlossary
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.ItemQuality
@@ -71,10 +72,13 @@ internal fun ItemCatalogDialog(
     onSelect: (InventoryItem) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
-    val filtered = remember(entries, query, remainingHeritage) {
+    var category by remember { mutableStateOf(ItemCatalogFilter.ALL) }
+    val filtered = remember(entries, query, category, remainingHeritage) {
         val needle = query.trim()
         entries.filter { entry ->
-            (remainingHeritage == null || entry.creationCost.toIntOrNull() != null) &&
+            entry.kind == CatalogKind.ITEM &&
+                category.matches(entry) &&
+                (remainingHeritage == null || entry.creationCost.toIntOrNull() != null) &&
                 (needle.isEmpty() || entry.name.contains(needle, true) || entry.group.contains(needle, true) || entry.summary.contains(needle, true))
         }
     }
@@ -88,6 +92,17 @@ internal fun ItemCatalogDialog(
                     Text("Itens acima do saldo são bloqueados. Itens # não participam da criação com PH.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 HudTextField("Buscar item", query) { query = it }
+                Text("FILTRAR O SELETOR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                ItemCatalogFilter.entries.chunked(3).forEach { filters ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        filters.forEach { filter ->
+                            TextButton(
+                                onClick = { category = filter },
+                                modifier = Modifier.weight(1f),
+                            ) { Text(if (category == filter) "[ ${filter.label} ]" else filter.label) }
+                        }
+                    }
+                }
                 Column(Modifier.fillMaxWidth().heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
                     filtered.forEach { entry ->
                         val numericCost = entry.creationCost.toIntOrNull()
@@ -121,6 +136,25 @@ internal fun ItemCatalogDialog(
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
+}
+
+private enum class ItemCatalogFilter(val label: String) {
+    ALL("TODOS"),
+    WEAPON("ARMAS"),
+    ARMOR("ARMADURAS"),
+    ACCESSORY("ACESSÓRIOS"),
+    EQUIPMENT("EQUIPAMENTOS");
+
+    fun matches(entry: CatalogEntry): Boolean {
+        val group = entry.group.lowercase()
+        return when (this) {
+            ALL -> true
+            WEAPON -> "arma" in group || "arco" in group || "besta" in group
+            ARMOR -> "armadura" in group || "escudo" in group
+            ACCESSORY -> "acessório" in group || "acessorio" in group
+            EQUIPMENT -> group.contains(Regex("consumível|consumivel|ferramenta|recipiente|componente"))
+        }
+    }
 }
 
 @Composable
