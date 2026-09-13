@@ -253,7 +253,11 @@ internal fun PhaseOneStrictInventorySection(
             }
         }
 
-        AddButton("Adicionar item", enabled) { dialog = "add" }
+        val canAddItem = enabled && (!character.isInCreation || remainingHeritage > 0)
+        AddButton("Adicionar item", canAddItem) { dialog = "add" }
+        if (character.isInCreation && remainingHeritage == 0) {
+            Text("LIMITE DE PH ATINGIDO // remova ou altere um item de herança para adicionar outro.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        }
         TextButton(onClick = { dialog = "glossary" }, modifier = Modifier.fillMaxWidth()) { Text("CONSULTAR GLOSSÁRIOS") }
         if (remainingHeritage > 0) {
             Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
@@ -543,6 +547,7 @@ private fun StrictItemBuilderDialog(
     val material: ItemPart = materials.firstOrNull { it.id == draft.materialId }
         ?: materials.firstOrNull { it.id == if (!weapon && base.id == "gibao") "organico" else "ligas_comuns" }
         ?: materials.first()
+    val hasAlloyComposition = material.id.startsWith("ligas_")
     val secondaryMaterial: ItemPart? = materials.firstOrNull { it.id == draft.secondaryMaterialId && it.id != material.id }
     val modifications: List<ItemPart> = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
         .filter { it.id in draft.modificationIds }
@@ -557,9 +562,13 @@ private fun StrictItemBuilderDialog(
     val commonLoad = draft.commonLoad
     val commonQuantity = draft.commonQuantity
     val commonCategory = draft.commonCategory
-    val totalSteps = if (category == "Item") 2 else 7
+    val totalSteps = if (category == "Item") 2 else if (hasAlloyComposition) 7 else 6
     val stepTitle = if (category == "Item") listOf("DADOS", "REVISÃO")[step - 1]
-        else listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")[step - 1]
+        else (if (hasAlloyComposition) listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")
+        else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO"))[step - 1]
+    val qualityStep = if (hasAlloyComposition) 4 else 3
+    val modificationsStep = qualityStep + 1
+    val gemsStep = modificationsStep + 1
 
     val bases: List<ItemPart> = basePool
     val availableModifications: List<ItemPart> = ItemCreationRules.compatibleModifications(base, weapon)
@@ -655,11 +664,14 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 2 && category != "Item") {
                     ChoiceField<String>("Material principal", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String ->
-                        onDraftChange(draft.copy(materialId = id, secondaryMaterialId = draft.secondaryMaterialId.takeUnless { it == id }.orEmpty()))
+                        onDraftChange(draft.copy(
+                            materialId = id,
+                            secondaryMaterialId = draft.secondaryMaterialId.takeIf { id.startsWith("ligas_") && it != id }.orEmpty(),
+                        ))
                     }
                     ItemPartDetails("DETALHES DO MATERIAL", material, weapon, initialCreation)
                 }
-                if (step == 3 && category != "Item") {
+                if (step == 3 && category != "Item" && hasAlloyComposition) {
                     Text("COMPOSIÇÃO DA LIGA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     Text("Use o material puro ou combine dois materiais diferentes. A liga reúne os traços e equilibra os valores dos dois.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     val secondaryOptions = listOf("") + materials.filter { it.id != material.id }.map { it.id }
@@ -669,7 +681,7 @@ private fun StrictItemBuilderDialog(
                     val composition = ItemCreationRules.mixMaterials(material, secondaryMaterial)
                     ItemPartDetails(if (secondaryMaterial == null) "COMPOSIÇÃO PURA" else "RESULTADO DA LIGA", composition, weapon, initialCreation)
                 }
-                if (step == 4 && category != "Item") {
+                if (step == qualityStep && category != "Item") {
                     ChoiceField<String>("Qualidade", quality.takeIf { it in qualityOptions }?.name ?: ItemQuality.COMMON.name, qualityOptions.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
                     QualityDetails(quality, weapon, initialCreation)
                     if (initialCreation) Text(
@@ -677,7 +689,7 @@ private fun StrictItemBuilderDialog(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                if (step == 5 && category != "Item") {
+                if (step == modificationsStep && category != "Item") {
                     Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                     HudTextField("Filtrar por nome, grupo ou efeito", componentQuery) { componentQuery = it }
                     availableModifications.filter { modification ->
@@ -697,7 +709,7 @@ private fun StrictItemBuilderDialog(
                     }
                     }
                 }
-                if (step == 6 && category != "Item") {
+                if (step == gemsStep && category != "Item") {
                     TwoFields(
                         { IntegerField("Espaços de Gema", gemSlots, true, it) { value -> onDraftChange(draft.copy(gemSlots = value.coerceIn(gems.size, 5))) } },
                         { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> onDraftChange(draft.copy(technologySlots = value.coerceIn(technologies.size, 5))) } },
