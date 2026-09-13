@@ -312,14 +312,19 @@ private fun AshBuilderDialog(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var source by rememberSaveable { mutableStateOf("Todas") }
-    var selectedId by rememberSaveable { mutableStateOf(entries.firstOrNull()?.id.orEmpty()) }
+    var selectedAshName by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedId by rememberSaveable { mutableStateOf("") }
     var doses by rememberSaveable { mutableIntStateOf(1) }
     val sources = listOf("Todas") + entries.mapNotNull { it.catalogAshSource?.label }.distinct().sorted()
-    val filtered = entries.filter { entry ->
-        (source == "Todas" || entry.catalogAshSource?.label == source) &&
-            (query.isBlank() || entry.searchableText().contains(query, ignoreCase = true))
+    val grouped = remember(entries) { entries.groupBy(CatalogEntry::name).toSortedMap() }
+    val filteredGroups = grouped.filterValues { variants ->
+        (source == "Todas" || variants.any { it.catalogAshSource?.label == source }) &&
+            (query.isBlank() || variants.any { it.searchableText().contains(query, ignoreCase = true) })
     }
-    val selected = filtered.firstOrNull { it.id == selectedId } ?: filtered.firstOrNull()
+    val selectedVariants = selectedAshName?.let(grouped::get).orEmpty().sortedBy { entry ->
+        AshPurity.entries.indexOf(entry.catalogAshPurity ?: AshPurity.RAW)
+    }
+    val selected = selectedVariants.firstOrNull { it.id == selectedId }
     val purity = selected?.catalogAshPurity ?: AshPurity.RAW
     val preview = doses.coerceAtLeast(1) * purity.heritageCostPerDose
     val allowed = selected != null && (remainingHeritage == null || preview <= remainingHeritage)
@@ -328,31 +333,97 @@ private fun AshBuilderDialog(
         onDismissRequest = onDismiss,
         modifier = Modifier.fillMaxSize(),
         properties = DialogProperties(usePlatformDefaultWidth = false),
-        title = { Text("PREPARAR CINZAS") },
+        title = { Text(selectedAshName?.uppercase() ?: "PREPARAR CINZAS") },
         text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 remainingHeritage?.let { remaining ->
                     val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
-                    Text("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
-                    LinearProgressIndicator(progress = { ((spent + preview).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                    Text(
+                        if (selected == null) "HERANÇA // $spent GASTOS // $remaining RESTANTES"
+                        else "HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES",
+                        color = if (selected == null || allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    )
+                    LinearProgressIndicator(
+                        progress = { ((spent + if (selected != null) preview else 0).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
-                HudTextField("Buscar por nome, fonte ou efeito", query) { query = it }
-                ChoiceField("Fonte", source, sources, true) { source = it }
-                ChoiceField<String>(
-                    "Cinza", selected?.id.orEmpty(), filtered.map { it.id }, filtered.isNotEmpty(),
-                    display = { id -> filtered.firstOrNull { it.id == id }?.let { "${it.name} // ${it.catalogAshPurity?.label}" } ?: "Selecionar" },
-                ) { selectedId = it }
-                IntegerField("Doses", doses, true) { doses = it.coerceAtLeast(1) }
-                selected?.let { entry ->
-                    Text("${entry.catalogAshSource?.label ?: "Fonte desconhecida"} // ${purity.label}", color = MaterialTheme.colorScheme.primary)
-                    Text("CARGA ${kotlin.math.ceil(doses.toDouble() / purity.dosesPerLoad).toInt()} // ${purity.dosesPerLoad} DOSE(S) POR CARGA")
-                    if (remainingHeritage != null) Text("CUSTO // $preview PH", color = MaterialTheme.colorScheme.primary)
-                    Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (selectedAshName == null) {
+                    HudTextField("Buscar por nome, fonte ou efeito", query) { query = it }
+                    ChoiceField("Fonte", source, sources, true) { source = it }
+                    Text("CINZAS // ${filteredGroups.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    Column(
+                        Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        filteredGroups.forEach { (name, variants) ->
+                            Column(
+                                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).clickable {
+                                    selectedAshName = name
+                                    selectedId = variants.firstOrNull { it.catalogAshPurity == AshPurity.RAW }?.id
+                                        ?: variants.firstOrNull()?.id.orEmpty()
+                                }.padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
+                            ) {
+                                Text(name, color = Ice, style = MaterialTheme.typography.titleSmall)
+                                Text(
+                                    "${variants.firstOrNull()?.catalogAshSource?.label ?: "Fonte desconhecida"} // ${variants.size} PUREZAS",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Text(selectedVariants.firstOrNull()?.catalogAshSource?.label ?: "Fonte desconhecida", color = MaterialTheme.colorScheme.primary)
+                    Column(
+                        Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(7.dp),
+                    ) {
+                        selectedVariants.forEach { entry ->
+                            val entryPurity = entry.catalogAshPurity ?: AshPurity.RAW
+                            val isSelected = entry.id == selectedId
+                            Column(
+                                Modifier.fillMaxWidth()
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = .14f) else MaterialTheme.colorScheme.surfaceVariant)
+                                    .clickable { selectedId = entry.id }
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text(entryPurity.label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleSmall)
+                                    if (isSelected) Text("SELECIONADA", color = Signal, style = MaterialTheme.typography.labelSmall)
+                                }
+                                Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    "${entryPurity.dosesPerLoad} DOSE(S) POR CARGA" + if (remainingHeritage != null) " // ${entryPurity.heritageCostPerDose} PH POR DOSE" else "",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        }
+                    }
+                    IntegerField("Doses", doses, true) { doses = it.coerceAtLeast(1) }
+                    selected?.let {
+                        Text("CARGA ${kotlin.math.ceil(doses.toDouble() / purity.dosesPerLoad).toInt()} // ${purity.dosesPerLoad} DOSE(S) POR CARGA")
+                        if (remainingHeritage != null) Text("CUSTO // $preview PH", color = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { selected?.let { onAdd(it, doses) } }, enabled = allowed) { Text(if (allowed) "ADICIONAR" else "SALDO INSUFICIENTE") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        confirmButton = {
+            if (selectedAshName != null) TextButton(onClick = { selected?.let { onAdd(it, doses) } }, enabled = allowed) {
+                Text(if (allowed) "ADICIONAR" else "SALDO INSUFICIENTE")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                if (selectedAshName != null) {
+                    selectedAshName = null
+                    selectedId = ""
+                } else onDismiss()
+            }) { Text(if (selectedAshName != null) "VOLTAR" else "CANCELAR") }
+        },
     )
 }
 
