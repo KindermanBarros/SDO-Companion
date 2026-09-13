@@ -197,6 +197,17 @@ test('active campaign members can read campaign and linked character', async () 
   await assertSucceeds(getDoc(doc(db, 'characters', ids.character)));
 });
 
+test('campaign authority allows listing linked characters', async () => {
+  await seed();
+  for (const uid of [ids.player, ids.owner]) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertSucceeds(getDocs(query(
+      collection(db, 'characters'),
+      where('campaignId', '==', ids.campaign),
+    )));
+  }
+});
+
 test('outsiders cannot read campaign or linked character', async () => {
   await seed();
   const db = env.authenticatedContext(ids.outsider).firestore();
@@ -328,6 +339,27 @@ test('campaign master can create a linked sheet assigned to an active player', a
     id: 'assigned-outsider', ownerId: ids.outsider, campaignId: ids.campaign,
     name: 'Inválida', lockType: 'NONE', isLocked: false,
     lockedBy: '', lockedAt: null, deleted: false, updatedAt: 2,
+  }));
+});
+
+test('player can publish a newly created sheet without reading the missing document first', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+  const reference = doc(db, 'characters', 'new-player-character');
+
+  await assertFails(getDoc(reference));
+  await assertSucceeds(setDoc(reference, {
+    id: 'new-player-character',
+    ownerId: ids.player,
+    campaignId: ids.campaign,
+    name: 'Nova personagem',
+    lockType: 'NONE',
+    isLocked: false,
+    lockedBy: '',
+    lockedAt: null,
+    deleted: false,
+    appliedDeliveryIds: [],
+    updatedAt: 2,
   }));
 });
 

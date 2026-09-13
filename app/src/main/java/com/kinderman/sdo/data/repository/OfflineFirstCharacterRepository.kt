@@ -248,6 +248,19 @@ class OfflineFirstCharacterRepository(
             } else {
                 val normalizedRecord = record.copy(campaignId = normalizeCampaignId(record.campaignId))
                 val reference = collection.document(record.id)
+                if (record.id !in remoteIds) {
+                    // A read of a missing document cannot be authorized by character rules that
+                    // inspect resource.data. Publish a new local sheet directly; later writes use
+                    // the transaction below so remote conflicts are still detected.
+                    val writeTimestamp = maxOf(
+                        System.currentTimeMillis(),
+                        normalizedRecord.updatedAt,
+                        normalizedRecord.lastSyncedAt + 1,
+                    )
+                    reference.set(normalizedRecord.copy(updatedAt = writeTimestamp, dirty = false)).await()
+                    dao.markSynced(record.id, writeTimestamp)
+                    return@forEach
+                }
                 val result = store.runTransaction { transaction ->
                     val snapshot = transaction.get(reference)
                     val remote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
