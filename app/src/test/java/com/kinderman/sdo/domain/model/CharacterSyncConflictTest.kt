@@ -43,12 +43,12 @@ class CharacterSyncConflictTest {
     }
 
     @Test
-    fun equalTimestampsPreferOnlineCopyDeterministically() {
+    fun equalTimestampsPreserveLocalCopy() {
         val local = Character(id = "character-tie", name = "Local", updatedAt = 100)
         val remote = local.copy(name = "Online", dirty = false)
         val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
 
-        assertEquals(setOf("name"), automaticRemoteFieldIds(conflict))
+        assertEquals(emptySet<String>(), automaticRemoteFieldIds(conflict))
     }
 
     @Test
