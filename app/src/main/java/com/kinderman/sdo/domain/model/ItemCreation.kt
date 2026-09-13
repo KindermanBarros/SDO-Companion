@@ -18,6 +18,11 @@ data class ItemPart(
     val pl: Int = 0,
     val agilityLimit: Int? = null,
     val backpackCapacity: Int = 0,
+    val materialTier: String = "",
+    val characterCreationVisible: Boolean = true,
+    val traitIds: List<String> = emptyList(),
+    val damageBonus: Int = 0,
+    val damageReduction: Int = 0,
 )
 
 @IgnoreExtraProperties

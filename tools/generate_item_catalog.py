@@ -129,6 +129,10 @@ if __name__ == "__main__":
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     subprocess.run([sys.executable, str(ROOT / "tools/validate_item_catalogs.py")], check=True)
+    structured_command = [sys.executable, str(ROOT / "tools/generate_structured_item_catalog.py")]
+    if args.check:
+        structured_command.append("--check")
+    subprocess.run(structured_command, check=True)
     items_path = ROOT / "catalogs/items.json"
     modifications_path = ROOT / "catalogs/modifications.json"
     output_path = ROOT / "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedItemParts.kt"
