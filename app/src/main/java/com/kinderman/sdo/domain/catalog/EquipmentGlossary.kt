@@ -55,7 +55,7 @@ object EquipmentGlossary {
     }
 
     private fun modificationEntries(parts: List<ItemPart>) = parts.map { part ->
-        GlossaryEntry(part.name, part.group, part.effect.ifBlank { "Sem efeito adicional." }, "Termos", part.id)
+        GlossaryEntry(part.name, part.group, playerDescription(part.effect).ifBlank { "Sem efeito adicional." }, "Termos", part.id)
     }
 
     private fun describe(part: ItemPart, includeDurability: Boolean): String = buildList {
@@ -66,6 +66,16 @@ object EquipmentGlossary {
         if (part.traitIds.isNotEmpty()) add("Traços: ${part.traitIds.joinToString()}.")
         if (part.damageBonus != 0) add("Bônus de dano ${part.damageBonus}.")
         if (part.damageReduction != 0) add("Redução ${part.damageReduction}.")
-        if (part.effect.isNotBlank()) add(part.effect)
+        playerDescription(part.effect).takeIf(String::isNotBlank)?.let(::add)
     }.joinToString(" ")
+
+    private fun playerDescription(value: String): String = value
+        .split(Regex("(?<=[.!?])\\s+"))
+        .filterNot { sentence ->
+            sentence.contains("preço", ignoreCase = true) ||
+                sentence.contains("PH", ignoreCase = true) ||
+                sentence.contains("E$", ignoreCase = true)
+        }
+        .joinToString(" ")
+        .trim()
 }
