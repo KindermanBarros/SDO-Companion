@@ -29,7 +29,7 @@ import com.kinderman.sdo.ui.TechPanel
 @Composable
 internal fun NotesSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
-        SectionHeader("15", "Registros pessoais")
+        SectionHeader("14", "Registros pessoais")
         Text(
             "Crie registros separados para pistas, memórias e acontecimentos da campanha.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,

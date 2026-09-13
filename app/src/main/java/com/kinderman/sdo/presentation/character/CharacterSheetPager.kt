@@ -47,8 +47,9 @@ internal enum class SheetPage(val code: String, val label: String) {
     MYSTIC("09", "MÍSTICO"),
     INVENTORY("10", "INVENTÁRIO"),
     BODY("11—12", "CORPO"),
-    RECORD("13—14", "ESTADO"),
-    NOTES("15", "ANOTAÇÕES"),
+    RECORD("13", "ESTADO"),
+    NOTES("14", "ANOTAÇÕES"),
+    HISTORY("15", "HISTÓRIA"),
 }
 
 @Composable
@@ -65,6 +66,7 @@ internal fun CharacterSheetPager(
     val pages = SheetPage.entries
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val pageScrollStates = listOf(
+        rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
         rememberLazyListState(),
@@ -221,10 +223,13 @@ private fun SheetPageContent(
 
             SheetPage.RECORD -> {
                 item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições") { ConditionSection(character, editable, onChange) } }
-                item("narrative") { com.kinderman.sdo.ui.CollapsibleSection("História") { NarrativeSection(character, editable, onChange) } }
             }
 
             SheetPage.NOTES -> item("notes") { com.kinderman.sdo.ui.CollapsibleSection("Anotações") { NotesSection(character, editable, onChange) } }
+
+            SheetPage.HISTORY -> item("narrative") {
+                com.kinderman.sdo.ui.CollapsibleSection("História") { NarrativeSection(character, editable, onChange) }
+            }
         }
     }
 }
