@@ -4,6 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,6 +23,13 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,19 +95,13 @@ internal fun CharacterSheetPager(
     var pageMenu by remember { mutableStateOf(false) }
 
     Column(modifier.fillMaxSize()) {
-        androidx.compose.foundation.layout.Box {
-            androidx.compose.material3.TextButton(onClick = { pageMenu = true }) {
-                Text("Ir para: ${pages[pagerState.currentPage].label}", style = MaterialTheme.typography.labelLarge)
-            }
-            androidx.compose.material3.DropdownMenu(expanded = pageMenu, onDismissRequest = { pageMenu = false }) {
-                pages.forEachIndexed { index, page ->
-                    androidx.compose.material3.DropdownMenuItem(
-                        text = { Text(page.label) },
-                        onClick = { pageMenu = false; scope.launch { pagerState.animateScrollToPage(index) } },
-                    )
-                }
-            }
-        }
+        SheetPageNavigator(
+            pages = pages,
+            currentPage = pagerState.currentPage,
+            menuExpanded = pageMenu,
+            onMenuExpandedChange = { pageMenu = it },
+            onNavigate = { index -> scope.launch { pagerState.animateScrollToPage(index) } },
+        )
         PrimaryScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.background,
@@ -154,6 +162,88 @@ internal fun CharacterSheetPager(
             },
             dismissButton = {},
         )
+    }
+}
+
+@Composable
+private fun SheetPageNavigator(
+    pages: List<SheetPage>,
+    currentPage: Int,
+    menuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    onNavigate: (Int) -> Unit,
+) {
+    val page = pages[currentPage]
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = .72f),
+                shape = CutCornerShape(topEnd = 16.dp, bottomStart = 12.dp),
+            ),
+        color = MaterialTheme.colorScheme.surface,
+        shape = CutCornerShape(topEnd = 16.dp, bottomStart = 12.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = { onNavigate(currentPage - 1) },
+                enabled = currentPage > 0,
+            ) {
+                Icon(Icons.Default.ChevronLeft, "Página anterior")
+            }
+            Box(
+                Modifier
+                    .weight(1f)
+                    .clickable { onMenuExpandedChange(true) }
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
+                    ) {
+                        Text(page.code, modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp), style = MaterialTheme.typography.labelMedium)
+                    }
+                    Column(Modifier.weight(1f)) {
+                        Text(page.label, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "SEÇÃO ${currentPage + 1} DE ${pages.size}",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    Icon(Icons.Default.ExpandMore, "Escolher seção", tint = MaterialTheme.colorScheme.primary)
+                }
+                androidx.compose.material3.DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { onMenuExpandedChange(false) },
+                ) {
+                    pages.forEachIndexed { index, option ->
+                        androidx.compose.material3.DropdownMenuItem(
+                            leadingIcon = { Text(option.code, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall) },
+                            text = { Text(option.label) },
+                            onClick = {
+                                onMenuExpandedChange(false)
+                                onNavigate(index)
+                            },
+                        )
+                    }
+                }
+            }
+            IconButton(
+                onClick = { onNavigate(currentPage + 1) },
+                enabled = currentPage < pages.lastIndex,
+            ) {
+                Icon(Icons.Default.ChevronRight, "Próxima página")
+            }
+        }
     }
 }
 
