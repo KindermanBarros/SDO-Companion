@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
@@ -102,8 +104,8 @@ internal fun ItemCatalogDialog(
                     enabled = true,
                     display = { it.ifBlank { "TODAS" } },
                 ) { category = it }
-                Column(Modifier.fillMaxWidth().heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
-                    filtered.forEach { entry ->
+                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 460.dp)) {
+                    items(filtered, key = { "${it.kind}:${it.id}" }) { entry ->
                         val numericCost = entry.creationCost.toIntOrNull()
                         val allowed = remainingHeritage == null || numericCost != null && numericCost <= remainingHeritage
                         val overBudget = remainingHeritage != null && (numericCost == null || numericCost > remainingHeritage)
@@ -335,8 +337,8 @@ private fun ItemPartPickerDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column(Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
-                parts.forEach { part ->
+            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
+                items(parts, key = ItemPart::id) { part ->
                     Column(Modifier.fillMaxWidth().clickable { onSelect(part) }.padding(vertical = 10.dp)) {
                         Text(part.name, color = MaterialTheme.colorScheme.onSurface)
                         Text(
@@ -396,8 +398,8 @@ internal fun EquipmentGlossaryDialog(onUse: ((com.kinderman.sdo.domain.catalog.G
                 ChoiceField("Consulta", section, listOf("Termos", "Materiais", "Armas"), true) { section = it; group = "Todos" }
                 ChoiceField("Categoria", group, listOf("Todos") + groups, true) { group = it }
                 Text("RESULTADOS // ${filtered.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState())) {
-                    filtered.forEach { entry ->
+                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 500.dp)) {
+                    items(filtered, key = { "${it.section}:${it.group}:${it.referenceId}:${it.term}" }) { entry ->
                         Column(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                             Text(entry.term, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
                             Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
