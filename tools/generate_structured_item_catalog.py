@@ -22,6 +22,9 @@ def effect(value):
         f"durability = {value.get('durability', 0)}, "
         f"damageBonus = {value.get('damageBonus', 0)}, "
         f"damageReduction = {value.get('damageReduction', 0)}, "
+        f"pg = {value.get('pg', 0)}, "
+        f"pl = {value.get('pl', 0)}, "
+        f"categoryDieShift = {value.get('categoryDieShift', 0)}, "
         f"agilityLimit = {value.get('agilityLimit', 'null')}, "
         f"traitIds = {list_of(value.get('traitIds', []))})"
     )
@@ -34,8 +37,8 @@ def generate(materials, traits, economy):
         "package com.kinderman.sdo.domain.catalog",
         "",
         "internal enum class MaterialTier { COMMON, UNCOMMON, RARE, ANCESTRAL }",
-        "internal data class StructuredItemTrait(val id: String, val name: String, val appliesTo: List<String>, val characterCreationVisible: Boolean, val ancestral: Boolean)",
-        "internal data class StructuredMaterialEffect(val durability: Int, val damageBonus: Int, val damageReduction: Int, val agilityLimit: Int?, val traitIds: List<String>)",
+        "internal data class StructuredItemTrait(val id: String, val name: String, val description: String, val appliesTo: List<String>, val characterCreationVisible: Boolean, val ancestral: Boolean)",
+        "internal data class StructuredMaterialEffect(val durability: Int, val damageBonus: Int, val damageReduction: Int, val pg: Int, val pl: Int, val categoryDieShift: Int, val agilityLimit: Int?, val traitIds: List<String>)",
         "internal data class StructuredMaterial(val id: String, val name: String, val tier: MaterialTier, val origins: List<String>, val characterCreationVisible: Boolean, val money: Int, val ph: Int, val weapon: StructuredMaterialEffect, val armor: StructuredMaterialEffect)",
         "",
         "internal object GeneratedStructuredItemCatalog {",
@@ -44,7 +47,7 @@ def generate(materials, traits, economy):
     for trait in traits["traits"]:
         lines.append(
             "        StructuredItemTrait("
-            f"{quote(trait['id'])}, {quote(trait['name'])}, {list_of(trait['appliesTo'])}, "
+            f"{quote(trait['id'])}, {quote(trait['name'])}, {quote(trait['description'])}, {list_of(trait['appliesTo'])}, "
             f"{str(trait['characterCreationVisible']).lower()}, {str(trait.get('ancestral', False)).lower()}),"
         )
     lines.extend(("    )", "", "    val materials = listOf("))

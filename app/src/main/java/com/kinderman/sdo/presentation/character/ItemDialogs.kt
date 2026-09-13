@@ -161,6 +161,7 @@ internal fun ItemBuilderDialog(
         else -> ItemCreationRules.armorMaterials
     }
     val initialCreation = remainingHeritage != null
+    val qualityOptions = ItemCreationRules.qualitiesFor(initialCreation)
     val availableMaterials = ItemCreationRules.materialsFor(allMaterials, initialCreation)
     val availableSecondaryMaterials = availableMaterials.filter { it.id != material.id }
     val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
@@ -216,8 +217,14 @@ internal fun ItemBuilderDialog(
                     Text("SEGUNDO MATERIAL // ${secondaryMaterial?.name ?: "SEM MISTURA"}")
                 }
                 if (secondaryMaterial != null) TextButton(onClick = { secondaryMaterial = null }, modifier = Modifier.fillMaxWidth()) { Text("USAR MATERIAL PURO") }
+                val composition = ItemCreationRules.mixMaterials(material, secondaryMaterial)
+                if (composition.traitIds.isNotEmpty()) Text(
+                    "TRAÇOS // ${composition.traitIds.joinToString { ItemCreationRules.traitName(it).uppercase() }}",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
                 TextButton(
-                    onClick = { quality = ItemQuality.entries[(quality.ordinal + 1) % ItemQuality.entries.size] },
+                    onClick = { quality = qualityOptions[(qualityOptions.indexOf(quality).coerceAtLeast(0) + 1) % qualityOptions.size] },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("QUALIDADE // ${quality.label}") }
                 Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)

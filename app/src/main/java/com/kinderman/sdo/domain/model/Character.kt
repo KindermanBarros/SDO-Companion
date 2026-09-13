@@ -206,7 +206,7 @@ val InventoryItem.inventoryState: InventoryState get() = InventoryState.fromStor
 
 fun InventoryItem.withInventoryState(value: InventoryState): InventoryItem = copy(state = value.storageCode)
 
-enum class ItemAcquisitionSource { HERITAGE, PURCHASE, REWARD, NARRATIVE }
+enum class ItemAcquisitionSource { HERITAGE, PURCHASE, CRAFTED, REWARD, NARRATIVE }
 
 @IgnoreExtraProperties
 data class BodyRegion(

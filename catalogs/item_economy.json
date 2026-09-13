@@ -120,6 +120,36 @@
       "id": "campo_inercia_condensado",
       "money": 1300,
       "ph": 9
+    },
+    {
+      "id": "ambar_vespa_catedral",
+      "money": 420,
+      "ph": 6
+    },
+    {
+      "id": "tendao_colosso",
+      "money": 420,
+      "ph": 6
+    },
+    {
+      "id": "aerogel_kaltoch",
+      "money": 950,
+      "ph": 9
+    },
+    {
+      "id": "ceramica_plasma",
+      "money": 1400,
+      "ph": 10
+    },
+    {
+      "id": "filamento_gravitacional",
+      "money": 1250,
+      "ph": 10
+    },
+    {
+      "id": "cristal_dados_vivos",
+      "money": 1500,
+      "ph": 10
     }
   ]
 }

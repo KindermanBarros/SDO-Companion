@@ -23,6 +23,7 @@ data class ItemPart(
     val traitIds: List<String> = emptyList(),
     val damageBonus: Int = 0,
     val damageReduction: Int = 0,
+    val categoryDieShift: Int = 0,
 )
 
 @IgnoreExtraProperties
@@ -65,6 +66,8 @@ enum class ItemEffectType {
     PL,
     AGILITY_LIMIT,
     DURABILITY,
+    DAMAGE_REDUCTION,
+    DIE_CATEGORY,
     GEM_POWER,
     RULE,
 }
@@ -375,7 +378,7 @@ data class BuiltItem(
         technologySlots = technologySlots,
         mechanicalEffects = mechanicalEffects,
         dataVersion = CURRENT_ITEM_DATA_VERSION,
-        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
+        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.CRAFTED,
         heritageCost = creationCost.takeIf { initialCreation },
         purchasePrice = price,
     )

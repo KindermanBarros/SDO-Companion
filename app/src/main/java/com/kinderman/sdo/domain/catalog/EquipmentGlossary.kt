@@ -63,9 +63,11 @@ object EquipmentGlossary {
         if (includeDurability) add("Durabilidade ${part.durability}.")
         if (part.pg != 0 || part.pl != 0) add("P.G. ${part.pg}; P.L. ${part.pl}.")
         if (part.region.isNotBlank()) add("Região: ${part.region}.")
-        if (part.traitIds.isNotEmpty()) add("Traços: ${part.traitIds.joinToString()}.")
+        if (part.traitIds.isNotEmpty()) add("Traços: ${part.traitIds.joinToString { ItemCreationRules.traitName(it) }}.")
+        part.traitIds.mapNotNullTo(this) { id -> ItemCreationRules.traitDescription(id).takeIf(String::isNotBlank) }
         if (part.damageBonus != 0) add("Bônus de dano ${part.damageBonus}.")
         if (part.damageReduction != 0) add("Redução ${part.damageReduction}.")
+        if (part.categoryDieShift != 0) add("Categoria de dado ${if (part.categoryDieShift > 0) "+" else ""}${part.categoryDieShift}.")
         playerDescription(part.effect).takeIf(String::isNotBlank)?.let(::add)
     }.joinToString(" ")
 

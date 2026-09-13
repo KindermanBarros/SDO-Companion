@@ -1,7 +1,7 @@
 {
   "$schema": "./item-components.schema.json",
   "schemaVersion": 1,
-  "catalogVersion": 2,
+  "catalogVersion": 3,
   "kind": "MODIFICATION",
   "entries": [
     {
@@ -744,6 +744,104 @@
         "target": "projectile_guard",
         "condition": "EQUIPPED",
         "description": "Uma vez por cena, recebe +2 PG contra um projétil."
+      }
+    },
+    {
+      "id": "contrapeso_modular",
+      "name": "Contrapeso Modular",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "ATTACK",
+        "value": 1,
+        "target": "attack",
+        "condition": "WIELDED",
+        "description": "+1 Ataque enquanto empunhada."
+      }
+    },
+    {
+      "id": "revestimento_ablativo",
+      "name": "Revestimento Ablativo",
+      "compatibleItemTypes": [
+        "Armadura",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 2,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "DURABILITY",
+        "value": 2,
+        "target": "durability",
+        "condition": "EQUIPPED",
+        "description": "+2 Durabilidade máxima."
+      }
+    },
+    {
+      "id": "malha_articulada",
+      "name": "Malha Articulada",
+      "compatibleItemTypes": [
+        "Armadura",
+        "Acessório"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "AGILITY_LIMIT",
+        "value": 1,
+        "target": "agility_limit",
+        "condition": "EQUIPPED",
+        "description": "+1 no Limite de Agilidade do item."
+      }
+    },
+    {
+      "id": "nucleo_estabilizador",
+      "name": "Núcleo Estabilizador",
+      "compatibleItemTypes": [
+        "Arma"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "effect": {
+        "type": "PHYSICAL_DAMAGE",
+        "value": 1,
+        "target": "physical_damage",
+        "condition": "WIELDED",
+        "description": "+1 dano físico enquanto empunhada."
       }
     }
   ]

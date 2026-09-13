@@ -11,10 +11,13 @@
       "characterCreationVisible": true,
       "effects": {
         "weapon": {
-          "durability": 8
+          "durability": 2
         },
         "armor": {
-          "durability": 8
+          "durability": 2,
+          "pg": 1,
+          "pl": 1,
+          "damageReduction": 1
         }
       }
     },
@@ -28,12 +31,14 @@
       "characterCreationVisible": true,
       "effects": {
         "weapon": {
-          "durability": 10,
+          "durability": 5,
           "damageBonus": 1
         },
         "armor": {
-          "durability": 10,
-          "damageReduction": 1
+          "durability": 5,
+          "pg": 1,
+          "pl": 3,
+          "agilityLimit": 4
         }
       }
     },
@@ -139,13 +144,15 @@
       "characterCreationVisible": true,
       "effects": {
         "weapon": {
-          "durability": 12,
-          "damageBonus": 1
+          "durability": 6,
+          "categoryDieShift": 1
         },
         "armor": {
-          "durability": 13,
-          "damageReduction": 1,
-          "agilityLimit": -1
+          "durability": 6,
+          "pg": 2,
+          "pl": 3,
+          "agilityLimit": 3,
+          "damageReduction": 4
         }
       }
     },
@@ -159,15 +166,21 @@
       "characterCreationVisible": true,
       "effects": {
         "weapon": {
-          "durability": 10,
+          "durability": 5,
+          "damageBonus": 1,
           "traitIds": [
-            "canalizador"
+            "delicado",
+            "dilaceracao"
           ]
         },
         "armor": {
-          "durability": 10,
+          "durability": 5,
+          "pg": 1,
+          "pl": 3,
+          "agilityLimit": 3,
+          "damageReduction": 5,
           "traitIds": [
-            "isolante"
+            "delicado"
           ]
         }
       }
@@ -559,6 +572,158 @@
           "damageReduction": 2,
           "traitIds": [
             "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ambar_vespa_catedral",
+      "name": "Âmbar de Vespa-Catedral",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 9,
+          "traitIds": [
+            "condutor"
+          ]
+        },
+        "armor": {
+          "durability": 10,
+          "traitIds": [
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "tendao_colosso",
+      "name": "Tendão de Colosso",
+      "tier": "RARE",
+      "origins": [
+        "MONSTER"
+      ],
+      "characterCreationVisible": true,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "leve",
+            "impactante"
+          ]
+        },
+        "armor": {
+          "durability": 12,
+          "agilityLimit": 1,
+          "traitIds": [
+            "leve"
+          ]
+        }
+      }
+    },
+    {
+      "id": "aerogel_kaltoch",
+      "name": "Aerogel Kaltoch",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 10,
+          "traitIds": [
+            "leve"
+          ]
+        },
+        "armor": {
+          "durability": 11,
+          "agilityLimit": 2,
+          "traitIds": [
+            "leve",
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ceramica_plasma",
+      "name": "Cerâmica de Plasma",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 14,
+          "damageBonus": 1,
+          "traitIds": [
+            "canalizador"
+          ]
+        },
+        "armor": {
+          "durability": 15,
+          "damageReduction": 2,
+          "traitIds": [
+            "isolante"
+          ]
+        }
+      }
+    },
+    {
+      "id": "filamento_gravitacional",
+      "name": "Filamento Gravitacional",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 12,
+          "traitIds": [
+            "impactante",
+            "leve"
+          ]
+        },
+        "armor": {
+          "durability": 13,
+          "agilityLimit": 2,
+          "traitIds": [
+            "silencioso"
+          ]
+        }
+      }
+    },
+    {
+      "id": "cristal_dados_vivos",
+      "name": "Cristal de Dados Vivos",
+      "tier": "ANCESTRAL",
+      "origins": [
+        "KALTOCH",
+        "FUTURISTIC"
+      ],
+      "characterCreationVisible": false,
+      "effects": {
+        "weapon": {
+          "durability": 11,
+          "traitIds": [
+            "condutor",
+            "canalizador"
+          ]
+        },
+        "armor": {
+          "durability": 12,
+          "traitIds": [
+            "reflexivo",
+            "autorregenerativo"
           ]
         }
       }
