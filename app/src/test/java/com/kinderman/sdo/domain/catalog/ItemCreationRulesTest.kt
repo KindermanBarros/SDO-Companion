@@ -207,7 +207,7 @@ class ItemCreationRulesTest {
     }
 
 
-    @Test fun nonInitialCreationKeepsFuturePriceWithoutPretendingThereWasAPurchase() {
+    @Test fun nonInitialCreationDoesNotPersistHiddenPurchaseData() {
         val item = ItemCreationRules.build(
             base = ItemCreationRules.weaponBases.first { it.id == "adaga" },
             material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" },
@@ -215,7 +215,7 @@ class ItemCreationRulesTest {
         ).toInventoryItem(initialCreation = false)
 
         assertEquals(ItemAcquisitionSource.CRAFTED, item.acquisitionSource)
-        assertTrue(item.purchasePrice > 0)
+        assertNull(item.purchasePrice)
         assertEquals(0, item.initialCreationCost())
     }
 

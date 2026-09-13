@@ -22,6 +22,7 @@ import com.kinderman.sdo.domain.model.recycleBrokenItem
 import com.kinderman.sdo.domain.model.wieldedHandsUsed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -132,7 +133,7 @@ class ItemNormalizationTest {
         assertEquals(0, normalized.localProtection(normalized.bodyRegions[1]))
     }
 
-    @Test fun brokenItemRecyclesIntoScrapWorthHalfItsEstribosValue() {
+    @Test fun brokenItemRecyclesIntoScrapWithoutCreatingHiddenCurrency() {
         val expensive = InventoryItem(
             id = "broken", name = "Montante", category = "Arma", purchasePrice = 90,
             durabilityCurrent = 0, durabilityMax = 6, itemCondition = ItemCondition.BROKEN,
@@ -142,7 +143,7 @@ class ItemNormalizationTest {
 
         assertFalse(recycled.inventory.any { it.id == expensive.id })
         val scrap = recycled.inventory.single { it.name.startsWith("Sucata recuperada") }
-        assertEquals(45, scrap.purchasePrice)
+        assertNull(scrap.purchasePrice)
         assertEquals(1, scrap.quantity)
     }
 

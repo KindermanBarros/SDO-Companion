@@ -1,5 +1,7 @@
 package com.kinderman.sdo.domain.catalog
 
+import java.nio.file.Files
+import java.nio.file.Path
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -46,5 +48,22 @@ class EquipmentGlossaryTest {
         assertFalse(definitions.contains("PH"))
         assertFalse(definitions.contains("E$"))
         assertFalse(definitions.contains("preço", ignoreCase = true))
+    }
+
+    @Test fun playerCharacterScreensDoNotExposeMoneyPurchaseOrSale() {
+        val workingDirectory = Path.of(System.getProperty("user.dir"))
+        val sourceDirectory = sequenceOf(
+            workingDirectory.resolve("src/main/java/com/kinderman/sdo/presentation/character"),
+            workingDirectory.resolve("app/src/main/java/com/kinderman/sdo/presentation/character"),
+        ).first { Files.isDirectory(it) }
+        val forbidden = listOf("purchasePrice", "E$", "preço", "dinheiro", "compra", "venda")
+        Files.walk(sourceDirectory).use { paths ->
+            paths.filter { Files.isRegularFile(it) && it.toString().endsWith(".kt") }.forEach { path ->
+                val source = Files.readString(path)
+                forbidden.forEach { token ->
+                    assertFalse("${path.fileName} expõe $token", source.contains(token, ignoreCase = true))
+                }
+            }
+        }
     }
 }

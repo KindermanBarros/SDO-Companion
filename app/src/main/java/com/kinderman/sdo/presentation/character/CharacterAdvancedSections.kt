@@ -159,11 +159,11 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
             onCatalog = { dialog = "initial_catalog" },
             onBuilder = { dialog = "initial_builder" },
         )
-        "initial_builder" -> ItemBuilderDialog(remainingHeritage, { dialog = null }) { item ->
+        "initial_builder" -> UnifiedItemBuilderDialog(remainingHeritage, character.bodyRegions.map { it.name }, { dialog = null }) { item ->
             onChange(character.addInventoryItem(item))
             dialog = null
         }
-        "builder" -> ItemBuilderDialog(null, { dialog = null }) { item ->
+        "builder" -> UnifiedItemBuilderDialog(null, character.bodyRegions.map { it.name }, { dialog = null }) { item ->
             onChange(character.addInventoryItem(item))
             dialog = null
         }

@@ -8,20 +8,20 @@ internal data class StructuredMaterial(val id: String, val name: String, val tie
 
 internal object GeneratedStructuredItemCatalog {
     val traits = listOf(
-        StructuredItemTrait("antipessoal", "Antipessoal", "Especializado em enfrentar um alvo individual.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("anticavalaria", "Anticavalaria", "Preparado para deter montarias, cavaleiros e investidas.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("leve", "Leve", "Reduz impedimentos sem alterar a Carga automaticamente.", listOf("WEAPON", "ARMOR"), true, false),
-        StructuredItemTrait("pesado", "Pesado", "Exige manejo compatível com o peso e a estrutura do item.", listOf("WEAPON", "ARMOR"), true, false),
-        StructuredItemTrait("delicado", "Delicado", "Pode perder Durabilidade quando uma regra interagir com este traço.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("dilaceracao", "Dilaceração", "Interage com efeitos que ampliam ferimentos e sangramento.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("perfurante", "Perfurante", "Interage com efeitos próprios de perfuração e pontos vulneráveis.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("impactante", "Impactante", "Interage com empurrões, colisões e golpes de impacto.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("condutor", "Condutor", "Conduz energia quando outro efeito usar essa propriedade.", listOf("WEAPON", "ARMOR"), true, false),
-        StructuredItemTrait("canalizador", "Canalizador", "Pode servir de canal para efeitos arcanos compatíveis.", listOf("WEAPON"), true, false),
-        StructuredItemTrait("isolante", "Isolante", "Resiste à condução de energia quando uma regra utilizar esse traço.", listOf("ARMOR"), true, false),
-        StructuredItemTrait("silencioso", "Silencioso", "Reduz ruídos produzidos pelo uso normal do equipamento.", listOf("ARMOR"), true, false),
-        StructuredItemTrait("reflexivo", "Reflexivo", "Interage com luz, feixes e efeitos refletidos.", listOf("ARMOR"), true, false),
-        StructuredItemTrait("autorregenerativo", "Autorregenerativo", "Recupera sua estrutura conforme a regra ancestral que o concedeu.", listOf("WEAPON", "ARMOR"), false, true),
+        StructuredItemTrait("antipessoal", "Antipessoal", "Marcador mecânico de arma contra um alvo individual; não concede bônus isoladamente, apenas quando uma técnica ou efeito citar Antipessoal.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("anticavalaria", "Anticavalaria", "Marcador mecânico de arma contra montarias, cavaleiros e investidas; não concede bônus isoladamente, apenas quando uma regra citar Anticavalaria.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("leve", "Leve", "Marcador mecânico de equipamento leve; não altera Carga, empunhadura ou LA sozinho, e só produz o benefício da regra que citar Leve.", listOf("WEAPON", "ARMOR"), true, false),
+        StructuredItemTrait("pesado", "Pesado", "Marcador mecânico de equipamento pesado; não é sinônimo de Carga e aplica somente exigências ou efeitos que citem Pesado.", listOf("WEAPON", "ARMOR"), true, false),
+        StructuredItemTrait("delicado", "Delicado", "Marcador mecânico de fragilidade; a Durabilidade só é reduzida quando o próprio item ou outra regra citar Delicado.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("dilaceracao", "Dilaceração", "Marcador mecânico de dano dilacerante; só amplia ferimentos ou sangramento na situação explicitamente indicada pelo item ou efeito, como um Crítico.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("perfurante", "Perfurante", "Marcador mecânico de perfuração; só ignora ou reduz proteção quando uma regra compatível citar Perfurante.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("impactante", "Impactante", "Marcador mecânico de impacto; só provoca empurrão, colisão ou efeito adicional quando uma regra compatível citar Impactante.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("condutor", "Condutor", "Marcador mecânico de condução; permite interações de energia que citem Condutor, sem adicionar dano ou resistência por conta própria.", listOf("WEAPON", "ARMOR"), true, false),
+        StructuredItemTrait("canalizador", "Canalizador", "Marcador mecânico de canalização; permite usar o item como foco apenas quando uma magia, poder ou regra citar Canalizador.", listOf("WEAPON"), true, false),
+        StructuredItemTrait("isolante", "Isolante", "Marcador mecânico de isolamento; só reduz ou impede condução de energia quando uma regra compatível citar Isolante.", listOf("ARMOR"), true, false),
+        StructuredItemTrait("silencioso", "Silencioso", "Marcador mecânico de silêncio; reduz ruído de uso apenas nas rolagens ou situações cuja regra citar Silencioso.", listOf("ARMOR"), true, false),
+        StructuredItemTrait("reflexivo", "Reflexivo", "Marcador mecânico de reflexão; só desvia luz, feixes ou efeitos quando a regra correspondente citar Reflexivo.", listOf("ARMOR"), true, false),
+        StructuredItemTrait("autorregenerativo", "Autorregenerativo", "Marcador mecânico ancestral de reparo; recupera Durabilidade somente na quantidade e no intervalo definidos pelo material ou efeito que concedeu Autorregenerativo.", listOf("WEAPON", "ARMOR"), false, true),
     )
 
     val materials = listOf(
