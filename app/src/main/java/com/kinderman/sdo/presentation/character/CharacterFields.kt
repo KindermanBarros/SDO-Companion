@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -27,7 +27,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.DpOffset
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Signal
@@ -133,15 +136,24 @@ internal fun <T> ChoiceField(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
+    var anchorWidth by remember { mutableStateOf(0) }
+    val density = LocalDensity.current
     val visibleOptions = if (query.isBlank()) options else options.filter { display(it).contains(query, ignoreCase = true) }
     Box(modifier) {
         OutlinedButton(
             onClick = { expanded = true },
             enabled = enabled,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).onSizeChanged { anchorWidth = it.width },
             shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
         ) { Text("$label // ${display(value)}", maxLines = 2) }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false; query = "" }, modifier = Modifier.widthIn(min = 280.dp, max = 520.dp)) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false; query = "" },
+            offset = DpOffset(0.dp, 4.dp),
+            modifier = Modifier
+                .then(if (anchorWidth > 0) Modifier.requiredWidth(with(density) { anchorWidth.toDp() }) else Modifier)
+                .heightIn(max = if (searchable) 320.dp else 360.dp),
+        ) {
             Column {
                 if (searchable) HudTextField("Buscar em $label", query, Modifier.fillMaxWidth().padding(horizontal = 8.dp)) { query = it }
                 visibleOptions.forEach { option ->

@@ -2,7 +2,9 @@ package com.kinderman.sdo.presentation.session
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -20,6 +23,8 @@ import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Healing
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -36,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +60,9 @@ import com.kinderman.sdo.domain.model.canonicalBodyState
 import com.kinderman.sdo.domain.model.canonicalConditions
 import com.kinderman.sdo.domain.model.localProtectionBreakdown
 import com.kinderman.sdo.domain.model.LoadCondition
+import com.kinderman.sdo.domain.model.InventoryState
+import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.effectiveLoad
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.HudBackground
@@ -62,8 +71,18 @@ import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.presentation.character.CharacterActionButton
+import com.kinderman.sdo.presentation.character.CharacterActionStyle
 
 private data class SessionAbilityEntry(val ability: Ability, val description: String)
+private data class SessionResourceValue(
+    val label: String,
+    val current: Int,
+    val maximum: Int,
+    val resource: SessionResource,
+    val operationType: SessionOperationType = SessionOperationType.RESOURCE,
+)
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -165,60 +184,105 @@ private fun SessionContent(
                         },
                     )
                 }
-                Text("Ações de combate", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
+                SectionHeader("00", "Resumo operacional")
+                Text(
+                    "VIDA ${character.life.current}/${character.lifeMaximum} // ENERGIA ${character.energy.current}/${character.energyMaximum} // CARGA ${character.currentLoad}/${character.maximumLoad}",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                )
                 when (character.loadCondition) {
                     LoadCondition.OVERLOADED -> Text("SOBRECARREGADO // MOVIMENTO −5 m // ESQUIVA −2 // CORRIDA +1 PE // DESVANTAGEM: Movimento, Furtividade e Atletismo", color = MaterialTheme.colorScheme.error)
                     LoadCondition.IMMOBILE -> Text("IMÓVEL // MOVIMENTO E ESQUIVA INDISPONÍVEIS", color = MaterialTheme.colorScheme.error)
                     else -> Unit
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { damageDialog = true }, enabled = !readOnly, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.Shield, null)
-                        Text(" DANO")
-                    }
-                    OutlinedButton(onClick = { healingDialog = true }, enabled = !readOnly, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.Healing, null)
-                        Text(" CURA")
-                    }
+                    CharacterActionButton("Aplicar dano", !readOnly, CharacterActionStyle.PRIMARY, Modifier.weight(1f)) { damageDialog = true }
+                    CharacterActionButton("Aplicar cura", !readOnly, CharacterActionStyle.SECONDARY, Modifier.weight(1f)) { healingDialog = true }
                 }
+                if (readOnly) Text("SOMENTE LEITURA // controles operacionais bloqueados", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
             }
         }
         item {
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                TelemetryTag("RESOURCES.QUICK")
-                ResourceControl("VIDA", character.life.current, character.lifeMaximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.LIFE, amount = it - character.life.current))
-                }
-                ResourceControl("SANIDADE", character.sanity.current, character.sanityMaximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.SANITY, amount = it - character.sanity.current))
-                }
-                ResourceControl("ARCANO", character.arcane.current, character.arcaneMaximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ARCANE, amount = it - character.arcane.current))
-                }
-                ResourceControl("ENERGIA", character.energy.current, character.energyMaximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.ENERGY, amount = it - character.energy.current))
-                }
-                ResourceControl("DESTINO", character.destiny.current, character.destinyMaximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.DESTINY, resource = SessionResource.DESTINY, amount = it - character.destiny.current))
-                }
-                ResourceControl("EXAUSTÃO", character.exhaustion.current, character.exhaustion.maximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.EXHAUSTION, amount = it - character.exhaustion.current))
-                }
-                ResourceControl("CORRUPÇÃO", character.corruption.current, character.corruption.maximum, !readOnly) {
-                    onCommand(character, SessionCommand(type = SessionOperationType.RESOURCE, resource = SessionResource.CORRUPTION, amount = it - character.corruption.current))
+                SectionHeader("01", "Recursos rápidos")
+                val resources = listOf(
+                    SessionResourceValue("VIDA", character.life.current, character.lifeMaximum, SessionResource.LIFE),
+                    SessionResourceValue("SANIDADE", character.sanity.current, character.sanityMaximum, SessionResource.SANITY),
+                    SessionResourceValue("ARCANO", character.arcane.current, character.arcaneMaximum, SessionResource.ARCANE),
+                    SessionResourceValue("ENERGIA", character.energy.current, character.energyMaximum, SessionResource.ENERGY),
+                    SessionResourceValue("DESTINO", character.destiny.current, character.destinyMaximum, SessionResource.DESTINY, SessionOperationType.DESTINY),
+                    SessionResourceValue("EXAUSTÃO", character.exhaustion.current, character.exhaustion.maximum, SessionResource.EXHAUSTION),
+                    SessionResourceValue("CORRUPÇÃO", character.corruption.current, character.corruption.maximum, SessionResource.CORRUPTION),
+                )
+                resources.chunked(2).forEach { pair ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        pair.forEach { resource ->
+                            ResourceControl(resource.label, resource.current, resource.maximum, !readOnly, compact, Modifier.weight(1f)) { next ->
+                                onCommand(character, SessionCommand(type = resource.operationType, resource = resource.resource, amount = next - resource.current))
+                            }
+                        }
+                        if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                    }
                 }
             }
         }
         item {
             TechPanel {
-                TelemetryTag("DEFENSE.SNAPSHOT")
-                Text("Proteções", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                SectionHeader("02", "Proteções")
                 character.calculatedProtections().forEach { (name, value) ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(name, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(value.toString(), color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
+            }
+        }
+        item {
+            TechPanel(accent = MaterialTheme.colorScheme.error) {
+                SectionHeader("03", "Corpo")
+                character.canonicalBodyState().regions.chunked(2).forEach { pair ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        pair.forEach { region ->
+                            Column(
+                                Modifier.weight(1f).background(MaterialTheme.colorScheme.surfaceVariant).padding(if (compact) 6.dp else 9.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                            ) {
+                                Text(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+                                Text("${region.state.label.uppercase()} // ${region.failures}/4", style = MaterialTheme.typography.labelSmall, color = if (region.failures > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                                Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+        item {
+            val readyItems = character.inventory.filter {
+                it.inventoryState in setOf(InventoryState.WIELDED, InventoryState.EQUIPPED, InventoryState.QUICK_ACCESS) ||
+                    it.category.equals("Munição", true) || it.linkedAshId.isNotBlank()
+            }
+            TechPanel {
+                SectionHeader("04", "Equipamento pronto")
+                if (readyItems.isEmpty()) Text("Nenhum equipamento operacional.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                readyItems.forEach { item ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(item.name.ifBlank { "Item sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                buildList {
+                                    add(item.inventoryState.label.uppercase())
+                                    add("CARGA ${item.effectiveLoad()}")
+                                    if (item.category.equals("Munição", true) || item.linkedAshId.isNotBlank()) add("QTD ${item.quantity}")
+                                }.joinToString(" // "),
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                        TelemetryTag(item.category.ifBlank { "ITEM" }.uppercase())
+                    }
+                }
+                Text("Consulta apenas // altere equipamento e munição na ficha completa", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             }
         }
         item {
@@ -236,26 +300,17 @@ private fun SessionContent(
                     }
                 }) }
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                TelemetryTag("ABILITIES.READY")
-                Text("Poderes, magias, cinzas e runas", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                SectionHeader("05", "Poderes // Magias // Runas // Cinzas")
                 if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 entries.forEach { entry ->
-                    Column(Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(6.dp)).padding(10.dp)) {
-                        Text(entry.ability.kind.label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                        Text(entry.description, color = if (entry.ability.available) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
-                        TextButton(
-                            onClick = { pendingAbilityId = entry.ability.id },
-                            enabled = !readOnly && entry.ability.available,
-                        ) { Text(if (entry.ability.available) "USAR" else "INDISPONÍVEL") }
-                    }
+                    SessionAbilityCard(entry, compact, !readOnly) { pendingAbilityId = entry.ability.id }
                 }
             }
         }
         item {
             val conditions = character.canonicalConditions()
             TechPanel(accent = if (conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
-                TelemetryTag("CONDITIONS.${conditions.size}")
-                Text("Condições", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                SectionHeader("06", "Condições // ${conditions.size}")
                 if (conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 conditions.forEach { condition ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -301,14 +356,64 @@ private fun SessionContent(
 }
 
 @Composable
-private fun ResourceControl(label: String, current: Int, maximum: Int, enabled: Boolean, onChange: (Int) -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-            Text("$current / $maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, editable: Boolean, onUse: () -> Unit) {
+    var expanded by rememberSaveable(entry.ability.id) { mutableStateOf(false) }
+    val accent = if (entry.ability.available) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .border(1.dp, accent.copy(alpha = .7f), CutCornerShape(topEnd = 10.dp, bottomStart = 8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(if (compact) 7.dp else 10.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 7.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text((if (entry.ability.favorite) "★ " else "") + entry.ability.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                Text("${entry.ability.kind.label.uppercase()} // ${abilityCostLabel(entry.ability.cost)}", color = accent, style = MaterialTheme.typography.labelSmall)
+            }
+            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher habilidade" else "Ver detalhes")
         }
-        IconButton({ onChange(current - 1) }, enabled = enabled && current > 0) { Icon(Icons.Default.Remove, "Reduzir $label") }
-        IconButton({ onChange(current + 1) }, enabled = enabled && current < maximum) { Icon(Icons.Default.Add, "Aumentar $label") }
+        if (expanded) {
+            Text(entry.description.substringAfter('\n', entry.ability.effect.ifBlank { "Sem descrição adicional." }), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            CharacterActionButton(
+                label = if (entry.ability.available) "Usar habilidade" else "Indisponível",
+                enabled = editable && entry.ability.available,
+                style = CharacterActionStyle.PRIMARY,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onUse,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResourceControl(
+    label: String,
+    current: Int,
+    maximum: Int,
+    enabled: Boolean,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+    onChange: (Int) -> Unit,
+) {
+    Column(
+        modifier.background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(topEnd = 8.dp, bottomStart = 6.dp)).padding(if (compact) 5.dp else 7.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            IconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Remove, "Reduzir $label") }
+            Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+            IconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Add, "Aumentar $label") }
+        }
     }
 }
 

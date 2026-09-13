@@ -67,6 +67,7 @@ import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.LabelFunctional
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 
@@ -204,7 +205,7 @@ private fun PhaseOneKnowledgeList(
     val options = remember(catalog, kind) { catalog.filter { it.kind == kind } }
     Text(title.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, knowledge ->
-        Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        SdoInsetCard(contentPadding = 6.dp, verticalSpacing = 4.dp) {
             val published = knowledge.catalogEntryId.isNotBlank()
             val adjustedLevel = if (knowledge.name.isBlank()) (knowledge.value + knowledge.adjustment).coerceAtLeast(0)
                 else totalValue(knowledge.name)
@@ -221,7 +222,7 @@ private fun PhaseOneKnowledgeList(
                     onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index })
                 }
             }
-            if (expandedKnowledgeId != knowledge.id) return@Column
+            if (expandedKnowledgeId != knowledge.id) return@SdoInsetCard
             if (!published) {
                 HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
             }
@@ -401,7 +402,7 @@ private fun StructuredPowerEditor(
     onRemove: () -> Unit,
     onValue: (Power) -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    SdoInsetCard(accent = MaterialTheme.colorScheme.primary) {
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
                 Text(
@@ -429,7 +430,7 @@ private fun StructuredPowerEditor(
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 3,
             )
-            return@Column
+            return@SdoInsetCard
         }
         HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
         val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques

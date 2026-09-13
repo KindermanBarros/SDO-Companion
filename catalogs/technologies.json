@@ -1,0 +1,1358 @@
+{
+  "$schema": "./item-components.schema.json",
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "kind": "TECHNOLOGY",
+  "entries": [
+    {
+      "id": "tech_termica_fio",
+      "name": "Conversor de Dano Térmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:termica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de fogo; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_termica_barreira",
+      "name": "Barreira Reativa Térmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:termica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de fogo recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_termica_isolante",
+      "name": "Isolamento Térmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:termica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de fogo na região protegida."
+      }
+    },
+    {
+      "id": "tech_termica_pulso",
+      "name": "Pulso Tático Térmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:termica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de fogo: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_termica_estabilizador",
+      "name": "Estabilizador Térmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:termica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por fogo em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_criogenica_fio",
+      "name": "Conversor de Dano Criogênica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:criogenica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de gelo; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_criogenica_barreira",
+      "name": "Barreira Reativa Criogênica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:criogenica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de gelo recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_criogenica_isolante",
+      "name": "Isolamento Criogênica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:criogenica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de gelo na região protegida."
+      }
+    },
+    {
+      "id": "tech_criogenica_pulso",
+      "name": "Pulso Tático Criogênica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:criogenica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de gelo: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_criogenica_estabilizador",
+      "name": "Estabilizador Criogênica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:criogenica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por gelo em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_voltaica_fio",
+      "name": "Conversor de Dano Voltaica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:voltaica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de eletricidade; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_voltaica_barreira",
+      "name": "Barreira Reativa Voltaica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:voltaica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de eletricidade recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_voltaica_isolante",
+      "name": "Isolamento Voltaica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:voltaica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de eletricidade na região protegida."
+      }
+    },
+    {
+      "id": "tech_voltaica_pulso",
+      "name": "Pulso Tático Voltaica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:voltaica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de eletricidade: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_voltaica_estabilizador",
+      "name": "Estabilizador Voltaica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:voltaica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por eletricidade em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_onirica_fio",
+      "name": "Conversor de Dano Onírica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:onirica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de onírico; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_onirica_barreira",
+      "name": "Barreira Reativa Onírica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:onirica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de onírico recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_onirica_isolante",
+      "name": "Isolamento Onírica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:onirica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de onírico na região protegida."
+      }
+    },
+    {
+      "id": "tech_onirica_pulso",
+      "name": "Pulso Tático Onírica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:onirica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de onírico: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_onirica_estabilizador",
+      "name": "Estabilizador Onírica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:onirica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por onírico em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_cinetica_fio",
+      "name": "Conversor de Dano Cinética",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:cinetica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de impacto; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_cinetica_barreira",
+      "name": "Barreira Reativa Cinética",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:cinetica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de impacto recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_cinetica_isolante",
+      "name": "Isolamento Cinética",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:cinetica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de impacto na região protegida."
+      }
+    },
+    {
+      "id": "tech_cinetica_pulso",
+      "name": "Pulso Tático Cinética",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:cinetica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de impacto: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_cinetica_estabilizador",
+      "name": "Estabilizador Cinética",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:cinetica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por impacto em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_solar_fio",
+      "name": "Conversor de Dano Solar",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:solar",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de luz; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_solar_barreira",
+      "name": "Barreira Reativa Solar",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:solar",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de luz recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_solar_isolante",
+      "name": "Isolamento Solar",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:solar",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de luz na região protegida."
+      }
+    },
+    {
+      "id": "tech_solar_pulso",
+      "name": "Pulso Tático Solar",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:solar",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de luz: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_solar_estabilizador",
+      "name": "Estabilizador Solar",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:solar",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por luz em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_sombria_fio",
+      "name": "Conversor de Dano Sombria",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:sombria",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de sombra; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_sombria_barreira",
+      "name": "Barreira Reativa Sombria",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:sombria",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de sombra recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_sombria_isolante",
+      "name": "Isolamento Sombria",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:sombria",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de sombra na região protegida."
+      }
+    },
+    {
+      "id": "tech_sombria_pulso",
+      "name": "Pulso Tático Sombria",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:sombria",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de sombra: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_sombria_estabilizador",
+      "name": "Estabilizador Sombria",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:sombria",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por sombra em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_acida_fio",
+      "name": "Conversor de Dano Ácida",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:acida",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de ácido; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_acida_barreira",
+      "name": "Barreira Reativa Ácida",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:acida",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de ácido recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_acida_isolante",
+      "name": "Isolamento Ácida",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:acida",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de ácido na região protegida."
+      }
+    },
+    {
+      "id": "tech_acida_pulso",
+      "name": "Pulso Tático Ácida",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:acida",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de ácido: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_acida_estabilizador",
+      "name": "Estabilizador Ácida",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:acida",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por ácido em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_eolica_fio",
+      "name": "Conversor de Dano Eólica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:eolica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de vento; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_eolica_barreira",
+      "name": "Barreira Reativa Eólica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:eolica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de vento recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_eolica_isolante",
+      "name": "Isolamento Eólica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:eolica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de vento na região protegida."
+      }
+    },
+    {
+      "id": "tech_eolica_pulso",
+      "name": "Pulso Tático Eólica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:eolica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de vento: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_eolica_estabilizador",
+      "name": "Estabilizador Eólica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:eolica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por vento em cada cena é reduzida em 1."
+      }
+    },
+    {
+      "id": "tech_sismica_fio",
+      "name": "Conversor de Dano Sísmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "MAGIC_DAMAGE",
+        "value": 1,
+        "target": "damage:sismica",
+        "condition": "WIELDED",
+        "description": "Uma vez por turno, converte 1 ponto do dano causado em dano de terra; não aumenta o dano total."
+      }
+    },
+    {
+      "id": "tech_sismica_barreira",
+      "name": "Barreira Reativa Sísmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection:sismica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PG contra a primeira fonte de terra recebida em cada rodada."
+      }
+    },
+    {
+      "id": "tech_sismica_isolante",
+      "name": "Isolamento Sísmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "PL",
+        "value": 1,
+        "target": "local_protection:sismica",
+        "condition": "EQUIPPED",
+        "description": "Concede +1 PL contra efeitos de terra na região protegida."
+      }
+    },
+    {
+      "id": "tech_sismica_pulso",
+      "name": "Pulso Tático Sísmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 4,
+      "price": 150,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "combat_action:sismica",
+        "condition": "WIELDED",
+        "description": "Uma vez por cena, após acertar, aplique um pulso de terra: empurre o alvo 1 quadrado ou impeça reações até o próximo turno."
+      }
+    },
+    {
+      "id": "tech_sismica_estabilizador",
+      "name": "Estabilizador Sísmica",
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 0,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "effect": {
+        "type": "DURABILITY",
+        "value": 1,
+        "target": "durability:sismica",
+        "condition": "EQUIPPED",
+        "description": "A primeira perda de Durabilidade causada por terra em cada cena é reduzida em 1."
+      }
+    }
+  ]
+}

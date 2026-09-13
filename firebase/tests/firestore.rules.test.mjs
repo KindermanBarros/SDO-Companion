@@ -197,6 +197,17 @@ test('active campaign members can read campaign and linked character', async () 
   await assertSucceeds(getDoc(doc(db, 'characters', ids.character)));
 });
 
+test('campaign authority allows listing linked characters', async () => {
+  await seed();
+  for (const uid of [ids.player, ids.owner]) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertSucceeds(getDocs(query(
+      collection(db, 'characters'),
+      where('campaignId', '==', ids.campaign),
+    )));
+  }
+});
+
 test('outsiders cannot read campaign or linked character', async () => {
   await seed();
   const db = env.authenticatedContext(ids.outsider).firestore();
@@ -331,6 +342,27 @@ test('campaign master can create a linked sheet assigned to an active player', a
   }));
 });
 
+test('player can publish a newly created sheet without reading the missing document first', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+  const reference = doc(db, 'characters', 'new-player-character');
+
+  await assertFails(getDoc(reference));
+  await assertSucceeds(setDoc(reference, {
+    id: 'new-player-character',
+    ownerId: ids.player,
+    campaignId: ids.campaign,
+    name: 'Nova personagem',
+    lockType: 'NONE',
+    isLocked: false,
+    lockedBy: '',
+    lockedAt: null,
+    deleted: false,
+    appliedDeliveryIds: [],
+    updatedAt: 2,
+  }));
+});
+
 test('sheet owner can unlink and delete their own locked sheet even when campaign is archived', async () => {
   await seed({ archived: true });
   await env.withSecurityRulesDisabled(async (context) => {
@@ -345,12 +377,20 @@ test('sheet owner can unlink and delete their own locked sheet even when campaig
   await assertSucceeds(deleteDoc(doc(db, 'characters', ids.character)));
 });
 
-test('campaign master may edit but may not unlink or delete another player sheet', async () => {
+test('campaign master may edit and unlink but may not delete another player sheet', async () => {
   await seed();
   const db = env.authenticatedContext(ids.owner).firestore();
   await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), { name: 'Edição da Mestre', updatedAt: 2 }));
-  await assertFails(updateDoc(doc(db, 'characters', ids.character), { campaignId: '', updatedAt: 3 }));
+  await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), { campaignId: '', updatedAt: 3 }));
   await assertFails(deleteDoc(doc(db, 'characters', ids.character)));
+});
+
+test('campaign master cannot alter sheet data while unlinking another player sheet', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertFails(updateDoc(doc(db, 'characters', ids.character), {
+    campaignId: '', name: 'Alterada durante desvinculação', updatedAt: 3,
+  }));
 });
 
 test('audit operation can be created without a forbidden read of a missing document', async () => {

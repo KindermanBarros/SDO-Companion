@@ -20,7 +20,7 @@ class OfflineFirstOwnerRepository(
 
     override suspend fun sync(session: UserSession) {
         if (!session.isAdmin) return
-        val store = runCatching { Firebase.firestore }.getOrNull() ?: return
+        val store = Firebase.firestore
         val owners = store.collection("users").get().await().documents.map { document ->
             OwnerRecord(
                 uid = document.id,

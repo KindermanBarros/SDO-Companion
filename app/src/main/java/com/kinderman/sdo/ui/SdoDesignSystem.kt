@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -15,15 +16,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
@@ -32,19 +32,18 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -157,27 +156,54 @@ private val arcaneColors = darkColorScheme(
 )
 
 private val terminalColors = darkColorScheme(
-    primary = Color(0xFF70FF9A), onPrimary = Color(0xFF001B08), secondary = Color(0xFFB7FFCA),
-    onSecondary = Color(0xFF001B08), tertiary = Color(0xFFFFD166), onTertiary = Color(0xFF241A00),
-    background = Color(0xFF030D07), onBackground = Color(0xFFE8FFEE), surface = Color(0xFF0D1C12),
-    onSurface = Color(0xFFE8FFEE), surfaceVariant = Color(0xFF183622), onSurfaceVariant = Color(0xFFC9F5D5),
-    error = Color(0xFFFF7A9E), onError = Color.Black,
+    primary = Color(0xFF70FF9A),
+    onPrimary = Color(0xFF001B08),
+    secondary = Color(0xFFB7FFCA),
+    onSecondary = Color(0xFF001B08),
+    tertiary = Color(0xFFFFD166),
+    onTertiary = Color(0xFF241A00),
+    background = Color(0xFF030D07),
+    onBackground = Color(0xFFE8FFEE),
+    surface = Color(0xFF0D1C12),
+    onSurface = Color(0xFFE8FFEE),
+    surfaceVariant = Color(0xFF183622),
+    onSurfaceVariant = Color(0xFFC9F5D5),
+    error = Color(0xFFFF7A9E),
+    onError = Color.Black,
 )
 
 private val crimsonColors = darkColorScheme(
-    primary = Color(0xFFFF866E), onPrimary = Color(0xFF2D0500), secondary = Color(0xFFFFC06B),
-    onSecondary = Color(0xFF281500), tertiary = Color(0xFFFF75AA), onTertiary = Color(0xFF300016),
-    background = Color(0xFF150605), onBackground = Color(0xFFFFF1ED), surface = Color(0xFF2A1210),
-    onSurface = Color(0xFFFFF1ED), surfaceVariant = Color(0xFF4A211D), onSurfaceVariant = Color(0xFFFFD4CA),
-    error = Color(0xFFFF75AA), onError = Color(0xFF300016),
+    primary = Color(0xFFFF866E),
+    onPrimary = Color(0xFF2D0500),
+    secondary = Color(0xFFFFC06B),
+    onSecondary = Color(0xFF281500),
+    tertiary = Color(0xFFFF75AA),
+    onTertiary = Color(0xFF300016),
+    background = Color(0xFF150605),
+    onBackground = Color(0xFFFFF1ED),
+    surface = Color(0xFF2A1210),
+    onSurface = Color(0xFFFFF1ED),
+    surfaceVariant = Color(0xFF4A211D),
+    onSurfaceVariant = Color(0xFFFFD4CA),
+    error = Color(0xFFFF75AA),
+    onError = Color(0xFF300016),
 )
 
 private val systemLightColors = lightColorScheme(
-    primary = Color(0xFF006A64), onPrimary = Color.White, secondary = Color(0xFF3D6374),
-    onSecondary = Color.White, tertiary = Color(0xFF8B1551), onTertiary = Color.White,
-    background = Color(0xFFF5FAFA), onBackground = Color(0xFF101C1B), surface = Color.White,
-    onSurface = Color(0xFF101C1B), surfaceVariant = Color(0xFFDCE8E6), onSurfaceVariant = Color(0xFF3F4947),
-    error = Color(0xFFBA1A1A), onError = Color.White,
+    primary = Color(0xFF006A64),
+    onPrimary = Color.White,
+    secondary = Color(0xFF3D6374),
+    onSecondary = Color.White,
+    tertiary = Color(0xFF8B1551),
+    onTertiary = Color.White,
+    background = Color(0xFFF5FAFA),
+    onBackground = Color(0xFF101C1B),
+    surface = Color.White,
+    onSurface = Color(0xFF101C1B),
+    surfaceVariant = Color(0xFFDCE8E6),
+    onSurfaceVariant = Color(0xFF3F4947),
+    error = Color(0xFFBA1A1A),
+    onError = Color.White,
 )
 
 private val edgerunnersColors = darkColorScheme(
@@ -209,6 +235,36 @@ private val apertureWhiteColors = lightColorScheme(
     surfaceVariant = Color(0xFFF3F0F0), onSurfaceVariant = Color(0xFF514A4A),
     outline = Color(0xFF8E8585), outlineVariant = Color(0xFFB5AAAA),
     error = Color(0xFFD45500), onError = Color.White,
+)
+
+private val blackLodgeDreamColors = darkColorScheme(
+    primary = Color(0xFF8C94F6), onPrimary = Color(0xFF020100),
+    primaryContainer = Color(0xFF5438B6), onPrimaryContainer = Color(0xFFA9DEFE),
+    secondary = Color(0xFFD9575A), onSecondary = Color(0xFF020100),
+    secondaryContainer = Color(0xFF612723), onSecondaryContainer = Color(0xFFFFE9E7),
+    tertiary = Color(0xFF59BCFF), onTertiary = Color(0xFF030250),
+    tertiaryContainer = Color(0xFF1A1E9B), onTertiaryContainer = Color(0xFFA9DEFE),
+    background = Color(0xFF020100), onBackground = Color(0xFFA9DEFE),
+    surface = Color(0xFF030250), onSurface = Color(0xFFA9DEFE),
+    surfaceVariant = Color(0xFF290D5A), onSurfaceVariant = Color(0xFF8C94F6),
+    outline = Color(0xFFD9575A), outlineVariant = Color(0xFF5438B6),
+    error = Color(0xFFF06A6D), onError = Color(0xFF2C0506),
+    errorContainer = Color(0xFF460000), onErrorContainer = Color(0xFFFFE9E7),
+)
+
+private val oldestHouseSignalColors = darkColorScheme(
+    primary = Color(0xFFB40127), onPrimary = Color(0xFFF5F6F4),
+    primaryContainer = Color(0xFF710321), onPrimaryContainer = Color(0xFFF5F6F4),
+    secondary = Color(0xFF990124), onSecondary = Color(0xFFF5F6F4),
+    secondaryContainer = Color(0xFF600820), onSecondaryContainer = Color(0xFFF5F6F4),
+    tertiary = Color(0xFF840122), onTertiary = Color(0xFFF5F6F4),
+    tertiaryContainer = Color(0xFF4F0C1F), onTertiaryContainer = Color(0xFFF5F6F4),
+    background = Color(0xFF32141E), onBackground = Color(0xFFF5F6F4),
+    surface = Color(0xFF3F101E), onSurface = Color(0xFFF5F6F4),
+    surfaceVariant = Color(0xFF4F0C1F), onSurfaceVariant = Color(0xFFF5F6F4),
+    outline = Color(0xFF990124), outlineVariant = Color(0xFF600820),
+    error = Color(0xFFB40127), onError = Color(0xFFF5F6F4),
+    errorContainer = Color(0xFF710321), onErrorContainer = Color(0xFFF5F6F4),
 )
 
 val TechInterfaceFont = FontFamily(
@@ -253,9 +309,21 @@ private fun hudTypography(scale: Float) = Typography(
         fontSize = (14 * scale).sp,
         letterSpacing = 1.sp,
     ),
-    bodyLarge = TextStyle(fontFamily = TechInterfaceFont, fontSize = (16 * scale).sp, lineHeight = (23 * scale).sp),
-    bodyMedium = TextStyle(fontFamily = TechInterfaceFont, fontSize = (14 * scale).sp, lineHeight = (20 * scale).sp),
-    bodySmall = TextStyle(fontFamily = TechInterfaceFont, fontSize = (12 * scale).sp, lineHeight = (17 * scale).sp),
+    bodyLarge = TextStyle(
+        fontFamily = TechInterfaceFont,
+        fontSize = (16 * scale).sp,
+        lineHeight = (23 * scale).sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = TechInterfaceFont,
+        fontSize = (14 * scale).sp,
+        lineHeight = (20 * scale).sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = TechInterfaceFont,
+        fontSize = (12 * scale).sp,
+        lineHeight = (17 * scale).sp
+    ),
     labelLarge = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
@@ -283,6 +351,8 @@ fun SdoTheme(
         SdoThemeVariant.EDGERUNNERS -> edgerunnersColors
         SdoThemeVariant.MAGENTA_DREAM -> magentaDreamColors
         SdoThemeVariant.APERTURE_WHITE -> apertureWhiteColors
+        SdoThemeVariant.BLACK_LODGE_DREAM -> blackLodgeDreamColors
+        SdoThemeVariant.OLDEST_HOUSE_SIGNAL -> oldestHouseSignalColors
         SdoThemeVariant.HIGH_CONTRAST -> highContrastColors
         SdoThemeVariant.SYSTEM -> if (isSystemInDarkTheme()) hudColors else systemLightColors
     }
@@ -290,8 +360,6 @@ fun SdoTheme(
         surfaceContainerHigh = baseColors.surface,
         surfaceContainer = baseColors.surface,
         surfaceContainerHighest = baseColors.surfaceVariant,
-        outline = baseColors.onSurfaceVariant.copy(alpha = 0.7f),
-        outlineVariant = baseColors.onSurfaceVariant.copy(alpha = 0.35f),
     )
     val view = LocalView.current
     if (!view.isInEditMode) SideEffect {
@@ -316,7 +384,10 @@ fun SdoTheme(
             extraLarge = CutCornerShape(22.dp),
         ),
         content = {
-            androidx.compose.runtime.CompositionLocalProvider(LocalSdoPreferences provides preferences, content = content)
+            androidx.compose.runtime.CompositionLocalProvider(
+                LocalSdoPreferences provides preferences,
+                content = content
+            )
         },
     )
 }
@@ -327,9 +398,11 @@ fun HudBackground(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val gridColor = MaterialTheme.colorScheme.surfaceVariant
-    Box(modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)) {
+    Box(
+        modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Canvas(Modifier.fillMaxSize()) {
             val minor = 12.dp.toPx()
             val major = minor * 4
@@ -366,10 +439,11 @@ fun TechPanel(
     accent: Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val compactCards = LocalSdoPreferences.current.compactCards
     if (LocalFlattenCollapsiblePanel.current) {
         CompositionLocalProvider(LocalFlattenCollapsiblePanel provides false) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
                 content = content,
             )
         }
@@ -393,12 +467,32 @@ fun TechPanel(
     ) {
         CompositionLocalProvider(LocalCollapsibleSectionTitle provides null) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(if (compactCards) 11.dp else 16.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
                 content = content,
             )
         }
     }
+}
+
+@Composable
+fun SdoInsetCard(
+    modifier: Modifier = Modifier,
+    accent: Color = MaterialTheme.colorScheme.outlineVariant,
+    contentPadding: androidx.compose.ui.unit.Dp = 10.dp,
+    verticalSpacing: androidx.compose.ui.unit.Dp = 7.dp,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant, shape)
+            .border(1.dp, accent, shape)
+            .padding(contentPadding),
+        verticalArrangement = Arrangement.spacedBy(verticalSpacing),
+        content = content,
+    )
 }
 
 @Composable
@@ -414,10 +508,17 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
     ) {
         Box(
             Modifier
-                .background(MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
+                .background(
+                    MaterialTheme.colorScheme.primary,
+                    CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp)
+                )
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         ) {
-            Text(index, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelLarge)
+            Text(
+                index,
+                color = MaterialTheme.colorScheme.onPrimary,
+                style = MaterialTheme.typography.labelLarge
+            )
         }
         Text(
             title.uppercase(),
@@ -427,9 +528,16 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
-        Canvas(Modifier
-            .size(width = 24.dp, height = 9.dp)) {
-            drawLine(secondary, Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
+        Canvas(
+            Modifier
+                .size(width = 24.dp, height = 9.dp)
+        ) {
+            drawLine(
+                secondary,
+                Offset(0f, size.height / 2),
+                Offset(size.width, size.height / 2),
+                2f
+            )
             drawLine(
                 error,
                 Offset(size.width * .72f, 0f),
@@ -469,9 +577,11 @@ fun TelemetryTag(text: String, color: Color? = null) {
 fun Barcode(seed: String, modifier: Modifier = Modifier) {
     val signal = MaterialTheme.colorScheme.primary
     val neutral = MaterialTheme.colorScheme.outline
-    Canvas(modifier
-        .fillMaxWidth()
-        .height(28.dp)) {
+    Canvas(
+        modifier
+            .fillMaxWidth()
+            .height(28.dp)
+    ) {
         val safeSeed = seed.ifEmpty { "SDO" }
         var cursor = 0f
         var index = 0
@@ -505,7 +615,11 @@ fun ComplianceMark(modifier: Modifier = Modifier) {
         Spacer(Modifier.size(6.dp))
         Column {
             Text("CE//SDO", color = primary, style = MaterialTheme.typography.labelLarge)
-            Text("CONFORMIDADE ATIVA", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Text(
+                "CONFORMIDADE ATIVA",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall
+            )
         }
     }
 }
@@ -522,9 +636,10 @@ fun HudTextField(
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
     onValue: (String) -> Unit,
 ) {
-    val interaction = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val interaction =
+        androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val compact = LocalSdoWindowClass.current == SdoWindowClass.COMPACT ||
-        LocalSdoPreferences.current.density == SdoContentDensity.COMPACT
+            LocalSdoPreferences.current.density == SdoContentDensity.COMPACT
     val colors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -537,7 +652,9 @@ fun HudTextField(
     androidx.compose.foundation.text.BasicTextField(
         value = value,
         onValueChange = onValue,
-        modifier = modifier.fillMaxWidth().then(Modifier.heightIn(min = if (compact) 48.dp else 56.dp)),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(Modifier.heightIn(min = if (compact) 48.dp else 56.dp)),
         interactionSource = interaction,
         keyboardOptions = keyboardOptions,
         singleLine = !multiline,
@@ -552,10 +669,18 @@ fun HudTextField(
                 visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
                 interactionSource = interaction,
                 label = { Text(label, maxLines = 1, style = MaterialTheme.typography.bodySmall) },
-                placeholder = placeholder?.let { hint -> { Text(hint, style = MaterialTheme.typography.bodyMedium) } },
+                placeholder = placeholder?.let { hint ->
+                    {
+                        Text(
+                            hint,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                },
                 colors = colors,
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    horizontal = 12.dp, vertical = if (compact) 8.dp else 12.dp),
+                    horizontal = 12.dp, vertical = if (compact) 8.dp else 12.dp
+                ),
                 container = {
                     OutlinedTextFieldDefaults.Container(
                         enabled = enabled, isError = false, interactionSource = interaction,

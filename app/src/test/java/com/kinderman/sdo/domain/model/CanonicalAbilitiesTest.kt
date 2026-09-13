@@ -30,6 +30,21 @@ class CanonicalAbilitiesTest {
         assertEquals(ItemAcquisitionSource.NARRATIVE, item.acquisitionSource)
     }
 
+    @Test fun ashInventoryAndMysticEntryRemainBidirectionallyLinked() {
+        val ash = MysticAbility(type = "Cinza", name = "Brasa Rubra", ashPurity = AshPurity.REFINED)
+        val created = Character().withAddedAsh(ash, doses = 3, initialCreation = false)
+        val ability = created.mysticAbilities.single()
+        val item = created.inventory.single()
+
+        assertEquals(item.id, ability.linkedInventoryItemId)
+        assertEquals(ability.id, item.linkedAshId)
+        assertEquals(1, created.withAshDoses(ability.id, 1).inventory.single().quantity)
+
+        val removedFromInventory = created.withRemovedAshInventoryItem(item.id)
+        assertTrue(removedFromInventory.inventory.isEmpty())
+        assertTrue(removedFromInventory.mysticAbilities.isEmpty())
+    }
+
     @Test fun eachAbilityFamilyOwnsExactlyOneCostResource() {
         val activePower = Power(costType = AbilityCostType.ARCANE, costValue = 2).canonicalized()
         val passivePower = Power(executionType = AbilityExecution.PASSIVE, costType = AbilityCostType.LIFE, costValue = 3).canonicalized()

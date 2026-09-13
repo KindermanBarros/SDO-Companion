@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.auth
 
 import android.app.Activity
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
@@ -81,7 +82,7 @@ class FirebaseAuthRepository : AuthRepository {
         runCatching {
             currentUser?.reload()?.await()
             currentUser?.getIdToken(false)?.await()
-        }
+        }.onFailure { Log.w("SDO_FIREBASE", "Firebase Auth refresh failed; using cached session", it) }
         val verified = auth.currentUser?.takeIf { it.uid == uid }?.isEmailVerified ?: emailVerified
         return UserSession(
             uid,

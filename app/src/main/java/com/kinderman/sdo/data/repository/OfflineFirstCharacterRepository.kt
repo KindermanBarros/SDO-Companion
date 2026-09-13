@@ -152,7 +152,7 @@ class OfflineFirstCharacterRepository(
     }
 
     override suspend fun sync(session: UserSession): List<CharacterSyncConflict> = syncMutex.withLock {
-        val store = runCatching { Firebase.firestore }.getOrNull() ?: return@withLock emptyList()
+        val store = Firebase.firestore
         val collection = store.collection("characters")
         val campaigns = store.collection("campaigns")
         val members = store.collection("campaignMembers")
@@ -168,40 +168,27 @@ class OfflineFirstCharacterRepository(
             document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
         }
 
-        var campaignScopeComplete = true
-        val membershipDocuments = if (session.isAdmin) emptyList() else runCatching {
-            members.whereEqualTo("userId", session.uid).get().await().documents
-        }.getOrElse {
-            campaignScopeComplete = false
-            emptyList()
-        }
+        val membershipDocuments = if (session.isAdmin) emptyList()
+            else members.whereEqualTo("userId", session.uid).get().await().documents
         val memberCampaignIds = membershipDocuments.mapNotNull { document ->
                 val campaignId = document.getString("campaignId").orEmpty()
                 val state = document.getString("state").orEmpty()
                 campaignId.takeIf { it.isNotBlank() && state == "ACTIVE" }
             }
             .toMutableSet()
-        val ownedCampaignIds = if (session.isAdmin) mutableSetOf() else runCatching {
-            campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
-        }.getOrElse {
-            campaignScopeComplete = false
-            mutableSetOf()
-        }
+        val ownedCampaignIds = if (session.isAdmin) mutableSetOf()
+            else campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
         val authorizedCampaignIds = (memberCampaignIds + ownedCampaignIds).toSet()
         authorizedCampaignIds.forEach { campaignId ->
-            runCatching {
-                collection.whereEqualTo("campaignId", campaignId).get().await().documents
-            }.onSuccess { documents ->
-                documents.forEach { document ->
-                    document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
-                }
-            }.onFailure {
-                campaignScopeComplete = false
+            collection.whereEqualTo("campaignId", campaignId).get().await().documents.forEach { document ->
+                document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
             }
         }
         val remoteRecords = remoteById.values.map { remote ->
             val migrated = remote.migratedStructuredRecord(markDirty = false)
-            if (migrated != remote) runCatching {
+            val canWriteRemote = session.isAdmin || remote.ownerId == session.uid ||
+                normalizeCampaignId(remote.campaignId) in ownedCampaignIds
+            if (migrated != remote && canWriteRemote) {
                 val reference = collection.document(remote.id)
                 store.runTransaction { transaction ->
                     val latest = transaction.get(reference).toObject(CharacterRecord::class.java)
@@ -239,8 +226,7 @@ class OfflineFirstCharacterRepository(
         }
         (if (session.isAdmin) dao.all() else dao.visible(session.uid))
             .filter {
-                !it.dirty && it.id !in remoteIds && it.id !in dirtyIds &&
-                    (it.ownerId == session.uid || campaignScopeComplete)
+                !it.dirty && it.id !in remoteIds && it.id !in dirtyIds
             }
             .forEach { dao.purge(it.id) }
 
@@ -262,6 +248,19 @@ class OfflineFirstCharacterRepository(
             } else {
                 val normalizedRecord = record.copy(campaignId = normalizeCampaignId(record.campaignId))
                 val reference = collection.document(record.id)
+                if (record.id !in remoteIds) {
+                    // A read of a missing document cannot be authorized by character rules that
+                    // inspect resource.data. Publish a new local sheet directly; later writes use
+                    // the transaction below so remote conflicts are still detected.
+                    val writeTimestamp = maxOf(
+                        System.currentTimeMillis(),
+                        normalizedRecord.updatedAt,
+                        normalizedRecord.lastSyncedAt + 1,
+                    )
+                    reference.set(normalizedRecord.copy(updatedAt = writeTimestamp, dirty = false)).await()
+                    dao.markSynced(record.id, writeTimestamp)
+                    return@forEach
+                }
                 val result = store.runTransaction { transaction ->
                     val snapshot = transaction.get(reference)
                     val remote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
