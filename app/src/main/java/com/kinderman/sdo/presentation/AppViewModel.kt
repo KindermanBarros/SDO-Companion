@@ -104,14 +104,17 @@ class AppViewModel(
         if (values.isEmpty()) flowOf(emptyList())
         else combine(values.map { campaignRepository.observeMembers(it.id) }) { groups -> groups.flatMap { it } }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
+    private val accessibleCampaignIds = campaigns.map { values ->
+        values.filterNot(Campaign::isDeleted).mapTo(linkedSetOf(), Campaign::id)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
     private val manageableCampaignIds = combine(currentSession, campaigns) { session, values ->
         if (session == null) emptySet() else values.filter { campaign ->
             session.isAdmin || campaign.ownerId == session.uid
         }.mapTo(linkedSetOf(), Campaign::id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
-    val audit = manageableCampaignIds.flatMapLatest(operationsRepository::observeAudit)
+    val audit = accessibleCampaignIds.flatMapLatest(operationsRepository::observeAudit)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val library = manageableCampaignIds.flatMapLatest(operationsRepository::observeLibrary)
+    val library = accessibleCampaignIds.flatMapLatest(operationsRepository::observeLibrary)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val deliveries = combine(currentSession, manageableCampaignIds) { session, ids -> session to ids }
         .flatMapLatest { (session, ids) -> session?.let { operationsRepository.observeDeliveries(it, ids) } ?: flowOf(emptyList()) }
@@ -416,7 +419,13 @@ class AppViewModel(
                     }
                 // Delivery acceptance claims and applies remote content atomically before the
                 // general character sync can upload an offline draft of the same sheet.
-                runCatching { operationsRepository.sync(session, manageableCampaignIds.value) }
+                runCatching {
+                    operationsRepository.sync(
+                        session = session,
+                        readableCampaignIds = accessibleCampaignIds.value,
+                        writableCampaignIds = manageableCampaignIds.value,
+                    )
+                }
                     .onFailure {
                         android.util.Log.e("SDO_SYNC", "operationsRepository.sync failed", it)
                         failures += "operações" to it
