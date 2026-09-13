@@ -41,7 +41,7 @@ object ItemCreationRules {
         }
 
     private fun mergeMaterials(legacy: List<ItemPart>, structured: List<ItemPart>): List<ItemPart> =
-        (legacy.filterNot { old -> structured.any { it.id == old.id } } + structured)
+        (legacy + structured.filterNot { candidate -> legacy.any { it.id == candidate.id } })
             .sortedWith(compareBy(ItemPart::materialTier, ItemPart::name))
 
     val weaponMaterials = mergeMaterials(CanonicalItemCatalog.weaponMaterials, structuredMaterials(weapon = true))
