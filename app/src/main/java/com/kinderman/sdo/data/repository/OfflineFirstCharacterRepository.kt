@@ -19,6 +19,7 @@ import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.CampaignMemberState
 import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.characterConflictFields
+import com.kinderman.sdo.domain.model.automaticRemoteFieldIds
 import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
@@ -31,6 +32,7 @@ import kotlinx.coroutines.tasks.await
 
 private sealed interface CharacterSyncWrite {
     data class Saved(val updatedAt: Long) : CharacterSyncWrite
+    data class AcceptedRemote(val record: CharacterRecord) : CharacterSyncWrite
     data class Conflict(val value: CharacterSyncConflict) : CharacterSyncWrite
 }
 
@@ -270,14 +272,21 @@ class OfflineFirstCharacterRepository(
                         val remoteCharacter = remote.toDomain()
                         val fields = characterConflictFields(localCharacter, remoteCharacter)
                         if (fields.isNotEmpty()) {
-                            return@runTransaction CharacterSyncWrite.Conflict(
-                                CharacterSyncConflict(
-                                    local = localCharacter,
-                                    remote = remoteCharacter,
-                                    remoteUpdatedAt = remote.updatedAt,
-                                    fields = fields,
-                                ),
+                            val conflict = CharacterSyncConflict(
+                                local = localCharacter,
+                                remote = remoteCharacter,
+                                remoteUpdatedAt = remote.updatedAt,
+                                fields = fields,
                             )
+                            val automaticRemoteFields = automaticRemoteFieldIds(conflict)
+                            if (automaticRemoteFields == null) {
+                                return@runTransaction CharacterSyncWrite.Conflict(conflict)
+                            }
+                            if (automaticRemoteFields.isNotEmpty()) {
+                                return@runTransaction CharacterSyncWrite.AcceptedRemote(remote)
+                            }
+                            // The local document is newer. Continue below and publish it with a
+                            // timestamp beyond both revisions so this conflict cannot reappear.
                         }
                     }
                     val writeTimestamp = maxOf(
@@ -290,6 +299,14 @@ class OfflineFirstCharacterRepository(
                 }.await()
                 when (result) {
                     is CharacterSyncWrite.Conflict -> conflicts += result.value
+                    is CharacterSyncWrite.AcceptedRemote -> dao.upsert(
+                        result.record.copy(
+                            campaignId = normalizeCampaignId(result.record.campaignId),
+                            dirty = false,
+                            lastSyncedAt = result.record.updatedAt,
+                            deleted = false,
+                        ),
+                    )
                     is CharacterSyncWrite.Saved -> dao.markSynced(record.id, result.updatedAt)
                 }
             }
