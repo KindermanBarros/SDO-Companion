@@ -68,6 +68,13 @@ class ItemCreationRulesTest {
         assertEquals("Padrão metálico.", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }.effect)
     }
 
+    @Test fun everyNonCommonQualityExposesItsRuleEffect() {
+        ItemQuality.entries.filterNot { it == ItemQuality.COMMON }.forEach { quality ->
+            assertTrue(ItemCreationRules.qualityEffect(quality, armor = false).orEmpty().isNotBlank())
+            assertTrue(ItemCreationRules.qualityEffect(quality, armor = true).orEmpty().isNotBlank())
+        }
+    }
+
     @Test fun qualityChangesCostPriceAndArmorProtection() {
         val item = ItemCreationRules.build(
             base = ItemCreationRules.armorBases.first { it.id == "elmo" },

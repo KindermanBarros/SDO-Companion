@@ -138,7 +138,7 @@ object ItemCreationRules {
         else -> 60_000
     }
 
-    private fun qualityEffect(quality: ItemQuality, armor: Boolean): String? = when (quality) {
+    fun qualityEffect(quality: ItemQuality, armor: Boolean): String? = when (quality) {
         ItemQuality.MUNDANE -> if (armor) "Mundana: não concede PL nem possui espaços." else "Mundana: -1 Categoria de Dado e sem espaços."
         ItemQuality.COMMON -> null
         ItemQuality.IMPROVED -> if (armor) "Aprimorada: +1 PG." else "Aprimorada: +1 Ataque e +1 dano."
