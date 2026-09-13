@@ -106,8 +106,10 @@ fun normalizeAbilityName(value: String): String = Normalizer.normalize(value.tri
     .lowercase()
     .replace(Regex("[^\\p{L}\\p{N}]+"), "")
 
-fun InventoryItem.effectiveLoad(): Int = if (linkedAshId.isBlank()) load else {
-    if (quantity <= 0) 0 else ceil(quantity.toDouble() / ashPurity.dosesPerLoad).toInt()
+fun InventoryItem.effectiveLoad(): Int = when {
+    linkedAshId.isNotBlank() -> if (quantity <= 0) 0 else ceil(quantity.toDouble() / ashPurity.dosesPerLoad).toInt()
+    category.equals("Munição", true) -> if (quantity <= 0) 0 else ceil(quantity.toDouble() / 10.0).toInt()
+    else -> load
 }
 
 fun Character.withAddedAbility(ability: MysticAbility, reuseExistingAsh: Boolean = false): Character {
@@ -259,6 +261,12 @@ fun Character.withRemovedAbility(abilityId: String): Character {
         mysticAbilities = mysticAbilities.filterNot { it.id == abilityId },
         inventory = inventory.filterNot { it.id == item?.id },
     )
+}
+
+fun Character.withRemovedAshInventoryItem(itemId: String): Character {
+    val item = inventory.firstOrNull { it.id == itemId } ?: return this
+    if (item.linkedAshId.isBlank()) return removeInventoryItem(itemId)
+    return withRemovedCanonicalAbility(item.linkedAshId)
 }
 
 fun Character.withAshDoses(abilityId: String, doses: Int): Character = copy(inventory = inventory.map {

@@ -225,12 +225,23 @@ class OfflineFirstCampaignRepository(
     override suspend fun linkCharacter(session: UserSession, character: Character, campaign: Campaign): Character {
         val existing = requireActiveCampaign(campaign.id)
         val member = dao.member(existing.id, session.uid)?.toDomain()
-        check(existing.ownerId == session.uid || member?.isActive == true) { "Você não participa desta campanha." }
+        check(session.isAdmin || existing.ownerId == session.uid || member?.isActive == true) { "Você não participa desta campanha." }
         val currentCampaignId = normalizeCampaignId(character.campaignId)
-        check(currentCampaignId.isBlank() || currentCampaignId == existing.id) {
+        check(session.isAdmin || currentCampaignId.isBlank() || currentCampaignId == existing.id) {
             "A ficha já está vinculada a outra campanha ativa."
         }
-        check(character.ownerId == session.uid) { "Somente o dono pode vincular esta ficha." }
+        check(session.isAdmin || character.ownerId == session.uid) { "Somente o dono pode vincular esta ficha." }
+        if (session.isAdmin && currentCampaignId.isNotBlank() && currentCampaignId != existing.id) {
+            dao.member(currentCampaignId, character.ownerId)?.toDomain()?.let { previousMembership ->
+                if (character.id in previousMembership.characterIds) dao.upsertMember(
+                    previousMembership.copy(
+                        characterIds = previousMembership.characterIds - character.id,
+                        updatedAt = System.currentTimeMillis(),
+                        dirty = true,
+                    ).toRecord(),
+                )
+            }
+        }
         val ownerMembership = dao.member(existing.id, character.ownerId)?.toDomain()
         if (ownerMembership != null && character.id !in ownerMembership.characterIds) {
             dao.upsertMember(
@@ -247,8 +258,10 @@ class OfflineFirstCampaignRepository(
     override suspend fun unlinkCharacter(session: UserSession, character: Character): Character {
         val campaignId = normalizeCampaignId(character.campaignId)
         if (campaignId.isBlank()) return character.copy(campaignId = "")
-        requireCampaign(campaignId)
-        check(character.ownerId == session.uid) { "Somente o dono pode desvincular esta ficha." }
+        val campaign = requireCampaign(campaignId)
+        check(session.isAdmin || character.ownerId == session.uid || campaign.ownerId == session.uid) {
+            "Somente o dono da ficha, o dono da campanha ou um administrador pode desvincular esta ficha."
+        }
         val member = dao.member(campaignId, character.ownerId)?.toDomain()
         if (member != null && character.id in member.characterIds) {
             dao.upsertMember(

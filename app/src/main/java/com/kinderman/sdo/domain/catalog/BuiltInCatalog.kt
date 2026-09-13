@@ -36,5 +36,5 @@ object BuiltInCatalog {
 
     val entries: List<CatalogEntry> = paths + CanonicalCatalogData.entries.filter {
         it.kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.ASH, CatalogKind.RUNE)
-    } + ItemCreationRules.catalog
+    } + CombatPowerCatalog.entries + ItemCreationRules.catalog
 }

@@ -26,10 +26,10 @@ class ItemCreationRulesTest {
         assertEquals(8, item.creationCost)
         assertEquals(1, item.load)
         assertEquals(2, item.durability)
-        assertTrue(item.effect.contains("Afiada"))
+        assertTrue(item.effect.contains(ItemCreationRules.weaponModifications.first { it.id == "afiada" }.effect))
         assertEquals(ItemEffectType.RULE, item.mechanicalEffects.single().type)
         assertEquals("attack", item.mechanicalEffects.single().target)
-        assertTrue(item.effect.contains("CD 15; 5 Progressos; 4 horas"))
+        assertTrue(ItemCreationRules.complexity(item.creationCost).contains("CD 15; 5 Progressos; 4 horas"))
         assertEquals(8, item.toInventoryItem(initialCreation = true).initialCreationCost())
         assertEquals(0, item.toInventoryItem(initialCreation = false).initialCreationCost())
     }
@@ -57,7 +57,8 @@ class ItemCreationRulesTest {
 
         assertEquals(6, item.creationCost)
         assertEquals(2, item.durability)
-        assertTrue(item.effect.contains("Material predominante: Ligas Comuns"))
+        assertEquals("ligas_comuns", item.materialId)
+        assertTrue(!item.effect.contains("Material predominante"))
         assertTrue(item.mechanicalEffects.isEmpty())
     }
 
@@ -110,8 +111,9 @@ class ItemCreationRulesTest {
         )
 
         assertEquals(4, item.creationCost)
-        assertTrue(item.effect.contains(gem.name))
-        assertTrue(item.effect.contains("Espaços de Gema: 1"))
+        assertTrue(item.effect.contains(gem.effect))
+        assertTrue(!item.effect.contains("Espaços de Gema"))
+        assertEquals(1, item.gemSlots)
         assertEquals(gem.id, item.gemIds.single())
         assertEquals(ItemEffectType.KNOWLEDGE, item.mechanicalEffects.single().type)
         assertEquals("*", item.mechanicalEffects.single().target)
@@ -124,9 +126,10 @@ class ItemCreationRulesTest {
             CanonicalItemCatalog.armorMaterials.size + CanonicalItemCatalog.weaponBases.size +
             CanonicalItemCatalog.armorBases.size + CanonicalItemCatalog.catalogItems.size
 
-        assertEquals(111, itemDefinitionCount)
+        assertEquals(161, itemDefinitionCount)
         assertEquals(26, CanonicalItemCatalog.modifications.size)
         assertEquals(57, CanonicalItemCatalog.gems.size)
+        assertEquals(50, CanonicalItemCatalog.technologies.size)
     }
 
     @Test fun catalogInventoryUsesTypedProtectionInsteadOfDescriptionParsing() {

@@ -1,6 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.userFacingSource
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
@@ -39,42 +42,65 @@ internal fun CatalogPickerDialog(
     alreadyAddedCatalogIds: Set<String> = emptySet(),
     extraActionLabel: String? = null,
     onExtraAction: (() -> Unit)? = null,
+    groupAshVariants: Boolean = false,
     onSelect: (CatalogEntry) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
     var selectedAttribute by remember { mutableStateOf("") }
+    var selectedKind by remember { mutableStateOf<CatalogKind?>(null) }
     var selectedCategory by remember { mutableStateOf("") }
     var selectedSource by remember { mutableStateOf("") }
     var details by remember { mutableStateOf<CatalogEntry?>(null) }
 
     val attributes = remember(entries) { entries.map(CatalogEntry::relatedAttribute).filter(String::isNotBlank).distinct().sorted() }
+    val kinds = remember(entries) { entries.map(CatalogEntry::kind).distinct() }
     val categories = remember(entries) { entries.map(CatalogEntry::group).filter(String::isNotBlank).distinct().sorted() }
     val sources = remember(entries) { entries.map(CatalogEntry::userFacingSource).filter(String::isNotBlank).distinct().sorted() }
-    val filtered = remember(entries, query, selectedAttribute, selectedCategory, selectedSource) {
+    val filtered = remember(entries, query, selectedKind, selectedAttribute, selectedCategory, selectedSource) {
         val needle = query.trim()
         entries.filter { entry ->
             (needle.isEmpty() || entry.searchableText().contains(needle, true)) &&
+                (selectedKind == null || entry.kind == selectedKind) &&
                 (selectedAttribute.isEmpty() || entry.relatedAttribute.equals(selectedAttribute, true)) &&
                 (selectedCategory.isEmpty() || entry.group.equals(selectedCategory, true)) &&
                 (selectedSource.isEmpty() || entry.userFacingSource().equals(selectedSource, true))
         }
     }
+    val displayedEntries = remember(filtered, groupAshVariants) {
+        if (!groupAshVariants) filtered else (
+            filtered.filterNot { it.kind == CatalogKind.ASH } +
+                filtered.filter { it.kind == CatalogKind.ASH }
+                    .groupBy { it.name.trim().lowercase() }
+                    .values
+                    .map { variants -> variants.minBy { it.catalogAshPurity?.ordinal ?: Int.MAX_VALUE } }
+            ).sortedWith(compareBy<CatalogEntry>({ it.kind.ordinal }, { it.name.lowercase() }))
+    }
+    val selectedAshVariants = details?.takeIf { groupAshVariants && it.kind == CatalogKind.ASH }?.let { selected ->
+        entries.filter { it.kind == CatalogKind.ASH && it.name.equals(selected.name, ignoreCase = true) }
+            .sortedBy { it.catalogAshPurity?.ordinal ?: Int.MAX_VALUE }
+    }.orEmpty()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(details?.name ?: title) },
         text = {
             if (details != null) {
-                CatalogDetails(details!!, details!!.id in alreadyAddedCatalogIds)
+                CatalogDetails(
+                    details!!,
+                    details!!.id in alreadyAddedCatalogIds,
+                    ashVariants = selectedAshVariants,
+                    onAshVariantSelect = { details = it },
+                )
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     HudTextField("Buscar no catálogo", query) { query = it }
-                    if (attributes.isNotEmpty()) FilterButton("ATRIBUTO", selectedAttribute, attributes) { selectedAttribute = it }
-                    if (categories.isNotEmpty()) FilterButton("CATEGORIA", selectedCategory, categories) { selectedCategory = it }
-                    if (sources.size > 1) FilterButton("ORIGEM", selectedSource, sources) { selectedSource = it }
-                    Text("RESULTADOS // ${filtered.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    if (kinds.size > 1) ChoiceField("TIPO", selectedKind, listOf(null) + kinds, true, display = { it?.catalogLabel() ?: "TODOS" }) { selectedKind = it }
+                    if (attributes.isNotEmpty()) ChoiceField("ATRIBUTO", selectedAttribute, listOf("") + attributes, true, display = { it.ifBlank { "TODOS" } }) { selectedAttribute = it }
+                    if (categories.isNotEmpty()) ChoiceField("CATEGORIA", selectedCategory, listOf("") + categories, true, display = { it.ifBlank { "TODAS" } }) { selectedCategory = it }
+                    if (sources.size > 1) ChoiceField("ORIGEM", selectedSource, listOf("") + sources, true, display = { it.ifBlank { "TODAS" } }) { selectedSource = it }
+                    Text("RESULTADOS // ${displayedEntries.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
-                        items(filtered, key = CatalogEntry::id) { entry ->
+                        items(displayedEntries, key = CatalogEntry::id) { entry ->
                             val alreadyAdded = entry.id in alreadyAddedCatalogIds
                             Column(
                                 Modifier.fillMaxWidth().clickable { details = entry },
@@ -82,10 +108,24 @@ internal fun CatalogPickerDialog(
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Text(entry.name, color = Ice, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                                    if (alreadyAdded) Text("ADICIONADO", color = Signal, style = MaterialTheme.typography.labelSmall)
+                                    val groupAlreadyAdded = if (groupAshVariants && entry.kind == CatalogKind.ASH) {
+                                        entries.any { variant ->
+                                            variant.kind == CatalogKind.ASH &&
+                                                variant.name.equals(entry.name, true) &&
+                                                variant.id in alreadyAddedCatalogIds
+                                        }
+                                    } else alreadyAdded
+                                    if (groupAlreadyAdded) Text("ADICIONADO", color = Signal, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Text(
-                                    listOf(entry.group, entry.relatedAttribute).filter(String::isNotBlank).joinToString(" // "),
+                                    buildList {
+                                        add(entry.group)
+                                        add(entry.relatedAttribute)
+                                        if (groupAshVariants && entry.kind == CatalogKind.ASH) {
+                                            val variants = entries.count { it.kind == CatalogKind.ASH && it.name.trim().equals(entry.name.trim(), true) }
+                                            add("$variants PUREZAS")
+                                        }
+                                    }.filter(String::isNotBlank).joinToString(" // "),
                                     color = MaterialTheme.colorScheme.primary,
                                     style = MaterialTheme.typography.labelSmall,
                                 )
@@ -102,7 +142,8 @@ internal fun CatalogPickerDialog(
             if (selected != null) {
                 val blocked = selected.id in alreadyAddedCatalogIds && !selected.repeatable
                 TextButton(onClick = { onSelect(selected) }, enabled = !blocked) {
-                    Text(if (blocked) "JÁ ADICIONADO" else "ADICIONAR")
+                    val purity = selected.catalogAshPurity?.label?.uppercase()
+                    Text(if (blocked) "JÁ ADICIONADO" else purity?.let { "ADICIONAR $it" } ?: "ADICIONAR")
                 }
             }
         },
@@ -119,22 +160,25 @@ internal fun CatalogPickerDialog(
     )
 }
 
-@Composable
-private fun FilterButton(label: String, selected: String, options: List<String>, onSelected: (String) -> Unit) {
-    TextButton(
-        onClick = {
-            val all = listOf("") + options
-            val index = all.indexOf(selected).coerceAtLeast(0)
-            onSelected(all[(index + 1) % all.size])
-        },
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text("$label // ${selected.ifBlank { "TODOS" }}")
-    }
+private fun CatalogKind.catalogLabel(): String = when (this) {
+    CatalogKind.PATH -> "Caminho"
+    CatalogKind.POWER -> "Poder"
+    CatalogKind.MAGIC -> "Magia"
+    CatalogKind.ASH -> "Cinza"
+    CatalogKind.RUNE -> "Runa"
+    CatalogKind.ITEM -> "Item"
+    CatalogKind.ACQUIRED_KNOWLEDGE -> "Conhecimento adquirido"
+    CatalogKind.ARCANE_KNOWLEDGE -> "Conhecimento arcano"
+    CatalogKind.BATTLE_TECHNIQUE -> "Poder marcial"
 }
 
 @Composable
-private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
+private fun CatalogDetails(
+    entry: CatalogEntry,
+    alreadyAdded: Boolean,
+    ashVariants: List<CatalogEntry> = emptyList(),
+    onAshVariantSelect: (CatalogEntry) -> Unit = {},
+) {
     val isKnowledge = entry.kind in setOf(
         com.kinderman.sdo.domain.model.CatalogKind.ACQUIRED_KNOWLEDGE,
         com.kinderman.sdo.domain.model.CatalogKind.ARCANE_KNOWLEDGE,
@@ -142,6 +186,44 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
     )
     Column(Modifier.fillMaxWidth().heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        if (ashVariants.isNotEmpty()) {
+            Text("ESCOLHA A PUREZA PELO EFEITO", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelLarge)
+            Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                ashVariants.forEach { variant ->
+                    val selected = variant.id == entry.id
+                    val purity = variant.catalogAshPurity
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = .14f)
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                            )
+                            .clickable { onAshVariantSelect(variant) }
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                                purity?.label?.uppercase() ?: "PADRÃO",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.titleSmall,
+                        )
+                            if (selected) Text("SELECIONADA", color = Signal, style = MaterialTheme.typography.labelSmall)
+                        }
+                        Text(variant.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        purity?.let {
+                            Text(
+                                "${it.dosesPerLoad} DOSE(S) POR CARGA",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                }
+            }
+            Text("DETALHES DA PUREZA SELECIONADA", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelSmall)
+        }
         if (alreadyAdded) Text(if (entry.repeatable) "JÁ ADICIONADO // REPETÍVEL" else "JÁ ADICIONADO", color = MaterialTheme.colorScheme.error)
         Text(entry.summary, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
         DetailLine("ATRIBUTO", entry.relatedAttribute)

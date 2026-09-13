@@ -42,7 +42,9 @@ internal data class ItemComponentDefinition(
 /** Loads the shipped JSON catalogs directly, keeping them as the runtime source of truth. */
 internal object CanonicalItemCatalog {
     private val itemDefinitions: List<Pair<ItemPartKind, CatalogItemDefinition>> by lazy {
-        document("items.json").getValue("entries").jsonArray.map { element ->
+        listOf("items.json", "ammunition.json").flatMap { fileName ->
+            document(fileName).getValue("entries").jsonArray
+        }.map { element ->
             val entry = element.jsonObject
             val kind = ItemPartKind.valueOf(entry.string("kind"))
             kind to CatalogItemDefinition(
@@ -62,6 +64,7 @@ internal object CanonicalItemCatalog {
     }
     val modifications by lazy { components("modifications.json", expectedKind = "MODIFICATION", expectTier = false) }
     val gems by lazy { components("gems.json", expectedKind = "GEM", expectTier = true) }
+    val technologies by lazy { components("technologies.json", expectedKind = "TECHNOLOGY", expectTier = false) }
 
     private fun parts(kind: ItemPartKind): List<ItemPart> =
         itemDefinitions.filter { it.first == kind }.map { it.second.part }

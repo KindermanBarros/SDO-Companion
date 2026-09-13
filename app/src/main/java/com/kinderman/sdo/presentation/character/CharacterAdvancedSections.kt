@@ -1,12 +1,14 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,8 +17,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
@@ -68,6 +75,7 @@ import com.kinderman.sdo.domain.model.formattedAbilityExecution
 import com.kinderman.sdo.domain.model.withAddedAbility
 import com.kinderman.sdo.domain.model.withRemovedAbility
 import com.kinderman.sdo.domain.model.withUpdatedAbility
+import com.kinderman.sdo.domain.model.withAshDoses
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.ArcanePanel
@@ -235,11 +243,22 @@ internal fun BodyRegionSection(
 ) {
     val body = character.canonicalBodyState()
     val region = body.regions[index]
+    var expanded by rememberSaveable(character.id, region.region.name) { mutableStateOf(false) }
     fun updateRegion(updated: BodyRegionState) = onChange(
         character.withCanonicalBodyState(body.withUpdatedRegion(region.region) { updated }),
     )
     TechPanel(accent = MaterialTheme.colorScheme.error) {
-        Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+        Row(
+            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                Text("${region.state.label.uppercase()} // ${region.failures}/4 FALHAS // PL ${character.localProtection(region)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            }
+            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher ${region.name}" else "Expandir ${region.name}")
+        }
+        if (!expanded) return@TechPanel
         ChoiceField("Estado", region.state, BodyIntegrity.entries, enabled, display = { it.label }) { state ->
             updateRegion(region.copy(state = state))
         }
@@ -299,6 +318,7 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
             )
         }
         body.organs.forEachIndexed { index, organ ->
+            var expanded by rememberSaveable(character.id, "organ", index) { mutableStateOf(false) }
             val implantOptions = listOf("") + character.inventory.filter { it.category.contains("implante", true) }.map { it.id }
             fun updateOrgan(updated: OrganState) {
                 onChange(character.withCanonicalBodyState(body.copy(organs = body.organs.mapIndexed { organIndex, current ->
@@ -307,11 +327,16 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
             }
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 Row(Modifier.fillMaxWidth()) {
-                    Text("ALTERAÇÃO ${(index + 1).toString().padStart(2, '0')}", modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary)
+                    Column(Modifier.weight(1f).clickable { expanded = !expanded }) {
+                        Text(organ.organ.label.uppercase(), color = MaterialTheme.colorScheme.primary)
+                        Text("${organ.state.label.uppercase()} // ${organ.failures}/3 FALHAS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                    }
+                    Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher órgão" else "Expandir órgão", Modifier.clickable { expanded = !expanded })
                     RemoveButton(enabled, "Remover registro de órgão") {
                         onChange(character.withCanonicalBodyState(body.copy(organs = body.organs.filterIndexed { organIndex, _ -> organIndex != index })))
                     }
                 }
+                if (!expanded) return@Column
                 ChoiceField("Órgão", organ.organ, OrganSlot.entries, enabled, display = { it.label }) { slot ->
                     updateOrgan(organ.copy(organ = slot, customName = if (slot == OrganSlot.Other) organ.customName else ""))
                 }
@@ -358,16 +383,22 @@ internal fun MysticSection(character: Character, catalog: List<CatalogEntry>, en
                     applyChange { character.withRemovedAbility(ability.id) }
                 },
                 onValue = { value -> applyChange { character.withUpdatedAbility(value.copy(revision = ability.revision + 1)) } },
+                onDosesChange = { doses -> applyChange { character.withAshDoses(ability.id, doses) } },
             )
         }
-        AddButton("Selecionar magia, cinza ou runa", enabled && catalog.isNotEmpty()) { selecting = true }
+        AddButton("Selecionar místico", enabled && catalog.isNotEmpty()) { selecting = true }
         AddButton("Adicionar efeito manualmente", enabled) {
             val ability = MysticAbility(type = "Magia")
             expandedAbilityId = ability.id
             applyChange { character.withAddedAbility(ability) }
         }
     }
-    if (selecting) CatalogPickerDialog("SELECIONAR EFEITO MÍSTICO", catalog, { selecting = false }) { entry ->
+    if (selecting) CatalogPickerDialog(
+        title = "SELECIONAR EFEITO MÍSTICO",
+        entries = catalog,
+        onDismiss = { selecting = false },
+        groupAshVariants = true,
+    ) { entry ->
         val ability = runCatching { entry.toMysticAbility(character) }
             .getOrElse {
                 android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show()
@@ -389,6 +420,7 @@ private fun MysticEditor(
     onToggle: () -> Unit,
     onRemove: () -> Unit,
     onValue: (MysticAbility) -> Unit,
+    onDosesChange: (Int) -> Unit,
 ) {
     val effectiveCostType = when {
         ability.type.equals("Cinza", true) -> AbilityCostType.DOSE
@@ -398,7 +430,12 @@ private fun MysticEditor(
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
                 Text(ability.name.ifBlank { "EFEITO ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
-                val source = if (ability.type.equals("Cinza", true)) "${ability.ashSource.label} // ${ability.ashPurity.label}" else ability.canonicalSource.label
+                val linkedAsh = character.inventory.firstOrNull {
+                    it.id == ability.linkedInventoryItemId || it.linkedAshId == ability.id
+                }
+                val source = if (ability.type.equals("Cinza", true)) {
+                    "${ability.ashSource.label} // ${ability.ashPurity.label} // ESTOQUE ${linkedAsh?.quantity ?: 0}"
+                } else ability.canonicalSource.label
                 Text(
                     listOf(ability.type.ifBlank { "Magia" }, source, formattedAbilityExecution(ability.executionType, ability.timeValue, ability.timeUnit), formattedAbilityCost(effectiveCostType, ability.costValue)).joinToString(" // "),
                     color = MaterialTheme.colorScheme.primary,
@@ -427,6 +464,11 @@ private fun MysticEditor(
                 { ChoiceField("Fonte", ability.ashSource, AshSource.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(ashSource = value)) } },
                 { ChoiceField("Pureza", ability.ashPurity, AshPurity.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(ashPurity = value)) } },
             )
+            IntegerField(
+                "Doses no inventário",
+                character.inventory.firstOrNull { it.id == ability.linkedInventoryItemId || it.linkedAshId == ability.id }?.quantity ?: 0,
+                enabled,
+            ) { onDosesChange(it.coerceAtLeast(0)) }
         } else {
             val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques
             val sourceOptions = AbilitySource.entries.filterNot { it == AbilitySource.KNOWLEDGE && knowledges.isEmpty() }

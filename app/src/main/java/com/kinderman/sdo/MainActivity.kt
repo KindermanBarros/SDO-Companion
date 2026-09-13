@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity() {
             notifications = storage.getBoolean("notifications", true),
             compactCards = storage.getBoolean("compact_cards", false),
             collapseLongSections = storage.getBoolean("collapse_long_sections", true),
-            calculationAuditEnabled = storage.getBoolean("calculation_audit_enabled", storage.getBoolean("show_value_audit", false)),
             showArchivedCampaigns = storage.getBoolean("show_archived_campaigns", true),
         )
     }
@@ -57,7 +56,6 @@ class MainActivity : ComponentActivity() {
             .putBoolean("notifications", preferences.notifications)
             .putBoolean("compact_cards", preferences.compactCards)
             .putBoolean("collapse_long_sections", preferences.collapseLongSections)
-            .putBoolean("calculation_audit_enabled", preferences.calculationAuditEnabled)
             .putBoolean("show_archived_campaigns", preferences.showArchivedCampaigns)
             .apply()
     }

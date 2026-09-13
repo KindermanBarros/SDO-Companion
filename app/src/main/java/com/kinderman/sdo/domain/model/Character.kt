@@ -165,6 +165,9 @@ data class InventoryItem(
     val materialId: String = "",
     val modificationIds: List<String> = emptyList(),
     val gemIds: List<String> = emptyList(),
+    val technologyIds: List<String> = emptyList(),
+    val gemSlots: Int = 0,
+    val technologySlots: Int = 0,
     val mechanicalEffects: List<ItemEffect> = emptyList(),
     val dataVersion: Int = CURRENT_ITEM_DATA_VERSION,
 )

@@ -168,6 +168,7 @@ fun SdoApp(
                     onAdd = appViewModel::add,
                     onAddToCampaign = appViewModel::addToCampaign,
                     onLinkCharacter = appViewModel::linkCharacter,
+                    onUnlinkCharacter = appViewModel::unlinkCharacter,
                     onOpen = {
                         navigate(AppSurface.SHEET, it)
                     },
@@ -205,7 +206,6 @@ fun SdoApp(
                     readOnly = archived,
                     isCampaignHistorian = isCampaignHistorian,
                     isCampaignResponsible = isCampaignResponsible,
-                    showCalculationAudit = preferences.calculationAuditEnabled,
                     snackbarHost = { SnackbarHost(snackbar) },
                     onBack = { goBack() },
                     onOpenSession = {
@@ -224,7 +224,7 @@ fun SdoApp(
                 AppSurface.SESSION -> SessionModeScreen(
                     characters = characters,
                     selectedId = selectedId,
-                    compact = preferences.density == SdoContentDensity.COMPACT || preferences.compactCards,
+                    compact = preferences.density == SdoContentDensity.COMPACT,
                     readOnly = archived,
                     onSelect = { navigate(AppSurface.SESSION, it) },
                     onOpenSheet = {

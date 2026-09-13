@@ -173,7 +173,7 @@ class CharacterConverters {
             it.commonEffect, it.commonLoad.toString(), it.commonQuantity.toString(),
             it.commonCategory, it.commonRegion, it.commonDurability.toString(), it.commonPg.toString(),
             it.commonPl.toString(), it.commonAgilityLimit?.toString().orEmpty(), it.commonAttack.toString(),
-            it.commonDamage.toString(), it.commonRange.toString(),
+            it.commonDamage.toString(), it.commonRange.toString(), it.technologyIds.nested(),
         ).row()
     }
 
@@ -204,6 +204,7 @@ class CharacterConverters {
                 commonAttack = fields.getOrNull(21)?.toIntOrNull() ?: 0,
                 commonDamage = fields.getOrNull(22)?.toIntOrNull() ?: 0,
                 commonRange = fields.getOrNull(23)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                technologyIds = fields.getOrElse(24) { "" }.toNestedList(),
             )
         }
 
@@ -367,7 +368,7 @@ class CharacterConverters {
             item.effect, item.pg.toString(), item.pl.toString(), item.category,
             item.agilityLimit?.toString().orEmpty(), item.quality.name,
             "", // reserved legacy slot; ItemBonus is no longer part of the domain model
-            "canonical-v5", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            "canonical-v6", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
             item.acquisitionSource.name, item.heritageCost?.toString().orEmpty(), item.purchasePrice?.toString().orEmpty(),
             item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
             item.baseId, item.materialId, item.modificationIds.nested(), item.gemIds.nested(),
@@ -375,7 +376,7 @@ class CharacterConverters {
                 listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description, effect.resolvedTargetId).joinToString(MODIFIER_FIELD)
             },
             item.dataVersion.toString(), item.durabilityMax.toString(), item.itemCondition.name,
-            item.backpackCapacity.toString(),
+            item.backpackCapacity.toString(), item.technologyIds.nested(), item.gemSlots.toString(), item.technologySlots.toString(),
         ).row()
     }
 
@@ -384,8 +385,8 @@ class CharacterConverters {
             InventoryItem(
                 id = p[0], state = p.getOrElse(1) { "M" }, name = p.getOrElse(2) { "" },
                 load = p.getOrNull(3)?.toIntOrNull() ?: 0,
-                durabilityCurrent = if (p.getOrNull(13) == "canonical-v5") p.getOrNull(4)?.toIntOrNull() ?: 0 else legacyDurability(p.getOrElse(4) { "" }).first,
-                durabilityMax = if (p.getOrNull(13) == "canonical-v5") p.getOrNull(30)?.toIntOrNull() ?: 0 else legacyDurability(p.getOrElse(4) { "" }).second,
+                durabilityCurrent = if (p.getOrNull(13)?.startsWith("canonical-") == true) p.getOrNull(4)?.toIntOrNull() ?: 0 else legacyDurability(p.getOrElse(4) { "" }).first,
+                durabilityMax = if (p.getOrNull(13)?.startsWith("canonical-") == true) p.getOrNull(30)?.toIntOrNull() ?: 0 else legacyDurability(p.getOrElse(4) { "" }).second,
                 region = p.getOrElse(5) { "" }, effect = p.getOrElse(6) { "" },
                 pg = p.getOrNull(7)?.toIntOrNull() ?: 0, pl = p.getOrNull(8)?.toIntOrNull() ?: 0,
                 category = p.getOrElse(9) { "" }, agilityLimit = p.getOrNull(10)?.toIntOrNull(),
@@ -401,11 +402,11 @@ class CharacterConverters {
                 catalogVersion = p.getOrNull(21)?.toIntOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 acquiredAt = p.getOrNull(22)?.toLongOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: 0,
                 canonical = p.getOrNull(23)?.toBooleanStrictOrNull().takeIf { p.getOrNull(13)?.startsWith("canonical-") == true } ?: false,
-                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }.orEmpty(),
-                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }.orEmpty(),
-                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }?.toNestedList().orEmpty(),
-                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }?.toNestedList().orEmpty(),
-                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v3", "canonical-v4", "canonical-v5") }
+                baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
+                materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
+                modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }?.toNestedList().orEmpty(),
+                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }?.toNestedList().orEmpty(),
+                mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }
                     ?.split(MODIFIER_ROW)?.filter(String::isNotBlank)?.map { encoded ->
                         val fields = encoded.split(MODIFIER_FIELD)
                         ItemEffect(
@@ -418,9 +419,12 @@ class CharacterConverters {
                             resolvedTargetId = fields.getOrElse(6) { "" },
                         )
                     }.orEmpty(),
-                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v4", "canonical-v5") } ?: 0,
+                technologyIds = p.getOrElse(33) { "" }.takeIf { p.getOrNull(13) == "canonical-v6" }?.toNestedList().orEmpty(),
+                gemSlots = p.getOrNull(34)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v6" } ?: 0,
+                technologySlots = p.getOrNull(35)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v6" } ?: 0,
+                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v4", "canonical-v5", "canonical-v6") } ?: 0,
                 itemCondition = p.enumAt(31, if (legacyDurability(p.getOrElse(4) { "" }).second == 0) ItemCondition.SCRAP else ItemCondition.NORMAL),
-                backpackCapacity = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v5" } ?: 0,
+                backpackCapacity = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v5", "canonical-v6") } ?: 0,
             )
         }
     }

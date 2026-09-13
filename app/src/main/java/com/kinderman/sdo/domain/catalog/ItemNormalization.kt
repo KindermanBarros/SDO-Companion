@@ -23,7 +23,7 @@ internal fun InventoryItem.normalized(): InventoryItem? {
 
     val normalizedState = durabilityNormalized.inventoryState.storageCode
     val retainedEffects = (
-        ItemCreationRules.componentEffects(modificationIds, gemIds) + mechanicalEffects
+        ItemCreationRules.componentEffects(modificationIds, gemIds, technologyIds) + mechanicalEffects
     ).distinctBy(ItemEffect::id)
     val resolved = ItemCreationRules.inventoryTemplate(catalogEntryId, name)
 

@@ -44,12 +44,13 @@ internal fun CanonicalAbilitySection(
     val abilities = character.allCanonicalAbilitiesSafely().filter { it.kind in kinds }
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         val powersOnly = kinds == setOf(AbilityKind.POWER)
-        SectionHeader(if (powersOnly) "08" else "09", if (powersOnly) "Poderes" else "Habilidades")
+        SectionHeader(if (powersOnly) "08" else "09", if (powersOnly) "Poderes" else "Magias // Runas // Cinzas")
         abilities.forEach { ability -> CanonicalAbilityEditor(character, ability, kinds, enabled, onChange) }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = { selecting = true }, enabled = enabled && catalog.isNotEmpty(), modifier = Modifier.weight(1f)) {
-                Text("+ CATÁLOGO")
-            }
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            AddButton(
+                if (powersOnly) "Selecionar poder" else "Selecionar místico",
+                enabled && catalog.isNotEmpty(),
+            ) { selecting = true }
             TextButton(onClick = {
                 val kind = kinds.firstOrNull() ?: AbilityKind.POWER
                 val ability = Ability(
@@ -57,12 +58,17 @@ internal fun CanonicalAbilitySection(
                     source = Source.narrative(NarrativeSourceId("manual")), cost = defaultCost(kind),
                 )
                 onChange(character.copy(abilities = character.allCanonicalAbilitiesSafely() + ability))
-            }, enabled = enabled, modifier = Modifier.weight(1f)) {
-                Text("+ NARRATIVA")
+            }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                Text(if (powersOnly) "+ CRIAR PODER" else "+ CRIAR EFEITO MÍSTICO")
             }
         }
     }
-    if (selecting) CatalogPickerDialog("SELECIONAR HABILIDADE", catalog, { selecting = false }) { entry ->
+    if (selecting) CatalogPickerDialog(
+        title = if (kinds == setOf(AbilityKind.POWER)) "SELECIONAR PODER" else "CATÁLOGO MÍSTICO",
+        entries = catalog,
+        onDismiss = { selecting = false },
+        groupAshVariants = kinds != setOf(AbilityKind.POWER),
+    ) { entry ->
         val result = runCatching {
             when (entry.kind) {
                 CatalogKind.POWER -> entry.toStructuredPower(PowerSourceType.NARRATIVE, entry.id).toCanonicalAbility()
@@ -70,7 +76,12 @@ internal fun CanonicalAbilitySection(
             }
         }
         result.onSuccess { ability ->
-            onChange(character.copy(abilities = character.allCanonicalAbilitiesSafely() + ability))
+            val updated = if (entry.kind == CatalogKind.ASH) {
+                character.withAddedAsh(entry.toMysticAbility(), doses = 1, initialCreation = character.isInCreation)
+            } else {
+                character.copy(abilities = character.allCanonicalAbilitiesSafely() + ability)
+            }
+            onChange(updated)
             selecting = false
         }.onFailure { error ->
             android.widget.Toast.makeText(context, error.message ?: "Entrada inválida no catálogo.", android.widget.Toast.LENGTH_LONG).show()
