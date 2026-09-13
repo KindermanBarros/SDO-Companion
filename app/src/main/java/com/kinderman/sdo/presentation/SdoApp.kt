@@ -78,10 +78,7 @@ fun SdoApp(
     val message by appViewModel.message.collectAsStateWithLifecycle()
     val saveErrors by appViewModel.saveErrors.collectAsStateWithLifecycle()
     val catalog by appViewModel.catalog.collectAsStateWithLifecycle()
-    val audit by appViewModel.audit.collectAsStateWithLifecycle()
-    val campaignLibrary by appViewModel.library.collectAsStateWithLifecycle()
     val deliveries by appViewModel.deliveries.collectAsStateWithLifecycle()
-    val alertSettings by appViewModel.alertSettings.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -243,7 +240,11 @@ fun SdoApp(
                     onBack = { goBack() },
                 )
 
-                AppSurface.HISTORIAN -> HistorianDashboardScreen(
+                AppSurface.HISTORIAN -> {
+                    val audit by appViewModel.audit.collectAsStateWithLifecycle()
+                    val campaignLibrary by appViewModel.library.collectAsStateWithLifecycle()
+                    val alertSettings by appViewModel.alertSettings.collectAsStateWithLifecycle()
+                    HistorianDashboardScreen(
                     session = appSession!!,
                     campaigns = campaigns,
                     memberships = memberships,
@@ -266,7 +267,8 @@ fun SdoApp(
                         navigate(AppSurface.SHEET, it)
                     },
                     onBack = { goBack() },
-                )
+                    )
+                }
 
                 AppSurface.SETTINGS -> SettingsScreen(
                     preferences = preferences,
