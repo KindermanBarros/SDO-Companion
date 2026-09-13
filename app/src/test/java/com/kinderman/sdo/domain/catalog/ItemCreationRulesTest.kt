@@ -25,7 +25,7 @@ class ItemCreationRulesTest {
         )
         assertEquals(8, item.creationCost)
         assertEquals(1, item.load)
-        assertEquals(8, item.durability)
+        assertEquals(2, item.durability)
         assertTrue(item.effect.contains(ItemCreationRules.weaponModifications.first { it.id == "afiada" }.effect))
         assertEquals(ItemEffectType.RULE, item.mechanicalEffects.single().type)
         assertEquals("attack", item.mechanicalEffects.single().target)
@@ -56,7 +56,7 @@ class ItemCreationRulesTest {
         )
 
         assertEquals(6, item.creationCost)
-        assertEquals(8, item.durability)
+        assertEquals(2, item.durability)
         assertEquals("ligas_comuns", item.materialId)
         assertTrue(!item.effect.contains("Material predominante"))
         assertTrue(item.mechanicalEffects.isEmpty())
@@ -82,8 +82,8 @@ class ItemCreationRulesTest {
     }
 
     @Test fun weaponAndArmorReceiveDifferentEffectsFromSameMaterial() {
-        val weapon = ItemCreationRules.weaponMaterials.first { it.id == "ligas_incomuns" }
-        val armor = ItemCreationRules.armorMaterials.first { it.id == "ligas_incomuns" }
+        val weapon = ItemCreationRules.weaponMaterials.first { it.id == "ferrita_rubra" }
+        val armor = ItemCreationRules.armorMaterials.first { it.id == "ferrita_rubra" }
 
         assertEquals(1, weapon.damageBonus)
         assertEquals(0, weapon.damageReduction)
