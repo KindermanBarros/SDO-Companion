@@ -581,7 +581,10 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 3 && category != "Item") {
                     ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
-                    Text("CUSTO ATUAL // ${built.creationCost ?: "#"} PH // SALDO ${remainingHeritage?.minus(built.creationCost ?: 0) ?: "—"}", color = MaterialTheme.colorScheme.primary)
+                    if (initialCreation) Text(
+                        "CUSTO ATUAL // ${built.creationCost ?: "#"} PH // SALDO ${(remainingHeritage ?: 0) - (built.creationCost ?: 0)}",
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
                 if (step == 4 && category != "Item") {
                     Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
