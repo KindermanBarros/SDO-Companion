@@ -254,6 +254,22 @@ test('player can edit their own character but another active member cannot', asy
   }));
 });
 
+test('player can synchronize links for their own active campaign membership', async () => {
+  await seed();
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  const otherMemberDb = env.authenticatedContext(ids.historian).firestore();
+  const membership = doc(playerDb, 'campaignMembers', `${ids.campaign}::${ids.player}`);
+
+  await assertSucceeds(updateDoc(membership, {
+    characterIds: [ids.character, 'second-character'],
+    updatedAt: 2,
+  }));
+  await assertFails(updateDoc(doc(otherMemberDb, 'campaignMembers', `${ids.campaign}::${ids.player}`), {
+    characterIds: [],
+    updatedAt: 3,
+  }));
+});
+
 test('campaign owner can edit linked characters while campaign is active', async () => {
   await seed();
   const db = env.authenticatedContext(ids.owner).firestore();
