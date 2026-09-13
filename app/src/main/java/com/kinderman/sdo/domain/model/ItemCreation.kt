@@ -381,7 +381,7 @@ data class BuiltItem(
     )
 }
 
-const val CURRENT_ITEM_DATA_VERSION = 6
+const val CURRENT_ITEM_DATA_VERSION = 7
 
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 

@@ -6,6 +6,7 @@ import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
+import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.inventoryState
 import com.kinderman.sdo.domain.model.withValidInventoryStates
 
@@ -15,10 +16,12 @@ fun Character.withNormalizedInventory(): Character {
 }
 
 internal fun InventoryItem.normalized(): InventoryItem? {
+    val knownMaterialIds = (ItemCreationRules.weaponMaterials + ItemCreationRules.armorMaterials).mapTo(hashSetOf(), ItemPart::id)
+    val normalizedSecondaryMaterialId = secondaryMaterialId.takeIf { it != materialId && it in knownMaterialIds }.orEmpty()
     val durabilityWasNotDefined = durabilityMax <= 0
     val durabilityNormalized = if (durabilityWasNotDefined) {
-        copy(durabilityCurrent = 1, durabilityMax = 1)
-    } else copy(durabilityCurrent = durabilityCurrent.coerceIn(0, durabilityMax))
+        copy(durabilityCurrent = 1, durabilityMax = 1, secondaryMaterialId = normalizedSecondaryMaterialId)
+    } else copy(durabilityCurrent = durabilityCurrent.coerceIn(0, durabilityMax), secondaryMaterialId = normalizedSecondaryMaterialId)
     if (dataVersion >= CURRENT_ITEM_DATA_VERSION) return durabilityNormalized
 
     val normalizedState = durabilityNormalized.inventoryState.storageCode
@@ -53,6 +56,7 @@ internal fun InventoryItem.normalized(): InventoryItem? {
         catalogVersion = entry.version,
         canonical = true,
         acquiredAt = acquiredAt,
+        secondaryMaterialId = normalizedSecondaryMaterialId,
         durabilityCurrent = finalDurabilityCurrent,
         durabilityMax = finalDurabilityMax,
         mechanicalEffects = (canonical.mechanicalEffects + retainedEffects).distinctBy(ItemEffect::id),
