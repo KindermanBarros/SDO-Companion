@@ -45,7 +45,8 @@ internal fun RacePickerDialog(
     onConfirm: (RaceDefinition, SubRaceDefinition?, String, List<RacialPower>, RacialPower?) -> Unit,
 ) {
     val initialRace = RaceCatalog.race(character.race) ?: RaceCatalog.races.first()
-    val initialSubRace = RaceCatalog.subRacesFor(initialRace).firstOrNull { it.name == character.subRace }
+    val initialSubRaceName = character.subRace.ifBlank { RaceCatalog.legacySubRace(character.race).orEmpty() }
+    val initialSubRace = RaceCatalog.subRacesFor(initialRace).firstOrNull { it.name == initialSubRaceName }
     val initialBaseCount = if (initialSubRace == null) 2 else 1
     val storedBasePowers = initialRace.powers.filter { option ->
         character.powers.any { it.name == option.name && it.origin == "Raça — ${initialRace.name}" }

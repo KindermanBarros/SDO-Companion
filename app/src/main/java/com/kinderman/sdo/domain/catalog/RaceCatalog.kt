@@ -35,6 +35,7 @@ data class RaceDefinition(
 data class SubRaceDefinition(
     val name: String,
     val powers: List<RacialPower>,
+    val parentRace: String? = null,
     val organicOnly: Boolean = false,
     val source: String = RaceCatalog.SOURCE,
     val ruleReference: String = RaceCatalog.RULE_REFERENCE,
@@ -96,12 +97,10 @@ object RaceCatalog {
         race("Humanos", "Qualquer", 1, 1, 1, 1, powers = arrayOf(power("Versatilidade", "Escolha 1 Conhecimento Adquirido adicional."), power("Adaptação", "Uma vez por cena, repita um teste falho e mantenha o segundo resultado.", costValue = 2, action = "Reação", limit = "Uma vez por cena"))),
         race("Elfos", "POD", 0, 1, 2, 1, powers = arrayOf(power("Afinidade Arcana", "+2 em testes de uma tradição, escola ou aplicação de magia escolhida.", action = "1 ação"), power("Passo Gracioso", "Uma vez por turno após Movimento, desloque-se mais 5 m; não vale para Corrida.", costValue = 1, limit = "Uma vez por turno"))),
         race("Ascendidos", "VIG", 2, 0, 1, 1, powers = arrayOf(power("Asas Manifestas", "Plane, ignore quedas ou voe 10 m, terminando apoiado.", costValue = 2), power("Sopro Dracônico", "Uma vez por cena, afete uma linha de 6 m com POD + Arcano e cause 1d6 de dano mágico.", costValue = 2, range = "6 metros", limit = "Uma vez por cena"))),
-        race("Elfos do Crepúsculo", "INT", 0, 1, 2, 1, powers = arrayOf(power("Interface Arcana", "+2 em um Conhecimento ligado a tecnologia, engenharia, artefatos ou magia."), power("Conversão de Energia", "Uma vez por turno, recupere 1 PM sem ultrapassar seu máximo.", costValue = 2, limit = "Uma vez por turno"))),
         race("Golms", "VIG", 3, 1, 0, 0, organic = false, powers = arrayOf(power("Corpo Construído", "Imune a sangramento, venenos e doenças comuns; não respira; cura biológica pela metade."), power("Matéria Resistente", "Escolha Pedra, Metal, Cristal ou Cerâmica para obter a resistência correspondente."))),
         race("Ciuvati", "POD", 0, 2, 2, 0, powers = arrayOf(power("Anatomia Impossível", "Uma vez por cena, reduza em um grau uma Falha Corporal, mutilação ou desmembramento.", costValue = 2, action = "Reação", limit = "Uma vez por cena"), power("Presença Anômala", "Uma vez por cena, faça um teste resistido; o alvo sofre -2 contra você até o próximo turno.", costValue = 3, range = "10 metros", duration = "1 turno", limit = "Uma vez por cena"))),
         race("Crias da Neblina", "CAR", 2, 1, 0, 1, powers = arrayOf(power("Pedra Viva", "Membros resistem a +1 Falha Corporal; críticos não desmembram automaticamente."), power("Reparo Dourado", "Imune a sangramento; recebe resistência crescente conforme Falhas de Órgão."))),
-        race("Kaltoch — Andarilho", "VIG", 1, 1, 1, 1, organic = false, powers = arrayOf(power("Reparo", "Corpo mecânico: recupera HP por Reparo e começa com Reparo [0]."), power("Imunidade Mecânica", "Imune a venenos e doenças comuns."))),
-        race("Kaltoch — Aumentado", "INT", 1, 1, 1, 1, powers = arrayOf(power("Pós-Mortal", "Partes mecânicas são imunes a venenos; começa com 4 modificações ou implantes."), power("Tecnologia Aprimorada", "Escolha 1 Conhecimento Adquirido suportado por um implante."))),
+        race("Kaltoch", "VIG", 1, 1, 1, 1, organic = false, powers = arrayOf(power("Reparo", "Corpo mecânico: recupera HP por Reparo e começa com Reparo [0]."), power("Imunidade Mecânica", "Imune a venenos e doenças comuns."))),
         race("Anões", "FOR", 2, 0, 0, 2, powers = arrayOf(power("Nascidos da Terra", "+4 em Sentidos no subterrâneo ou em estruturas de pedra/terra."), power("Resistência Anã", "RD 2 contra corte, impacto e perfuração; RD 4 abaixo da metade do HP.", action = "1 ação"))),
         race("Sonaris", "POD", 0, 2, 1, 1, powers = arrayOf(power("Tímpano Vivo", "+5 em Sentidos por audição e localização sonora em 10 m; vulnerável a som extremo.", action = "1 ação"), power("Memória Emocional", "Capte a impressão emocional mais forte de um objeto ou local.", costValue = 2, range = "Toque"))),
         race("Goblins", "AGI", 2, 0, 0, 2, powers = arrayOf(power("Remendo Genial", "Uma vez por dia, improvise um item comum que dura 1 cena.", limit = "Uma vez por dia"), power("Instinto Paranoico", "+4 em Iniciativa e ignora penalidade de PG por surpresa no primeiro turno."))),
@@ -115,6 +114,14 @@ object RaceCatalog {
     )
 
     val subRaces = listOf(
+        SubRaceDefinition("Elfos do Crepúsculo", listOf(
+            power("Interface Arcana", "+2 em um Conhecimento ligado a tecnologia, engenharia, artefatos ou magia."),
+            power("Conversão de Energia", "Uma vez por turno, recupere 1 PM sem ultrapassar seu máximo.", costValue = 2, limit = "Uma vez por turno"),
+        ), parentRace = "Elfos"),
+        SubRaceDefinition("Aumentado", listOf(
+            power("Pós-Mortal", "Partes mecânicas são imunes a venenos; começa com 4 modificações ou implantes."),
+            power("Tecnologia Aprimorada", "Escolha 1 Conhecimento Adquirido suportado por um implante."),
+        ), parentRace = "Kaltoch"),
         SubRaceDefinition("Oráculo", listOf(
             power("Vislumbre do Possível", "Uma vez por cena, rerrole o d20 e escolha o resultado.", costValue = 2, destinyCostEligible = true, action = "Reação", limit = "Uma vez por cena"),
             power("Presságio", "Uma vez por cena, aplique +2 ou -2 ao primeiro teste de uma criatura.", costValue = 2, destinyCostEligible = true, range = "Indefinido", duration = "1 turno", limit = "Uma vez por cena"),
@@ -142,6 +149,22 @@ object RaceCatalog {
         ), organicOnly = true),
     )
 
-    fun race(name: String) = races.firstOrNull { it.name == name }
-    fun subRacesFor(race: RaceDefinition) = subRaces.filter { !it.organicOnly || race.organic }
+    fun race(name: String): RaceDefinition? {
+        val canonicalName = when (name) {
+            "Kaltoch — Andarilho", "Kaltoch — Aumentado" -> "Kaltoch"
+            "Elfos do Crepúsculo" -> "Elfos"
+            else -> name
+        }
+        return races.firstOrNull { it.name == canonicalName }
+    }
+
+    fun legacySubRace(raceName: String): String? = when (raceName) {
+        "Kaltoch — Aumentado" -> "Aumentado"
+        "Elfos do Crepúsculo" -> "Elfos do Crepúsculo"
+        else -> null
+    }
+
+    fun subRacesFor(race: RaceDefinition) = subRaces.filter {
+        (it.parentRace == null || it.parentRace == race.name) && (!it.organicOnly || race.organic)
+    }
 }
