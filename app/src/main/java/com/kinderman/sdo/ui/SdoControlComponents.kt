@@ -85,12 +85,13 @@ fun <T> SdoResponsiveGrid(
     items: List<T>,
     modifier: Modifier = Modifier,
     minItemWidth: Dp = 132.dp,
+    maxColumns: Int = 4,
     horizontalSpacing: Dp = 8.dp,
     verticalSpacing: Dp = 8.dp,
     content: @Composable (T, Modifier) -> Unit,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val columns = responsiveColumnCount(maxWidth.value, minItemWidth.value)
+        val columns = responsiveColumnCount(maxWidth.value, minItemWidth.value, maxColumns)
         androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
             items.chunked(columns).forEach { rowItems ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
@@ -102,5 +103,5 @@ fun <T> SdoResponsiveGrid(
     }
 }
 
-internal fun responsiveColumnCount(widthDp: Float, minimumItemWidthDp: Float): Int =
-    (widthDp / minimumItemWidthDp).toInt().coerceIn(1, 4)
+internal fun responsiveColumnCount(widthDp: Float, minimumItemWidthDp: Float, maxColumns: Int = 4): Int =
+    (widthDp / minimumItemWidthDp).toInt().coerceIn(1, maxColumns.coerceAtLeast(1))
