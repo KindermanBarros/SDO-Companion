@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
-import com.kinderman.sdo.domain.model.AbilityKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.ui.TechPanel
+import com.kinderman.sdo.ui.SdoInsetCard
 
 private val creationSteps = listOf(
     "Conceito e raça", "Atributos", "5 Conhecimentos Especiais", "15 Pontos de Conhecimento",
@@ -37,14 +37,12 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
         Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("ETAPA $step/${CharacterCreation.STEP_COUNT} // ${creationSteps[step - 1].uppercase()}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             LinearProgressIndicator(progress = { step / CharacterCreation.STEP_COUNT.toFloat() }, modifier = Modifier.fillMaxWidth())
-            val balance = when (step) {
-                2 -> "ATRIBUTOS ${CharacterCreation.attributePointsSpent(character)}/10"
-                3 -> "ESPECIAIS ${CharacterCreation.initialSpecialKnowledges(character).size}/5 // NÍVEL 0"
-                4 -> "CONHECIMENTOS ${CharacterCreation.knowledgePointsSpent(character)}/15"
-                7 -> "HERANÇA ${CharacterCreation.heritageSpent(character)}/30 PH"
-                else -> null
+            when (step) {
+                2 -> CreationBudgetProgress("ATRIBUTOS", CharacterCreation.attributePointsSpent(character), 10)
+                3 -> CreationBudgetProgress("CONHECIMENTOS ESPECIAIS", CharacterCreation.initialSpecialKnowledges(character).size, 5, "NÍVEL 0")
+                4 -> CreationBudgetProgress("PONTOS DE CONHECIMENTO", CharacterCreation.knowledgePointsSpent(character), 15)
+                7 -> CreationBudgetProgress("PONTOS DE HERANÇA", CharacterCreation.heritageSpent(character), 30, "PH")
             }
-            balance?.let { Text(it, style = MaterialTheme.typography.labelSmall) }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("creation-error")) }
         }
         LazyColumn(
@@ -61,9 +59,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 item { PhaseOneKnowledgeSection(character, catalog, enabled, onChange, allowEntryChanges = false) }
             }
             5 -> item { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, enabled, onChange) }
-            6 -> {
-                item { CanonicalAbilitySection(character, catalog.filter { it.kind == CatalogKind.POWER }, setOf(AbilityKind.POWER), enabled, onChange) }
-            }
+            6 -> item { CreationPowersOverview(character) }
             7 -> item { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, enabled, onChange) }
             8 -> item { CreationReview(character) }
         }
@@ -89,6 +85,36 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 content(Modifier.fillMaxWidth(), Modifier.fillMaxWidth())
             } else Row(layoutModifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 content(Modifier.weight(1f), Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun CreationBudgetProgress(label: String, selected: Int, total: Int, suffix: String = "") {
+    val normalizedSelected = selected.coerceAtLeast(0)
+    val remaining = (total - normalizedSelected).coerceAtLeast(0)
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text("$label // $normalizedSelected / $total${suffix.takeIf { it.isNotBlank() }?.let { " $it" }.orEmpty()}", style = MaterialTheme.typography.labelSmall)
+        LinearProgressIndicator(
+            progress = { (normalizedSelected.toFloat() / total).coerceIn(0f, 1f) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text("$remaining RESTANTES", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+@Composable
+private fun CreationPowersOverview(character: Character) {
+    TechPanel {
+        Text("PODERES DO PERSONAGEM", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        Text("Os poderes desta etapa são definidos pelo Caminho e pela Raça. Esta tela serve apenas para conferência.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (character.powers.isEmpty()) {
+            Text("Nenhum poder foi atribuído ainda.", color = MaterialTheme.colorScheme.error)
+        } else character.powers.forEach { power ->
+            SdoInsetCard {
+                Text(power.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                Text(power.effect.ifBlank { "Sem efeito descrito." }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
