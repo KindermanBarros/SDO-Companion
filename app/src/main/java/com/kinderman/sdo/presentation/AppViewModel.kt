@@ -45,6 +45,11 @@ data class CharacterLoadState(
     val syncing: Boolean = false,
 )
 
+internal enum class RemoteSyncTrigger { MANUAL, EDITING_IDLE, APP_FOREGROUND, APP_BACKGROUND, SHEET_CLOSED }
+
+internal fun shouldRunRemoteSync(automaticSync: Boolean, trigger: RemoteSyncTrigger): Boolean =
+    trigger == RemoteSyncTrigger.MANUAL || automaticSync
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModel(
     private val repository: CharacterRepository,
@@ -69,6 +74,8 @@ class AppViewModel(
     private var lastSyncFailure: String? = null
     private val localSaveMutex = Mutex()
     private val autosaveJobs = mutableMapOf<String, Job>()
+    private val pendingAutosaves = mutableMapOf<String, Character>()
+    private var remoteSyncDebounceJob: Job? = null
 
     val session = currentSession.asStateFlow()
     private val _saveErrors = MutableStateFlow<Map<String, String>>(emptyMap())
@@ -121,7 +128,7 @@ class AppViewModel(
         _invitePreview.value = null
         lastSyncFailure = null
         currentSession.value = session
-        startSync(initial = true)
+        if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_FOREGROUND)) startSync(initial = true)
     }
 
     fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.USER))
@@ -129,12 +136,18 @@ class AppViewModel(
     fun setAutomaticSync(enabled: Boolean) {
         val shouldSyncPendingChanges = enabled && !automaticSync
         automaticSync = enabled
-        if (shouldSyncPendingChanges) startSync(initial = false)
+        if (shouldSyncPendingChanges) viewModelScope.launch {
+            flushAllPendingAutosaves()
+            startSync(initial = false)
+        }
     }
 
     fun clearSession() {
         autosaveJobs.values.forEach(Job::cancel)
         autosaveJobs.clear()
+        pendingAutosaves.clear()
+        remoteSyncDebounceJob?.cancel()
+        remoteSyncDebounceJob = null
         syncJob?.cancel()
         syncJob = null
         syncRequested = false
@@ -154,14 +167,16 @@ class AppViewModel(
 
     fun save(character: Character) {
         autosaveJobs.remove(character.id)?.cancel()
+        pendingAutosaves.remove(character.id)
         saveLocally(character, notify = true)
     }
 
     fun autosave(character: Character) {
+        pendingAutosaves[character.id] = character
         autosaveJobs.remove(character.id)?.cancel()
         val job = viewModelScope.launch {
             delay(350)
-            persistLocally(character, notify = false)
+            flushPendingAutosave(character.id)
         }
         autosaveJobs[character.id] = job
         job.invokeOnCompletion { if (autosaveJobs[character.id] === job) autosaveJobs.remove(character.id) }
@@ -278,7 +293,32 @@ class AppViewModel(
     fun delete(character: Character) = runAction("Personagem removido") { session -> deleteCharacter(session, character) }
 
     fun dismissMessage() { _message.value = null }
-    fun sync() = startSync(initial = false)
+    fun sync() {
+        viewModelScope.launch {
+            flushAllPendingAutosaves()
+            startSync(initial = false)
+        }
+    }
+
+    fun onAppForegrounded() {
+        if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_FOREGROUND)) startSync(initial = false)
+    }
+
+    fun onAppBackgrounded() {
+        viewModelScope.launch {
+            flushAllPendingAutosaves()
+            if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_BACKGROUND)) startSync(initial = false)
+        }
+    }
+
+    fun closeCharacter(character: Character) {
+        pendingAutosaves[character.id] = character
+        autosaveJobs.remove(character.id)?.cancel()
+        viewModelScope.launch {
+            flushPendingAutosave(character.id, scheduleRemote = false)
+            if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.SHEET_CLOSED)) startSync(initial = false)
+        }
+    }
 
     private fun saveLocally(character: Character, notify: Boolean) {
         viewModelScope.launch {
@@ -292,13 +332,39 @@ class AppViewModel(
             .onSuccess {
                 _saveErrors.value = _saveErrors.value - character.id
                 if (notify) _message.value = "Ficha salva localmente"
-                if (automaticSync) startSync(initial = false)
+                if (automaticSync) scheduleRemoteSync()
             }
             .onFailure {
                 val error = userMessage(it, "Falha ao salvar ficha localmente")
                 _saveErrors.value = _saveErrors.value + (character.id to error)
                 _message.value = error
             }
+    }
+
+    private suspend fun flushPendingAutosave(characterId: String, scheduleRemote: Boolean = true) {
+        autosaveJobs.remove(characterId)?.cancel()
+        val character = pendingAutosaves.remove(characterId) ?: return
+        persistLocally(character, notify = false)
+        if (!scheduleRemote) remoteSyncDebounceJob?.cancel()
+    }
+
+    private suspend fun flushAllPendingAutosaves() {
+        val pending = pendingAutosaves.values.toList()
+        autosaveJobs.values.forEach(Job::cancel)
+        autosaveJobs.clear()
+        pendingAutosaves.clear()
+        pending.forEach { persistLocally(it, notify = false) }
+        remoteSyncDebounceJob?.cancel()
+        remoteSyncDebounceJob = null
+    }
+
+    private fun scheduleRemoteSync() {
+        if (!shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.EDITING_IDLE)) return
+        remoteSyncDebounceJob?.cancel()
+        remoteSyncDebounceJob = viewModelScope.launch {
+            delay(5_000)
+            startSync(initial = false)
+        }
     }
 
     fun resolveConflict(conflict: CharacterSyncConflict, remoteFieldIds: Set<String>) {
@@ -310,7 +376,7 @@ class AppViewModel(
                         it.local.id == conflict.local.id && it.remoteUpdatedAt == conflict.remoteUpdatedAt
                     }
                     _message.value = "Conflito resolvido"
-                    if (_conflicts.value.isEmpty()) startSync(initial = false)
+                    if (_conflicts.value.isEmpty() && automaticSync) startSync(initial = false)
                 }
                 .onFailure { _message.value = userMessage(it, "Falha ao resolver conflito") }
         }
