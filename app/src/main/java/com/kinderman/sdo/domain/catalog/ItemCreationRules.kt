@@ -37,11 +37,14 @@ object ItemCreationRules {
                 traitIds = effect.traitIds,
                 damageBonus = effect.damageBonus,
                 damageReduction = effect.damageReduction,
+                pg = effect.pg,
+                pl = effect.pl,
+                categoryDieShift = effect.categoryDieShift,
             )
         }
 
     private fun mergeMaterials(legacy: List<ItemPart>, structured: List<ItemPart>): List<ItemPart> =
-        (legacy + structured.filterNot { candidate -> legacy.any { it.id == candidate.id } })
+        (legacy.filterNot { old -> structured.any { it.id == old.id } } + structured)
             .sortedWith(compareBy(ItemPart::materialTier, ItemPart::name))
 
     val weaponMaterials = mergeMaterials(CanonicalItemCatalog.weaponMaterials, structuredMaterials(weapon = true))
@@ -62,6 +65,13 @@ object ItemCreationRules {
 
     val gemComponents = CanonicalItemCatalog.gems.map { it.part }
     val technologyComponents = CanonicalItemCatalog.technologies.map { it.part }
+
+    fun traitName(id: String): String = GeneratedStructuredItemCatalog.traits.firstOrNull { it.id == id }?.name ?: id
+
+    fun traitDescription(id: String): String = GeneratedStructuredItemCatalog.traits.firstOrNull { it.id == id }?.description.orEmpty()
+
+    fun qualitiesFor(initialCreation: Boolean): List<ItemQuality> =
+        ItemQuality.entries.filterNot { initialCreation && it == ItemQuality.ANCIENT }
 
     fun materialsFor(materials: List<ItemPart>, initialCreation: Boolean): List<ItemPart> =
         materials.filter { material ->
@@ -90,6 +100,9 @@ object ItemCreationRules {
             traitIds = (primary.traitIds + secondary.traitIds).distinct(),
             damageBonus = (primary.damageBonus + secondary.damageBonus + 1) / 2,
             damageReduction = (primary.damageReduction + secondary.damageReduction + 1) / 2,
+            pg = (primary.pg + secondary.pg + 1) / 2,
+            pl = (primary.pl + secondary.pl + 1) / 2,
+            categoryDieShift = (primary.categoryDieShift + secondary.categoryDieShift + 1) / 2,
         )
     }
 
@@ -129,7 +142,7 @@ object ItemCreationRules {
             ItemQuality.MASTERPIECE, ItemQuality.ARTIFACT, ItemQuality.ANCIENT -> 2
             else -> 0
         } else 0
-        val rawPg = base.pg + (if (protective) effectiveMaterial.pg + effectiveMaterial.damageReduction else 0) + modifications.sumOf { it.pg } + qualityPg
+        val rawPg = base.pg + (if (protective) effectiveMaterial.pg else 0) + modifications.sumOf { it.pg } + qualityPg
         val rawPl = if (quality == ItemQuality.MUNDANE) 0 else base.pl + effectiveMaterial.pl + modifications.sumOf { it.pl } + qualityPl
         val pg = if (armor && effectiveMaterial.id == "sucata") rawPg / 2 else rawPg
         val pl = if (armor && effectiveMaterial.id == "sucata") rawPl / 2 else rawPl
@@ -149,7 +162,9 @@ object ItemCreationRules {
             technologies.forEach { add(it.effect) }
             qualityEffect(quality, armor)?.let(::add)
         }.filter(String::isNotBlank).joinToString("\n")
-        val referencePrice = componentCost?.let(::standardPrice)?.let { (it * quality.priceMultiplier).roundToInt() } ?: 0
+        val componentPrice = base.price + effectiveMaterial.price + modifications.sumOf { it.price } +
+            installedComponents.sumOf { it.price } + technologies.sumOf { it.price }
+        val referencePrice = (componentPrice * quality.priceMultiplier).roundToInt().coerceAtLeast(0)
         return BuiltItem(
             name = customName.ifBlank { "${base.name} de ${effectiveMaterial.name}" },
             category = base.group,
@@ -179,6 +194,22 @@ object ItemCreationRules {
                         value = bonus,
                         condition = ItemEffectCondition.WIELDED,
                         description = "Bônus de dano concedido pelo material.",
+                    )
+                }, effectiveMaterial.damageReduction.takeIf { protective && it != 0 }?.let { reduction ->
+                    ItemEffect(
+                        id = "material:${effectiveMaterial.id}:reduction",
+                        type = ItemEffectType.DAMAGE_REDUCTION,
+                        value = reduction,
+                        condition = ItemEffectCondition.EQUIPPED,
+                        description = "Redução de dano concedida pelo material.",
+                    )
+                }, effectiveMaterial.categoryDieShift.takeIf { !armor && it != 0 }?.let { shift ->
+                    ItemEffect(
+                        id = "material:${effectiveMaterial.id}:die-category",
+                        type = ItemEffectType.DIE_CATEGORY,
+                        value = shift,
+                        condition = ItemEffectCondition.WIELDED,
+                        description = "Alteração da categoria de dado concedida pelo material.",
                     )
                 }) +
                 equipmentEffects(base.id, pg, pl, baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) }, quality, armor, isShield = base.group == "Escudo"))
@@ -333,7 +364,7 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
             summary.takeIf(String::isNotBlank),
         ).joinToString("\n"),
         category = group,
-        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.PURCHASE,
+        acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.NARRATIVE,
         heritageCost = creationCost.toIntOrNull().takeIf { initialCreation },
         purchasePrice = price,
         catalogEntryId = id,

@@ -3,6 +3,7 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemEffectType
+import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import org.junit.Assert.assertEquals
@@ -81,6 +82,17 @@ class ItemCreationRulesTest {
         assertTrue(regularMaterials.any { it.materialTier == MaterialTier.ANCESTRAL.name })
     }
 
+    @Test fun ancestralQualityIsNeverAvailableDuringCharacterCreation() {
+        assertTrue(ItemQuality.ANCIENT !in ItemCreationRules.qualitiesFor(initialCreation = true))
+        assertTrue(ItemQuality.ANCIENT in ItemCreationRules.qualitiesFor(initialCreation = false))
+    }
+
+    @Test fun catalogsMeetMinimumCoverageAndTraitsHaveDescriptions() {
+        assertTrue(GeneratedStructuredItemCatalog.materials.size >= 30)
+        assertTrue(CanonicalItemCatalog.modifications.size >= 30)
+        assertTrue(GeneratedStructuredItemCatalog.traits.all { it.description.isNotBlank() })
+    }
+
     @Test fun weaponAndArmorReceiveDifferentEffectsFromSameMaterial() {
         val weapon = ItemCreationRules.weaponMaterials.first { it.id == "ferrita_rubra" }
         val armor = ItemCreationRules.armorMaterials.first { it.id == "ferrita_rubra" }
@@ -89,6 +101,17 @@ class ItemCreationRulesTest {
         assertEquals(0, weapon.damageReduction)
         assertEquals(0, armor.damageBonus)
         assertEquals(1, armor.damageReduction)
+    }
+
+    @Test fun damageReductionRemainsIndependentFromGeneralProtection() {
+        val item = ItemCreationRules.build(
+            base = ItemCreationRules.armorBases.first { it.id == "elmo" },
+            material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" },
+            modifications = emptyList(), gemSlots = 0, technologySlots = 0,
+        )
+
+        assertEquals(2, item.pg)
+        assertTrue(item.mechanicalEffects.any { it.type == ItemEffectType.DAMAGE_REDUCTION && it.value == 1 })
     }
 
     @Test fun alloyCombinesTwoDifferentMaterialsAndPersistsComposition() {
@@ -178,9 +201,22 @@ class ItemCreationRulesTest {
             CanonicalItemCatalog.armorBases.size + CanonicalItemCatalog.catalogItems.size
 
         assertEquals(161, itemDefinitionCount)
-        assertEquals(26, CanonicalItemCatalog.modifications.size)
+        assertEquals(30, CanonicalItemCatalog.modifications.size)
         assertEquals(57, CanonicalItemCatalog.gems.size)
         assertEquals(50, CanonicalItemCatalog.technologies.size)
+    }
+
+
+    @Test fun nonInitialCreationKeepsFuturePriceWithoutPretendingThereWasAPurchase() {
+        val item = ItemCreationRules.build(
+            base = ItemCreationRules.weaponBases.first { it.id == "adaga" },
+            material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" },
+            modifications = emptyList(), gemSlots = 0, technologySlots = 0,
+        ).toInventoryItem(initialCreation = false)
+
+        assertEquals(ItemAcquisitionSource.CRAFTED, item.acquisitionSource)
+        assertTrue(item.purchasePrice > 0)
+        assertEquals(0, item.initialCreationCost())
     }
 
     @Test fun catalogInventoryUsesTypedProtectionInsteadOfDescriptionParsing() {

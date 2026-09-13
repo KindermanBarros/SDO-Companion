@@ -178,10 +178,12 @@ internal fun PhaseOneStrictInventorySection(
                 }
                 ItemCreationRules.run {
                     val materialName = (weaponMaterials + armorMaterials).firstOrNull { it.id == item.materialId }?.name
+                    val secondaryMaterialName = (weaponMaterials + armorMaterials).firstOrNull { it.id == item.secondaryMaterialId }?.name
                     val modificationNames = (weaponModifications + armorModifications).filter { it.id in item.modificationIds }.map { it.name }
                     val gemNames = gemComponents.filter { it.id in item.gemIds }.map { it.name }
                     val technologyNames = technologyComponents.filter { it.id in item.technologyIds }.map { it.name }
                     materialName?.let { Text("MATERIAL // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
+                    secondaryMaterialName?.let { Text("LIGA // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
                     if (modificationNames.isNotEmpty()) Text("MODIFICAÇÕES // ${modificationNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     Text("ESPAÇOS // GEMAS ${item.gemIds.size}/${item.gemSlots} // TECNOLOGIA ${item.technologyIds.size}/${item.technologySlots}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                     if (gemNames.isNotEmpty()) Text("GEMAS // ${gemNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -515,6 +517,7 @@ private fun StrictItemBuilderDialog(
     val category = draft.category
     val weapon = category == "Arma"
     val initialCreation = remainingHeritage != null
+    val qualityOptions = ItemCreationRules.qualitiesFor(initialCreation)
     val basePool: List<ItemPart> = when (category) {
         "Arma" -> ItemCreationRules.weaponBases
         "Acessório" -> ItemCreationRules.armorBases.filter { it.group == "Acessório" }
@@ -535,7 +538,7 @@ private fun StrictItemBuilderDialog(
     val gemSlots = draft.gemSlots
     val technologySlots = draft.technologySlots
     val customName = draft.customName
-    val quality = draft.quality
+    val quality = draft.quality.takeIf { it in qualityOptions } ?: ItemQuality.COMMON
     val gems: List<ItemPart> = ItemCreationRules.gemComponents.filter { it.id in draft.gemIds }
     val technologies: List<ItemPart> = ItemCreationRules.technologyComponents.filter { it.id in draft.technologyIds }
     val commonName = draft.commonName
@@ -603,7 +606,7 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 1 && category == "Item") {
                     ChoiceField("Categoria", commonCategory, listOf("Arma", "Armadura", "Acessório", "Escudo", "Consumível", "Munição", "Ferramenta", "Recipiente de Carga", "Item"), true) { onDraftChange(draft.copy(commonCategory = it)) }
-                    ChoiceField("Qualidade", quality, ItemQuality.entries, true, display = { it.label }) { onDraftChange(draft.copy(quality = it)) }
+                    ChoiceField("Qualidade", quality.takeIf { it in qualityOptions } ?: ItemQuality.COMMON, qualityOptions, true, display = { it.label }) { onDraftChange(draft.copy(quality = it)) }
                     HudTextField("Nome do item", commonName) { onDraftChange(draft.copy(commonName = it)) }
                     TwoFields(
                         { IntegerField("Quantidade", commonQuantity, true, it) { value -> onDraftChange(draft.copy(commonQuantity = value.coerceAtLeast(1))) } },
@@ -653,7 +656,7 @@ private fun StrictItemBuilderDialog(
                     ItemPartDetails(if (secondaryMaterial == null) "COMPOSIÇÃO PURA" else "RESULTADO DA LIGA", composition, weapon, initialCreation)
                 }
                 if (step == 4 && category != "Item") {
-                    ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
+                    ChoiceField<String>("Qualidade", quality.takeIf { it in qualityOptions }?.name ?: ItemQuality.COMMON.name, qualityOptions.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
                     QualityDetails(quality, weapon, initialCreation)
                     if (initialCreation) Text(
                         "CUSTO ATUAL // ${built.creationCost} PH // SALDO ${remainingHeritage - (built.creationCost ?: 0)}",
@@ -730,9 +733,13 @@ private fun StrictItemBuilderDialog(
                 if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (technologies.isNotEmpty()) Text("TECNOLOGIAS // ${technologies.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (category != "Item") {
+                    val finalMaterial = ItemCreationRules.mixMaterials(material, secondaryMaterial)
                     val selectedEffects = buildList {
                         add(base.effect)
-                        add(material.effect)
+                        add(finalMaterial.effect)
+                        finalMaterial.traitIds.mapTo(this) { traitId ->
+                            "${ItemCreationRules.traitName(traitId)}: ${ItemCreationRules.traitDescription(traitId)}"
+                        }
                         ItemCreationRules.qualityEffect(quality, armor = !weapon)?.let(::add)
                         modifications.mapTo(this) { "${it.name}: ${it.effect}" }
                         gems.mapTo(this) { "${it.name}: ${it.effect}" }
@@ -771,12 +778,18 @@ private fun ItemPartDetails(title: String, part: ItemPart, weapon: Boolean, show
         Text(title, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         Text(part.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
         if (part.traitIds.isNotEmpty()) Text(
-            "TRAÇOS // ${part.traitIds.joinToString { it.replace('_', ' ').uppercase() }}",
+            "TRAÇOS // ${part.traitIds.joinToString { ItemCreationRules.traitName(it).uppercase() }}",
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodySmall,
         )
+        part.traitIds.forEach { traitId ->
+            ItemCreationRules.traitDescription(traitId).takeIf(String::isNotBlank)?.let { description ->
+                Text("${ItemCreationRules.traitName(traitId)} // $description", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            }
+        }
         if (part.damageBonus != 0) Text("DANO // +${part.damageBonus}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         if (part.damageReduction != 0) Text("REDUÇÃO // +${part.damageReduction}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (part.categoryDieShift != 0) Text("CATEGORIA DE DADO // ${signed(part.categoryDieShift)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         ItemPartStats(part, showHeritageCost, includeProtection = false)
         if (!weapon) {
             Text("PROTEÇÃO // PG ${part.pg} // PL ${part.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -831,6 +844,8 @@ internal fun ItemEffect.presentationLabel(): String {
         ItemEffectType.PL -> "Proteção local"
         ItemEffectType.AGILITY_LIMIT -> "Limite de Agilidade"
         ItemEffectType.DURABILITY -> "Durabilidade"
+        ItemEffectType.DAMAGE_REDUCTION -> "Redução de dano"
+        ItemEffectType.DIE_CATEGORY -> "Categoria de dado"
         ItemEffectType.GEM_POWER -> "Poder de gema"
         ItemEffectType.RULE -> error("handled above")
     }

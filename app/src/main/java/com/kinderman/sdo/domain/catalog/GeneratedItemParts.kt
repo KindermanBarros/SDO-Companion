@@ -9,12 +9,12 @@ internal object GeneratedItemParts {
     val weaponMaterials = listOf(
         ItemPart("sucata", "Sucata", "Material de arma", 0, 5, 0, 0, "", "Começa em Sucata; ataques com Desvantagem.", 0, 0, null, 0),
         ItemPart("madeira", "Madeira, Osso Simples ou Plástico", "Material de arma", 0, 5, 0, 1, "", "Dano cortante torna-se impacto quando incompatível.", 0, 0, null, 0),
-        ItemPart("ligas_comuns", "Ligas Comuns", "Material de arma", 1, 20, 0, 2, "", "Padrão metálico.", 0, 0, null, 0),
+        ItemPart("ligas_comuns", "Ligas Comuns", "Material de arma", 1, 25, 0, 2, "", "Efeitos definidos pelos campos estruturados do material.", 0, 0, null, 0),
         ItemPart("escamas_exoticas", "Escamas Exóticas", "Material de arma", 2, 45, 0, 2, "", "Orgânica e não metálica.", 0, 0, null, 0),
         ItemPart("ossos_comuns", "Ossos Trabalhados", "Material de arma", 3, 90, -1, 3, "", "Remove Pesado; Carga mínima 2.", 0, 0, null, 0),
-        ItemPart("ligas_incomuns", "Ligas Incomuns", "Material de arma", 3, 90, 0, 5, "", "+1 dano.", 0, 0, null, 0),
-        ItemPart("aco_negro", "Aço Negro", "Material de arma", 5, 250, 0, 6, "", "+1 Categoria de Dado.", 0, 0, null, 0),
-        ItemPart("prata_estelar", "Prata Estelar", "Material de arma", 5, 250, 0, 5, "", "+1 dano; Delicada; Dilaceração.", 0, 0, null, 0),
+        ItemPart("ligas_incomuns", "Ligas Incomuns", "Material de arma", 3, 130, 0, 5, "", "Efeitos definidos pelos campos estruturados do material.", 0, 0, null, 0),
+        ItemPart("aco_negro", "Aço Negro", "Material de arma", 5, 300, 0, 6, "", "Efeitos definidos pelos campos estruturados do material.", 0, 0, null, 0),
+        ItemPart("prata_estelar", "Prata Estelar", "Material de arma", 5, 360, 0, 5, "", "Efeitos definidos pelos campos estruturados do material.", 0, 0, null, 0),
         ItemPart("ligas_raras", "Ligas Raras", "Material de arma", null, 0, 0, 6, "", "Propriedades e preço definidos pela liga; item #.", 0, 0, null, 0),
         ItemPart("ligas_ancestrais", "Ligas Ancestrais", "Material de arma", null, 0, 0, 8, "", "Propriedades definidas pela liga; item #.", 0, 0, null, 0),
     )
@@ -22,11 +22,11 @@ internal object GeneratedItemParts {
     val armorMaterials = listOf(
         ItemPart("sucata", "Sucata", "Material de armadura", 0, 5, 0, 0, "", "Começa em Sucata; PG e PL finais pela metade.", 0, 0, null, 0),
         ItemPart("organico", "Madeira, Couro ou Tecido", "Material de armadura", 0, 5, 0, 1, "", "Corte absorvido torna-se impacto.", 0, 1, null, 0),
-        ItemPart("ligas_comuns", "Ligas Comuns", "Material de armadura", 1, 20, 0, 2, "", "RD 1 contra corte.", 1, 1, null, 0),
+        ItemPart("ligas_comuns", "Ligas Comuns", "Material de armadura", 1, 25, 0, 2, "", "Efeitos definidos pelos campos estruturados do material.", 1, 1, null, 0),
         ItemPart("escamas_comuns", "Escamas Comuns", "Material de armadura", 2, 45, 0, 2, "", "RD 1 contra impacto.", 1, 2, null, 0),
-        ItemPart("ligas_incomuns", "Ligas Incomuns", "Material de armadura", 3, 90, 0, 5, "", "LA 4.", 1, 3, 4, 0),
-        ItemPart("aco_negro", "Aço Negro", "Material de armadura", 5, 250, 0, 6, "", "RD 4 contra corte e impacto; LA 3.", 2, 3, 3, 0),
-        ItemPart("prata_estelar", "Prata Estelar", "Material de armadura", 5, 250, 0, 5, "", "RD 5; Delicada; LA 3.", 1, 3, 3, 0),
+        ItemPart("ligas_incomuns", "Ligas Incomuns", "Material de armadura", 3, 130, 0, 5, "", "Efeitos definidos pelos campos estruturados do material.", 1, 3, 4, 0),
+        ItemPart("aco_negro", "Aço Negro", "Material de armadura", 5, 300, 0, 6, "", "Efeitos definidos pelos campos estruturados do material.", 2, 3, 3, 0),
+        ItemPart("prata_estelar", "Prata Estelar", "Material de armadura", 5, 360, 0, 5, "", "Efeitos definidos pelos campos estruturados do material.", 1, 3, 3, 0),
         ItemPart("ligas_raras", "Ligas Raras", "Material de armadura", null, 0, 0, 6, "", "Propriedades, PG, PL, LA e preço definidos pela liga; item #.", 0, 0, null, 0),
         ItemPart("ligas_ancestrais", "Ligas Ancestrais", "Material de armadura", null, 0, 0, 8, "", "Propriedades definidas pela liga; item #.", 0, 0, null, 0),
     )
@@ -113,6 +113,8 @@ internal object GeneratedItemParts {
         ItemPart("isolamento_galvanico", "Isolamento Galvânico", "Modificação de arma", 4, 150, 0, 0, "", "Impede o primeiro dano de retorno elétrico de cada cena.", 0, 0, null, 0),
         ItemPart("revestimento_refratario", "Revestimento Refratário", "Modificação de arma", 4, 150, 0, 0, "", "Reduz em 1 o desgaste provocado por calor ou ácido.", 0, 0, null, 0),
         ItemPart("pomo_oculto", "Pomo Oculto", "Modificação de arma", 2, 45, 0, 0, "", "Concede +2 para ocultar a arma em uma revista.", 0, 0, null, 0),
+        ItemPart("contrapeso_modular", "Contrapeso Modular", "Modificação de arma", 2, 45, 0, 0, "", "+1 Ataque enquanto empunhada.", 0, 0, null, 0),
+        ItemPart("nucleo_estabilizador", "Núcleo Estabilizador", "Modificação de arma", 3, 90, 0, 0, "", "+1 dano físico enquanto empunhada.", 0, 0, null, 0),
     )
 
     val armorModifications = listOf(
@@ -127,6 +129,8 @@ internal object GeneratedItemParts {
         ItemPart("sola_tracionada", "Sola Tracionada", "Modificação de armadura", 2, 45, 0, 0, "", "Ignora o primeiro quadrado de terreno difícil por turno.", 0, 0, null, 0),
         ItemPart("encaixe_oculto", "Encaixe Oculto", "Modificação de armadura", 2, 45, 0, 0, "", "Permite ocultar um objeto de Carga 0 no acessório.", 0, 0, null, 0),
         ItemPart("aro_defletor", "Aro Defletor", "Modificação de armadura", 3, 90, 0, 0, "", "Uma vez por cena, recebe +2 PG contra um projétil.", 0, 0, null, 0),
+        ItemPart("revestimento_ablativo", "Revestimento Ablativo", "Modificação de armadura", 3, 90, 0, 2, "", "+2 Durabilidade máxima.", 0, 0, null, 0),
+        ItemPart("malha_articulada", "Malha Articulada", "Modificação de armadura", 3, 90, 0, 0, "", "+1 no Limite de Agilidade do item.", 0, 0, null, 0),
     )
 
     private val modificationBaseGroups = mapOf(
@@ -156,6 +160,10 @@ internal object GeneratedItemParts {
         "sola_tracionada" to setOf(),
         "encaixe_oculto" to setOf(),
         "aro_defletor" to setOf(),
+        "contrapeso_modular" to setOf(),
+        "revestimento_ablativo" to setOf(),
+        "malha_articulada" to setOf(),
+        "nucleo_estabilizador" to setOf(),
     )
     private val modificationBaseIds = mapOf(
         "cruel" to setOf(),
@@ -184,6 +192,10 @@ internal object GeneratedItemParts {
         "sola_tracionada" to setOf("botas", "botas_viagem", "sapatilhas"),
         "encaixe_oculto" to setOf("manto_negro", "manto_elite", "bracadeira"),
         "aro_defletor" to setOf("escudo_leve", "escudo_pesado"),
+        "contrapeso_modular" to setOf(),
+        "revestimento_ablativo" to setOf(),
+        "malha_articulada" to setOf(),
+        "nucleo_estabilizador" to setOf(),
     )
 
     val catalogItems = listOf(

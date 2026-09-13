@@ -7,7 +7,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Especializado em enfrentar um alvo individual."
     },
     {
       "id": "anticavalaria",
@@ -15,7 +16,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Preparado para deter montarias, cavaleiros e investidas."
     },
     {
       "id": "leve",
@@ -24,7 +26,8 @@
         "WEAPON",
         "ARMOR"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Reduz impedimentos sem alterar a Carga automaticamente."
     },
     {
       "id": "pesado",
@@ -33,7 +36,8 @@
         "WEAPON",
         "ARMOR"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Exige manejo compatível com o peso e a estrutura do item."
     },
     {
       "id": "delicado",
@@ -41,7 +45,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Pode perder Durabilidade quando uma regra interagir com este traço."
     },
     {
       "id": "dilaceracao",
@@ -49,7 +54,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Interage com efeitos que ampliam ferimentos e sangramento."
     },
     {
       "id": "perfurante",
@@ -57,7 +63,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Interage com efeitos próprios de perfuração e pontos vulneráveis."
     },
     {
       "id": "impactante",
@@ -65,7 +72,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Interage com empurrões, colisões e golpes de impacto."
     },
     {
       "id": "condutor",
@@ -74,7 +82,8 @@
         "WEAPON",
         "ARMOR"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Conduz energia quando outro efeito usar essa propriedade."
     },
     {
       "id": "canalizador",
@@ -82,7 +91,8 @@
       "appliesTo": [
         "WEAPON"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Pode servir de canal para efeitos arcanos compatíveis."
     },
     {
       "id": "isolante",
@@ -90,7 +100,8 @@
       "appliesTo": [
         "ARMOR"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Resiste à condução de energia quando uma regra utilizar esse traço."
     },
     {
       "id": "silencioso",
@@ -98,7 +109,8 @@
       "appliesTo": [
         "ARMOR"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Reduz ruídos produzidos pelo uso normal do equipamento."
     },
     {
       "id": "reflexivo",
@@ -106,7 +118,8 @@
       "appliesTo": [
         "ARMOR"
       ],
-      "characterCreationVisible": true
+      "characterCreationVisible": true,
+      "description": "Interage com luz, feixes e efeitos refletidos."
     },
     {
       "id": "autorregenerativo",
@@ -116,7 +129,8 @@
         "ARMOR"
       ],
       "characterCreationVisible": false,
-      "ancestral": true
+      "ancestral": true,
+      "description": "Recupera sua estrutura conforme a regra ancestral que o concedeu."
     }
   ]
 }
