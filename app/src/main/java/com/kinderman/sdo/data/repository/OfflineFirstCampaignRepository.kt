@@ -289,16 +289,6 @@ class OfflineFirstCampaignRepository(
         val members = store.collection(MEMBERS)
         val invites = store.collection(INVITES)
 
-        dao.allCampaigns().filter { it.lastSyncedAt != 0L && it.state != CampaignState.DELETED.name && (session.isAdmin || it.ownerId == session.uid || dao.member(it.id, session.uid)?.state == CampaignMemberState.ACTIVE.name) }.forEach { local ->
-            val remote = campaigns.document(local.id).get(com.google.firebase.firestore.Source.SERVER).await()
-                .toObject(CampaignRecord::class.java)
-            if (remote?.state == CampaignState.DELETED.name) {
-                dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
-                characterDao.inCampaign(local.id).forEach {
-                    characterDao.upsert(it.copy(campaignId = "", dirty = true))
-                }
-            }
-        }
         val deletedIds = dao.allCampaigns().filter { it.state == CampaignState.DELETED.name }.map { it.id }.toSet()
         val dirtyCampaigns = dao.dirtyCampaigns().filterNot { it.id in deletedIds }.filter { session.isAdmin || it.ownerId == session.uid }
         val newCampaigns = dirtyCampaigns.filter { it.lastSyncedAt == 0L }
@@ -344,6 +334,14 @@ class OfflineFirstCampaignRepository(
             document.toObject(CampaignMemberRecord::class.java)
         }
         remoteMemberships.forEach { dao.upsertMember(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
+        if (!session.isAdmin) {
+            val activeRemoteCampaignIds = remoteMemberships
+                .filter { it.userId == session.uid && it.state == CampaignMemberState.ACTIVE.name }
+                .mapTo(hashSetOf()) { it.campaignId }
+            dao.allMembers()
+                .filter { it.userId == session.uid && it.state == CampaignMemberState.ACTIVE.name && it.campaignId !in activeRemoteCampaignIds }
+                .forEach { stale -> dao.purgeMember(stale.campaignId, stale.userId) }
+        }
 
         val campaignIds = remoteMemberships
             .filter { it.state == CampaignMemberState.ACTIVE.name }
@@ -360,6 +358,11 @@ class OfflineFirstCampaignRepository(
             val document = campaigns.document(campaignId).get().await()
             document.toObject(CampaignRecord::class.java)?.copy(id = document.id)?.let { remote ->
                 dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
+                if (remote.state == CampaignState.DELETED.name) {
+                    characterDao.inCampaign(campaignId).forEach {
+                        characterDao.upsert(it.copy(campaignId = "", dirty = true))
+                    }
+                }
             }
         }
 
