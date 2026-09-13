@@ -161,7 +161,6 @@ private fun CatalogDetails(entry: CatalogEntry, alreadyAdded: Boolean) {
         DetailLine("FONTE", entry.userFacingSource())
         if (!isKnowledge) DetailLine("REFERÊNCIA", entry.ruleReference)
         DetailLine("PALAVRAS-CHAVE", entry.keywords.joinToString(", "))
-        DetailLine("VERSÃO", entry.version.toString())
     }
 }
 
