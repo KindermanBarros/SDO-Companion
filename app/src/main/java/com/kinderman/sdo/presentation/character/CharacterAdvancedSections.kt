@@ -582,7 +582,7 @@ internal fun AbilityAvailabilityEditor(
 @Composable
 internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
-        SectionHeader("14", "História")
+        SectionHeader("15", "História")
         HudTextField("História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
     }
 }
