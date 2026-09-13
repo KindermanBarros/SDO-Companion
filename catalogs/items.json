@@ -1,7 +1,7 @@
 {
   "$schema": "./items.schema.json",
   "schemaVersion": 1,
-  "catalogVersion": 2,
+  "catalogVersion": 3,
   "entries": [
     {
       "id": "sucata",
@@ -42,7 +42,7 @@
       "load": 0,
       "durability": 2,
       "region": "",
-      "effect": "",
+      "effect": "Padrão metálico.",
       "pg": 0,
       "pl": 0,
       "agilityLimit": null,

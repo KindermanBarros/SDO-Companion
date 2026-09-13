@@ -61,6 +61,13 @@ class ItemCreationRulesTest {
         assertTrue(item.mechanicalEffects.isEmpty())
     }
 
+    @Test fun canonicalMaterialsExposeTheirRuleEffects() {
+        val materials = ItemCreationRules.weaponMaterials + ItemCreationRules.armorMaterials
+
+        assertTrue(materials.all { it.effect.isNotBlank() })
+        assertEquals("Padrão metálico.", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }.effect)
+    }
+
     @Test fun qualityChangesCostPriceAndArmorProtection() {
         val item = ItemCreationRules.build(
             base = ItemCreationRules.armorBases.first { it.id == "elmo" },

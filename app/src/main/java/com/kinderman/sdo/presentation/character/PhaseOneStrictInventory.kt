@@ -577,7 +577,7 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == 2 && category != "Item") {
                     ChoiceField<String>("Material", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String -> onDraftChange(draft.copy(materialId = id)) }
-                    Text(material.effect, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    MaterialDetails(material, weapon)
                 }
                 if (step == 3 && category != "Item") {
                     ChoiceField<String>("Qualidade", quality.name, ItemQuality.entries.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
@@ -648,6 +648,29 @@ private fun StrictItemBuilderDialog(
         },
         dismissButton = { TextButton(onClick = { if (step > 1) onDraftChange(draft.copy(step = step - 1)) else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
     )
+}
+
+@Composable
+private fun MaterialDetails(material: ItemPart, weapon: Boolean) {
+    Column(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text("EFEITO DO MATERIAL", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        Text(material.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
+        Text("DURABILIDADE // ${material.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (material.load != 0) Text(
+            "AJUSTE DE CARGA // ${if (material.load > 0) "+" else ""}${material.load}",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        if (!weapon) {
+            Text("PROTEÇÃO // PG ${material.pg} // PL ${material.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            material.agilityLimit?.let { limit ->
+                Text("LIMITE DE AGILIDADE // $limit", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
 }
 
 internal fun ItemEffect.presentationLabel(): String {
