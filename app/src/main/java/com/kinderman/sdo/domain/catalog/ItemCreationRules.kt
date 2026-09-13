@@ -16,8 +16,36 @@ import java.util.Locale
 object ItemCreationRules {
     const val HERITAGE_BUDGET = 30
 
-    val weaponMaterials = CanonicalItemCatalog.weaponMaterials
-    val armorMaterials = CanonicalItemCatalog.armorMaterials
+    private fun structuredMaterials(weapon: Boolean): List<ItemPart> =
+        GeneratedStructuredItemCatalog.materials.map { material ->
+            val effect = if (weapon) material.weapon else material.armor
+            ItemPart(
+                id = material.id,
+                name = material.name,
+                group = when (material.tier) {
+                    MaterialTier.COMMON -> "Material comum"
+                    MaterialTier.UNCOMMON -> "Material incomum"
+                    MaterialTier.RARE -> "Material raro"
+                    MaterialTier.ANCESTRAL -> "Material ancestral"
+                },
+                creationCost = material.ph,
+                price = material.money,
+                durability = effect.durability,
+                agilityLimit = effect.agilityLimit,
+                materialTier = material.tier.name,
+                characterCreationVisible = material.characterCreationVisible,
+                traitIds = effect.traitIds,
+                damageBonus = effect.damageBonus,
+                damageReduction = effect.damageReduction,
+            )
+        }
+
+    private fun mergeMaterials(legacy: List<ItemPart>, structured: List<ItemPart>): List<ItemPart> =
+        (legacy.filterNot { old -> structured.any { it.id == old.id } } + structured)
+            .sortedWith(compareBy(ItemPart::materialTier, ItemPart::name))
+
+    val weaponMaterials = mergeMaterials(CanonicalItemCatalog.weaponMaterials, structuredMaterials(weapon = true))
+    val armorMaterials = mergeMaterials(CanonicalItemCatalog.armorMaterials, structuredMaterials(weapon = false))
     val weaponBases = CanonicalItemCatalog.weaponBases
     val armorBases = CanonicalItemCatalog.armorBases
     val weaponModifications = CanonicalItemCatalog.modifications
@@ -34,6 +62,11 @@ object ItemCreationRules {
 
     val gemComponents = CanonicalItemCatalog.gems.map { it.part }
     val technologyComponents = CanonicalItemCatalog.technologies.map { it.part }
+
+    fun materialsFor(materials: List<ItemPart>, initialCreation: Boolean): List<ItemPart> =
+        materials.filter { material ->
+            !initialCreation || (material.creationCost != null && material.characterCreationVisible && material.materialTier != MaterialTier.ANCESTRAL.name)
+        }
 
     fun build(
         base: ItemPart,
@@ -69,7 +102,7 @@ object ItemCreationRules {
             ItemQuality.MASTERPIECE, ItemQuality.ARTIFACT, ItemQuality.ANCIENT -> 2
             else -> 0
         } else 0
-        val rawPg = base.pg + (if (protective) material.pg else 0) + modifications.sumOf { it.pg } + qualityPg
+        val rawPg = base.pg + (if (protective) material.pg + material.damageReduction else 0) + modifications.sumOf { it.pg } + qualityPg
         val rawPl = if (quality == ItemQuality.MUNDANE) 0 else base.pl + material.pl + modifications.sumOf { it.pl } + qualityPl
         val pg = if (armor && material.id == "sucata") rawPg / 2 else rawPg
         val pl = if (armor && material.id == "sucata") rawPl / 2 else rawPl
@@ -111,6 +144,15 @@ object ItemCreationRules {
             gemSlots = effectiveGemSlots,
             technologySlots = effectiveTechnologySlots,
             mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id), technologies.map(ItemPart::id)) +
+                listOfNotNull(material.damageBonus.takeIf { it != 0 }?.let { bonus ->
+                    ItemEffect(
+                        id = "material:${material.id}:damage",
+                        type = ItemEffectType.PHYSICAL_DAMAGE,
+                        value = bonus,
+                        condition = ItemEffectCondition.WIELDED,
+                        description = "Bônus de dano concedido pelo material.",
+                    )
+                }) +
                 equipmentEffects(base.id, pg, pl, baseAgilityLimit?.let { (it + agilityAdjustment).coerceAtLeast(0) }, quality, armor, isShield = base.group == "Escudo"))
                 .distinctBy(ItemEffect::id),
         )

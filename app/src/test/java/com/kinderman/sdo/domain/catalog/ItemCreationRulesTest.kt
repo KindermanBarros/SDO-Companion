@@ -25,7 +25,7 @@ class ItemCreationRulesTest {
         )
         assertEquals(8, item.creationCost)
         assertEquals(1, item.load)
-        assertEquals(2, item.durability)
+        assertEquals(8, item.durability)
         assertTrue(item.effect.contains(ItemCreationRules.weaponModifications.first { it.id == "afiada" }.effect))
         assertEquals(ItemEffectType.RULE, item.mechanicalEffects.single().type)
         assertEquals("attack", item.mechanicalEffects.single().target)
@@ -56,17 +56,39 @@ class ItemCreationRulesTest {
         )
 
         assertEquals(6, item.creationCost)
-        assertEquals(2, item.durability)
+        assertEquals(8, item.durability)
         assertEquals("ligas_comuns", item.materialId)
         assertTrue(!item.effect.contains("Material predominante"))
         assertTrue(item.mechanicalEffects.isEmpty())
     }
 
-    @Test fun canonicalMaterialsExposeTheirRuleEffects() {
-        val materials = ItemCreationRules.weaponMaterials + ItemCreationRules.armorMaterials
+    @Test fun structuredMaterialsKeepMechanicalEffectsOutOfDescription() {
+        val weapon = ItemCreationRules.weaponMaterials.first { it.id == "ferrita_rubra" }
+        val armor = ItemCreationRules.armorMaterials.first { it.id == "ferrita_rubra" }
 
-        assertTrue(materials.all { it.effect.isNotBlank() })
-        assertEquals("Padrão metálico.", ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }.effect)
+        assertTrue(weapon.effect.isBlank())
+        assertEquals(1, weapon.damageBonus)
+        assertEquals(listOf("impactante"), weapon.traitIds)
+        assertEquals(1, armor.damageReduction)
+    }
+
+    @Test fun ancestralMaterialsAreNeverAvailableDuringCharacterCreation() {
+        val creationMaterials = ItemCreationRules.materialsFor(ItemCreationRules.weaponMaterials, initialCreation = true)
+        val regularMaterials = ItemCreationRules.materialsFor(ItemCreationRules.weaponMaterials, initialCreation = false)
+
+        assertTrue(creationMaterials.none { it.materialTier == MaterialTier.ANCESTRAL.name })
+        assertTrue(creationMaterials.all { it.characterCreationVisible })
+        assertTrue(regularMaterials.any { it.materialTier == MaterialTier.ANCESTRAL.name })
+    }
+
+    @Test fun weaponAndArmorReceiveDifferentEffectsFromSameMaterial() {
+        val weapon = ItemCreationRules.weaponMaterials.first { it.id == "ligas_incomuns" }
+        val armor = ItemCreationRules.armorMaterials.first { it.id == "ligas_incomuns" }
+
+        assertEquals(1, weapon.damageBonus)
+        assertEquals(0, weapon.damageReduction)
+        assertEquals(0, armor.damageBonus)
+        assertEquals(1, armor.damageReduction)
     }
 
     @Test fun everyNonCommonQualityExposesItsRuleEffect() {

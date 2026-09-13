@@ -160,7 +160,7 @@ internal fun ItemBuilderDialog(
         else -> ItemCreationRules.armorMaterials
     }
     val initialCreation = remainingHeritage != null
-    val availableMaterials = if (initialCreation) allMaterials.filter { it.creationCost != null } else allMaterials
+    val availableMaterials = ItemCreationRules.materialsFor(allMaterials, initialCreation)
     val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
     val built = ItemCreationRules.build(
         base, material, modifications, gemSlots, technologySlots, customName, quality,

@@ -547,7 +547,7 @@ private fun StrictItemBuilderDialog(
         weapon -> ItemCreationRules.weaponMaterials
         base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
         else -> ItemCreationRules.armorMaterials
-    }.let { list -> if (initialCreation) list.filter { it.creationCost != null } else list }
+    }.let { ItemCreationRules.materialsFor(it, initialCreation) }
     val availableModifications: List<ItemPart> = ItemCreationRules.compatibleModifications(base, weapon)
     val built: BuiltItem = ItemCreationRules.build(
         base = base,
