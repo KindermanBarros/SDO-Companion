@@ -327,7 +327,13 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
         if (expanded) {
             if (showAttributes) {
                 val otherPoints = character.attributes.sumOf { if (it.acronym == attribute.acronym) 0 else it.value.coerceAtLeast(0) }
-                val maximum = if (creationMode) minOf(5, (10 - otherPoints).coerceAtLeast(0)) else 5
+                // A ficha limita o valor final a 5. Bônus raciais e permanentes não
+                // consomem o orçamento de criação, mas reduzem o teto selecionável da base.
+                val appliedBonus = calculation.total - attribute.value
+                val totalCapForBase = (5 - appliedBonus).coerceIn(0, 5)
+                val maximum = if (creationMode) {
+                    minOf(totalCapForBase, (10 - otherPoints).coerceAtLeast(0))
+                } else totalCapForBase
                 ChoiceField("Valor-base", attribute.value.coerceIn(0, maximum), (0..maximum).toList(), enabled) { onValue(attribute.copy(value = it)) }
             }
             if (showBasicKnowledges) attribute.skills.forEachIndexed { index, skill ->

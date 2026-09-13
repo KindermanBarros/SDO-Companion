@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.RaceCatalog
 import com.kinderman.sdo.domain.catalog.RaceDefinition
@@ -134,9 +135,12 @@ internal fun RacePickerDialog(
 
 @Composable
 private fun PowerChoice(power: RacialPower, checked: Boolean, onChecked: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable { onChecked(!checked) }.padding(vertical = 4.dp)) {
+    Row(
+        Modifier.fillMaxWidth().clickable { onChecked(!checked) }.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
         Checkbox(checked, onCheckedChange = null)
-        Column(Modifier.padding(top = 8.dp)) {
+        Column(Modifier.padding(top = 12.dp)) {
             Text(power.name, color = MaterialTheme.colorScheme.onSurface)
             Text(power.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
