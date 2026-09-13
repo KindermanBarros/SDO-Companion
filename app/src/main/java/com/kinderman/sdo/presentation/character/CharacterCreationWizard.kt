@@ -21,6 +21,7 @@ import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.SdoInsetCard
 
@@ -59,7 +60,19 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                 item { PhaseOneKnowledgeSection(character, catalog, enabled, onChange, allowEntryChanges = false) }
             }
             5 -> item { PhaseOnePathSection(character, catalog.filter { it.kind == CatalogKind.PATH }, enabled, onChange) }
-            6 -> item { CreationPowersOverview(character) }
+            6 -> item {
+                if (character.powers.any { it.sourceType == PowerSourceType.PATH }) {
+                    CreationPowersOverview(character)
+                } else {
+                    PhaseOnePowerSection(
+                        character = character,
+                        catalog = catalog.filter { it.kind == CatalogKind.POWER },
+                        enabled = enabled,
+                        onChange = onChange,
+                        selectionLimit = 2,
+                    )
+                }
+            }
             7 -> item { PhaseOneInventoryWithBonusSection(character, catalog.filter { it.kind == CatalogKind.ITEM || it.kind == CatalogKind.ASH }, enabled, onChange) }
             8 -> item { CreationReview(character) }
         }
