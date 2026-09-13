@@ -131,7 +131,13 @@ object CharacterCreation {
         val errors = validate(character)
         require(errors.isEmpty()) { errors.first().message }
         val startingItems = buildList {
-            if (character.inventory.none { it.name.equals("Roupas simples", true) }) add(InventoryItem(name = "Roupas simples", category = "Item", quantity = 1, acquisitionSource = ItemAcquisitionSource.NARRATIVE))
+            if (character.inventory.none { it.name.equals("Roupas simples", true) }) add(InventoryItem(
+                name = "Roupas simples",
+                category = "Acessório",
+                region = "Torso",
+                quantity = 1,
+                acquisitionSource = ItemAcquisitionSource.NARRATIVE,
+            ))
             if (character.inventory.none { it.name.equals("Objeto pessoal", true) }) add(InventoryItem(name = "Objeto pessoal", category = "Item", effect = "Sem efeito mecânico.", quantity = 1, acquisitionSource = ItemAcquisitionSource.NARRATIVE))
         }
         return character.copy(
