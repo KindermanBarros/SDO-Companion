@@ -154,7 +154,7 @@ internal fun PhaseOneKnowledgeSection(
         ) { onChange(character.copy(battleTechniques = it)) }
     }
     pendingKnowledge?.let { knowledge ->
-        val level = knowledge.pendingMilestoneLevels.first()
+        val level = knowledge.pendingMilestoneLevels.firstOrNull() ?: return@let
         val rewards = eligibleMilestoneRewards(knowledge, catalog)
         if (!creatingSpecialization) CatalogPickerDialog(
             title = "RECOMPENSA DE DOMÍNIO // NÍVEL $level",
