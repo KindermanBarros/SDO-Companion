@@ -538,15 +538,25 @@ private fun StrictItemBuilderDialog(
         "Acessório" -> ItemCreationRules.armorBases.filter { it.group == "Acessório" }
         else -> ItemCreationRules.armorBases.filterNot { it.group == "Acessório" }
     }
-    val base: ItemPart = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.first()
+    if (category != "Item" && basePool.isEmpty()) {
+        StrictCatalogUnavailableDialog(onDismiss)
+        return
+    }
+    val base: ItemPart = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.firstOrNull()
+        ?: ItemPart("narrative", "Item narrativo", "Item", 0, 0)
     val materialPool: List<ItemPart> = if (weapon) ItemCreationRules.weaponMaterials else ItemCreationRules.armorMaterials
     val materials: List<ItemPart> = ItemCreationRules.materialsFor(
         if (!weapon && base.id == "gibao") materialPool.filter { it.id == "organico" } else materialPool,
         initialCreation,
     )
+    if (category != "Item" && materials.isEmpty()) {
+        StrictCatalogUnavailableDialog(onDismiss)
+        return
+    }
     val material: ItemPart = materials.firstOrNull { it.id == draft.materialId }
         ?: materials.firstOrNull { it.id == if (!weapon && base.id == "gibao") "organico" else "ligas_comuns" }
-        ?: materials.first()
+        ?: materials.firstOrNull()
+        ?: ItemPart("narrative", "Sem material", "Material", 0, 0)
     val hasAlloyComposition = material.id.startsWith("ligas_")
     val secondaryMaterial: ItemPart? = materials.firstOrNull { it.id == draft.secondaryMaterialId && it.id != material.id }
     val modifications: List<ItemPart> = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
@@ -885,8 +895,18 @@ private fun strictToggleModification(current: List<ItemPart>, item: ItemPart): L
     if (item.id == "nobre") next = next.filterNot { it.id == "chamativa" }
     if (item.id == "chamativa") next = next.filterNot { it.id == "nobre" }
     if (item.id == "sob_medida" && next.none { it.id == "ajustada" }) {
-        next = next + ItemCreationRules.armorModifications.first { it.id == "ajustada" }
+        ItemCreationRules.armorModifications.firstOrNull { it.id == "ajustada" }?.let { next = next + it }
     }
     if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
     return next
+}
+
+@Composable
+private fun StrictCatalogUnavailableDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("CATÁLOGO DE ITENS INDISPONÍVEL") },
+        text = { Text("Não há bases ou materiais compatíveis para este construtor. Feche a tela e tente sincronizar novamente.") },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+    )
 }
