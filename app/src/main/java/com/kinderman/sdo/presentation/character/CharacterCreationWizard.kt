@@ -81,7 +81,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
             val narrow = maxWidth < 420.dp
             val layoutModifier = Modifier.fillMaxWidth()
             val content: @Composable (Modifier, Modifier) -> Unit = { backModifier, forwardModifier ->
-                    CharacterActionButton("Voltar", step > 1, CharacterActionStyle.SECONDARY, backModifier.testTag("creation-back")) {
+                    CharacterActionButton("Voltar", step > 1 && (!character.isHeritageReselection || step > 7), CharacterActionStyle.SECONDARY, backModifier.testTag("creation-back")) {
                         onChange(character.copy(creationStep = step - 1))
                     }
                     if (step < CharacterCreation.STEP_COUNT) {
@@ -89,7 +89,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
                             onChange(character.copy(creationStep = step + 1))
                         }
                     } else {
-                        CharacterActionButton("Finalizar personagem", CharacterCreation.validate(character).isEmpty(), CharacterActionStyle.PRIMARY, forwardModifier.testTag("creation-forward")) {
+                        CharacterActionButton(if (character.isHeritageReselection) "Concluir nova Herança" else "Finalizar personagem", CharacterCreation.validate(character).isEmpty(), CharacterActionStyle.PRIMARY, forwardModifier.testTag("creation-forward")) {
                             onChange(CharacterCreation.finish(character))
                         }
                     }
