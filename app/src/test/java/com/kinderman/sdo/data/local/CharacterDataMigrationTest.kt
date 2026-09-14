@@ -51,6 +51,30 @@ class CharacterDataMigrationTest {
         assertEquals(CURRENT_ITEM_DATA_VERSION, migrated.itemSchemaVersion)
     }
 
+    @Test fun malformedLegacyPayloadsDoNotBlockDraftLoadingAndNormalizeLevel() {
+        val legacyDraft = CharacterRecord(
+            id = "legacy-draft",
+            ownerId = "account-a",
+            level = 0,
+            creationStatus = "DRAFT",
+            canonicalAbilitiesPayload = "{broken",
+            canonicalBodyPayload = "{broken",
+            canonicalConditionsPayload = "{broken",
+            activeModifiersPayload = "{broken",
+            canonicalItemsPayload = "{broken",
+            scopedItemCatalogPayload = "{broken",
+            canonicalProgressionPayload = "{broken",
+        )
+
+        val migrated = legacyDraft.migratedStructuredRecord(markDirty = true)
+        val character = migrated.toDomain()
+
+        assertEquals(1, character.level)
+        assertTrue(character.isInCreation)
+        assertTrue(character.migrationReviews.isNotEmpty())
+        assertFalse(migrated.requiresStructuredMigration())
+    }
+
     @Test fun ambiguousMechanicsBecomeIdempotentReviewRecords() {
         val legacy = CharacterRecord(
             id = "legacy", canonicalSchemaVersion = 0,
