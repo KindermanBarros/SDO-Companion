@@ -408,6 +408,7 @@ data class Character(
     val appliedDeliveryIds: List<String> = emptyList(),
 ) {
     val isInCreation: Boolean get() = creationStatus == CharacterCreationStatus.DRAFT
+    val isHeritageReselection: Boolean get() = isInCreation && creationCompletedAt != null && creationStep >= 7
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.inventoryState == InventoryState.STORED }.sumOf { it.effectiveLoad() }
     val backpackCapacity: Int get() = inventory
