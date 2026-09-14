@@ -69,6 +69,26 @@ class ItemNormalizationTest {
         assertEquals(10, normalized.backpackCapacity)
     }
 
+    @Test fun currentCatalogContainerRecoversMissingCapacity() {
+        val legacyProjection = InventoryItem(
+            id = "fruit-bag",
+            name = "Sacolão de Frutas",
+            state = "E",
+            category = "Recipiente de Carga",
+            catalogEntryId = "item.saco_frutas",
+            backpackCapacity = 0,
+            durabilityCurrent = 1,
+            durabilityMax = 1,
+            dataVersion = CURRENT_ITEM_DATA_VERSION,
+        )
+
+        val normalized = Character(inventory = listOf(legacyProjection)).withNormalizedInventory()
+
+        assertEquals(InventoryState.EQUIPPED, normalized.inventory.single().inventoryState)
+        assertEquals(20, normalized.backpackCapacity)
+        assertEquals(22, normalized.maximumLoad)
+    }
+
     @Test fun scrapWeaponAppliesEveryRulesPenalty() {
         val effects = listOf(
             ItemEffect("attack", ItemEffectType.ATTACK, 3, condition = ItemEffectCondition.WIELDED),
