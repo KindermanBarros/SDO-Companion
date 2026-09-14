@@ -34,7 +34,7 @@ fun Character.withRaceSelection(
         .take(requiredBasePowers)
         .let { selected -> selected + raceDefinition.powers.filterNot { it in selected }.take(requiredBasePowers - selected.size) }
     val selectedSubRacePower = subRaceDefinition?.let { subRace ->
-        subRacePower?.takeIf { it in subRace.powers } ?: subRace.powers.first()
+        subRacePower?.takeIf { it in subRace.powers } ?: subRace.powers.firstOrNull()
     }
     val retainedPowers = powers.filterNot {
         it.origin.startsWith("Raça — ") || it.origin.startsWith("Sub-raça — ")
