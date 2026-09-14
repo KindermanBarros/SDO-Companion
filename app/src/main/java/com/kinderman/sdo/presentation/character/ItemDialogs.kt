@@ -255,10 +255,10 @@ internal fun ItemBuilderDialog(
                     val checked = modification in modifications
                     Row(
                         Modifier.fillMaxWidth().clickable {
-                            modifications = toggleModification(modifications, modification)
+                            modifications = ItemCreationRules.toggleModification(modifications, modification)
                         },
                     ) {
-                        Checkbox(checked, onCheckedChange = { modifications = toggleModification(modifications, modification) })
+                        Checkbox(checked, onCheckedChange = { modifications = ItemCreationRules.toggleModification(modifications, modification) })
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(
                                 if (initialCreation) "${modification.name} // ${modification.creationCost ?: "#"} PH"
@@ -380,18 +380,6 @@ private fun ItemPartPickerDialog(
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
-}
-
-private fun toggleModification(current: List<ItemPart>, item: ItemPart): List<ItemPart> {
-    if (item in current) return current - item
-    var next = current + item
-    if (item.id == "nobre") next = next.filterNot { it.id == "chamativa" }
-    if (item.id == "chamativa") next = next.filterNot { it.id == "nobre" }
-    if (item.id == "sob_medida" && next.none { it.id == "ajustada" }) {
-        ItemCreationRules.armorModifications.firstOrNull { it.id == "ajustada" }?.let { next = next + it }
-    }
-    if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
-    return next
 }
 
 @Composable
