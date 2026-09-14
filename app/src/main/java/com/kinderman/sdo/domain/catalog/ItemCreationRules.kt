@@ -63,6 +63,25 @@ object ItemCreationRules {
                 CanonicalItemCatalog.modifications.firstOrNull { it.part.id == modification.id }?.supports(base) == true
             }
 
+    /** Keeps item modifications valid when a prerequisite or an exclusive option changes. */
+    fun toggleModification(current: List<ItemPart>, item: ItemPart): List<ItemPart> {
+        if (current.any { it.id == item.id }) {
+            val removedIds = when (item.id) {
+                "ajustada" -> setOf("ajustada", "sob_medida")
+                else -> setOf(item.id)
+            }
+            return current.filterNot { it.id in removedIds }
+        }
+
+        var next = current + item
+        if (item.id == "nobre") next = next.filterNot { it.id == "chamativa" }
+        if (item.id == "chamativa") next = next.filterNot { it.id == "nobre" }
+        if (item.id == "sob_medida" && next.none { it.id == "ajustada" }) {
+            armorModifications.firstOrNull { it.id == "ajustada" }?.let { next = next + it }
+        }
+        return next.distinctBy(ItemPart::id)
+    }
+
     val gemComponents = CanonicalItemCatalog.gems.map { it.part }
     val technologyComponents = CanonicalItemCatalog.technologies.map { it.part }
 
