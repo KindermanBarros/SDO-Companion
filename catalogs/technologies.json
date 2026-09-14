@@ -185,11 +185,11 @@
       "failureEnhancementDamage": 2,
       "failureItemDamage": 1,
       "effect": {
-        "type": "RULE",
-        "value": 0,
-        "target": "power",
+        "type": "MAGIC_DAMAGE",
+        "value": 2,
+        "target": "thermal_burst",
         "condition": "WIELDED",
-        "description": "Com uma Ação, ativa o efeito singular do núcleo."
+        "description": "Com uma Ação, gaste 1 carga para causar 2 de dano mágico de fogo a um alvo próximo."
       }
     },
     {
@@ -375,9 +375,9 @@
       "effect": {
         "type": "RULE",
         "value": 0,
-        "target": "power",
+        "target": "tesla_lock",
         "condition": "WIELDED",
-        "description": "Com uma Ação, ativa o efeito singular do núcleo."
+        "description": "Com uma Ação, gaste 1 carga; um alvo próximo testa Vigor ou fica sem Reação até o próximo turno."
       }
     },
     {
@@ -563,9 +563,9 @@
       "effect": {
         "type": "RULE",
         "value": 0,
-        "target": "power",
+        "target": "steam_dash",
         "condition": "WIELDED",
-        "description": "Com uma Ação, ativa o efeito singular do núcleo."
+        "description": "Com uma Ação, gaste 1 carga para mover até 3 quadrados sem provocar Reações."
       }
     },
     {
@@ -749,11 +749,11 @@
       "failureEnhancementDamage": 2,
       "failureItemDamage": 1,
       "effect": {
-        "type": "RULE",
-        "value": 0,
-        "target": "power",
-        "condition": "WIELDED",
-        "description": "Com uma Ação, ativa o efeito singular do núcleo."
+        "type": "PG",
+        "value": 3,
+        "target": "solid_guard",
+        "condition": "EQUIPPED",
+        "description": "Com uma Ação, gaste 1 carga para receber +3 PG até o próximo turno."
       }
     },
     {
@@ -939,9 +939,9 @@
       "effect": {
         "type": "RULE",
         "value": 0,
-        "target": "power",
+        "target": "gravity_pull",
         "condition": "WIELDED",
-        "description": "Com uma Ação, ativa o efeito singular do núcleo."
+        "description": "Com uma Ação, gaste 1 carga para puxar um alvo próximo em até 3 quadrados."
       }
     },
     {
@@ -1127,9 +1127,9 @@
       "effect": {
         "type": "RULE",
         "value": 0,
-        "target": "power",
+        "target": "dream_sight",
         "condition": "WIELDED",
-        "description": "Com uma Ação, ativa o efeito singular do núcleo."
+        "description": "Com uma Ação, gaste 1 carga para perceber criaturas e energia onírica ocultas na área até o fim da cena."
       }
     }
   ]

@@ -86,13 +86,22 @@ def build_technologies():
         ("Barreira", "RARE", "DEFENSIVE", effect("PG", 1, "protection", "+1 PG enquanto houver carga.", "EQUIPPED"), ["Armadura", "Escudo", "Acessório"]),
         ("Atuador", "RARE", "AUTOMATION", effect("ATTACK", 1, "attack", "+1 em Ataque enquanto houver carga."), ["Arma"]),
         ("Reserva", "RARE", "STORAGE", effect("RULE", 0, "storage", "Com uma Ação, recupera uma carga de outro mecanismo instalado."), ITEM_TYPES),
-        ("Núcleo", "ANCESTRAL", "POWER", effect("RULE", 0, "power", "Com uma Ação, ativa o efeito singular do núcleo."), ITEM_TYPES),
     ]
+    ancestral_effects = {
+        "Térmico": effect("MAGIC_DAMAGE", 2, "thermal_burst", "Com uma Ação, gaste 1 carga para causar 2 de dano mágico de fogo a um alvo próximo."),
+        "Tesla": effect("RULE", 0, "tesla_lock", "Com uma Ação, gaste 1 carga; um alvo próximo testa Vigor ou fica sem Reação até o próximo turno."),
+        "Vapor": effect("RULE", 0, "steam_dash", "Com uma Ação, gaste 1 carga para mover até 3 quadrados sem provocar Reações."),
+        "Kaltoch": effect("PG", 3, "solid_guard", "Com uma Ação, gaste 1 carga para receber +3 PG até o próximo turno.", "EQUIPPED"),
+        "Gravitacional": effect("RULE", 0, "gravity_pull", "Com uma Ação, gaste 1 carga para puxar um alvo próximo em até 3 quadrados."),
+        "Onírico": effect("RULE", 0, "dream_sight", "Com uma Ação, gaste 1 carga para perceber criaturas e energia onírica ocultas na área até o fim da cena."),
+    }
     result = []
     for theme, origin in themes:
         for form, rarity, category, payload, types in forms:
             result.append(entry(f"tech_{slug(theme)}_{slug(form)}", f"{form} {theme}", rarity, category,
                                 origin, payload, technology=True, types=types, active=True))
+        result.append(entry(f"tech_{slug(theme)}_nucleo", f"Núcleo {theme}", "ANCESTRAL", "POWER",
+                            origin, ancestral_effects[theme], technology=True, types=ITEM_TYPES, active=True))
     assert len(result) == len({item["id"] for item in result}) == 30
     return result
 
