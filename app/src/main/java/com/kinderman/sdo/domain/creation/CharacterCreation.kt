@@ -7,6 +7,8 @@ import com.kinderman.sdo.domain.model.PowerSourceType
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.initialCreationCost
+import com.kinderman.sdo.domain.model.synchronizeItemPowers
+import com.kinderman.sdo.domain.model.withValidInventoryStates
 
 enum class CharacterCreationErrorCode {
     IDENTITY_INCOMPLETE,
@@ -51,8 +53,11 @@ object CharacterCreation {
         .filter { it.acquisitionSource == com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE }
         .sumOf { it.initialCreationCost() }
 
-    fun validate(character: Character): List<CharacterCreationError> =
+    fun validate(character: Character): List<CharacterCreationError> = if (character.isHeritageReselection) {
+        validateStep(7, character)
+    } else {
         (1 until STEP_COUNT).flatMap { validateStep(it, character) }
+    }
 
     fun validateStep(step: Int, character: Character): List<CharacterCreationError> = buildList {
         fun error(code: CharacterCreationErrorCode, message: String) = add(CharacterCreationError(step, code, message))
@@ -134,7 +139,18 @@ object CharacterCreation {
     fun stepError(step: Int, character: Character): String? = validateStep(step, character).firstOrNull()?.message
 
     fun flowError(step: Int, character: Character): String? =
-        (1..step.coerceAtMost(STEP_COUNT - 1)).firstNotNullOfOrNull { validateStep(it, character).firstOrNull()?.message }
+        if (character.isHeritageReselection) validateStep(7, character).firstOrNull()?.message
+        else (1..step.coerceAtMost(STEP_COUNT - 1)).firstNotNullOfOrNull { validateStep(it, character).firstOrNull()?.message }
+
+    fun reopenHeritage(character: Character): Character {
+        require(!character.isInCreation) { "A ficha ainda está em criação." }
+        return character.copy(
+            creationStatus = CharacterCreationStatus.DRAFT,
+            creationStep = 7,
+            itemCreationDraft = null,
+            inventory = character.inventory.filterNot { it.acquisitionSource == ItemAcquisitionSource.HERITAGE },
+        ).withValidInventoryStates().synchronizeItemPowers()
+    }
 
     fun finish(character: Character, now: Long = System.currentTimeMillis()): Character {
         val errors = validate(character)
