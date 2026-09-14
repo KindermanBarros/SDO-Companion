@@ -88,7 +88,8 @@ private fun Character.applyReward(reward: ProgressionReward, catalog: List<Catal
     ProgressionRewardType.ATTRIBUTE -> copy(attributes = attributes.increment(reward.targetId))
     ProgressionRewardType.KNOWLEDGE -> incrementKnowledge(reward.targetId)
     ProgressionRewardType.NEW_KNOWLEDGE -> {
-        val entry = catalog.single { it.id == reward.catalogEntryId && it.kind in knowledgeKinds }
+        val entry = catalog.firstOrNull { it.id == reward.catalogEntryId && it.kind in knowledgeKinds }
+            ?: error("Conhecimento de progressão não encontrado no catálogo.")
         require((learnedKnowledges + arcaneKnowledges + battleTechniques).none { it.catalogEntryId == entry.id })
         val knowledge = entry.toSpecialKnowledge().copy(value = 1)
         when (entry.kind) {
@@ -98,12 +99,14 @@ private fun Character.applyReward(reward: ProgressionReward, catalog: List<Catal
         }
     }
     ProgressionRewardType.PATH_POWER -> {
-        val entry = catalog.single { it.id == reward.catalogEntryId && it.kind == CatalogKind.POWER }
+        val entry = catalog.firstOrNull { it.id == reward.catalogEntryId && it.kind == CatalogKind.POWER }
+            ?: error("Poder de progressão não encontrado no catálogo.")
         require(powers.none { it.catalogEntryId == entry.id })
         copy(powers = powers + entry.toStructuredPower(PowerSourceType.PATH, pathName))
     }
     ProgressionRewardType.PATH_ENHANCEMENT -> {
-        val power = powers.single { it.id == reward.targetId && it.sourceType == PowerSourceType.PATH }
+        val power = powers.firstOrNull { it.id == reward.targetId && it.sourceType == PowerSourceType.PATH }
+            ?: error("Poder de Caminho não encontrado para aprimoramento.")
         require(power.enhancements.isNotBlank() && !power.enhancements.equals("Sem aprimoramento publicado", true))
         val enhancedEffect = power.effect + "\n\nAPRIMORAMENTO CONCEDIDO:\n" + power.enhancements
         copy(
