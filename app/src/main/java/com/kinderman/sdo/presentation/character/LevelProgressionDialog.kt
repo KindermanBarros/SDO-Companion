@@ -36,6 +36,7 @@ internal fun LevelProgressionDialog(
     var target by remember { mutableStateOf(character.level) }
     var confirmedReduction by remember { mutableStateOf(false) }
     var choices by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var progressionError by remember { mutableStateOf<String?>(null) }
     val levels = if (target > character.level) ((character.level + 1)..target).toList() else emptyList()
     val known = character.attributes.flatMap { attribute -> attribute.skills.filter { it.value < 5 }.map { basicKnowledgeId(attribute.acronym, it.name) to it.name } } +
         (character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques).filter { it.value < 5 }.map { it.id to it.name }
@@ -92,13 +93,18 @@ internal fun LevelProgressionDialog(
                     Text("Vida +${1 + vitality.coerceAtLeast(0)} // Sanidade +1${if (level % 5 == 0) " // Energia +1 adicional" else ""}", style = MaterialTheme.typography.bodySmall)
                 }
                 if (levels.isNotEmpty()) Text("Revise todas as escolhas. Elas serão aplicadas juntas ao confirmar.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                progressionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         },
         confirmButton = {
             val enabled = when { target == character.level -> false; target < character.level -> confirmedReduction; else -> complete }
             TextButton(onClick = {
                 if (target < character.level) onConfirm(character.copy(level = target))
-                else onConfirm(LevelProgression.apply(character, target, buildRewards(levels, choices), catalog))
+                else runCatching {
+                    LevelProgression.apply(character, target, buildRewards(levels, choices), catalog)
+                }.onSuccess(onConfirm).onFailure { error ->
+                    progressionError = error.message ?: "Não foi possível aplicar a progressão nesta ficha."
+                }
             }, enabled = enabled) { Text(if (target < character.level) "REDUZIR NÍVEL" else "APLICAR PROGRESSÃO") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
