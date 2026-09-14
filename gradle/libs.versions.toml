@@ -1,14 +1,14 @@
 [versions]
 activityCompose = "1.13.0"
-composeBom = "2026.08.00"
+composeBom = "2026.09.00"
 credentials = "1.6.0"
-firebaseBom = "34.18.0"
+firebaseBom = "34.19.0"
 googleid = "1.2.0"
 junit = "4.13.2"
 kotlinx = "1.11.0"
 lifecycle = "2.11.0"
-navigationCompose = "2.10.0"
-room = "2.8.4"
+navigationCompose = "2.10.1"
+room = "2.8.5"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
