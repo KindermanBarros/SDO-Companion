@@ -2,6 +2,7 @@ package com.kinderman.sdo.presentation.character
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -31,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +61,7 @@ import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TechInterfaceFont
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.Void
+import kotlinx.coroutines.launch
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +90,8 @@ fun CharacterSheetScreen(
     var current by remember(character.id) { mutableStateOf(character) }
     var confirmDelete by remember { mutableStateOf(false) }
     var confirmHeritageReset by remember { mutableStateOf(false) }
+    val undoSnackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(character.updatedAt) {
         if (shouldReplaceDraft(current.updatedAt, character.updatedAt)) current = character
     }
@@ -93,6 +102,34 @@ fun CharacterSheetScreen(
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
     val canLeaveCreation = !current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()
     BackHandler { if (canLeaveCreation) onClose(current) }
+
+    val changeCharacter: (Character) -> Unit = { changed ->
+        if (!readOnly) {
+            val before = current
+            val removedItems = before.inventory.filter { previous -> changed.inventory.none { it.id == previous.id } }
+            val draft = changed.copy(updatedAt = maxOf(System.currentTimeMillis(), before.updatedAt + 1), dirty = true)
+            current = draft
+            onAutosave(draft)
+            if (removedItems.isNotEmpty()) scope.launch {
+                val result = undoSnackbar.showSnackbar(
+                    message = if (removedItems.size == 1) "${removedItems.single().name.ifBlank { "Item" }} removido" else "Itens removidos",
+                    actionLabel = "DESFAZER",
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Long,
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    val latest = current
+                    val restored = if (latest.updatedAt == draft.updatedAt) {
+                        before
+                    } else {
+                        latest.copy(inventory = (latest.inventory + removedItems).distinctBy { it.id })
+                    }.copy(updatedAt = maxOf(System.currentTimeMillis(), latest.updatedAt + 1), dirty = true)
+                    current = restored
+                    onAutosave(restored)
+                }
+            }
+        }
+    }
 
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
@@ -125,7 +162,12 @@ fun CharacterSheetScreen(
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
-            snackbarHost = snackbarHost,
+            snackbarHost = {
+                Box {
+                    snackbarHost()
+                    SnackbarHost(undoSnackbar)
+                }
+            },
             topBar = {
                 TopAppBar(
                     title = {
@@ -181,13 +223,6 @@ fun CharacterSheetScreen(
                 )
             },
         ) { padding ->
-            val changeCharacter: (Character) -> Unit = {
-                if (!readOnly) {
-                    val draft = it.copy(updatedAt = maxOf(System.currentTimeMillis(), current.updatedAt + 1), dirty = true)
-                    current = draft
-                    onAutosave(draft)
-                }
-            }
             if (current.isInCreation) CharacterCreationWizard(
                 character = current,
                 catalog = catalog,
