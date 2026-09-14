@@ -65,6 +65,9 @@ internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, 
         Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         AddButton("Selecionar raça, sub-raça e poderes", enabled) { selectingRace = true }
         HudTextField("Ocupação", character.occupation, enabled = enabled) { onChange(character.copy(occupation = it)) }
+        IntegerField("Dinheiro", character.money, enabled) { value ->
+            onChange(character.copy(money = value.coerceAtLeast(0)))
+        }
         TwoFields(
             { IntegerField("Altura (cm)", character.height.toIntOrNull() ?: 0, enabled, it) { value -> onChange(character.copy(height = value.coerceAtLeast(0).toString())) } },
             { IntegerField("Idade", character.age.toIntOrNull() ?: 0, enabled, it) { value -> onChange(character.copy(age = value.coerceAtLeast(0).toString())) } },
