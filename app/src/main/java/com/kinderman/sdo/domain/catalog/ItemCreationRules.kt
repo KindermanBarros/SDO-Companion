@@ -60,7 +60,7 @@ object ItemCreationRules {
     fun compatibleModifications(base: ItemPart, weapon: Boolean): List<ItemPart> =
         (if (weapon) weaponModifications else armorModifications)
             .filter { modification ->
-                CanonicalItemCatalog.modifications.first { it.part.id == modification.id }.supports(base)
+                CanonicalItemCatalog.modifications.firstOrNull { it.part.id == modification.id }?.supports(base) == true
             }
 
     val gemComponents = CanonicalItemCatalog.gems.map { it.part }
@@ -254,13 +254,16 @@ object ItemCreationRules {
     )
 
     private val catalogBundle: CatalogBundle by lazy {
-        val commonWeapon = weaponMaterials.first { it.id == "ligas_comuns" }
-        val commonArmor = armorMaterials.first { it.id == "ligas_comuns" }
-        val built = weaponBases.map { build(it, commonWeapon, emptyList(), 0, 0) } +
-            armorBases.map { base ->
-                val material = if (base.id == "gibao") armorMaterials.first { it.id == "organico" } else commonArmor
-                build(base, material, emptyList(), 0, 0)
-            }
+        val commonWeapon = weaponMaterials.firstOrNull { it.id == "ligas_comuns" } ?: weaponMaterials.firstOrNull()
+        val commonArmor = armorMaterials.firstOrNull { it.id == "ligas_comuns" } ?: armorMaterials.firstOrNull()
+        val built = commonWeapon?.let { material ->
+            weaponBases.map { build(it, material, emptyList(), 0, 0) }
+        }.orEmpty() + armorBases.mapNotNull { base ->
+            val material = if (base.id == "gibao") {
+                armorMaterials.firstOrNull { it.id == "organico" }
+            } else commonArmor
+            material?.let { build(base, it, emptyList(), 0, 0) }
+        }
         val regular = built.mapIndexed { index, item -> item.catalogEntry("item.regular_$index") }
         val starterItems = CanonicalItemCatalog.catalogItems.map { definition ->
             definition.part.toBuiltItem()
