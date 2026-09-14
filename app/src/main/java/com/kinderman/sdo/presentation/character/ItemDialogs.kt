@@ -145,9 +145,16 @@ internal fun ItemBuilderDialog(
     onDismiss: () -> Unit,
     onAdd: (InventoryItem) -> Unit,
 ) {
+    val initialBase = ItemCreationRules.weaponBases.firstOrNull()
+    val initialMaterial = ItemCreationRules.weaponMaterials.firstOrNull { it.id == "ligas_comuns" }
+        ?: ItemCreationRules.weaponMaterials.firstOrNull()
+    if (initialBase == null || initialMaterial == null) {
+        UnavailableItemCatalogDialog(onDismiss)
+        return
+    }
     var weapon by remember { mutableStateOf(true) }
-    var base by remember { mutableStateOf(ItemCreationRules.weaponBases.first()) }
-    var material by remember { mutableStateOf(ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }) }
+    var base by remember { mutableStateOf(initialBase) }
+    var material by remember { mutableStateOf(initialMaterial) }
     var secondaryMaterial by remember { mutableStateOf<ItemPart?>(null) }
     var modifications by remember { mutableStateOf(emptyList<ItemPart>()) }
     var gemSlots by remember { mutableIntStateOf(0) }
@@ -194,18 +201,28 @@ internal fun ItemBuilderDialog(
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     TextButton(onClick = {
-                        weapon = true
-                        base = ItemCreationRules.weaponBases.first()
-                        material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" }
-                        secondaryMaterial = null
-                        modifications = emptyList()
+                        val nextBase = ItemCreationRules.weaponBases.firstOrNull()
+                        val nextMaterial = ItemCreationRules.weaponMaterials.firstOrNull { it.id == "ligas_comuns" }
+                            ?: ItemCreationRules.weaponMaterials.firstOrNull()
+                        if (nextBase != null && nextMaterial != null) {
+                            weapon = true
+                            base = nextBase
+                            material = nextMaterial
+                            secondaryMaterial = null
+                            modifications = emptyList()
+                        }
                     }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
                     TextButton(onClick = {
-                        weapon = false
-                        base = ItemCreationRules.armorBases.first()
-                        material = ItemCreationRules.armorMaterials.first { it.id == "ligas_comuns" }
-                        secondaryMaterial = null
-                        modifications = emptyList()
+                        val nextBase = ItemCreationRules.armorBases.firstOrNull()
+                        val nextMaterial = ItemCreationRules.armorMaterials.firstOrNull { it.id == "ligas_comuns" }
+                            ?: ItemCreationRules.armorMaterials.firstOrNull()
+                        if (nextBase != null && nextMaterial != null) {
+                            weapon = false
+                            base = nextBase
+                            material = nextMaterial
+                            secondaryMaterial = null
+                            modifications = emptyList()
+                        }
                     }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
                 }
                 HudTextField("Nome personalizado (opcional)", customName) { customName = it }
@@ -226,7 +243,11 @@ internal fun ItemBuilderDialog(
                     style = MaterialTheme.typography.bodySmall,
                 )
                 TextButton(
-                    onClick = { quality = qualityOptions[(qualityOptions.indexOf(quality).coerceAtLeast(0) + 1) % qualityOptions.size] },
+                    onClick = {
+                        if (qualityOptions.isNotEmpty()) {
+                            quality = qualityOptions[(qualityOptions.indexOf(quality).coerceAtLeast(0) + 1) % qualityOptions.size]
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("QUALIDADE // ${quality.label}") }
                 Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
@@ -313,7 +334,7 @@ internal fun ItemBuilderDialog(
             base = part
             modifications = modifications.filter { it in ItemCreationRules.compatibleModifications(part, weapon) }
             if (!weapon && part.id == "gibao") {
-                material = ItemCreationRules.armorMaterials.first { it.id == "organico" }
+                ItemCreationRules.armorMaterials.firstOrNull { it.id == "organico" }?.let { material = it }
             }
         } else if (picker == "secondaryMaterial") {
             secondaryMaterial = part
@@ -338,7 +359,7 @@ private fun ItemPartPickerDialog(
         title = { Text(title) },
         text = {
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
-                items(parts, key = ItemPart::id) { part ->
+                items(parts.distinctBy(ItemPart::id), key = ItemPart::id) { part ->
                     Column(Modifier.fillMaxWidth().clickable { onSelect(part) }.padding(vertical = 10.dp)) {
                         Text(part.name, color = MaterialTheme.colorScheme.onSurface)
                         Text(
@@ -367,10 +388,20 @@ private fun toggleModification(current: List<ItemPart>, item: ItemPart): List<It
     if (item.id == "nobre") next = next.filterNot { it.id == "chamativa" }
     if (item.id == "chamativa") next = next.filterNot { it.id == "nobre" }
     if (item.id == "sob_medida" && next.none { it.id == "ajustada" }) {
-        next = next + ItemCreationRules.armorModifications.first { it.id == "ajustada" }
+        ItemCreationRules.armorModifications.firstOrNull { it.id == "ajustada" }?.let { next = next + it }
     }
     if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
     return next
+}
+
+@Composable
+private fun UnavailableItemCatalogDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("CATÁLOGO DE ITENS INDISPONÍVEL") },
+        text = { Text("As bases ou materiais necessários não foram carregados. Feche a tela e tente sincronizar novamente.") },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+    )
 }
 
 
