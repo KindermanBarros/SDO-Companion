@@ -183,7 +183,34 @@ data class CharacterRecord(
     val appliedDeliveryIds: List<String> = emptyList(),
 )
 
-fun CharacterRecord.toDomain() = Character(
+fun CharacterRecord.toDomain(): Character {
+    val decodedAbilities = canonicalAbilitiesPayload
+        .takeIf { it.isNotBlank() && canonicalConverters.isCanonicalAbilitiesPayloadValid(it) }
+        ?.let(canonicalConverters::stringToCanonicalAbilities)
+    val decodedBody = canonicalBodyPayload
+        .takeIf { it.isNotBlank() && canonicalConverters.isCanonicalBodyPayloadValid(it) }
+        ?.let(canonicalConverters::stringToCanonicalBody)
+    val decodedConditions = canonicalConditionsPayload
+        .takeIf { it.isNotBlank() && canonicalConverters.isCanonicalConditionsPayloadValid(it) }
+        ?.let(canonicalConverters::stringToCanonicalConditions)
+    val decodedModifiers = activeModifiersPayload
+        .takeIf(canonicalConverters::isActiveModifiersPayloadValid)
+        ?.let(canonicalConverters::stringToActiveModifiers)
+        .orEmpty()
+    val decodedItems = canonicalItemsPayload
+        .takeIf(canonicalConverters::isCanonicalItemsPayloadValid)
+        ?.let(canonicalConverters::stringToCanonicalItems)
+        .orEmpty()
+    val decodedItemCatalog = scopedItemCatalogPayload
+        .takeIf(canonicalConverters::isScopedItemCatalogPayloadValid)
+        ?.let(canonicalConverters::stringToScopedItemCatalog)
+        .orEmpty()
+    val decodedProgression = canonicalProgressionPayload
+        .takeIf(canonicalConverters::isProgressionPayloadValid)
+        ?.let(canonicalConverters::stringToCanonicalProgression)
+        ?: com.kinderman.sdo.domain.model.CharacterProgression()
+
+    return Character(
     id = id,
     ownerId = ownerId,
     campaignId = normalizeCampaignId(campaignId),
@@ -196,24 +223,24 @@ fun CharacterRecord.toDomain() = Character(
     age = age,
     sex = sex,
     size = size,
-    level = level,
+    level = level.coerceIn(1, com.kinderman.sdo.domain.progression.LevelProgression.MAX_LEVEL),
     creationStatus = runCatching { CharacterCreationStatus.valueOf(creationStatus) }.getOrDefault(CharacterCreationStatus.COMPLETED),
     creationStep = creationStep.coerceIn(1, com.kinderman.sdo.domain.creation.CharacterCreation.STEP_COUNT),
     creationCompletedAt = creationCompletedAt,
     creationRulesVersion = creationRulesVersion,
     itemSchemaVersion = com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION,
     canonicalSchemaVersion = canonicalSchemaVersion,
-    abilities = if (canonicalAbilitiesPayload.isNotBlank()) canonicalConverters.stringToCanonicalAbilities(canonicalAbilitiesPayload)
-        else (powers.mapNotNull { runCatching { it.toCanonicalAbility() }.getOrNull() } + mysticAbilities.mapNotNull { runCatching { it.toCanonicalAbility() }.getOrNull() }),
-    bodyState = canonicalBodyPayload.takeIf(String::isNotBlank)?.let(canonicalConverters::stringToCanonicalBody)
+    abilities = decodedAbilities
+        ?: (powers.mapNotNull { runCatching { it.toCanonicalAbility() }.getOrNull() } + mysticAbilities.mapNotNull { runCatching { it.toCanonicalAbility() }.getOrNull() }),
+    bodyState = decodedBody
         ?: runCatching { Character(bodyRegions = normalizeBodyRegions(bodyRegions), organs = organs).canonicalBodyState() }.getOrNull(),
-    conditionInstances = if (canonicalConditionsPayload.isNotBlank()) canonicalConverters.stringToCanonicalConditions(canonicalConditionsPayload)
-        else conditions.mapNotNull { runCatching { it.toCanonicalInstance() }.getOrNull() },
-    activeModifiers = if (activeModifiersPayload.isNotBlank()) canonicalConverters.stringToActiveModifiers(activeModifiersPayload) else emptyList(),
-    itemStates = canonicalConverters.stringToCanonicalItems(canonicalItemsPayload),
-    customItemCatalog = canonicalConverters.stringToScopedItemCatalog(scopedItemCatalogPayload),
-    progression = canonicalConverters.stringToCanonicalProgression(canonicalProgressionPayload),
-    migrationReviews = MigrationReviewCodec.decode(migrationReviewPayload),
+    conditionInstances = decodedConditions
+        ?: conditions.mapNotNull { runCatching { it.toCanonicalInstance() }.getOrNull() },
+    activeModifiers = decodedModifiers,
+    itemStates = decodedItems,
+    customItemCatalog = decodedItemCatalog,
+    progression = decodedProgression,
+    migrationReviews = runCatching { MigrationReviewCodec.decode(migrationReviewPayload) }.getOrDefault(emptyList()),
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -253,8 +280,7 @@ fun CharacterRecord.toDomain() = Character(
         } else item
     },
     itemCreationDraft = itemCreationDraft,
-    bodyRegions = (canonicalBodyPayload.takeIf(String::isNotBlank)?.let(canonicalConverters::stringToCanonicalBody)
-        ?.regions?.map { it.toLegacyRegion() } ?: normalizeBodyRegions(bodyRegions)).map { region ->
+    bodyRegions = (decodedBody?.regions?.map { it.toLegacyRegion() } ?: normalizeBodyRegions(bodyRegions)).map { region ->
         if (canonicalSchemaVersion >= 2) region else region.copy(state = when {
             region.failures >= 4 -> com.kinderman.sdo.domain.model.BodyIntegrity.Destroyed
             region.failures > 0 -> com.kinderman.sdo.domain.model.BodyIntegrity.Damaged
@@ -262,8 +288,7 @@ fun CharacterRecord.toDomain() = Character(
         })
     },
     agilityLimit = agilityLimit,
-    organs = (canonicalBodyPayload.takeIf(String::isNotBlank)?.let(canonicalConverters::stringToCanonicalBody)
-        ?.organs?.map { it.toLegacyStatus() } ?: organs).map { organ ->
+    organs = (decodedBody?.organs?.map { it.toLegacyStatus() } ?: organs).map { organ ->
         if (canonicalSchemaVersion >= 2) organ else organ.copy(state = when {
             organ.failures >= 3 -> com.kinderman.sdo.domain.model.BodyIntegrity.Destroyed
             organ.failures > 0 -> com.kinderman.sdo.domain.model.BodyIntegrity.Damaged
@@ -271,8 +296,7 @@ fun CharacterRecord.toDomain() = Character(
         })
     },
     mysticAbilities = mysticAbilities.map(MysticAbility::canonicalized),
-    conditions = if (canonicalConditionsPayload.isBlank()) conditions else
-        canonicalConverters.stringToCanonicalConditions(canonicalConditionsPayload).map { it.toLegacyEffect() },
+    conditions = decodedConditions?.map { it.toLegacyEffect() } ?: conditions,
     story = story,
     notes = notes,
     personalNotes = personalNotes.ifEmpty {
@@ -292,7 +316,8 @@ fun CharacterRecord.toDomain() = Character(
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
-).withMigratedCreationRules().withRefreshedPresetPowers().withNormalizedInventory().synchronizeItemPowers()
+    ).withMigratedCreationRules().withRefreshedPresetPowers().withNormalizedInventory().synchronizeItemPowers()
+}
 
 fun Character.toRecord(): CharacterRecord {
     if (canonicalSchemaVersion != com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION) {
