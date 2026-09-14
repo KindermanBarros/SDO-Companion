@@ -22,14 +22,22 @@ internal fun InventoryItem.normalized(): InventoryItem? {
     val durabilityNormalized = if (durabilityWasNotDefined) {
         copy(durabilityCurrent = 1, durabilityMax = 1, secondaryMaterialId = normalizedSecondaryMaterialId)
     } else copy(durabilityCurrent = durabilityCurrent.coerceIn(0, durabilityMax), secondaryMaterialId = normalizedSecondaryMaterialId)
-    if (dataVersion >= CURRENT_ITEM_DATA_VERSION) return durabilityNormalized
+    val resolved = ItemCreationRules.inventoryTemplate(catalogEntryId, name)
+    if (dataVersion >= CURRENT_ITEM_DATA_VERSION) {
+        val (entry, template) = resolved ?: return durabilityNormalized
+        return durabilityNormalized.copy(
+            category = category.ifBlank { template.category },
+            catalogEntryId = catalogEntryId.ifBlank { entry.id },
+            catalogVersion = maxOf(catalogVersion, entry.version),
+            canonical = true,
+            backpackCapacity = backpackCapacity.takeIf { it > 0 } ?: template.backpackCapacity,
+        )
+    }
 
     val normalizedState = durabilityNormalized.inventoryState.storageCode
     val retainedEffects = (
         ItemCreationRules.componentEffects(modificationIds, gemIds, technologyIds) + mechanicalEffects
     ).distinctBy(ItemEffect::id)
-    val resolved = ItemCreationRules.inventoryTemplate(catalogEntryId, name)
-
     if (resolved == null) {
         return durabilityNormalized.copy(
             state = normalizedState,
