@@ -11,6 +11,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RaceSelectionTest {
+    @Test fun `empty subrace powers do not crash selection`() {
+        val race = RaceDefinition("Teste", "FOR", 0, 0, 0, 0, emptyList())
+        val subRace = SubRaceDefinition("Sem poderes", emptyList())
+
+        val selected = Character().withRaceSelection(race, subRace, "FOR", emptyList(), null)
+
+        assertEquals("Teste", selected.race)
+        assertEquals("Sem poderes", selected.subRace)
+    }
+
     @Test fun catalogContainsCanonicalRacesAndRestrictsOrganicSubRaces() {
         assertEquals(18, RaceCatalog.races.size)
         assertTrue(RaceCatalog.race("Humanos") != null)
