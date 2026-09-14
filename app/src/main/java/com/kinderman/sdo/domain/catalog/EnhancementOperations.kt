@@ -6,6 +6,7 @@ import com.kinderman.sdo.domain.model.InstalledEnhancement
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemAcquisitionSource
 import com.kinderman.sdo.domain.model.ItemCondition
+import com.kinderman.sdo.domain.model.synchronizeItemPowers
 
 /** Creates a loose enhancement. Installation and removal move this same instance in and out of a host item. */
 fun enhancementInventoryItem(catalogEntryId: String, initialCreation: Boolean = false): InventoryItem {
