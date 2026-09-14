@@ -38,14 +38,14 @@ class ItemCreationRulesTest {
             gemSlots = 1,
             technologySlots = 1,
         )
-        assertEquals(8, item.creationCost)
+        assertEquals(5, item.creationCost)
         assertEquals(1, item.load)
         assertEquals(2, item.durability)
         assertTrue(item.effect.contains(ItemCreationRules.weaponModifications.first { it.id == "afiada" }.effect))
         assertEquals(ItemEffectType.RULE, item.mechanicalEffects.single().type)
         assertEquals("attack", item.mechanicalEffects.single().target)
-        assertTrue(ItemCreationRules.complexity(item.creationCost).contains("CD 15; 5 Progressos; 4 horas"))
-        assertEquals(8, item.toInventoryItem(initialCreation = true).initialCreationCost())
+        assertTrue(ItemCreationRules.complexity(item.creationCost).contains("CD 12; 3 Progressos; 2 horas"))
+        assertEquals(5, item.toInventoryItem(initialCreation = true).initialCreationCost())
         assertEquals(0, item.toInventoryItem(initialCreation = false).initialCreationCost())
     }
 
@@ -198,13 +198,14 @@ class ItemCreationRulesTest {
             components = listOf(gem),
         )
 
-        assertEquals(4, item.creationCost)
+        assertEquals(3, item.creationCost)
         assertTrue(item.effect.contains(gem.effect))
         assertTrue(!item.effect.contains("Espaços de Gema"))
-        assertEquals(1, item.gemSlots)
-        assertEquals(gem.id, item.gemIds.single())
-        assertEquals(ItemEffectType.KNOWLEDGE, item.mechanicalEffects.single().type)
-        assertEquals("*", item.mechanicalEffects.single().target)
+        assertEquals(1, item.enhancementSlots)
+        assertEquals(gem.id, item.installedEnhancements.single().catalogEntryId)
+        val expectedEffect = CanonicalItemCatalog.gems.first { it.part.id == gem.id }.effect
+        assertEquals(expectedEffect.type, item.mechanicalEffects.single().type)
+        assertEquals(expectedEffect.target, item.mechanicalEffects.single().target)
         assertEquals("faca", item.baseId)
         assertEquals("madeira", item.materialId)
     }
@@ -215,9 +216,9 @@ class ItemCreationRulesTest {
             CanonicalItemCatalog.armorBases.size + CanonicalItemCatalog.catalogItems.size
 
         assertEquals(161, itemDefinitionCount)
-        assertEquals(30, CanonicalItemCatalog.modifications.size)
-        assertEquals(57, CanonicalItemCatalog.gems.size)
-        assertEquals(50, CanonicalItemCatalog.technologies.size)
+        assertEquals(35, CanonicalItemCatalog.modifications.size)
+        assertEquals(30, CanonicalItemCatalog.gems.size)
+        assertEquals(30, CanonicalItemCatalog.technologies.size)
     }
 
 

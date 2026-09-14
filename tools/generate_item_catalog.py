@@ -24,7 +24,8 @@ def item_part(entry, group=None):
         f'{quote(entry["id"])}, {quote(entry["name"])}, {quote(group or entry["group"])}, '
         f'{creation_cost}, {entry["price"]}, {entry.get("load", 0)}, {entry.get("durability", 0)}, '
         f'{quote(entry.get("region", ""))}, {quote(effect)}, {entry.get("pg", 0)}, '
-        f'{entry.get("pl", 0)}, {agility_limit}, {entry.get("backpackCapacity", 0)})'
+        f'{entry.get("pl", 0)}, {agility_limit}, {entry.get("backpackCapacity", 0)}, '
+        f'enhancementSlots = {entry.get("enhancementSlots", 0)})'
     )
 
 

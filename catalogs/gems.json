@@ -1,976 +1,1177 @@
 {
   "$schema": "./item-components.schema.json",
   "schemaVersion": 1,
-  "catalogVersion": 2,
+  "catalogVersion": 3,
   "kind": "GEM",
   "entries": [
     {
-      "id": "gema_menor_conhecimento_aleatorio",
-      "name": "Gema Menor de Conhecimento",
-      "tier": "MINOR",
+      "id": "gema_forca",
+      "name": "Gema de Força",
+      "rarity": "COMMON",
+      "category": "ATTRIBUTE",
+      "origin": "Veio Rubro",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
       "creationCost": 2,
       "price": 45,
-      "effect": {
-        "type": "KNOWLEDGE",
-        "value": 1,
-        "target": "*",
-        "condition": "WIELDED",
-        "description": "+1 em um Conhecimento aleatório, definido permanentemente ao instalar a gema."
-      }
-    },
-    {
-      "id": "gema_atributo_for",
-      "name": "Gema de Força",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 4,
-      "price": 150,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
       "effect": {
         "type": "ATTRIBUTE",
         "value": 1,
         "target": "FOR",
         "condition": "WIELDED",
-        "description": "+1 em Força enquanto a arma estiver empunhada."
+        "description": "+1 em Força."
       }
     },
     {
-      "id": "gema_atributo_vig",
+      "id": "gema_vigor",
       "name": "Gema de Vigor",
-      "tier": "MAJOR",
+      "rarity": "COMMON",
+      "category": "ATTRIBUTE",
+      "origin": "Nódulo Bestial",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 4,
-      "price": 150,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
       "effect": {
         "type": "ATTRIBUTE",
         "value": 1,
         "target": "VIG",
         "condition": "WIELDED",
-        "description": "+1 em Vigor enquanto a arma estiver empunhada."
+        "description": "+1 em Vigor."
       }
     },
     {
-      "id": "gema_atributo_agi",
+      "id": "gema_agilidade",
       "name": "Gema de Agilidade",
-      "tier": "MAJOR",
+      "rarity": "UNCOMMON",
+      "category": "ATTRIBUTE",
+      "origin": "Cristal de Vendaval",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 4,
-      "price": 150,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
       "effect": {
         "type": "ATTRIBUTE",
         "value": 1,
         "target": "AGI",
         "condition": "WIELDED",
-        "description": "+1 em Agilidade enquanto a arma estiver empunhada."
+        "description": "+1 em Agilidade."
       }
     },
     {
-      "id": "gema_atributo_pod",
+      "id": "gema_poder",
       "name": "Gema de Poder",
-      "tier": "MAJOR",
+      "rarity": "RARE",
+      "category": "ATTRIBUTE",
+      "origin": "Geodo Onírico",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 4,
-      "price": 150,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
         "type": "ATTRIBUTE",
         "value": 1,
         "target": "POD",
         "condition": "WIELDED",
-        "description": "+1 em Poder enquanto a arma estiver empunhada."
+        "description": "+1 em Poder."
       }
     },
     {
-      "id": "gema_atributo_int",
+      "id": "gema_intelecto",
       "name": "Gema de Intelecto",
-      "tier": "MAJOR",
+      "rarity": "UNCOMMON",
+      "category": "ATTRIBUTE",
+      "origin": "Quartzo Mnemônico",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 4,
-      "price": 150,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
       "effect": {
         "type": "ATTRIBUTE",
         "value": 1,
         "target": "INT",
         "condition": "WIELDED",
-        "description": "+1 em Intelecto enquanto a arma estiver empunhada."
+        "description": "+1 em Intelecto."
       }
     },
     {
-      "id": "gema_atributo_car",
+      "id": "gema_carisma",
       "name": "Gema de Carisma",
-      "tier": "MAJOR",
+      "rarity": "RARE",
+      "category": "ATTRIBUTE",
+      "origin": "Pérola de Eco",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 4,
-      "price": 150,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
         "type": "ATTRIBUTE",
         "value": 1,
         "target": "CAR",
         "condition": "WIELDED",
-        "description": "+1 em Carisma enquanto a arma estiver empunhada."
+        "description": "+1 em Carisma."
       }
     },
     {
-      "id": "gema_aprimoramento_aurora_fio",
-      "name": "Fio de Aurora",
-      "tier": "MINOR",
+      "id": "gema_saber_errante",
+      "name": "Gema de Saber Errante",
+      "rarity": "COMMON",
+      "category": "KNOWLEDGE",
+      "origin": "Ruína Onírica",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
+      "effect": {
+        "type": "KNOWLEDGE",
+        "value": 1,
+        "target": "*",
+        "condition": "WIELDED",
+        "description": "+1 em um Conhecimento sorteado ao receber a gema."
+      }
+    },
+    {
+      "id": "gema_ourives",
+      "name": "Gema de Ourives",
+      "rarity": "UNCOMMON",
+      "category": "KNOWLEDGE",
+      "origin": "Oficina Afundada",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
       "creationCost": 3,
       "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "KNOWLEDGE",
+        "value": 2,
+        "target": "INT:Ourivesaria",
+        "condition": "WIELDED",
+        "description": "+2 em Ourivesaria."
+      }
+    },
+    {
+      "id": "gema_engenho",
+      "name": "Gema de Engenho",
+      "rarity": "RARE",
+      "category": "KNOWLEDGE",
+      "origin": "Núcleo Kaltoch",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "KNOWLEDGE",
+        "value": 2,
+        "target": "INT:Engenharia",
+        "condition": "WIELDED",
+        "description": "+2 em Engenharia."
+      }
+    },
+    {
+      "id": "gema_vigilia",
+      "name": "Gema de Vigília",
+      "rarity": "COMMON",
+      "category": "KNOWLEDGE",
+      "origin": "Olho Mineral",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
+      "effect": {
+        "type": "KNOWLEDGE",
+        "value": 1,
+        "target": "POD:Sentidos",
+        "condition": "WIELDED",
+        "description": "+1 em Sentidos."
+      }
+    },
+    {
+      "id": "gema_lamina_onirica",
+      "name": "Gema de Lâmina Onírica",
+      "rarity": "UNCOMMON",
+      "category": "OFFENSIVE",
+      "origin": "Obsidiana Sonhadora",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 3,
+      "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
       "effect": {
         "type": "MAGIC_DAMAGE",
         "value": 1,
         "target": "damage",
         "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
+        "description": "+1 de dano mágico."
       }
     },
     {
-      "id": "gema_aprimoramento_aurora_guarda",
-      "name": "Guarda de Aurora",
-      "tier": "MINOR",
+      "id": "gema_mira_cintilante",
+      "name": "Gema de Mira Cintilante",
+      "rarity": "COMMON",
+      "category": "OFFENSIVE",
+      "origin": "Areia Estelar",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 3,
-      "price": 90,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
       "effect": {
-        "type": "DURABILITY",
+        "type": "ATTACK",
         "value": 1,
-        "target": "durability",
+        "target": "attack",
         "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
+        "description": "+1 em Ataque."
       }
     },
     {
-      "id": "gema_aprimoramento_aurora_pulso",
-      "name": "Pulso de Aurora",
-      "tier": "MAJOR",
+      "id": "gema_impacto_rubro",
+      "name": "Gema de Impacto Rubro",
+      "rarity": "RARE",
+      "category": "OFFENSIVE",
+      "origin": "Coração de Colosso",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
+        "type": "PHYSICAL_DAMAGE",
+        "value": 2,
+        "target": "damage",
         "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
+        "description": "+2 de dano físico."
       }
     },
     {
-      "id": "gema_aprimoramento_aurora_veu",
-      "name": "Véu de Aurora",
-      "tier": "MAJOR",
+      "id": "gema_corte_fantasma",
+      "name": "Gema de Corte Fantasma",
+      "rarity": "RARE",
+      "category": "OFFENSIVE",
+      "origin": "Fenda Onírica",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_aurora_eco",
-      "name": "Eco de Aurora",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_basalto_fio",
-      "name": "Fio de Basalto",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
+        "type": "DIE_CATEGORY",
         "value": 1,
         "target": "damage",
         "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
+        "description": "+1 Categoria de Dado no dano."
       }
     },
     {
-      "id": "gema_aprimoramento_basalto_guarda",
-      "name": "Guarda de Basalto",
-      "tier": "MINOR",
+      "id": "gema_ruina_ancestral",
+      "name": "Gema de Ruína Ancestral",
+      "rarity": "ANCESTRAL",
+      "category": "OFFENSIVE",
+      "origin": "Arsenal Kaltoch",
+      "characterCreationVisible": false,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_basalto_pulso",
-      "name": "Pulso de Basalto",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_basalto_veu",
-      "name": "Véu de Basalto",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_basalto_eco",
-      "name": "Eco de Basalto",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_carmesim_fio",
-      "name": "Fio de Carmesim",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 8,
+      "price": 600,
+      "load": 0,
+      "durability": 8,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
         "type": "MAGIC_DAMAGE",
-        "value": 1,
+        "value": 3,
         "target": "damage",
         "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
+        "description": "+3 de dano mágico."
       }
     },
     {
-      "id": "gema_aprimoramento_carmesim_guarda",
-      "name": "Guarda de Carmesim",
-      "tier": "MINOR",
+      "id": "gema_barreira",
+      "name": "Gema de Barreira",
+      "rarity": "COMMON",
+      "category": "DEFENSIVE",
+      "origin": "Cristal Bastilha",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
+      "effect": {
+        "type": "PG",
+        "value": 1,
+        "target": "protection",
+        "condition": "EQUIPPED",
+        "description": "+1 PG."
+      }
+    },
+    {
+      "id": "gema_bastiao",
+      "name": "Gema de Bastião",
+      "rarity": "UNCOMMON",
+      "category": "DEFENSIVE",
+      "origin": "Casco de Leviatã",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
       "creationCost": 3,
       "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "PL",
+        "value": 2,
+        "target": "protection",
+        "condition": "EQUIPPED",
+        "description": "+2 PL."
+      }
+    },
+    {
+      "id": "gema_resistencia",
+      "name": "Gema de Resistência",
+      "rarity": "RARE",
+      "category": "DEFENSIVE",
+      "origin": "Âmbar de Monstro",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "DAMAGE_REDUCTION",
+        "value": 1,
+        "target": "all",
+        "condition": "EQUIPPED",
+        "description": "Redução de Dano 1."
+      }
+    },
+    {
+      "id": "gema_integridade",
+      "name": "Gema de Integridade",
+      "rarity": "COMMON",
+      "category": "DEFENSIVE",
+      "origin": "Mina Profunda",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
       "effect": {
         "type": "DURABILITY",
-        "value": 1,
+        "value": 2,
         "target": "durability",
         "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
+        "description": "+2 de Durabilidade máxima."
       }
     },
     {
-      "id": "gema_aprimoramento_carmesim_pulso",
-      "name": "Pulso de Carmesim",
-      "tier": "MAJOR",
+      "id": "gema_escudo_solido",
+      "name": "Gema de Escudo Sólido",
+      "rarity": "ANCESTRAL",
+      "category": "DEFENSIVE",
+      "origin": "Luz Sólida",
+      "characterCreationVisible": false,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 8,
+      "price": 600,
+      "load": 0,
+      "durability": 8,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 0,
+      "recharge": "Nenhuma",
+      "activation": "PASSIVE",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
+        "type": "PG",
+        "value": 3,
+        "target": "protection",
+        "condition": "EQUIPPED",
+        "description": "+3 PG."
       }
     },
     {
-      "id": "gema_aprimoramento_carmesim_veu",
-      "name": "Véu de Carmesim",
-      "tier": "MAJOR",
+      "id": "gema_pulso",
+      "name": "Gema de Pulso",
+      "rarity": "UNCOMMON",
+      "category": "POWER",
+      "origin": "Tempestade Onírica",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_carmesim_eco",
-      "name": "Eco de Carmesim",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_cobalto_fio",
-      "name": "Fio de Cobalto",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
       "creationCost": 3,
       "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
+        "type": "GEM_POWER",
+        "value": 0,
+        "target": "push",
         "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
+        "description": "Com uma Ação, empurre um alvo próximo em 1 quadrado."
       }
     },
     {
-      "id": "gema_aprimoramento_cobalto_guarda",
-      "name": "Guarda de Cobalto",
-      "tier": "MINOR",
+      "id": "gema_veu",
+      "name": "Gema de Véu",
+      "rarity": "RARE",
+      "category": "POWER",
+      "origin": "Névoa Mineral",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "GEM_POWER",
+        "value": 0,
+        "target": "veil",
+        "condition": "WIELDED",
+        "description": "Com uma Ação, fique obscurecido até seu próximo turno."
+      }
+    },
+    {
+      "id": "gema_eco",
+      "name": "Gema de Eco",
+      "rarity": "RARE",
+      "category": "POWER",
+      "origin": "Caverna Ressonante",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "GEM_POWER",
+        "value": 0,
+        "target": "echo",
+        "condition": "WIELDED",
+        "description": "Com uma Ação, repita o último som ouvido."
+      }
+    },
+    {
+      "id": "gema_restauro",
+      "name": "Gema de Restauro",
+      "rarity": "RARE",
+      "category": "POWER",
+      "origin": "Fonte Onírica",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "GEM_POWER",
+        "value": 0,
+        "target": "repair",
+        "condition": "WIELDED",
+        "description": "Com uma Ação, restaure 1 de Durabilidade do item."
+      }
+    },
+    {
+      "id": "gema_portal_breve",
+      "name": "Gema de Portal Breve",
+      "rarity": "ANCESTRAL",
+      "category": "POWER",
+      "origin": "Portal Kaltoch",
+      "characterCreationVisible": false,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 8,
+      "price": 600,
+      "load": 0,
+      "durability": 8,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 6,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
+      "effect": {
+        "type": "GEM_POWER",
+        "value": 0,
+        "target": "teleport",
+        "condition": "WIELDED",
+        "description": "Com uma Ação, desloque-se até 3 quadrados visíveis."
+      }
+    },
+    {
+      "id": "gema_luz",
+      "name": "Gema de Luz",
+      "rarity": "COMMON",
+      "category": "UTILITY",
+      "origin": "Geodo Solar",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "light",
+        "condition": "WIELDED",
+        "description": "Com uma Ação, ilumine a área próxima."
+      }
+    },
+    {
+      "id": "gema_bussola",
+      "name": "Gema de Bússola",
+      "rarity": "COMMON",
+      "category": "UTILITY",
+      "origin": "Magnetita Onírica",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 2,
+      "price": 45,
+      "load": 0,
+      "durability": 4,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 0,
+      "effect": {
+        "type": "RULE",
+        "value": 0,
+        "target": "direction",
+        "condition": "WIELDED",
+        "description": "Aponta para um destino gravado ao ser instalada."
+      }
+    },
+    {
+      "id": "gema_memoria",
+      "name": "Gema de Memória",
+      "rarity": "UNCOMMON",
+      "category": "UTILITY",
+      "origin": "Cristal Mnemônico",
+      "characterCreationVisible": true,
+      "compatibleItemTypes": [
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
+      ],
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
       "creationCost": 3,
       "price": 90,
+      "load": 0,
+      "durability": 5,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 1,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_cobalto_pulso",
-      "name": "Pulso de Cobalto",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
+        "type": "RULE",
         "value": 0,
-        "target": "combat_pulse",
+        "target": "memory",
         "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
+        "description": "Armazena e reproduz uma lembrança sensorial."
       }
     },
     {
-      "id": "gema_aprimoramento_cobalto_veu",
-      "name": "Véu de Cobalto",
-      "tier": "MAJOR",
+      "id": "gema_chave",
+      "name": "Gema de Chave",
+      "rarity": "RARE",
+      "category": "UTILITY",
+      "origin": "Fechadura Perdida",
+      "characterCreationVisible": true,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 5,
+      "price": 250,
+      "load": 0,
+      "durability": 6,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 3,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "GEM_POWER",
+        "type": "RULE",
         "value": 0,
-        "target": "combat_guard",
+        "target": "key",
         "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
+        "description": "Pode ser vinculada a um mecanismo como chave onírica."
       }
     },
     {
-      "id": "gema_aprimoramento_cobalto_eco",
-      "name": "Eco de Cobalto",
-      "tier": "MAJOR",
+      "id": "gema_oraculo",
+      "name": "Gema de Oráculo",
+      "rarity": "ANCESTRAL",
+      "category": "UTILITY",
+      "origin": "Observatório Kaltoch",
+      "characterCreationVisible": false,
       "compatibleItemTypes": [
-        "Arma"
+        "Arma",
+        "Armadura",
+        "Acessório",
+        "Escudo"
       ],
-      "creationCost": 6,
-      "price": 400,
+      "compatibleBaseGroups": [],
+      "compatibleBaseIds": [],
+      "creationCost": 8,
+      "price": 600,
+      "load": 0,
+      "durability": 8,
+      "region": "",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "maxCharges": 6,
+      "recharge": "Recupera 1 carga com uma Ação; carga total após 8 horas",
+      "activation": "ACTION",
+      "installationKnowledge": "Ourivesaria",
+      "installationDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "removalDifficulty": "Definida pela combinação entre aprimoramento e item",
+      "failureEnhancementDamage": 2,
+      "failureItemDamage": 1,
       "effect": {
-        "type": "GEM_POWER",
+        "type": "RULE",
         "value": 0,
-        "target": "combat_echo",
+        "target": "oracle",
         "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_crepusculo_fio",
-      "name": "Fio de Crepúsculo",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
-        "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_crepusculo_guarda",
-      "name": "Guarda de Crepúsculo",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_crepusculo_pulso",
-      "name": "Pulso de Crepúsculo",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_crepusculo_veu",
-      "name": "Véu de Crepúsculo",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_crepusculo_eco",
-      "name": "Eco de Crepúsculo",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_eter_fio",
-      "name": "Fio de Éter",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
-        "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_eter_guarda",
-      "name": "Guarda de Éter",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_eter_pulso",
-      "name": "Pulso de Éter",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_eter_veu",
-      "name": "Véu de Éter",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_eter_eco",
-      "name": "Eco de Éter",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_ferrugem_fio",
-      "name": "Fio de Ferrugem",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
-        "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_ferrugem_guarda",
-      "name": "Guarda de Ferrugem",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_ferrugem_pulso",
-      "name": "Pulso de Ferrugem",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_ferrugem_veu",
-      "name": "Véu de Ferrugem",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_ferrugem_eco",
-      "name": "Eco de Ferrugem",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_marfim_fio",
-      "name": "Fio de Marfim",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
-        "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_marfim_guarda",
-      "name": "Guarda de Marfim",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_marfim_pulso",
-      "name": "Pulso de Marfim",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_marfim_veu",
-      "name": "Véu de Marfim",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_marfim_eco",
-      "name": "Eco de Marfim",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_tempestade_fio",
-      "name": "Fio de Tempestade",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
-        "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_tempestade_guarda",
-      "name": "Guarda de Tempestade",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_tempestade_pulso",
-      "name": "Pulso de Tempestade",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_tempestade_veu",
-      "name": "Véu de Tempestade",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_tempestade_eco",
-      "name": "Eco de Tempestade",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_vidro_fio",
-      "name": "Fio de Vidro",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "MAGIC_DAMAGE",
-        "value": 1,
-        "target": "damage",
-        "condition": "WIELDED",
-        "description": "Converte parte do impacto em dano mágico sutil."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_vidro_guarda",
-      "name": "Guarda de Vidro",
-      "tier": "MINOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 3,
-      "price": 90,
-      "effect": {
-        "type": "DURABILITY",
-        "value": 1,
-        "target": "durability",
-        "condition": "WIELDED",
-        "description": "Reduz em 1 a primeira perda de Durabilidade de cada cena."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_vidro_pulso",
-      "name": "Pulso de Vidro",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_pulse",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, após acertar, empurre o alvo 1 quadrado."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_vidro_veu",
-      "name": "Véu de Vidro",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_guard",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, receba +2 Esquiva contra um ataque."
-      }
-    },
-    {
-      "id": "gema_aprimoramento_vidro_eco",
-      "name": "Eco de Vidro",
-      "tier": "MAJOR",
-      "compatibleItemTypes": [
-        "Arma"
-      ],
-      "creationCost": 6,
-      "price": 400,
-      "effect": {
-        "type": "GEM_POWER",
-        "value": 0,
-        "target": "combat_echo",
-        "condition": "WIELDED",
-        "description": "Uma vez por cena, repita o menor dado de dano do ataque."
+        "description": "Com uma Ação, revela energia onírica próxima."
       }
     }
   ]

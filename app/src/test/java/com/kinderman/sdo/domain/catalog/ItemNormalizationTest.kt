@@ -309,7 +309,9 @@ class ItemNormalizationTest {
 
         val migrated = Character(inventory = listOf(legacy)).withNormalizedInventory().inventory.single()
 
-        assertEquals(setOf("afiada", "gema_atributo_for"), migrated.mechanicalEffects.map { it.id }.toSet())
+        assertEquals(setOf("afiada"), migrated.mechanicalEffects.map { it.id }.toSet())
+        assertTrue(migrated.gemIds.isEmpty())
+        assertEquals(0, migrated.gemSlots)
         assertFalse(migrated.canonical)
         assertEquals(CURRENT_ITEM_DATA_VERSION, migrated.dataVersion)
     }

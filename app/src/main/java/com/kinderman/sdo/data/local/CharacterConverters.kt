@@ -24,6 +24,8 @@ import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.ItemCondition
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.EnhancementKind
+import com.kinderman.sdo.domain.model.InstalledEnhancement
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -168,13 +170,13 @@ class CharacterConverters {
     @TypeConverter fun itemCreationDraftToString(value: ItemCreationDraft?): String? = value?.let {
         listOf(
             it.step.toString(), it.category, it.baseId, it.materialId, it.quality.name,
-            it.modificationIds.nested(), it.gemIds.nested(), it.gemSlots.toString(),
-            it.technologySlots.toString(), it.customName, it.manualPrice, it.commonName,
+            it.modificationIds.nested(), "", "0",
+            "0", it.customName, it.manualPrice, it.commonName,
             it.commonEffect, it.commonLoad.toString(), it.commonQuantity.toString(),
             it.commonCategory, it.commonRegion, it.commonDurability.toString(), it.commonPg.toString(),
             it.commonPl.toString(), it.commonAgilityLimit?.toString().orEmpty(), it.commonAttack.toString(),
-            it.commonDamage.toString(), it.commonRange.toString(), it.technologyIds.nested(),
-            it.secondaryMaterialId, "alloy-v1",
+            it.commonDamage.toString(), it.commonRange.toString(), "",
+            it.secondaryMaterialId, "enhancement-v1", it.enhancementIds.nested(), it.enhancementSlots.toString(),
         ).row()
     }
 
@@ -182,16 +184,15 @@ class CharacterConverters {
         value?.takeIf(String::isNotBlank)?.parts()?.let { fields ->
             ItemCreationDraft(
                 step = (fields.getOrNull(0)?.toIntOrNull() ?: 1).let { legacyStep ->
-                    if (fields.getOrNull(26) != "alloy-v1" && fields.getOrNull(1) != "Item" && legacyStep >= 3) legacyStep + 1 else legacyStep
+                    if (fields.getOrNull(26) !in setOf("alloy-v1", "enhancement-v1") && fields.getOrNull(1) != "Item" && legacyStep >= 3) legacyStep + 1 else legacyStep
                 }.coerceIn(1, 7),
                 category = fields.getOrElse(1) { "Arma" },
                 baseId = fields.getOrElse(2) { "" },
                 materialId = fields.getOrElse(3) { "" },
                 quality = runCatching { ItemQuality.valueOf(fields.getOrElse(4) { "" }) }.getOrDefault(ItemQuality.COMMON),
                 modificationIds = fields.getOrElse(5) { "" }.toNestedList(),
-                gemIds = fields.getOrElse(6) { "" }.toNestedList(),
-                gemSlots = fields.getOrNull(7)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
-                technologySlots = fields.getOrNull(8)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+                enhancementIds = fields.getOrElse(27) { "" }.takeIf { fields.getOrNull(26) == "enhancement-v1" }?.toNestedList().orEmpty(),
+                enhancementSlots = fields.getOrNull(28)?.toIntOrNull().takeIf { fields.getOrNull(26) == "enhancement-v1" } ?: 0,
                 customName = fields.getOrElse(9) { "" },
                 manualPrice = fields.getOrElse(10) { "" },
                 commonName = fields.getOrElse(11) { "" },
@@ -207,8 +208,7 @@ class CharacterConverters {
                 commonAttack = fields.getOrNull(21)?.toIntOrNull() ?: 0,
                 commonDamage = fields.getOrNull(22)?.toIntOrNull() ?: 0,
                 commonRange = fields.getOrNull(23)?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
-                technologyIds = fields.getOrElse(24) { "" }.toNestedList(),
-                secondaryMaterialId = fields.getOrElse(25) { "" }.takeIf { fields.getOrNull(26) == "alloy-v1" }.orEmpty(),
+                secondaryMaterialId = fields.getOrElse(25) { "" }.takeIf { fields.getOrNull(26) in setOf("alloy-v1", "enhancement-v1") }.orEmpty(),
             )
         }
 
@@ -372,16 +372,22 @@ class CharacterConverters {
             item.effect, item.pg.toString(), item.pl.toString(), item.category,
             item.agilityLimit?.toString().orEmpty(), item.quality.name,
             "", // reserved legacy slot; ItemBonus is no longer part of the domain model
-            "canonical-v7", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
+            "canonical-v8", item.quantity.toString(), item.linkedAshId, item.ashPurity.name,
             item.acquisitionSource.name, item.heritageCost?.toString().orEmpty(), item.purchasePrice?.toString().orEmpty(),
             item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
-            item.baseId, item.materialId, item.modificationIds.nested(), item.gemIds.nested(),
+            item.baseId, item.materialId, item.modificationIds.nested(), "",
             item.mechanicalEffects.joinToString(MODIFIER_ROW) { effect ->
                 listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description, effect.resolvedTargetId).joinToString(MODIFIER_FIELD)
             },
             item.dataVersion.toString(), item.durabilityMax.toString(), item.itemCondition.name,
-            item.backpackCapacity.toString(), item.technologyIds.nested(), item.gemSlots.toString(), item.technologySlots.toString(),
+            item.backpackCapacity.toString(), "", "0", "0",
             item.secondaryMaterialId,
+            item.installedEnhancements.joinToString(MODIFIER_ROW) { enhancement ->
+                listOf(enhancement.id, enhancement.catalogEntryId, enhancement.kind.name,
+                    enhancement.durabilityCurrent.toString(), enhancement.durabilityMax.toString(),
+                    enhancement.chargesCurrent.toString(), enhancement.chargesMax.toString()).joinToString(MODIFIER_FIELD)
+            }, item.enhancementSlots.toString(), item.enhancementChargesCurrent.toString(),
+            item.enhancementChargesMax.toString(),
         ).row()
     }
 
@@ -410,7 +416,6 @@ class CharacterConverters {
                 baseId = p.getOrElse(24) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
                 materialId = p.getOrElse(25) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }.orEmpty(),
                 modificationIds = p.getOrElse(26) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }?.toNestedList().orEmpty(),
-                gemIds = p.getOrElse(27) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }?.toNestedList().orEmpty(),
                 mechanicalEffects = p.getOrElse(28) { "" }.takeIf { p.getOrNull(13)?.startsWith("canonical-") == true }
                     ?.split(MODIFIER_ROW)?.filter(String::isNotBlank)?.map { encoded ->
                         val fields = encoded.split(MODIFIER_FIELD)
@@ -424,13 +429,25 @@ class CharacterConverters {
                             resolvedTargetId = fields.getOrElse(6) { "" },
                         )
                     }.orEmpty(),
-                technologyIds = p.getOrElse(33) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v6", "canonical-v7") }?.toNestedList().orEmpty(),
-                gemSlots = p.getOrNull(34)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v6", "canonical-v7") } ?: 0,
-                technologySlots = p.getOrNull(35)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v6", "canonical-v7") } ?: 0,
-                secondaryMaterialId = p.getOrElse(36) { "" }.takeIf { p.getOrNull(13) == "canonical-v7" }.orEmpty(),
-                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v4", "canonical-v5", "canonical-v6", "canonical-v7") } ?: 0,
+                secondaryMaterialId = p.getOrElse(36) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v7", "canonical-v8") }.orEmpty(),
+                installedEnhancements = p.getOrElse(37) { "" }.takeIf { p.getOrNull(13) == "canonical-v8" }
+                    ?.split(MODIFIER_ROW)?.filter(String::isNotBlank)?.map { encoded ->
+                        val fields = encoded.split(MODIFIER_FIELD)
+                        InstalledEnhancement(
+                            id = fields.getOrElse(0) { "" }, catalogEntryId = fields.getOrElse(1) { "" },
+                            kind = runCatching { EnhancementKind.valueOf(fields.getOrElse(2) { "" }) }.getOrDefault(EnhancementKind.GEM),
+                            durabilityCurrent = fields.getOrNull(3)?.toIntOrNull() ?: 1,
+                            durabilityMax = fields.getOrNull(4)?.toIntOrNull() ?: 1,
+                            chargesCurrent = fields.getOrNull(5)?.toIntOrNull() ?: 0,
+                            chargesMax = fields.getOrNull(6)?.toIntOrNull() ?: 0,
+                        )
+                    }.orEmpty(),
+                enhancementSlots = p.getOrNull(38)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v8" } ?: 0,
+                enhancementChargesCurrent = p.getOrNull(39)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v8" } ?: 0,
+                enhancementChargesMax = p.getOrNull(40)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v8" } ?: 0,
+                dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v4", "canonical-v5", "canonical-v6", "canonical-v7", "canonical-v8") } ?: 0,
                 itemCondition = p.enumAt(31, if (legacyDurability(p.getOrElse(4) { "" }).second == 0) ItemCondition.SCRAP else ItemCondition.NORMAL),
-                backpackCapacity = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v5", "canonical-v6", "canonical-v7") } ?: 0,
+                backpackCapacity = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v5", "canonical-v6", "canonical-v7", "canonical-v8") } ?: 0,
             )
         }
     }

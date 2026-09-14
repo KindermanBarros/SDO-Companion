@@ -843,6 +843,46 @@
         "condition": "WIELDED",
         "description": "+1 dano físico enquanto empunhada."
       }
+    },
+    {
+      "id": "encaixe_aprimoramento_1", "name": "Encaixe de Aprimoramento I",
+      "compatibleItemTypes": ["Arma", "Armadura", "Acessório", "Escudo"],
+      "compatibleBaseGroups": [], "compatibleBaseIds": [], "creationCost": 2, "price": 45,
+      "load": 0, "durability": 0, "region": "", "pg": 0, "pl": 0, "agilityLimit": null,
+      "enhancementSlots": 1,
+      "effect": {"type": "RULE", "value": 0, "target": "enhancement_slots", "condition": "EQUIPPED", "description": "Concede 1 Espaço de Aprimoramento adicional."}
+    },
+    {
+      "id": "encaixe_aprimoramento_2", "name": "Encaixe de Aprimoramento II",
+      "compatibleItemTypes": ["Arma", "Armadura", "Acessório", "Escudo"],
+      "compatibleBaseGroups": [], "compatibleBaseIds": [], "creationCost": 4, "price": 150,
+      "load": 0, "durability": 0, "region": "", "pg": 0, "pl": 0, "agilityLimit": null,
+      "enhancementSlots": 2,
+      "effect": {"type": "RULE", "value": 0, "target": "enhancement_slots", "condition": "EQUIPPED", "description": "Concede 2 Espaços de Aprimoramento adicionais."}
+    },
+    {
+      "id": "encaixe_aprimoramento_3", "name": "Encaixe de Aprimoramento III",
+      "compatibleItemTypes": ["Arma", "Armadura", "Acessório", "Escudo"],
+      "compatibleBaseGroups": [], "compatibleBaseIds": [], "creationCost": 6, "price": 400,
+      "load": 0, "durability": 0, "region": "", "pg": 0, "pl": 0, "agilityLimit": null,
+      "enhancementSlots": 3,
+      "effect": {"type": "RULE", "value": 0, "target": "enhancement_slots", "condition": "EQUIPPED", "description": "Concede 3 Espaços de Aprimoramento adicionais."}
+    },
+    {
+      "id": "encaixe_aprimoramento_4", "name": "Encaixe de Aprimoramento IV",
+      "compatibleItemTypes": ["Arma", "Armadura", "Acessório", "Escudo"],
+      "compatibleBaseGroups": [], "compatibleBaseIds": [], "creationCost": 8, "price": 850,
+      "load": 0, "durability": 0, "region": "", "pg": 0, "pl": 0, "agilityLimit": null,
+      "enhancementSlots": 4,
+      "effect": {"type": "RULE", "value": 0, "target": "enhancement_slots", "condition": "EQUIPPED", "description": "Concede 4 Espaços de Aprimoramento adicionais."}
+    },
+    {
+      "id": "encaixe_aprimoramento_5", "name": "Encaixe de Aprimoramento V",
+      "compatibleItemTypes": ["Arma", "Armadura", "Acessório", "Escudo"],
+      "compatibleBaseGroups": [], "compatibleBaseIds": [], "creationCost": 10, "price": 1700,
+      "load": 0, "durability": 0, "region": "", "pg": 0, "pl": 0, "agilityLimit": null,
+      "enhancementSlots": 5,
+      "effect": {"type": "RULE", "value": 0, "target": "enhancement_slots", "condition": "EQUIPPED", "description": "Concede 5 Espaços de Aprimoramento adicionais."}
     }
   ]
 }

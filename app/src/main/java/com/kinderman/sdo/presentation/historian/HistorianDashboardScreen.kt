@@ -552,7 +552,6 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
         QuickActionKind.MONEY -> SessionCommand(type = SessionOperationType.MONEY, amount = amount, reason = label)
         QuickActionKind.DESTINY -> SessionCommand(type = SessionOperationType.DESTINY, amount = amount, resource = SessionResource.DESTINY, reason = label)
         QuickActionKind.NOTE -> SessionCommand(type = SessionOperationType.NOTE, label = label.ifBlank { "Anotação do Historiador" }, detail = "Registro operacional", reason = label)
-        QuickActionKind.REWARD -> SessionCommand(type = SessionOperationType.REWARD, label = label.ifBlank { "Recompensa" }, detail = amount.toString(), reason = label)
         QuickActionKind.REGION -> SessionCommand(type = SessionOperationType.REGION_FAILURE, amount = amount, bodyRegion = region?.region, reason = label)
         null -> null
     }
@@ -604,7 +603,7 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
 private enum class QuickActionKind(val label: String) {
     DAMAGE("DANO"), HEAL("CURA"), RESOURCE("RECURSO"),
     CONDITION("CONDIÇÃO"), MONEY("DINHEIRO"), DESTINY("DESTINO"),
-    NOTE("ANOTAÇÃO"), REWARD("RECOMPENSA"), REGION("FALHA LOCAL"),
+    NOTE("ANOTAÇÃO"), REGION("FALHA LOCAL"),
 }
 
 @Composable

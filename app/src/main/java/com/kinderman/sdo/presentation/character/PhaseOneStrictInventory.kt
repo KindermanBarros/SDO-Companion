@@ -65,6 +65,11 @@ import com.kinderman.sdo.domain.model.heritageCostPerDose
 import com.kinderman.sdo.domain.model.handsRequired
 import com.kinderman.sdo.domain.model.synchronizeItemPowers
 import com.kinderman.sdo.domain.catalog.toMysticAbility
+import com.kinderman.sdo.domain.catalog.installEnhancement
+import com.kinderman.sdo.domain.catalog.enhancementInventoryItem
+import com.kinderman.sdo.domain.catalog.removeEnhancement
+import com.kinderman.sdo.domain.catalog.rechargeEnhancement
+import com.kinderman.sdo.domain.catalog.spendEnhancementCharge
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
 import com.kinderman.sdo.ui.HudTextField
@@ -180,46 +185,39 @@ internal fun PhaseOneStrictInventorySection(
                     val materialName = (weaponMaterials + armorMaterials).firstOrNull { it.id == item.materialId }?.name
                     val secondaryMaterialName = (weaponMaterials + armorMaterials).firstOrNull { it.id == item.secondaryMaterialId }?.name
                     val modificationNames = (weaponModifications + armorModifications).filter { it.id in item.modificationIds }.map { it.name }
-                    val gemNames = gemComponents.filter { it.id in item.gemIds }.map { it.name }
-                    val technologyNames = technologyComponents.filter { it.id in item.technologyIds }.map { it.name }
+                    val installedEnhancementIds = item.installedEnhancements.map { it.catalogEntryId }.toSet()
+                    val enhancementNames = enhancementComponents.filter { it.id in installedEnhancementIds }.map { it.name }
                     materialName?.let { Text("MATERIAL // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
                     secondaryMaterialName?.let { Text("LIGA // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
                     if (modificationNames.isNotEmpty()) Text("MODIFICAÇÕES // ${modificationNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                    Text("ESPAÇOS // GEMAS ${item.gemIds.size}/${item.gemSlots} // TECNOLOGIA ${item.technologyIds.size}/${item.technologySlots}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
-                    if (gemNames.isNotEmpty()) Text("GEMAS // ${gemNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                    if (technologyNames.isNotEmpty()) Text("TECNOLOGIAS // ${technologyNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                    fun updateComponents(gemIds: List<String> = item.gemIds, technologyIds: List<String> = item.technologyIds) {
-                        val componentEffectIds = (gemComponents.map { it.id } + technologyComponents.map { it.id }).toSet()
-                        val updated = item.copy(
-                            gemIds = gemIds,
-                            technologyIds = technologyIds,
-                            mechanicalEffects = (
-                                item.mechanicalEffects.filterNot { it.id in componentEffectIds } +
-                                    componentEffects(item.modificationIds, gemIds, technologyIds)
-                                ).distinctBy(ItemEffect::id),
-                        )
-                        onChange(character.copy(inventory = character.inventory.replace(index, updated)).synchronizeItemPowers())
+                    Text("ESPAÇOS DE APRIMORAMENTO // ${item.installedEnhancements.size}/${item.enhancementSlots}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+                    if (enhancementNames.isNotEmpty()) Text("INSTALADOS // ${enhancementNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    val basePart = (weaponBases + armorBases).firstOrNull { it.id == item.baseId }
+                    val compatibleIds = basePart?.let { compatibleEnhancements(it, initialCreation = false).mapTo(hashSetOf()) { part -> part.id } }.orEmpty()
+                    val availableEnhancements = character.inventory.filter { loose ->
+                        loose.id != item.id && loose.category in setOf("Gema", "Tecnologia") &&
+                            loose.catalogEntryId in compatibleIds &&
+                            !(loose.category == "Tecnologia" && loose.catalogEntryId in installedEnhancementIds)
                     }
-                    val availableGems = gemComponents.filterNot { it.id in item.gemIds }
-                    if (enabled && item.gemIds.size < item.gemSlots && availableGems.isNotEmpty()) {
-                        ChoiceField("Instalar gema", "", availableGems.map { it.id }, true, display = { id -> availableGems.firstOrNull { it.id == id }?.name ?: "Selecionar" }) { id ->
-                            updateComponents(gemIds = item.gemIds + id)
+                    if (enabled && item.installedEnhancements.size < item.enhancementSlots && availableEnhancements.isNotEmpty()) {
+                        ChoiceField("Instalar aprimoramento do inventário", "", availableEnhancements.map { it.id }, true, display = { id ->
+                            availableEnhancements.firstOrNull { it.id == id }?.let { "${it.category} // ${it.name}" } ?: "Selecionar"
+                        }) { sourceId ->
+                            runCatching { character.installEnhancement(sourceId, item.id) }
+                                .onSuccess(onChange)
+                                .onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
                         }
                     }
-                    item.gemIds.forEach { id ->
-                        gemComponents.firstOrNull { it.id == id }?.let { gem ->
-                            TextButton(onClick = { updateComponents(gemIds = item.gemIds - id) }, enabled = enabled) { Text("REMOVER GEMA // ${gem.name.uppercase()}") }
-                        }
-                    }
-                    val availableTechnologies = technologyComponents.filterNot { it.id in item.technologyIds }
-                    if (enabled && item.technologyIds.size < item.technologySlots && availableTechnologies.isNotEmpty()) {
-                        ChoiceField("Instalar tecnologia", "", availableTechnologies.map { it.id }, true, display = { id -> availableTechnologies.firstOrNull { it.id == id }?.name ?: "Selecionar" }) { id ->
-                            updateComponents(technologyIds = item.technologyIds + id)
-                        }
-                    }
-                    item.technologyIds.forEach { id ->
-                        technologyComponents.firstOrNull { it.id == id }?.let { technology ->
-                            TextButton(onClick = { updateComponents(technologyIds = item.technologyIds - id) }, enabled = enabled) { Text("REMOVER TECNOLOGIA // ${technology.name.uppercase()}") }
+                    item.installedEnhancements.forEach { installed ->
+                        enhancementComponents.firstOrNull { it.id == installed.catalogEntryId }?.let { enhancement ->
+                            Text("${enhancement.name} // DUR ${installed.durabilityCurrent}/${installed.durabilityMax} // CARGAS ${installed.chargesCurrent}/${installed.chargesMax}", style = MaterialTheme.typography.bodySmall)
+                            if (installed.chargesMax > 0) Row {
+                                TextButton(onClick = { onChange(character.spendEnhancementCharge(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent > 0) { Text("ATIVAR") }
+                                TextButton(onClick = { onChange(character.rechargeEnhancement(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent < installed.chargesMax) { Text("RECARREGAR") }
+                            }
+                            TextButton(onClick = {
+                                onChange(character.removeEnhancement(item.id, installed.id))
+                            }, enabled = enabled) { Text("REMOVER // ${enhancement.name.uppercase()}") }
                         }
                     }
                 }
@@ -300,6 +298,24 @@ internal fun PhaseOneStrictInventorySection(
             onChange(character.addInventoryItem(item))
             dialog = null
         }
+        "initial_gem" -> EnhancementCatalogDialog(
+            technology = false,
+            randomByCategory = true,
+            remainingHeritage = remainingHeritage,
+            onDismiss = { dialog = null },
+        ) { id ->
+            onChange(character.addInventoryItem(enhancementInventoryItem(id, initialCreation = true)))
+            dialog = null
+        }
+        "gem_catalog", "technology_catalog" -> EnhancementCatalogDialog(
+            technology = dialog == "technology_catalog",
+            randomByCategory = false,
+            remainingHeritage = null,
+            onDismiss = { dialog = null },
+        ) { id ->
+            onChange(character.addInventoryItem(enhancementInventoryItem(id)))
+            dialog = null
+        }
         "initial_weapon", "initial_armor", "initial_accessory" -> StrictItemBuilderDialog(
             remainingHeritage = remainingHeritage,
             regionOptions = character.bodyRegions.map { it.name },
@@ -356,9 +372,47 @@ private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Bo
                 AddButton("Construir arma", true) { onChoice(if (initialCreation) "initial_weapon" else "builder_weapon") }
                 AddButton("Construir armadura", true) { onChoice(if (initialCreation) "initial_armor" else "builder_armor") }
                 AddButton("Construir acessório", true) { onChoice(if (initialCreation) "initial_accessory" else "builder_accessory") }
+                AddButton(if (initialCreation) "Sortear gema" else "Adicionar gema", true) { onChoice(if (initialCreation) "initial_gem" else "gem_catalog") }
+                if (!initialCreation) AddButton("Adicionar tecnologia", true) { onChoice("technology_catalog") }
                 if (!initialCreation) AddButton("Construir item comum", true) { onChoice("builder_item") }
                 if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_builder") }
                 if (!initialCreation) TextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
+}
+
+@Composable
+private fun EnhancementCatalogDialog(
+    technology: Boolean,
+    randomByCategory: Boolean,
+    remainingHeritage: Int?,
+    onDismiss: () -> Unit,
+    onAdd: (String) -> Unit,
+) {
+    val options = ItemCreationRules.enhancementCreationOptions(technology)
+    val categories = options.map { ItemCreationRules.enhancementCategory(it.id) }.distinct().sorted()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (randomByCategory) "SORTEAR GEMA" else if (technology) "TECNOLOGIAS" else "GEMAS") },
+        text = {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (randomByCategory) {
+                    Text("Escolha a categoria. A gema completa será sorteada; opções ancestrais não participam da criação.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    categories.forEach { category ->
+                        val eligible = options.filter { ItemCreationRules.enhancementCategory(it.id) == category && (it.creationCost ?: Int.MAX_VALUE) <= (remainingHeritage ?: Int.MAX_VALUE) }
+                        AddButton(category, eligible.isNotEmpty()) { onAdd(eligible.random().id) }
+                    }
+                } else options.forEach { enhancement ->
+                    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp)) {
+                        Text(enhancement.name)
+                        Text("${ItemCreationRules.enhancementRarity(enhancement.id)} // ${ItemCreationRules.enhancementCategory(enhancement.id)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        Text(enhancement.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = { onAdd(enhancement.id) }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR") }
+                    }
+                }
             }
         },
         confirmButton = {},
@@ -561,12 +615,14 @@ private fun StrictItemBuilderDialog(
     val secondaryMaterial: ItemPart? = materials.firstOrNull { it.id == draft.secondaryMaterialId && it.id != material.id }
     val modifications: List<ItemPart> = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
         .filter { it.id in draft.modificationIds }
-    val gemSlots = draft.gemSlots
-    val technologySlots = draft.technologySlots
     val customName = draft.customName
     val quality = draft.quality.takeIf { it in qualityOptions } ?: ItemQuality.COMMON
-    val gems: List<ItemPart> = ItemCreationRules.gemComponents.filter { it.id in draft.gemIds }
-    val technologies: List<ItemPart> = ItemCreationRules.technologyComponents.filter { it.id in draft.technologyIds }
+    val enhancementSlots = if (quality == ItemQuality.MUNDANE) 0 else
+        base.enhancementSlots + modifications.sumOf(ItemPart::enhancementSlots).coerceAtMost(5)
+    val enhancementOptions = ItemCreationRules.compatibleEnhancements(base, initialCreation)
+    val enhancements = enhancementOptions.filter { it.id in draft.enhancementIds }.take(enhancementSlots)
+    val gems: List<ItemPart> = enhancements.filterNot { ItemCreationRules.enhancementIsTechnology(it.id) }
+    val technologies: List<ItemPart> = enhancements.filter { ItemCreationRules.enhancementIsTechnology(it.id) }
     val commonName = draft.commonName
     val commonEffect = draft.commonEffect
     val commonLoad = draft.commonLoad
@@ -574,8 +630,8 @@ private fun StrictItemBuilderDialog(
     val commonCategory = draft.commonCategory
     val totalSteps = if (category == "Item") 2 else if (hasAlloyComposition) 7 else 6
     val stepTitle = if (category == "Item") listOf("DADOS", "REVISÃO")[step - 1]
-        else (if (hasAlloyComposition) listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO")
-        else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "GEMAS", "REVISÃO"))[step - 1]
+        else (if (hasAlloyComposition) listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "APRIMORAMENTOS", "REVISÃO")
+        else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "APRIMORAMENTOS", "REVISÃO"))[step - 1]
     val qualityStep = if (hasAlloyComposition) 4 else 3
     val modificationsStep = qualityStep + 1
     val gemsStep = modificationsStep + 1
@@ -587,12 +643,13 @@ private fun StrictItemBuilderDialog(
         material = material,
         secondaryMaterial = secondaryMaterial,
         modifications = modifications,
-        gemSlots = gemSlots,
-        technologySlots = technologySlots,
+        gemSlots = 0,
+        technologySlots = 0,
         customName = customName,
         quality = quality,
         components = gems,
         technologies = technologies,
+        enhancementSlots = enhancementSlots,
     )
     val allowedByBudget = remainingHeritage == null || (built.creationCost != null && built.creationCost <= remainingHeritage)
     val commonEffects = buildList {
@@ -720,41 +777,24 @@ private fun StrictItemBuilderDialog(
                     }
                 }
                 if (step == gemsStep && category != "Item") {
-                    TwoFields(
-                        { IntegerField("Espaços de Gema", gemSlots, true, it) { value -> onDraftChange(draft.copy(gemSlots = value.coerceIn(gems.size, 5))) } },
-                        { IntegerField("Espaços de Tecnologia", technologySlots, true, it) { value -> onDraftChange(draft.copy(technologySlots = value.coerceIn(technologies.size, 5))) } },
-                    )
-                    val availableGems: List<ItemPart> = ItemCreationRules.gemComponents.filterNot { candidate: ItemPart -> gems.any { it.id == candidate.id } }
-                    if (quality != ItemQuality.MUNDANE && gems.size < gemSlots && availableGems.isNotEmpty()) {
-                        ChoiceField<String>("Adicionar gema", "", availableGems.map { it.id }, true, display = { id: String -> availableGems.firstOrNull { it.id == id }?.let { "${it.name} // ${it.effect}" } ?: "Selecionar" }) { id: String ->
-                            onDraftChange(draft.copy(gemIds = draft.gemIds + id))
-                        }
+                    Text("ESPAÇOS DE APRIMORAMENTO // ${enhancements.size}/$enhancementSlots", color = MaterialTheme.colorScheme.primary)
+                    Text("A base do item e uma modificação de Encaixe determinam o total disponível.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    val available = enhancementOptions.filterNot { candidate -> enhancements.any { it.id == candidate.id } }
+                    if (quality != ItemQuality.MUNDANE && enhancements.size < enhancementSlots && available.isNotEmpty()) {
+                        ChoiceField<String>("Adicionar aprimoramento", "", available.map { it.id }, true, display = { id ->
+                            available.firstOrNull { it.id == id }?.let { "${if (ItemCreationRules.enhancementIsTechnology(it.id)) "Tecnologia" else "Gema"} // ${it.name}" } ?: "Selecionar"
+                        }) { id -> onDraftChange(draft.copy(enhancementIds = draft.enhancementIds + id)) }
                     }
-                    gems.forEach { gem: ItemPart ->
+                    enhancements.forEach { enhancement ->
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Column(Modifier.weight(1f)) {
-                                Text(gem.name)
-                                Text(gem.effect, style = MaterialTheme.typography.bodySmall)
-                                ItemPartStats(gem, initialCreation)
+                                Text(enhancement.name)
+                                Text(if (ItemCreationRules.enhancementIsTechnology(enhancement.id)) "TECNOLOGIA // ${enhancement.materialTier}" else "GEMA // ${enhancement.materialTier}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                                Text(enhancement.effect, style = MaterialTheme.typography.bodySmall)
+                                ItemPartStats(enhancement, initialCreation)
                             }
-                            RemoveButton(true, "Remover ${gem.name}") { onDraftChange(draft.copy(gemIds = draft.gemIds - gem.id)) }
-                        }
-                    }
-                    val availableTechnologies = ItemCreationRules.technologyComponents.filterNot { candidate -> technologies.any { it.id == candidate.id } }
-                    if (quality != ItemQuality.MUNDANE && technologies.size < technologySlots && availableTechnologies.isNotEmpty()) {
-                        ChoiceField<String>("Adicionar tecnologia", "", availableTechnologies.map { it.id }, true, display = { id ->
-                            availableTechnologies.firstOrNull { it.id == id }?.let { "${it.name} // ${it.effect}" } ?: "Selecionar"
-                        }) { id -> onDraftChange(draft.copy(technologyIds = draft.technologyIds + id)) }
-                    }
-                    technologies.forEach { technology ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Column(Modifier.weight(1f)) {
-                                Text(technology.name)
-                                Text(technology.effect, style = MaterialTheme.typography.bodySmall)
-                                ItemPartStats(technology, initialCreation)
-                            }
-                            RemoveButton(true, "Remover ${technology.name}") {
-                                onDraftChange(draft.copy(technologyIds = draft.technologyIds - technology.id))
+                            RemoveButton(true, "Remover ${enhancement.name}") {
+                                onDraftChange(draft.copy(enhancementIds = draft.enhancementIds - enhancement.id))
                             }
                         }
                     }
