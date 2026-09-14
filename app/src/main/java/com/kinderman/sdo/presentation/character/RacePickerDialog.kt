@@ -40,7 +40,16 @@ internal fun RacePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (RaceDefinition, SubRaceDefinition?, String, List<RacialPower>, RacialPower?) -> Unit,
 ) {
-    val initialRace = RaceCatalog.race(character.race) ?: RaceCatalog.races.first()
+    val initialRace = RaceCatalog.race(character.race) ?: RaceCatalog.races.firstOrNull()
+    if (initialRace == null) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("CATÁLOGO DE RAÇAS INDISPONÍVEL") },
+            text = { Text("Nenhuma raça válida foi carregada. Feche a tela e tente sincronizar novamente.") },
+            confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+        )
+        return
+    }
     val initialSubRaceName = character.subRace.ifBlank { RaceCatalog.legacySubRace(character.race).orEmpty() }
     val initialSubRace = RaceCatalog.subRacesFor(initialRace).firstOrNull { it.name == initialSubRaceName }
     val initialBaseCount = if (initialSubRace == null) 2 else 1
@@ -78,7 +87,7 @@ internal fun RacePickerDialog(
                         subRace = null
                         subRacePower = null
                     }
-                    basePowers = if (subRace == null) option.powers.toSet() else setOf(option.powers.first())
+                    basePowers = if (subRace == null) option.powers.toSet() else option.powers.firstOrNull()?.let { setOf(it) }.orEmpty()
                 }
                 SdoInsetCard {
                     Text("RECURSOS RACIAIS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
@@ -103,8 +112,8 @@ internal fun RacePickerDialog(
                     optionLabel = { it?.name?.uppercase() ?: "NENHUMA" },
                 ) { option ->
                     subRace = option
-                    basePowers = if (option == null) race.powers.toSet() else setOf(race.powers.first())
-                    subRacePower = option?.powers?.first()
+                    basePowers = if (option == null) race.powers.toSet() else race.powers.firstOrNull()?.let { setOf(it) }.orEmpty()
+                    subRacePower = option?.powers?.firstOrNull()
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 SectionHeader("02.B", if (needsReplacement) "Mantenha 1 poder racial" else "Poderes raciais")
