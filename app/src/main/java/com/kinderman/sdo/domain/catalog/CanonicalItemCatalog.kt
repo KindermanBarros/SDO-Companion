@@ -120,6 +120,7 @@ private fun JsonObject.toItemPart(group: String? = null, description: String? = 
     pg = optionalInt("pg"),
     pl = optionalInt("pl"),
     agilityLimit = nullableInt("agilityLimit"),
+    backpackCapacity = optionalInt("backpackCapacity"),
 )
 
 private fun JsonObject.string(name: String): String = getValue(name).jsonPrimitive.content
