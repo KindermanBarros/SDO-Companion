@@ -184,7 +184,7 @@ class CharacterConverters {
         value?.takeIf(String::isNotBlank)?.parts()?.let { fields ->
             ItemCreationDraft(
                 step = (fields.getOrNull(0)?.toIntOrNull() ?: 1).let { legacyStep ->
-                    if (fields.getOrNull(26) != "alloy-v1" && fields.getOrNull(1) != "Item" && legacyStep >= 3) legacyStep + 1 else legacyStep
+                    if (fields.getOrNull(26) !in setOf("alloy-v1", "enhancement-v1") && fields.getOrNull(1) != "Item" && legacyStep >= 3) legacyStep + 1 else legacyStep
                 }.coerceIn(1, 7),
                 category = fields.getOrElse(1) { "Arma" },
                 baseId = fields.getOrElse(2) { "" },
@@ -386,7 +386,8 @@ class CharacterConverters {
                 listOf(enhancement.id, enhancement.catalogEntryId, enhancement.kind.name,
                     enhancement.durabilityCurrent.toString(), enhancement.durabilityMax.toString(),
                     enhancement.chargesCurrent.toString(), enhancement.chargesMax.toString()).joinToString(MODIFIER_FIELD)
-            }, item.enhancementSlots.toString(),
+            }, item.enhancementSlots.toString(), item.enhancementChargesCurrent.toString(),
+            item.enhancementChargesMax.toString(),
         ).row()
     }
 
@@ -442,6 +443,8 @@ class CharacterConverters {
                         )
                     }.orEmpty(),
                 enhancementSlots = p.getOrNull(38)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v8" } ?: 0,
+                enhancementChargesCurrent = p.getOrNull(39)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v8" } ?: 0,
+                enhancementChargesMax = p.getOrNull(40)?.toIntOrNull().takeIf { p.getOrNull(13) == "canonical-v8" } ?: 0,
                 dataVersion = p.getOrNull(29)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v4", "canonical-v5", "canonical-v6", "canonical-v7", "canonical-v8") } ?: 0,
                 itemCondition = p.enumAt(31, if (legacyDurability(p.getOrElse(4) { "" }).second == 0) ItemCondition.SCRAP else ItemCondition.NORMAL),
                 backpackCapacity = p.getOrNull(32)?.toIntOrNull().takeIf { p.getOrNull(13) in setOf("canonical-v5", "canonical-v6", "canonical-v7", "canonical-v8") } ?: 0,

@@ -104,6 +104,17 @@ object ItemCreationRules {
     fun enhancementIsTechnology(id: String): Boolean =
         CanonicalItemCatalog.technologies.any { it.part.id == id }
 
+    fun enhancementCategory(id: String): String =
+        CanonicalItemCatalog.enhancements.first { it.part.id == id }.category
+
+    fun enhancementRarity(id: String): String =
+        CanonicalItemCatalog.enhancements.first { it.part.id == id }.part.materialTier
+
+    fun enhancementCreationOptions(technology: Boolean): List<ItemPart> =
+        CanonicalItemCatalog.enhancements.filter {
+            (it.kind == "TECHNOLOGY") == technology && it.characterCreationVisible
+        }.map(ItemComponentDefinition::part)
+
     fun traitName(id: String): String = GeneratedStructuredItemCatalog.traits.firstOrNull { it.id == id }?.name ?: id
 
     fun traitDescription(id: String): String = GeneratedStructuredItemCatalog.traits.firstOrNull { it.id == id }?.description.orEmpty()
@@ -331,7 +342,10 @@ object ItemCreationRules {
 
     internal fun enhancementEffects(enhancements: List<InstalledEnhancement>) =
         CanonicalItemCatalog.enhancements
-            .filter { definition -> enhancements.any { it.catalogEntryId == definition.part.id && it.durabilityCurrent > 0 } }
+            .filter { definition -> enhancements.any {
+                it.catalogEntryId == definition.part.id && it.durabilityCurrent > 0 &&
+                    (definition.maxCharges == 0 || it.chargesCurrent > 0)
+            } }
             .map(ItemComponentDefinition::effect)
             .distinctBy(ItemEffect::id)
 

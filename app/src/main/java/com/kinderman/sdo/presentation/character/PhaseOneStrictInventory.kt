@@ -65,6 +65,11 @@ import com.kinderman.sdo.domain.model.heritageCostPerDose
 import com.kinderman.sdo.domain.model.handsRequired
 import com.kinderman.sdo.domain.model.synchronizeItemPowers
 import com.kinderman.sdo.domain.catalog.toMysticAbility
+import com.kinderman.sdo.domain.catalog.installEnhancement
+import com.kinderman.sdo.domain.catalog.enhancementInventoryItem
+import com.kinderman.sdo.domain.catalog.removeEnhancement
+import com.kinderman.sdo.domain.catalog.rechargeEnhancement
+import com.kinderman.sdo.domain.catalog.spendEnhancementCharge
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.Carbon
 import com.kinderman.sdo.ui.HudTextField
@@ -188,22 +193,30 @@ internal fun PhaseOneStrictInventorySection(
                     Text("ESPAÇOS DE APRIMORAMENTO // ${item.installedEnhancements.size}/${item.enhancementSlots}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                     if (enhancementNames.isNotEmpty()) Text("INSTALADOS // ${enhancementNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     val basePart = (weaponBases + armorBases).firstOrNull { it.id == item.baseId }
-                    val availableEnhancements = basePart?.let { compatibleEnhancements(it, initialCreation = false) }.orEmpty()
-                        .filterNot { candidate -> enhancementIsTechnology(candidate.id) && candidate.id in installedEnhancementIds }
+                    val compatibleIds = basePart?.let { compatibleEnhancements(it, initialCreation = false).mapTo(hashSetOf()) { part -> part.id } }.orEmpty()
+                    val availableEnhancements = character.inventory.filter { loose ->
+                        loose.id != item.id && loose.category in setOf("Gema", "Tecnologia") &&
+                            loose.catalogEntryId in compatibleIds &&
+                            !(loose.category == "Tecnologia" && loose.catalogEntryId in installedEnhancementIds)
+                    }
                     if (enabled && item.installedEnhancements.size < item.enhancementSlots && availableEnhancements.isNotEmpty()) {
-                        ChoiceField("Instalar aprimoramento", "", availableEnhancements.map { it.id }, true, display = { id ->
-                            availableEnhancements.firstOrNull { it.id == id }?.let { "${if (enhancementIsTechnology(id)) "Tecnologia" else "Gema"} // ${it.name}" } ?: "Selecionar"
-                        }) { id ->
-                            val updated = installEnhancement(item, id)
-                            onChange(character.copy(inventory = character.inventory.replace(index, updated)).synchronizeItemPowers())
+                        ChoiceField("Instalar aprimoramento do inventário", "", availableEnhancements.map { it.id }, true, display = { id ->
+                            availableEnhancements.firstOrNull { it.id == id }?.let { "${it.category} // ${it.name}" } ?: "Selecionar"
+                        }) { sourceId ->
+                            runCatching { character.installEnhancement(sourceId, item.id) }
+                                .onSuccess(onChange)
+                                .onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
                         }
                     }
                     item.installedEnhancements.forEach { installed ->
                         enhancementComponents.firstOrNull { it.id == installed.catalogEntryId }?.let { enhancement ->
                             Text("${enhancement.name} // DUR ${installed.durabilityCurrent}/${installed.durabilityMax} // CARGAS ${installed.chargesCurrent}/${installed.chargesMax}", style = MaterialTheme.typography.bodySmall)
+                            if (installed.chargesMax > 0) Row {
+                                TextButton(onClick = { onChange(character.spendEnhancementCharge(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent > 0) { Text("ATIVAR") }
+                                TextButton(onClick = { onChange(character.rechargeEnhancement(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent < installed.chargesMax) { Text("RECARREGAR") }
+                            }
                             TextButton(onClick = {
-                                val updated = removeEnhancement(item, installed.id)
-                                onChange(character.copy(inventory = character.inventory.replace(index, updated)).synchronizeItemPowers())
+                                onChange(character.removeEnhancement(item.id, installed.id))
                             }, enabled = enabled) { Text("REMOVER // ${enhancement.name.uppercase()}") }
                         }
                     }
@@ -285,6 +298,24 @@ internal fun PhaseOneStrictInventorySection(
             onChange(character.addInventoryItem(item))
             dialog = null
         }
+        "initial_gem" -> EnhancementCatalogDialog(
+            technology = false,
+            randomByCategory = true,
+            remainingHeritage = remainingHeritage,
+            onDismiss = { dialog = null },
+        ) { id ->
+            onChange(character.addInventoryItem(enhancementInventoryItem(id, initialCreation = true)))
+            dialog = null
+        }
+        "gem_catalog", "technology_catalog" -> EnhancementCatalogDialog(
+            technology = dialog == "technology_catalog",
+            randomByCategory = false,
+            remainingHeritage = null,
+            onDismiss = { dialog = null },
+        ) { id ->
+            onChange(character.addInventoryItem(enhancementInventoryItem(id)))
+            dialog = null
+        }
         "initial_weapon", "initial_armor", "initial_accessory" -> StrictItemBuilderDialog(
             remainingHeritage = remainingHeritage,
             regionOptions = character.bodyRegions.map { it.name },
@@ -341,9 +372,47 @@ private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Bo
                 AddButton("Construir arma", true) { onChoice(if (initialCreation) "initial_weapon" else "builder_weapon") }
                 AddButton("Construir armadura", true) { onChoice(if (initialCreation) "initial_armor" else "builder_armor") }
                 AddButton("Construir acessório", true) { onChoice(if (initialCreation) "initial_accessory" else "builder_accessory") }
+                AddButton(if (initialCreation) "Sortear gema" else "Adicionar gema", true) { onChoice(if (initialCreation) "initial_gem" else "gem_catalog") }
+                if (!initialCreation) AddButton("Adicionar tecnologia", true) { onChoice("technology_catalog") }
                 if (!initialCreation) AddButton("Construir item comum", true) { onChoice("builder_item") }
                 if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_builder") }
                 if (!initialCreation) TextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
+}
+
+@Composable
+private fun EnhancementCatalogDialog(
+    technology: Boolean,
+    randomByCategory: Boolean,
+    remainingHeritage: Int?,
+    onDismiss: () -> Unit,
+    onAdd: (String) -> Unit,
+) {
+    val options = ItemCreationRules.enhancementCreationOptions(technology)
+    val categories = options.map { ItemCreationRules.enhancementCategory(it.id) }.distinct().sorted()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (randomByCategory) "SORTEAR GEMA" else if (technology) "TECNOLOGIAS" else "GEMAS") },
+        text = {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (randomByCategory) {
+                    Text("Escolha a categoria. A gema completa será sorteada; opções ancestrais não participam da criação.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    categories.forEach { category ->
+                        val eligible = options.filter { ItemCreationRules.enhancementCategory(it.id) == category && (it.creationCost ?: Int.MAX_VALUE) <= (remainingHeritage ?: Int.MAX_VALUE) }
+                        AddButton(category, eligible.isNotEmpty()) { onAdd(eligible.random().id) }
+                    }
+                } else options.forEach { enhancement ->
+                    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp)) {
+                        Text(enhancement.name)
+                        Text("${ItemCreationRules.enhancementRarity(enhancement.id)} // ${ItemCreationRules.enhancementCategory(enhancement.id)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        Text(enhancement.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = { onAdd(enhancement.id) }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR") }
+                    }
+                }
             }
         },
         confirmButton = {},

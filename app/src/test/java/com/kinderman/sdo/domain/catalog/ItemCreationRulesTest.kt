@@ -203,8 +203,9 @@ class ItemCreationRulesTest {
         assertTrue(!item.effect.contains("Espaços de Gema"))
         assertEquals(1, item.enhancementSlots)
         assertEquals(gem.id, item.installedEnhancements.single().catalogEntryId)
-        assertEquals(ItemEffectType.KNOWLEDGE, item.mechanicalEffects.single().type)
-        assertEquals("*", item.mechanicalEffects.single().target)
+        val expectedEffect = CanonicalItemCatalog.gems.first { it.part.id == gem.id }.effect
+        assertEquals(expectedEffect.type, item.mechanicalEffects.single().type)
+        assertEquals(expectedEffect.target, item.mechanicalEffects.single().target)
         assertEquals("faca", item.baseId)
         assertEquals("madeira", item.materialId)
     }
