@@ -32,16 +32,16 @@ object EquipmentGlossary {
 
     val entries: List<GlossaryEntry> by lazy {
         rules +
-            materialEntries(ItemCreationRules.weaponMaterials) +
-            materialEntries(ItemCreationRules.armorMaterials) +
+            materialEntries(ItemCreationRules.weaponMaterials, "Armas") +
+            materialEntries(ItemCreationRules.armorMaterials, "Armaduras") +
             itemEntries(ItemCreationRules.weaponBases + ItemCreationRules.armorBases) +
             modificationEntries(ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
     }
 
-    private fun materialEntries(parts: List<ItemPart>) = parts.map { part ->
+    private fun materialEntries(parts: List<ItemPart>, application: String) = parts.map { part ->
         GlossaryEntry(
             term = part.name,
-            group = part.group,
+            group = "${part.group} — $application",
             definition = describe(part, includeDurability = true), section = "Materiais", referenceId = part.id,
         )
     }
