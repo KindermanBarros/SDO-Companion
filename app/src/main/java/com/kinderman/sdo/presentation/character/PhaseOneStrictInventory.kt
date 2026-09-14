@@ -708,8 +708,8 @@ private fun StrictItemBuilderDialog(
                         Text(group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         groupModifications.forEach { modification: ItemPart ->
                         val checked = modification in modifications
-                        Row(Modifier.fillMaxWidth().clickable { onDraftChange(draft.copy(modificationIds = strictToggleModification(modifications, modification).map { it.id })) }) {
-                            Checkbox(checked, onCheckedChange = { onDraftChange(draft.copy(modificationIds = strictToggleModification(modifications, modification).map { it.id })) })
+                        Row(Modifier.fillMaxWidth().clickable { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) }) {
+                            Checkbox(checked, onCheckedChange = { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) })
                             Column(Modifier.padding(top = 8.dp)) {
                                 Text(modification.name, color = MaterialTheme.colorScheme.onSurface)
                                 if (modification.effect.isNotBlank()) Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -887,18 +887,6 @@ internal fun ItemEffect.presentationLabel(): String {
     }
     val target = resolvedTargetId.ifBlank { target }.takeIf(String::isNotBlank)?.let { " · $it" }.orEmpty()
     return "$typeLabel ${if (value > 0) "+" else ""}$value$target"
-}
-
-private fun strictToggleModification(current: List<ItemPart>, item: ItemPart): List<ItemPart> {
-    if (item in current) return current - item
-    var next = current + item
-    if (item.id == "nobre") next = next.filterNot { it.id == "chamativa" }
-    if (item.id == "chamativa") next = next.filterNot { it.id == "nobre" }
-    if (item.id == "sob_medida" && next.none { it.id == "ajustada" }) {
-        ItemCreationRules.armorModifications.firstOrNull { it.id == "ajustada" }?.let { next = next + it }
-    }
-    if (item.id == "ajustada" && current.any { it.id == "sob_medida" }) return current
-    return next
 }
 
 @Composable
