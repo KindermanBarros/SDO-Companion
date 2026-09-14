@@ -12,6 +12,7 @@ import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CharacterCreationTest {
@@ -41,6 +42,35 @@ class CharacterCreationTest {
 
     @Test fun `heritage budget must be spent completely`() {
         assertNotNull(CharacterCreation.stepError(7, Character()))
+    }
+
+    @Test fun `admin heritage reopening removes only prior heritage and grants a fresh budget`() {
+        val previousHeritage = InventoryItem(name = "Espada antiga", acquisitionSource = ItemAcquisitionSource.HERITAGE, heritageCost = 30)
+        val narrative = InventoryItem(name = "Objeto pessoal", acquisitionSource = ItemAcquisitionSource.NARRATIVE)
+        val completed = Character(
+            creationStatus = CharacterCreationStatus.COMPLETED,
+            creationCompletedAt = 10L,
+            creationStep = CharacterCreation.STEP_COUNT,
+            inventory = listOf(previousHeritage, narrative),
+        )
+
+        val reopened = CharacterCreation.reopenHeritage(completed)
+
+        assertTrue(reopened.isHeritageReselection)
+        assertEquals(7, reopened.creationStep)
+        assertEquals(0, CharacterCreation.heritageSpent(reopened))
+        assertEquals(listOf(narrative.id), reopened.inventory.map { it.id })
+
+        val selected = reopened.copy(
+            creationStep = CharacterCreation.STEP_COUNT,
+            inventory = reopened.inventory + InventoryItem(
+                name = "Nova escolha",
+                acquisitionSource = ItemAcquisitionSource.HERITAGE,
+                heritageCost = 30,
+            ),
+        )
+        assertTrue(CharacterCreation.validate(selected).isEmpty())
+        assertEquals(CharacterCreationStatus.COMPLETED, CharacterCreation.finish(selected).creationStatus)
     }
 
     @Test fun `manual path requires exactly two initial powers beyond racial powers`() {
