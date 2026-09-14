@@ -224,6 +224,15 @@ private fun SessionContent(
                         if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
                     }
                 }
+                MoneyControl(character.money, !readOnly, compact) { next ->
+                    onCommand(
+                        character,
+                        SessionCommand(
+                            type = SessionOperationType.MONEY,
+                            amount = next - character.money,
+                        ),
+                    )
+                }
             }
         }
         item {
@@ -413,6 +422,37 @@ private fun ResourceControl(
             IconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Remove, "Reduzir $label") }
             Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
             IconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Add, "Aumentar $label") }
+        }
+    }
+}
+
+@Composable
+private fun MoneyControl(
+    money: Int,
+    enabled: Boolean,
+    compact: Boolean,
+    onChange: (Int) -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(topEnd = 8.dp, bottomStart = 6.dp))
+            .padding(if (compact) 5.dp else 7.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text("DINHEIRO", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = { onChange((money - 1).coerceAtLeast(0)) },
+                enabled = enabled && money > 0,
+                modifier = Modifier.weight(1f),
+            ) { Icon(Icons.Default.Remove, "Reduzir dinheiro") }
+            Text(money.toString(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+            IconButton(
+                onClick = { onChange(money + 1) },
+                enabled = enabled && money < Int.MAX_VALUE,
+                modifier = Modifier.weight(1f),
+            ) { Icon(Icons.Default.Add, "Aumentar dinheiro") }
         }
     }
 }
