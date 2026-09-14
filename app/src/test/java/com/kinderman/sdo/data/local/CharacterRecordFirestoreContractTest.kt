@@ -8,6 +8,8 @@ import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.ItemQuality
+import com.kinderman.sdo.domain.model.EnhancementKind
+import com.kinderman.sdo.domain.model.InstalledEnhancement
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneReward
 import com.kinderman.sdo.domain.model.KnowledgeMilestoneRewardType
 import com.kinderman.sdo.domain.model.SpecialKnowledge
@@ -75,8 +77,8 @@ class CharacterRecordFirestoreContractTest {
         val draft = ItemCreationDraft(
             step = 3, category = "Armadura", baseId = "elmo", materialId = "ligas_comuns",
             secondaryMaterialId = "ferrita_rubra",
-            quality = ItemQuality.IMPROVED, modificationIds = listOf("robusta"), gemIds = listOf("gema_atributo_for"),
-            gemSlots = 1, technologySlots = 2, customName = "Elmo da Aurora",
+            quality = ItemQuality.IMPROVED, modificationIds = listOf("robusta"), enhancementIds = listOf("gema_forca"),
+            enhancementSlots = 3, customName = "Elmo da Aurora",
             manualPrice = "120", commonName = "Kit", commonEffect = "Ferramentas",
             commonLoad = 2, commonQuantity = 3,
         )
@@ -115,8 +117,9 @@ class CharacterRecordFirestoreContractTest {
             materialId = "madeira",
             secondaryMaterialId = "ferrita_rubra",
             modificationIds = listOf("afiada"),
-            gemIds = listOf("gema_menor_aleatoria"),
-            mechanicalEffects = listOf(ItemEffect("gema_menor_aleatoria", ItemEffectType.KNOWLEDGE, 1, "*")),
+            installedEnhancements = listOf(InstalledEnhancement(catalogEntryId = "gema_saber_errante", kind = EnhancementKind.GEM, durabilityCurrent = 4, durabilityMax = 4)),
+            enhancementSlots = 1,
+            mechanicalEffects = listOf(ItemEffect("gema_saber_errante", ItemEffectType.KNOWLEDGE, 1, "*")),
             dataVersion = CURRENT_ITEM_DATA_VERSION,
         )
         val converters = CharacterConverters()

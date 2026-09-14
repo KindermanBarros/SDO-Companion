@@ -169,8 +169,23 @@ data class InventoryItem(
     val technologyIds: List<String> = emptyList(),
     val gemSlots: Int = 0,
     val technologySlots: Int = 0,
+    val installedEnhancements: List<InstalledEnhancement> = emptyList(),
+    val enhancementSlots: Int = 0,
     val mechanicalEffects: List<ItemEffect> = emptyList(),
     val dataVersion: Int = CURRENT_ITEM_DATA_VERSION,
+)
+
+enum class EnhancementKind { GEM, TECHNOLOGY }
+
+@IgnoreExtraProperties
+data class InstalledEnhancement(
+    val id: String = UUID.randomUUID().toString(),
+    val catalogEntryId: String = "",
+    val kind: EnhancementKind = EnhancementKind.GEM,
+    val durabilityCurrent: Int = 1,
+    val durabilityMax: Int = 1,
+    val chargesCurrent: Int = 0,
+    val chargesMax: Int = 0,
 )
 
 enum class ItemCondition { NORMAL, SCRAP, BROKEN }

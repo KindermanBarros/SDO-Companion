@@ -157,11 +157,9 @@ internal fun ItemBuilderDialog(
     var material by remember { mutableStateOf(initialMaterial) }
     var secondaryMaterial by remember { mutableStateOf<ItemPart?>(null) }
     var modifications by remember { mutableStateOf(emptyList<ItemPart>()) }
-    var gemSlots by remember { mutableIntStateOf(0) }
-    var technologySlots by remember { mutableIntStateOf(0) }
     var customName by remember { mutableStateOf("") }
     var quality by remember { mutableStateOf(ItemQuality.COMMON) }
-    var gems by remember { mutableStateOf(emptyList<ItemPart>()) }
+    var enhancements by remember { mutableStateOf(emptyList<ItemPart>()) }
     var picker by remember { mutableStateOf<String?>(null) }
     val availableBases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
     val allMaterials = when {
@@ -174,10 +172,18 @@ internal fun ItemBuilderDialog(
     val availableMaterials = ItemCreationRules.materialsFor(allMaterials, initialCreation)
     val availableSecondaryMaterials = availableMaterials.filter { it.id != material.id }
     val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
+    val enhancementSlots = if (quality == ItemQuality.MUNDANE) 0 else
+        base.enhancementSlots + modifications.sumOf(ItemPart::enhancementSlots).coerceAtMost(5)
+    val availableEnhancements = ItemCreationRules.compatibleEnhancements(base, initialCreation)
+    val effectiveEnhancements = enhancements.take(enhancementSlots)
+    val installedGems = effectiveEnhancements.filterNot { ItemCreationRules.enhancementIsTechnology(it.id) }
+    val installedTechnologies = effectiveEnhancements.filter { ItemCreationRules.enhancementIsTechnology(it.id) }
     val built = ItemCreationRules.build(
-        base, material, modifications, gemSlots, technologySlots, customName, quality,
+        base, material, modifications, 0, 0, customName, quality,
         secondaryMaterial = secondaryMaterial,
-        components = gems,
+        components = installedGems,
+        technologies = installedTechnologies,
+        enhancementSlots = enhancementSlots,
     )
     val allowed = remainingHeritage == null || built.creationCost != null && built.creationCost <= remainingHeritage
     val overBudget = remainingHeritage != null && (built.creationCost == null || built.creationCost > remainingHeritage)
@@ -269,23 +275,20 @@ internal fun ItemBuilderDialog(
                         }
                     }
                 }
-                TwoFields(
-                    { IntegerField(if (initialCreation) "Espaços de Gema (1 PH)" else "Espaços de Gema", gemSlots, true, it) { value -> gemSlots = value.coerceIn(gems.size, 5) } },
-                    { IntegerField(if (initialCreation) "Espaços de Tecnologia (2 PH)" else "Espaços de Tecnologia", technologySlots, true, it) { value -> technologySlots = value.coerceIn(0, 5) } },
-                )
-                Text("GEMAS INSTALADAS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                ItemCreationRules.gemComponents.forEach { gem ->
-                    val checked = gem in gems
+                Text("ESPAÇOS DE APRIMORAMENTO // ${effectiveEnhancements.size}/$enhancementSlots", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text("Os espaços vêm do item e de uma modificação de Encaixe.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                Text("APRIMORAMENTOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                availableEnhancements.forEach { gem ->
+                    val checked = gem in enhancements
                     Row(Modifier.fillMaxWidth().clickable(enabled = quality != ItemQuality.MUNDANE) {
-                        gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
-                        gemSlots = gemSlots.coerceAtLeast(gems.size)
+                        enhancements = if (checked) enhancements - gem else if (enhancements.size < enhancementSlots) enhancements + gem else enhancements
                     }) {
                         Checkbox(checked, enabled = quality != ItemQuality.MUNDANE, onCheckedChange = {
-                            gems = if (checked) gems - gem else if (gems.size < 5) gems + gem else gems
-                            gemSlots = gemSlots.coerceAtLeast(gems.size)
+                            enhancements = if (checked) enhancements - gem else if (enhancements.size < enhancementSlots) enhancements + gem else enhancements
                         })
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(if (initialCreation) "${gem.name} // ${gem.creationCost} PH" else gem.name, color = MaterialTheme.colorScheme.onSurface)
+                            Text(if (ItemCreationRules.enhancementIsTechnology(gem.id)) "TECNOLOGIA // ${gem.materialTier}" else "GEMA // ${gem.materialTier}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                             Text(gem.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                     }

@@ -10,6 +10,8 @@ import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemEffect
 import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
+import com.kinderman.sdo.domain.model.EnhancementKind
+import com.kinderman.sdo.domain.model.InstalledEnhancement
 import kotlin.math.roundToInt
 import java.util.Locale
 
@@ -74,6 +76,9 @@ object ItemCreationRules {
         }
 
         var next = current + item
+        if (item.id.startsWith("encaixe_aprimoramento_")) {
+            next = next.filterNot { it.id.startsWith("encaixe_aprimoramento_") && it.id != item.id }
+        }
         if (item.id == "nobre") next = next.filterNot { it.id == "chamativa" }
         if (item.id == "chamativa") next = next.filterNot { it.id == "nobre" }
         if (item.id == "sob_medida" && next.none { it.id == "ajustada" }) {
@@ -84,6 +89,20 @@ object ItemCreationRules {
 
     val gemComponents = CanonicalItemCatalog.gems.map { it.part }
     val technologyComponents = CanonicalItemCatalog.technologies.map { it.part }
+    val enhancementComponents = gemComponents + technologyComponents
+
+    fun compatibleEnhancements(base: ItemPart, initialCreation: Boolean): List<ItemPart> {
+        val itemType = when (base.group) {
+            "Armadura" -> "Armadura"; "Escudo" -> "Escudo"; "Acessório" -> "Acessório"; else -> "Arma"
+        }
+        return CanonicalItemCatalog.enhancements.filter { definition ->
+            itemType in definition.compatibleItemTypes && definition.supports(base) &&
+                (!initialCreation || definition.characterCreationVisible)
+        }.map(ItemComponentDefinition::part)
+    }
+
+    fun enhancementIsTechnology(id: String): Boolean =
+        CanonicalItemCatalog.technologies.any { it.part.id == id }
 
     fun traitName(id: String): String = GeneratedStructuredItemCatalog.traits.firstOrNull { it.id == id }?.name ?: id
 
@@ -137,17 +156,20 @@ object ItemCreationRules {
         technologies: List<ItemPart> = emptyList(),
         priceOverride: Int? = null,
         secondaryMaterial: ItemPart? = null,
+        enhancementSlots: Int? = null,
     ): BuiltItem {
         val effectiveMaterial = mixMaterials(material, secondaryMaterial)
         val installedComponents = if (quality == ItemQuality.MUNDANE) emptyList() else components
-        require(installedComponents.size <= gemSlots) { "Cada Gema selecionada precisa de um Espaço de Gema." }
-        require(technologies.size <= technologySlots) { "Cada melhoria selecionada precisa de um Espaço de Tecnologia." }
-        val effectiveGemSlots = if (quality == ItemQuality.MUNDANE) 0 else gemSlots
-        val effectiveTechnologySlots = if (quality == ItemQuality.MUNDANE) 0 else technologySlots
+        val catalogSlots = base.enhancementSlots + modifications.sumOf(ItemPart::enhancementSlots).coerceAtMost(5)
+        val requestedSlots = enhancementSlots ?: (gemSlots + technologySlots).takeIf { it > 0 } ?: catalogSlots
+        val effectiveEnhancementSlots = if (quality == ItemQuality.MUNDANE) 0 else requestedSlots.coerceAtMost(base.enhancementSlots + 5)
+        require(installedComponents.size + technologies.size <= effectiveEnhancementSlots) {
+            "Cada Gema ou Tecnologia precisa de um Espaço de Aprimoramento."
+        }
         val numericCosts = listOf(base.creationCost, effectiveMaterial.creationCost) +
             modifications.map { it.creationCost } + installedComponents.map { it.creationCost } + technologies.map { it.creationCost }
         val componentCost = if (numericCosts.any { it == null }) null else
-            numericCosts.filterNotNull().sum() + effectiveGemSlots + effectiveTechnologySlots * 2
+            numericCosts.filterNotNull().sum()
         val creationCost = componentCost?.let { (it + quality.creationAdjustment).coerceAtLeast(0) }
         val armor = base.group == "Armadura" || base.group == "Escudo" || base.group == "Acessório"
         val protective = base.group == "Armadura" || base.group == "Escudo"
@@ -201,10 +223,9 @@ object ItemCreationRules {
             materialId = material.id,
             secondaryMaterialId = secondaryMaterial?.id.orEmpty(),
             modificationIds = modifications.map { it.id },
-            gemIds = installedComponents.map { it.id },
-            technologyIds = technologies.map { it.id },
-            gemSlots = effectiveGemSlots,
-            technologySlots = effectiveTechnologySlots,
+            installedEnhancements = (installedComponents.map { enhancementState(it.id, EnhancementKind.GEM) } +
+                technologies.map { enhancementState(it.id, EnhancementKind.TECHNOLOGY) }),
+            enhancementSlots = effectiveEnhancementSlots,
             mechanicalEffects = (componentEffects(modifications.map(ItemPart::id), installedComponents.map(ItemPart::id), technologies.map(ItemPart::id)) +
                 listOfNotNull(effectiveMaterial.damageBonus.takeIf { it != 0 }?.let { bonus ->
                     ItemEffect(
@@ -307,6 +328,48 @@ object ItemCreationRules {
             CanonicalItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect } +
             CanonicalItemCatalog.technologies.filter { it.part.id in technologyIds }.map { it.effect })
             .distinctBy { it.id }
+
+    internal fun enhancementEffects(enhancements: List<InstalledEnhancement>) =
+        CanonicalItemCatalog.enhancements
+            .filter { definition -> enhancements.any { it.catalogEntryId == definition.part.id && it.durabilityCurrent > 0 } }
+            .map(ItemComponentDefinition::effect)
+            .distinctBy(ItemEffect::id)
+
+    fun installEnhancement(item: InventoryItem, catalogEntryId: String): InventoryItem {
+        require(item.installedEnhancements.size < item.enhancementSlots) { "O item não possui Espaço de Aprimoramento livre." }
+        val definition = CanonicalItemCatalog.enhancements.first { it.part.id == catalogEntryId }
+        require(definition.kind != "TECHNOLOGY" || item.installedEnhancements.none { it.catalogEntryId == catalogEntryId }) {
+            "A mesma Tecnologia não pode ser instalada duas vezes no item."
+        }
+        val kind = if (definition.kind == "TECHNOLOGY") EnhancementKind.TECHNOLOGY else EnhancementKind.GEM
+        val installed = item.installedEnhancements + enhancementState(catalogEntryId, kind)
+        val componentIds = CanonicalItemCatalog.enhancements.mapTo(hashSetOf()) { it.effect.id }
+        return item.copy(
+            installedEnhancements = installed,
+            mechanicalEffects = (item.mechanicalEffects.filterNot { it.id in componentIds } + enhancementEffects(installed)).distinctBy(ItemEffect::id),
+        )
+    }
+
+    fun removeEnhancement(item: InventoryItem, installationId: String): InventoryItem {
+        val installed = item.installedEnhancements.filterNot { it.id == installationId }
+        val componentIds = CanonicalItemCatalog.enhancements.mapTo(hashSetOf()) { it.effect.id }
+        return item.copy(
+            installedEnhancements = installed,
+            mechanicalEffects = (item.mechanicalEffects.filterNot { it.id in componentIds } + enhancementEffects(installed)).distinctBy(ItemEffect::id),
+        )
+    }
+
+    private fun enhancementState(id: String, kind: EnhancementKind): InstalledEnhancement {
+        val definition = CanonicalItemCatalog.enhancements.first { it.part.id == id }
+        return InstalledEnhancement(
+            catalogEntryId = id,
+            kind = kind,
+            durabilityCurrent = definition.part.durability.coerceAtLeast(1),
+            durabilityMax = definition.part.durability.coerceAtLeast(1),
+            chargesCurrent = definition.maxCharges,
+            chargesMax = definition.maxCharges,
+        )
+    }
 
     private fun equipmentEffects(baseId: String, pg: Int, pl: Int, agilityLimit: Int?, quality: ItemQuality, armor: Boolean, isShield: Boolean = false) = buildList {
         if (pg != 0) {

@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -33,6 +34,18 @@ internal data class ItemComponentDefinition(
     val compatibleBaseIds: Set<String>,
     val effect: ItemEffect,
     val tier: GemTier? = null,
+    val kind: String = "MODIFICATION",
+    val category: String = "",
+    val origin: String = "",
+    val characterCreationVisible: Boolean = true,
+    val maxCharges: Int = 0,
+    val recharge: String = "",
+    val activation: String = "PASSIVE",
+    val installationKnowledge: String = "",
+    val installationDifficulty: String = "",
+    val removalDifficulty: String = "",
+    val failureEnhancementDamage: Int = 0,
+    val failureItemDamage: Int = 0,
 ) {
     fun supports(base: ItemPart): Boolean =
         (compatibleBaseGroups.isEmpty() && compatibleBaseIds.isEmpty()) ||
@@ -62,20 +75,21 @@ internal object CanonicalItemCatalog {
     val catalogItems by lazy {
         itemDefinitions.filter { it.first == ItemPartKind.CATALOG_ITEM }.map { it.second }
     }
-    val modifications by lazy { components("modifications.json", expectedKind = "MODIFICATION", expectTier = false) }
-    val gems by lazy { components("gems.json", expectedKind = "GEM", expectTier = true) }
-    val technologies by lazy { components("technologies.json", expectedKind = "TECHNOLOGY", expectTier = false) }
+    val modifications by lazy { components("modifications.json", expectedKind = "MODIFICATION") }
+    val gems by lazy { components("gems.json", expectedKind = "GEM") }
+    val technologies by lazy { components("technologies.json", expectedKind = "TECHNOLOGY") }
+    val enhancements by lazy { gems + technologies }
 
     private fun parts(kind: ItemPartKind): List<ItemPart> =
         itemDefinitions.filter { it.first == kind }.map { it.second.part }
 
-    private fun components(fileName: String, expectedKind: String, expectTier: Boolean): List<ItemComponentDefinition> =
+    private fun components(fileName: String, expectedKind: String): List<ItemComponentDefinition> =
         document(fileName, expectedKind).getValue("entries").jsonArray.map { element ->
             val entry = element.jsonObject
             val effect = entry.getValue("effect").jsonObject
             ItemComponentDefinition(
                 part = entry.toItemPart(
-                    group = if (expectTier) "Gema" else "Modificação",
+                    group = when (expectedKind) { "GEM" -> "Gema"; "TECHNOLOGY" -> "Tecnologia"; else -> "Modificação" },
                     description = effect.string("description"),
                 ),
                 compatibleItemTypes = entry.stringSet("compatibleItemTypes"),
@@ -89,7 +103,19 @@ internal object CanonicalItemCatalog {
                     condition = ItemEffectCondition.valueOf(effect.string("condition")),
                     description = effect.string("description"),
                 ),
-                tier = entry.optionalString("tier").takeIf(String::isNotBlank)?.let(GemTier::valueOf),
+                tier = entry.optionalString("rarity").takeIf(String::isNotBlank)?.let(GemTier::valueOf),
+                kind = expectedKind,
+                category = entry.optionalString("category"),
+                origin = entry.optionalString("origin"),
+                characterCreationVisible = entry.optionalBoolean("characterCreationVisible", true),
+                maxCharges = entry.optionalInt("maxCharges"),
+                recharge = entry.optionalString("recharge"),
+                activation = entry.optionalString("activation").ifBlank { "PASSIVE" },
+                installationKnowledge = entry.optionalString("installationKnowledge"),
+                installationDifficulty = entry.optionalString("installationDifficulty"),
+                removalDifficulty = entry.optionalString("removalDifficulty"),
+                failureEnhancementDamage = entry.optionalInt("failureEnhancementDamage"),
+                failureItemDamage = entry.optionalInt("failureItemDamage"),
             )
         }
 
@@ -121,12 +147,16 @@ private fun JsonObject.toItemPart(group: String? = null, description: String? = 
     pl = optionalInt("pl"),
     agilityLimit = nullableInt("agilityLimit"),
     backpackCapacity = optionalInt("backpackCapacity"),
+    enhancementSlots = optionalInt("enhancementSlots"),
+    materialTier = optionalString("rarity"),
+    characterCreationVisible = optionalBoolean("characterCreationVisible", true),
 )
 
 private fun JsonObject.string(name: String): String = getValue(name).jsonPrimitive.content
 private fun JsonObject.optionalString(name: String): String = get(name)?.jsonPrimitive?.content.orEmpty()
 private fun JsonObject.int(name: String): Int = getValue(name).jsonPrimitive.int
 private fun JsonObject.optionalInt(name: String): Int = get(name)?.jsonPrimitive?.int ?: 0
+private fun JsonObject.optionalBoolean(name: String, default: Boolean): Boolean = get(name)?.jsonPrimitive?.boolean ?: default
 private fun JsonObject.nullableInt(name: String): Int? = get(name)?.takeUnless { it is JsonNull }?.jsonPrimitive?.int
 private fun JsonObject.stringSet(name: String): Set<String> =
     get(name)?.jsonArray?.map { it.jsonPrimitive.content }?.toSet().orEmpty()

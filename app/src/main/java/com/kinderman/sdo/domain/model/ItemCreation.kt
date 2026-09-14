@@ -24,6 +24,7 @@ data class ItemPart(
     val damageBonus: Int = 0,
     val damageReduction: Int = 0,
     val categoryDieShift: Int = 0,
+    val enhancementSlots: Int = 0,
 )
 
 @IgnoreExtraProperties
@@ -35,10 +36,12 @@ data class ItemCreationDraft(
     val secondaryMaterialId: String = "",
     val quality: ItemQuality = ItemQuality.COMMON,
     val modificationIds: List<String> = emptyList(),
-    val gemIds: List<String> = emptyList(),
-    val technologyIds: List<String> = emptyList(),
-    val gemSlots: Int = 0,
-    val technologySlots: Int = 0,
+    val enhancementIds: List<String> = emptyList(),
+    val enhancementSlots: Int = 0,
+    @Deprecated("Use enhancementIds") val gemIds: List<String> = emptyList(),
+    @Deprecated("Use enhancementIds") val technologyIds: List<String> = emptyList(),
+    @Deprecated("Use enhancementSlots") val gemSlots: Int = 0,
+    @Deprecated("Use enhancementSlots") val technologySlots: Int = 0,
     val customName: String = "",
     val manualPrice: String = "",
     val commonName: String = "",
@@ -148,8 +151,19 @@ data class EquipmentEffectResolution(val entries: List<EquipmentEffectAudit>) {
 }
 
 object EquipmentEffectEngine {
-    fun resolve(character: Character): EquipmentEffectResolution = EquipmentEffectResolution(
-        character.activeItemEffects().map { active ->
+    fun resolve(character: Character): EquipmentEffectResolution {
+        val effects = character.activeItemEffects()
+        val limited = effects.filter { it.effect.type in setOf(ItemEffectType.ATTRIBUTE, ItemEffectType.KNOWLEDGE) }
+            .groupBy { active ->
+                val family = when {
+                    active.effect.id.startsWith("gema_") -> "GEM"
+                    active.effect.id.startsWith("tech_") -> "TECHNOLOGY"
+                    else -> "OTHER:${active.effect.id}"
+                }
+                Triple(active.effect.type, active.effect.resolvedTargetId.ifBlank { active.effect.target }, family)
+            }.values.mapNotNull { group -> group.maxByOrNull { it.effect.value } }
+        val stackable = effects.filterNot { it.effect.type in setOf(ItemEffectType.ATTRIBUTE, ItemEffectType.KNOWLEDGE) }
+        return EquipmentEffectResolution((limited + stackable).map { active ->
             EquipmentEffectAudit(
                 itemId = active.itemId,
                 itemName = active.itemName,
@@ -159,8 +173,8 @@ object EquipmentEffectEngine {
                 value = active.effect.value,
                 description = active.effect.description,
             )
-        },
-    )
+        })
+    }
 }
 
 fun Character.addInventoryItem(item: InventoryItem): Character {
@@ -342,10 +356,12 @@ data class BuiltItem(
     val materialId: String = "",
     val secondaryMaterialId: String = "",
     val modificationIds: List<String> = emptyList(),
-    val gemIds: List<String> = emptyList(),
-    val technologyIds: List<String> = emptyList(),
-    val gemSlots: Int = 0,
-    val technologySlots: Int = 0,
+    val installedEnhancements: List<InstalledEnhancement> = emptyList(),
+    val enhancementSlots: Int = 0,
+    @Deprecated("Use installedEnhancements") val gemIds: List<String> = emptyList(),
+    @Deprecated("Use installedEnhancements") val technologyIds: List<String> = emptyList(),
+    @Deprecated("Use enhancementSlots") val gemSlots: Int = 0,
+    @Deprecated("Use enhancementSlots") val technologySlots: Int = 0,
     val mechanicalEffects: List<ItemEffect> = emptyList(),
 ) {
     fun toInventoryItem(initialCreation: Boolean = false) = InventoryItem(
@@ -367,10 +383,8 @@ data class BuiltItem(
         materialId = materialId,
         secondaryMaterialId = secondaryMaterialId,
         modificationIds = modificationIds,
-        gemIds = gemIds,
-        technologyIds = technologyIds,
-        gemSlots = gemSlots,
-        technologySlots = technologySlots,
+        installedEnhancements = installedEnhancements,
+        enhancementSlots = enhancementSlots,
         mechanicalEffects = mechanicalEffects,
         dataVersion = CURRENT_ITEM_DATA_VERSION,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.CRAFTED,
@@ -379,7 +393,7 @@ data class BuiltItem(
     )
 }
 
-const val CURRENT_ITEM_DATA_VERSION = 7
+const val CURRENT_ITEM_DATA_VERSION = 8
 
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 
