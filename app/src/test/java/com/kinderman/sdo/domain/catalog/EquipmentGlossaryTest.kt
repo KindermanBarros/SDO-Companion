@@ -2,8 +2,9 @@ package com.kinderman.sdo.domain.catalog
 
 import java.nio.file.Files
 import java.nio.file.Path
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EquipmentGlossaryTest {
@@ -40,6 +41,15 @@ class EquipmentGlossaryTest {
         ).flatten().map { it.name }
 
         assertTrue(catalogTerms.all { it in terms })
+    }
+
+    @Test fun materialCardsHaveUniqueLazyListKeys() {
+        val materials = EquipmentGlossary.entries.filter { it.section == "Materiais" }
+        val keys = materials.map { "${it.section}:${it.group}:${it.referenceId}:${it.term}" }
+
+        assertEquals(keys.size, keys.distinct().size)
+        assertTrue(materials.any { it.group.endsWith("— Armas") })
+        assertTrue(materials.any { it.group.endsWith("— Armaduras") })
     }
 
     @Test fun playerGlossaryDoesNotExposeMoneyOrHeritageCosts() {
