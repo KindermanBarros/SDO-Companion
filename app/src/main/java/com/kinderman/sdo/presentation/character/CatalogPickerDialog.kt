@@ -67,13 +67,14 @@ internal fun CatalogPickerDialog(
         }
     }
     val displayedEntries = remember(filtered, groupAshVariants) {
-        if (!groupAshVariants) filtered else (
+        (if (!groupAshVariants) filtered else (
             filtered.filterNot { it.kind == CatalogKind.ASH } +
                 filtered.filter { it.kind == CatalogKind.ASH }
                     .groupBy { it.name.trim().lowercase() }
                     .values
                     .map { variants -> variants.minBy { it.catalogAshPurity?.ordinal ?: Int.MAX_VALUE } }
-            ).sortedWith(compareBy<CatalogEntry>({ it.kind.ordinal }, { it.name.lowercase() }))
+            ).sortedWith(compareBy<CatalogEntry>({ it.kind.ordinal }, { it.name.lowercase() })))
+            .distinctBy { it.kind to it.id }
     }
     val selectedAshVariants = details?.takeIf { groupAshVariants && it.kind == CatalogKind.ASH }?.let { selected ->
         entries.filter { it.kind == CatalogKind.ASH && it.name.equals(selected.name, ignoreCase = true) }
@@ -100,7 +101,7 @@ internal fun CatalogPickerDialog(
                     if (sources.size > 1) ChoiceField("ORIGEM", selectedSource, listOf("") + sources, true, display = { it.ifBlank { "TODAS" } }) { selectedSource = it }
                     Text("RESULTADOS // ${displayedEntries.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
-                        items(displayedEntries, key = CatalogEntry::id) { entry ->
+                        items(displayedEntries, key = { "${it.kind}:${it.id}" }) { entry ->
                             val alreadyAdded = entry.id in alreadyAddedCatalogIds
                             Column(
                                 Modifier.fillMaxWidth().clickable { details = entry },
