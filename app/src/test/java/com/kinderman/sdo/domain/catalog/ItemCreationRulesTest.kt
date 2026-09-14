@@ -12,6 +12,20 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ItemCreationRulesTest {
+    @Test
+    fun `removing a prerequisite also removes dependent modifications`() {
+        val adjusted = ItemCreationRules.armorModifications.first { it.id == "ajustada" }
+        val tailored = ItemCreationRules.armorModifications.first { it.id == "sob_medida" }
+
+        val selected = ItemCreationRules.toggleModification(emptyList(), tailored)
+        assertTrue(selected.any { it.id == adjusted.id })
+        assertTrue(selected.any { it.id == tailored.id })
+
+        val afterPrerequisiteRemoval = ItemCreationRules.toggleModification(selected, adjusted)
+        assertTrue(afterPrerequisiteRemoval.none { it.id == adjusted.id })
+        assertTrue(afterPrerequisiteRemoval.none { it.id == tailored.id })
+    }
+
     @Test fun initialHeritageBudgetIsThirty() {
         assertEquals(30, ItemCreationRules.HERITAGE_BUDGET)
     }
