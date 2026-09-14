@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -81,6 +82,7 @@ fun CharacterSheetScreen(
     }
     var current by remember(character.id) { mutableStateOf(character) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var confirmHeritageReset by remember { mutableStateOf(false) }
     LaunchedEffect(character.updatedAt) {
         if (shouldReplaceDraft(current.updatedAt, character.updatedAt)) current = character
     }
@@ -100,6 +102,24 @@ fun CharacterSheetScreen(
             TextButton(onClick = { confirmDelete = false; onDelete(current) }) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
         },
         dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("CANCELAR") } },
+    )
+
+    if (confirmHeritageReset) AlertDialog(
+        onDismissRequest = { confirmHeritageReset = false },
+        title = { Text("REABRIR 30 PH") },
+        text = { Text("Os itens escolhidos anteriormente com Pontos de Herança serão removidos. A ficha voltará somente às etapas de Equipamento inicial e Revisão com 30 PH disponíveis.") },
+        confirmButton = {
+            TextButton(onClick = {
+                confirmHeritageReset = false
+                val reopened = CharacterCreation.reopenHeritage(current).copy(
+                    updatedAt = maxOf(System.currentTimeMillis(), current.updatedAt + 1),
+                    dirty = true,
+                )
+                current = reopened
+                onAutosave(reopened)
+            }) { Text("REABRIR HERANÇA", color = MaterialTheme.colorScheme.error) }
+        },
+        dismissButton = { TextButton(onClick = { confirmHeritageReset = false }) { Text("CANCELAR") } },
     )
 
     HudBackground {
@@ -129,6 +149,9 @@ fun CharacterSheetScreen(
                     actions = {
                         IconButton({ onOpenSession(current.id) }) {
                             Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
+                        }
+                        if (session.isAdmin && !readOnly && !current.isInCreation) IconButton({ confirmHeritageReset = true }) {
+                            Icon(Icons.Default.Refresh, "Reabrir escolha secreta de 30 PH", tint = MaterialTheme.colorScheme.secondary)
                         }
                         if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) IconButton({
                             onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
