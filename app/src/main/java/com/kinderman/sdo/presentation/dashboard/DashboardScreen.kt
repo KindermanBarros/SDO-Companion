@@ -42,7 +42,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.ui.SdoCard
-import com.kinderman.sdo.ui.SdoCardDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton

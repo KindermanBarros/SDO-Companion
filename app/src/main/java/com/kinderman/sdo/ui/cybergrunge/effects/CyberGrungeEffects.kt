@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 17) {
     Canvas(modifier.fillMaxSize()) {
-        repeat(9) { index ->
+        repeat(CyberGrungeTokens.PANEL_GLITCH_BLOCKS) { index ->
             val x = ((seed + index * 43) % 101) / 101f * size.width
             val y = ((seed * 3 + index * 67) % 97) / 97f * size.height
             drawRect(
@@ -32,7 +32,7 @@ internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 
 @Composable
 internal fun CyberGrungeEmptySignal(modifier: Modifier = Modifier) {
     Canvas(modifier.fillMaxWidth().height(22.dp)) {
-        repeat(13) { index ->
+        repeat(CyberGrungeTokens.EMPTY_SIGNAL_BLOCKS) { index ->
             val start = ((index * 31) % 97) / 97f * size.width
             val width = size.width * (.025f + (index % 4) * .018f)
             drawRect(

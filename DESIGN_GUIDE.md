@@ -467,6 +467,12 @@ estática e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
 - Campos vazios usam ruído tipográfico como placeholder, sem substituir label ou semântica.
 - Telas consomem contratos `Sdo*`; a seleção entre Standard e Cybergrunge acontece no design
   system, evitando condicionais visuais espalhadas na apresentação.
+- Ações primitivas usam `SdoTextButton`, `SdoIconButton`, `SdoButton` e `SdoOutlinedButton`;
+  superfícies clicáveis usam `SdoCard`. Não importar equivalentes Material diretamente em telas.
+- Navegação compacta usa `SdoNavigationBar`; layouts expandidos usam `SdoNavigationRail`.
+- O laboratório em Ajustes cobre ações, campos, escolhas, toggles e estados vazio/offline/erro.
+- Orçamentos de desenho são protegidos por `CyberGrungeRenderBudgetTest`; o CI compila os testes
+  instrumentados de renderização com `assembleDebugAndroidTest`.
 
 Arquitetura:
 
@@ -544,7 +550,7 @@ Campo de preenchimento estruturado:
 
 Tokens e componentes fundamentais estão localizados em:
 
-- [SdoDesignSystem.kt](app/src/main/java/com/kinderman/sdo/ui/SdoDesignSystem.kt)
+- [SdoTheme.kt](app/src/main/java/com/kinderman/sdo/ui/core/SdoTheme.kt)
 - [Core](app/src/main/java/com/kinderman/sdo/ui/core)
 - [Contratos compartilhados](app/src/main/java/com/kinderman/sdo/ui/shared)
 - [Interface Cybergrunge](app/src/main/java/com/kinderman/sdo/ui/cybergrunge)

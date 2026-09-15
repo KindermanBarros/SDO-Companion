@@ -46,7 +46,7 @@ jobs:
       # Pull requests never receive signing/Firebase secrets and do not produce an APK.
       # Packaging is restricted to the trusted main-branch release job below.
       - name: Run debug checks
-        run: gradle lintDebug testDebugUnitTest --build-cache --stacktrace
+        run: gradle lintDebug testDebugUnitTest assembleDebugAndroidTest --build-cache --stacktrace
 
   release:
     name: Build and publish Android release

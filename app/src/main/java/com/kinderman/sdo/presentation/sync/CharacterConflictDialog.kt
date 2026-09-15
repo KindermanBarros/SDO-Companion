@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.ui.SdoButton
-import com.kinderman.sdo.ui.SdoButtonDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Text

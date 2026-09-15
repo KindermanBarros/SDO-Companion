@@ -42,7 +42,7 @@ internal fun CyberGrungeBackdrop(modifier: Modifier = Modifier) {
         }
 
         val block = 18.dp.toPx()
-        repeat(22) { index ->
+        repeat(CyberGrungeTokens.BACKDROP_BLOCKS) { index ->
             val column = ((index * 47) % 19) / 19f
             val row = ((index * 83) % 31) / 31f
             val width = block * (1 + index % 4)
