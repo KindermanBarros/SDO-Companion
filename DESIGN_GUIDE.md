@@ -94,11 +94,11 @@ slots estruturais exigidos por APIs como `AlertDialog`. Nas telas, um uso direto
 papel específico que ainda não esteja coberto pelo sistema; estilos locais duplicados devem ser
 extraídos quando aparecem pela segunda vez.
 
-### Interface Kaltoch experimental
+### Interface Cybergrunge experimental
 
-`SdoVisualMode.STANDARD` permanece como padrão. `KALTOCH` é apresentado ao usuário como
-**Interface Kaltoch** e troca tokens sem alterar conteúdo, permissões ou comportamento. A direção
-completa está em [docs/interface-kaltoch.md](docs/interface-kaltoch.md):
+`SdoVisualMode.STANDARD` permanece como padrão. `CYBERGRUNGE` é apresentado ao usuário como
+**Interface Cybergrunge** e troca tokens sem alterar conteúdo, permissões ou comportamento. A direção
+completa está em [docs/interface-cybergrunge.md](docs/interface-cybergrunge.md):
 
 - paleta Obsidian Signal com vermelho reservado a seleção/ação principal;
 - ciano para telemetria positiva e âmbar para aviso recuperável;
@@ -107,7 +107,7 @@ completa está em [docs/interface-kaltoch.md](docs/interface-kaltoch.md):
 - textos, valores e controles nunca recebem distorção ou glitch permanente;
 - alvos interativos usam `SdoSpacingTokens.minimumTouchTarget` (48 dp), inclusive em densidade compacta.
 
-O modo é identificado por um selo amarelo **EXPERIMENTAL**, exibido acima da opção Interface Kaltoch.
+O modo é identificado por um selo amarelo **EXPERIMENTAL**, exibido acima da opção Interface Cybergrunge.
 A opção fica logo abaixo de Interface Padrão. Quando ativa, a escolha de temas desaparece porque a
 paleta pertence à própria interface. Trata-se de uma UI alternativa, não uma simples troca de cores.
 Quando ativo, o design system aplica em todas as telas:
@@ -119,7 +119,7 @@ Quando ativo, o design system aplica em todas as telas:
 - superfícies parcialmente translúcidas que revelam a camada gráfica sem comprometer texto;
 - composição determinística e sem animação contínua, preservando bateria e fluidez no Android.
 
-Os assets são vetoriais/code-native e pertencem a `KaltochAssets.kt`. Telas não devem copiar
+Os assets são vetoriais/code-native e pertencem a `CybergrungeAssets.kt`. Telas não devem copiar
 esses desenhos: `HudBackground`, `TechPanel`, `SdoInsetCard` e os demais componentes do design
 system propagam a linguagem visual. Ruído nunca pode atravessar campos de texto nem reduzir o
 contraste mínimo do conteúdo funcional.
