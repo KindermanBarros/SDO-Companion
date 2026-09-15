@@ -112,7 +112,7 @@ fun SettingsScreen(
                         },
                     )
                 }
-                if (preferences.visualMode == SdoVisualMode.STANDARD) item {
+                if (preferences.visualMode.allowsThemeSelection) item {
                     SdoChoicePanel(
                         title = "TEMA",
                         options = SdoThemeVariant.entries,
