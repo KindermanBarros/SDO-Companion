@@ -38,6 +38,7 @@ fun <T> SdoChoicePanel(
     label: (T) -> String,
     description: (T) -> String,
     onSelect: (T) -> Unit,
+    optionBadge: @Composable (T) -> Unit = {},
 ) {
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         TelemetryTag(title)
@@ -45,6 +46,7 @@ fun <T> SdoChoicePanel(
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(selected = option == selected, onClick = { onSelect(option) })
                 Column(Modifier.weight(1f)) {
+                    optionBadge(option)
                     Text(label(option), color = MaterialTheme.colorScheme.onSurface)
                     Text(description(option), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
