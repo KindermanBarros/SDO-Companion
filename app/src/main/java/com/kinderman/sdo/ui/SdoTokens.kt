@@ -23,11 +23,11 @@ object SdoOpacityTokens {
 }
 
 object SdoShapeTokens {
-    val control: Shape @Composable get() = if (LocalSdoPreferences.current.visualMode == SdoVisualMode.KALTOCH) {
+    val control: Shape @Composable get() = if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
         CutCornerShape(topStart = 2.dp, topEnd = 14.dp, bottomStart = 10.dp)
     } else CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
 
-    val panel: Shape @Composable get() = if (LocalSdoPreferences.current.visualMode == SdoVisualMode.KALTOCH) {
+    val panel: Shape @Composable get() = if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
         CutCornerShape(topStart = 3.dp, topEnd = 28.dp, bottomStart = 18.dp, bottomEnd = 2.dp)
     } else CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp)
 }
