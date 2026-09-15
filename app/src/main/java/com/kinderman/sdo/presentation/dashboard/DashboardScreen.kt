@@ -2,7 +2,7 @@ package com.kinderman.sdo.presentation.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -736,7 +736,7 @@ private fun CampaignPanel(
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
-                    .clickable { expanded = !expanded },
+                    .sdoClickable { expanded = !expanded },
                 horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -898,7 +898,7 @@ private fun CampaignCharacterRow(
         Modifier
             .fillMaxWidth()
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CutCornerShape(topEnd = 10.dp, bottomStart = 8.dp))
-            .clickable(enabled = canOpen, onClick = onOpen)
+            .sdoClickable(enabled = canOpen, onClick = onOpen)
             .padding(horizontal = 10.dp, vertical = if (compact) 6.dp else 9.dp)
             .heightIn(min = 48.dp),
         verticalAlignment = Alignment.CenterVertically,

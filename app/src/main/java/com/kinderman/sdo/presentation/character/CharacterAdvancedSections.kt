@@ -1,7 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -249,7 +249,7 @@ internal fun BodyRegionSection(
     )
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         Row(
-            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            Modifier.fillMaxWidth().sdoClickable { expanded = !expanded },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
@@ -327,11 +327,11 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
             }
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 Row(Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f).clickable { expanded = !expanded }) {
+                    Column(Modifier.weight(1f).sdoClickable { expanded = !expanded }) {
                         Text(organ.organ.label.uppercase(), color = MaterialTheme.colorScheme.primary)
                         Text("${organ.state.label.uppercase()} // ${organ.failures}/3 FALHAS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     }
-                    Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher órgão" else "Expandir órgão", Modifier.clickable { expanded = !expanded })
+                    Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher órgão" else "Expandir órgão", Modifier.sdoClickable { expanded = !expanded })
                     RemoveButton(enabled, "Remover registro de órgão") {
                         onChange(character.withCanonicalBodyState(body.copy(organs = body.organs.filterIndexed { organIndex, _ -> organIndex != index })))
                     }

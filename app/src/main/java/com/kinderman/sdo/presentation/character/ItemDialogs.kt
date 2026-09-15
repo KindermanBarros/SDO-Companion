@@ -1,6 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -139,7 +139,7 @@ internal fun ItemCatalogDialog(
                         val allowed = remainingHeritage == null || numericCost != null && numericCost <= remainingHeritage
                         val overBudget = remainingHeritage != null && (numericCost == null || numericCost > remainingHeritage)
                         Column(
-                            Modifier.fillMaxWidth().clickable(enabled = !overBudget) {
+                            Modifier.fillMaxWidth().sdoClickable(enabled = !overBudget) {
                                 if (allowed) {
                                     if (entry.group.equals("Ferramenta", ignoreCase = true)) {
                                         pendingToolId = entry.id
@@ -294,7 +294,7 @@ internal fun ItemBuilderDialog(
                 availableModifications.forEach { modification ->
                     val checked = modification in modifications
                     Row(
-                        Modifier.fillMaxWidth().clickable {
+                        Modifier.fillMaxWidth().sdoClickable {
                             modifications = ItemCreationRules.toggleModification(modifications, modification)
                         },
                     ) {
@@ -314,7 +314,7 @@ internal fun ItemBuilderDialog(
                 Text("APRIMORAMENTOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 availableEnhancements.forEach { gem ->
                     val checked = gem in enhancements
-                    Row(Modifier.fillMaxWidth().clickable(enabled = quality != ItemQuality.MUNDANE) {
+                    Row(Modifier.fillMaxWidth().sdoClickable(enabled = quality != ItemQuality.MUNDANE) {
                         enhancements = if (checked) enhancements - gem else if (enhancements.size < enhancementSlots) enhancements + gem else enhancements
                     }) {
                         Checkbox(checked, enabled = quality != ItemQuality.MUNDANE, onCheckedChange = {
@@ -397,7 +397,7 @@ private fun ItemPartPickerDialog(
         text = {
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
                 items(parts.distinctBy(ItemPart::id), key = ItemPart::id) { part ->
-                    Column(Modifier.fillMaxWidth().clickable { onSelect(part) }.padding(vertical = 10.dp)) {
+                    Column(Modifier.fillMaxWidth().sdoClickable { onSelect(part) }.padding(vertical = 10.dp)) {
                         Text(part.name, color = MaterialTheme.colorScheme.onSurface)
                         Text(
                             if (showHeritageCost) {
@@ -493,7 +493,7 @@ internal fun EquipmentPickerDialog(
                     val checked = item.id in selected
                     val compatible = item.matchesRegion(regionName)
                     Row(
-                        Modifier.fillMaxWidth().clickable(enabled = compatible) {
+                        Modifier.fillMaxWidth().sdoClickable(enabled = compatible) {
                             selected = toggleEquipment(selected, item, inventory)
                         }.padding(vertical = 6.dp),
                     ) {

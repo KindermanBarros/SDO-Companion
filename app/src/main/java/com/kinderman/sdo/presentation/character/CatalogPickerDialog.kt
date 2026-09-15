@@ -1,6 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -107,7 +107,7 @@ internal fun CatalogPickerDialog(
                         items(displayedEntries, key = { "${it.kind}:${it.id}" }) { entry ->
                             val alreadyAdded = entry.id in alreadyAddedCatalogIds
                             Column(
-                                Modifier.fillMaxWidth().clickable { details = entry },
+                                Modifier.fillMaxWidth().sdoClickable { details = entry },
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -203,7 +203,7 @@ private fun CatalogDetails(
                                 if (selected) MaterialTheme.colorScheme.primary.copy(alpha = .14f)
                                 else MaterialTheme.colorScheme.surfaceVariant,
                             )
-                            .clickable { onAshVariantSelect(variant) }
+                            .sdoClickable { onAshVariantSelect(variant) }
                             .padding(10.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {

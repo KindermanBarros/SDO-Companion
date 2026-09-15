@@ -1,7 +1,7 @@
 package com.kinderman.sdo.presentation.session
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
@@ -28,11 +28,9 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.kinderman.sdo.ui.SdoTextButton
@@ -152,7 +150,7 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
                 else -> MaterialTheme.colorScheme.secondary
             }
             TechPanel(
-                modifier = Modifier.fillMaxWidth().clickable { onSelect(character.id) },
+                modifier = Modifier.fillMaxWidth().sdoClickable { onSelect(character.id) },
                 accent = lifeColor,
             ) {
                 Row(
@@ -417,7 +415,7 @@ private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, edi
         verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 7.dp),
     ) {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { expanded = !expanded },
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).sdoClickable { expanded = !expanded },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {

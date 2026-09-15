@@ -48,6 +48,15 @@ jobs:
       - name: Run debug checks
         run: gradle lintDebug testDebugUnitTest assembleDebugAndroidTest --build-cache --stacktrace
 
+      - name: Enforce presentation design-system boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if rg -n '^import androidx\.compose\.(material3\.(Button|OutlinedButton|TextButton|IconButton|Card|Switch|RadioButton|NavigationRailItem)|foundation\.clickable)$' app/src/main/java/com/kinderman/sdo/presentation; then
+            echo 'Presentation code must consume Sdo* design-system contracts.' >&2
+            exit 1
+          fi
+
   release:
     name: Build and publish Android release
     if: github.event_name != 'pull_request'

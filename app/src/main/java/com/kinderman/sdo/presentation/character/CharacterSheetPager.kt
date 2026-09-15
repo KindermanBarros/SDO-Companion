@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -171,7 +171,7 @@ private fun SheetPageNavigator(
             Box(
                 Modifier
                     .weight(1f)
-                    .clickable { onMenuExpandedChange(true) }
+                    .sdoClickable { onMenuExpandedChange(true) }
                     .padding(horizontal = 8.dp, vertical = 10.dp),
             ) {
                 Row(
