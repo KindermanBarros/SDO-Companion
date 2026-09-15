@@ -19,11 +19,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,12 +54,14 @@ internal fun CyberGrungePanel(
         CyberGrungeInterference(seed = accent.hashCode())
         Box(Modifier.fillMaxWidth().height(3.dp).background(accent).align(Alignment.TopStart))
         Box(Modifier.width(CyberGrungeTokens.railWidth).fillMaxSize().background(accent.copy(alpha = .78f)))
-        Column(
-            modifier = Modifier.padding(start = if (compact) 13.dp else 18.dp, top = 13.dp, end = 13.dp, bottom = 13.dp),
-            verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
-        ) {
-            CyberGrungePanelChrome()
-            content()
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+            Column(
+                modifier = Modifier.padding(start = if (compact) 13.dp else 18.dp, top = 13.dp, end = 13.dp, bottom = 13.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+            ) {
+                CyberGrungePanelChrome()
+                content()
+            }
         }
     }
 }
@@ -141,17 +145,19 @@ internal fun CyberGrungeField(
                 visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
                 interactionSource = interaction,
                 label = { Text("INPUT//$label", style = MaterialTheme.typography.labelSmall) },
-                placeholder = {
-                    if (value.isEmpty()) CyberGrungeEmptySignal()
-                    else if (placeholder != null) Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                },
+                placeholder = null,
                 colors = colors,
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 11.dp),
                 container = {
-                    OutlinedTextFieldDefaults.Container(
-                        enabled = enabled, isError = false, interactionSource = interaction, colors = colors,
-                        shape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp),
-                    )
+                    Box {
+                        OutlinedTextFieldDefaults.Container(
+                            enabled = enabled, isError = false, interactionSource = interaction, colors = colors,
+                            shape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp),
+                        )
+                        if (value.isEmpty()) CyberGrungeEmptySignal(
+                            Modifier.align(Alignment.Center).padding(horizontal = 14.dp),
+                        )
+                    }
                 },
             )
         },
