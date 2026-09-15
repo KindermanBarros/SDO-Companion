@@ -16,7 +16,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -176,7 +176,7 @@ internal fun PhaseOneStrictInventorySection(
                 )
                 if (item.isBroken) {
                     Text("QUEBRADO // sem efeitos mecânicos e sem reparo normal", color = MaterialTheme.colorScheme.error)
-                    TextButton(
+                    SdoTextButton(
                         onClick = { onChange(character.recycleBrokenItem(item.id)) },
                         enabled = enabled,
                     ) { Text("RECICLAR") }
@@ -212,10 +212,10 @@ internal fun PhaseOneStrictInventorySection(
                         enhancementComponents.firstOrNull { it.id == installed.catalogEntryId }?.let { enhancement ->
                             Text("${enhancement.name} // DUR ${installed.durabilityCurrent}/${installed.durabilityMax} // CARGAS ${installed.chargesCurrent}/${installed.chargesMax}", style = MaterialTheme.typography.bodySmall)
                             if (installed.chargesMax > 0) Row {
-                                TextButton(onClick = { onChange(character.spendEnhancementCharge(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent > 0) { Text("ATIVAR") }
-                                TextButton(onClick = { onChange(character.rechargeEnhancement(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent < installed.chargesMax) { Text("RECARREGAR") }
+                                SdoTextButton(onClick = { onChange(character.spendEnhancementCharge(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent > 0) { Text("ATIVAR") }
+                                SdoTextButton(onClick = { onChange(character.rechargeEnhancement(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent < installed.chargesMax) { Text("RECARREGAR") }
                             }
-                            TextButton(onClick = {
+                            SdoTextButton(onClick = {
                                 onChange(character.removeEnhancement(item.id, installed.id))
                             }, enabled = enabled) { Text("REMOVER // ${enhancement.name.uppercase()}") }
                         }
@@ -256,7 +256,7 @@ internal fun PhaseOneStrictInventorySection(
         if (character.isInCreation && remainingHeritage == 0) {
             Text("LIMITE DE PH ATINGIDO // remova ou altere um item de herança para adicionar outro.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
-        TextButton(onClick = { dialog = "glossary" }, modifier = Modifier.fillMaxWidth()) { Text("CONSULTAR GLOSSÁRIOS") }
+        SdoTextButton(onClick = { dialog = "glossary" }, modifier = Modifier.fillMaxWidth()) { Text("CONSULTAR GLOSSÁRIOS") }
         if (remainingHeritage > 0) {
             Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
         }
@@ -376,11 +376,11 @@ private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Bo
                 if (!initialCreation) AddButton("Adicionar tecnologia", true) { onChoice("technology_catalog") }
                 if (!initialCreation) AddButton("Construir item comum", true) { onChoice("builder_item") }
                 if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_builder") }
-                if (!initialCreation) TextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
+                if (!initialCreation) SdoTextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -410,13 +410,13 @@ private fun EnhancementCatalogDialog(
                         Text(enhancement.name)
                         Text("${ItemCreationRules.enhancementRarity(enhancement.id)} // ${ItemCreationRules.enhancementCategory(enhancement.id)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         Text(enhancement.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                        TextButton(onClick = { onAdd(enhancement.id) }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR") }
+                        SdoTextButton(onClick = { onAdd(enhancement.id) }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR") }
                     }
                 }
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -529,12 +529,12 @@ private fun AshBuilderDialog(
             }
         },
         confirmButton = {
-            if (selectedAshName != null) TextButton(onClick = { selected?.let { onAdd(it, doses) } }, enabled = allowed) {
+            if (selectedAshName != null) SdoTextButton(onClick = { selected?.let { onAdd(it, doses) } }, enabled = allowed) {
                 Text(if (allowed) "ADICIONAR" else "SALDO INSUFICIENTE")
             }
         },
         dismissButton = {
-            TextButton(onClick = {
+            SdoTextButton(onClick = {
                 if (selectedAshName != null) {
                     selectedAshName = null
                     selectedId = ""
@@ -836,12 +836,12 @@ private fun StrictItemBuilderDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            SdoTextButton(
                 enabled = step < totalSteps || if (category == "Item") commonName.isNotBlank() else allowedByBudget,
                 onClick = { if (step < totalSteps) onDraftChange(draft.copy(step = step + 1)) else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
             ) { Text(if (step < totalSteps) "CONTINUAR" else "CRIAR ITEM") }
         },
-        dismissButton = { TextButton(onClick = { if (step > 1) onDraftChange(draft.copy(step = step - 1)) else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = { if (step > 1) onDraftChange(draft.copy(step = step - 1)) else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
     )
 }
 
@@ -935,6 +935,6 @@ private fun StrictCatalogUnavailableDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("CATÁLOGO DE ITENS INDISPONÍVEL") },
         text = { Text("Não há bases ou materiais compatíveis para este construtor. Feche a tela e tente sincronizar novamente.") },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+        confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
     )
 }

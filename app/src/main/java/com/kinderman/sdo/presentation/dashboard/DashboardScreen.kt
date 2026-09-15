@@ -41,16 +41,16 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import com.kinderman.sdo.ui.SdoCard
+import com.kinderman.sdo.ui.SdoCardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -224,8 +224,8 @@ fun DashboardScreen(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
-                            IconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = MaterialTheme.colorScheme.primary) }
-                            IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
+                            SdoIconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = MaterialTheme.colorScheme.primary) }
+                            SdoIconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
                         }
                     }
                     SdoScreenMasthead(
@@ -237,7 +237,7 @@ fun DashboardScreen(
                     )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         DashboardSection.entries.forEach { target ->
-                            TextButton(
+                            SdoTextButton(
                                 onClick = { section = target },
                                 modifier = Modifier.weight(1f).then(
                                     if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
@@ -251,13 +251,13 @@ fun DashboardScreen(
                         TelemetryTag("QUICK_ACCESS")
                         Text("Acessos rápidos", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            TextButton(onClick = onOpenSession, modifier = Modifier.weight(1f)) {
+                            SdoTextButton(onClick = onOpenSession, modifier = Modifier.weight(1f)) {
                                 Icon(Icons.Default.PlayCircle, "Modo sessão")
                             }
-                            if (admin || campaigns.any { !it.isArchived && it.ownerId == uid }) TextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
+                            if (admin || campaigns.any { !it.isArchived && it.ownerId == uid }) SdoTextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
                                 Icon(Icons.Default.Visibility, "Painel do Historiador")
                             }
-                            TextButton(onClick = onOpenSettings, modifier = Modifier.weight(1f)) {
+                            SdoTextButton(onClick = onOpenSettings, modifier = Modifier.weight(1f)) {
                                 Icon(Icons.Default.Settings, "Configurações")
                             }
                         }
@@ -271,16 +271,16 @@ fun DashboardScreen(
                                 Text("${delivery.snapshotKind.name} // ${delivery.snapshotName}", color = MaterialTheme.colorScheme.onSurface)
                                 Text(delivery.snapshotSummary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    TextButton({ onRespondDelivery(delivery, true) }, modifier = Modifier.weight(1f)) { Text("ACEITAR") }
-                                    TextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = MaterialTheme.colorScheme.error) }
+                                    SdoTextButton({ onRespondDelivery(delivery, true) }, modifier = Modifier.weight(1f)) { Text("ACEITAR") }
+                                    SdoTextButton({ onRespondDelivery(delivery, false) }, modifier = Modifier.weight(1f)) { Text("RECUSAR", color = MaterialTheme.colorScheme.error) }
                                 }
                             }
                         }
                     }
                     if (section == DashboardSection.CAMPAIGNS) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
-                            TextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("CÓDIGO") }
+                            SdoTextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
+                            SdoTextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("CÓDIGO") }
                         }
                     }
                     }
@@ -434,11 +434,11 @@ fun DashboardScreen(
                 onDismissRequest = { deletingCampaign = null },
                 title = { Text("Excluir campanha?") },
                 text = { Text("Excluir “${campaign.name}”? Esta ação não pode ser desfeita. As fichas serão preservadas, sem campanha. É necessário estar online.") },
-                confirmButton = { TextButton(onClick = {
+                confirmButton = { SdoTextButton(onClick = {
                     deletingCampaign = null
                     onDeleteCampaign(campaign)
                 }) { Text("Excluir", color = MaterialTheme.colorScheme.error) } },
-                dismissButton = { TextButton(onClick = { deletingCampaign = null }) { Text("Cancelar") } },
+                dismissButton = { SdoTextButton(onClick = { deletingCampaign = null }) { Text("Cancelar") } },
             )
         }
         ownerTarget?.let { character ->
@@ -574,18 +574,18 @@ private fun AdminCharacterFilters(
             onValue = onQueryChange,
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextButton(onClick = onChooseOwner, modifier = Modifier.weight(1f)) {
+            SdoTextButton(onClick = onChooseOwner, modifier = Modifier.weight(1f)) {
                 Text("OWNER // ${ownerLabel.uppercase()}", maxLines = 1)
             }
-            TextButton(onClick = onChooseCampaign, modifier = Modifier.weight(1f)) {
+            SdoTextButton(onClick = onChooseCampaign, modifier = Modifier.weight(1f)) {
                 Text("CAMPANHA // ${campaignLabel.uppercase()}", maxLines = 1)
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextButton(onClick = onChooseStatus, modifier = Modifier.weight(1f)) {
+            SdoTextButton(onClick = onChooseStatus, modifier = Modifier.weight(1f)) {
                 Text("STATUS // ${statusLabel.uppercase()}", maxLines = 1)
             }
-            TextButton(onClick = onClear, modifier = Modifier.weight(1f)) {
+            SdoTextButton(onClick = onClear, modifier = Modifier.weight(1f)) {
                 Text("LIMPAR", color = MaterialTheme.colorScheme.error)
             }
         }
@@ -617,14 +617,14 @@ private fun FilterSelectionDialog(
         text = {
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
                 items(options, key = { "${it.first.orEmpty()}:${it.second}" }) { (value, label) ->
-                    TextButton(onClick = { onSelect(value) }, modifier = Modifier.fillMaxWidth()) {
+                    SdoTextButton(onClick = { onSelect(value) }, modifier = Modifier.fillMaxWidth()) {
                         Text(label.uppercase())
                     }
                 }
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -642,12 +642,12 @@ private fun AssignCharacterDialog(
         text = {
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
                 item {
-                    TextButton(onClick = { onSelect(ownerId) }, modifier = Modifier.fillMaxWidth()) {
+                    SdoTextButton(onClick = { onSelect(ownerId) }, modifier = Modifier.fillMaxWidth()) {
                         Text("PARA MIM // MESTRE")
                     }
                 }
                 items(players, key = CampaignMember::userId) { player ->
-                    TextButton(onClick = { onSelect(player.userId) }, modifier = Modifier.fillMaxWidth()) {
+                    SdoTextButton(onClick = { onSelect(player.userId) }, modifier = Modifier.fillMaxWidth()) {
                         Text("JOGADOR // ${player.userId.take(12).uppercase()}")
                     }
                 }
@@ -657,7 +657,7 @@ private fun AssignCharacterDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -682,14 +682,14 @@ private fun LinkCharacterDialog(
                     )
                 }
                 items(characters, key = Character::id) { character ->
-                    TextButton(onClick = { onSelect(character) }, modifier = Modifier.fillMaxWidth()) {
+                    SdoTextButton(onClick = { onSelect(character) }, modifier = Modifier.fillMaxWidth()) {
                         Text("${character.name.uppercase()} // ${character.race.uppercase()}")
                     }
                 }
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -720,7 +720,7 @@ private fun CampaignPanel(
     var expanded by rememberSaveable(campaign.id) { mutableStateOf(initiallyExpanded) }
     val accent = if (archived) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.secondary
     val cardShape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp)
-    Card(
+    SdoCard(
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, accent, cardShape),
@@ -847,13 +847,13 @@ private fun CampaignPanel(
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (owner || administrator) {
-                            TextButton(onClick = onArchive, modifier = Modifier.weight(1f)) { Text(if (archived) "RESTAURAR" else "ARQUIVAR") }
+                            SdoTextButton(onClick = onArchive, modifier = Modifier.weight(1f)) { Text(if (archived) "RESTAURAR" else "ARQUIVAR") }
                         } else if (!archived) {
-                            TextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = MaterialTheme.colorScheme.error) }
+                            SdoTextButton(onClick = onLeave, modifier = Modifier.weight(1f)) { Text("SAIR", color = MaterialTheme.colorScheme.error) }
                         }
                     }
                     if (owner || administrator) {
-                        TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                        SdoTextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
                             Text("APAGAR DEFINITIVAMENTE", color = MaterialTheme.colorScheme.error)
                         }
                     }
@@ -923,7 +923,7 @@ private fun CampaignCharacterRow(
             },
             if (canOpen) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline,
         )
-        if (canUnlink) IconButton(onClick = onUnlink) {
+        if (canUnlink) SdoIconButton(onClick = onUnlink) {
             Icon(Icons.Default.LinkOff, "Desvincular ${character.name} da campanha", tint = MaterialTheme.colorScheme.error)
         }
         if (canOpen) Icon(Icons.Default.ChevronRight, "Abrir ficha", tint = MaterialTheme.colorScheme.primary)
@@ -944,9 +944,9 @@ private fun CreateCampaignDialog(onDismiss: () -> Unit, onCreate: (String, Strin
             }
         },
         confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onCreate(name, description) }) { Text("CRIAR") }
+            SdoTextButton(enabled = name.isNotBlank(), onClick = { onCreate(name, description) }) { Text("CRIAR") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -962,9 +962,9 @@ private fun JoinCampaignDialog(onDismiss: () -> Unit, onPreview: (String) -> Uni
             }
         },
         confirmButton = {
-            TextButton(enabled = code.length == 8, onClick = { onPreview(code) }) { Text("VER CAMPANHA") }
+            SdoTextButton(enabled = code.length == 8, onClick = { onPreview(code) }) { Text("VER CAMPANHA") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -987,16 +987,16 @@ private fun InvitePreviewDialog(
                 } else {
                     Text("Escolha uma ficha sem campanha ou crie uma nova.", color = MaterialTheme.colorScheme.onSurface)
                     characters.forEach { character ->
-                        TextButton(
+                        SdoTextButton(
                             onClick = { onAccept(preview.invite.code, character, false) },
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("USAR // ${character.name.uppercase()}") }
                     }
-                    TextButton(
+                    SdoTextButton(
                         onClick = { onAccept(preview.invite.code, null, true) },
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text("+ CRIAR NOVA FICHA") }
-                    TextButton(
+                    SdoTextButton(
                         onClick = { onAccept(preview.invite.code, null, false) },
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text("ENTRAR SEM VINCULAR FICHA") }
@@ -1004,10 +1004,10 @@ private fun InvitePreviewDialog(
             }
         },
         confirmButton = {
-            if (preview.alreadyMember) TextButton(onClick = onDismiss) { Text("FECHAR") }
+            if (preview.alreadyMember) SdoTextButton(onClick = onDismiss) { Text("FECHAR") }
         },
         dismissButton = {
-            if (!preview.alreadyMember) TextButton(onClick = onDismiss) { Text("CANCELAR") }
+            if (!preview.alreadyMember) SdoTextButton(onClick = onDismiss) { Text("CANCELAR") }
         },
     )
 }
@@ -1022,7 +1022,7 @@ private fun CharacterAccessCard(
     onOpen: () -> Unit,
     onOwnerClick: () -> Unit,
 ) {
-    Card(
+    SdoCard(
         onClick = onOpen,
         modifier = Modifier.fillMaxWidth().border(
             1.dp,
@@ -1073,7 +1073,7 @@ private fun CharacterAccessCard(
                             ?.trim()
                             ?.takeIf(String::isNotBlank)
                             ?: "SEM PERFIL"
-                        OutlinedButton(
+                        SdoOutlinedButton(
                             onClick = onOwnerClick,
                             modifier = Modifier
                                 .wrapContentWidth(Alignment.Start)

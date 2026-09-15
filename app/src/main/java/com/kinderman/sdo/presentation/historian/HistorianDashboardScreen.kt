@@ -22,13 +22,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -90,6 +90,7 @@ import com.kinderman.sdo.ui.SdoResponsiveGrid
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.SdoScreenMasthead
 import java.text.DateFormat
 import java.util.Date
 
@@ -218,7 +219,7 @@ fun HistorianDashboardScreen(
             topBar = {
                 TopAppBar(
                     title = { Text("PAINEL DO HISTORIADOR") },
-                    navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                    navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -232,9 +233,16 @@ fun HistorianDashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
+                    SdoScreenMasthead(
+                        eyebrow = "HISTORIAN//CONTROL",
+                        title = "PAINEL DO HISTORIADOR",
+                        metadata = "${visibleCampaigns.size} CAMPANHAS // ${selectedCharacters.size} FICHAS",
+                    )
+                }
+                item {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         HistorianSection.entries.forEach { target ->
-                            TextButton(
+                            SdoTextButton(
                                 onClick = { section = target },
                                 modifier = Modifier.weight(1f).then(
                                     if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
@@ -245,7 +253,7 @@ fun HistorianDashboardScreen(
                 }
                 item {
                     androidx.compose.foundation.layout.Box {
-                        TextButton(
+                        SdoTextButton(
                             onClick = { choosingCampaign = true },
                             enabled = visibleCampaigns.isNotEmpty(),
                             modifier = Modifier.fillMaxWidth(),
@@ -363,13 +371,13 @@ fun HistorianDashboardScreen(
                                 Text("Ações mais recentes primeiro. Busque por personagem, alvo, motivo ou tipo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 HudTextField("Buscar no histórico", auditSearch, onValue = { auditSearch = it })
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    TextButton(onClick = {
+                                    SdoTextButton(onClick = {
                                         val options = listOf<SessionOperationType?>(null) + availableAuditTypes
                                         auditType = options[(options.indexOf(auditType) + 1) % options.size]
                                     }, enabled = availableAuditTypes.isNotEmpty(), modifier = Modifier.weight(1f)) {
                                         com.kinderman.sdo.ui.AdaptiveActionLabel("TIPO // ${auditType?.displayLabel() ?: "TODOS"}")
                                     }
-                                    TextButton(onClick = { auditSearch = ""; auditType = null }, modifier = Modifier.weight(1f)) { Text("LIMPAR") }
+                                    SdoTextButton(onClick = { auditSearch = ""; auditType = null }, modifier = Modifier.weight(1f)) { Text("LIMPAR") }
                                 }
                             }
                         }
@@ -693,7 +701,7 @@ private fun LibraryEditorDialog(
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
-                    TextButton({
+                    SdoTextButton({
                         val options = CampaignContentKind.entries
                         val kind = options[(options.indexOf(value.kind) + 1) % options.size]
                         value = value.copy(
@@ -703,7 +711,7 @@ private fun LibraryEditorDialog(
                             conditionSnapshot = if (kind == CampaignContentKind.CONDITION) value.conditionSnapshot ?: ConditionEffect(name = value.name, summary = value.summary) else null,
                         )
                     }) { Text("TIPO // ${value.kind.name}") }
-                    TextButton({
+                    SdoTextButton({
                         val options = campaigns
                         if (options.isNotEmpty()) value = value.copy(campaignId = options[(options.indexOfFirst { it.id == value.campaignId } + 1).coerceAtLeast(0) % options.size].id)
                     }, enabled = campaignCanChange) { Text("CAMPANHA // ${campaigns.firstOrNull { it.id == value.campaignId }?.name ?: "FIXA"}") }
@@ -777,7 +785,7 @@ private fun LibraryEditorDialog(
                 }
             }
         },
-        confirmButton = { TextButton({
+        confirmButton = { SdoTextButton({
             val synchronized = value.copy(
                 itemSnapshot = value.itemSnapshot?.copy(name = value.name),
                 powerSnapshot = value.powerSnapshot?.copy(name = value.name),
@@ -785,7 +793,7 @@ private fun LibraryEditorDialog(
             )
             onSave(synchronized.copy(version = if (value.updatedAt == initial.updatedAt) value.version + 1 else value.version))
         }) { Text("SALVAR") } },
-        dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -818,7 +826,7 @@ private fun DeliveryDialog(
                 }
             }
         },
-        confirmButton = { TextButton({ onDeliver(candidates.filter { it.id in selected }, mappings) }, enabled = selected.isNotEmpty()) { Text("ENVIAR") } },
-        dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
+        confirmButton = { SdoTextButton({ onDeliver(candidates.filter { it.id in selected }, mappings) }, enabled = selected.isNotEmpty()) { Text("ENVIAR") } },
+        dismissButton = { SdoTextButton(onDismiss) { Text("CANCELAR") } },
     )
 }

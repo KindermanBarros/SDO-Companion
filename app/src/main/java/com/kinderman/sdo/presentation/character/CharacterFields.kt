@@ -12,14 +12,14 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import com.kinderman.sdo.ui.SdoButton
+import com.kinderman.sdo.ui.SdoButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.OutlinedButton
+import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -91,7 +91,7 @@ internal fun CharacterActionButton(
 
 @Composable
 internal fun RemoveButton(enabled: Boolean, description: String, onClick: () -> Unit) {
-    IconButton(onClick = onClick, enabled = enabled) { Icon(Icons.Default.Close, description, tint = MaterialTheme.colorScheme.error) }
+    SdoIconButton(onClick = onClick, enabled = enabled) { Icon(Icons.Default.Close, description, tint = MaterialTheme.colorScheme.error) }
 }
 
 @Composable
@@ -124,7 +124,7 @@ internal fun <T> ChoiceField(
     val density = LocalDensity.current
     val visibleOptions = if (query.isBlank()) options else options.filter { display(it).contains(query, ignoreCase = true) }
     Box(modifier) {
-        OutlinedButton(
+        SdoOutlinedButton(
             onClick = { expanded = true },
             enabled = enabled,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).onSizeChanged { anchorWidth = it.width },

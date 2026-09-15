@@ -412,31 +412,30 @@ fun HudBackground(
             .background(MaterialTheme.colorScheme.background)
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val minor = 12.dp.toPx()
-            val major = minor * 4
-            var x = 0f
-            while (x <= size.width) {
-                val isMajor = (x % major) < 0.5f
-                drawLine(
-                    color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
-                    start = Offset(x, 0f),
-                    end = Offset(x, size.height),
-                    strokeWidth = if (isMajor) 1.2f else 0.6f,
-                )
-                x += minor
-            }
-            var y = 0f
-            while (y <= size.height) {
-                val isMajor = (y % major) < 0.5f
-                drawLine(
-                    color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
-                    start = Offset(0f, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = if (isMajor) 1.2f else 0.6f,
-                )
-                y += minor
-            }
-            if (cybergrunge) {
+            if (!cybergrunge) {
+                val minor = 12.dp.toPx()
+                val major = minor * 4
+                var x = 0f
+                while (x <= size.width) {
+                    val isMajor = (x % major) < 0.5f
+                    drawLine(
+                        color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
+                        start = Offset(x, 0f), end = Offset(x, size.height),
+                        strokeWidth = if (isMajor) 1.2f else 0.6f,
+                    )
+                    x += minor
+                }
+                var y = 0f
+                while (y <= size.height) {
+                    val isMajor = (y % major) < 0.5f
+                    drawLine(
+                        color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
+                        start = Offset(0f, y), end = Offset(size.width, y),
+                        strokeWidth = if (isMajor) 1.2f else 0.6f,
+                    )
+                    y += minor
+                }
+            } else {
                 drawLine(
                     color = signalColor.copy(alpha = 0.28f),
                     start = Offset(size.width * .055f, 0f),

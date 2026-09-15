@@ -16,7 +16,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -142,7 +142,7 @@ internal fun CatalogPickerDialog(
             val selected = details
             if (selected != null) {
                 val blocked = selected.id in alreadyAddedCatalogIds && !selected.repeatable
-                TextButton(onClick = { onSelect(selected) }, enabled = !blocked) {
+                SdoTextButton(onClick = { onSelect(selected) }, enabled = !blocked) {
                     val purity = selected.catalogAshPurity?.label?.uppercase()
                     Text(if (blocked) "JÁ ADICIONADO" else purity?.let { "ADICIONAR $it" } ?: "ADICIONAR")
                 }
@@ -151,9 +151,9 @@ internal fun CatalogPickerDialog(
         dismissButton = {
             Row {
                 if (details == null && extraActionLabel != null && onExtraAction != null) {
-                    TextButton(onClick = onExtraAction) { Text(extraActionLabel) }
+                    SdoTextButton(onClick = onExtraAction) { Text(extraActionLabel) }
                 }
-                TextButton(onClick = {
+                SdoTextButton(onClick = {
                     if (details != null) details = null else onDismiss()
                 }) { Text(if (details != null) "VOLTAR" else "CANCELAR") }
             }

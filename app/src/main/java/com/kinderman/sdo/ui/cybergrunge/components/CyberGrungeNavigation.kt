@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -18,10 +19,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
@@ -59,6 +63,7 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
             val accent = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             Row(
                 Modifier.border(1.dp, accent, CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
+                    .clip(CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
                     .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .45f) else CyberGrungeTokens.Panel)
                     .clickable(onClick = item.onClick).padding(horizontal = 9.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
@@ -68,6 +73,41 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
                     Text("0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
                     Text(item.label.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelSmall)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifier) {
+    if (LocalSdoPreferences.current.visualMode != SdoVisualMode.CYBERGRUNGE) {
+        NavigationBar(modifier) {
+            items.forEach { item ->
+                NavigationBarItem(
+                    selected = item.selected, onClick = item.onClick,
+                    icon = { Icon(item.icon, null) }, label = { Text(item.label) },
+                )
+            }
+        }
+        return
+    }
+    Row(
+        modifier.fillMaxWidth().background(CyberGrungeTokens.Void)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .7f))
+            .padding(horizontal = 5.dp, vertical = 7.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        items.forEachIndexed { index, item ->
+            val shape = CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp)
+            val accent = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+            Column(
+                Modifier.weight(1f).border(1.dp, accent, shape).clip(shape)
+                    .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else CyberGrungeTokens.Panel)
+                    .clickable(onClick = item.onClick).padding(vertical = 7.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(item.icon, null, tint = accent)
+                Text("0${index + 1}//${item.label.uppercase()}", color = accent, style = MaterialTheme.typography.labelSmall)
             }
         }
     }

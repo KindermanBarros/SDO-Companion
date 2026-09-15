@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import com.kinderman.sdo.ui.SdoCard
+import com.kinderman.sdo.ui.SdoCardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -113,7 +113,7 @@ internal fun OwnerPickerDialog(
                         )
                     }
                 }
-                OutlinedButton(
+                SdoOutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth(),
                     shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
@@ -132,7 +132,7 @@ private fun OwnerOption(
     onClick: () -> Unit,
 ) {
     val accent = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-    Card(
+    SdoCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()

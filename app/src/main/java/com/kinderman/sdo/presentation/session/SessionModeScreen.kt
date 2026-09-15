@@ -28,12 +28,12 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -72,6 +72,7 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoScreenMasthead
 import com.kinderman.sdo.presentation.character.CharacterActionButton
 import com.kinderman.sdo.presentation.character.CharacterActionStyle
 
@@ -104,9 +105,9 @@ fun SessionModeScreen(
             topBar = {
                 TopAppBar(
                     title = { Text(if (character == null) "MODO SESSÃO" else character.name.uppercase()) },
-                    navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                    navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
-                        if (character != null) IconButton({ onOpenSheet(character.id) }) {
+                        if (character != null) SdoIconButton({ onOpenSheet(character.id) }) {
                             Icon(Icons.Default.EditNote, "Abrir ficha completa")
                         }
                     },
@@ -133,6 +134,13 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
         contentPadding = PaddingValues(18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        item {
+            SdoScreenMasthead(
+                eyebrow = "SESSION//LIVE",
+                title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
+                metadata = if (readOnly) "ARQUIVO // SOMENTE LEITURA" else "OPERAÇÃO ATIVA // AUTOSAVE LOCAL",
+            )
+        }
         item {
             TechPanel {
                 TelemetryTag("SELECT_OPERATIVE")
@@ -324,7 +332,7 @@ private fun SessionContent(
                 conditions.forEach { condition ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text(condition.sessionLabel(), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                        TextButton(
+                        SdoTextButton(
                             enabled = !readOnly,
                             onClick = {
                                 onCommand(
@@ -358,8 +366,8 @@ private fun SessionContent(
             onDismissRequest = { pendingAbilityId = null },
             title = { Text("CONFIRMAR USO") },
             text = { Text("$name // ${cost.ifBlank { "sem custo" }}. O custo será descontado antes da ação e o recurso nunca ficará negativo.") },
-            confirmButton = { TextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
-            dismissButton = { TextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
+            confirmButton = { SdoTextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
+            dismissButton = { SdoTextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
         )
     }
 }
@@ -416,9 +424,9 @@ private fun ResourceControl(
     ) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Remove, "Reduzir $label") }
+            SdoIconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Remove, "Reduzir $label") }
             Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-            IconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Add, "Aumentar $label") }
+            SdoIconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Add, "Aumentar $label") }
         }
     }
 }
@@ -439,13 +447,13 @@ private fun MoneyControl(
     ) {
         Text("DINHEIRO", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
+            SdoIconButton(
                 onClick = { onChange((money - 1).coerceAtLeast(0)) },
                 enabled = enabled && money > 0,
                 modifier = Modifier.weight(1f),
             ) { Icon(Icons.Default.Remove, "Reduzir dinheiro") }
             Text(money.toString(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-            IconButton(
+            SdoIconButton(
                 onClick = { onChange(money + 1) },
                 enabled = enabled && money < Int.MAX_VALUE,
                 modifier = Modifier.weight(1f),
@@ -471,17 +479,17 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
                 Stepper(amount, 0, 999) { amount = it }
                 Text("2. Escolha a região")
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton({ regionIndex = (regionIndex - 1).floorMod(regions.size) }) { Text("‹") }
+                    SdoTextButton({ regionIndex = (regionIndex - 1).floorMod(regions.size) }) { Text("‹") }
                     Text(region.name, modifier = Modifier.weight(1f).align(Alignment.CenterVertically))
-                    TextButton({ regionIndex = (regionIndex + 1).floorMod(regions.size) }) { Text("›") }
+                    SdoTextButton({ regionIndex = (regionIndex + 1).floorMod(regions.size) }) { Text("›") }
                 }
                 Text("3. P.L. local: $protection")
                 Text("4. Resultado: $amount − $protection = $applied de Vida", color = if (applied > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                 Text("Nada é alterado antes da confirmação.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         },
-        confirmButton = { TextButton({ onConfirm(amount, region.region) }) { Text("CONFIRMAR") } },
-        dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
+        confirmButton = { SdoTextButton({ onConfirm(amount, region.region) }) { Text("CONFIRMAR") } },
+        dismissButton = { SdoTextButton(onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -497,17 +505,17 @@ private fun AmountDialog(title: String, current: Int, maximum: Int, onDismiss: (
                 Text("Vida: $current → ${(current + amount).coerceAtMost(maximum)} / $maximum")
             }
         },
-        confirmButton = { TextButton({ onConfirm(amount) }) { Text("CONFIRMAR") } },
-        dismissButton = { TextButton(onDismiss) { Text("CANCELAR") } },
+        confirmButton = { SdoTextButton({ onConfirm(amount) }) { Text("CONFIRMAR") } },
+        dismissButton = { SdoTextButton(onDismiss) { Text("CANCELAR") } },
     )
 }
 
 @Composable
 private fun Stepper(value: Int, minimum: Int, maximum: Int, onChange: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton({ onChange((value - 1).coerceAtLeast(minimum)) }) { Icon(Icons.Default.Remove, "Reduzir") }
+        SdoIconButton({ onChange((value - 1).coerceAtLeast(minimum)) }) { Icon(Icons.Default.Remove, "Reduzir") }
         Text(value.toString(), modifier = Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.titleLarge)
-        IconButton({ onChange((value + 1).coerceAtMost(maximum)) }) { Icon(Icons.Default.Add, "Aumentar") }
+        SdoIconButton({ onChange((value + 1).coerceAtMost(maximum)) }) { Icon(Icons.Default.Add, "Aumentar") }
     }
 }
 

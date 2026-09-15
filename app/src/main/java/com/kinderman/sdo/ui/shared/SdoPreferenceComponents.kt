@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
 data class SdoToggleOption(
@@ -37,6 +38,7 @@ fun SdoTogglePanel(title: String, options: List<SdoToggleOption>) {
                 Row(
                     Modifier.fillMaxWidth()
                         .border(1.dp, accent, CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+                        .clip(CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
                         .clickable { option.onChange(!option.selected) }
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically,

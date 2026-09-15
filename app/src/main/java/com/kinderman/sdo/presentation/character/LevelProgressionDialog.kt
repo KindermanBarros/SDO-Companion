@@ -10,7 +10,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +73,7 @@ internal fun LevelProgressionDialog(
                 }
                 if (target < character.level) {
                     Text("Reduzir o nível não remove recompensas já recebidas.", color = MaterialTheme.colorScheme.error)
-                    TextButton(onClick = { confirmedReduction = !confirmedReduction }) { Text(if (confirmedReduction) "✓ REDUÇÃO CONFIRMADA" else "CONFIRMAR REDUÇÃO") }
+                    SdoTextButton(onClick = { confirmedReduction = !confirmedReduction }) { Text(if (confirmedReduction) "✓ REDUÇÃO CONFIRMADA" else "CONFIRMAR REDUÇÃO") }
                 }
                 levels.forEach { level ->
                     HorizontalDivider()
@@ -98,7 +98,7 @@ internal fun LevelProgressionDialog(
         },
         confirmButton = {
             val enabled = when { target == character.level -> false; target < character.level -> confirmedReduction; else -> complete }
-            TextButton(onClick = {
+            SdoTextButton(onClick = {
                 if (target < character.level) onConfirm(character.copy(level = target))
                 else runCatching {
                     LevelProgression.apply(character, target, buildRewards(levels, choices), catalog)
@@ -107,7 +107,7 @@ internal fun LevelProgressionDialog(
                 }
             }, enabled = enabled) { Text(if (target < character.level) "REDUZIR NÍVEL" else "APLICAR PROGRESSÃO") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 

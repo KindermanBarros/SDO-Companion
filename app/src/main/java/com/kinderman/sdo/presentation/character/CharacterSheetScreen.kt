@@ -20,7 +20,7 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -28,7 +28,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.SdoScreenMasthead
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -136,9 +137,9 @@ fun CharacterSheetScreen(
         title = { Text("REMOVER PERSONAGEM") },
         text = { Text("A exclusão de ${current.name} será sincronizada com o Firebase e removida do cache local.") },
         confirmButton = {
-            TextButton(onClick = { confirmDelete = false; onDelete(current) }) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
+            SdoTextButton(onClick = { confirmDelete = false; onDelete(current) }) { Text("REMOVER", color = MaterialTheme.colorScheme.error) }
         },
-        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = { confirmDelete = false }) { Text("CANCELAR") } },
     )
 
     if (confirmHeritageReset) AlertDialog(
@@ -146,7 +147,7 @@ fun CharacterSheetScreen(
         title = { Text("REABRIR 30 PH") },
         text = { Text("Os itens escolhidos anteriormente com Pontos de Herança serão removidos. A ficha voltará somente às etapas de Equipamento inicial e Revisão com 30 PH disponíveis.") },
         confirmButton = {
-            TextButton(onClick = {
+            SdoTextButton(onClick = {
                 confirmHeritageReset = false
                 val reopened = CharacterCreation.reopenHeritage(current).copy(
                     updatedAt = maxOf(System.currentTimeMillis(), current.updatedAt + 1),
@@ -156,7 +157,7 @@ fun CharacterSheetScreen(
                 onAutosave(reopened)
             }) { Text("REABRIR HERANÇA", color = MaterialTheme.colorScheme.error) }
         },
-        dismissButton = { TextButton(onClick = { confirmHeritageReset = false }) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = { confirmHeritageReset = false }) { Text("CANCELAR") } },
     )
 
     HudBackground {
@@ -187,15 +188,15 @@ fun CharacterSheetScreen(
                             )
                         }
                     },
-                    navigationIcon = { IconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                    navigationIcon = { SdoIconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
-                        IconButton({ onOpenSession(current.id) }) {
+                        SdoIconButton({ onOpenSession(current.id) }) {
                             Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
                         }
-                        if (session.isAdmin && !readOnly && !current.isInCreation) IconButton({ confirmHeritageReset = true }) {
+                        if (session.isAdmin && !readOnly && !current.isInCreation) SdoIconButton({ confirmHeritageReset = true }) {
                             Icon(Icons.Default.Refresh, "Reabrir escolha secreta de 30 PH", tint = MaterialTheme.colorScheme.secondary)
                         }
-                        if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) IconButton({
+                        if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) SdoIconButton({
                             onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
                         }) {
                             Icon(
@@ -203,7 +204,7 @@ fun CharacterSheetScreen(
                                 if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador",
                                 tint = if (current.lockType == CharacterLock.HISTORIAN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                             )
-                        } else if (canChangePlayerLock) IconButton({
+                        } else if (canChangePlayerLock) SdoIconButton({
                             onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
                         }) {
                             Icon(
@@ -212,8 +213,8 @@ fun CharacterSheetScreen(
                                 tint = if (current.lockType == CharacterLock.PLAYER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                             )
                         }
-                        if (canDelete) IconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = MaterialTheme.colorScheme.error) }
-                        if (editable) IconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary) }
+                        if (canDelete) SdoIconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = MaterialTheme.colorScheme.error) }
+                        if (editable) SdoIconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary) }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -259,7 +260,7 @@ private fun MissingCharacterState(
             topBar = {
                 TopAppBar(
                     title = { Text("FICHA INDISPONÍVEL") },
-                    navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar ao painel") } },
+                    navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar ao painel") } },
                 )
             },
         ) { padding ->
@@ -270,7 +271,7 @@ private fun MissingCharacterState(
             ) {
                 Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
                 Text(if (sessionAvailable) "Esta ficha não existe mais ou ainda não foi sincronizada." else "A sessão não está disponível.")
-                TextButton(onClick = onBack) { Text("VOLTAR AO PAINEL") }
+                SdoTextButton(onClick = onBack) { Text("VOLTAR AO PAINEL") }
             }
         }
     }
@@ -279,6 +280,11 @@ private fun MissingCharacterState(
 @Composable
 internal fun SheetHero(character: Character, session: UserSession, saveError: String? = null) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    SdoScreenMasthead(
+        eyebrow = "CHARACTER//ARCHIVE",
+        title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
+        metadata = "NÍVEL ${character.level} // ${if (character.dirty) "ALTERAÇÕES LOCAIS" else "ARQUIVO ESTÁVEL"}",
+    )
     TechPanel(accent = if (character.isLocked) Signal else Acid) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
@@ -302,7 +308,7 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
         Barcode("${character.id}-${character.name}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ComplianceMark()
-            IconButton(onClick = {
+            SdoIconButton(onClick = {
                 android.widget.Toast.makeText(context,
                     saveError ?: if (character.dirty) "Alterações salvas no aparelho; sincronização pendente"
                     else "Alterações salvas",

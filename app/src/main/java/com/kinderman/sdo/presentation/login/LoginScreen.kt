@@ -13,13 +13,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import com.kinderman.sdo.ui.SdoButton
+import com.kinderman.sdo.ui.SdoButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,6 +37,7 @@ import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.SdoScreenMasthead
 
 @Composable
 fun LoginScreen(
@@ -58,6 +59,7 @@ fun LoginScreen(
                 TelemetryTag("SYS.26 // ONLINE")
                 TelemetryTag("AUTH_GATE", MaterialTheme.colorScheme.error)
             }
+            SdoScreenMasthead("AUTH//GATE", "SOLIDÃO DOS OPRIMIDOS", "COMPANION // TERMINAL DE PERSONAGEM")
             TechPanel(accent = MaterialTheme.colorScheme.primary) {
                 Text("SOLIDÃO DOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text("OPRIMIDOS", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.displayLarge)
@@ -69,7 +71,7 @@ fun LoginScreen(
                         Text("ERR_AUTH // $it", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                Button(
+                SdoButton(
                     onClick = onGoogleLogin,
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     enabled = !state.loading,
@@ -85,7 +87,7 @@ fun LoginScreen(
                 }
                 if (allowDemo) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    OutlinedButton(
+                    SdoOutlinedButton(
                         onClick = onDemo,
                         modifier = Modifier.fillMaxWidth(),
                         shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),

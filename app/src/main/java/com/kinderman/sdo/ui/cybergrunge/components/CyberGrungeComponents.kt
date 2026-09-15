@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -134,7 +135,10 @@ internal fun CyberGrungeField(
                 visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
                 interactionSource = interaction,
                 label = { Text("INPUT//$label", style = MaterialTheme.typography.labelSmall) },
-                placeholder = { Text(placeholder ?: "▥ ▒▒ SINAL VAZIO", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                placeholder = {
+                    if (value.isEmpty()) CyberGrungeEmptySignal()
+                    else if (placeholder != null) Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                },
                 colors = colors,
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 11.dp),
                 container = {
@@ -160,6 +164,7 @@ internal fun CyberGrungeChoiceRow(
     Row(
         Modifier.fillMaxWidth()
             .border(1.dp, accent, CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+            .clip(CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
             .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically,
