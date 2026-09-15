@@ -19,7 +19,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Arremesso a 4 m contra PA; causa 1d6 de fogo. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Arremesso a 4 m contra PA; causa 1d6 de fogo. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Brasa Rubra",
+        "Fogo",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.brasa_rubra.refinada",
@@ -34,7 +49,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Arremesso a 6 m contra PA; causa 2d6 de fogo. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Arremesso a 6 m contra PA; causa 2d6 de fogo. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Brasa Rubra",
+        "Fogo",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.brasa_rubra.pura",
@@ -49,7 +79,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Arremesso a 9 m contra PA; causa 3d6 de fogo. O usuário controla onde a combustão termina."
+      "effect": "Arremesso a 9 m contra PA; causa 3d6 de fogo. O usuário controla onde a combustão termina.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Brasa Rubra",
+        "Fogo",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sopro_de_forja.bruta",
@@ -64,7 +109,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Sopro de Forja",
+        "Fogo",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sopro_de_forja.refinada",
@@ -79,7 +139,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Sopro de Forja",
+        "Fogo",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sopro_de_forja.pura",
@@ -94,7 +169,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. O usuário controla onde a combustão termina."
+      "effect": "Aquece metal pequeno por uma cena; complicação pode fundi-lo ou queimar o usuário. O usuário controla onde a combustão termina.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Sopro de Forja",
+        "Fogo",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sol_engarrafado.bruta",
@@ -109,7 +199,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ilumina raio de 11 m e revela sombras mágicas por uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Ilumina raio de 11 m e revela sombras mágicas por uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Sol Engarrafado",
+        "Luz",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sol_engarrafado.refinada",
@@ -124,7 +229,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ilumina raio de 11 m e revela sombras mágicas por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Ilumina raio de 11 m e revela sombras mágicas por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Sol Engarrafado",
+        "Luz",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sol_engarrafado.pura",
@@ -139,7 +259,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ilumina raio de 15 m e revela sombras mágicas por uma cena. O usuário controla o brilho sem ofuscar aliados."
+      "effect": "Ilumina raio de 15 m e revela sombras mágicas por uma cena. O usuário controla o brilho sem ofuscar aliados.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Sol Engarrafado",
+        "Luz",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.estopim_cinzento.bruta",
@@ -154,7 +289,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Acende instantaneamente material inflamável tocado. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Acende instantaneamente material inflamável tocado. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Estopim Cinzento",
+        "Fogo",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.estopim_cinzento.refinada",
@@ -169,7 +319,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Acende instantaneamente material inflamável tocado. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Acende instantaneamente material inflamável tocado. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Estopim Cinzento",
+        "Fogo",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.estopim_cinzento.pura",
@@ -184,7 +349,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Acende instantaneamente material inflamável tocado. O usuário controla onde a combustão termina."
+      "effect": "Acende instantaneamente material inflamável tocado. O usuário controla onde a combustão termina.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Estopim Cinzento",
+        "Fogo",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.coracao_de_caldeira.bruta",
@@ -199,7 +379,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Concede resistência a frio e ambiente gelado por uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Concede resistência a frio e ambiente gelado por uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Coração de Caldeira",
+        "Fogo",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.coracao_de_caldeira.refinada",
@@ -214,7 +409,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Concede resistência a frio e ambiente gelado por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Concede resistência a frio e ambiente gelado por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Coração de Caldeira",
+        "Fogo",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.coracao_de_caldeira.pura",
@@ -229,7 +439,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Concede resistência a frio e ambiente gelado por uma cena. O usuário controla onde a combustão termina."
+      "effect": "Concede resistência a frio e ambiente gelado por uma cena. O usuário controla onde a combustão termina.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Coração de Caldeira",
+        "Fogo",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.geada_de_vidro.bruta",
@@ -244,7 +469,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque a 4 m contra PA; causa 1d6 frio e −1 m Movimento por rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Ataque a 4 m contra PA; causa 1d6 frio e −1 m Movimento por rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Geada de Vidro",
+        "Frio",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.geada_de_vidro.refinada",
@@ -259,7 +499,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque a 6 m contra PA; causa 2d6 frio e −2 m Movimento por rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Ataque a 6 m contra PA; causa 2d6 frio e −2 m Movimento por rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Geada de Vidro",
+        "Frio",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.geada_de_vidro.pura",
@@ -274,7 +529,22 @@
       "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque a 9 m contra PA; causa 3d6 frio e −3 m Movimento por rodada. O usuário escolhe uma superfície que não será congelada."
+      "effect": "Ataque a 9 m contra PA; causa 3d6 frio e −3 m Movimento por rodada. O usuário escolhe uma superfície que não será congelada.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Geada de Vidro",
+        "Frio",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sal_de_preservacao.bruta",
@@ -291,7 +561,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Conserva alimento ou cadáver pequeno por um dia. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Conserva alimento ou cadáver pequeno por um dia. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Sal de Preservação",
+        "Frio",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sal_de_preservacao.refinada",
@@ -308,7 +593,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Conserva alimento ou cadáver pequeno por um dia. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Conserva alimento ou cadáver pequeno por um dia. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Sal de Preservação",
+        "Frio",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sal_de_preservacao.pura",
@@ -325,7 +625,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Conserva alimento ou cadáver pequeno por um dia. O usuário escolhe uma superfície que não será congelada."
+      "effect": "Conserva alimento ou cadáver pequeno por um dia. O usuário escolhe uma superfície que não será congelada.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Sal de Preservação",
+        "Frio",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.nevoa_invernal.bruta",
@@ -341,7 +656,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Cria névoa fria em raio de 2 m por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Cria névoa fria em raio de 2 m por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Névoa Invernal",
+        "Frio",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.nevoa_invernal.refinada",
@@ -357,7 +687,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Cria névoa fria em raio de 3 m por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Cria névoa fria em raio de 3 m por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Névoa Invernal",
+        "Frio",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.nevoa_invernal.pura",
@@ -373,7 +718,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Cria névoa fria em raio de 5 m por uma rodada. O usuário escolhe uma superfície que não será congelada."
+      "effect": "Cria névoa fria em raio de 5 m por uma rodada. O usuário escolhe uma superfície que não será congelada.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Névoa Invernal",
+        "Frio",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.prisao_cristalina.bruta",
@@ -389,7 +749,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Contra PA, Imobiliza um alvo por uma rodada; gelo tem 15 PV. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Contra PA, Imobiliza um alvo por uma rodada; gelo tem 15 PV. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Prisão Cristalina",
+        "Frio",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.prisao_cristalina.refinada",
@@ -405,7 +780,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Contra PA, Imobiliza um alvo por uma rodada; gelo tem 15 PV. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Contra PA, Imobiliza um alvo por uma rodada; gelo tem 15 PV. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Prisão Cristalina",
+        "Frio",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.prisao_cristalina.pura",
@@ -421,7 +811,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Contra PA, Imobiliza um alvo por uma rodada; gelo tem 15 PV. O usuário escolhe uma superfície que não será congelada."
+      "effect": "Contra PA, Imobiliza um alvo por uma rodada; gelo tem 15 PV. O usuário escolhe uma superfície que não será congelada.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Prisão Cristalina",
+        "Frio",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passo_sem_pegadas.bruta",
@@ -436,7 +841,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Congela e apaga rastros numa faixa de 7 m. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Congela e apaga rastros numa faixa de 7 m. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Passo Sem Pegadas",
+        "Frio",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passo_sem_pegadas.refinada",
@@ -451,7 +871,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Congela e apaga rastros numa faixa de 10 m. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Congela e apaga rastros numa faixa de 10 m. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Passo Sem Pegadas",
+        "Frio",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passo_sem_pegadas.pura",
@@ -466,7 +901,22 @@
       "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Congela e apaga rastros numa faixa de 15 m. O usuário escolhe uma superfície que não será congelada."
+      "effect": "Congela e apaga rastros numa faixa de 15 m. O usuário escolhe uma superfície que não será congelada.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Passo Sem Pegadas",
+        "Frio",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.po_restaurador.bruta",
@@ -481,7 +931,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Aplicado por toque, recupera 1d6 PV; não remove Falhas. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Aplicado por toque, recupera 1d6 PV; não remove Falhas. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Pó Restaurador",
+        "Cura",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.po_restaurador.refinada",
@@ -496,7 +961,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Aplicado por toque, recupera 2d6 PV; não remove Falhas. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Aplicado por toque, recupera 2d6 PV; não remove Falhas. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Pó Restaurador",
+        "Cura",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.po_restaurador.pura",
@@ -511,7 +991,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Aplicado por toque, recupera 3d6 PV; não remove Falhas. O usuário escolhe não deixar cicatriz visível."
+      "effect": "Aplicado por toque, recupera 3d6 PV; não remove Falhas. O usuário escolhe não deixar cicatriz visível.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Pó Restaurador",
+        "Cura",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.selo_coagulante.bruta",
@@ -526,7 +1021,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Selo Coagulante",
+        "Cura",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.selo_coagulante.refinada",
@@ -541,7 +1051,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Selo Coagulante",
+        "Cura",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.selo_coagulante.pura",
@@ -556,7 +1081,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. O usuário escolhe não deixar cicatriz visível."
+      "effect": "Interrompe sangramento comum; risco pode fechar o ferimento de modo incorreto. O usuário escolhe não deixar cicatriz visível.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Selo Coagulante",
+        "Cura",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.folego_dourado.bruta",
@@ -571,7 +1111,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Estabiliza automaticamente criatura inconsciente e recupera 1d6 PV. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Estabiliza automaticamente criatura inconsciente e recupera 1d6 PV. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Fôlego Dourado",
+        "Cura",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.folego_dourado.refinada",
@@ -586,7 +1141,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Estabiliza automaticamente criatura inconsciente e recupera 2d6 PV. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Estabiliza automaticamente criatura inconsciente e recupera 2d6 PV. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Fôlego Dourado",
+        "Cura",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.folego_dourado.pura",
@@ -601,7 +1171,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Estabiliza automaticamente criatura inconsciente e recupera 3d6 PV. O usuário escolhe não deixar cicatriz visível."
+      "effect": "Estabiliza automaticamente criatura inconsciente e recupera 3d6 PV. O usuário escolhe não deixar cicatriz visível.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Fôlego Dourado",
+        "Cura",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.lavagem_purificante.bruta",
@@ -616,7 +1201,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Remove veneno fraco ou condição física leve. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Remove veneno fraco ou condição física leve. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Lavagem Purificante",
+        "Cura",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.lavagem_purificante.refinada",
@@ -631,7 +1231,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Remove veneno fraco ou condição física leve. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Remove veneno fraco ou condição física leve. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Lavagem Purificante",
+        "Cura",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.lavagem_purificante.pura",
@@ -646,7 +1261,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Remove veneno fraco ou condição física leve. O usuário escolhe não deixar cicatriz visível."
+      "effect": "Remove veneno fraco ou condição física leve. O usuário escolhe não deixar cicatriz visível.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Lavagem Purificante",
+        "Cura",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.vigilia_ambar.bruta",
@@ -661,7 +1291,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Vigília Âmbar",
+        "Cura",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.vigilia_ambar.refinada",
@@ -676,7 +1321,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Vigília Âmbar",
+        "Cura",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.vigilia_ambar.pura",
@@ -691,7 +1351,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. O usuário escolhe não deixar cicatriz visível."
+      "effect": "Ignora 1 ponto de Exaustão como penalidade por uma cena, sem removê-lo. O usuário escolhe não deixar cicatriz visível.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Vigília Âmbar",
+        "Cura",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.veu_translucido.bruta",
@@ -706,7 +1381,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Cria imagem estática de até 1 m por uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Cria imagem estática de até 1 m por uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Véu Translúcido",
+        "Ilusão",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.veu_translucido.refinada",
@@ -721,7 +1411,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Cria imagem estática de até 2 m por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Cria imagem estática de até 2 m por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Véu Translúcido",
+        "Ilusão",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.veu_translucido.pura",
@@ -736,7 +1441,22 @@
       "targetArea": "Uma criatura ou alvo válido no alcance",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Cria imagem estática de até 3 m por uma cena. O usuário escolhe uma criatura que reconhece a ilusão."
+      "effect": "Cria imagem estática de até 3 m por uma cena. O usuário escolhe uma criatura que reconhece a ilusão.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Véu Translúcido",
+        "Ilusão",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.eco_emprestado.bruta",
@@ -751,7 +1471,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Repete perfeitamente um som curto ouvido recentemente. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Repete perfeitamente um som curto ouvido recentemente. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Eco Emprestado",
+        "Mental",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.eco_emprestado.refinada",
@@ -766,7 +1501,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Repete perfeitamente um som curto ouvido recentemente. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Repete perfeitamente um som curto ouvido recentemente. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Eco Emprestado",
+        "Mental",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.eco_emprestado.pura",
@@ -781,7 +1531,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Repete perfeitamente um som curto ouvido recentemente. O usuário percebe se o alvo resistiu."
+      "effect": "Repete perfeitamente um som curto ouvido recentemente. O usuário percebe se o alvo resistiu.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Eco Emprestado",
+        "Mental",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.poeira_do_esquecimento.bruta",
@@ -796,7 +1561,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Poeira do Esquecimento",
+        "Mental",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.poeira_do_esquecimento.refinada",
@@ -811,7 +1591,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Poeira do Esquecimento",
+        "Mental",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.poeira_do_esquecimento.pura",
@@ -826,7 +1621,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. O usuário percebe se o alvo resistiu."
+      "effect": "Contra PMental, apaga lembrança dos últimos segundos; não remove conhecimento consolidado. O usuário percebe se o alvo resistiu.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Poeira do Esquecimento",
+        "Mental",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.olho_de_mercurio.bruta",
@@ -841,7 +1651,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Olho de Mercúrio",
+        "Luz",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.olho_de_mercurio.refinada",
@@ -856,7 +1681,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Olho de Mercúrio",
+        "Luz",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.olho_de_mercurio.pura",
@@ -871,7 +1711,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. O usuário controla o brilho sem ofuscar aliados."
+      "effect": "+4 para notar ilusão ou detalhe oculto uma vez na cena. O usuário controla o brilho sem ofuscar aliados.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Olho de Mercúrio",
+        "Luz",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.perfume_de_confianca.bruta",
@@ -886,7 +1741,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Postura",
-      "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Perfume de Confiança",
+        "Mental",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.perfume_de_confianca.refinada",
@@ -901,7 +1771,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Postura",
-      "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Perfume de Confiança",
+        "Mental",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.perfume_de_confianca.pura",
@@ -916,7 +1801,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Postura",
-      "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. O usuário percebe se o alvo resistiu."
+      "effect": "Contra PP, impõe −2 à resistência contra uma conversa não hostil por uma cena. O usuário percebe se o alvo resistiu.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Perfume de Confiança",
+        "Mental",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.fuligem_sem_luz.bruta",
@@ -932,7 +1832,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Escurece raio de 2 m por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Escurece raio de 2 m por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Fuligem Sem Luz",
+        "Trevas",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.fuligem_sem_luz.refinada",
@@ -948,7 +1863,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Escurece raio de 3 m por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Escurece raio de 3 m por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Fuligem Sem Luz",
+        "Trevas",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.fuligem_sem_luz.pura",
@@ -964,7 +1894,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Escurece raio de 5 m por uma rodada. O usuário enxerga através das trevas criadas."
+      "effect": "Escurece raio de 5 m por uma rodada. O usuário enxerga através das trevas criadas.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Fuligem Sem Luz",
+        "Trevas",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.manto_violeta.bruta",
@@ -979,7 +1924,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 Furtividade em penumbra durante uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "+4 Furtividade em penumbra durante uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Manto Violeta",
+        "Trevas",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.manto_violeta.refinada",
@@ -994,7 +1954,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 Furtividade em penumbra durante uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "+4 Furtividade em penumbra durante uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Manto Violeta",
+        "Trevas",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.manto_violeta.pura",
@@ -1009,7 +1984,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 Furtividade em penumbra durante uma cena. O usuário enxerga através das trevas criadas."
+      "effect": "+4 Furtividade em penumbra durante uma cena. O usuário enxerga através das trevas criadas.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Manto Violeta",
+        "Trevas",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.veneno_da_sombra.bruta",
@@ -1025,7 +2015,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Ataque por toque contra PA; 1d6 e alvo fica Abalado por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Ataque por toque contra PA; 1d6 e alvo fica Abalado por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Veneno da Sombra",
+        "Trevas",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.veneno_da_sombra.refinada",
@@ -1041,7 +2046,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Ataque por toque contra PA; 2d6 e alvo fica Abalado por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Ataque por toque contra PA; 2d6 e alvo fica Abalado por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Veneno da Sombra",
+        "Trevas",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.veneno_da_sombra.pura",
@@ -1057,7 +2077,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Ataque por toque contra PA; 3d6 e alvo fica Abalado por uma rodada. O usuário enxerga através das trevas criadas."
+      "effect": "Ataque por toque contra PA; 3d6 e alvo fica Abalado por uma rodada. O usuário enxerga através das trevas criadas.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Veneno da Sombra",
+        "Trevas",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passagem_muda.bruta",
@@ -1073,7 +2108,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Abafa passos do usuário por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Abafa passos do usuário por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Passagem Muda",
+        "Trevas",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passagem_muda.refinada",
@@ -1089,7 +2139,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Abafa passos do usuário por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Abafa passos do usuário por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Passagem Muda",
+        "Trevas",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passagem_muda.pura",
@@ -1105,7 +2170,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Abafa passos do usuário por uma rodada. O usuário enxerga através das trevas criadas."
+      "effect": "Abafa passos do usuário por uma rodada. O usuário enxerga através das trevas criadas.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Passagem Muda",
+        "Trevas",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.marca_do_ausente.bruta",
@@ -1122,7 +2202,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Oculta objeto pequeno de percepção mundana por uma hora; toque o revela. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Oculta objeto pequeno de percepção mundana por uma hora; toque o revela. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Marca do Ausente",
+        "Trevas",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.marca_do_ausente.refinada",
@@ -1139,7 +2234,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Oculta objeto pequeno de percepção mundana por uma hora; toque o revela. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Oculta objeto pequeno de percepção mundana por uma hora; toque o revela. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Marca do Ausente",
+        "Trevas",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.marca_do_ausente.pura",
@@ -1156,7 +2266,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Oculta objeto pequeno de percepção mundana por uma hora; toque o revela. O usuário enxerga através das trevas criadas."
+      "effect": "Oculta objeto pequeno de percepção mundana por uma hora; toque o revela. O usuário enxerga através das trevas criadas.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Marca do Ausente",
+        "Trevas",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.prata_de_sonho.bruta",
@@ -1171,7 +2296,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Prata de Sonho",
+        "Onírico",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.prata_de_sonho.refinada",
@@ -1186,7 +2326,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Prata de Sonho",
+        "Onírico",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.prata_de_sonho.pura",
@@ -1201,7 +2356,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. O usuário distingue a manifestação de um sonho comum."
+      "effect": "Abre visão breve do Plano Onírico; revela uma imagem verdadeira e simbólica. O usuário distingue a manifestação de um sonho comum.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Prata de Sonho",
+        "Onírico",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.ancora_do_desperto.bruta",
@@ -1216,7 +2386,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "+4 PA ou PMental contra um efeito onírico. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "+4 PA ou PMental contra um efeito onírico. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Âncora do Desperto",
+        "Onírico",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.ancora_do_desperto.refinada",
@@ -1231,7 +2416,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "+4 PA ou PMental contra um efeito onírico. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "+4 PA ou PMental contra um efeito onírico. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Âncora do Desperto",
+        "Onírico",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.ancora_do_desperto.pura",
@@ -1246,7 +2446,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "+4 PA ou PMental contra um efeito onírico. O usuário distingue a manifestação de um sonho comum."
+      "effect": "+4 PA ou PMental contra um efeito onírico. O usuário distingue a manifestação de um sonho comum.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Âncora do Desperto",
+        "Onírico",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sono_alheio.bruta",
@@ -1262,7 +2477,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Mental",
-      "effect": "Contra PMental, alvo adormece por uma rodada ou até sofrer dano. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Contra PMental, alvo adormece por uma rodada ou até sofrer dano. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Sono Alheio",
+        "Onírico",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sono_alheio.refinada",
@@ -1278,7 +2508,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Mental",
-      "effect": "Contra PMental, alvo adormece por uma rodada ou até sofrer dano. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Contra PMental, alvo adormece por uma rodada ou até sofrer dano. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Sono Alheio",
+        "Onírico",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sono_alheio.pura",
@@ -1294,7 +2539,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Mental",
-      "effect": "Contra PMental, alvo adormece por uma rodada ou até sofrer dano. O usuário distingue a manifestação de um sonho comum."
+      "effect": "Contra PMental, alvo adormece por uma rodada ou até sofrer dano. O usuário distingue a manifestação de um sonho comum.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Sono Alheio",
+        "Onírico",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.memoria_condensada.bruta",
@@ -1309,7 +2569,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Memória Condensada",
+        "Onírico",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.memoria_condensada.refinada",
@@ -1324,7 +2599,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Memória Condensada",
+        "Onírico",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.memoria_condensada.pura",
@@ -1339,7 +2629,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. O usuário distingue a manifestação de um sonho comum."
+      "effect": "Guarda uma lembrança sensorial curta que pode ser experimentada uma vez. O usuário distingue a manifestação de um sonho comum.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Memória Condensada",
+        "Onírico",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passo_de_nevoa.bruta",
@@ -1354,7 +2659,22 @@
       "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Teleporta usuário até 4 m para ponto visível. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Teleporta usuário até 4 m para ponto visível. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Passo de Névoa",
+        "Onírico",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passo_de_nevoa.refinada",
@@ -1369,7 +2689,22 @@
       "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Teleporta usuário até 4 m para ponto visível. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Teleporta usuário até 4 m para ponto visível. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Passo de Névoa",
+        "Onírico",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.passo_de_nevoa.pura",
@@ -1384,7 +2719,22 @@
       "targetArea": "Um objeto válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Teleporta usuário até 6 m para ponto visível. O usuário distingue a manifestação de um sonho comum."
+      "effect": "Teleporta usuário até 6 m para ponto visível. O usuário distingue a manifestação de um sonho comum.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Passo de Névoa",
+        "Onírico",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.ferrugem_faminta.bruta",
@@ -1399,7 +2749,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Causa 1d6 a objeto metálico ou reduz sua Durabilidade em 1. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Causa 1d6 a objeto metálico ou reduz sua Durabilidade em 1. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Ferrugem Faminta",
+        "Decadência",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.ferrugem_faminta.refinada",
@@ -1414,7 +2779,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Causa 2d6 a objeto metálico ou reduz sua Durabilidade em 1. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Causa 2d6 a objeto metálico ou reduz sua Durabilidade em 1. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Ferrugem Faminta",
+        "Decadência",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.ferrugem_faminta.pura",
@@ -1429,7 +2809,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Causa 3d6 a objeto metálico ou reduz sua Durabilidade em 1. O usuário delimita o material afetado."
+      "effect": "Causa 3d6 a objeto metálico ou reduz sua Durabilidade em 1. O usuário delimita o material afetado.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Ferrugem Faminta",
+        "Decadência",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.po_de_ossario.bruta",
@@ -1444,7 +2839,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Pó de Ossário",
+        "Morte",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.po_de_ossario.refinada",
@@ -1459,7 +2869,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Pó de Ossário",
+        "Morte",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.po_de_ossario.pura",
@@ -1474,7 +2899,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. Outros cadáveres ou espíritos não são perturbados."
+      "effect": "Faz ossos próximos apontarem para cadáver ou energia necrótica mais próxima. Outros cadáveres ou espíritos não são perturbados.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Pó de Ossário",
+        "Morte",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.frio_sepulcral.bruta",
@@ -1489,7 +2929,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque a 4 m contra PA; 1d6 necrótico. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Ataque a 4 m contra PA; 1d6 necrótico. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Frio Sepulcral",
+        "Morte",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.frio_sepulcral.refinada",
@@ -1504,7 +2959,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque a 6 m contra PA; 2d6 necrótico. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Ataque a 6 m contra PA; 2d6 necrótico. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Frio Sepulcral",
+        "Morte",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.frio_sepulcral.pura",
@@ -1519,7 +2989,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque a 9 m contra PA; 3d6 necrótico. Outros cadáveres ou espíritos não são perturbados."
+      "effect": "Ataque a 9 m contra PA; 3d6 necrótico. Outros cadáveres ou espíritos não são perturbados.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Frio Sepulcral",
+        "Morte",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.voz_postuma.bruta",
@@ -1534,7 +3019,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Cadáver recente responde uma pergunta com memória fragmentária. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Cadáver recente responde uma pergunta com memória fragmentária. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Voz Póstuma",
+        "Luz",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.voz_postuma.refinada",
@@ -1549,7 +3049,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Cadáver recente responde uma pergunta com memória fragmentária. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Cadáver recente responde uma pergunta com memória fragmentária. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Voz Póstuma",
+        "Luz",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.voz_postuma.pura",
@@ -1564,7 +3079,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Cadáver recente responde uma pergunta com memória fragmentária. O usuário controla o brilho sem ofuscar aliados."
+      "effect": "Cadáver recente responde uma pergunta com memória fragmentária. O usuário controla o brilho sem ofuscar aliados.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Voz Póstuma",
+        "Luz",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.repouso_selado.bruta",
@@ -1581,7 +3111,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Impede cadáver de ser reanimado por um dia. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Impede cadáver de ser reanimado por um dia. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Repouso Selado",
+        "Morte",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.repouso_selado.refinada",
@@ -1598,7 +3143,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Impede cadáver de ser reanimado por um dia. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Impede cadáver de ser reanimado por um dia. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Repouso Selado",
+        "Morte",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.repouso_selado.pura",
@@ -1615,7 +3175,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Impede cadáver de ser reanimado por um dia. Outros cadáveres ou espíritos não são perturbados."
+      "effect": "Impede cadáver de ser reanimado por um dia. Outros cadáveres ou espíritos não são perturbados.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Repouso Selado",
+        "Morte",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.areia_ascendente.bruta",
@@ -1631,7 +3206,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Rajada empurra objetos leves e revela formas invisíveis por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Rajada empurra objetos leves e revela formas invisíveis por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Areia Ascendente",
+        "Ar",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.areia_ascendente.refinada",
@@ -1647,7 +3237,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Rajada empurra objetos leves e revela formas invisíveis por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Rajada empurra objetos leves e revela formas invisíveis por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Areia Ascendente",
+        "Ar",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.areia_ascendente.pura",
@@ -1663,7 +3268,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Rajada empurra objetos leves e revela formas invisíveis por uma rodada. O usuário controla com precisão os limites descritos."
+      "effect": "Rajada empurra objetos leves e revela formas invisíveis por uma rodada. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Areia Ascendente",
+        "Ar",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.pulmao_de_tempestade.bruta",
@@ -1678,7 +3298,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Pulmão de Tempestade",
+        "Ar",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.pulmao_de_tempestade.refinada",
@@ -1693,7 +3328,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Pulmão de Tempestade",
+        "Ar",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.pulmao_de_tempestade.pura",
@@ -1708,7 +3358,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. O usuário controla com precisão os limites descritos."
+      "effect": "Permite prender a respiração e ignorar fumaça comum por uma cena. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Pulmão de Tempestade",
+        "Ar",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.trovao_seco.bruta",
@@ -1723,7 +3388,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Cone 4 m contra PA; 1d6 sônico e objetos frágeis vibram. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Cone 4 m contra PA; 1d6 sônico e objetos frágeis vibram. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Trovão Seco",
+        "Som",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.trovao_seco.refinada",
@@ -1738,7 +3418,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Cone 5 m contra PA; 2d6 sônico e objetos frágeis vibram. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Cone 5 m contra PA; 2d6 sônico e objetos frágeis vibram. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Trovão Seco",
+        "Som",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.trovao_seco.pura",
@@ -1753,7 +3448,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Cone 8 m contra PA; 3d6 sônico e objetos frágeis vibram. O usuário escolhe quem pode ouvir o efeito."
+      "effect": "Cone 8 m contra PA; 3d6 sônico e objetos frágeis vibram. O usuário escolhe quem pode ouvir o efeito.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Trovão Seco",
+        "Som",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.queda_de_pluma.bruta",
@@ -1768,7 +3478,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz a zero o dano de uma queda de até 11 m. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Reduz a zero o dano de uma queda de até 11 m. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Queda de Pluma",
+        "Ar",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.queda_de_pluma.refinada",
@@ -1783,7 +3508,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz a zero o dano de uma queda de até 15 m. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Reduz a zero o dano de uma queda de até 15 m. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Queda de Pluma",
+        "Ar",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.queda_de_pluma.pura",
@@ -1798,7 +3538,22 @@
       "targetArea": "Um alvo válido no alcance",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz a zero o dano de uma queda de até 23 m. O usuário controla com precisão os limites descritos."
+      "effect": "Reduz a zero o dano de uma queda de até 23 m. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Queda de Pluma",
+        "Ar",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.frasco_de_vendaval.bruta",
@@ -1813,7 +3568,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Linha 7 m contra PG; empurra alvos 3 m. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Linha 7 m contra PG; empurra alvos 3 m. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Frasco de Vendaval",
+        "Ar",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.frasco_de_vendaval.refinada",
@@ -1828,7 +3598,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Linha 7 m contra PG; empurra alvos 3 m. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Linha 7 m contra PG; empurra alvos 3 m. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Frasco de Vendaval",
+        "Ar",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.frasco_de_vendaval.pura",
@@ -1843,7 +3628,22 @@
       "targetArea": "área descrita no Efeito",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Linha 10 m contra PG; empurra alvos 4 m. O usuário controla com precisão os limites descritos."
+      "effect": "Linha 10 m contra PG; empurra alvos 4 m. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Frasco de Vendaval",
+        "Ar",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.limalha_viva.bruta",
@@ -1858,7 +3658,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Forma ferramenta metálica simples por uma cena. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Forma ferramenta metálica simples por uma cena. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Limalha Viva",
+        "Terra",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.limalha_viva.refinada",
@@ -1873,7 +3688,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Forma ferramenta metálica simples por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Forma ferramenta metálica simples por uma cena. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Limalha Viva",
+        "Terra",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.limalha_viva.pura",
@@ -1888,7 +3718,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Forma ferramenta metálica simples por uma cena. A forma criada permanece estável até o fim da duração."
+      "effect": "Forma ferramenta metálica simples por uma cena. A forma criada permanece estável até o fim da duração.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Limalha Viva",
+        "Terra",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.peso_de_montanha.bruta",
@@ -1904,7 +3749,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Contra PA, Imobiliza objeto ou criatura por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Contra PA, Imobiliza objeto ou criatura por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Peso de Montanha",
+        "Terra",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.peso_de_montanha.refinada",
@@ -1920,7 +3780,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Contra PA, Imobiliza objeto ou criatura por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Contra PA, Imobiliza objeto ou criatura por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Peso de Montanha",
+        "Terra",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.peso_de_montanha.pura",
@@ -1936,7 +3811,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Contra PA, Imobiliza objeto ou criatura por uma rodada. A forma criada permanece estável até o fim da duração."
+      "effect": "Contra PA, Imobiliza objeto ou criatura por uma rodada. A forma criada permanece estável até o fim da duração.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Peso de Montanha",
+        "Terra",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.pele_de_cascalho.bruta",
@@ -1951,7 +3841,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz o próximo dano físico recebido em 1d6. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Reduz o próximo dano físico recebido em 1d6. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Pele de Cascalho",
+        "Terra",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.pele_de_cascalho.refinada",
@@ -1966,7 +3871,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz o próximo dano físico recebido em 2d6. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Reduz o próximo dano físico recebido em 2d6. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Pele de Cascalho",
+        "Terra",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.pele_de_cascalho.pura",
@@ -1981,7 +3901,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz o próximo dano físico recebido em 3d6. A forma criada permanece estável até o fim da duração."
+      "effect": "Reduz o próximo dano físico recebido em 3d6. A forma criada permanece estável até o fim da duração.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Pele de Cascalho",
+        "Terra",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.cristal_de_eco.bruta",
@@ -1996,7 +3931,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Cristal de Eco",
+        "Terra",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.cristal_de_eco.refinada",
@@ -2011,7 +3961,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Cristal de Eco",
+        "Terra",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.cristal_de_eco.pura",
@@ -2026,7 +3991,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. A forma criada permanece estável até o fim da duração."
+      "effect": "Registra vibração ou frase curta e a repete ao ser quebrado. A forma criada permanece estável até o fim da duração.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Cristal de Eco",
+        "Terra",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.semente_instantanea.bruta",
@@ -2041,7 +4021,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz planta comum crescer até maturidade funcional em minutos. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Faz planta comum crescer até maturidade funcional em minutos. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Semente Instantânea",
+        "Natureza",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.semente_instantanea.refinada",
@@ -2056,7 +4051,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz planta comum crescer até maturidade funcional em minutos. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Faz planta comum crescer até maturidade funcional em minutos. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Semente Instantânea",
+        "Natureza",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.semente_instantanea.pura",
@@ -2071,7 +4081,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz planta comum crescer até maturidade funcional em minutos. O usuário controla com precisão os limites descritos."
+      "effect": "Faz planta comum crescer até maturidade funcional em minutos. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Semente Instantânea",
+        "Natureza",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.esporos_de_alerta.bruta",
@@ -2086,7 +4111,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Mudam de cor quando criatura grande se aproxima em 10 m. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Mudam de cor quando criatura grande se aproxima em 10 m. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Esporos de Alerta",
+        "Natureza",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.esporos_de_alerta.refinada",
@@ -2101,7 +4141,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Mudam de cor quando criatura grande se aproxima em 15 m. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Mudam de cor quando criatura grande se aproxima em 15 m. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Esporos de Alerta",
+        "Natureza",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.esporos_de_alerta.pura",
@@ -2116,7 +4171,22 @@
       "targetArea": "alvo descrito no Efeito",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Mudam de cor quando criatura grande se aproxima em 15 m. O usuário controla com precisão os limites descritos."
+      "effect": "Mudam de cor quando criatura grande se aproxima em 15 m. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Esporos de Alerta",
+        "Natureza",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.seiva_predatoria.bruta",
@@ -2132,7 +4202,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Geral",
-      "effect": "Contra PG, vinhas Imobilizam em área de 2 m por uma rodada. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Contra PG, vinhas Imobilizam em área de 2 m por uma rodada. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Seiva Predatória",
+        "Natureza",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.seiva_predatoria.refinada",
@@ -2148,7 +4233,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Geral",
-      "effect": "Contra PG, vinhas Imobilizam em área de 2 m por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Contra PG, vinhas Imobilizam em área de 2 m por uma rodada. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Seiva Predatória",
+        "Natureza",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.seiva_predatoria.pura",
@@ -2164,7 +4264,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Geral",
-      "effect": "Contra PG, vinhas Imobilizam em área de 3 m por uma rodada. O usuário controla com precisão os limites descritos."
+      "effect": "Contra PG, vinhas Imobilizam em área de 3 m por uma rodada. O usuário controla com precisão os limites descritos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Seiva Predatória",
+        "Natureza",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sangue_desperto.bruta",
@@ -2179,7 +4294,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Identifica parentesco direto entre duas amostras. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Identifica parentesco direto entre duas amostras. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Sangue Desperto",
+        "Sangue",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sangue_desperto.refinada",
@@ -2194,7 +4324,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Identifica parentesco direto entre duas amostras. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Identifica parentesco direto entre duas amostras. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Sangue Desperto",
+        "Sangue",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.sangue_desperto.pura",
@@ -2209,7 +4354,22 @@
       "targetArea": "Usuário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Identifica parentesco direto entre duas amostras. O efeito não mistura vínculos diferentes."
+      "effect": "Identifica parentesco direto entre duas amostras. O efeito não mistura vínculos diferentes.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Sangue Desperto",
+        "Sangue",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.rastro_carmesim.bruta",
@@ -2226,7 +4386,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Indica por uma hora a direção do dono da amostra, se estiver no mesmo plano. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Indica por uma hora a direção do dono da amostra, se estiver no mesmo plano. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Rastro Carmesim",
+        "Sangue",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.rastro_carmesim.refinada",
@@ -2243,7 +4418,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Indica por uma hora a direção do dono da amostra, se estiver no mesmo plano. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Indica por uma hora a direção do dono da amostra, se estiver no mesmo plano. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Rastro Carmesim",
+        "Sangue",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.rastro_carmesim.pura",
@@ -2260,7 +4450,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Indica por uma hora a direção do dono da amostra, se estiver no mesmo plano. O efeito não mistura vínculos diferentes."
+      "effect": "Indica por uma hora a direção do dono da amostra, se estiver no mesmo plano. O efeito não mistura vínculos diferentes.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Rastro Carmesim",
+        "Sangue",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.circuito_fantasma.bruta",
@@ -2275,7 +4480,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. Após o uso, aplique o risco de Cinza Bruta."
+      "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Circuito Fantasma",
+        "Tecnologia",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.circuito_fantasma.refinada",
@@ -2290,7 +4510,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. A manifestação é estável e não aplica o risco das Cinzas Brutas."
+      "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. A manifestação é estável e não aplica o risco das Cinzas Brutas.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Circuito Fantasma",
+        "Tecnologia",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     },
     {
       "id": "ash.circuito_fantasma.pura",
@@ -2305,7 +4540,22 @@
       "targetArea": "Usuário",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. O dispositivo afetado não sofre dano."
+      "effect": "Alimenta ou comanda dispositivo simples por uma cena sem fonte comum. O dispositivo afetado não sofre dano.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Circuito Fantasma",
+        "Tecnologia",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "150 Exemplos de Cinzas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
     }
   ]
 }
