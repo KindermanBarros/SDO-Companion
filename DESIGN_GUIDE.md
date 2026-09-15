@@ -117,7 +117,7 @@ Quando ativo, o design system aplica em todas as telas:
 - cards com borda reforçada, recortes assimétricos, código serial e barras de dados;
 - hierarquia editorial inspirada em zines industriais, relatórios anatômicos corrompidos e HUDs de erro;
 - superfícies parcialmente translúcidas que revelam a camada gráfica sem comprometer texto;
-- composição deliberadamente instável e animada; o custo visual faz parte do modo experimental opt-in.
+- composição visualmente instável, porém estática em repouso; movimento contínuo existe apenas durante carregamento ativo.
 
 Os assets são vetoriais/code-native e pertencem a `CybergrungeAssets.kt`, incluindo a marca anatômica
 `cybergrunge_skull_signal.xml`. Telas não devem copiar
