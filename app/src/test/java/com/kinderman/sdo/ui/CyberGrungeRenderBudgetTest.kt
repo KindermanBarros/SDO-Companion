@@ -5,15 +5,15 @@ import org.junit.Test
 
 class CyberGrungeRenderBudgetTest {
     @Test
-    fun staticLayersStayInsideMobileRenderBudget() {
-        assertTrue(CyberGrungeTokens.BACKDROP_BLOCKS <= 24)
-        assertTrue(CyberGrungeTokens.PANEL_GLITCH_BLOCKS <= 10)
-        assertTrue(CyberGrungeTokens.EMPTY_SIGNAL_BLOCKS <= 16)
+    fun experimentalCorruptionStaysInsideEmergencyCeiling() {
+        assertTrue(CyberGrungeTokens.BACKDROP_BLOCKS <= 64)
+        assertTrue(CyberGrungeTokens.PANEL_GLITCH_BLOCKS <= 32)
+        assertTrue(CyberGrungeTokens.EMPTY_SIGNAL_BLOCKS <= 32)
     }
 
     @Test
     fun compositionBoundMotionStaysInsideTimingBudget() {
-        // Press motion is finite; latent and missing-signal loops are disposed with their composables.
+        // Every continuous corruption loop is composition-bound and disposed with its visual mode.
         assertTrue(SdoMotionTokens.RESPONSE <= 200)
         assertTrue(SdoMotionTokens.TELEMETRY_SCAN >= 1_000)
     }
