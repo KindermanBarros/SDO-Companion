@@ -13,7 +13,7 @@ import com.kinderman.sdo.data.local.OperationsDao
 import com.kinderman.sdo.data.local.SessionOperationRecord
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
-import com.kinderman.sdo.data.local.migratedStructuredRecord
+import com.kinderman.sdo.data.local.CharacterMigrationManager
 import com.kinderman.sdo.domain.model.CampaignAlertSettings
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignDelivery
@@ -37,9 +37,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 
-class OfflineFirstOperationsRepository(
+class SyncedOperationsRepository(
     private val dao: OperationsDao,
     private val campaignDao: CampaignDao,
+    private val migrationManager: CharacterMigrationManager = CharacterMigrationManager(),
 ) : OperationsRepository {
     override fun observeAudit(campaignIds: Set<String>): Flow<List<SessionOperation>> =
         dao.observeAudit(campaignIds.ifEmpty { setOf("") }).map { it.map(SessionOperationRecord::toDomain) }
@@ -123,7 +124,7 @@ class OfflineFirstOperationsRepository(
             dirty = true,
         )
         if (!accept) return dao.upsertDelivery(responded.toRecord())
-        val record = dao.character(delivery.recipientCharacterId)?.migratedStructuredRecord(markDirty = true)
+        val record = dao.character(delivery.recipientCharacterId)?.let { migrationManager.migrate(it, markDirty = true) }
             ?: error("Ficha destinatária não encontrada.")
         val character = applyDelivery(record.toDomain(), delivery).copy(updatedAt = now, dirty = true)
         dao.acceptDeliveryOnce(responded.toRecord(), character.toRecord())
@@ -137,9 +138,9 @@ class OfflineFirstOperationsRepository(
         writableCampaignIds: Set<String>,
     ) {
         val store = Firebase.firestore
-        val operations = store.collection(OPERATIONS)
-        val library = store.collection(LIBRARY)
-        val deliveries = store.collection(DELIVERIES)
+        val operations = store.collection(FirestoreCollections.CAMPAIGN_AUDIT)
+        val library = store.collection(FirestoreCollections.CAMPAIGN_LIBRARY)
+        val deliveries = store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES)
         dao.dirtyOperations().filter { it.actorId == session.uid }.forEach { local ->
             // Audit entries are immutable. Reading a missing document first cannot be authorized
             // by rules that inspect resource.data, so create directly and treat an existing
@@ -190,20 +191,14 @@ class OfflineFirstOperationsRepository(
             .forEach { dao.upsertDelivery(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
     }
 
-    private companion object {
-        const val OPERATIONS = "campaignAudit"
-        const val LIBRARY = "campaignLibrary"
-        const val DELIVERIES = "campaignDeliveries"
-    }
-
     private suspend fun requireActiveCampaign(campaignId: String) {
         val campaign = campaignDao.campaign(campaignId) ?: error("Campanha não encontrada.")
         require(campaign.state == "ACTIVE") { "Campanhas arquivadas são somente leitura." }
     }
 
     private suspend fun syncAcceptedDelivery(store: com.google.firebase.firestore.FirebaseFirestore, local: CampaignDeliveryRecord) {
-        val deliveryReference = store.collection(DELIVERIES).document(local.id)
-        val characterReference = store.collection("characters").document(local.recipientCharacterId)
+        val deliveryReference = store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).document(local.id)
+        val characterReference = store.collection(FirestoreCollections.CHARACTERS).document(local.recipientCharacterId)
         val result = store.runTransaction { transaction ->
             val remoteDelivery = transaction.get(deliveryReference).toObject(CampaignDeliveryRecord::class.java)
                 ?: error("Entrega remota não encontrada.")
@@ -211,7 +206,7 @@ class OfflineFirstOperationsRepository(
             require(remoteDelivery.state != CampaignDeliveryState.DECLINED.name) { "Esta entrega já foi recusada em outro aparelho." }
             val remoteRecord = transaction.get(characterReference).toObject(com.kinderman.sdo.data.local.CharacterRecord::class.java)
                 ?: error("Ficha destinatária remota não encontrada.")
-            val remoteCharacter = remoteRecord.migratedStructuredRecord(markDirty = false).toDomain()
+            val remoteCharacter = migrationManager.migrate(remoteRecord, markDirty = false).toDomain()
             val applied = if (local.id in remoteCharacter.appliedDeliveryIds) remoteCharacter
                 else applyDelivery(remoteCharacter, local.toDomain()).copy(updatedAt = maxOf(local.updatedAt, System.currentTimeMillis()))
             transaction.set(characterReference, applied.toRecord().copy(dirty = false))

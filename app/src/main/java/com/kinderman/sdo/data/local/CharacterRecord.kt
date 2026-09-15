@@ -11,7 +11,7 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterCreationStatus
 import com.kinderman.sdo.domain.model.ConditionEffect
-import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
+import com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.MysticAbility
@@ -320,7 +320,7 @@ fun CharacterRecord.toDomain(): Character {
 }
 
 fun Character.toRecord(): CharacterRecord {
-    if (canonicalSchemaVersion != com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION) {
+    if (canonicalSchemaVersion != com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION) {
         throw com.kinderman.sdo.domain.model.DomainError.LegacyWriteRejected()
     }
     return CharacterRecord(

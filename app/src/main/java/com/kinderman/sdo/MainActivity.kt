@@ -13,6 +13,7 @@ import com.kinderman.sdo.ui.SdoFontScale
 import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.SdoThemeVariant
+import com.kinderman.sdo.ui.SdoVisualMode
 import com.kinderman.sdo.ui.SdoResponsiveFrame
 
 class MainActivity : ComponentActivity() {
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
     private fun loadPreferences(): SdoPreferences {
         val storage = getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE)
         return SdoPreferences(
+            visualMode = enumValueOrDefault(storage.getString("visual_mode", null), SdoVisualMode.STANDARD),
             theme = enumValueOrDefault(storage.getString("theme", null), SdoThemeVariant.CYAN_INDUSTRIAL),
             density = enumValueOrDefault(storage.getString("density", null), SdoContentDensity.COMFORTABLE),
             fontScale = enumValueOrDefault(storage.getString("font_scale", null), SdoFontScale.STANDARD),
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
 
     private fun savePreferences(preferences: SdoPreferences) {
         getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE).edit()
+            .putString("visual_mode", preferences.visualMode.name)
             .putString("theme", preferences.theme.name)
             .putString("density", preferences.density.name)
             .putString("font_scale", preferences.fontScale.name)

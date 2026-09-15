@@ -5,7 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class CanonicalAbilitiesTest {
+class AbilityManagementTest {
     @Test fun ashBuilderCalculatesHeritageAndLoadFromPurityAndMergesDoses() {
         val ash = MysticAbility(type = "Cinza", name = "Brasa Rubra", ashPurity = AshPurity.REFINED, catalogEntryId = "ash.brasa.refinada")
 

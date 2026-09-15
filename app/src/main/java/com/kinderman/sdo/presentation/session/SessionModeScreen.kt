@@ -377,10 +377,7 @@ private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, edi
         verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 7.dp),
     ) {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-            ) { expanded = !expanded },
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { expanded = !expanded },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {

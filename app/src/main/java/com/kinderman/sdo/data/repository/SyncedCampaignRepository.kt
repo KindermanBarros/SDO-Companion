@@ -32,7 +32,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 
-class OfflineFirstCampaignRepository(
+class SyncedCampaignRepository(
     private val dao: CampaignDao,
     private val characterDao: CharacterDao,
 ) : CampaignRepository {
@@ -121,11 +121,11 @@ class OfflineFirstCampaignRepository(
     override suspend fun delete(session: UserSession, campaign: Campaign) = syncMutex.withLock {
         requireOwner(session, requireCampaign(campaign.id))
         val store = Firebase.firestore
-        val reference = store.collection(CAMPAIGNS).document(campaign.id)
+        val reference = store.collection(FirestoreCollections.CAMPAIGNS).document(campaign.id)
         val remote = reference.get(com.google.firebase.firestore.Source.SERVER).await()
         check(remote.exists()) { "Sincronize a campanha antes de excluí-la." }
         check(session.isAdmin || remote.getString("ownerId") == session.uid) { "Sem permissão para excluir." }
-        val characters = store.collection("characters").whereEqualTo("campaignId", campaign.id)
+        val characters = store.collection(FirestoreCollections.CHARACTERS).whereEqualTo("campaignId", campaign.id)
             .get(com.google.firebase.firestore.Source.SERVER).await().documents
         check(characters.size <= 450) { "Desvincule algumas fichas antes de excluir: o limite seguro por operação é de 450 fichas." }
         val now = System.currentTimeMillis()
@@ -188,7 +188,7 @@ class OfflineFirstCampaignRepository(
         val local = dao.inviteByCode(normalized)?.toDomain()
         val invite = local ?: run {
             val store = Firebase.firestore
-            val document = store.collection(INVITES).document(normalized).get().await()
+            val document = store.collection(FirestoreCollections.CAMPAIGN_INVITES).document(normalized).get().await()
             document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)?.toDomain()
         } ?: return null
         if (!invite.isUsable()) return null
@@ -285,9 +285,9 @@ class OfflineFirstCampaignRepository(
 
     override suspend fun sync(session: UserSession) = syncMutex.withLock {
         val store = Firebase.firestore
-        val campaigns = store.collection(CAMPAIGNS)
-        val members = store.collection(MEMBERS)
-        val invites = store.collection(INVITES)
+        val campaigns = store.collection(FirestoreCollections.CAMPAIGNS)
+        val members = store.collection(FirestoreCollections.CAMPAIGN_MEMBERS)
+        val invites = store.collection(FirestoreCollections.CAMPAIGN_INVITES)
 
         val deletedIds = dao.allCampaigns().filter { it.state == CampaignState.DELETED.name }.map { it.id }.toSet()
         val dirtyCampaigns = dao.dirtyCampaigns().filterNot { it.id in deletedIds }.filter { session.isAdmin || it.ownerId == session.uid }
@@ -452,9 +452,6 @@ class OfflineFirstCampaignRepository(
     }
 
     companion object {
-        private const val CAMPAIGNS = "campaigns"
-        private const val MEMBERS = "campaignMembers"
-        private const val INVITES = "campaignInvites"
         private const val CODE_LENGTH = 8
         private const val CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     }

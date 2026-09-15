@@ -256,7 +256,7 @@ def render(entries):
               'import com.kinderman.sdo.domain.model.AbilityTimeUnit',
               'import com.kinderman.sdo.domain.model.AshSource',
               'import com.kinderman.sdo.domain.model.AshPurity', '',
-              'internal object CanonicalCatalogData {']
+              'internal object GeneratedCatalogEntries {']
     chunks = [entries[i:i + 20] for i in range(0, len(entries), 20)]
     result += ['    val entries: List<CatalogEntry> by lazy { ' + ' + '.join(f'part{i}()' for i in range(len(chunks))) + ' }']
     for index, chunk in enumerate(chunks):
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     parser.add_argument('--catalog-dir', type=Path, default=ROOT / 'catalogs')
     args = parser.parse_args()
     entries = load_catalog(args.catalog_dir)
-    output = ROOT / 'app/src/main/java/com/kinderman/sdo/domain/catalog/CanonicalCatalogData.kt'
+    output = ROOT / 'app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedCatalogEntries.kt'
     generated = render(entries)
     if args.check:
         assert output.read_text() == generated, 'Generated Kotlin differs from JSON. Run tools/generate_catalog.py.'

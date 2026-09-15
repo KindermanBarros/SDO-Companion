@@ -49,20 +49,20 @@ object ItemCreationRules {
         (legacy.filterNot { old -> structured.any { it.id == old.id } } + structured)
             .sortedWith(compareBy(ItemPart::materialTier, ItemPart::name))
 
-    val weaponMaterials = mergeMaterials(CanonicalItemCatalog.weaponMaterials, structuredMaterials(weapon = true))
-    val armorMaterials = mergeMaterials(CanonicalItemCatalog.armorMaterials, structuredMaterials(weapon = false))
-    val weaponBases = CanonicalItemCatalog.weaponBases
-    val armorBases = CanonicalItemCatalog.armorBases
-    val weaponModifications = CanonicalItemCatalog.modifications
+    val weaponMaterials = mergeMaterials(BundledItemCatalog.weaponMaterials, structuredMaterials(weapon = true))
+    val armorMaterials = mergeMaterials(BundledItemCatalog.armorMaterials, structuredMaterials(weapon = false))
+    val weaponBases = BundledItemCatalog.weaponBases
+    val armorBases = BundledItemCatalog.armorBases
+    val weaponModifications = BundledItemCatalog.modifications
         .filter { "Arma" in it.compatibleItemTypes }.map { it.part.copy(group = "Modificação de arma") }
-    val armorModifications = CanonicalItemCatalog.modifications
+    val armorModifications = BundledItemCatalog.modifications
         .filter { definition -> definition.compatibleItemTypes.any { it in setOf("Armadura", "Acessório", "Escudo") } }
         .map { it.part.copy(group = "Modificação de armadura") }
 
     fun compatibleModifications(base: ItemPart, weapon: Boolean): List<ItemPart> =
         (if (weapon) weaponModifications else armorModifications)
             .filter { modification ->
-                CanonicalItemCatalog.modifications.firstOrNull { it.part.id == modification.id }?.supports(base) == true
+                BundledItemCatalog.modifications.firstOrNull { it.part.id == modification.id }?.supports(base) == true
             }
 
     /** Keeps item modifications valid when a prerequisite or an exclusive option changes. */
@@ -87,31 +87,31 @@ object ItemCreationRules {
         return next.distinctBy(ItemPart::id)
     }
 
-    val gemComponents = CanonicalItemCatalog.gems.map { it.part }
-    val technologyComponents = CanonicalItemCatalog.technologies.map { it.part }
+    val gemComponents = BundledItemCatalog.gems.map { it.part }
+    val technologyComponents = BundledItemCatalog.technologies.map { it.part }
     val enhancementComponents = gemComponents + technologyComponents
 
     fun compatibleEnhancements(base: ItemPart, initialCreation: Boolean): List<ItemPart> {
         val itemType = when (base.group) {
             "Armadura" -> "Armadura"; "Escudo" -> "Escudo"; "Acessório" -> "Acessório"; else -> "Arma"
         }
-        return CanonicalItemCatalog.enhancements.filter { definition ->
+        return BundledItemCatalog.enhancements.filter { definition ->
             itemType in definition.compatibleItemTypes && definition.supports(base) &&
                 (!initialCreation || definition.characterCreationVisible)
         }.map(ItemComponentDefinition::part)
     }
 
     fun enhancementIsTechnology(id: String): Boolean =
-        CanonicalItemCatalog.technologies.any { it.part.id == id }
+        BundledItemCatalog.technologies.any { it.part.id == id }
 
     fun enhancementCategory(id: String): String =
-        CanonicalItemCatalog.enhancements.first { it.part.id == id }.category
+        BundledItemCatalog.enhancements.first { it.part.id == id }.category
 
     fun enhancementRarity(id: String): String =
-        CanonicalItemCatalog.enhancements.first { it.part.id == id }.part.materialTier
+        BundledItemCatalog.enhancements.first { it.part.id == id }.part.materialTier
 
     fun enhancementCreationOptions(technology: Boolean): List<ItemPart> =
-        CanonicalItemCatalog.enhancements.filter {
+        BundledItemCatalog.enhancements.filter {
             (it.kind == "TECHNOLOGY") == technology && it.characterCreationVisible
         }.map(ItemComponentDefinition::part)
 
@@ -316,10 +316,10 @@ object ItemCreationRules {
             material?.let { build(base, it, emptyList(), 0, 0) }
         }
         val regular = built.mapIndexed { index, item -> item.catalogEntry("item.regular_$index") }
-        val starterItems = CanonicalItemCatalog.catalogItems.map { definition ->
+        val starterItems = BundledItemCatalog.catalogItems.map { definition ->
             definition.part.toBuiltItem()
         }
-        val starters = CanonicalItemCatalog.catalogItems.zip(starterItems).map { (definition, item) ->
+        val starters = BundledItemCatalog.catalogItems.zip(starterItems).map { (definition, item) ->
             item.catalogEntry(definition.part.id, definition.source, definition.ruleReference)
         }
         val entries = (regular + starters).distinctBy { it.name }
@@ -335,13 +335,13 @@ object ItemCreationRules {
         catalogBundle.inventoryTemplates[catalogEntryId]
 
     internal fun componentEffects(modificationIds: List<String>, gemIds: List<String>, technologyIds: List<String> = emptyList()) =
-        (CanonicalItemCatalog.modifications.filter { it.part.id in modificationIds }.map { it.effect } +
-            CanonicalItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect } +
-            CanonicalItemCatalog.technologies.filter { it.part.id in technologyIds }.map { it.effect })
+        (BundledItemCatalog.modifications.filter { it.part.id in modificationIds }.map { it.effect } +
+            BundledItemCatalog.gems.filter { it.part.id in gemIds }.map { it.effect } +
+            BundledItemCatalog.technologies.filter { it.part.id in technologyIds }.map { it.effect })
             .distinctBy { it.id }
 
     internal fun enhancementEffects(enhancements: List<InstalledEnhancement>) =
-        CanonicalItemCatalog.enhancements
+        BundledItemCatalog.enhancements
             .filter { definition -> enhancements.any {
                 it.catalogEntryId == definition.part.id && it.durabilityCurrent > 0 &&
                     (definition.maxCharges == 0 || it.chargesCurrent > 0)
@@ -351,13 +351,13 @@ object ItemCreationRules {
 
     fun installEnhancement(item: InventoryItem, catalogEntryId: String): InventoryItem {
         require(item.installedEnhancements.size < item.enhancementSlots) { "O item não possui Espaço de Aprimoramento livre." }
-        val definition = CanonicalItemCatalog.enhancements.first { it.part.id == catalogEntryId }
+        val definition = BundledItemCatalog.enhancements.first { it.part.id == catalogEntryId }
         require(definition.kind != "TECHNOLOGY" || item.installedEnhancements.none { it.catalogEntryId == catalogEntryId }) {
             "A mesma Tecnologia não pode ser instalada duas vezes no item."
         }
         val kind = if (definition.kind == "TECHNOLOGY") EnhancementKind.TECHNOLOGY else EnhancementKind.GEM
         val installed = item.installedEnhancements + enhancementState(catalogEntryId, kind)
-        val componentIds = CanonicalItemCatalog.enhancements.mapTo(hashSetOf()) { it.effect.id }
+        val componentIds = BundledItemCatalog.enhancements.mapTo(hashSetOf()) { it.effect.id }
         return item.copy(
             installedEnhancements = installed,
             mechanicalEffects = (item.mechanicalEffects.filterNot { it.id in componentIds } + enhancementEffects(installed)).distinctBy(ItemEffect::id),
@@ -366,7 +366,7 @@ object ItemCreationRules {
 
     fun removeEnhancement(item: InventoryItem, installationId: String): InventoryItem {
         val installed = item.installedEnhancements.filterNot { it.id == installationId }
-        val componentIds = CanonicalItemCatalog.enhancements.mapTo(hashSetOf()) { it.effect.id }
+        val componentIds = BundledItemCatalog.enhancements.mapTo(hashSetOf()) { it.effect.id }
         return item.copy(
             installedEnhancements = installed,
             mechanicalEffects = (item.mechanicalEffects.filterNot { it.id in componentIds } + enhancementEffects(installed)).distinctBy(ItemEffect::id),
@@ -374,7 +374,7 @@ object ItemCreationRules {
     }
 
     private fun enhancementState(id: String, kind: EnhancementKind): InstalledEnhancement {
-        val definition = CanonicalItemCatalog.enhancements.first { it.part.id == id }
+        val definition = BundledItemCatalog.enhancements.first { it.part.id == id }
         return InstalledEnhancement(
             catalogEntryId = id,
             kind = kind,

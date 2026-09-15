@@ -34,7 +34,7 @@ object BuiltInCatalog {
         sangue_carmesim|Caminho do Sangue Carmesim|Sons do Orgulho|Sangue, sacrifício e legado.
     """)
 
-    val entries: List<CatalogEntry> = paths + CanonicalCatalogData.entries.filter {
+    val entries: List<CatalogEntry> = paths + GeneratedCatalogEntries.entries.filter {
         it.kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.ASH, CatalogKind.RUNE)
     } + CombatPowerCatalog.entries + ItemCreationRules.catalog
 }

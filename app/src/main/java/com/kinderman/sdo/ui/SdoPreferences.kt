@@ -2,6 +2,11 @@ package com.kinderman.sdo.ui
 
 val LocalSdoPreferences = androidx.compose.runtime.compositionLocalOf { SdoPreferences() }
 
+enum class SdoVisualMode(val label: String, val description: String) {
+    STANDARD("Interface padrão", "HUD técnico atual com o tema de cores selecionado."),
+    CYBERGRUNGE("Cybergrunge PUI", "Terminal de campo Obsidian Signal, assimétrico e de alto contraste."),
+}
+
 enum class SdoThemeVariant(
     val label: String,
     val description: String,
@@ -30,6 +35,7 @@ enum class SdoFontScale(val label: String, val multiplier: Float) {
 }
 
 data class SdoPreferences(
+    val visualMode: SdoVisualMode = SdoVisualMode.STANDARD,
     val theme: SdoThemeVariant = SdoThemeVariant.CYAN_INDUSTRIAL,
     val density: SdoContentDensity = SdoContentDensity.COMFORTABLE,
     val fontScale: SdoFontScale = SdoFontScale.STANDARD,

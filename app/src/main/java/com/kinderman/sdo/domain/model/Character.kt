@@ -366,7 +366,7 @@ data class Character(
     val creationCompletedAt: Long? = null,
     val creationRulesVersion: Int = 1,
     val itemSchemaVersion: Int = CURRENT_ITEM_DATA_VERSION,
-    val canonicalSchemaVersion: Int = CANONICAL_SCHEMA_VERSION,
+    val canonicalSchemaVersion: Int = CURRENT_CHARACTER_SCHEMA_VERSION,
     val migrationReviews: List<NeedsReview> = emptyList(),
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,

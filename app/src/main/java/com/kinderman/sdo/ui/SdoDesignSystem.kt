@@ -121,6 +121,19 @@ private val hudColors = darkColorScheme(
     onError = Color(0xFF040D1B),
 )
 
+private val cybergrungeColors = darkColorScheme(
+    primary = Color(0xFFE0003B), onPrimary = Color(0xFFF2E9EC),
+    primaryContainer = Color(0xFF72001F), onPrimaryContainer = Color(0xFFF2E9EC),
+    secondary = Color(0xFF00D9D0), onSecondary = Color(0xFF090608),
+    secondaryContainer = Color(0xFF063C3B), onSecondaryContainer = Color(0xFFD8FFFC),
+    tertiary = Color(0xFFFF9A00), onTertiary = Color(0xFF211000),
+    background = Color(0xFF090608), onBackground = Color(0xFFF2E9EC),
+    surface = Color(0xFF120B0F), onSurface = Color(0xFFF2E9EC),
+    surfaceVariant = Color(0xFF211017), onSurfaceVariant = Color(0xFFB9AAB0),
+    outline = Color(0xFF74666C), outlineVariant = Color(0xFF3F3036),
+    error = Color(0xFFFF315E), onError = Color(0xFF090608),
+)
+
 private val highContrastColors = darkColorScheme(
     primary = Color(0xFF63FFF1),
     onPrimary = Color.Black,
@@ -275,13 +288,6 @@ val RawDisplayFont = FontFamily(
     Font(R.font.mb_forever_raw, weight = FontWeight.Normal),
 )
 
-object SdoMotionTokens {
-    const val RESPONSE = 180
-    const val TRANSITION = 300
-    const val SIGNAL_PULSE = 700
-    const val TELEMETRY_SCAN = 1_100
-}
-
 private fun hudTypography(scale: Float) = Typography(
     displayLarge = TextStyle(
         fontFamily = RawDisplayFont,
@@ -343,7 +349,7 @@ fun SdoTheme(
     preferences: SdoPreferences = SdoPreferences(),
     content: @Composable () -> Unit,
 ) {
-    val baseColors = when (preferences.theme) {
+    val baseColors = if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) cybergrungeColors else when (preferences.theme) {
         SdoThemeVariant.CYAN_INDUSTRIAL -> hudColors
         SdoThemeVariant.GREEN_TERMINAL -> terminalColors
         SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
@@ -398,6 +404,8 @@ fun HudBackground(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val gridColor = MaterialTheme.colorScheme.surfaceVariant
+    val signalColor = MaterialTheme.colorScheme.primary
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
     Box(
         modifier
             .fillMaxSize()
@@ -410,7 +418,7 @@ fun HudBackground(
             while (x <= size.width) {
                 val isMajor = (x % major) < 0.5f
                 drawLine(
-                    color = gridColor.copy(alpha = if (isMajor) 0.40f else 0.16f),
+                    color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
                     start = Offset(x, 0f),
                     end = Offset(x, size.height),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -421,12 +429,30 @@ fun HudBackground(
             while (y <= size.height) {
                 val isMajor = (y % major) < 0.5f
                 drawLine(
-                    color = gridColor.copy(alpha = if (isMajor) 0.40f else 0.16f),
+                    color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
                 )
                 y += minor
+            }
+            if (cybergrunge) {
+                drawLine(
+                    color = signalColor.copy(alpha = 0.28f),
+                    start = Offset(size.width * .055f, 0f),
+                    end = Offset(size.width * .055f, size.height),
+                    strokeWidth = 2.dp.toPx(),
+                )
+                var slash = -size.height
+                while (slash < size.width) {
+                    drawLine(
+                        color = signalColor.copy(alpha = SdoOpacityTokens.GRUNGE),
+                        start = Offset(slash, size.height),
+                        end = Offset(slash + size.height, 0f),
+                        strokeWidth = 8.dp.toPx(),
+                    )
+                    slash += 96.dp.toPx()
+                }
             }
         }
         content()
@@ -451,15 +477,16 @@ fun TechPanel(
     }
 
     val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
+    val panelShape = SdoShapeTokens.panel
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = resolvedAccent.copy(alpha = 0.72f),
-                shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
+                color = resolvedAccent.copy(alpha = SdoOpacityTokens.BORDER),
+                shape = panelShape,
             ),
-        shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
+        shape = panelShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
             contentColor = MaterialTheme.colorScheme.onSurface,

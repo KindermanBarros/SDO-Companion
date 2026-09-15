@@ -103,7 +103,7 @@ class ItemCreationRulesTest {
 
     @Test fun catalogsMeetMinimumCoverageAndTraitsHaveDescriptions() {
         assertTrue(GeneratedStructuredItemCatalog.materials.size >= 30)
-        assertTrue(CanonicalItemCatalog.modifications.size >= 30)
+        assertTrue(BundledItemCatalog.modifications.size >= 30)
         assertTrue(GeneratedStructuredItemCatalog.traits.all { it.description.isNotBlank() })
     }
 
@@ -203,7 +203,7 @@ class ItemCreationRulesTest {
         assertTrue(!item.effect.contains("Espaços de Gema"))
         assertEquals(1, item.enhancementSlots)
         assertEquals(gem.id, item.installedEnhancements.single().catalogEntryId)
-        val expectedEffect = CanonicalItemCatalog.gems.first { it.part.id == gem.id }.effect
+        val expectedEffect = BundledItemCatalog.gems.first { it.part.id == gem.id }.effect
         assertEquals(expectedEffect.type, item.mechanicalEffects.single().type)
         assertEquals(expectedEffect.target, item.mechanicalEffects.single().target)
         assertEquals("faca", item.baseId)
@@ -211,14 +211,14 @@ class ItemCreationRulesTest {
     }
 
     @Test fun runtimeCatalogIsLoadedDirectlyFromCanonicalJson() {
-        val itemDefinitionCount = CanonicalItemCatalog.weaponMaterials.size +
-            CanonicalItemCatalog.armorMaterials.size + CanonicalItemCatalog.weaponBases.size +
-            CanonicalItemCatalog.armorBases.size + CanonicalItemCatalog.catalogItems.size
+        val itemDefinitionCount = BundledItemCatalog.weaponMaterials.size +
+            BundledItemCatalog.armorMaterials.size + BundledItemCatalog.weaponBases.size +
+            BundledItemCatalog.armorBases.size + BundledItemCatalog.catalogItems.size
 
         assertEquals(161, itemDefinitionCount)
-        assertEquals(35, CanonicalItemCatalog.modifications.size)
-        assertEquals(30, CanonicalItemCatalog.gems.size)
-        assertEquals(30, CanonicalItemCatalog.technologies.size)
+        assertEquals(35, BundledItemCatalog.modifications.size)
+        assertEquals(30, BundledItemCatalog.gems.size)
+        assertEquals(30, BundledItemCatalog.technologies.size)
     }
 
 

@@ -1,6 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.RaceCatalog
@@ -140,11 +142,13 @@ internal fun RacePickerDialog(
 @Composable
 private fun PowerChoice(power: RacialPower, checked: Boolean, onChecked: (Boolean) -> Unit) {
     SdoInsetCard(
-        modifier = Modifier.clickable { onChecked(!checked) },
+        modifier = Modifier
+            .heightIn(min = 48.dp)
+            .toggleable(value = checked, role = Role.Checkbox, onValueChange = onChecked),
         accent = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
     ) {
         Row(verticalAlignment = Alignment.Top) {
-            Checkbox(checked, onCheckedChange = { onChecked(it) })
+            Checkbox(checked, onCheckedChange = null)
             Column(Modifier.padding(top = 10.dp)) {
                 Text(power.name, color = MaterialTheme.colorScheme.onSurface)
                 Text(power.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)

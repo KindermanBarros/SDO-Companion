@@ -13,9 +13,9 @@ import org.junit.Test
 
 class EnhancementRulesTest {
     @Test fun catalogsProvideThirtyFunctionalEntriesOfEachKind() {
-        assertEquals(30, CanonicalItemCatalog.gems.size)
-        assertEquals(30, CanonicalItemCatalog.technologies.size)
-        assertTrue(CanonicalItemCatalog.enhancements.all { it.effect.description.isNotBlank() })
+        assertEquals(30, BundledItemCatalog.gems.size)
+        assertEquals(30, BundledItemCatalog.technologies.size)
+        assertTrue(BundledItemCatalog.enhancements.all { it.effect.description.isNotBlank() })
     }
 
     @Test fun gemAndTechnologyShareTheSameCapacity() {

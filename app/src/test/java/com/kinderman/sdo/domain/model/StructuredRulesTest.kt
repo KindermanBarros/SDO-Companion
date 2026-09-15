@@ -1,7 +1,7 @@
 package com.kinderman.sdo.domain.model
 
 import com.kinderman.sdo.data.local.CharacterRecord
-import com.kinderman.sdo.data.local.migratedStructuredRecord
+import com.kinderman.sdo.data.local.migratedRecord
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import java.util.concurrent.ConcurrentHashMap
@@ -14,7 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-class CanonicalContractsTest {
+class StructuredRulesTest {
     private val abilityRef = CatalogReference(AbilityCatalogId("ability.fire"), 1)
     private val characterSource = Source.narrative(NarrativeSourceId("character-1"))
 
@@ -55,8 +55,8 @@ class CanonicalContractsTest {
     }
 
     @Test fun ambiguousLegacyTextBecomesStableNeedsReview() {
-        val first = CanonicalMigration.migrateMechanicalText("Descrição", "+2 em testes")
-        val second = CanonicalMigration.migrateMechanicalText(first.value, first.reviews.single().legacyValue)
+        val first = LegacyMechanicsMigration.migrateMechanicalText("Descrição", "+2 em testes")
+        val second = LegacyMechanicsMigration.migrateMechanicalText(first.value, first.reviews.single().legacyValue)
         assertEquals(MigrationState.NEEDS_REVIEW, first.state)
         assertEquals(first, second)
         assertEquals("Descrição", first.value)
@@ -375,11 +375,11 @@ class CanonicalContractsTest {
         // Create initial character
         val character = Character(
             name = "Valente",
-            canonicalSchemaVersion = CANONICAL_SCHEMA_VERSION,
+            canonicalSchemaVersion = CURRENT_CHARACTER_SCHEMA_VERSION,
             powers = listOf(Power(name = "Investida", origin = "Guerreiro")),
         )
         val record = character.toRecord()
-        assertEquals(CANONICAL_SCHEMA_VERSION, record.canonicalSchemaVersion)
+        assertEquals(CURRENT_CHARACTER_SCHEMA_VERSION, record.canonicalSchemaVersion)
         // Derived maximums are zeroed on record to avoid persisting authority
         assertEquals(0, record.life.maximum)
         assertEquals(emptyMap<String, Int>(), record.protections)
@@ -392,7 +392,7 @@ class CanonicalContractsTest {
         // Editing character advances updated state with canonical invariants
         val edited = reloaded.copy(name = "Valente Renascido").toRecord()
         assertEquals("Valente Renascido", edited.toDomain().name)
-        assertEquals(CANONICAL_SCHEMA_VERSION, edited.canonicalSchemaVersion)
+        assertEquals(CURRENT_CHARACTER_SCHEMA_VERSION, edited.canonicalSchemaVersion)
     }
 
     @Test fun concurrentBatchMigrationPreservesDataWithoutLoss() {
@@ -412,7 +412,7 @@ class CanonicalContractsTest {
         val migratedResults = ConcurrentHashMap<String, CharacterRecord>()
         records.forEach { record ->
             pool.submit {
-                val migrated = record.migratedStructuredRecord(markDirty = true)
+                val migrated = record.migratedRecord(markDirty = true)
                 migratedResults[record.id] = migrated
             }
         }
@@ -423,7 +423,7 @@ class CanonicalContractsTest {
         records.forEach { record ->
             val migrated = migratedResults[record.id]
             assertNotNull(migrated)
-            assertEquals(CANONICAL_SCHEMA_VERSION, migrated!!.canonicalSchemaVersion)
+            assertEquals(CURRENT_CHARACTER_SCHEMA_VERSION, migrated!!.canonicalSchemaVersion)
             assertEquals(record.name, migrated.name)
             assertEquals(record.ownerId, migrated.ownerId)
         }
@@ -462,7 +462,7 @@ class CanonicalContractsTest {
             canonicalSchemaVersion = 0,
         )
         expect<DomainError.LegacyWriteRejected> {
-            if (legacyCharacter.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) {
+            if (legacyCharacter.canonicalSchemaVersion != CURRENT_CHARACTER_SCHEMA_VERSION) {
                 throw DomainError.LegacyWriteRejected()
             }
         }

@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-class OfflineFirstOwnerRepository(
+class SyncedOwnerRepository(
     private val dao: OwnerDao,
 ) : OwnerRepository {
     override fun observe(): Flow<List<UserProfile>> =
@@ -21,7 +21,7 @@ class OfflineFirstOwnerRepository(
     override suspend fun sync(session: UserSession) {
         if (!session.isAdmin) return
         val store = Firebase.firestore
-        val owners = store.collection("users").get().await().documents.map { document ->
+        val owners = store.collection(FirestoreCollections.USERS).get().await().documents.map { document ->
             OwnerRecord(
                 uid = document.id,
                 email = document.getString("email").orEmpty(),

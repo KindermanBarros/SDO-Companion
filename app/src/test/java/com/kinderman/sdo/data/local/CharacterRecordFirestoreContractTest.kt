@@ -86,7 +86,7 @@ class CharacterRecordFirestoreContractTest {
 
         assertEquals(draft, converters.stringToItemCreationDraft(converters.itemCreationDraftToString(draft)))
         assertEquals(draft, CharacterRecord(itemCreationDraft = draft, creationRulesVersion = 2)
-            .migratedStructuredRecord(markDirty = false).toDomain().toRecord().itemCreationDraft)
+            .migratedRecord(markDirty = false).toDomain().toRecord().itemCreationDraft)
     }
 
     @Test fun knowledgeMilestoneRewardsSurviveRoomConversion() {
@@ -100,7 +100,7 @@ class CharacterRecordFirestoreContractTest {
     @Test fun legacyEmbeddedRacialBonusMovesToDerivedModifierOnce() {
         val attributes = defaultAttributes().map { if (it.acronym == "CAR") it.copy(value = 3) else it }
         val migrated = CharacterRecord(race = "Humanos", raceAttribute = "CAR", attributes = attributes, creationRulesVersion = 1)
-            .migratedStructuredRecord(markDirty = false).toDomain()
+            .migratedRecord(markDirty = false).toDomain()
 
         assertEquals(2, migrated.attributes.first { it.acronym == "CAR" }.value)
         assertEquals(3, migrated.attributeTotal("CAR"))
@@ -134,7 +134,7 @@ class CharacterRecordFirestoreContractTest {
             category = "Acessório",
         )
 
-        val record = CharacterRecord(inventory = listOf(legacy)).migratedStructuredRecord(markDirty = false)
+        val record = CharacterRecord(inventory = listOf(legacy)).migratedRecord(markDirty = false)
         val migrated = record.toDomain().toRecord()
 
         assertEquals("Objeto personalizado", migrated.inventory.single().name)
@@ -155,7 +155,7 @@ class CharacterRecordFirestoreContractTest {
         assertNotNull(fieldAnnotation)
         assertEquals(456L, CharacterRecord(lastSyncedAt = 456L).toDomain().lastSyncedAt)
         assertEquals(456L, CharacterRecord(lastSyncedAt = 456L)
-            .migratedStructuredRecord(markDirty = false).toDomain().toRecord().lastSyncedAt)
+            .migratedRecord(markDirty = false).toDomain().toRecord().lastSyncedAt)
     }
 
     @Test
@@ -174,7 +174,7 @@ class CharacterRecordFirestoreContractTest {
     @Test
     fun legacyNotesAreMigratedToTheFirstPersonalRecord() {
         val character = CharacterRecord(id = "character-1", notes = "Pista antiga")
-            .migratedStructuredRecord(markDirty = false).toDomain()
+            .migratedRecord(markDirty = false).toDomain()
 
         assertEquals(1, character.personalNotes.size)
         assertEquals("Registro Pessoal 1", character.personalNotes.single().title)
@@ -187,7 +187,7 @@ class CharacterRecordFirestoreContractTest {
         val markers = listOf("delivery-a", "delivery-b")
 
         assertEquals(markers, CharacterRecord(appliedDeliveryIds = markers)
-            .migratedStructuredRecord(markDirty = false).toDomain().toRecord().appliedDeliveryIds)
+            .migratedRecord(markDirty = false).toDomain().toRecord().appliedDeliveryIds)
     }
 
     @Test
@@ -232,7 +232,7 @@ class CharacterRecordFirestoreContractTest {
                 "Mental" to 10,
                 "Arcana" to 10,
             ),
-        ).migratedStructuredRecord(markDirty = false).toDomain()
+        ).migratedRecord(markDirty = false).toDomain()
 
         assertEquals(9, character.protectionAdjustments.getValue("Geral"))
         assertEquals(0, character.protectionAdjustments.getValue("Esquiva"))
@@ -259,6 +259,6 @@ class CharacterRecordFirestoreContractTest {
         val record = CharacterRecord(race = "Humanos", subRace = "Oráculo", raceAttribute = "AGI")
 
         assertEquals("AGI", record.toDomain().raceAttribute)
-        assertEquals("AGI", record.migratedStructuredRecord(markDirty = false).toDomain().toRecord().raceAttribute)
+        assertEquals("AGI", record.migratedRecord(markDirty = false).toDomain().toRecord().raceAttribute)
     }
 }

@@ -260,13 +260,13 @@ private fun SheetPageContent(
 
             SheetPage.POWERS -> item("powers") {
                 com.kinderman.sdo.ui.CollapsibleSection("Poderes", "08") {
-                    CanonicalAbilitySection(character, catalog.filter { it.kind == CatalogKind.POWER }, setOf(AbilityKind.POWER), editable, onChange)
+                    AbilitySection(character, catalog.filter { it.kind == CatalogKind.POWER }, setOf(AbilityKind.POWER), editable, onChange)
                 }
             }
 
             SheetPage.MYSTIC -> item("mystic") {
                 com.kinderman.sdo.ui.CollapsibleSection("Magias // Runas // Cinzas", "09") {
-                    CanonicalAbilitySection(
+                    AbilitySection(
                         character,
                         catalog.filter { it.kind == CatalogKind.MAGIC || it.kind == CatalogKind.ASH || it.kind == CatalogKind.RUNE },
                         setOf(AbilityKind.SPELL, AbilityKind.RUNE, AbilityKind.ASH),
