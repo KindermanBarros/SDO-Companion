@@ -35,6 +35,7 @@ import com.kinderman.sdo.ui.SdoTogglePanel
 import com.kinderman.sdo.ui.CyberPanel
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.ExperimentalBadge
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -99,6 +100,9 @@ fun SettingsScreen(
                     )
                 }
                 item {
+                    if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
+                        ExperimentalBadge()
+                    }
                     SdoChoicePanel(
                         title = "MODO VISUAL",
                         options = SdoVisualMode.entries,

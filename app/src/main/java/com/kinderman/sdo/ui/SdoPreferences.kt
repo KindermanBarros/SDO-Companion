@@ -4,7 +4,7 @@ val LocalSdoPreferences = androidx.compose.runtime.compositionLocalOf { SdoPrefe
 
 enum class SdoVisualMode(val label: String, val description: String) {
     STANDARD("Interface padrão", "HUD técnico atual com o tema de cores selecionado."),
-    CYBERGRUNGE("Cybergrunge PUI", "Terminal de campo Obsidian Signal, assimétrico e de alto contraste."),
+    CYBERGRUNGE("Cybergrunge PUI · EXPERIMENTAL", "Interface alternativa de arquivo corrompido, colagem técnica e alto contraste."),
 }
 
 enum class SdoThemeVariant(

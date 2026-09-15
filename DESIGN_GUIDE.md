@@ -106,6 +106,21 @@ permissões ou comportamento:
 - textos, valores e controles nunca recebem distorção ou glitch permanente;
 - alvos interativos usam `SdoSpacingTokens.minimumTouchTarget` (48 dp), inclusive em densidade compacta.
 
+O modo é identificado como **EXPERIMENTAL** e constitui uma UI alternativa, não uma simples troca
+de cores. Quando ativo, o design system aplica em todas as telas:
+
+- scanlines estáticas, blocos de corrupção e fraturas digitais desenhados em Compose;
+- mira/sigilo técnico, trilhos de sinal e carimbos de sistema nas margens;
+- cards com borda reforçada, recortes assimétricos, código serial e barras de dados;
+- hierarquia editorial inspirada em zines industriais, relatórios anatômicos corrompidos e HUDs de erro;
+- superfícies parcialmente translúcidas que revelam a camada gráfica sem comprometer texto;
+- composição determinística e sem animação contínua, preservando bateria e fluidez no Android.
+
+Os assets são vetoriais/code-native e pertencem a `CyberGrungeAssets.kt`. Telas não devem copiar
+esses desenhos: `HudBackground`, `TechPanel`, `SdoInsetCard` e os demais componentes do design
+system propagam a linguagem visual. Ruído nunca pode atravessar campos de texto nem reduzir o
+contraste mínimo do conteúdo funcional.
+
 ### Card de campanha
 
 O card inteiro deve funcionar como cabeçalho de expansão, não somente o ícone:

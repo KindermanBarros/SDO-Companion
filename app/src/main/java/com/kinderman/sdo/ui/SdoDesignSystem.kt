@@ -455,6 +455,10 @@ fun HudBackground(
                 }
             }
         }
+        if (cybergrunge) {
+            CyberGrungeBackdrop()
+            CyberGrungeEdgeMarks()
+        }
         content()
     }
 }
@@ -478,17 +482,18 @@ fun TechPanel(
 
     val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
     val panelShape = SdoShapeTokens.panel
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
-                width = 1.dp,
+                width = if (cybergrunge) 2.dp else 1.dp,
                 color = resolvedAccent.copy(alpha = SdoOpacityTokens.BORDER),
                 shape = panelShape,
             ),
         shape = panelShape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (cybergrunge) 0.9f else 0.96f),
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
@@ -496,8 +501,10 @@ fun TechPanel(
             Column(
                 modifier = Modifier.padding(if (compactCards) 11.dp else 16.dp),
                 verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
-                content = content,
-            )
+            ) {
+                if (cybergrunge) CyberGrungePanelChrome()
+                content()
+            }
         }
     }
 }
@@ -510,7 +517,7 @@ fun SdoInsetCard(
     verticalSpacing: androidx.compose.ui.unit.Dp = 7.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
+    val shape = SdoShapeTokens.control
     Column(
         modifier = modifier
             .fillMaxWidth()
