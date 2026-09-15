@@ -32,7 +32,7 @@ import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
-internal fun CanonicalAbilitySection(
+internal fun AbilitySection(
     character: Character,
     catalog: List<CatalogEntry>,
     kinds: Set<AbilityKind>,
@@ -45,7 +45,7 @@ internal fun CanonicalAbilitySection(
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         val powersOnly = kinds == setOf(AbilityKind.POWER)
         SectionHeader(if (powersOnly) "08" else "09", if (powersOnly) "Poderes" else "Magias // Runas // Cinzas")
-        abilities.forEach { ability -> CanonicalAbilityEditor(character, ability, kinds, enabled, onChange) }
+        abilities.forEach { ability -> AbilityEditor(character, ability, kinds, enabled, onChange) }
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             AddButton(
                 if (powersOnly) "Selecionar poder" else "Selecionar místico",
@@ -90,7 +90,7 @@ internal fun CanonicalAbilitySection(
 }
 
 @Composable
-private fun CanonicalAbilityEditor(character: Character, ability: Ability, allowedKinds: Set<AbilityKind>, enabled: Boolean, onChange: (Character) -> Unit) {
+private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: Set<AbilityKind>, enabled: Boolean, onChange: (Character) -> Unit) {
     val published = ability.definition != null
     var expanded by rememberSaveable(ability.id) { mutableStateOf(false) }
     val isRacial = ability.source?.kind == SourceKind.Race
@@ -150,7 +150,7 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
             } },
         )
         TwoFields(
-            { field -> CanonicalCostField(ability, mechanicsEditable, field, ::update) },
+            { field -> AbilityCostField(ability, mechanicsEditable, field, ::update) },
             { field -> ChoiceField("Gatilho", triggerLabel(trigger), triggerOptions, mechanicsEditable, field) { selected ->
                 val operations = ability.mechanicalEffect?.operations.orEmpty()
                 val effect = operations.takeIf { it.isNotEmpty() }?.let { MechanicalEffect(it, ability.mechanicalEffect?.usage, triggerFrom(selected)) }
@@ -160,7 +160,7 @@ private fun CanonicalAbilityEditor(character: Character, ability: Ability, allow
         HudTextField("Descrição", ability.effect, multiline = true, enabled = mechanicsEditable) { update(ability.copy(effect = it)) }
         Text("OPERAÇÕES ESTRUTURADAS", color = MaterialTheme.colorScheme.primary)
         ability.mechanicalEffect?.operations.orEmpty().forEachIndexed { index, operation ->
-            CanonicalOperationEditor(operation, mechanicsEditable, { replacement ->
+            AbilityOperationEditor(operation, mechanicsEditable, { replacement ->
                 val operations = ability.mechanicalEffect!!.operations.mapIndexed { current, value -> if (current == index) replacement else value }
                 update(ability.copy(mechanicalEffect = MechanicalEffect(operations, ability.mechanicalEffect.usage, ability.mechanicalEffect.trigger)))
             }, {
@@ -195,7 +195,7 @@ private fun Ability.compactSummary(): String {
 }
 
 @Composable
-private fun CanonicalOperationEditor(operation: EffectOperation, enabled: Boolean, update: (EffectOperation) -> Unit, remove: () -> Unit) {
+private fun AbilityOperationEditor(operation: EffectOperation, enabled: Boolean, update: (EffectOperation) -> Unit, remove: () -> Unit) {
     val kinds = EffectOperationKind.entries
     Column(Modifier.fillMaxWidth().padding(start = 8.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
         ChoiceField("Tipo", operation.kind, kinds, enabled) { kind -> update(when (kind) {
@@ -239,7 +239,7 @@ private fun FixedAmountField(amount: DiceOrNumber, enabled: Boolean, update: (Di
 }
 
 @Composable
-private fun CanonicalCostField(ability: Ability, enabled: Boolean, modifier: Modifier = Modifier, update: (Ability) -> Unit) {
+private fun AbilityCostField(ability: Ability, enabled: Boolean, modifier: Modifier = Modifier, update: (Ability) -> Unit) {
     val amount = ability.cost.amount
     ChoiceField("Custo", amount.coerceIn(0, 20), (0..20).toList(), enabled, modifier) { value ->
         val cost = when (ability.kind) {

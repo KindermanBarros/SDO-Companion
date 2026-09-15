@@ -19,7 +19,7 @@ internal fun InventoryItem.normalized(): InventoryItem? {
     val knownMaterialIds = (ItemCreationRules.weaponMaterials + ItemCreationRules.armorMaterials).mapTo(hashSetOf(), ItemPart::id)
     val normalizedSecondaryMaterialId = secondaryMaterialId.takeIf { it != materialId && it in knownMaterialIds }.orEmpty()
     val durabilityWasNotDefined = durabilityMax <= 0
-    val validEnhancementIds = CanonicalItemCatalog.enhancements.mapTo(hashSetOf()) { it.part.id }
+    val validEnhancementIds = BundledItemCatalog.enhancements.mapTo(hashSetOf()) { it.part.id }
     val cleanedEnhancements = installedEnhancements.filter {
         it.catalogEntryId in validEnhancementIds && it.durabilityMax > 0 && it.durabilityCurrent > 0
     }.distinctBy { it.catalogEntryId }

@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 
-class OfflineFirstOperationsRepository(
+class SyncedOperationsRepository(
     private val dao: OperationsDao,
     private val campaignDao: CampaignDao,
 ) : OperationsRepository {
@@ -137,9 +137,9 @@ class OfflineFirstOperationsRepository(
         writableCampaignIds: Set<String>,
     ) {
         val store = Firebase.firestore
-        val operations = store.collection(OPERATIONS)
-        val library = store.collection(LIBRARY)
-        val deliveries = store.collection(DELIVERIES)
+        val operations = store.collection(FirestoreCollections.CAMPAIGN_AUDIT)
+        val library = store.collection(FirestoreCollections.CAMPAIGN_LIBRARY)
+        val deliveries = store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES)
         dao.dirtyOperations().filter { it.actorId == session.uid }.forEach { local ->
             // Audit entries are immutable. Reading a missing document first cannot be authorized
             // by rules that inspect resource.data, so create directly and treat an existing
@@ -190,20 +190,14 @@ class OfflineFirstOperationsRepository(
             .forEach { dao.upsertDelivery(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
     }
 
-    private companion object {
-        const val OPERATIONS = "campaignAudit"
-        const val LIBRARY = "campaignLibrary"
-        const val DELIVERIES = "campaignDeliveries"
-    }
-
     private suspend fun requireActiveCampaign(campaignId: String) {
         val campaign = campaignDao.campaign(campaignId) ?: error("Campanha não encontrada.")
         require(campaign.state == "ACTIVE") { "Campanhas arquivadas são somente leitura." }
     }
 
     private suspend fun syncAcceptedDelivery(store: com.google.firebase.firestore.FirebaseFirestore, local: CampaignDeliveryRecord) {
-        val deliveryReference = store.collection(DELIVERIES).document(local.id)
-        val characterReference = store.collection("characters").document(local.recipientCharacterId)
+        val deliveryReference = store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).document(local.id)
+        val characterReference = store.collection(FirestoreCollections.CHARACTERS).document(local.recipientCharacterId)
         val result = store.runTransaction { transaction ->
             val remoteDelivery = transaction.get(deliveryReference).toObject(CampaignDeliveryRecord::class.java)
                 ?: error("Entrega remota não encontrada.")

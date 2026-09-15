@@ -7,10 +7,10 @@ import com.google.firebase.FirebaseApp
 import com.kinderman.sdo.data.auth.FirebaseAuthRepository
 import com.kinderman.sdo.data.local.AppDatabase
 import com.kinderman.sdo.data.repository.LocalCatalogRepository
-import com.kinderman.sdo.data.repository.OfflineFirstCampaignRepository
-import com.kinderman.sdo.data.repository.OfflineFirstCharacterRepository
-import com.kinderman.sdo.data.repository.OfflineFirstOwnerRepository
-import com.kinderman.sdo.data.repository.OfflineFirstOperationsRepository
+import com.kinderman.sdo.data.repository.SyncedCampaignRepository
+import com.kinderman.sdo.data.repository.SyncedCharacterRepository
+import com.kinderman.sdo.data.repository.SyncedOwnerRepository
+import com.kinderman.sdo.data.repository.SyncedOperationsRepository
 import com.kinderman.sdo.domain.repository.AuthRepository
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
@@ -67,11 +67,11 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_27_28,
             )
             .build()
-        characterRepository = OfflineFirstCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao())
-        ownerRepository = OfflineFirstOwnerRepository(db.ownerDao())
+        characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao())
+        ownerRepository = SyncedOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
-        campaignRepository = OfflineFirstCampaignRepository(db.campaignDao(), db.characterDao())
-        operationsRepository = OfflineFirstOperationsRepository(db.operationsDao(), db.campaignDao())
+        campaignRepository = SyncedCampaignRepository(db.campaignDao(), db.characterDao())
+        operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao())
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {
             catalogRepository.refreshBundledCatalog()

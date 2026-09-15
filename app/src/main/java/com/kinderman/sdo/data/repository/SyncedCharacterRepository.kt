@@ -39,7 +39,7 @@ private sealed interface CharacterSyncWrite {
     data class Conflict(val value: CharacterSyncConflict) : CharacterSyncWrite
 }
 
-class OfflineFirstCharacterRepository(
+class SyncedCharacterRepository(
     private val dao: CharacterDao,
     private val ownerDao: OwnerDao,
     private val campaignDao: CampaignDao,
@@ -160,9 +160,9 @@ class OfflineFirstCharacterRepository(
 
     override suspend fun sync(session: UserSession): List<CharacterSyncConflict> = syncMutex.withLock {
         val store = Firebase.firestore
-        val collection = store.collection("characters")
-        val campaigns = store.collection("campaigns")
-        val members = store.collection("campaignMembers")
+        val collection = store.collection(FirestoreCollections.CHARACTERS)
+        val campaigns = store.collection(FirestoreCollections.CAMPAIGNS)
+        val members = store.collection(FirestoreCollections.CAMPAIGN_MEMBERS)
         val conflicts = mutableListOf<CharacterSyncConflict>()
 
         val remoteById = linkedMapOf<String, CharacterRecord>()

@@ -14,7 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-class CanonicalContractsTest {
+class StructuredRulesTest {
     private val abilityRef = CatalogReference(AbilityCatalogId("ability.fire"), 1)
     private val characterSource = Source.narrative(NarrativeSourceId("character-1"))
 

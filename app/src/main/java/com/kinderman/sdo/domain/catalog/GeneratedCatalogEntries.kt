@@ -13,7 +13,7 @@ import com.kinderman.sdo.domain.model.AbilityTimeUnit
 import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.AshPurity
 
-internal object CanonicalCatalogData {
+internal object GeneratedCatalogEntries {
     val entries: List<CatalogEntry> by lazy { part0() + part1() + part2() + part3() + part4() + part5() + part6() + part7() + part8() + part9() + part10() + part11() + part12() + part13() + part14() + part15() + part16() + part17() + part18() + part19() + part20() + part21() + part22() + part23() + part24() }
     private fun part0(): List<CatalogEntry> = listOf(
         CatalogEntry(

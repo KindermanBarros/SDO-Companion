@@ -10,7 +10,7 @@ import com.kinderman.sdo.domain.model.synchronizeItemPowers
 
 /** Creates a loose enhancement. Installation and removal move this same instance in and out of a host item. */
 fun enhancementInventoryItem(catalogEntryId: String, initialCreation: Boolean = false): InventoryItem {
-    val definition = CanonicalItemCatalog.enhancements.first { it.part.id == catalogEntryId }
+    val definition = BundledItemCatalog.enhancements.first { it.part.id == catalogEntryId }
     return InventoryItem(
         name = definition.part.name,
         category = if (definition.kind == "TECHNOLOGY") "Tecnologia" else "Gema",
@@ -33,7 +33,7 @@ fun Character.installEnhancement(sourceItemId: String, hostItemId: String): Char
     val source = inventory.first { it.id == sourceItemId && it.category in setOf("Gema", "Tecnologia") }
     val host = inventory.first { it.id == hostItemId }
     require(host.installedEnhancements.size < host.enhancementSlots) { "O item não possui espaço livre." }
-    val definition = CanonicalItemCatalog.enhancements.first { it.part.id == source.catalogEntryId }
+    val definition = BundledItemCatalog.enhancements.first { it.part.id == source.catalogEntryId }
     val base = (ItemCreationRules.weaponBases + ItemCreationRules.armorBases).firstOrNull { it.id == host.baseId }
     val compatibleIds = base?.let { ItemCreationRules.compatibleEnhancements(it, initialCreation = false).mapTo(hashSetOf()) { part -> part.id } }.orEmpty()
     require(source.catalogEntryId in compatibleIds) { "O aprimoramento não é compatível com este item." }
@@ -59,7 +59,7 @@ fun Character.installEnhancement(sourceItemId: String, hostItemId: String): Char
 fun Character.removeEnhancement(hostItemId: String, installationId: String): Character {
     val host = inventory.first { it.id == hostItemId }
     val installed = host.installedEnhancements.first { it.id == installationId }
-    val definition = CanonicalItemCatalog.enhancements.first { it.part.id == installed.catalogEntryId }
+    val definition = BundledItemCatalog.enhancements.first { it.part.id == installed.catalogEntryId }
     val loose = enhancementInventoryItem(installed.catalogEntryId).copy(
         id = installed.id,
         durabilityCurrent = installed.durabilityCurrent,
@@ -77,7 +77,7 @@ fun Character.failEnhancementOperation(hostItemId: String, enhancementInstanceId
     val installed = host.installedEnhancements.firstOrNull { it.id == enhancementInstanceId }
     val loose = inventory.firstOrNull { it.id == enhancementInstanceId }
     val catalogId = installed?.catalogEntryId ?: loose?.catalogEntryId ?: error("Aprimoramento não encontrado.")
-    val definition = CanonicalItemCatalog.enhancements.first { it.part.id == catalogId }
+    val definition = BundledItemCatalog.enhancements.first { it.part.id == catalogId }
     val damagedInstalled = installed?.copy(
         durabilityCurrent = (installed.durabilityCurrent - definition.failureEnhancementDamage).coerceAtLeast(0),
     )
@@ -89,7 +89,7 @@ fun Character.failEnhancementOperation(hostItemId: String, enhancementInstanceId
         itemCondition = if (hostDurability == 0) ItemCondition.BROKEN else host.itemCondition,
         installedEnhancements = remainingInstalled,
         mechanicalEffects = ItemCreationRules.enhancementEffects(remainingInstalled) + host.mechanicalEffects.filterNot { effect ->
-            CanonicalItemCatalog.enhancements.any { it.effect.id == effect.id }
+            BundledItemCatalog.enhancements.any { it.effect.id == effect.id }
         },
     )
     val damagedLoose = loose?.copy(durabilityCurrent = (loose.durabilityCurrent - definition.failureEnhancementDamage).coerceAtLeast(0))
@@ -123,7 +123,7 @@ private fun Character.updateEnhancement(
         item.copy(
             installedEnhancements = updated,
             mechanicalEffects = item.mechanicalEffects.filterNot { effect ->
-                CanonicalItemCatalog.enhancements.any { it.effect.id == effect.id }
+                BundledItemCatalog.enhancements.any { it.effect.id == effect.id }
             } + ItemCreationRules.enhancementEffects(updated),
         )
     }

@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.kinderman.sdo.data.repository.OfflineFirstCharacterRepository
+import com.kinderman.sdo.data.repository.SyncedCharacterRepository
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
 import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.InventoryItem
@@ -182,13 +182,13 @@ class AppDatabaseMigrationInstrumentedTest {
                 inventory = listOf(InventoryItem(id = "weapon", name = "Lâmina", state = "W", mechanicalEffects = listOf(effect))),
             ),
         )
-        var repository = OfflineFirstCharacterRepository(database.characterDao(), database.ownerDao(), database.campaignDao())
+        var repository = SyncedCharacterRepository(database.characterDao(), database.ownerDao(), database.campaignDao())
         assertNotNull(repository.observeOne("character").first()!!.powers.singleOrNull { it.linkedItemId == "weapon" })
         assertEquals(CURRENT_ITEM_DATA_VERSION, database.characterDao().get("character")!!.itemSchemaVersion)
         database.close()
 
         database = openRoom(name)
-        repository = OfflineFirstCharacterRepository(database.characterDao(), database.ownerDao(), database.campaignDao())
+        repository = SyncedCharacterRepository(database.characterDao(), database.ownerDao(), database.campaignDao())
         assertNotNull(repository.observeOne("character").first()!!.powers.singleOrNull { it.linkedItemId == "weapon" })
         assertEquals(CURRENT_ITEM_DATA_VERSION, database.characterDao().get("character")!!.itemSchemaVersion)
         database.close()

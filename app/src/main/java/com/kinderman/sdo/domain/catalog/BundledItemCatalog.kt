@@ -53,7 +53,7 @@ internal data class ItemComponentDefinition(
 }
 
 /** Loads the shipped JSON catalogs directly, keeping them as the runtime source of truth. */
-internal object CanonicalItemCatalog {
+internal object BundledItemCatalog {
     private val itemDefinitions: List<Pair<ItemPartKind, CatalogItemDefinition>> by lazy {
         listOf("items.json", "ammunition.json").flatMap { fileName ->
             document(fileName).getValue("entries").jsonArray
@@ -120,8 +120,8 @@ internal object CanonicalItemCatalog {
         }
 
     private fun document(fileName: String, expectedKind: String? = null): JsonObject {
-        val stream = checkNotNull(CanonicalItemCatalog::class.java.classLoader?.getResourceAsStream(fileName)) {
-            "Canonical catalog resource not found: $fileName"
+        val stream = checkNotNull(BundledItemCatalog::class.java.classLoader?.getResourceAsStream(fileName)) {
+            "Bundled catalog resource not found: $fileName"
         }
         return stream.bufferedReader().use { reader ->
             Json.parseToJsonElement(reader.readText()).jsonObject.also { document ->
