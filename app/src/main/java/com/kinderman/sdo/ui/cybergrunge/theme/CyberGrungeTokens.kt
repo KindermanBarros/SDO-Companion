@@ -14,5 +14,6 @@ internal object CyberGrungeTokens {
     val cut = 14.dp
     const val BACKDROP_BLOCKS = 54
     const val PANEL_GLITCH_BLOCKS = 21
+    const val PANEL_EDGE_GLITCH_LINES = 13
     const val EMPTY_SIGNAL_BLOCKS = 27
 }

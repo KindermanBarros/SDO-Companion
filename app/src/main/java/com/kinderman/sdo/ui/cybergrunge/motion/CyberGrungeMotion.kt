@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.math.abs
 import kotlin.math.sin
 
 /** Cybergrunge uses channel displacement and compression for touch feedback, never Material ripples. */
@@ -47,9 +48,19 @@ internal fun Modifier.cyberGrungePress(interactionSource: InteractionSource): Mo
     }
 }
 
-/** Continuous hostile drift used by experimental panels: the interface never fully stabilizes. */
+internal data class CyberGrungePanelMotion(
+    val translationX: Float,
+    val translationY: Float,
+    val rotation: Float,
+    val direction: Int,
+    val rupture: Float,
+)
+
+internal fun cyberGrungeDirectionFor(translationX: Float): Int = if (translationX < 0f) -1 else 1
+
+/** One motion clock drives both the card transform and its directional edge corruption. */
 @Composable
-internal fun Modifier.cyberGrungePossessed(seed: Int): Modifier {
+internal fun rememberCyberGrungePanelMotion(seed: Int): CyberGrungePanelMotion {
     val transition = rememberInfiniteTransition(label = "possessed-panel-$seed")
     val phase by transition.animateFloat(
         initialValue = 0f,
@@ -69,12 +80,21 @@ internal fun Modifier.cyberGrungePossessed(seed: Int): Modifier {
         ),
         label = "possessed-panel-rupture-$seed",
     )
-    return graphicsLayer {
-        val slow = sin(phase + seed * .013f)
-        val spike = if (sin(phase * 3.7f + seed) > .9f) rupture else 0f
-        translationX = slow * 1.7f + spike * 4.2f
-        translationY = sin(phase * 1.43f + seed * .021f) * 1.15f
-        rotationZ = slow * .11f + spike * .18f
-        scaleX = 1f + spike * .0025f
-    }
+    val slow = sin(phase + seed * .013f)
+    val spike = if (sin(phase * 3.7f + seed) > .9f) rupture else 0f
+    val x = slow * 1.7f + spike * 4.2f
+    return CyberGrungePanelMotion(
+        translationX = x,
+        translationY = sin(phase * 1.43f + seed * .021f) * 1.15f,
+        rotation = slow * .11f + spike * .18f,
+        direction = cyberGrungeDirectionFor(x),
+        rupture = abs(spike),
+    )
+}
+
+internal fun Modifier.cyberGrungePossessed(motion: CyberGrungePanelMotion): Modifier = graphicsLayer {
+    translationX = motion.translationX
+    translationY = motion.translationY
+    rotationZ = motion.rotation
+    scaleX = 1f + motion.rupture * .0025f
 }

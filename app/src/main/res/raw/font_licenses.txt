@@ -9,3 +9,16 @@ Oxanium
 Copyright 2019 The Oxanium Project Authors (https://github.com/sevmeyer/oxanium)
 License: SIL Open Font License, Version 1.1
 Full license included in licenses/fonts/OFL-Oxanium.txt in the source distribution.
+
+Press Start 2P
+Copyright 2012 The Press Start 2P Project Authors
+License: SIL Open Font License, Version 1.1
+Full license included in licenses/fonts/OFL-Press-Start-2P.txt in the source distribution.
+
+Acidic
+User-supplied font asset. The distributed archive did not include licensing terms.
+Provenance is recorded here without asserting redistribution rights.
+
+Drunk Fonts Regular
+User-supplied font asset. The distributed archive did not include licensing terms.
+Provenance is recorded here without asserting redistribution rights.

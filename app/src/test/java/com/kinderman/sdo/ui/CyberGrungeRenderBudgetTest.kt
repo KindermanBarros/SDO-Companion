@@ -8,6 +8,7 @@ class CyberGrungeRenderBudgetTest {
     fun experimentalCorruptionStaysInsideEmergencyCeiling() {
         assertTrue(CyberGrungeTokens.BACKDROP_BLOCKS <= 64)
         assertTrue(CyberGrungeTokens.PANEL_GLITCH_BLOCKS <= 32)
+        assertTrue(CyberGrungeTokens.PANEL_EDGE_GLITCH_LINES <= 16)
         assertTrue(CyberGrungeTokens.EMPTY_SIGNAL_BLOCKS <= 32)
     }
 
