@@ -12,7 +12,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -48,7 +47,7 @@ internal fun CyberGrungeEmptySignal(modifier: Modifier = Modifier) {
         ),
         label = "empty-signal-phase",
     )
-    Canvas(modifier.fillMaxWidth().height(22.dp).testTag("cybergrunge-empty-signal")) {
+    Canvas(modifier.fillMaxWidth().height(22.dp)) {
         repeat(CyberGrungeTokens.EMPTY_SIGNAL_BLOCKS) { index ->
             val direction = if (index % 2 == 0) 1f else -1f
             val drift = phase * size.width * .18f * direction

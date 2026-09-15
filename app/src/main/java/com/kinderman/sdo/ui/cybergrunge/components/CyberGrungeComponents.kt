@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -131,7 +132,9 @@ internal fun CyberGrungeField(
         minLines = if (multiline) 3 else 1,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
-        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp),
+        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp).then(
+            if (value.isEmpty()) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
+        ),
         decorationBox = { inner ->
             OutlinedTextFieldDefaults.DecorationBox(
                 value = value, innerTextField = inner, enabled = enabled, singleLine = !multiline,
