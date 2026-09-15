@@ -7,9 +7,9 @@ import org.junit.Test
 
 class SdoVisualModeTest {
     @Test
-    fun kaltochHasItsOwnIdentityAndPalette() {
-        assertEquals("Interface Kaltoch", SdoVisualMode.KALTOCH.label)
-        assertFalse(SdoVisualMode.KALTOCH.allowsThemeSelection)
+    fun cybergrungeHasItsOwnIdentityAndPalette() {
+        assertEquals("Interface Cybergrunge", SdoVisualMode.CYBERGRUNGE.label)
+        assertFalse(SdoVisualMode.CYBERGRUNGE.allowsThemeSelection)
     }
 
     @Test
