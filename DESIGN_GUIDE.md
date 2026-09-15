@@ -453,6 +453,30 @@ Movimento comunica mudança de estado; não é decoração contínua fora de pro
 
 ## Componentes do Design System
 
+### Interface Cybergrunge (experimental)
+
+Cybergrunge é uma interface alternativa, não uma simples paleta. Ao ativá-la em Ajustes, a
+aplicação troca a composição de navegação, painéis, ações, filtros, campos, seletores e estados.
+Ela usa trilhos assimétricos, cantos recortados, identificadores de terminal, interferência
+estática e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
+
+- `EXPERIMENTAL` deve permanecer visível no seletor e nos mastheads Cybergrunge.
+- Glitch de fundo é estático e barato; animações contínuas ficam restritas a loading ativo.
+- Efeitos visuais pertencem aos limites do componente e não podem cobrir controles aninhados.
+- Áreas clicáveis preservam o alvo mínimo de 48 dp e o ripple fica recortado pelo shape local.
+- Campos vazios usam ruído tipográfico como placeholder, sem substituir label ou semântica.
+- Telas consomem contratos `Sdo*`; a seleção entre Standard e Cybergrunge acontece no design
+  system, evitando condicionais visuais espalhadas na apresentação.
+
+Arquitetura:
+
+- `ui/core`: preferências, responsividade e tokens públicos.
+- `ui/shared`: contratos consumidos pelas telas.
+- `ui/cybergrunge/theme`: tokens semânticos da interface alternativa.
+- `ui/cybergrunge/effects`: efeitos code-native com custo previsível.
+- `ui/cybergrunge/components`: implementações alternativas de painel, ação, campo, escolha e
+  navegação.
+
 ### HudBackground
 
 Canvas de fundo `Void` (`#040D1B`) com grade vetorial milimetrada em duas densidades (`Grid` e
@@ -521,5 +545,8 @@ Campo de preenchimento estruturado:
 Tokens e componentes fundamentais estão localizados em:
 
 - [SdoDesignSystem.kt](app/src/main/java/com/kinderman/sdo/ui/SdoDesignSystem.kt)
+- [Core](app/src/main/java/com/kinderman/sdo/ui/core)
+- [Contratos compartilhados](app/src/main/java/com/kinderman/sdo/ui/shared)
+- [Interface Cybergrunge](app/src/main/java/com/kinderman/sdo/ui/cybergrunge)
 - [Telas de personagem](app/src/main/java/com/kinderman/sdo/presentation/character)
 - [Modelo canônico no domínio](app/src/main/java/com/kinderman/sdo/domain/model/Character.kt)

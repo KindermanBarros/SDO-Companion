@@ -481,8 +481,14 @@ fun TechPanel(
     }
 
     val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
-    val panelShape = SdoShapeTokens.panel
     val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
+    if (cybergrunge) {
+        CompositionLocalProvider(LocalCollapsibleSectionTitle provides null) {
+            CyberGrungePanel(modifier, resolvedAccent, compactCards, content)
+        }
+        return
+    }
+    val panelShape = SdoShapeTokens.panel
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -502,7 +508,6 @@ fun TechPanel(
                 modifier = Modifier.padding(if (compactCards) 11.dp else 16.dp),
                 verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
             ) {
-                if (cybergrunge) CyberGrungePanelChrome()
                 content()
             }
         }
@@ -517,6 +522,17 @@ fun SdoInsetCard(
     verticalSpacing: androidx.compose.ui.unit.Dp = 7.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
+        Column(
+            modifier = modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = .86f), shape)
+                .border(1.dp, accent.copy(alpha = .75f), shape)
+                .padding(start = contentPadding + 4.dp, top = contentPadding, end = contentPadding, bottom = contentPadding),
+            verticalArrangement = Arrangement.spacedBy(verticalSpacing), content = content,
+        )
+        return
+    }
     val shape = SdoShapeTokens.control
     Column(
         modifier = modifier
@@ -670,6 +686,10 @@ fun HudTextField(
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
     onValue: (String) -> Unit,
 ) {
+    if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        CyberGrungeField(label, value, modifier, multiline, placeholder, enabled, keyboardOptions, onValue)
+        return
+    }
     val interaction =
         androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val compact = LocalSdoWindowClass.current == SdoWindowClass.COMPACT ||

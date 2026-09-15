@@ -30,6 +30,10 @@ fun SdoActionButton(
     enabled: Boolean = true,
     style: SdoActionStyle = SdoActionStyle.SECONDARY,
 ) {
+    if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        CyberGrungeAction(label, onClick, modifier, enabled, style)
+        return
+    }
     val shape = SdoShapeTokens.control
     when (style) {
         SdoActionStyle.PRIMARY -> Button(
@@ -61,6 +65,20 @@ fun SdoFilterChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        val accent = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        OutlinedButton(
+            onClick = onClick,
+            modifier = modifier.heightIn(min = 48.dp),
+            shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+            border = androidx.compose.foundation.BorderStroke(if (selected) 2.dp else 1.dp, accent),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = accent,
+                containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else androidx.compose.ui.graphics.Color.Transparent,
+            ),
+        ) { AdaptiveActionLabel(if (selected) "■ ${label.uppercase()}" else "□ ${label.uppercase()}", color = accent) }
+        return
+    }
     FilterChip(
         selected = selected,
         onClick = onClick,
