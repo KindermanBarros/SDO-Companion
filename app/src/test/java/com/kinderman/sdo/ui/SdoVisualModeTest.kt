@@ -6,8 +6,8 @@ import org.junit.Test
 
 class SdoVisualModeTest {
     @Test
-    fun cybergrungeIsExplicitlyExperimental() {
-        assertTrue(SdoVisualMode.CYBERGRUNGE.label.contains("EXPERIMENTAL"))
+    fun kaltochIsExplicitlyExperimental() {
+        assertTrue(SdoVisualMode.KALTOCH.label.contains("EXPERIMENTAL"))
         assertFalse(SdoVisualMode.STANDARD.label.contains("EXPERIMENTAL"))
     }
 }
