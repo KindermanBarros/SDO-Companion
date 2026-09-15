@@ -1,7 +1,7 @@
 package com.kinderman.sdo.data.local
 
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
-import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
+import com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.NeedsReview
 import com.kinderman.sdo.domain.model.AuditableChoice
 import com.kinderman.sdo.domain.model.CatalogEntryId
@@ -21,9 +21,75 @@ import com.kinderman.sdo.domain.model.StackState
 
 const val CURRENT_CREATION_RULES_VERSION = 2
 
-/** Content-aware migration shared by Room reads and Firestore synchronization. */
-fun CharacterRecord.requiresStructuredMigration(): Boolean =
-    canonicalSchemaVersion < CANONICAL_SCHEMA_VERSION ||
+/** Coordinates every persisted character migration in version order. */
+class CharacterMigrationManager(
+    private val steps: List<CharacterMigrationStep> = defaultCharacterMigrationSteps,
+) {
+    init {
+        require(steps.zipWithNext().all { (current, next) -> current.targetVersion == next.sourceVersion }) {
+            "Character migrations must form an uninterrupted version chain."
+        }
+    }
+
+    fun requiresMigration(record: CharacterRecord): Boolean =
+        record.canonicalSchemaVersion < CURRENT_CHARACTER_SCHEMA_VERSION || record.requiresCurrentDataRepair()
+
+    fun migrate(record: CharacterRecord, markDirty: Boolean): CharacterRecord {
+        if (record.canonicalSchemaVersion > CURRENT_CHARACTER_SCHEMA_VERSION) {
+            throw com.kinderman.sdo.domain.model.DomainError.UnsupportedSchemaVersion(
+                "A ficha usa schema ${record.canonicalSchemaVersion}; este app suporta até $CURRENT_CHARACTER_SCHEMA_VERSION.",
+            )
+        }
+        var migrated = record
+        while (migrated.canonicalSchemaVersion < CURRENT_CHARACTER_SCHEMA_VERSION) {
+            val step = steps.singleOrNull { it.sourceVersion == migrated.canonicalSchemaVersion }
+                ?: error("Não existe migração de ficha a partir da versão ${migrated.canonicalSchemaVersion}.")
+            migrated = step.migrate(migrated)
+            check(migrated.canonicalSchemaVersion == step.targetVersion) {
+                "A migração ${step.sourceVersion} → ${step.targetVersion} não atualizou a versão da ficha."
+            }
+        }
+        if (migrated.requiresCurrentDataRepair()) migrated = migrateCurrentData(migrated)
+        return if (migrated == record) record else migrated.copy(dirty = record.dirty || markDirty, lastSyncedAt = record.lastSyncedAt)
+    }
+
+    suspend fun migrateStoredCharacters(dao: CharacterDao): Int {
+        var migratedCount = 0
+        dao.all().forEach { record ->
+            val migrated = migrate(record, markDirty = true)
+            if (migrated != record) {
+                dao.upsert(migrated)
+                migratedCount++
+            }
+        }
+        return migratedCount
+    }
+}
+
+interface CharacterMigrationStep {
+    val sourceVersion: Int
+    val targetVersion: Int
+    fun migrate(record: CharacterRecord): CharacterRecord
+}
+
+private object LegacyCharacterMigration : CharacterMigrationStep {
+    override val sourceVersion = 0
+    override val targetVersion = 1
+
+    override fun migrate(record: CharacterRecord): CharacterRecord = record.copy(canonicalSchemaVersion = targetVersion)
+}
+
+private object StructuredCharacterMigration : CharacterMigrationStep {
+    override val sourceVersion = 1
+    override val targetVersion = 2
+
+    override fun migrate(record: CharacterRecord): CharacterRecord =
+        migrateCurrentData(record).copy(canonicalSchemaVersion = targetVersion)
+}
+
+private val defaultCharacterMigrationSteps = listOf(LegacyCharacterMigration, StructuredCharacterMigration)
+
+private fun CharacterRecord.requiresCurrentDataRepair(): Boolean =
         canonicalAbilitiesPayload.isBlank() ||
         canonicalBodyPayload.isBlank() ||
         canonicalConditionsPayload.isBlank() ||
@@ -35,13 +101,8 @@ fun CharacterRecord.requiresStructuredMigration(): Boolean =
         creationRulesVersion < CURRENT_CREATION_RULES_VERSION ||
         inventory.any { it.dataVersion < CURRENT_ITEM_DATA_VERSION }
 
-fun CharacterRecord.migratedStructuredRecord(markDirty: Boolean): CharacterRecord {
-    if (canonicalSchemaVersion > CANONICAL_SCHEMA_VERSION) {
-        throw com.kinderman.sdo.domain.model.DomainError.UnsupportedSchemaVersion(
-            "A ficha usa schema canônico $canonicalSchemaVersion; este app suporta até $CANONICAL_SCHEMA_VERSION.",
-        )
-    }
-    if (!requiresStructuredMigration()) return this
+private fun migrateCurrentData(record: CharacterRecord): CharacterRecord = with(record) {
+    if (!requiresCurrentDataRepair()) return record
     val migrationSource = if (itemSchemaVersion < CURRENT_ITEM_DATA_VERSION) {
         copy(inventory = inventory.map { item -> item.copy(dataVersion = minOf(item.dataVersion, itemSchemaVersion)) })
     } else this
@@ -49,7 +110,7 @@ fun CharacterRecord.migratedStructuredRecord(markDirty: Boolean): CharacterRecor
     val (itemStates, scopedCatalog) = migrationSource.canonicalInventory()
     val reviews = (domain.migrationReviews + migrationSource.legacyReviewQueue()).distinct()
     return domain.copy(
-        canonicalSchemaVersion = CANONICAL_SCHEMA_VERSION,
+        canonicalSchemaVersion = CURRENT_CHARACTER_SCHEMA_VERSION,
         migrationReviews = reviews,
         itemSchemaVersion = CURRENT_ITEM_DATA_VERSION,
         creationRulesVersion = maxOf(creationRulesVersion, CURRENT_CREATION_RULES_VERSION),
@@ -57,10 +118,10 @@ fun CharacterRecord.migratedStructuredRecord(markDirty: Boolean): CharacterRecor
         customItemCatalog = scopedCatalog,
         progression = migrationSource.canonicalProgression(),
     ).toRecord().copy(
-        canonicalSchemaVersion = CANONICAL_SCHEMA_VERSION,
+        canonicalSchemaVersion = CURRENT_CHARACTER_SCHEMA_VERSION,
         itemSchemaVersion = CURRENT_ITEM_DATA_VERSION,
         creationRulesVersion = maxOf(creationRulesVersion, CURRENT_CREATION_RULES_VERSION),
-        dirty = dirty || markDirty,
+        dirty = dirty,
         lastSyncedAt = lastSyncedAt,
     )
 }

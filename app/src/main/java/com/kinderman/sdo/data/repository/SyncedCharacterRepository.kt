@@ -8,9 +8,9 @@ import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.OwnerDao
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
-import com.kinderman.sdo.data.local.migratedStructuredRecord
+import com.kinderman.sdo.data.local.CharacterMigrationManager
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.CANONICAL_SCHEMA_VERSION
+import com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
@@ -43,6 +43,7 @@ class SyncedCharacterRepository(
     private val dao: CharacterDao,
     private val ownerDao: OwnerDao,
     private val campaignDao: CampaignDao,
+    private val migrationManager: CharacterMigrationManager = CharacterMigrationManager(),
 ) : CharacterRepository {
     private val syncMutex = Mutex()
 
@@ -50,7 +51,7 @@ class SyncedCharacterRepository(
         (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
             .map { records ->
                 records.map { record ->
-                    val migrated = record.migratedStructuredRecord(markDirty = true)
+                    val migrated = migrationManager.migrate(record, markDirty = true)
                     if (migrated != record) dao.upsert(migrated)
                     migrated.toDomain()
                 }
@@ -60,7 +61,7 @@ class SyncedCharacterRepository(
 
     override fun observeOne(id: String): Flow<Character?> = dao.observeOne(id).map { record ->
         record?.let {
-            val migrated = it.migratedStructuredRecord(markDirty = true)
+            val migrated = migrationManager.migrate(it, markDirty = true)
             if (migrated != it) dao.upsert(migrated)
             migrated.toDomain()
         }
@@ -98,7 +99,7 @@ class SyncedCharacterRepository(
         check(CharacterAccessPolicy.canEdit(session, character, isCampaignHistorian(session, character))) {
             "Você não pode editar esta ficha."
         }
-        if (character.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
+        if (character.canonicalSchemaVersion != CURRENT_CHARACTER_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
         dao.upsert(
             character.copy(
                 campaignId = normalizeCampaignId(character.campaignId),
@@ -127,7 +128,7 @@ class SyncedCharacterRepository(
             "Somente a responsável principal pode transferir uma ficha."
         }
         check(owner.uid.isNotBlank()) { "O novo owner é inválido." }
-        if (character.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
+        if (character.canonicalSchemaVersion != CURRENT_CHARACTER_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
         dao.upsert(
             character.copy(
                 ownerId = owner.uid,
@@ -138,7 +139,7 @@ class SyncedCharacterRepository(
     }
 
     private suspend fun saveLock(character: Character, lockType: CharacterLock, actorId: String) {
-        if (character.canonicalSchemaVersion != CANONICAL_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
+        if (character.canonicalSchemaVersion != CURRENT_CHARACTER_SCHEMA_VERSION) throw DomainError.LegacyWriteRejected()
         val locked = lockType != CharacterLock.NONE
         dao.upsert(
             character.copy(
@@ -192,7 +193,7 @@ class SyncedCharacterRepository(
             }
         }
         val remoteRecords = remoteById.values.map { remote ->
-            val migrated = remote.migratedStructuredRecord(markDirty = false)
+            val migrated = migrationManager.migrate(remote, markDirty = false)
             val canWriteRemote = session.isAdmin || remote.ownerId == session.uid ||
                 normalizeCampaignId(remote.campaignId) in ownedCampaignIds
             if (migrated != remote && canWriteRemote) {
@@ -201,7 +202,7 @@ class SyncedCharacterRepository(
                     val latest = transaction.get(reference).toObject(CharacterRecord::class.java)
                         ?.copy(id = reference.id)
                         ?: return@runTransaction
-                    val latestMigrated = latest.migratedStructuredRecord(markDirty = false)
+                    val latestMigrated = migrationManager.migrate(latest, markDirty = false)
                     if (latestMigrated != latest) transaction.set(reference, latestMigrated.copy(dirty = false))
                     Unit
                 }.await()
@@ -211,7 +212,7 @@ class SyncedCharacterRepository(
         val remoteIds = remoteById.keys
 
         val dirtyRecords = dao.dirty().map { record ->
-            val migrated = record.migratedStructuredRecord(markDirty = true)
+            val migrated = migrationManager.migrate(record, markDirty = true)
             if (migrated != record) dao.upsert(migrated)
             migrated
         }.filter { record ->
@@ -271,7 +272,7 @@ class SyncedCharacterRepository(
                 val result = store.runTransaction { transaction ->
                     val snapshot = transaction.get(reference)
                     val remote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
-                        ?.migratedStructuredRecord(markDirty = false)
+                        ?.let { migrationManager.migrate(it, markDirty = false) }
                     if (remote != null && remote.updatedAt > normalizedRecord.lastSyncedAt) {
                         val localCharacter = normalizedRecord.toDomain()
                         val remoteCharacter = remote.toDomain()

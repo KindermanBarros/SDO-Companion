@@ -5,8 +5,8 @@ import java.util.UUID
 import kotlin.math.ceil
 
 /** Schema implemented from the canonical rules contract. Never reuse a revision number. */
-const val CANONICAL_SCHEMA_VERSION = 2
-const val CANONICAL_RULES_COMMIT = "86102242603058895e49129ee0f88d66a9a317bb"
+const val CURRENT_CHARACTER_SCHEMA_VERSION = 2
+const val RULES_SOURCE_COMMIT = "86102242603058895e49129ee0f88d66a9a317bb"
 
 @Serializable
 @JvmInline
@@ -1318,13 +1318,13 @@ fun Character.resolveMigrationReview(
 ): Character {
     require(migrationReviews.any { it.field == field }) { "Pendência de migração inexistente: $field." }
     val corrected = correction(this)
-    require(corrected.canonicalSchemaVersion == CANONICAL_SCHEMA_VERSION) {
+    require(corrected.canonicalSchemaVersion == CURRENT_CHARACTER_SCHEMA_VERSION) {
         "A correção deve produzir o schema canônico atual."
     }
     return corrected.copy(migrationReviews = corrected.migrationReviews.filterNot { it.field == field })
 }
 
-object CanonicalMigration {
+object LegacyMechanicsMigration {
     fun migrateMechanicalText(
         description: String,
         mechanicalText: String

@@ -41,7 +41,7 @@ data class SessionCommand(
 
 @Serializable
 data class CanonicalSessionPayload(
-    val schemaVersion: Int = CANONICAL_SCHEMA_VERSION,
+    val schemaVersion: Int = CURRENT_CHARACTER_SCHEMA_VERSION,
     val effectOperations: List<EffectOperation> = emptyList(),
     val condition: ConditionPayload? = null,
     val conditionInstanceId: ConditionInstanceId? = null,

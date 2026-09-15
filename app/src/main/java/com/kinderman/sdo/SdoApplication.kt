@@ -6,6 +6,7 @@ import androidx.room.Room
 import com.google.firebase.FirebaseApp
 import com.kinderman.sdo.data.auth.FirebaseAuthRepository
 import com.kinderman.sdo.data.local.AppDatabase
+import com.kinderman.sdo.data.local.CharacterMigrationManager
 import com.kinderman.sdo.data.repository.LocalCatalogRepository
 import com.kinderman.sdo.data.repository.SyncedCampaignRepository
 import com.kinderman.sdo.data.repository.SyncedCharacterRepository
@@ -67,13 +68,15 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_27_28,
             )
             .build()
-        characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao())
+        val characterMigrationManager = CharacterMigrationManager()
+        characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao(), characterMigrationManager)
         ownerRepository = SyncedOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
         campaignRepository = SyncedCampaignRepository(db.campaignDao(), db.characterDao())
-        operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao())
+        operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao(), characterMigrationManager)
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {
+            characterMigrationManager.migrateStoredCharacters(db.characterDao())
             catalogRepository.refreshBundledCatalog()
         }
     }
