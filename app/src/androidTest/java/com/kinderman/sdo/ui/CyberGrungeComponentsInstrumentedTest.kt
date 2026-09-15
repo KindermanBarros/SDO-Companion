@@ -25,7 +25,7 @@ class CyberGrungeComponentsInstrumentedTest {
 
         compose.onNodeWithText("INPUT//NOME").assertExists()
         compose.onNodeWithText("SINAL VAZIO", substring = true).assertDoesNotExist()
-        compose.onNodeWithTag("cybergrunge-empty-signal").assertExists()
+        compose.onNodeWithTag("cybergrunge-empty-signal", useUnmergedTree = true).assertExists()
     }
 
     @Test
@@ -36,7 +36,7 @@ class CyberGrungeComponentsInstrumentedTest {
             }
         }
 
-        compose.onNodeWithTag("cybergrunge-empty-signal").assertDoesNotExist()
+        compose.onNodeWithTag("cybergrunge-empty-signal", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
