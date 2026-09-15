@@ -293,6 +293,21 @@ val RawDisplayFont = FontFamily(
     Font(R.font.mb_forever_raw, weight = FontWeight.Normal),
 )
 
+/** Default text face for the Cybergrunge interface. */
+val CyberGrungeTerminalFont = FontFamily(
+    Font(R.font.press_start_2p, weight = FontWeight.Normal),
+)
+
+/** Display face for large Cybergrunge headings. */
+val CyberGrungeHeadingFont = FontFamily(
+    Font(R.font.acidic, weight = FontWeight.Normal),
+)
+
+/** Deliberately scarce face reserved for the most expressive page titles. */
+val CyberGrungeHeroFont = FontFamily(
+    Font(R.font.drunk_fonts_regular, weight = FontWeight.Normal),
+)
+
 private fun hudTypography(scale: Float) = Typography(
     displayLarge = TextStyle(
         fontFamily = RawDisplayFont,
@@ -349,6 +364,28 @@ private fun hudTypography(scale: Float) = Typography(
     ),
 )
 
+private fun cyberGrungeTypography(scale: Float): Typography {
+    val terminal = CyberGrungeTerminalFont
+    val heading = CyberGrungeHeadingFont
+    return Typography(
+        displayLarge = TextStyle(fontFamily = heading, fontSize = (42 * scale).sp, lineHeight = (46 * scale).sp),
+        displayMedium = TextStyle(fontFamily = heading, fontSize = (36 * scale).sp, lineHeight = (40 * scale).sp),
+        displaySmall = TextStyle(fontFamily = heading, fontSize = (31 * scale).sp, lineHeight = (35 * scale).sp),
+        headlineLarge = TextStyle(fontFamily = heading, fontSize = (34 * scale).sp, lineHeight = (38 * scale).sp),
+        headlineMedium = TextStyle(fontFamily = heading, fontSize = (29 * scale).sp, lineHeight = (33 * scale).sp),
+        headlineSmall = TextStyle(fontFamily = heading, fontSize = (25 * scale).sp, lineHeight = (29 * scale).sp),
+        titleLarge = TextStyle(fontFamily = heading, fontSize = (22 * scale).sp, lineHeight = (26 * scale).sp),
+        titleMedium = TextStyle(fontFamily = heading, fontSize = (18 * scale).sp, lineHeight = (22 * scale).sp),
+        titleSmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (17 * scale).sp),
+        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (13 * scale).sp, lineHeight = (20 * scale).sp),
+        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (18 * scale).sp),
+        bodySmall = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (15 * scale).sp),
+        labelLarge = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (15 * scale).sp),
+        labelMedium = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (14 * scale).sp),
+        labelSmall = TextStyle(fontFamily = terminal, fontSize = (8 * scale).sp, lineHeight = (13 * scale).sp),
+    )
+}
+
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun SdoTheme(
@@ -395,7 +432,11 @@ fun SdoTheme(
     }
     MaterialTheme(
         colorScheme = colors,
-        typography = hudTypography(preferences.fontScale.multiplier),
+        typography = if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
+            cyberGrungeTypography(preferences.fontScale.multiplier)
+        } else {
+            hudTypography(preferences.fontScale.multiplier)
+        },
         shapes = androidx.compose.material3.Shapes(
             extraSmall = CutCornerShape(4.dp), small = CutCornerShape(8.dp),
             medium = CutCornerShape(12.dp), large = CutCornerShape(16.dp),
@@ -538,14 +579,7 @@ fun SdoInsetCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
-        Column(
-            modifier = modifier.fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = .86f), shape)
-                .border(1.dp, accent.copy(alpha = .75f), shape)
-                .padding(start = contentPadding + 4.dp, top = contentPadding, end = contentPadding, bottom = contentPadding),
-            verticalArrangement = Arrangement.spacedBy(verticalSpacing), content = content,
-        )
+        CyberGrungeInsetPanel(modifier, accent, contentPadding, verticalSpacing, content)
         return
     }
     val shape = SdoShapeTokens.control

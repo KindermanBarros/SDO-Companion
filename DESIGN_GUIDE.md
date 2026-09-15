@@ -458,10 +458,16 @@ Movimento comunica mudança de estado; não é decoração contínua fora de pro
 Cybergrunge é uma interface alternativa, não uma simples paleta. Ao ativá-la em Ajustes, a
 aplicação troca a composição de navegação, painéis, ações, filtros, campos, seletores e estados.
 Ela usa trilhos assimétricos, cantos recortados, identificadores de terminal, interferência
-estática e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
+animada e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
 
-- `EXPERIMENTAL` deve permanecer visível no seletor e nos mastheads Cybergrunge.
-- Glitch de fundo é estático e barato; animações contínuas ficam restritas a loading ativo.
+- `EXPERIMENTAL` permanece somente no seletor de interface; não ocupa mastheads nem painéis.
+- Press Start 2P é a fonte funcional padrão; Acidic identifica cabeçalhos e títulos grandes;
+  Drunk Fonts é reservada aos títulos expressivos dos mastheads. Press Start 2P cobre português;
+  glifos ausentes nas duas fontes decorativas usam o fallback tipográfico da plataforma.
+- Títulos de painel e masthead ficam em uma linha e reduzem de tamanho até o mínimo legível antes
+  de truncar, evitando aumentar a altura dos cartões em telas estreitas.
+- Cada card tem interferência animada e um rasgo de borda sincronizado ao shake: a borda esquerda
+  se fragmenta durante deslocamento à esquerda e a direita durante deslocamento à direita.
 - Efeitos visuais pertencem aos limites do componente e não podem cobrir controles aninhados.
 - Áreas clicáveis preservam o alvo mínimo de 48 dp e o ripple fica recortado pelo shape local.
 - Campos vazios usam ruído tipográfico como placeholder, sem substituir label ou semântica.

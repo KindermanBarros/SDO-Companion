@@ -45,15 +45,16 @@ internal fun CyberGrungePanel(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val possessionSeed = remember { System.identityHashCode(Any()) }
+    val motion = rememberCyberGrungePanelMotion(possessionSeed)
     val shape = CutCornerShape(topEnd = CyberGrungeTokens.cut, bottomStart = CyberGrungeTokens.cut)
     Box(
         modifier
-            .cyberGrungePossessed(possessionSeed)
+            .cyberGrungePossessed(motion)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface.copy(alpha = .94f), shape)
             .border(1.dp, accent.copy(alpha = .78f), shape),
     ) {
-        CyberGrungeInterference(seed = possessionSeed)
+        CyberGrungeInterference(motion = motion, seed = possessionSeed)
         Box(Modifier.fillMaxWidth().height(3.dp).background(accent).align(Alignment.TopStart))
         Box(Modifier.width(CyberGrungeTokens.railWidth).fillMaxSize().background(accent.copy(alpha = .78f)))
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
@@ -64,6 +65,40 @@ internal fun CyberGrungePanel(
                 CyberGrungePanelChrome()
                 content()
             }
+        }
+    }
+}
+
+@Composable
+internal fun CyberGrungeInsetPanel(
+    modifier: Modifier,
+    accent: Color,
+    contentPadding: androidx.compose.ui.unit.Dp,
+    verticalSpacing: androidx.compose.ui.unit.Dp,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val possessionSeed = remember { System.identityHashCode(Any()) }
+    val motion = rememberCyberGrungePanelMotion(possessionSeed)
+    val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
+    Box(
+        modifier
+            .cyberGrungePossessed(motion)
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = .86f), shape)
+            .border(1.dp, accent.copy(alpha = .75f), shape),
+    ) {
+        CyberGrungeInterference(motion = motion, seed = possessionSeed)
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+            Column(
+                modifier = Modifier.padding(
+                    start = contentPadding + 4.dp,
+                    top = contentPadding,
+                    end = contentPadding,
+                    bottom = contentPadding,
+                ),
+                verticalArrangement = Arrangement.spacedBy(verticalSpacing),
+                content = content,
+            )
         }
     }
 }
