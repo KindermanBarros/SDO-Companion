@@ -19,9 +19,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -125,7 +125,7 @@ internal fun CharacterSheetPager(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Escolha qual registro manter. Cada duplicata precisa ser resolvida separadamente.")
                     duplicate.entries.forEachIndexed { index, (id, name) ->
-                        TextButton(onClick = { keepId = id }) {
+                        SdoTextButton(onClick = { keepId = id }) {
                             Text("${if (keepId == id) "[ MANTER ]" else "MANTER"} ${index + 1}. $name")
                         }
                     }
@@ -133,7 +133,7 @@ internal fun CharacterSheetPager(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { onChange(character.resolveAbilityDuplicate(duplicate, keepId)) }) { Text("CONFIRMAR EXCLUSÃO") }
+                SdoTextButton(onClick = { onChange(character.resolveAbilityDuplicate(duplicate, keepId)) }) { Text("CONFIRMAR EXCLUSÃO") }
             },
             dismissButton = {},
         )
@@ -162,7 +162,7 @@ private fun SheetPageNavigator(
         shape = CutCornerShape(topEnd = 16.dp, bottomStart = 12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
+            SdoIconButton(
                 onClick = { onNavigate(currentPage - 1) },
                 enabled = currentPage > 0,
             ) {
@@ -212,7 +212,7 @@ private fun SheetPageNavigator(
                     }
                 }
             }
-            IconButton(
+            SdoIconButton(
                 onClick = { onNavigate(currentPage + 1) },
                 enabled = currentPage < pages.lastIndex,
             ) {

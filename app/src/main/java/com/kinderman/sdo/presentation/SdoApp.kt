@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ import com.kinderman.sdo.ui.LocalSdoWindowClass
 import com.kinderman.sdo.ui.SdoWindowClass
 import com.kinderman.sdo.ui.SdoNavigationItem
 import com.kinderman.sdo.ui.SdoNavigationRail
+import com.kinderman.sdo.ui.SdoNavigationBar
 
 private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, SETTINGS }
 
@@ -147,6 +149,7 @@ fun SdoApp(
                     if (canOpenHistorian) add(SdoNavigationItem("Mestre", surface == AppSurface.HISTORIAN, Icons.Default.Visibility) { navigate(AppSurface.HISTORIAN) })
                     add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
                 })
+                Column(Modifier.weight(1f).fillMaxSize()) {
                 Box(Modifier.weight(1f).fillMaxSize()) {
             screenState.SaveableStateProvider("${appSession?.uid}:${surface.name}") {
             when (surface) {
@@ -275,6 +278,12 @@ fun SdoApp(
                 )
             }
                 }
+                if (!wide && surface != AppSurface.SHEET) SdoNavigationBar(buildList {
+                    add(SdoNavigationItem("Painel", surface == AppSurface.DASHBOARD, Icons.Default.Home) { navigate(AppSurface.DASHBOARD, null) })
+                    add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
+                    if (canOpenHistorian) add(SdoNavigationItem("Mestre", surface == AppSurface.HISTORIAN, Icons.Default.Visibility) { navigate(AppSurface.HISTORIAN) })
+                    add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
+                })
             }
             }
         }

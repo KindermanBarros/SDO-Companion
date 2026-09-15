@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -76,11 +76,11 @@ internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, 
             onChange(character.copy(sex = it))
         }
         if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(onClick = { onChange(character.copy(level = (character.level - 1).coerceAtLeast(1))) }, enabled = enabled && character.level > 1) {
+                SdoIconButton(onClick = { onChange(character.copy(level = (character.level - 1).coerceAtLeast(1))) }, enabled = enabled && character.level > 1) {
                     Icon(Icons.Default.Remove, "Diminuir nível")
                 }
                 Text("NÍVEL ${character.level}", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp))
-                IconButton(onClick = { selectingLevel = true }, enabled = enabled) { Icon(Icons.Default.Add, "Aumentar nível") }
+                SdoIconButton(onClick = { selectingLevel = true }, enabled = enabled) { Icon(Icons.Default.Add, "Aumentar nível") }
             }
     }
     if (selectingRace) RacePickerDialog(character, { selectingRace = false }) { race, subRace, attribute, basePowers, subRacePower ->
@@ -167,11 +167,11 @@ private fun CalculatedResourceEditor(
             Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             ResourceCurrentControls(label, resource.current, maximum, accent, enabled) { onValue(resource.copy(current = it)) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                IconButton(enabled = enabled && resource.adjustment > -base, onClick = { onValue(resource.copy(adjustment = resource.adjustment - 1)) }) {
+                SdoIconButton(enabled = enabled && resource.adjustment > -base, onClick = { onValue(resource.copy(adjustment = resource.adjustment - 1)) }) {
                     Icon(Icons.Default.Remove, "Diminuir ajuste de $label", tint = accent)
                 }
                 Text("AJUSTE ${resource.adjustment.signed()}", color = accent)
-                IconButton(enabled = enabled, onClick = { onValue(resource.copy(adjustment = resource.adjustment + 1)) }) {
+                SdoIconButton(enabled = enabled, onClick = { onValue(resource.copy(adjustment = resource.adjustment + 1)) }) {
                     Icon(Icons.Default.Add, "Aumentar ajuste de $label", tint = accent)
                 }
             }
@@ -226,11 +226,11 @@ private fun ResourceSummary(current: Int, maximum: Int, accent: Color) {
 @Composable
 private fun ResourceCurrentControls(label: String, current: Int, maximum: Int, accent: Color, enabled: Boolean, onCurrent: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(enabled = enabled && current > 0, onClick = { onCurrent((current - 1).coerceAtLeast(0)) }) {
+        SdoIconButton(enabled = enabled && current > 0, onClick = { onCurrent((current - 1).coerceAtLeast(0)) }) {
             Icon(Icons.Default.Remove, "Diminuir $label", tint = accent)
         }
         ChoiceField("Atual", current.coerceIn(0, maximum), (0..maximum).toList(), enabled, Modifier.weight(1f)) { onCurrent(it) }
-        IconButton(enabled = enabled && current < maximum, onClick = { onCurrent((current + 1).coerceAtMost(maximum)) }) {
+        SdoIconButton(enabled = enabled && current < maximum, onClick = { onCurrent((current + 1).coerceAtMost(maximum)) }) {
             Icon(Icons.Default.Add, "Aumentar $label", tint = accent)
         }
     }
@@ -445,14 +445,14 @@ private fun ProtectionEditor(
         if (expanded) {
         Text("CÁLCULO // $formula = $base", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
+            SdoIconButton(
                 enabled = enabled && adjustment > -base,
                 onClick = { onAdjustment(adjustment - 1) },
             ) {
                 Icon(Icons.Default.Remove, "Diminuir ajuste de $name", tint = MaterialTheme.colorScheme.secondary)
             }
             Text("AJUSTE ${adjustment.signed()}", color = MaterialTheme.colorScheme.secondary)
-            IconButton(
+            SdoIconButton(
                 enabled = enabled,
                 onClick = { onAdjustment(adjustment + 1) },
             ) {

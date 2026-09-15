@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import com.kinderman.sdo.ui.SdoSwitch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -170,7 +170,7 @@ internal fun PhaseOneKnowledgeSection(
             onDismissRequest = { creatingSpecialization = false; specializationName = "" },
             title = { Text("CONHECIMENTO ESPECIALIZADO // NÍVEL $level") },
             text = { HudTextField("Nome da especialização", specializationName) { specializationName = it } },
-            confirmButton = { TextButton(
+            confirmButton = { SdoTextButton(
                 enabled = specializationName.isNotBlank(),
                 onClick = {
                     onChange(character.resolveKnowledgeSpecialization(knowledge.id, specializationName, catalog))
@@ -178,7 +178,7 @@ internal fun PhaseOneKnowledgeSection(
                     specializationName = ""
                 },
             ) { Text("CRIAR") } },
-            dismissButton = { TextButton(onClick = { creatingSpecialization = false; specializationName = "" }) { Text("CANCELAR") } },
+            dismissButton = { SdoTextButton(onClick = { creatingSpecialization = false; specializationName = "" }) { Text("CANCELAR") } },
         )
     }
 }
@@ -215,7 +215,7 @@ private fun PhaseOneKnowledgeList(
                     val modifier = knowledge.adjustment.takeUnless { creationMode || it == 0 }?.let { if (it > 0) " // MOD +$it" else " // MOD $it" }.orEmpty()
                     Text("${knowledge.attribute.ifBlank { "SEM ATRIBUTO" }} // NÍVEL $adjustedLevel$modifier", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 }
-                TextButton(onClick = { expandedKnowledgeId = knowledge.id.takeUnless { it == expandedKnowledgeId } }) {
+                SdoTextButton(onClick = { expandedKnowledgeId = knowledge.id.takeUnless { it == expandedKnowledgeId } }) {
                     Text(if (expandedKnowledgeId == knowledge.id) "FECHAR" else "EDITAR")
                 }
                 if (allowEntryChanges) RemoveButton(enabled, "Remover conhecimento") {
@@ -318,12 +318,12 @@ internal fun PhaseOnePathSection(
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
+                SdoTextButton(onClick = {
                     onChange(character.withStructuredPathPreset(entry))
                     pending = null
                 }) { Text("CONFIRMAR") }
             },
-            dismissButton = { TextButton(onClick = { pending = null }) { Text("CANCELAR") } },
+            dismissButton = { SdoTextButton(onClick = { pending = null }) { Text("CANCELAR") } },
         )
     }
 }
@@ -432,7 +432,7 @@ private fun StructuredPowerEditor(
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
-            TextButton(onClick = onToggle) { Text(if (expanded) "FECHAR" else "EDITAR") }
+            SdoTextButton(onClick = onToggle) { Text(if (expanded) "FECHAR" else "EDITAR") }
             RemoveButton(enabled && power.sourceType != PowerSourceType.RACE && power.sourceType != PowerSourceType.PATH, "Remover poder", onRemove)
         }
         if (!expanded) {
@@ -532,7 +532,7 @@ private fun StructuredPowerEditor(
             Row(Modifier.fillMaxWidth()) {
                 Checkbox(power.grantsPermanentBonus, { onValue(power.copy(grantsPermanentBonus = it)) }, enabled = enabled)
                 Text("Concede bônus permanente", modifier = Modifier.weight(1f))
-                if (power.canonicalSource != AbilitySource.ITEM) Switch(power.active, { onValue(power.copy(active = it)) }, enabled = enabled)
+                if (power.canonicalSource != AbilitySource.ITEM) SdoSwitch(power.active, { onValue(power.copy(active = it)) }, enabled = enabled)
             }
             if (power.grantsPermanentBonus) {
                 power.modifiers.forEachIndexed { modifierIndex, modifier ->

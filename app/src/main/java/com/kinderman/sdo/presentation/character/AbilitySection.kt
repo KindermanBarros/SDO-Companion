@@ -13,7 +13,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +51,7 @@ internal fun AbilitySection(
                 if (powersOnly) "Selecionar poder" else "Selecionar místico",
                 enabled && catalog.isNotEmpty(),
             ) { selecting = true }
-            TextButton(onClick = {
+            SdoTextButton(onClick = {
                 val kind = kinds.firstOrNull() ?: AbilityKind.POWER
                 val ability = Ability(
                     name = "Nova habilidade", kind = kind,

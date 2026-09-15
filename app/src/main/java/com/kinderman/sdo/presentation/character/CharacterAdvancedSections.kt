@@ -11,7 +11,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -442,7 +442,7 @@ private fun MysticEditor(
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
-            TextButton(onClick = onToggle) { Text(if (expanded) "FECHAR" else "EDITAR") }
+            SdoTextButton(onClick = onToggle) { Text(if (expanded) "FECHAR" else "EDITAR") }
             RemoveButton(enabled, "Remover efeito", onRemove)
         }
         if (!expanded) {
@@ -616,8 +616,8 @@ internal fun AbilityAvailabilityEditor(
     onChange: (Boolean, Boolean) -> Unit,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        TextButton({ onChange(!favorite, available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
-        TextButton({ onChange(favorite, !available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
+        SdoTextButton({ onChange(!favorite, available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
+        SdoTextButton({ onChange(favorite, !available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
     }
 }
 

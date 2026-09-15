@@ -13,12 +13,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import com.kinderman.sdo.ui.SdoButton
+import com.kinderman.sdo.ui.SdoButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,11 +64,11 @@ fun CharacterConflictDialog(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(
+                    SdoTextButton(
                         onClick = { remoteFieldIds = emptySet() },
                         modifier = Modifier.weight(1f),
                     ) { Text("TUDO LOCAL") }
-                    TextButton(
+                    SdoTextButton(
                         onClick = { remoteFieldIds = conflict.fields.mapTo(mutableSetOf()) { it.id } },
                         modifier = Modifier.weight(1f),
                     ) { Text("TUDO ONLINE") }
@@ -97,7 +97,7 @@ fun CharacterConflictDialog(
             }
         },
         confirmButton = {
-            Button(
+            SdoButton(
                 onClick = { onResolve(remoteFieldIds) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
                 shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
@@ -145,7 +145,7 @@ private fun VersionChoice(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    OutlinedButton(
+    SdoOutlinedButton(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),

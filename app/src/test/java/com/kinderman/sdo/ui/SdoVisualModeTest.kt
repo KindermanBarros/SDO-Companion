@@ -17,4 +17,11 @@ class SdoVisualModeTest {
         assertEquals("Interface padrão", SdoVisualMode.STANDARD.label)
         assertTrue(SdoVisualMode.STANDARD.allowsThemeSelection)
     }
+
+    @Test
+    fun cybergrungeIsOptInAndStandardRemainsDefault() {
+        assertEquals(SdoVisualMode.STANDARD, SdoPreferences().visualMode)
+        assertEquals(SdoThemeVariant.CYAN_INDUSTRIAL, SdoPreferences().theme)
+        assertTrue(SdoVisualMode.entries.first() == SdoVisualMode.STANDARD)
+    }
 }

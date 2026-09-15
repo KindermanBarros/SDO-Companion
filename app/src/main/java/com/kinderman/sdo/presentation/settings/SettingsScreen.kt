@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +36,8 @@ import com.kinderman.sdo.ui.CyberPanel
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.ExperimentalBadge
+import com.kinderman.sdo.ui.CyberGrungeLab
+import com.kinderman.sdo.ui.SdoScreenMasthead
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +54,7 @@ fun SettingsScreen(
                 TopAppBar(
                     title = { Text("CONFIGURAÇÕES") },
                     navigationIcon = {
-                        IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
+                        SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -66,6 +68,9 @@ fun SettingsScreen(
                 contentPadding = PaddingValues(18.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
+                item {
+                    SdoScreenMasthead("CFG//LOCAL", "CONFIGURAÇÕES", "PREFERÊNCIAS DO DISPOSITIVO")
+                }
                 item {
                     CyberPanel(
                         title = "Preferências ficam neste aparelho",
@@ -121,6 +126,9 @@ fun SettingsScreen(
                         description = SdoThemeVariant::description,
                         onSelect = { onPreferencesChange(preferences.copy(theme = it)) },
                     )
+                }
+                if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) item {
+                    CyberGrungeLab()
                 }
                 item {
                     SdoChoicePanel(

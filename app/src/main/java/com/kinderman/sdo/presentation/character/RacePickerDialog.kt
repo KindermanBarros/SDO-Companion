@@ -15,7 +15,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +49,7 @@ internal fun RacePickerDialog(
             onDismissRequest = onDismiss,
             title = { Text("CATÁLOGO DE RAÇAS INDISPONÍVEL") },
             text = { Text("Nenhuma raça válida foi carregada. Feche a tela e tente sincronizar novamente.") },
-            confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+            confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
         )
         return
     }

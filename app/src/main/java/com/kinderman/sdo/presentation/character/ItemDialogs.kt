@@ -17,7 +17,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -56,12 +56,12 @@ internal fun InitialShopDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = onCatalog, enabled = catalogAvailable, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
-                TextButton(onClick = onBuilder, modifier = Modifier.fillMaxWidth()) { Text("CONSTRUIR ITEM COM PH") }
+                SdoTextButton(onClick = onCatalog, enabled = catalogAvailable, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
+                SdoTextButton(onClick = onBuilder, modifier = Modifier.fillMaxWidth()) { Text("CONSTRUIR ITEM COM PH") }
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
     )
 }
 
@@ -135,7 +135,7 @@ internal fun ItemCatalogDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -206,7 +206,7 @@ internal fun ItemBuilderDialog(
                     )
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    TextButton(onClick = {
+                    SdoTextButton(onClick = {
                         val nextBase = ItemCreationRules.weaponBases.firstOrNull()
                         val nextMaterial = ItemCreationRules.weaponMaterials.firstOrNull { it.id == "ligas_comuns" }
                             ?: ItemCreationRules.weaponMaterials.firstOrNull()
@@ -218,7 +218,7 @@ internal fun ItemBuilderDialog(
                             modifications = emptyList()
                         }
                     }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
-                    TextButton(onClick = {
+                    SdoTextButton(onClick = {
                         val nextBase = ItemCreationRules.armorBases.firstOrNull()
                         val nextMaterial = ItemCreationRules.armorMaterials.firstOrNull { it.id == "ligas_comuns" }
                             ?: ItemCreationRules.armorMaterials.firstOrNull()
@@ -232,23 +232,23 @@ internal fun ItemBuilderDialog(
                     }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
                 }
                 HudTextField("Nome personalizado (opcional)", customName) { customName = it }
-                TextButton(onClick = { picker = "base" }, modifier = Modifier.fillMaxWidth()) { Text("TIPO // ${base.name}") }
+                SdoTextButton(onClick = { picker = "base" }, modifier = Modifier.fillMaxWidth()) { Text("TIPO // ${base.name}") }
                 Text("MATERIAL PREDOMINANTE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text("Partes, camadas e ligas compatíveis pertencem à mesma composição; o material só é contabilizado uma vez.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                TextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
+                SdoTextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
                 Text("LIGA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 Text("Combine um segundo material ou mantenha a composição pura.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                TextButton(onClick = { picker = "secondaryMaterial" }, modifier = Modifier.fillMaxWidth()) {
+                SdoTextButton(onClick = { picker = "secondaryMaterial" }, modifier = Modifier.fillMaxWidth()) {
                     Text("SEGUNDO MATERIAL // ${secondaryMaterial?.name ?: "SEM MISTURA"}")
                 }
-                if (secondaryMaterial != null) TextButton(onClick = { secondaryMaterial = null }, modifier = Modifier.fillMaxWidth()) { Text("USAR MATERIAL PURO") }
+                if (secondaryMaterial != null) SdoTextButton(onClick = { secondaryMaterial = null }, modifier = Modifier.fillMaxWidth()) { Text("USAR MATERIAL PURO") }
                 val composition = ItemCreationRules.mixMaterials(material, secondaryMaterial)
                 if (composition.traitIds.isNotEmpty()) Text(
                     "TRAÇOS // ${composition.traitIds.joinToString { ItemCreationRules.traitName(it).uppercase() }}",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodySmall,
                 )
-                TextButton(
+                SdoTextButton(
                     onClick = {
                         if (qualityOptions.isNotEmpty()) {
                             quality = qualityOptions[(qualityOptions.indexOf(quality).coerceAtLeast(0) + 1) % qualityOptions.size]
@@ -306,7 +306,7 @@ internal fun ItemBuilderDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = {
+            SdoTextButton(onClick = {
                 if (allowed) onAdd(built.toInventoryItem(initialCreation = initialCreation))
             }, enabled = !overBudget) {
                 Text(when {
@@ -316,7 +316,7 @@ internal fun ItemBuilderDialog(
                 })
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 
     if (picker != null) ItemPartPickerDialog(
@@ -381,7 +381,7 @@ private fun ItemPartPickerDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 
@@ -391,7 +391,7 @@ private fun UnavailableItemCatalogDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("CATÁLOGO DE ITENS INDISPONÍVEL") },
         text = { Text("As bases ou materiais necessários não foram carregados. Feche a tela e tente sincronizar novamente.") },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+        confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
     )
 }
 
@@ -426,14 +426,14 @@ internal fun EquipmentGlossaryDialog(onUse: ((com.kinderman.sdo.domain.catalog.G
                             Text(entry.term, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
                             Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                             Text(entry.definition, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                            if (onUse != null && entry.referenceId.isNotBlank()) TextButton(onClick = { onUse(entry) }) { Text("USAR COMO BASE") }
+                            if (onUse != null && entry.referenceId.isNotBlank()) SdoTextButton(onClick = { onUse(entry) }) { Text("USAR COMO BASE") }
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("FECHAR") } },
+        confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
     )
 }
 
@@ -479,8 +479,8 @@ internal fun EquipmentPickerDialog(
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onConfirm(selected) }) { Text("APLICAR") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
+        confirmButton = { SdoTextButton(onClick = { onConfirm(selected) }) { Text("APLICAR") } },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
 }
 

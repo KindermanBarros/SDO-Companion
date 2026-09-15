@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import com.kinderman.sdo.ui.SdoCard
+import com.kinderman.sdo.ui.SdoCardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -80,7 +80,7 @@ private fun PersonalNoteCard(
     onRemove: () -> Unit,
     onValue: (PersonalNote) -> Unit,
 ) {
-    Card(
+    SdoCard(
         modifier = Modifier
             .fillMaxWidth()
             .border(
