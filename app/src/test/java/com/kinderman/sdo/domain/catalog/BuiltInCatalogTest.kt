@@ -87,6 +87,12 @@ class BuiltInCatalogTest {
     @Test fun everyMysticExampleKeepsMetadataOutOfItsEffect() {
         val abilities = BuiltInCatalog.entries.filter { it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH) }
         assertTrue(abilities.all { it.targetArea.isNotBlank() })
+        assertTrue(abilities.all {
+            it.prerequisites.isNotEmpty() && it.keywords.isNotEmpty() &&
+                it.limit.isNotBlank() && it.activationCondition.isNotBlank() &&
+                it.enhancements.isNotBlank() && it.deactivationCondition.isNotBlank() &&
+                it.source.isNotBlank() && it.ruleReference.isNotBlank()
+        })
         assertTrue(abilities.none { it.mechanicalEffect.startsWith("Suporte e gatilho:", ignoreCase = true) })
         assertTrue(abilities.filter { it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE) }
             .all { it.abilityCostType == com.kinderman.sdo.domain.model.AbilityCostType.ARCANE })

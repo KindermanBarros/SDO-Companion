@@ -22,7 +22,22 @@
       "targetArea": "Recipiente; recebe líquido frio",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Aquece o conteúdo sem incendiá-lo."
+      "effect": "Aquece o conteúdo sem incendiá-lo.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Aquecimento",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.centelha",
@@ -41,7 +56,22 @@
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Produz chama pequena e estável.",
-      "package": "Kit de Runas Básicas"
+      "package": "Kit de Runas Básicas",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Centelha",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.alarme_termico",
@@ -59,7 +89,22 @@
       "targetArea": "Porta; criatura a cruza",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Emite clarão visível ao inscritor em 30 m."
+      "effect": "Emite clarão visível ao inscritor em 30 m.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Alarme Térmico",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.lamina_morna",
@@ -77,7 +122,22 @@
       "targetArea": "Arma; desembainhar",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Próximo acerto causa +1d6 fogo."
+      "effect": "Próximo acerto causa +1d6 fogo.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Lâmina Morna",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.selo_cauterizante",
@@ -95,7 +155,22 @@
       "targetArea": "Bandagem; contato com sangue",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Interrompe sangramento comum."
+      "effect": "Interrompe sangramento comum.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Selo Cauterizante",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.dissipacao_impacto",
@@ -113,7 +188,22 @@
       "targetArea": "Parede; sofre impacto",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Reduz em 2d6 o dano à estrutura."
+      "effect": "Reduz em 2d6 o dano à estrutura.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Dissipação de Impacto",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.solo_firme",
@@ -133,7 +223,22 @@
       "durationValue": 1,
       "resistance": "Nenhuma",
       "effect": "Ignora uma penalidade de terreno difícil por uma rodada.",
-      "package": "Kit de Runas Básicas"
+      "package": "Kit de Runas Básicas",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Solo Firme",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.tranca_mineral",
@@ -151,7 +256,22 @@
       "targetArea": "Porta; comando",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Funde a porta ao batente; quebrar exige CD 17."
+      "effect": "Funde a porta ao batente; quebrar exige CD 17.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Tranca Mineral",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.pilar_emergencia",
@@ -169,7 +289,22 @@
       "targetArea": "Piso; estrutura cede",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ergue suporte capaz de sustentar uma sala por uma cena."
+      "effect": "Ergue suporte capaz de sustentar uma sala por uma cena.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Pilar de Emergência",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.memoria_rocha",
@@ -190,7 +325,22 @@
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
       "effect": "Mostra vibração marcante ocorrida ali no último dia.",
-      "package": "Runas Avançadas"
+      "package": "Runas Avançadas",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Memória da Rocha",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.frescor",
@@ -211,7 +361,22 @@
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
       "effect": "Conserva conteúdo por um dia.",
-      "package": "Kit de Runas Básicas"
+      "package": "Kit de Runas Básicas",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Frescor",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.passo_congelante",
@@ -229,7 +394,22 @@
       "targetArea": "Sola; pisar em líquido",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Congela uma área de 1 m sob o usuário."
+      "effect": "Congela uma área de 1 m sob o usuário.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Passo Congelante",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.ferrolho_gelo",
@@ -247,7 +427,22 @@
       "targetArea": "Porta; intrusão",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Cria camada de gelo com 12 Vida."
+      "effect": "Cria camada de gelo com 12 Vida.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Ferrolho de Gelo",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.armadilha_geada",
@@ -266,7 +461,22 @@
       "duration": "Instantânea",
       "resistance": "Arcana",
       "effect": "Ataque do inscritor vs. PA; 2d6 + POD e −2 m Movimento.",
-      "package": "Runas Intermediárias"
+      "package": "Runas Intermediárias",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Armadilha de Geada",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.camara_invernal",
@@ -284,7 +494,22 @@
       "targetArea": "Sala; porta fechada",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Mantém frio intenso e preservação enquanto selada."
+      "effect": "Mantém frio intenso e preservação enquanto selada.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Câmara Invernal",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.curativo_reativo",
@@ -302,7 +527,22 @@
       "targetArea": "Bandagem; portador sofre dano",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Recupera 1d6 + POD do inscritor Vida."
+      "effect": "Recupera 1d6 + POD do inscritor Vida.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Curativo Reativo",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.marca_pureza",
@@ -322,7 +562,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Muda de cor diante de toxina comum."
+      "effect": "Muda de cor diante de toxina comum.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Marca de Pureza",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.leito_restaurador",
@@ -340,7 +595,22 @@
       "targetArea": "Cama; descanso de 8 h",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Hóspede recupera +2d6 Vida no descanso."
+      "effect": "Hóspede recupera +2d6 Vida no descanso.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Leito Restaurador",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.selo_estabilizacao",
@@ -359,7 +629,22 @@
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Estabiliza e suspende rolagem de morte até início do próximo turno.",
-      "package": "Runas Intermediárias"
+      "package": "Runas Intermediárias",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Selo de Estabilização",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.santuario_regenerativo",
@@ -378,7 +663,22 @@
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Aliados no raio 3 m recuperam 3d6 + POD uma vez por cena.",
-      "package": "Runas Avançadas"
+      "package": "Runas Avançadas",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Santuário Regenerativo",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.passos_silenciosos",
@@ -396,7 +696,22 @@
       "targetArea": "Botas; comando",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Abafa passos por uma cena ou até atacar."
+      "effect": "Abafa passos por uma cena ou até atacar.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Passos Silenciosos",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.fechadura_cega",
@@ -414,7 +729,22 @@
       "targetArea": "Fechadura; observação hostil",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Faz parecer que não há fechadura ou abertura."
+      "effect": "Faz parecer que não há fechadura ou abertura.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Fechadura Cega",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.manto_parede",
@@ -432,7 +762,22 @@
       "targetArea": "Capa; permanecer imóvel",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Concede +4 Furtividade por uma cena."
+      "effect": "Concede +4 Furtividade por uma cena.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Manto da Parede",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.corredor_falso",
@@ -450,7 +795,22 @@
       "targetArea": "Entrada; intruso atravessa",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "Contra PMental, mostra passagem na direção errada."
+      "effect": "Contra PMental, mostra passagem na direção errada.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Corredor Falso",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.arquivo_inexistente",
@@ -469,7 +829,22 @@
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Oculta cofre de percepção mundana por uma cena.",
-      "package": "Runas Avançadas"
+      "package": "Runas Avançadas",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Arquivo Inexistente",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.mensagem_eco",
@@ -488,7 +863,22 @@
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Reproduz mensagem de até dez segundos.",
-      "package": "Kit de Runas Básicas"
+      "package": "Kit de Runas Básicas",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Mensagem de Eco",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.sino_mudo",
@@ -506,7 +896,22 @@
       "targetArea": "Fio; rompimento",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Alerta mentalmente o portador em até 100 m."
+      "effect": "Alerta mentalmente o portador em até 100 m.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Sino Mudo",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.ruptura_harmonica",
@@ -525,7 +930,22 @@
       "duration": "Instantânea",
       "resistance": "Nenhuma",
       "effect": "Causa 2d6 + POD adicional a objeto ou estrutura frágil.",
-      "package": "Runas Intermediárias"
+      "package": "Runas Intermediárias",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Ruptura Harmônica",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.camara_silenciosa",
@@ -543,7 +963,22 @@
       "targetArea": "Parede; comando",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Sons não atravessam uma sala por uma cena."
+      "effect": "Sons não atravessam uma sala por uma cena.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Câmara Silenciosa",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.voz_anfiteatro",
@@ -561,7 +996,22 @@
       "targetArea": "Palco; orador inicia discurso",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Voz chega claramente a todos no local sem ensurdecer."
+      "effect": "Voz chega claramente a todos no local sem ensurdecer.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Voz do Anfiteatro",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.retorno_magnetico",
@@ -579,7 +1029,22 @@
       "targetArea": "Arma metálica; comando",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Arma arremessada retorna à mão se caminho estiver livre."
+      "effect": "Arma arremessada retorna à mão se caminho estiver livre.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Retorno Magnético",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.desvio_projetil",
@@ -597,7 +1062,22 @@
       "targetArea": "Escudo; projétil metálico se aproxima",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "+4 PG contra aquele ataque."
+      "effect": "+4 PG contra aquele ataque.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Desvio de Projétil",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.inventario_fiel",
@@ -615,7 +1095,22 @@
       "targetArea": "Caixa; item marcado sai",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Emite tom e registra qual selo foi removido."
+      "effect": "Emite tom e registra qual selo foi removido.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Inventário Fiel",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.corrente_obediente",
@@ -633,7 +1128,22 @@
       "targetArea": "Corrente; comando",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Enrola alvo adjacente; ataque vs. PG para Imobilizar."
+      "effect": "Enrola alvo adjacente; ataque vs. PG para Imobilizar.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Corrente Obediente",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.arsenal_vinculado",
@@ -651,7 +1161,22 @@
       "targetArea": "Suporte; comando do dono",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Convoca à mão uma arma marcada no mesmo edifício."
+      "effect": "Convoca à mão uma arma marcada no mesmo edifício.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Arsenal Vinculado",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.raiz_guarda",
@@ -669,7 +1194,22 @@
       "targetArea": "Vaso; estranho se aproxima",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Planta se move e aponta para o intruso."
+      "effect": "Planta se move e aponta para o intruso.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Raiz de Guarda",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.madeira_renovada",
@@ -687,7 +1227,22 @@
       "targetArea": "Ferramenta de madeira; quebra",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Repara dano simples uma vez."
+      "effect": "Repara dano simples uma vez.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Madeira Renovada",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.cerca_espinhosa",
@@ -706,7 +1261,22 @@
       "duration": "Cena",
       "resistance": "Nenhuma",
       "effect": "Cria barreira vegetal de 5 m com 15 Vida por uma cena.",
-      "package": "Runas Intermediárias"
+      "package": "Runas Intermediárias",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Cerca Espinhosa",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.fruto_vigilia",
@@ -726,7 +1296,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Produz fruto que remove 1 Exaustão, uma vez por dia."
+      "effect": "Produz fruto que remove 1 Exaustão, uma vez por dia.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Fruto de Vigília",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.jardim_sentinela",
@@ -744,7 +1329,22 @@
       "targetArea": "Jardim; intrusão",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Plantas prendem invasores; ataque vs. PG, Imobilizado."
+      "effect": "Plantas prendem invasores; ataque vs. PG, Imobilizado.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Jardim Sentinela",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.ancora_onirica",
@@ -763,7 +1363,22 @@
       "duration": "Cena",
       "resistance": "Arcana",
       "effect": "Contra PA, impede teleporte e deslocamento planar por uma cena.",
-      "package": "Runas Avançadas"
+      "package": "Runas Avançadas",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Âncora Onírica",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.cofre_memoria",
@@ -781,7 +1396,22 @@
       "targetArea": "Cristal; toque voluntário",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Guarda memória sensorial curta, reproduzível três vezes."
+      "effect": "Guarda memória sensorial curta, reproduzível três vezes.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Cofre de Memória",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.despertador_pesadelo",
@@ -801,7 +1431,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "Acorda o portador diante de intrusão mental."
+      "effect": "Acorda o portador diante de intrusão mental.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Despertador de Pesadelo",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.janela_sonho",
@@ -819,7 +1464,22 @@
       "targetArea": "Espelho; duas peças pareadas",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Permite imagem e voz entre os espelhos uma vez por cena."
+      "effect": "Permite imagem e voz entre os espelhos uma vez por cena.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Janela de Sonho",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.lacre_antimanifesto",
@@ -837,7 +1497,22 @@
       "targetArea": "Porta; Manifesto se aproxima",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Entidade deve vencer PA 16 para cruzar."
+      "effect": "Entidade deve vencer PA 16 para cruzar.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Lacre Antimanifesto",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.heranca_rubra",
@@ -855,7 +1530,22 @@
       "targetArea": "Medalhão; sangue de parente toca",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Confirma ou rejeita parentesco direto por mudança de cor."
+      "effect": "Confirma ou rejeita parentesco direto por mudança de cor.",
+      "prerequisites": [
+        "Rúnico nível 1"
+      ],
+      "keywords": [
+        "Herança Rubra",
+        "Rúnico",
+        "Nível 1",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.juramento_carmesim",
@@ -873,7 +1563,22 @@
       "targetArea": "Contrato; signatário quebra cláusula",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Marca visível surge na pele; não força obediência."
+      "effect": "Marca visível surge na pele; não força obediência.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Juramento Carmesim",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.guardiao_reliquia",
@@ -891,7 +1596,22 @@
       "targetArea": "Relíquia; usuário não autorizado toca",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Ataque vs. PA; 2d6 + POD e repele 2 m."
+      "effect": "Ataque vs. PA; 2d6 + POD e repele 2 m.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Guardião de Relíquia",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 1 horas e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.traducao_recursiva",
@@ -909,7 +1629,22 @@
       "targetArea": "Placa; inscrição antiga é aproximada",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Exibe tradução funcional de símbolos conhecidos por uma cena."
+      "effect": "Exibe tradução funcional de símbolos conhecidos por uma cena.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Tradução Recursiva",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     },
     {
       "id": "rune.portal_oficina",
@@ -928,7 +1663,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Abre passagem entre arcos no mesmo assentamento por uma rodada."
+      "effect": "Abre passagem entre arcos no mesmo assentamento por uma rodada.",
+      "prerequisites": [
+        "Rúnico nível 3"
+      ],
+      "keywords": [
+        "Portal de Oficina",
+        "Rúnico",
+        "Nível 3",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 8 horas e gastar 5 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Runas",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
     }
   ]
 }

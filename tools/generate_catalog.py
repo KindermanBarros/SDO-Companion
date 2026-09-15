@@ -32,7 +32,9 @@ KNOWLEDGE_FIELDS = {
 ABILITY_REQUIRED_FIELDS = {
     'id': str, 'type': str, 'name': str, 'costType': str, 'costValue': int,
     'execution': str, 'range': str, 'targetArea': str, 'duration': str,
-    'resistance': str, 'effect': str,
+    'resistance': str, 'effect': str, 'prerequisites': list, 'keywords': list,
+    'limit': str, 'activationCondition': str, 'enhancements': str,
+    'deactivationCondition': str, 'sourceDocument': str, 'ruleReference': str,
 }
 ABILITY_OPTIONAL_FIELDS = {
     'source': str, 'knowledge': str, 'level': int, 'purity': str, 'package': str,
@@ -116,12 +118,14 @@ def ability_to_catalog(entry, doc):
         'action': display_timed(entry['execution'], entry.get('executionValue', 0), entry.get('executionUnit', '')),
         'range': entry['range'],
         'duration': display_timed(entry['duration'], entry.get('durationValue', 0), entry.get('durationUnit', '')),
-        'source': doc['sourceDocument'], 'version': doc['catalogVersion'],
+        'source': entry['sourceDocument'], 'version': doc['catalogVersion'],
         'creationCost': '', 'price': 0, 'load': 0, 'durability': '', 'region': '',
-        'relatedAttribute': '', 'initialValue': None, 'prerequisites': [],
-        'mechanicalEffect': entry['effect'], 'ruleReference': doc['ruleReference'],
-        'keywords': [entry['name'], group], 'repeatable': False, 'limit': '',
-        'activationCondition': '', 'enhancements': '', 'deactivationCondition': '',
+        'relatedAttribute': '', 'initialValue': None, 'prerequisites': entry['prerequisites'],
+        'mechanicalEffect': entry['effect'], 'ruleReference': entry['ruleReference'],
+        'keywords': entry['keywords'], 'repeatable': False, 'limit': entry['limit'],
+        'activationCondition': entry['activationCondition'],
+        'enhancements': entry['enhancements'],
+        'deactivationCondition': entry['deactivationCondition'],
         'abilitySource': None if is_ash else SOURCE_VALUES[entry['source']],
         'sourceKnowledge': entry.get('knowledge', ''), 'sourceLevel': entry.get('level'),
         'abilityCostType': COST_VALUES[entry['costType']], 'abilityCostValue': entry['costValue'],
@@ -148,13 +152,18 @@ def load_abilities(name, doc):
         for key, expected in {**ABILITY_REQUIRED_FIELDS, **ABILITY_OPTIONAL_FIELDS}.items():
             if key in entry:
                 assert isinstance(entry[key], expected), (entry['id'], key)
+                if expected is list:
+                    assert all(isinstance(value, str) and value.strip() for value in entry[key]), (entry['id'], key)
         assert entry['type'] == ABILITY_FILES[name]
         assert entry['costType'] in COST_VALUES and entry['costValue'] >= 0
         assert entry['execution'] in EXECUTION_VALUES
         assert entry['range'] in RANGE_VALUES
         assert entry['duration'] in DURATION_VALUES
         assert entry['resistance'] in RESISTANCE_VALUES
-        assert entry['name'].strip() and entry['targetArea'].strip() and entry['effect'].strip()
+        for key in ('name', 'targetArea', 'effect', 'limit', 'activationCondition',
+                    'enhancements', 'deactivationCondition', 'sourceDocument', 'ruleReference'):
+            assert entry[key].strip(), (entry['id'], key)
+        assert entry['keywords'], (entry['id'], 'keywords')
         assert not entry['effect'].lower().startswith('suporte e gatilho:'), (entry['id'], 'effect metadata')
         if entry['execution'] == 'Tempo':
             assert entry.get('executionValue', 0) > 0 and entry.get('executionUnit') in TIME_UNIT_VALUES
@@ -230,6 +239,16 @@ def load_catalog(directory):
                 assert not entry['name'].lower().startswith('estudo de ')
             entries.append(entry)
     assert len({entry['id'] for entry in entries}) == len(entries), 'Duplicate IDs'
+    known_knowledges = {
+        entry['name'] for entry in entries
+        if entry['kind'] in ('ACQUIRED_KNOWLEDGE', 'ARCANE_KNOWLEDGE', 'BATTLE_TECHNIQUE')
+    }
+    unresolved_knowledge_sources = [
+        (entry['id'], entry['sourceKnowledge']) for entry in entries
+        if entry['kind'] in ('MAGIC', 'RUNE') and entry['abilitySource'] == 'KNOWLEDGE'
+        and entry['sourceKnowledge'] not in known_knowledges
+    ]
+    assert not unresolved_knowledge_sources, f'Unresolved knowledge sources: {unresolved_knowledge_sources}'
     actual_counts = {kind: sum(e['kind'] == kind for e in entries) for kind in COUNTS}
     assert all(actual_counts[kind] == count for kind, count in COUNTS.items() if kind not in (
         'ACQUIRED_KNOWLEDGE', 'ARCANE_KNOWLEDGE', 'BATTLE_TECHNIQUE'))

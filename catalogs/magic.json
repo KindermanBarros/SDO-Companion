@@ -21,7 +21,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "1d6 + POD elétrico em um alvo; pode desregular mecanismo simples por um turno."
+      "effect": "1d6 + POD elétrico em um alvo; pode desregular mecanismo simples por um turno.",
+      "prerequisites": [
+        "Electromancia nível 1"
+      ],
+      "keywords": [
+        "Faísca Condutora",
+        "Electromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.impulso_acelerado",
@@ -37,7 +52,22 @@
       "targetArea": "pessoal",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Movimento adicional de 5 m e +2 na próxima Iniciativa ou Reflexos na cena."
+      "effect": "Movimento adicional de 5 m e +2 na próxima Iniciativa ou Reflexos na cena.",
+      "prerequisites": [
+        "Electromancia nível 2"
+      ],
+      "keywords": [
+        "Impulso Acelerado",
+        "Electromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.punho_pedra",
@@ -53,7 +83,22 @@
       "targetArea": "pessoal",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Próximo ataque desarmado causa +1d6 físico e pode empurrar 1 m."
+      "effect": "Próximo ataque desarmado causa +1d6 físico e pode empurrar 1 m.",
+      "prerequisites": [
+        "Litomancia nível 1"
+      ],
+      "keywords": [
+        "Punho de Pedra",
+        "Litomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.muro_improvisado",
@@ -69,7 +114,22 @@
       "targetArea": "8 m",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Ergue cobertura alta de pedra com 15 Vida por uma cena."
+      "effect": "Ergue cobertura alta de pedra com 15 Vida por uma cena.",
+      "prerequisites": [
+        "Litomancia nível 2"
+      ],
+      "keywords": [
+        "Muro Improvisado",
+        "Litomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.vinha_prendedora",
@@ -85,7 +145,22 @@
       "targetArea": "8 m",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Imobiliza; escapar exige uma ação e FOR + Atletismo, CD 12."
+      "effect": "Imobiliza; escapar exige uma ação e FOR + Atletismo, CD 12.",
+      "prerequisites": [
+        "Natureza nível 1"
+      ],
+      "keywords": [
+        "Vinha Prendedora",
+        "Natureza",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.sussurro_fauna",
@@ -101,7 +176,22 @@
       "targetArea": "20 m",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Pequenos animais observam, distraem ou carregam objeto leve por uma cena."
+      "effect": "Pequenos animais observam, distraem ou carregam objeto leve por uma cena.",
+      "prerequisites": [
+        "Natureza nível 2"
+      ],
+      "keywords": [
+        "Sussurro da Fauna",
+        "Natureza",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.chama_palma",
@@ -117,7 +207,22 @@
       "targetArea": "pessoal",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Luz e ignição por uma cena; toque ofensivo causa 1d6 + POD."
+      "effect": "Luz e ignição por uma cena; toque ofensivo causa 1d6 + POD.",
+      "prerequisites": [
+        "Piromancia nível 1"
+      ],
+      "keywords": [
+        "Chama na Palma",
+        "Piromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.rajada_brasas",
@@ -135,7 +240,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Arcana",
-      "effect": "2d6 + POD de fogo; materiais inflamáveis podem incendiar."
+      "effect": "2d6 + POD de fogo; materiais inflamáveis podem incendiar.",
+      "prerequisites": [
+        "Piromancia nível 2"
+      ],
+      "keywords": [
+        "Rajada de Brasas",
+        "Piromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.jato_cortante",
@@ -151,7 +271,22 @@
       "targetArea": "8 m",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "1d6 + POD físico; empurra alvo leve 1 m."
+      "effect": "1d6 + POD físico; empurra alvo leve 1 m.",
+      "prerequisites": [
+        "Aqueomancia nível 1"
+      ],
+      "keywords": [
+        "Jato Cortante",
+        "Aqueomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.nevoa_cega",
@@ -168,7 +303,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Nuvem por uma rodada; visão através dela impõe Cego."
+      "effect": "Nuvem por uma rodada; visão através dela impõe Cego.",
+      "prerequisites": [
+        "Aqueomancia nível 2"
+      ],
+      "keywords": [
+        "Névoa Cega",
+        "Aqueomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.toque_drenante",
@@ -184,7 +334,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "1d6 + POD necrótico; recupera metade do dano, máximo POD."
+      "effect": "1d6 + POD necrótico; recupera metade do dano, máximo POD.",
+      "prerequisites": [
+        "Necromancia nível 1"
+      ],
+      "keywords": [
+        "Toque Drenante",
+        "Necromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.sussurro_ossos",
@@ -200,7 +365,22 @@
       "targetArea": "3 m",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Cadáver recente revela uma memória curta relacionada à morte."
+      "effect": "Cadáver recente revela uma memória curta relacionada à morte.",
+      "prerequisites": [
+        "Necromancia nível 2"
+      ],
+      "keywords": [
+        "Sussurro dos Ossos",
+        "Necromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.toque_restaurador",
@@ -216,7 +396,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Recupera 1d6 + POD Vida; não remove Falhas."
+      "effect": "Recupera 1d6 + POD Vida; não remove Falhas.",
+      "prerequisites": [
+        "Cura nível 1"
+      ],
+      "keywords": [
+        "Toque Restaurador",
+        "Cura",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.purificacao",
@@ -232,7 +427,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Remove veneno fraco, sangramento ou condição física leve."
+      "effect": "Remove veneno fraco, sangramento ou condição física leve.",
+      "prerequisites": [
+        "Cura nível 2"
+      ],
+      "keywords": [
+        "Purificação",
+        "Cura",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.sussurro_alheio",
@@ -248,7 +458,22 @@
       "targetArea": "8 m",
       "duration": "Instantânea",
       "resistance": "Mental",
-      "effect": "Planta pensamento curto que não obriga ação autodestrutiva."
+      "effect": "Planta pensamento curto que não obriga ação autodestrutiva.",
+      "prerequisites": [
+        "Oniromancia nível 1"
+      ],
+      "keywords": [
+        "Sussurro Alheio",
+        "Oniromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.veu_mental",
@@ -264,7 +489,22 @@
       "targetArea": "área 3 m a 10 m",
       "duration": "Cena",
       "resistance": "Mental",
-      "effect": "Ilusão sensorial simples por uma cena; cada observador resiste."
+      "effect": "Ilusão sensorial simples por uma cena; cada observador resiste.",
+      "prerequisites": [
+        "Oniromancia nível 2"
+      ],
+      "keywords": [
+        "Véu de Névoa Mental",
+        "Oniromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.fio_rubro",
@@ -282,7 +522,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Sente direção de criatura cujo sangue possui por uma hora."
+      "effect": "Sente direção de criatura cujo sangue possui por uma hora.",
+      "prerequisites": [
+        "Sangromancia nível 1"
+      ],
+      "keywords": [
+        "Fio Rubro",
+        "Sangromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.coagulo_imperativo",
@@ -299,7 +554,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "2d6 + POD e reduz Movimento em 5 m por uma rodada."
+      "effect": "2d6 + POD e reduz Movimento em 5 m por uma rodada.",
+      "prerequisites": [
+        "Sangromancia nível 2"
+      ],
+      "keywords": [
+        "Coágulo Imperativo",
+        "Sangromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.leitura_vestigio",
@@ -315,7 +585,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Revela idade aproximada, tradição e último uso arcano de uma inscrição antiga."
+      "effect": "Revela idade aproximada, tradição e último uso arcano de uma inscrição antiga.",
+      "prerequisites": [
+        "Arqueomancia nível 1"
+      ],
+      "keywords": [
+        "Leitura de Vestígio",
+        "Arqueomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.eco_reliquia",
@@ -332,7 +617,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Nenhuma",
-      "effect": "Reproduz por uma rodada uma função menor e segura de relíquia estudada."
+      "effect": "Reproduz por uma rodada uma função menor e segura de relíquia estudada.",
+      "prerequisites": [
+        "Arqueomancia nível 2"
+      ],
+      "keywords": [
+        "Eco da Relíquia",
+        "Arqueomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.sopro_vetorial",
@@ -348,7 +648,22 @@
       "targetArea": "linha 6 m",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Empurra objeto ou criatura leve 2 m; apaga chama comum."
+      "effect": "Empurra objeto ou criatura leve 2 m; apaga chama comum.",
+      "prerequisites": [
+        "Aeromancia nível 1"
+      ],
+      "keywords": [
+        "Sopro Vetorial",
+        "Aeromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.passo_vendaval",
@@ -364,7 +679,22 @@
       "targetArea": "pessoal",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Desloca 10 m sem provocar reações físicas e ignora terreno difícil."
+      "effect": "Desloca 10 m sem provocar reações físicas e ignora terreno difícil.",
+      "prerequisites": [
+        "Aeromancia nível 2"
+      ],
+      "keywords": [
+        "Passo de Vendaval",
+        "Aeromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.sentir_fratura",
@@ -380,7 +710,22 @@
       "targetArea": "raio 10 m",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Detecta cavidades, solo instável e vibrações recentes."
+      "effect": "Detecta cavidades, solo instável e vibrações recentes.",
+      "prerequisites": [
+        "Geomancia nível 1"
+      ],
+      "keywords": [
+        "Sentir Fratura",
+        "Geomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.dente_cristal",
@@ -396,7 +741,22 @@
       "targetArea": "10 m",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "2d6 + POD físico e cria terreno difícil em 2 m."
+      "effect": "2d6 + POD físico e cria terreno difícil em 2 m.",
+      "prerequisites": [
+        "Geomancia nível 2"
+      ],
+      "keywords": [
+        "Dente de Cristal",
+        "Geomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.geada_subita",
@@ -413,7 +773,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "1d6 + POD de frio e −2 m de Movimento por uma rodada."
+      "effect": "1d6 + POD de frio e −2 m de Movimento por uma rodada.",
+      "prerequisites": [
+        "Criomancia nível 1"
+      ],
+      "keywords": [
+        "Geada Súbita",
+        "Criomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.casulo_gelo",
@@ -430,7 +805,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Arcana",
-      "effect": "Imobiliza por uma rodada; casulo tem 12 Vida e vulnerabilidade a fogo."
+      "effect": "Imobiliza por uma rodada; casulo tem 12 Vida e vulnerabilidade a fogo.",
+      "prerequisites": [
+        "Criomancia nível 2"
+      ],
+      "keywords": [
+        "Casulo de Gelo",
+        "Criomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.manto_penumbra",
@@ -446,7 +836,22 @@
       "targetArea": "pessoal",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "+4 em Furtividade em sombra por uma cena; termina sob luz intensa."
+      "effect": "+4 em Furtividade em sombra por uma cena; termina sob luz intensa.",
+      "prerequisites": [
+        "Umbramancia nível 1"
+      ],
+      "keywords": [
+        "Manto de Penumbra",
+        "Umbramancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.passagem_silenciosa",
@@ -462,7 +867,22 @@
       "targetArea": "área 3 m",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Abafa sons do grupo por uma cena; ataques encerram o efeito para o agressor."
+      "effect": "Abafa sons do grupo por uma cena; ataques encerram o efeito para o agressor.",
+      "prerequisites": [
+        "Umbramancia nível 2"
+      ],
+      "keywords": [
+        "Passagem Silenciosa",
+        "Umbramancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.clarao_revelador",
@@ -478,7 +898,22 @@
       "targetArea": "cone 6 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Revela ocultações simples; criaturas falhas ficam Cegas até seu próximo turno."
+      "effect": "Revela ocultações simples; criaturas falhas ficam Cegas até seu próximo turno.",
+      "prerequisites": [
+        "Luminomancia nível 1"
+      ],
+      "keywords": [
+        "Clarão Revelador",
+        "Luminomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.lanca_prismatica",
@@ -494,7 +929,22 @@
       "targetArea": "15 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "2d6 + POD luminoso; ignora ocultação por sombra."
+      "effect": "2d6 + POD luminoso; ignora ocultação por sombra.",
+      "prerequisites": [
+        "Luminomancia nível 2"
+      ],
+      "keywords": [
+        "Lança Prismática",
+        "Luminomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.instante_alongado",
@@ -512,7 +962,22 @@
       "durationValue": 1,
       "durationUnit": "Dias",
       "resistance": "Nenhuma",
-      "effect": "+2 em uma reação, Reflexos ou teste para executar tarefa imediata."
+      "effect": "+2 em uma reação, Reflexos ou teste para executar tarefa imediata.",
+      "prerequisites": [
+        "Cronomancia nível 1"
+      ],
+      "keywords": [
+        "Instante Alongado",
+        "Cronomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 dias.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.atraso_causal",
@@ -528,7 +993,22 @@
       "targetArea": "8 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Um efeito visível de alvo só acontece no fim do próximo turno dele."
+      "effect": "Um efeito visível de alvo só acontece no fim do próximo turno dele.",
+      "prerequisites": [
+        "Cronomancia nível 2"
+      ],
+      "keywords": [
+        "Atraso Causal",
+        "Cronomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.ancora_peso",
@@ -545,7 +1025,22 @@
       "duration": "Turnos",
       "durationValue": 1,
       "resistance": "Geral",
-      "effect": "Alvo não pode ser empurrado e perde 3 m de Movimento por uma rodada."
+      "effect": "Alvo não pode ser empurrado e perde 3 m de Movimento por uma rodada.",
+      "prerequisites": [
+        "Gravimancia nível 1"
+      ],
+      "keywords": [
+        "Âncora de Peso",
+        "Gravimancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.queda_lateral",
@@ -561,7 +1056,22 @@
       "targetArea": "linha 8 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Move alvos atingidos 4 m numa direção e causa 2d6 se colidirem."
+      "effect": "Move alvos atingidos 4 m numa direção e causa 2d6 se colidirem.",
+      "prerequisites": [
+        "Gravimancia nível 2"
+      ],
+      "keywords": [
+        "Queda Lateral",
+        "Gravimancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.mao_distante",
@@ -577,7 +1087,22 @@
       "targetArea": "10 m",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Manipula objeto de até 2 kg como se estivesse adjacente."
+      "effect": "Manipula objeto de até 2 kg como se estivesse adjacente.",
+      "prerequisites": [
+        "Espaciomancia nível 1"
+      ],
+      "keywords": [
+        "Mão Distante",
+        "Espaciomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.salto_fenda",
@@ -593,7 +1118,22 @@
       "targetArea": "pessoal, 12 m",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Teleporta a ponto visível; não atravessa selo planar."
+      "effect": "Teleporta a ponto visível; não atravessa selo planar.",
+      "prerequisites": [
+        "Espaciomancia nível 2"
+      ],
+      "keywords": [
+        "Salto de Fenda",
+        "Espaciomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.estalo_ressonante",
@@ -609,7 +1149,22 @@
       "targetArea": "8 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "1d6 + POD sônico; objetos frágeis sofrem dano dobrado."
+      "effect": "1d6 + POD sônico; objetos frágeis sofrem dano dobrado.",
+      "prerequisites": [
+        "Sonoromancia nível 1"
+      ],
+      "keywords": [
+        "Estalo Ressonante",
+        "Sonoromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.camara_eco",
@@ -625,7 +1180,22 @@
       "targetArea": "área 4 m",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Sons internos não saem e externos não entram por uma cena; exige concentração."
+      "effect": "Sons internos não saem e externos não entram por uma cena; exige concentração.",
+      "prerequisites": [
+        "Sonoromancia nível 2"
+      ],
+      "keywords": [
+        "Câmara de Eco",
+        "Sonoromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.desvio_magnetico",
@@ -641,7 +1211,22 @@
       "targetArea": "pessoal",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "+2 PG contra um ataque de metal visível; pode ser usado como reação uma vez/rodada."
+      "effect": "+2 PG contra um ataque de metal visível; pode ser usado como reação uma vez/rodada.",
+      "prerequisites": [
+        "Ferromancia nível 1"
+      ],
+      "keywords": [
+        "Desvio Magnético",
+        "Ferromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.danca_laminas",
@@ -657,7 +1242,22 @@
       "targetArea": "raio 6 m",
       "duration": "Instantânea",
       "resistance": "Geral",
-      "effect": "Move até três objetos metálicos leves; cada alvo sofre 2d6 + POD."
+      "effect": "Move até três objetos metálicos leves; cada alvo sofre 2d6 + POD.",
+      "prerequisites": [
+        "Ferromancia nível 2"
+      ],
+      "keywords": [
+        "Dança das Lâminas",
+        "Ferromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.olhos_adaptados",
@@ -673,7 +1273,22 @@
       "targetArea": "toque",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Concede visão no escuro ou aquática por uma cena."
+      "effect": "Concede visão no escuro ou aquática por uma cena.",
+      "prerequisites": [
+        "Biomancia nível 1"
+      ],
+      "keywords": [
+        "Olhos Adaptados",
+        "Biomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.pele_reativa",
@@ -689,7 +1304,22 @@
       "targetArea": "toque",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Reduz em 2 o primeiro dano físico de cada rodada por uma cena; concentração."
+      "effect": "Reduz em 2 o primeiro dano físico de cada rodada por uma cena; concentração.",
+      "prerequisites": [
+        "Biomancia nível 2"
+      ],
+      "keywords": [
+        "Pele Reativa",
+        "Biomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.separar_mistura",
@@ -705,7 +1335,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Separa componentes comuns de uma dose ou recipiente pequeno."
+      "effect": "Separa componentes comuns de uma dose ou recipiente pequeno.",
+      "prerequisites": [
+        "Alquimancia nível 1"
+      ],
+      "keywords": [
+        "Separar Mistura",
+        "Alquimancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.troca_propriedade",
@@ -721,7 +1366,22 @@
       "targetArea": "toque",
       "duration": "Cena",
       "resistance": "Nenhuma",
-      "effect": "Torna objeto pequeno flexível, rígido, aderente ou quebradiço por uma cena."
+      "effect": "Torna objeto pequeno flexível, rígido, aderente ou quebradiço por uma cena.",
+      "prerequisites": [
+        "Alquimancia nível 2"
+      ],
+      "keywords": [
+        "Troca de Propriedade",
+        "Alquimancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.diagnostico_fantasma",
@@ -737,7 +1397,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Identifica falha funcional e atividade recente de dispositivo."
+      "effect": "Identifica falha funcional e atividade recente de dispositivo.",
+      "prerequisites": [
+        "Tecnomancia nível 1"
+      ],
+      "keywords": [
+        "Diagnóstico Fantasma",
+        "Tecnomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.comando_intruso",
@@ -753,7 +1428,22 @@
       "targetArea": "8 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Força máquina simples a executar uma função válida; sistemas protegidos resistem."
+      "effect": "Força máquina simples a executar uma função válida; sistemas protegidos resistem.",
+      "prerequisites": [
+        "Tecnomancia nível 2"
+      ],
+      "keywords": [
+        "Comando Intruso",
+        "Tecnomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.norte_celeste",
@@ -771,7 +1461,22 @@
       "durationValue": 1,
       "durationUnit": "Horas",
       "resistance": "Nenhuma",
-      "effect": "Conhece direção, hora aproximada e rota mais curta sob céu ou mapa astral."
+      "effect": "Conhece direção, hora aproximada e rota mais curta sob céu ou mapa astral.",
+      "prerequisites": [
+        "Astromancia nível 1"
+      ],
+      "keywords": [
+        "Norte Celeste",
+        "Astromancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 1 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 horas.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.mau_pressagio",
@@ -787,7 +1492,22 @@
       "targetArea": "12 m",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "Alvo sofre −2 no próximo teste; conjurador vê um sinal simbólico do risco."
+      "effect": "Alvo sofre −2 no próximo teste; conjurador vê um sinal simbólico do risco.",
+      "prerequisites": [
+        "Astromancia nível 2"
+      ],
+      "keywords": [
+        "Mau Presságio",
+        "Astromancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.pele_selo",
@@ -803,7 +1523,22 @@
       "targetArea": "toque",
       "duration": "Instantânea",
       "resistance": "Arcana",
-      "effect": "+2 PA até o próximo turno; não acumula consigo."
+      "effect": "+2 PA até o próximo turno; não acumula consigo.",
+      "prerequisites": [
+        "Abjuração nível 1"
+      ],
+      "keywords": [
+        "Pele de Selo",
+        "Abjuração",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     },
     {
       "id": "magic.ruptura_encanto",
@@ -819,7 +1554,22 @@
       "targetArea": "10 m",
       "duration": "Instantânea",
       "resistance": "Nenhuma",
-      "effect": "Teste contra 12 + nível encerra Magia ou Runa ativa de nível até 2."
+      "effect": "Teste contra 12 + nível encerra Magia ou Runa ativa de nível até 2.",
+      "prerequisites": [
+        "Abjuração nível 2"
+      ],
+      "keywords": [
+        "Ruptura de Encanto",
+        "Abjuração",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "50 Exemplos de Magias",
+      "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
     }
   ]
 }
