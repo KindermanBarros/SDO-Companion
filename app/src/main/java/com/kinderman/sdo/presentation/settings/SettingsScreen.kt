@@ -100,9 +100,6 @@ fun SettingsScreen(
                     )
                 }
                 item {
-                    if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
-                        ExperimentalBadge()
-                    }
                     SdoChoicePanel(
                         title = "MODO VISUAL",
                         options = SdoVisualMode.entries,
@@ -110,9 +107,12 @@ fun SettingsScreen(
                         label = SdoVisualMode::label,
                         description = SdoVisualMode::description,
                         onSelect = { onPreferencesChange(preferences.copy(visualMode = it)) },
+                        optionBadge = { option ->
+                            if (option == SdoVisualMode.CYBERGRUNGE) ExperimentalBadge()
+                        },
                     )
                 }
-                item {
+                if (preferences.visualMode == SdoVisualMode.STANDARD) item {
                     SdoChoicePanel(
                         title = "TEMA",
                         options = SdoThemeVariant.entries,
