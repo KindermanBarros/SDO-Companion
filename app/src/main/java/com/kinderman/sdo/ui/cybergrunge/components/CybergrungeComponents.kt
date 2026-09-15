@@ -48,8 +48,8 @@ internal fun CyberGrungePanel(
     val shape = CutCornerShape(topEnd = CyberGrungeTokens.cut, bottomStart = CyberGrungeTokens.cut)
     Box(
         modifier
-            .cyberGrungePossessed(possessionSeed)
             .fillMaxWidth()
+            .clip(shape)
             .background(MaterialTheme.colorScheme.surface.copy(alpha = .94f), shape)
             .border(1.dp, accent.copy(alpha = .78f), shape),
     ) {
@@ -142,9 +142,7 @@ internal fun CyberGrungeField(
             minLines = if (multiline) 3 else 1,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
-            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 88.dp else 48.dp).then(
-                if (value.isEmpty()) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
-            ),
+            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 88.dp else 48.dp),
             decorationBox = { inner ->
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = value, innerTextField = inner, enabled = enabled, singleLine = !multiline,
@@ -161,7 +159,8 @@ internal fun CyberGrungeField(
                                 shape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp),
                             )
                             if (value.isEmpty() && placeholder == null) CyberGrungeEmptySignal(
-                                Modifier.align(Alignment.Center).padding(horizontal = 14.dp),
+                                Modifier.align(Alignment.Center).padding(horizontal = 14.dp)
+                                    .testTag("cybergrunge-empty-signal"),
                             )
                         }
                     },

@@ -4,7 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
@@ -433,7 +433,7 @@ private fun OperationalCharacterCard(
         .take(2).mapNotNull { it.firstOrNull()?.uppercase() }.joinToString("").ifBlank { "?" }
     TechPanel(accent = if (alerts.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
         Row(
-            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            Modifier.fillMaxWidth().sdoClickable { expanded = !expanded },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

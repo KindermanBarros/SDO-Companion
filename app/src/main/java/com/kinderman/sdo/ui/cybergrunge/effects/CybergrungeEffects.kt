@@ -5,12 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -20,16 +14,7 @@ import androidx.compose.ui.unit.dp
 /** Static, allocation-light panel interference. Stateful motion is reserved for meaningful states. */
 @Composable
 internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 17) {
-    val transition = rememberInfiniteTransition(label = "panel-corruption-$seed")
-    val phase by transition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(420 + kotlin.math.abs(seed % 360)),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "panel-corruption-phase-$seed",
-    )
+    val phase = ((seed * 37 % 101) / 50f) - 1f
     Canvas(modifier.fillMaxSize()) {
         repeat(CyberGrungeTokens.PANEL_GLITCH_BLOCKS) { index ->
             val tear = if (index % 5 == 0) phase * size.width * .17f else phase * (index % 3) * 2.dp.toPx()
@@ -57,16 +42,7 @@ internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 
 /** Visual-only missing-signal state. The field label remains the accessible description. */
 @Composable
 internal fun CyberGrungeEmptySignal(modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "empty-signal")
-    val phase by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(SdoMotionTokens.TELEMETRY_SCAN),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "empty-signal-phase",
-    )
+    val phase = .43f
     Canvas(modifier.fillMaxWidth().height(22.dp)) {
         repeat(CyberGrungeTokens.EMPTY_SIGNAL_BLOCKS) { index ->
             val direction = if (index % 2 == 0) 1f else -1f

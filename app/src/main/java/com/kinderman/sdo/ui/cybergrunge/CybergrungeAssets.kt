@@ -1,6 +1,7 @@
 package com.kinderman.sdo.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,21 +18,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -97,13 +93,6 @@ internal fun BoxScope.CyberGrungeEdgeMarks() {
 
 @Composable
 internal fun BoxScope.CyberGrungeGhostNumbers() {
-    val transition = rememberInfiniteTransition(label = "possessed-background-data")
-    val drift by transition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(4_600, easing = LinearEasing), RepeatMode.Reverse),
-        label = "possessed-background-drift",
-    )
     val numbers = listOf("404", "13", "0XDEAD", "77", "NULL", "666", "//31")
     numbers.forEachIndexed { index, value ->
         Text(
@@ -120,11 +109,7 @@ internal fun BoxScope.CyberGrungeGhostNumbers() {
                     bottom = (18 + index * 39).dp,
                     start = (6 + index * 17).dp,
                 )
-                .graphicsLayer {
-                    translationX = drift * (12f + index * 3f) * if (index % 2 == 0) 1f else -1f
-                    translationY = drift * (4f + index)
-                    rotationZ = if (index % 2 == 0) -90f else 0f
-                },
+                .rotate(if (index % 2 == 0) -90f else 0f),
         )
     }
 }
@@ -193,26 +178,34 @@ fun SdoScreenMasthead(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Canvas(Modifier.size(width = 88.dp, height = 108.dp)) {
-            drawRect(signal.copy(alpha = .12f))
-            repeat(17) { line ->
-                val y = (5 + line * 6).dp.toPx()
-                val start = if (line % 4 == 0) 0f else ((line * 11) % 26).dp.toPx()
-                drawLine(
-                    if (line % 3 == 0) signal.copy(alpha = .88f) else ink.copy(alpha = .5f),
-                    Offset(start, y),
-                    Offset(size.width - ((line * 7) % 31).dp.toPx(), y),
-                    if (line % 5 == 0) 3.dp.toPx() else 1.dp.toPx(),
-                )
-            }
-            drawLine(signal, Offset(4.dp.toPx(), 6.dp.toPx()), Offset(size.width - 3.dp.toPx(), size.height - 8.dp.toPx()), 3.dp.toPx())
-            drawLine(ink.copy(alpha = .65f), Offset(size.width - 6.dp.toPx(), 4.dp.toPx()), Offset(8.dp.toPx(), size.height - 5.dp.toPx()), 1.dp.toPx())
-            repeat(14) { glitch ->
-                drawRect(
-                    if (glitch % 2 == 0) signal.copy(alpha = .7f) else ink.copy(alpha = .35f),
-                    Offset(((glitch * 29) % 80).dp.toPx(), ((glitch * 17) % 104).dp.toPx()),
-                    Size((5 + glitch % 3 * 5).dp.toPx(), 3.dp.toPx()),
-                )
+        Box(Modifier.size(width = 88.dp, height = 108.dp)) {
+            Image(
+                painter = painterResource(com.kinderman.sdo.R.drawable.cybergrunge_skull_signal),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(signal.copy(alpha = .12f))
+                repeat(17) { line ->
+                    val y = (5 + line * 6).dp.toPx()
+                    val start = if (line % 4 == 0) 0f else ((line * 11) % 26).dp.toPx()
+                    drawLine(
+                        if (line % 3 == 0) signal.copy(alpha = .88f) else ink.copy(alpha = .5f),
+                        Offset(start, y),
+                        Offset(size.width - ((line * 7) % 31).dp.toPx(), y),
+                        if (line % 5 == 0) 3.dp.toPx() else 1.dp.toPx(),
+                    )
+                }
+                drawLine(signal, Offset(4.dp.toPx(), 6.dp.toPx()), Offset(size.width - 3.dp.toPx(), size.height - 8.dp.toPx()), 3.dp.toPx())
+                drawLine(ink.copy(alpha = .65f), Offset(size.width - 6.dp.toPx(), 4.dp.toPx()), Offset(8.dp.toPx(), size.height - 5.dp.toPx()), 1.dp.toPx())
+                repeat(14) { glitch ->
+                    drawRect(
+                        if (glitch % 2 == 0) signal.copy(alpha = .7f) else ink.copy(alpha = .35f),
+                        Offset(((glitch * 29) % 80).dp.toPx(), ((glitch * 17) % 104).dp.toPx()),
+                        Size((5 + glitch % 3 * 5).dp.toPx(), 3.dp.toPx()),
+                    )
+                }
             }
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {

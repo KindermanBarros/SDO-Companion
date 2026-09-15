@@ -1,7 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -101,7 +101,7 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
     ))
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Row(
-            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            Modifier.fillMaxWidth().sdoClickable { expanded = !expanded },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

@@ -117,9 +117,10 @@ Quando ativo, o design system aplica em todas as telas:
 - cards com borda reforçada, recortes assimétricos, código serial e barras de dados;
 - hierarquia editorial inspirada em zines industriais, relatórios anatômicos corrompidos e HUDs de erro;
 - superfícies parcialmente translúcidas que revelam a camada gráfica sem comprometer texto;
-- composição deliberadamente instável e animada; o custo visual faz parte do modo experimental opt-in.
+- composição visualmente instável, porém estática em repouso; movimento contínuo existe apenas durante carregamento ativo.
 
-Os assets são vetoriais/code-native e pertencem a `CybergrungeAssets.kt`. Telas não devem copiar
+Os assets são vetoriais/code-native e pertencem a `CybergrungeAssets.kt`, incluindo a marca anatômica
+`cybergrunge_skull_signal.xml`. Telas não devem copiar
 esses desenhos: `HudBackground`, `TechPanel`, `SdoInsetCard` e os demais componentes do design
 system propagam a linguagem visual. Ruído nunca pode atravessar campos de texto nem reduzir o
 contraste mínimo do conteúdo funcional.
@@ -461,7 +462,7 @@ Ela usa trilhos assimétricos, cantos recortados, identificadores de terminal, i
 estática e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
 
 - `EXPERIMENTAL` deve permanecer visível no seletor e nos mastheads Cybergrunge.
-- Glitch de fundo é estático e barato; animações contínuas ficam restritas a loading ativo.
+- Glitch de fundo, cards e campos vazios é estático e barato; animações contínuas ficam restritas a loading ativo.
 - Efeitos visuais pertencem aos limites do componente e não podem cobrir controles aninhados.
 - Áreas clicáveis preservam o alvo mínimo de 48 dp e o ripple fica recortado pelo shape local.
 - Campos vazios usam ruído tipográfico como placeholder, sem substituir label ou semântica.
@@ -471,8 +472,8 @@ estática e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
   superfícies clicáveis usam `SdoCard`. Não importar equivalentes Material diretamente em telas.
 - Navegação compacta usa `SdoNavigationBar`; layouts expandidos usam `SdoNavigationRail`.
 - O laboratório em Ajustes cobre ações, campos, escolhas, toggles e estados vazio/offline/erro.
-- Orçamentos de desenho são protegidos por `CyberGrungeRenderBudgetTest`; o CI compila os testes
-  instrumentados de renderização com `assembleDebugAndroidTest`.
+- Orçamentos de desenho são protegidos por `CybergrungeRenderBudgetTest`; o CI valida esses limites
+  como testes unitários, sem comparação visual ou execução de emulador.
 
 Arquitetura:
 

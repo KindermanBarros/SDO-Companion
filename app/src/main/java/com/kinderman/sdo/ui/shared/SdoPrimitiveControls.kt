@@ -16,6 +16,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -161,3 +162,18 @@ fun SdoIconButton(
         content = content,
     )
 }
+
+/**
+ * Shared click surface for rows and custom layouts that cannot be expressed as buttons or cards.
+ * Clipping before indication keeps nested feedback inside the owning element.
+ */
+@Composable
+fun Modifier.sdoClickable(
+    enabled: Boolean = true,
+    shape: CornerBasedShape = if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp)
+    } else {
+        RoundedCornerShape(8.dp)
+    },
+    onClick: () -> Unit,
+): Modifier = clip(shape).clickable(enabled = enabled, onClick = onClick)

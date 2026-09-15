@@ -1,6 +1,6 @@
 package com.kinderman.sdo.presentation.historian
 
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,7 +31,7 @@ internal fun CompendiumDetails(entry: CatalogEntry) {
     var expanded by rememberSaveable(entry.id) { mutableStateOf(false) }
     Text(if (expanded) "Recolher detalhes ▴" else "Ver todos os valores ▾",
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded })
+        modifier = Modifier.fillMaxWidth().sdoClickable { expanded = !expanded })
     if (expanded) Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         val values = linkedMapOf(
             "Custo" to entry.cost, "Ação" to entry.action, "Alcance" to entry.range,
