@@ -108,7 +108,7 @@ fun SettingsScreen(
                         description = SdoVisualMode::description,
                         onSelect = { onPreferencesChange(preferences.copy(visualMode = it)) },
                         optionBadge = { option ->
-                            if (option == SdoVisualMode.CYBERGRUNGE) ExperimentalBadge()
+                            if (option == SdoVisualMode.KALTOCH) ExperimentalBadge()
                         },
                     )
                 }
