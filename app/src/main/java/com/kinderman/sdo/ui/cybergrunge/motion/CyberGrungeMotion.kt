@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 /** Cybergrunge uses channel displacement and compression for touch feedback, never Material ripples. */
 internal object CyberGrungeNoRippleIndication : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode = NoRippleNode()
+    override fun equals(other: Any?): Boolean = other === this
+    override fun hashCode(): Int = javaClass.name.hashCode()
 
     private class NoRippleNode : Modifier.Node(), DrawModifierNode {
         override fun ContentDrawScope.draw() = drawContent()
