@@ -121,7 +121,7 @@ private val hudColors = darkColorScheme(
     onError = Color(0xFF040D1B),
 )
 
-private val cybergrungeColors = darkColorScheme(
+private val kaltochColors = darkColorScheme(
     primary = Color(0xFFE0003B), onPrimary = Color(0xFFF2E9EC),
     primaryContainer = Color(0xFF72001F), onPrimaryContainer = Color(0xFFF2E9EC),
     secondary = Color(0xFF00D9D0), onSecondary = Color(0xFF090608),
@@ -349,7 +349,7 @@ fun SdoTheme(
     preferences: SdoPreferences = SdoPreferences(),
     content: @Composable () -> Unit,
 ) {
-    val baseColors = if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) cybergrungeColors else when (preferences.theme) {
+    val baseColors = if (preferences.visualMode == SdoVisualMode.KALTOCH) kaltochColors else when (preferences.theme) {
         SdoThemeVariant.CYAN_INDUSTRIAL -> hudColors
         SdoThemeVariant.GREEN_TERMINAL -> terminalColors
         SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
@@ -405,7 +405,7 @@ fun HudBackground(
 ) {
     val gridColor = MaterialTheme.colorScheme.surfaceVariant
     val signalColor = MaterialTheme.colorScheme.primary
-    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
+    val kaltoch = LocalSdoPreferences.current.visualMode == SdoVisualMode.KALTOCH
     Box(
         modifier
             .fillMaxSize()
@@ -436,7 +436,7 @@ fun HudBackground(
                 )
                 y += minor
             }
-            if (cybergrunge) {
+            if (kaltoch) {
                 drawLine(
                     color = signalColor.copy(alpha = 0.28f),
                     start = Offset(size.width * .055f, 0f),
@@ -455,9 +455,9 @@ fun HudBackground(
                 }
             }
         }
-        if (cybergrunge) {
-            CyberGrungeBackdrop()
-            CyberGrungeEdgeMarks()
+        if (kaltoch) {
+            KaltochBackdrop()
+            KaltochEdgeMarks()
         }
         content()
     }
@@ -482,18 +482,18 @@ fun TechPanel(
 
     val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
     val panelShape = SdoShapeTokens.panel
-    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
+    val kaltoch = LocalSdoPreferences.current.visualMode == SdoVisualMode.KALTOCH
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
-                width = if (cybergrunge) 2.dp else 1.dp,
+                width = if (kaltoch) 2.dp else 1.dp,
                 color = resolvedAccent.copy(alpha = SdoOpacityTokens.BORDER),
                 shape = panelShape,
             ),
         shape = panelShape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (cybergrunge) 0.9f else 0.96f),
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (kaltoch) 0.9f else 0.96f),
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
@@ -502,7 +502,7 @@ fun TechPanel(
                 modifier = Modifier.padding(if (compactCards) 11.dp else 16.dp),
                 verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
             ) {
-                if (cybergrunge) CyberGrungePanelChrome()
+                if (kaltoch) KaltochPanelChrome()
                 content()
             }
         }
