@@ -121,6 +121,19 @@ private val hudColors = darkColorScheme(
     onError = Color(0xFF040D1B),
 )
 
+private val cybergrungeColors = darkColorScheme(
+    primary = Color(0xFFE0003B), onPrimary = Color(0xFFF2E9EC),
+    primaryContainer = Color(0xFF72001F), onPrimaryContainer = Color(0xFFF2E9EC),
+    secondary = Color(0xFF00D9D0), onSecondary = Color(0xFF090608),
+    secondaryContainer = Color(0xFF063C3B), onSecondaryContainer = Color(0xFFD8FFFC),
+    tertiary = Color(0xFFFF9A00), onTertiary = Color(0xFF211000),
+    background = Color(0xFF090608), onBackground = Color(0xFFF2E9EC),
+    surface = Color(0xFF120B0F), onSurface = Color(0xFFF2E9EC),
+    surfaceVariant = Color(0xFF211017), onSurfaceVariant = Color(0xFFB9AAB0),
+    outline = Color(0xFF74666C), outlineVariant = Color(0xFF3F3036),
+    error = Color(0xFFFF315E), onError = Color(0xFF090608),
+)
+
 private val highContrastColors = darkColorScheme(
     primary = Color(0xFF63FFF1),
     onPrimary = Color.Black,
@@ -343,7 +356,7 @@ fun SdoTheme(
     preferences: SdoPreferences = SdoPreferences(),
     content: @Composable () -> Unit,
 ) {
-    val baseColors = when (preferences.theme) {
+    val baseColors = if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) cybergrungeColors else when (preferences.theme) {
         SdoThemeVariant.CYAN_INDUSTRIAL -> hudColors
         SdoThemeVariant.GREEN_TERMINAL -> terminalColors
         SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
@@ -398,6 +411,8 @@ fun HudBackground(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val gridColor = MaterialTheme.colorScheme.surfaceVariant
+    val signalColor = MaterialTheme.colorScheme.primary
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
     Box(
         modifier
             .fillMaxSize()
@@ -427,6 +442,24 @@ fun HudBackground(
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
                 )
                 y += minor
+            }
+            if (cybergrunge) {
+                drawLine(
+                    color = signalColor.copy(alpha = 0.28f),
+                    start = Offset(size.width * .055f, 0f),
+                    end = Offset(size.width * .055f, size.height),
+                    strokeWidth = 2.dp.toPx(),
+                )
+                var slash = -size.height
+                while (slash < size.width) {
+                    drawLine(
+                        color = signalColor.copy(alpha = 0.035f),
+                        start = Offset(slash, size.height),
+                        end = Offset(slash + size.height, 0f),
+                        strokeWidth = 8.dp.toPx(),
+                    )
+                    slash += 96.dp.toPx()
+                }
             }
         }
         content()

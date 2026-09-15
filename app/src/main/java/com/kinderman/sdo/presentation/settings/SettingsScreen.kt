@@ -2,9 +2,7 @@ package com.kinderman.sdo.presentation.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,14 +12,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -33,6 +28,10 @@ import com.kinderman.sdo.ui.SdoContentDensity
 import com.kinderman.sdo.ui.SdoFontScale
 import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoThemeVariant
+import com.kinderman.sdo.ui.SdoVisualMode
+import com.kinderman.sdo.ui.SdoChoicePanel
+import com.kinderman.sdo.ui.SdoToggleOption
+import com.kinderman.sdo.ui.SdoTogglePanel
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 
@@ -77,20 +76,20 @@ fun SettingsScreen(
                     }
                 }
                 item {
-                    TogglePanel("INTERFACE", listOf(
-                        Triple("Resumir cartões", preferences.compactCards, { value: Boolean -> onPreferencesChange(preferences.copy(compactCards = value)) }),
-                        Triple("Recolher seções extensas", preferences.collapseLongSections, { value: Boolean -> onPreferencesChange(preferences.copy(collapseLongSections = value)) }),
+                    SdoTogglePanel("INTERFACE", listOf(
+                        SdoToggleOption("Resumir cartões", preferences.compactCards) { onPreferencesChange(preferences.copy(compactCards = it)) },
+                        SdoToggleOption("Recolher seções extensas", preferences.collapseLongSections) { onPreferencesChange(preferences.copy(collapseLongSections = it)) },
                     ))
                 }
                 item {
-                    TogglePanel("SINCRONIZAÇÃO E NOTIFICAÇÕES", listOf(
-                        Triple("Sincronização automática", preferences.autoSync, { value: Boolean -> onPreferencesChange(preferences.copy(autoSync = value)) }),
-                        Triple("Alertas e entregas", preferences.notifications, { value: Boolean -> onPreferencesChange(preferences.copy(notifications = value)) }),
+                    SdoTogglePanel("SINCRONIZAÇÃO E NOTIFICAÇÕES", listOf(
+                        SdoToggleOption("Sincronização automática", preferences.autoSync) { onPreferencesChange(preferences.copy(autoSync = it)) },
+                        SdoToggleOption("Alertas e entregas", preferences.notifications) { onPreferencesChange(preferences.copy(notifications = it)) },
                     ))
                 }
                 item {
-                    TogglePanel("CAMPANHAS", listOf(
-                        Triple("Mostrar campanhas arquivadas", preferences.showArchivedCampaigns, { value: Boolean -> onPreferencesChange(preferences.copy(showArchivedCampaigns = value)) }),
+                    SdoTogglePanel("CAMPANHAS", listOf(
+                        SdoToggleOption("Mostrar campanhas arquivadas", preferences.showArchivedCampaigns) { onPreferencesChange(preferences.copy(showArchivedCampaigns = it)) },
                     ))
                 }
                 item {
@@ -101,7 +100,17 @@ fun SettingsScreen(
                     }
                 }
                 item {
-                    ChoicePanel(
+                    SdoChoicePanel(
+                        title = "MODO VISUAL",
+                        options = SdoVisualMode.entries,
+                        selected = preferences.visualMode,
+                        label = SdoVisualMode::label,
+                        description = SdoVisualMode::description,
+                        onSelect = { onPreferencesChange(preferences.copy(visualMode = it)) },
+                    )
+                }
+                item {
+                    SdoChoicePanel(
                         title = "TEMA",
                         options = SdoThemeVariant.entries,
                         selected = preferences.theme,
@@ -111,7 +120,7 @@ fun SettingsScreen(
                     )
                 }
                 item {
-                    ChoicePanel(
+                    SdoChoicePanel(
                         title = "DENSIDADE",
                         options = SdoContentDensity.entries,
                         selected = preferences.density,
@@ -121,7 +130,7 @@ fun SettingsScreen(
                     )
                 }
                 item {
-                    ChoicePanel(
+                    SdoChoicePanel(
                         title = "LEITURA",
                         options = SdoFontScale.entries,
                         selected = preferences.fontScale,
@@ -131,45 +140,6 @@ fun SettingsScreen(
                     )
                 }
 
-            }
-        }
-    }
-}
-
-@Composable
-private fun TogglePanel(title: String, options: List<Triple<String, Boolean, (Boolean) -> Unit>>) {
-    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-        TelemetryTag(title)
-        options.forEach { (label, selected, onChange) ->
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(label, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                Switch(checked = selected, onCheckedChange = onChange)
-            }
-        }
-    }
-}
-
-@Composable
-private fun <T> ChoicePanel(
-    title: String,
-    options: List<T>,
-    selected: T,
-    label: (T) -> String,
-    description: (T) -> String,
-    onSelect: (T) -> Unit,
-) {
-    TechPanel(accent = MaterialTheme.colorScheme.primary) {
-        TelemetryTag(title)
-        options.forEach { option ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                RadioButton(selected = option == selected, onClick = { onSelect(option) })
-                Column(Modifier.weight(1f)) {
-                    Text(label(option), color = MaterialTheme.colorScheme.onSurface)
-                    Text(description(option), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                }
             }
         }
     }
