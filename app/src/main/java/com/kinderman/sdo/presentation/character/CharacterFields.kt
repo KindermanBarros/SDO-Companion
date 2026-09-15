@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.DpOffset
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
+import com.kinderman.sdo.ui.SdoActionButton
+import com.kinderman.sdo.ui.SdoActionStyle
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.Void
 
@@ -66,16 +68,7 @@ internal fun IntegerField(
 
 @Composable
 internal fun AddButton(label: String, enabled: Boolean, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
-    ) {
-        Icon(Icons.Default.Add, null)
-        Text(label.uppercase(), style = MaterialTheme.typography.labelLarge)
-    }
+    SdoActionButton(label, onClick, Modifier.fillMaxWidth(), enabled, SdoActionStyle.PRIMARY)
 }
 
 enum class CharacterActionStyle { PRIMARY, SECONDARY, DESTRUCTIVE }
@@ -88,21 +81,12 @@ internal fun CharacterActionButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    when (style) {
-        CharacterActionStyle.PRIMARY -> Button(
-            onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
-            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-        ) { Text(label.uppercase()) }
-        CharacterActionStyle.SECONDARY -> OutlinedButton(
-            onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
-            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-        ) { Text(label.uppercase()) }
-        CharacterActionStyle.DESTRUCTIVE -> OutlinedButton(
-            onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp),
-            shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-        ) { Text(label.uppercase()) }
+    val resolved = when (style) {
+        CharacterActionStyle.PRIMARY -> SdoActionStyle.PRIMARY
+        CharacterActionStyle.SECONDARY -> SdoActionStyle.SECONDARY
+        CharacterActionStyle.DESTRUCTIVE -> SdoActionStyle.DESTRUCTIVE
     }
+    SdoActionButton(label, onClick, modifier, enabled, resolved)
 }
 
 @Composable

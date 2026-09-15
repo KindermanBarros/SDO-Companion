@@ -62,6 +62,50 @@ sobre branco e cinza claro como texto funcional são proibidos.
 
 ## Cards e expansão de conteúdo
 
+### Contrato de interação, ripple e escopo
+
+O feedback de toque pertence ao menor elemento que executa uma ação completa:
+
+- cards inteiramente acionáveis usam um único `clickable` ou `toggleable` no cabeçalho, com ripple visível;
+- nunca remover `indication` de controles operacionais para obter aparência “limpa”;
+- controles aninhados só permanecem interativos quando executam uma ação diferente da ação do card;
+- quando card e `Checkbox` representam a mesma seleção, o card recebe `toggleable` com o papel semântico correto e o `Checkbox` usa `onCheckedChange = null`;
+- botões aninhados em cards acionáveis consomem sua própria interação e precisam de rótulo/descrição inequívoca;
+- ícones decorativos não recebem `clickable`; a região interativa deve incluir texto e manter pelo menos 48 dp;
+- ripple não pode atravessar visualmente para outra ação, linha ou card.
+
+### Componentes permitidos nas telas
+
+Telas devem preferir os componentes do pacote `ui`:
+
+| Necessidade | Componente |
+| --- | --- |
+| ação principal, secundária ou destrutiva | `SdoActionButton` |
+| filtro mutuamente combinável | `SdoFilterChip` |
+| ações responsivas | `SdoResponsiveGrid` |
+| painel com código, título, resumo e ações | `CyberPanel` |
+| campo textual | `SdoField` / `HudTextField` |
+| escolha ou preferência local | `SdoChoicePanel` / `SdoTogglePanel` |
+| lista sem conteúdo | `SdoEmptyState` |
+| falha preservando dados locais | `SdoErrorState` / `SdoOfflineState` |
+
+Componentes Material diretos continuam aceitáveis dentro da implementação do design system e nos
+slots estruturais exigidos por APIs como `AlertDialog`. Nas telas, um uso direto precisa possuir
+papel específico que ainda não esteja coberto pelo sistema; estilos locais duplicados devem ser
+extraídos quando aparecem pela segunda vez.
+
+### Cybergrunge PUI ativável
+
+`SdoVisualMode.STANDARD` permanece como padrão. `CYBERGRUNGE` troca tokens sem alterar conteúdo,
+permissões ou comportamento:
+
+- paleta Obsidian Signal com vermelho reservado a seleção/ação principal;
+- ciano para telemetria positiva e âmbar para aviso recuperável;
+- recortes mais agressivos por `SdoShapeTokens`, preservando hitbox retangular;
+- textura estática de baixa opacidade; sem flicker, animação infinita ou bitmap de ruído;
+- textos, valores e controles nunca recebem distorção ou glitch permanente;
+- alvos interativos usam `SdoSpacingTokens.minimumTouchTarget` (48 dp), inclusive em densidade compacta.
+
 ### Card de campanha
 
 O card inteiro deve funcionar como cabeçalho de expansão, não somente o ícone:

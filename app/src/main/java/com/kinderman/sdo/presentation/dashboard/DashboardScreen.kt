@@ -738,10 +738,7 @@ private fun CampaignPanel(
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { expanded = !expanded },
+                    .clickable { expanded = !expanded },
                 horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -1081,7 +1078,7 @@ private fun CharacterAccessCard(
                             modifier = Modifier
                                 .wrapContentWidth(Alignment.Start)
                                 .widthIn(max = if (compact) 176.dp else 224.dp)
-                                .heightIn(min = if (compact) 36.dp else 42.dp),
+                                .heightIn(min = 48.dp),
                             shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
                             contentPadding = PaddingValues(
                                 horizontal = if (compact) 8.dp else 10.dp,

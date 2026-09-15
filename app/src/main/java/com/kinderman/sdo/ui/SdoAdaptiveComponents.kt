@@ -72,13 +72,7 @@ fun CollapsibleSection(title: String, index: String = "", content: @Composable (
                 .semantics {
                     stateDescription = if (expanded) "Expandido" else "Recolhido"
                 }
-                .toggleable(
-                    value = expanded,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    role = Role.Button,
-                    onValueChange = { expanded = it },
-                )
+                .toggleable(value = expanded, role = Role.Button, onValueChange = { expanded = it })
                 .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
