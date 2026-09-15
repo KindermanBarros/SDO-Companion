@@ -8,7 +8,7 @@ enum class SdoVisualMode(
     val allowsThemeSelection: Boolean,
 ) {
     STANDARD("Interface padrão", "HUD técnico atual com o tema de cores selecionado.", true),
-    KALTOCH("Interface Kaltoch", "Terminal experimental com falhas de sinal, glitches e componentes próprios.", false),
+    CYBERGRUNGE("Interface Cybergrunge", "Terminal experimental com falhas de sinal, glitches e componentes próprios.", false),
 }
 
 enum class SdoThemeVariant(
