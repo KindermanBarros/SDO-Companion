@@ -3,7 +3,7 @@ package com.kinderman.sdo.ui
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class CyberGrungeRenderBudgetTest {
+class CybergrungeRenderBudgetTest {
     @Test
     fun experimentalCorruptionStaysInsideEmergencyCeiling() {
         assertTrue(CyberGrungeTokens.BACKDROP_BLOCKS <= 64)
@@ -14,7 +14,7 @@ class CyberGrungeRenderBudgetTest {
 
     @Test
     fun compositionBoundMotionStaysInsideTimingBudget() {
-        // Every continuous corruption loop is composition-bound and disposed with its visual mode.
+        // Only explicit loading may loop; interaction feedback is finite and backgrounds are static.
         assertTrue(SdoMotionTokens.RESPONSE <= 200)
         assertTrue(SdoMotionTokens.TELEMETRY_SCAN >= 1_000)
     }
