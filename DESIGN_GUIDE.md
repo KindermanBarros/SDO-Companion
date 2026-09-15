@@ -94,10 +94,11 @@ slots estruturais exigidos por APIs como `AlertDialog`. Nas telas, um uso direto
 papel específico que ainda não esteja coberto pelo sistema; estilos locais duplicados devem ser
 extraídos quando aparecem pela segunda vez.
 
-### Cybergrunge PUI ativável
+### Interface Kaltoch experimental
 
-`SdoVisualMode.STANDARD` permanece como padrão. `CYBERGRUNGE` troca tokens sem alterar conteúdo,
-permissões ou comportamento:
+`SdoVisualMode.STANDARD` permanece como padrão. `CYBERGRUNGE` é apresentado ao usuário como
+**Interface Kaltoch** e troca tokens sem alterar conteúdo, permissões ou comportamento. A direção
+completa está em [docs/interface-kaltoch.md](docs/interface-kaltoch.md):
 
 - paleta Obsidian Signal com vermelho reservado a seleção/ação principal;
 - ciano para telemetria positiva e âmbar para aviso recuperável;
@@ -106,8 +107,10 @@ permissões ou comportamento:
 - textos, valores e controles nunca recebem distorção ou glitch permanente;
 - alvos interativos usam `SdoSpacingTokens.minimumTouchTarget` (48 dp), inclusive em densidade compacta.
 
-O modo é identificado como **EXPERIMENTAL** e constitui uma UI alternativa, não uma simples troca
-de cores. Quando ativo, o design system aplica em todas as telas:
+O modo é identificado por um selo amarelo **EXPERIMENTAL**, exibido acima da opção Interface Kaltoch.
+A opção fica logo abaixo de Interface Padrão. Quando ativa, a escolha de temas desaparece porque a
+paleta pertence à própria interface. Trata-se de uma UI alternativa, não uma simples troca de cores.
+Quando ativo, o design system aplica em todas as telas:
 
 - scanlines estáticas, blocos de corrupção e fraturas digitais desenhados em Compose;
 - mira/sigilo técnico, trilhos de sinal e carimbos de sistema nas margens;
