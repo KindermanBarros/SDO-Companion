@@ -36,7 +36,6 @@ import com.kinderman.sdo.ui.CyberPanel
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.ExperimentalBadge
-import com.kinderman.sdo.ui.CyberGrungeLab
 import com.kinderman.sdo.ui.SdoScreenMasthead
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -126,9 +125,6 @@ fun SettingsScreen(
                         description = SdoThemeVariant::description,
                         onSelect = { onPreferencesChange(preferences.copy(theme = it)) },
                     )
-                }
-                if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) item {
-                    CyberGrungeLab()
                 }
                 item {
                     SdoChoicePanel(

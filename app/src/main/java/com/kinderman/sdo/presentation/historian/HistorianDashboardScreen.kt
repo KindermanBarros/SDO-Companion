@@ -86,6 +86,7 @@ import com.kinderman.sdo.ui.SdoActionButton
 import com.kinderman.sdo.ui.SdoActionStyle
 import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoDataModules
 import com.kinderman.sdo.ui.SdoResponsiveGrid
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
@@ -240,15 +241,8 @@ fun HistorianDashboardScreen(
                     )
                 }
                 item {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        HistorianSection.entries.forEach { target ->
-                            SdoTextButton(
-                                onClick = { section = target },
-                                modifier = Modifier.weight(1f).then(
-                                    if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
-                                ),
-                            ) { com.kinderman.sdo.ui.AdaptiveActionLabel(target.label, color = if (section == target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) }
-                        }
+                    SdoResponsiveGrid(HistorianSection.entries.toList(), minItemWidth = 104.dp, maxColumns = 3) { target, modifier ->
+                        SdoFilterChip(target.label, section == target, { section = target }, modifier)
                     }
                 }
                 item {
@@ -678,12 +672,7 @@ private fun LibraryStructuredDetails(entry: CampaignLibraryEntry) {
         } }.orEmpty()
         else -> emptyList()
     }
-    if (fields.isNotEmpty()) SdoInsetCard {
-        fields.forEach { (label, value) ->
-            Text(label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-            Text(value, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
-        }
-    }
+    SdoDataModules(fields)
 }
 
 @Composable

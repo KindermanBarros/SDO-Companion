@@ -86,8 +86,8 @@ fun SdoFilterChip(
         modifier = modifier.heightIn(min = 48.dp),
         shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = .18f),
+            selectedLabelColor = MaterialTheme.colorScheme.primary,
         ),
         border = FilterChipDefaults.filterChipBorder(
             enabled = true,
@@ -109,7 +109,7 @@ fun <T> SdoResponsiveGrid(
     content: @Composable (T, Modifier) -> Unit,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val columns = responsiveColumnCount(maxWidth.value, minItemWidth.value, maxColumns)
+        val columns = responsiveColumnCount(maxWidth.value, minItemWidth.value, maxColumns, horizontalSpacing.value)
         androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
             items.chunked(columns).forEach { rowItems ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
@@ -121,5 +121,10 @@ fun <T> SdoResponsiveGrid(
     }
 }
 
-internal fun responsiveColumnCount(widthDp: Float, minimumItemWidthDp: Float, maxColumns: Int = 4): Int =
-    (widthDp / minimumItemWidthDp).toInt().coerceIn(1, maxColumns.coerceAtLeast(1))
+internal fun responsiveColumnCount(
+    widthDp: Float,
+    minimumItemWidthDp: Float,
+    maxColumns: Int = 4,
+    spacingDp: Float = 0f,
+): Int = ((widthDp + spacingDp) / (minimumItemWidthDp + spacingDp)).toInt()
+    .coerceIn(1, maxColumns.coerceAtLeast(1))

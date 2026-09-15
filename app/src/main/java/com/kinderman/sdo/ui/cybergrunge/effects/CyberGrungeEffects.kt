@@ -20,15 +20,35 @@ import androidx.compose.ui.unit.dp
 /** Static, allocation-light panel interference. Stateful motion is reserved for meaningful states. */
 @Composable
 internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 17) {
+    val transition = rememberInfiniteTransition(label = "panel-corruption-$seed")
+    val phase by transition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(420 + kotlin.math.abs(seed % 360)),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "panel-corruption-phase-$seed",
+    )
     Canvas(modifier.fillMaxSize()) {
         repeat(CyberGrungeTokens.PANEL_GLITCH_BLOCKS) { index ->
-            val x = ((seed + index * 43) % 101) / 101f * size.width
+            val tear = if (index % 5 == 0) phase * size.width * .17f else phase * (index % 3) * 2.dp.toPx()
+            val x = ((((seed + index * 43) % 101) / 101f * size.width) + tear + size.width) % size.width
             val y = ((seed * 3 + index * 67) % 97) / 97f * size.height
             drawRect(
                 color = if (index % 4 == 0) CyberGrungeTokens.SignalRed.copy(alpha = .11f)
                 else Color.White.copy(alpha = .045f),
                 topLeft = Offset(x, y),
                 size = Size((4 + index % 3 * 8).dp.toPx(), (2 + index % 2 * 2).dp.toPx()),
+            )
+        }
+        repeat(3) { slice ->
+            val y = ((((seed + slice * 31) % 89) / 89f) * size.height + phase * 9.dp.toPx())
+                .coerceIn(0f, size.height)
+            drawRect(
+                color = if (slice == 1) CyberGrungeTokens.SignalRed.copy(alpha = .22f) else Color.White.copy(alpha = .08f),
+                topLeft = Offset(if (slice % 2 == 0) 0f else size.width * .38f, y),
+                size = Size(size.width * if (slice % 2 == 0) .62f else .55f, (1 + slice).dp.toPx()),
             )
         }
     }
@@ -43,7 +63,7 @@ internal fun CyberGrungeEmptySignal(modifier: Modifier = Modifier) {
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(SdoMotionTokens.TELEMETRY_SCAN),
-            repeatMode = RepeatMode.Restart,
+            repeatMode = RepeatMode.Reverse,
         ),
         label = "empty-signal-phase",
     )

@@ -12,7 +12,7 @@ internal object CyberGrungeTokens {
     val Panel = Color(0xFF120B0F)
     val railWidth = 5.dp
     val cut = 14.dp
-    const val BACKDROP_BLOCKS = 22
-    const val PANEL_GLITCH_BLOCKS = 9
-    const val EMPTY_SIGNAL_BLOCKS = 13
+    const val BACKDROP_BLOCKS = 54
+    const val PANEL_GLITCH_BLOCKS = 21
+    const val EMPTY_SIGNAL_BLOCKS = 27
 }
