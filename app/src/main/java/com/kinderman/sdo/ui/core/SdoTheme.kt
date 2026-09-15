@@ -564,6 +564,32 @@ fun SdoInsetCard(
 fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
     if (LocalCollapsibleSectionTitle.current != null) return
 
+    if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("//$index", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                AdaptiveSingleLineText(
+                    text = title.uppercase(),
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                    minimumSize = 9.sp,
+                )
+            }
+            androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.primary, thickness = 2.dp)
+            androidx.compose.material3.HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(.42f),
+                color = MaterialTheme.colorScheme.secondary,
+                thickness = 1.dp,
+            )
+        }
+        return
+    }
+
     val secondary = MaterialTheme.colorScheme.secondary
     val error = MaterialTheme.colorScheme.primary
     Row(

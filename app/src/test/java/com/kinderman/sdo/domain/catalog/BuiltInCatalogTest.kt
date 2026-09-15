@@ -3,6 +3,8 @@ package com.kinderman.sdo.domain.catalog
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.SpecialKnowledge
+import com.kinderman.sdo.domain.model.AbilitySource
+import com.kinderman.sdo.domain.model.toCanonicalAbility
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -108,6 +110,32 @@ class BuiltInCatalogTest {
                     ability.resistance == entry.abilityResistance
             }
         })
+    }
+
+    @Test fun everyKnowledgeMysticEntryHasRequiredStructuredFieldsAndImportsWithoutReview() {
+        val entries = BuiltInCatalog.entries.filter {
+            it.kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE) && it.abilitySource == AbilitySource.KNOWLEDGE
+        }
+        assertTrue(entries.isNotEmpty())
+        assertTrue(entries.all {
+            it.sourceKnowledge.isNotBlank() && it.sourceLevel != null &&
+                it.abilityCostType != null && it.abilityCostValue != null &&
+                it.abilityExecution != null && it.abilityRange != null &&
+                it.abilityDuration != null && it.abilityResistance != null &&
+                it.targetArea.isNotBlank() && it.mechanicalEffect.isNotBlank() && it.ruleReference.isNotBlank()
+        })
+        entries.forEach { entry ->
+            val character = Character(
+                arcaneKnowledges = listOf(
+                    SpecialKnowledge(id = "knowledge-${entry.id}", name = entry.sourceKnowledge, value = entry.sourceLevel!!),
+                ),
+            )
+            val imported = entry.toMysticAbility(character).toCanonicalAbility()
+            assertEquals(
+                "knowledge-${entry.id}",
+                (imported.source?.knowledge?.target as com.kinderman.sdo.domain.model.KnowledgeSourceTarget.Special).specialId.value,
+            )
+        }
     }
 
     @Test fun catalogMagicBindsOnlyToAnOwnedKnowledgeAtTheRequiredLevel() {

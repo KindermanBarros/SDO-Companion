@@ -95,6 +95,7 @@ internal fun CyberGrungeAction(
             modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget).cyberGrungePress(interaction),
             shape = shape,
             colors = ButtonDefaults.buttonColors(containerColor = signal),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 8.dp),
             interactionSource = interaction,
             content = { content() },
         )
@@ -105,6 +106,7 @@ internal fun CyberGrungeAction(
             shape = shape,
             border = androidx.compose.foundation.BorderStroke(1.dp, signal),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = signal),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 8.dp),
             interactionSource = interaction,
             content = { content() },
         )
@@ -132,38 +134,41 @@ internal fun CyberGrungeField(
         focusedLabelColor = MaterialTheme.colorScheme.primary,
         unfocusedLabelColor = CyberGrungeTokens.Paper.copy(alpha = .72f),
     )
-    androidx.compose.foundation.text.BasicTextField(
-        value = value, onValueChange = onValue, enabled = enabled, singleLine = !multiline,
-        keyboardOptions = keyboardOptions, interactionSource = interaction,
-        minLines = if (multiline) 3 else 1,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
-        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp).then(
-            if (value.isEmpty()) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
-        ),
-        decorationBox = { inner ->
-            OutlinedTextFieldDefaults.DecorationBox(
-                value = value, innerTextField = inner, enabled = enabled, singleLine = !multiline,
-                visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
-                interactionSource = interaction,
-                label = { Text("INPUT//$label", style = MaterialTheme.typography.labelSmall) },
-                placeholder = null,
-                colors = colors,
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 11.dp),
-                container = {
-                    Box {
-                        OutlinedTextFieldDefaults.Container(
-                            enabled = enabled, isError = false, interactionSource = interaction, colors = colors,
-                            shape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp),
-                        )
-                        if (value.isEmpty()) CyberGrungeEmptySignal(
-                            Modifier.align(Alignment.Center).padding(horizontal = 14.dp),
-                        )
-                    }
-                },
-            )
-        },
-    )
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text("INPUT//$label", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        androidx.compose.foundation.text.BasicTextField(
+            value = value, onValueChange = onValue, enabled = enabled, singleLine = !multiline,
+            keyboardOptions = keyboardOptions, interactionSource = interaction,
+            minLines = if (multiline) 3 else 1,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
+            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 88.dp else 48.dp).then(
+                if (value.isEmpty()) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
+            ),
+            decorationBox = { inner ->
+                OutlinedTextFieldDefaults.DecorationBox(
+                    value = value, innerTextField = inner, enabled = enabled, singleLine = !multiline,
+                    visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+                    interactionSource = interaction,
+                    label = null,
+                    placeholder = placeholder?.let { hint -> { Text(hint, color = MaterialTheme.colorScheme.onSurfaceVariant) } },
+                    colors = colors,
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+                    container = {
+                        Box {
+                            OutlinedTextFieldDefaults.Container(
+                                enabled = enabled, isError = false, interactionSource = interaction, colors = colors,
+                                shape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp),
+                            )
+                            if (value.isEmpty() && placeholder == null) CyberGrungeEmptySignal(
+                                Modifier.align(Alignment.Center).padding(horizontal = 14.dp),
+                            )
+                        }
+                    },
+                )
+            },
+        )
+    }
 }
 
 @Composable
