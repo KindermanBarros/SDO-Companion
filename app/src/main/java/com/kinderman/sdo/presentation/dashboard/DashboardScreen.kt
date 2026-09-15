@@ -88,6 +88,7 @@ import com.kinderman.sdo.ui.LabelFunctional
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Panel
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoEmptyState
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
@@ -328,7 +329,7 @@ fun DashboardScreen(
                 when (section) {
                     DashboardSection.CHARACTERS -> {
                         if (filteredCharacters.isEmpty()) item("empty-characters") {
-                            EmptyDashboardPanel(
+                            SdoEmptyState(
                                 title = if (filtersActive) "Nenhuma ficha encontrada" else "Sem fichas",
                                 message = if (filtersActive) "Ajuste ou limpe os filtros de pesquisa." else "Crie uma ficha para iniciar o arquivo.",
                             )
@@ -358,7 +359,7 @@ fun DashboardScreen(
                             )
                         }
                         if (activeCampaigns.isEmpty() && archivedCampaigns.isEmpty()) item("empty-campaigns") {
-                            EmptyDashboardPanel(
+                            SdoEmptyState(
                                 title = if (campaignSearchQuery.isBlank()) "Nenhuma campanha detectada" else "Nenhuma campanha encontrada",
                                 message = if (campaignSearchQuery.isBlank()) "Crie uma campanha ou entre usando um código de convite." else "Revise o termo pesquisado.",
                             )
@@ -625,14 +626,6 @@ private fun FilterSelectionDialog(
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text("CANCELAR") } },
     )
-}
-
-@Composable
-private fun EmptyDashboardPanel(title: String, message: String) {
-    TechPanel {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Text(message)
-    }
 }
 
 @Composable

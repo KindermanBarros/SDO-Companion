@@ -288,13 +288,6 @@ val RawDisplayFont = FontFamily(
     Font(R.font.mb_forever_raw, weight = FontWeight.Normal),
 )
 
-object SdoMotionTokens {
-    const val RESPONSE = 180
-    const val TRANSITION = 300
-    const val SIGNAL_PULSE = 700
-    const val TELEMETRY_SCAN = 1_100
-}
-
 private fun hudTypography(scale: Float) = Typography(
     displayLarge = TextStyle(
         fontFamily = RawDisplayFont,
@@ -425,7 +418,7 @@ fun HudBackground(
             while (x <= size.width) {
                 val isMajor = (x % major) < 0.5f
                 drawLine(
-                    color = gridColor.copy(alpha = if (isMajor) 0.40f else 0.16f),
+                    color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
                     start = Offset(x, 0f),
                     end = Offset(x, size.height),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -436,7 +429,7 @@ fun HudBackground(
             while (y <= size.height) {
                 val isMajor = (y % major) < 0.5f
                 drawLine(
-                    color = gridColor.copy(alpha = if (isMajor) 0.40f else 0.16f),
+                    color = gridColor.copy(alpha = if (isMajor) SdoOpacityTokens.GRID_MAJOR else SdoOpacityTokens.GRID_MINOR),
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
                     strokeWidth = if (isMajor) 1.2f else 0.6f,
@@ -453,7 +446,7 @@ fun HudBackground(
                 var slash = -size.height
                 while (slash < size.width) {
                     drawLine(
-                        color = signalColor.copy(alpha = 0.035f),
+                        color = signalColor.copy(alpha = SdoOpacityTokens.GRUNGE),
                         start = Offset(slash, size.height),
                         end = Offset(slash + size.height, 0f),
                         strokeWidth = 8.dp.toPx(),
@@ -484,15 +477,16 @@ fun TechPanel(
     }
 
     val resolvedAccent = accent ?: MaterialTheme.colorScheme.primary
+    val panelShape = SdoShapeTokens.panel
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = resolvedAccent.copy(alpha = 0.72f),
-                shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
+                color = resolvedAccent.copy(alpha = SdoOpacityTokens.BORDER),
+                shape = panelShape,
             ),
-        shape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp),
+        shape = panelShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
             contentColor = MaterialTheme.colorScheme.onSurface,

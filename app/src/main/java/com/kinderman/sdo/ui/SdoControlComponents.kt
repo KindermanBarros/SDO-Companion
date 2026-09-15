@@ -30,24 +30,24 @@ fun SdoActionButton(
     enabled: Boolean = true,
     style: SdoActionStyle = SdoActionStyle.SECONDARY,
 ) {
-    val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
+    val shape = SdoShapeTokens.control
     when (style) {
         SdoActionStyle.PRIMARY -> Button(
             onClick = onClick,
             enabled = enabled,
-            modifier = modifier.heightIn(min = 48.dp),
+            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget),
             shape = shape,
         ) { AdaptiveActionLabel(label, color = MaterialTheme.colorScheme.onPrimary) }
         SdoActionStyle.SECONDARY -> OutlinedButton(
             onClick = onClick,
             enabled = enabled,
-            modifier = modifier.heightIn(min = 48.dp),
+            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget),
             shape = shape,
         ) { AdaptiveActionLabel(label) }
         SdoActionStyle.DESTRUCTIVE -> OutlinedButton(
             onClick = onClick,
             enabled = enabled,
-            modifier = modifier.heightIn(min = 48.dp),
+            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget),
             shape = shape,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
         ) { AdaptiveActionLabel(label, color = MaterialTheme.colorScheme.error) }

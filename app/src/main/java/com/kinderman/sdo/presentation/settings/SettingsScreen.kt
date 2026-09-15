@@ -32,6 +32,7 @@ import com.kinderman.sdo.ui.SdoVisualMode
 import com.kinderman.sdo.ui.SdoChoicePanel
 import com.kinderman.sdo.ui.SdoToggleOption
 import com.kinderman.sdo.ui.SdoTogglePanel
+import com.kinderman.sdo.ui.CyberPanel
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 
@@ -65,15 +66,12 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item {
-                    TechPanel(accent = MaterialTheme.colorScheme.primary) {
-                        TelemetryTag("LOCAL_PREFERENCES")
-                        Text("Preferências ficam neste aparelho", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            "A troca é imediata e não altera a ficha, a campanha ou o Firebase.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+                    CyberPanel(
+                        title = "Preferências ficam neste aparelho",
+                        code = "LOCAL_PREFERENCES",
+                        summary = "A troca é imediata e não altera a ficha, a campanha ou o Firebase.",
+                        accent = MaterialTheme.colorScheme.primary,
+                    )
                 }
                 item {
                     SdoTogglePanel("INTERFACE", listOf(
@@ -93,11 +91,12 @@ fun SettingsScreen(
                     ))
                 }
                 item {
-                    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                        TelemetryTag("ACCOUNT.SESSION")
-                        Text("Conta e sessão", color = MaterialTheme.colorScheme.onSurface)
-                        Text("Identidade, saída e permissões continuam centralizadas no painel principal.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    CyberPanel(
+                        title = "Conta e sessão",
+                        code = "ACCOUNT.SESSION",
+                        summary = "Identidade, saída e permissões continuam centralizadas no painel principal.",
+                        accent = MaterialTheme.colorScheme.secondary,
+                    )
                 }
                 item {
                     SdoChoicePanel(
