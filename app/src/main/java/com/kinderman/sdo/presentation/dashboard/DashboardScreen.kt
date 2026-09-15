@@ -88,6 +88,7 @@ import com.kinderman.sdo.ui.LabelFunctional
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Panel
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoScreenMasthead
 import com.kinderman.sdo.ui.SdoEmptyState
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechCutDark
@@ -227,13 +228,12 @@ fun DashboardScreen(
                             IconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
                         }
                     }
-                    Text("SDO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                    Text(if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
-                    Text(
+                    SdoScreenMasthead(
+                        eyebrow = "SDO // FIELD ARCHIVE",
+                        title = if (admin) "PAINEL ADMINISTRATIVO" else "MINHAS FICHAS",
+                        metadata =
                         if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // $activeCampaignCount CAMPANHAS ATIVAS"
                         else "$activeCampaignCount CAMPANHAS ATIVAS // ${characters.count { it.ownerId == uid && normalizeCampaignId(it.campaignId).isBlank() }} FICHAS SEM CAMPANHA",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelSmall,
                     )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         DashboardSection.entries.forEach { target ->

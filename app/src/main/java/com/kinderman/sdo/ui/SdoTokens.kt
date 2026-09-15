@@ -19,7 +19,7 @@ object SdoOpacityTokens {
     const val GRID_MINOR = .16f
     const val GRID_MAJOR = .40f
     const val BORDER = .72f
-    const val GRUNGE = .035f
+    const val GRUNGE = .075f
 }
 
 object SdoShapeTokens {
