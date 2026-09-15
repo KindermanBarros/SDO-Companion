@@ -472,8 +472,8 @@ estática e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
   superfícies clicáveis usam `SdoCard`. Não importar equivalentes Material diretamente em telas.
 - Navegação compacta usa `SdoNavigationBar`; layouts expandidos usam `SdoNavigationRail`.
 - O laboratório em Ajustes cobre ações, campos, escolhas, toggles e estados vazio/offline/erro.
-- Orçamentos de desenho são protegidos por `CybergrungeRenderBudgetTest`; o CI compila e executa os
-  testes instrumentados de renderização em um viewport Android delimitado.
+- Orçamentos de desenho são protegidos por `CybergrungeRenderBudgetTest`; o CI valida esses limites
+  como testes unitários, sem comparação visual ou execução de emulador.
 
 Arquitetura:
 
