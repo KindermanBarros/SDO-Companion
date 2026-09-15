@@ -12,8 +12,8 @@ class CyberGrungeRenderBudgetTest {
     }
 
     @Test
-    fun onlyLoadingOwnsAnInfiniteTransition() {
-        // Interaction motion uses animateFloatAsState and is disposed with its composable.
+    fun compositionBoundMotionStaysInsideTimingBudget() {
+        // Press motion is finite; latent and missing-signal loops are disposed with their composables.
         assertTrue(SdoMotionTokens.RESPONSE <= 200)
         assertTrue(SdoMotionTokens.TELEMETRY_SCAN >= 1_000)
     }

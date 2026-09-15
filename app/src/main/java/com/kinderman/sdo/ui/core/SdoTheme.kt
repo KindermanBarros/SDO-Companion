@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
@@ -344,6 +346,7 @@ private fun hudTypography(scale: Float) = Typography(
     ),
 )
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun SdoTheme(
     preferences: SdoPreferences = SdoPreferences(),
@@ -390,10 +393,16 @@ fun SdoTheme(
             extraLarge = CutCornerShape(22.dp),
         ),
         content = {
-            androidx.compose.runtime.CompositionLocalProvider(
-                LocalSdoPreferences provides preferences,
-                content = content
-            )
+            if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
+                CompositionLocalProvider(
+                    LocalSdoPreferences provides preferences,
+                    LocalIndication provides CyberGrungeNoRippleIndication,
+                    LocalRippleConfiguration provides null,
+                    content = content,
+                )
+            } else {
+                CompositionLocalProvider(LocalSdoPreferences provides preferences, content = content)
+            }
         },
     )
 }

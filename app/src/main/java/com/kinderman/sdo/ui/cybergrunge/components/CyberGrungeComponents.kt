@@ -75,6 +75,7 @@ internal fun CyberGrungeAction(
         SdoActionStyle.DESTRUCTIVE -> MaterialTheme.colorScheme.error
     }
     val shape = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)
+    val interaction = remember { MutableInteractionSource() }
     val content: @Composable () -> Unit = {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.width(12.dp).height(4.dp).background(signal))
@@ -84,18 +85,20 @@ internal fun CyberGrungeAction(
     if (style == SdoActionStyle.PRIMARY) {
         Button(
             onClick = onClick, enabled = enabled,
-            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget),
+            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget).cyberGrungePress(interaction),
             shape = shape,
             colors = ButtonDefaults.buttonColors(containerColor = signal),
+            interactionSource = interaction,
             content = { content() },
         )
     } else {
         OutlinedButton(
             onClick = onClick, enabled = enabled,
-            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget),
+            modifier = modifier.heightIn(min = SdoSpacingTokens.minimumTouchTarget).cyberGrungePress(interaction),
             shape = shape,
             border = androidx.compose.foundation.BorderStroke(1.dp, signal),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = signal),
+            interactionSource = interaction,
             content = { content() },
         )
     }
