@@ -1,7 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -144,7 +144,7 @@ internal fun PhaseOneStrictInventorySection(
                 Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().sdoClickable { expanded = !expanded }, verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
                         Text(compactDetails, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
@@ -475,7 +475,7 @@ private fun AshBuilderDialog(
                     ) {
                         filteredGroups.forEach { (name, variants) ->
                             Column(
-                                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).clickable {
+                                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).sdoClickable {
                                     selectedAshName = name
                                     selectedId = variants.firstOrNull { it.catalogAshPurity == AshPurity.RAW }?.id
                                         ?: variants.firstOrNull()?.id.orEmpty()
@@ -503,7 +503,7 @@ private fun AshBuilderDialog(
                             Column(
                                 Modifier.fillMaxWidth()
                                     .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = .14f) else MaterialTheme.colorScheme.surfaceVariant)
-                                    .clickable { selectedId = entry.id }
+                                    .sdoClickable { selectedId = entry.id }
                                     .padding(10.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
@@ -765,7 +765,7 @@ private fun StrictItemBuilderDialog(
                         Text(group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         groupModifications.forEach { modification: ItemPart ->
                         val checked = modification in modifications
-                        Row(Modifier.fillMaxWidth().clickable { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) }) {
+                        Row(Modifier.fillMaxWidth().sdoClickable { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) }) {
                             Checkbox(checked, onCheckedChange = { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) })
                             Column(Modifier.padding(top = 8.dp)) {
                                 Text(modification.name, color = MaterialTheme.colorScheme.onSurface)

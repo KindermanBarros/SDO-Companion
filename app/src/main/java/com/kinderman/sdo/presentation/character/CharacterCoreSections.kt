@@ -1,7 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -156,7 +156,7 @@ private fun CalculatedResourceEditor(
 ) {
     var expanded by rememberSaveable(label) { mutableStateOf(false) }
     SdoInsetCard(accent = accent) {
-        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().sdoClickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
                 ResourceSummary(resource.current, maximum, accent)
@@ -192,7 +192,7 @@ private fun ManualResourceEditor(
     var expanded by rememberSaveable(label) { mutableStateOf(false) }
     SdoInsetCard(accent = accent, verticalSpacing = 6.dp) {
         val maximum = fixedMaximum ?: resource.maximum.coerceAtLeast(0)
-        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().sdoClickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
                 ResourceSummary(resource.current, maximum, accent)
@@ -290,7 +290,7 @@ private fun AttributeEditor(character: Character, attribute: AttributeValue, ena
     }
     SdoInsetCard(contentPadding = 9.dp, verticalSpacing = 6.dp) {
         Row(
-            Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            Modifier.fillMaxWidth().sdoClickable { expanded = !expanded },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -435,7 +435,7 @@ private fun ProtectionEditor(
 ) {
     var expanded by rememberSaveable(name) { mutableStateOf(false) }
     SdoInsetCard(accent = MaterialTheme.colorScheme.secondary) {
-        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().sdoClickable { expanded = !expanded }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column {
                 Text(name.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
                 Text("TOTAL $total", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)

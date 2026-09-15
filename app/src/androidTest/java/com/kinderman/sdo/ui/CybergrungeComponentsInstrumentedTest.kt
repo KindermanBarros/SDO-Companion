@@ -1,17 +1,24 @@
 package com.kinderman.sdo.ui
 
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-class CyberGrungeComponentsInstrumentedTest {
+class CybergrungeComponentsInstrumentedTest {
     @get:Rule
     val compose = createComposeRule()
 
@@ -43,7 +50,17 @@ class CyberGrungeComponentsInstrumentedTest {
     fun experimentalLabExposesCoreInteractionStates() {
         compose.setContent {
             SdoTheme(SdoPreferences(visualMode = SdoVisualMode.CYBERGRUNGE)) {
-                CyberGrungeLab(Modifier.testTag("cybergrunge-lab"))
+                Box(Modifier.size(360.dp, 640.dp).testTag("cybergrunge-viewport")) {
+                    Column(
+                        Modifier.fillMaxSize().padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        SdoScreenMasthead("LAB//CG", "LABORATÓRIO VISUAL", "ANDROID VIEWPORT")
+                        SdoActionButton("Primária", {}, style = SdoActionStyle.PRIMARY)
+                        SdoOfflineState("SEM CONEXÃO", "Dados locais preservados.")
+                        SdoErrorState("SINAL CORROMPIDO", "Revise o campo.")
+                    }
+                }
             }
         }
 
@@ -52,7 +69,7 @@ class CyberGrungeComponentsInstrumentedTest {
         compose.onNodeWithText("SEM CONEXÃO").assertExists()
         compose.onNodeWithText("SINAL CORROMPIDO").assertExists()
 
-        val pixels = compose.onNodeWithTag("cybergrunge-lab").captureToImage().toPixelMap()
+        val pixels = compose.onNodeWithTag("cybergrunge-viewport").captureToImage().toPixelMap()
         val sampleColors = buildSet {
             val xStep = (pixels.width / 12).coerceAtLeast(1)
             val yStep = (pixels.height / 20).coerceAtLeast(1)
