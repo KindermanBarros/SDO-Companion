@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -142,13 +144,43 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
             }
         }
         items(characters, key = Character::id) { character ->
-            TechPanel(modifier = Modifier.fillMaxWidth().clickable { onSelect(character.id) }) {
-                Column(Modifier.fillMaxWidth()) {
-                    Text(character.name.ifBlank { "Personagem sem nome" })
+            val maximum = character.lifeMaximum.coerceAtLeast(1)
+            val lifeFraction = (character.life.current.toFloat() / maximum).coerceIn(0f, 1f)
+            val lifeColor = when {
+                lifeFraction <= .25f -> MaterialTheme.colorScheme.error
+                lifeFraction <= .5f -> MaterialTheme.colorScheme.tertiary
+                else -> MaterialTheme.colorScheme.secondary
+            }
+            TechPanel(
+                modifier = Modifier.fillMaxWidth().clickable { onSelect(character.id) },
+                accent = lifeColor,
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 72.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     Text(
-                        "VIDA ${character.life.current}/${character.lifeMaximum}  //  ${if (character.dirty) "LOCAL_DELTA" else "SYNC_OK"}",
-                        style = MaterialTheme.typography.labelSmall,
+                        character.name.ifBlank { "?" }.take(2).uppercase(),
+                        color = lifeColor,
+                        style = MaterialTheme.typography.headlineSmall,
                     )
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                        Text(
+                            character.name.ifBlank { "Personagem sem nome" },
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Box(Modifier.fillMaxWidth().height(5.dp).background(MaterialTheme.colorScheme.outlineVariant)) {
+                            Box(Modifier.fillMaxWidth(lifeFraction).height(5.dp).background(lifeColor))
+                        }
+                        Text(
+                            "Vida ${character.life.current}/$maximum",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    TelemetryTag(if (character.dirty) "PENDENTE" else "SALVO")
                 }
             }
         }
