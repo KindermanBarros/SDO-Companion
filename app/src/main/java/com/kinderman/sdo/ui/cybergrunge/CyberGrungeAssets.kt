@@ -184,16 +184,22 @@ fun SdoScreenMasthead(
     val signal = MaterialTheme.colorScheme.primary
     val ink = MaterialTheme.colorScheme.onSurface
     val surface = MaterialTheme.colorScheme.surface
-    Row(
+    val possessionSeed = androidx.compose.runtime.remember(title) { title.hashCode() }
+    val motion = rememberCyberGrungePanelMotion(possessionSeed)
+    Box(
         modifier
+            .cyberGrungePossessed(motion)
             .fillMaxWidth()
-            .heightIn(min = 132.dp)
-            .background(surface.copy(alpha = .82f), SdoShapeTokens.panel)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .heightIn(min = 108.dp)
+            .background(surface.copy(alpha = .82f), SdoShapeTokens.panel),
     ) {
-        Canvas(Modifier.size(width = 88.dp, height = 108.dp)) {
+        CyberGrungeInterference(motion = motion, seed = possessionSeed)
+        Row(
+            Modifier.fillMaxWidth().padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Canvas(Modifier.size(width = 62.dp, height = 88.dp)) {
             drawRect(signal.copy(alpha = .12f))
             repeat(17) { line ->
                 val y = (5 + line * 6).dp.toPx()
@@ -210,22 +216,38 @@ fun SdoScreenMasthead(
             repeat(14) { glitch ->
                 drawRect(
                     if (glitch % 2 == 0) signal.copy(alpha = .7f) else ink.copy(alpha = .35f),
-                    Offset(((glitch * 29) % 80).dp.toPx(), ((glitch * 17) % 104).dp.toPx()),
+                    Offset(
+                        ((glitch * 29) % 80).dp.toPx() + motion.translationX * (1 + glitch % 3),
+                        ((glitch * 17) % 104).dp.toPx() + motion.translationY * (1 + glitch % 2),
+                    ),
                     Size((5 + glitch % 3 * 5).dp.toPx(), 3.dp.toPx()),
                 )
             }
-        }
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(eyebrow, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                ExperimentalBadge()
             }
-            Text(title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.headlineLarge)
-            Text(metadata, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            AdaptiveSingleLineText(
+                text = eyebrow,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelLarge,
+                minimumSize = 6.sp,
+            )
+            AdaptiveSingleLineText(
+                text = title,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineLarge.copy(fontFamily = CyberGrungeHeroFont),
+                minimumSize = 15.sp,
+            )
+            AdaptiveSingleLineText(
+                text = metadata,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+                minimumSize = 6.sp,
+            )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 repeat(11) { index ->
                     Box(Modifier.weight(if (index % 4 == 0) 2f else 1f).height(3.dp).background(if (index < 3) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline))
                 }
+            }
             }
         }
     }

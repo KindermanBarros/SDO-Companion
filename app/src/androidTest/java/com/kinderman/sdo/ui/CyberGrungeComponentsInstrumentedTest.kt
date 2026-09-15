@@ -40,6 +40,22 @@ class CyberGrungeComponentsInstrumentedTest {
     }
 
     @Test
+    fun cybergrungeMastheadKeepsLongTitlesCompactWithoutExperimentalBadge() {
+        compose.setContent {
+            SdoTheme(SdoPreferences(visualMode = SdoVisualMode.CYBERGRUNGE)) {
+                SdoScreenMasthead(
+                    eyebrow = "PAINEL//ADMINISTRATIVO",
+                    title = "CONFIGURAÇÕES DO DISPOSITIVO",
+                    metadata = "PREFERÊNCIAS LOCAIS E SINCRONIZAÇÃO",
+                )
+            }
+        }
+
+        compose.onNodeWithText("CONFIGURAÇÕES DO DISPOSITIVO").assertExists()
+        compose.onNodeWithText("EXPERIMENTAL").assertDoesNotExist()
+    }
+
+    @Test
     fun experimentalLabExposesCoreInteractionStates() {
         compose.setContent {
             SdoTheme(SdoPreferences(visualMode = SdoVisualMode.CYBERGRUNGE)) {

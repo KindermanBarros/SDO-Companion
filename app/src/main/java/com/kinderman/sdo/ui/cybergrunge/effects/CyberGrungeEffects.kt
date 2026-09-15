@@ -17,24 +17,18 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/** Static, allocation-light panel interference. Stateful motion is reserved for meaningful states. */
+/** Animated framebuffer tears inside a panel, driven by the same clock as its shake. */
 @Composable
-internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 17) {
-    val transition = rememberInfiniteTransition(label = "panel-corruption-$seed")
-    val phase by transition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(420 + kotlin.math.abs(seed % 360)),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "panel-corruption-phase-$seed",
-    )
+internal fun CyberGrungeInterference(
+    motion: CyberGrungePanelMotion,
+    modifier: Modifier = Modifier,
+    seed: Int = 17,
+) {
     Canvas(modifier.fillMaxSize()) {
         repeat(CyberGrungeTokens.PANEL_GLITCH_BLOCKS) { index ->
-            val tear = if (index % 5 == 0) phase * size.width * .17f else phase * (index % 3) * 2.dp.toPx()
+            val tear = motion.translationX * (if (index % 5 == 0) size.width * .05f else (index % 3) * 2.dp.toPx())
             val x = ((((seed + index * 43) % 101) / 101f * size.width) + tear + size.width) % size.width
-            val y = ((seed * 3 + index * 67) % 97) / 97f * size.height
+            val y = (((seed * 3 + index * 67 + (motion.translationY * 11).toInt()) % 97 + 97) % 97) / 97f * size.height
             drawRect(
                 color = if (index % 4 == 0) CyberGrungeTokens.SignalRed.copy(alpha = .11f)
                 else Color.White.copy(alpha = .045f),
@@ -43,12 +37,32 @@ internal fun CyberGrungeInterference(modifier: Modifier = Modifier, seed: Int = 
             )
         }
         repeat(3) { slice ->
-            val y = ((((seed + slice * 31) % 89) / 89f) * size.height + phase * 9.dp.toPx())
+            val y = ((((seed + slice * 31) % 89) / 89f) * size.height + motion.translationY * 9.dp.toPx())
                 .coerceIn(0f, size.height)
             drawRect(
                 color = if (slice == 1) CyberGrungeTokens.SignalRed.copy(alpha = .22f) else Color.White.copy(alpha = .08f),
                 topLeft = Offset(if (slice % 2 == 0) 0f else size.width * .38f, y),
                 size = Size(size.width * if (slice % 2 == 0) .62f else .55f, (1 + slice).dp.toPx()),
+            )
+        }
+
+        // A narrow directional tear: left while travelling left, right while travelling right.
+        val edge = if (motion.direction < 0) 0f else size.width
+        val inward = if (motion.direction < 0) 1f else -1f
+        val strength = .24f + motion.rupture * .76f
+        repeat(CyberGrungeTokens.PANEL_EDGE_GLITCH_LINES) { line ->
+            val lineSeed = kotlin.math.abs(seed + line * 53)
+            val y = (lineSeed % 101) / 101f * size.height
+            val width = (3 + lineSeed % 19).dp.toPx() * strength
+            val x = edge + inward * if (motion.direction < 0) 0f else width
+            drawRect(
+                color = when (line % 3) {
+                    0 -> CyberGrungeTokens.SignalRed.copy(alpha = .2f + .45f * strength)
+                    1 -> CyberGrungeTokens.TerminalGreen.copy(alpha = .13f + .3f * strength)
+                    else -> Color.White.copy(alpha = .1f + .24f * strength)
+                },
+                topLeft = Offset(x, y),
+                size = Size(width, (1 + line % 4).dp.toPx()),
             )
         }
     }
