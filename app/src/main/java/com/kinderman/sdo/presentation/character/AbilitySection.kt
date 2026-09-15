@@ -241,15 +241,21 @@ private fun FixedAmountField(amount: DiceOrNumber, enabled: Boolean, update: (Di
 @Composable
 private fun AbilityCostField(ability: Ability, enabled: Boolean, modifier: Modifier = Modifier, update: (Ability) -> Unit) {
     val amount = ability.cost.amount
-    ChoiceField("Custo", amount.coerceIn(0, 20), (0..20).toList(), enabled, modifier) { value ->
-        val cost = when (ability.kind) {
-            AbilityKind.POWER -> AbilityCost.PowerCost(value, (ability.cost as? AbilityCost.PowerCost)?.resource ?: SpendableResource.PE)
-            AbilityKind.SPELL -> AbilityCost.SpellCost(value.coerceAtLeast(1))
-            AbilityKind.RUNE -> AbilityCost.RuneCost(value.coerceAtLeast(1))
-            AbilityKind.ASH -> AbilityCost.AshCost(value.coerceAtLeast(1))
-        }
-        update(ability.copy(cost = cost))
+    val minimum = if (ability.kind == AbilityKind.ASH) 1 else 0
+    ChoiceField("Custo", amount.coerceIn(minimum, 20), (minimum..20).toList(), enabled, modifier) { value ->
+        update(ability.copy(cost = abilityCostWithAmount(ability, value)))
     }
+}
+
+internal fun abilityCostWithAmount(ability: Ability, value: Int): AbilityCost = when (ability.kind) {
+    AbilityKind.POWER -> AbilityCost.PowerCost(
+        value.coerceAtLeast(0),
+        (ability.cost as? AbilityCost.PowerCost)?.resource ?: SpendableResource.PE,
+        (ability.cost as? AbilityCost.PowerCost)?.isDivineOrLuckBased ?: false,
+    )
+    AbilityKind.SPELL -> AbilityCost.SpellCost(value.coerceAtLeast(0))
+    AbilityKind.RUNE -> AbilityCost.RuneCost(value.coerceAtLeast(0))
+    AbilityKind.ASH -> AbilityCost.AshCost(value.coerceAtLeast(1))
 }
 
 private val triggerOptions = listOf("Nenhum", "Manual", "Ao aplicar", "Início do turno", "Fim do turno")
