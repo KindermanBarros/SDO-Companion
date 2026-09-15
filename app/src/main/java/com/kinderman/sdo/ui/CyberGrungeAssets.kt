@@ -119,12 +119,12 @@ internal fun CyberGrungePanelChrome() {
 fun ExperimentalBadge(modifier: Modifier = Modifier) {
     Box(
         modifier
-            .background(MaterialTheme.colorScheme.tertiary, SdoShapeTokens.control)
+            .background(Color(0xFFFFD400), SdoShapeTokens.control)
             .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Text(
             "EXPERIMENTAL",
-            color = MaterialTheme.colorScheme.onTertiary,
+            color = Color(0xFF090608),
             fontWeight = FontWeight.Black,
             style = MaterialTheme.typography.labelSmall,
         )
