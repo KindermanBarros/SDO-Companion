@@ -2,9 +2,13 @@ package com.kinderman.sdo.ui
 
 val LocalSdoPreferences = androidx.compose.runtime.compositionLocalOf { SdoPreferences() }
 
-enum class SdoVisualMode(val label: String, val description: String) {
-    STANDARD("Interface padrão", "HUD técnico atual com o tema de cores selecionado."),
-    KALTOCH("Interface Kaltoch", "Terminal experimental com falhas de sinal, glitches e componentes próprios."),
+enum class SdoVisualMode(
+    val label: String,
+    val description: String,
+    val allowsThemeSelection: Boolean,
+) {
+    STANDARD("Interface padrão", "HUD técnico atual com o tema de cores selecionado.", true),
+    KALTOCH("Interface Kaltoch", "Terminal experimental com falhas de sinal, glitches e componentes próprios.", false),
 }
 
 enum class SdoThemeVariant(
