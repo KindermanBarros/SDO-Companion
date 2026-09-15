@@ -8,8 +8,10 @@ pelos contratos `Sdo*`, há navegação alternativa tanto compacta quanto expand
 sinal gráfico sem placeholder e o movimento de toque é finito e vinculado à composição.
 
 O custo visual possui limites testáveis de blocos por camada. A Interface Padrão não compõe fundos ou
-efeitos Cybergrunge. O pipeline compila também os testes instrumentados para impedir que a superfície
-de validação visual fique obsoleta.
+efeitos Cybergrunge. O modo experimental remove o ripple Material em toda a sua composição e substitui
+o retorno de toque por compressão e deslocamento curto de sinal. Campos vazios mantêm interferência
+animada apenas enquanto continuam vazios e visíveis. O pipeline compila também os testes instrumentados
+para impedir que a superfície de validação visual fique obsoleta.
 
 Este plano transforma o modo experimental em uma interface própria, com componentes, movimento e
 renderização separados da Interface Padrão. A implementação deve avançar por etapas revisáveis, sem

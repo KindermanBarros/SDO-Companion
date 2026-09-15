@@ -3,6 +3,8 @@ package com.kinderman.sdo.ui
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.Modifier
@@ -25,6 +27,18 @@ class CyberGrungeComponentsInstrumentedTest {
 
         compose.onNodeWithText("INPUT//NOME").assertExists()
         compose.onNodeWithText("SINAL VAZIO", substring = true).assertDoesNotExist()
+        compose.onNodeWithTag("cybergrunge-empty-signal").assertExists()
+    }
+
+    @Test
+    fun visualMissingSignalLeavesCompositionWhenFieldHasContent() {
+        compose.setContent {
+            SdoTheme(SdoPreferences(visualMode = SdoVisualMode.CYBERGRUNGE)) {
+                SdoField(label = "NOME", value = "Kara", onValueChange = {})
+            }
+        }
+
+        compose.onNodeWithTag("cybergrunge-empty-signal").assertDoesNotExist()
     }
 
     @Test
