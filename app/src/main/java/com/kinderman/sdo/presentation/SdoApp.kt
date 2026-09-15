@@ -2,10 +2,6 @@ package com.kinderman.sdo.presentation
 
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayCircle
@@ -44,6 +40,8 @@ import com.kinderman.sdo.ui.SdoContentDensity
 import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.LocalSdoWindowClass
 import com.kinderman.sdo.ui.SdoWindowClass
+import com.kinderman.sdo.ui.SdoNavigationItem
+import com.kinderman.sdo.ui.SdoNavigationRail
 
 private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, SETTINGS }
 
@@ -143,12 +141,12 @@ fun SdoApp(
             val wide = LocalSdoWindowClass.current == SdoWindowClass.EXPANDED
             val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { it.ownerId == appSession?.uid }
             Row(Modifier.fillMaxSize()) {
-                if (wide) NavigationRail {
-                    NavigationRailItem(surface == AppSurface.DASHBOARD, { navigate(AppSurface.DASHBOARD, null) }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Painel") })
-                    NavigationRailItem(surface == AppSurface.SESSION, { navigate(AppSurface.SESSION, null) }, icon = { Icon(Icons.Default.PlayCircle, null) }, label = { Text("Sessão") })
-                    if (canOpenHistorian) NavigationRailItem(surface == AppSurface.HISTORIAN, { navigate(AppSurface.HISTORIAN) }, icon = { Icon(Icons.Default.Visibility, null) }, label = { Text("Mestre") })
-                    NavigationRailItem(surface == AppSurface.SETTINGS, { navigate(AppSurface.SETTINGS) }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Ajustes") })
-                }
+                if (wide) SdoNavigationRail(buildList {
+                    add(SdoNavigationItem("Painel", surface == AppSurface.DASHBOARD, Icons.Default.Home) { navigate(AppSurface.DASHBOARD, null) })
+                    add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
+                    if (canOpenHistorian) add(SdoNavigationItem("Mestre", surface == AppSurface.HISTORIAN, Icons.Default.Visibility) { navigate(AppSurface.HISTORIAN) })
+                    add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
+                })
                 Box(Modifier.weight(1f).fillMaxSize()) {
             screenState.SaveableStateProvider("${appSession?.uid}:${surface.name}") {
             when (surface) {
