@@ -83,6 +83,11 @@ jobs:
           disable-animations: true
           script: gradle connectedDebugAndroidTest --build-cache --stacktrace
 
+      - name: Print instrumented test failures
+        if: failure()
+        run: |
+          find app/build/outputs/androidTest-results -type f -name '*.xml' -print -exec cat {} \;
+
   release:
     name: Build and publish Android release
     if: github.event_name != 'pull_request'
