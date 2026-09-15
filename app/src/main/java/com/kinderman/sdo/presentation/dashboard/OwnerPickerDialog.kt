@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import com.kinderman.sdo.ui.SdoCard
-import com.kinderman.sdo.ui.SdoCardDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import com.kinderman.sdo.ui.SdoOutlinedButton
 import androidx.compose.material3.Text

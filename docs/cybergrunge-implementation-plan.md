@@ -1,5 +1,16 @@
 # Plano de implementação — Interface Cybergrunge
 
+## Estado da implementação
+
+As etapas de fundação previstas neste documento foram incorporadas na PR #128. O laboratório visual
+fica disponível dentro de Ajustes quando o modo experimental está ativo. Controles das telas passam
+pelos contratos `Sdo*`, há navegação alternativa tanto compacta quanto expandida, campos vazios usam
+sinal gráfico sem placeholder e o movimento de toque é finito e vinculado à composição.
+
+O custo visual possui limites testáveis de blocos por camada. A Interface Padrão não compõe fundos ou
+efeitos Cybergrunge. O pipeline compila também os testes instrumentados para impedir que a superfície
+de validação visual fique obsoleta.
+
 Este plano transforma o modo experimental em uma interface própria, com componentes, movimento e
 renderização separados da Interface Padrão. A implementação deve avançar por etapas revisáveis, sem
 misturar regras do RPG com decisões visuais.

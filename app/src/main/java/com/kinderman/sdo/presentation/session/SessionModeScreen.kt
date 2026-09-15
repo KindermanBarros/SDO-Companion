@@ -135,13 +135,6 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            SdoScreenMasthead(
-                eyebrow = "SESSION//LIVE",
-                title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
-                metadata = if (readOnly) "ARQUIVO // SOMENTE LEITURA" else "OPERAÇÃO ATIVA // AUTOSAVE LOCAL",
-            )
-        }
-        item {
             TechPanel {
                 TelemetryTag("SELECT_OPERATIVE")
                 Text("Escolha uma ficha para a sessão", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
@@ -180,6 +173,13 @@ private fun SessionContent(
         contentPadding = PaddingValues(if (compact) 12.dp else 18.dp),
         verticalArrangement = Arrangement.spacedBy(spacing),
     ) {
+        item {
+            SdoScreenMasthead(
+                eyebrow = "SESSION//LIVE",
+                title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
+                metadata = if (readOnly) "ARQUIVO // SOMENTE LEITURA" else "OPERAÇÃO ATIVA // AUTOSAVE LOCAL",
+            )
+        }
         item {
             TechPanel(accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

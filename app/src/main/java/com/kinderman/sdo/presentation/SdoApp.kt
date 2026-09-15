@@ -278,6 +278,7 @@ fun SdoApp(
                 )
             }
                 }
+                }
                 if (!wide && surface != AppSurface.SHEET) SdoNavigationBar(buildList {
                     add(SdoNavigationItem("Painel", surface == AppSurface.DASHBOARD, Icons.Default.Home) { navigate(AppSurface.DASHBOARD, null) })
                     add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
