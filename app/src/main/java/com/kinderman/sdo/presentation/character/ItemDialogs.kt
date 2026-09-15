@@ -75,6 +75,8 @@ internal fun ItemCatalogDialog(
 ) {
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
+    var pendingToolId by remember { mutableStateOf<String?>(null) }
+    var toolName by remember { mutableStateOf("") }
     val categories = remember(entries) {
         entries.filter { it.kind == CatalogKind.ITEM }.map(CatalogEntry::group).filter(String::isNotBlank).distinct().sorted()
     }
@@ -86,6 +88,33 @@ internal fun ItemCatalogDialog(
                 (remainingHeritage == null || entry.creationCost.toIntOrNull() != null) &&
                 (needle.isEmpty() || entry.name.contains(needle, true) || entry.group.contains(needle, true) || entry.summary.contains(needle, true))
         }
+    }
+    val pendingTool = entries.firstOrNull { it.id == pendingToolId }
+    if (pendingTool != null) {
+        AlertDialog(
+            onDismissRequest = { pendingToolId = null },
+            title = { Text("IDENTIFICAR FERRAMENTA") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        "${pendingTool.name} // informe o nome ou ofício para diferenciar este conjunto no inventário.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    HudTextField("Nome ou ofício", toolName) { toolName = it }
+                    Text("Ex.: Relojoeiro — será salva como ${pendingTool.name} — Relojoeiro.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                SdoTextButton(
+                    onClick = {
+                        onSelect(pendingTool.toInventoryItem(initialCreation = remainingHeritage != null).copy(name = "${pendingTool.name} — ${toolName.trim()}"))
+                    },
+                    enabled = toolName.isNotBlank(),
+                ) { Text("ADICIONAR") }
+            },
+            dismissButton = { SdoTextButton(onClick = { pendingToolId = null }) { Text("VOLTAR") } },
+        )
+        return
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -112,7 +141,12 @@ internal fun ItemCatalogDialog(
                         Column(
                             Modifier.fillMaxWidth().clickable(enabled = !overBudget) {
                                 if (allowed) {
-                                    onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
+                                    if (entry.group.equals("Ferramenta", ignoreCase = true)) {
+                                        pendingToolId = entry.id
+                                        toolName = ""
+                                    } else {
+                                        onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
+                                    }
                                 }
                             }.padding(vertical = 9.dp),
                             verticalArrangement = Arrangement.spacedBy(3.dp),
