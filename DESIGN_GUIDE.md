@@ -96,7 +96,7 @@ extraídos quando aparecem pela segunda vez.
 
 ### Interface Kaltoch experimental
 
-`SdoVisualMode.STANDARD` permanece como padrão. `CYBERGRUNGE` é apresentado ao usuário como
+`SdoVisualMode.STANDARD` permanece como padrão. `KALTOCH` é apresentado ao usuário como
 **Interface Kaltoch** e troca tokens sem alterar conteúdo, permissões ou comportamento. A direção
 completa está em [docs/interface-kaltoch.md](docs/interface-kaltoch.md):
 
@@ -119,7 +119,7 @@ Quando ativo, o design system aplica em todas as telas:
 - superfícies parcialmente translúcidas que revelam a camada gráfica sem comprometer texto;
 - composição determinística e sem animação contínua, preservando bateria e fluidez no Android.
 
-Os assets são vetoriais/code-native e pertencem a `CyberGrungeAssets.kt`. Telas não devem copiar
+Os assets são vetoriais/code-native e pertencem a `KaltochAssets.kt`. Telas não devem copiar
 esses desenhos: `HudBackground`, `TechPanel`, `SdoInsetCard` e os demais componentes do design
 system propagam a linguagem visual. Ruído nunca pode atravessar campos de texto nem reduzir o
 contraste mínimo do conteúdo funcional.
