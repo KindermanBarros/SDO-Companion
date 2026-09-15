@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import com.kinderman.sdo.ui.SdoTextButton
 import com.kinderman.sdo.ui.SdoScreenMasthead
+import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CharacterLock
@@ -173,9 +175,13 @@ fun CharacterSheetScreen(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(current.name.uppercase(), style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                when {
+                            AdaptiveSingleLineText(
+                                current.name.uppercase(),
+                                style = MaterialTheme.typography.titleMedium,
+                                minimumSize = 9.sp,
+                            )
+                            AdaptiveSingleLineText(
+                                text = when {
                                     readOnly -> "Campanha arquivada · somente leitura"
                                     session.isAdmin -> "Acesso administrativo"
                                     isCampaignHistorian -> "Acesso da Mestre"
@@ -185,6 +191,7 @@ fun CharacterSheetScreen(
                                 },
                                 color = if (readOnly || current.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall,
+                                minimumSize = 7.sp,
                             )
                         }
                     },

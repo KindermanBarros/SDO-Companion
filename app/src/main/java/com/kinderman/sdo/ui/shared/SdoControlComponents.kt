@@ -76,6 +76,7 @@ fun SdoFilterChip(
                 contentColor = accent,
                 containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else androidx.compose.ui.graphics.Color.Transparent,
             ),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp),
         ) { AdaptiveActionLabel(if (selected) "■ ${label.uppercase()}" else "□ ${label.uppercase()}", color = accent) }
         return
     }

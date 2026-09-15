@@ -72,7 +72,7 @@ internal fun AbilitySection(
         val result = runCatching {
             when (entry.kind) {
                 CatalogKind.POWER -> entry.toStructuredPower(PowerSourceType.NARRATIVE, entry.id).toCanonicalAbility()
-                else -> entry.toMysticAbility().toCanonicalAbility()
+                else -> entry.toMysticAbility(character).toCanonicalAbility()
             }
         }
         result.onSuccess { ability ->

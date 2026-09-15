@@ -48,7 +48,7 @@ fun AdaptiveActionLabel(text: String, color: Color = MaterialTheme.colorScheme.p
         style = MaterialTheme.typography.labelLarge.copy(color = color, letterSpacing = 0.sp),
         maxLines = 1,
         autoSize = TextAutoSize.StepBased(
-            minFontSize = 11.sp,
+            minFontSize = 8.sp,
             maxFontSize = MaterialTheme.typography.labelLarge.fontSize
         ),
     )

@@ -32,6 +32,9 @@ import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoVisualMode
 import com.kinderman.sdo.ui.TechCutDark
 
 @Composable
@@ -250,5 +253,12 @@ private fun CatalogDetails(
 @Composable
 private fun DetailLine(label: String, value: String) {
     if (value.isBlank()) return
+    if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        SdoInsetCard(contentPadding = 8.dp, verticalSpacing = 3.dp) {
+            Text(label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            Text(value, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
+        }
+        return
+    }
     Text("$label // $value", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
 }
