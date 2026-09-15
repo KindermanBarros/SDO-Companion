@@ -55,6 +55,23 @@ fun AdaptiveActionLabel(text: String, color: Color = MaterialTheme.colorScheme.p
 }
 
 @Composable
+fun AdaptiveSingleLineText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.titleMedium,
+    minimumSize: androidx.compose.ui.unit.TextUnit = 11.sp,
+) {
+    BasicText(
+        text = text,
+        modifier = modifier,
+        style = style.copy(color = color),
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(minFontSize = minimumSize, maxFontSize = style.fontSize),
+    )
+}
+
+@Composable
 fun CollapsibleSection(title: String, index: String = "", content: @Composable () -> Unit) {
     val collapsible = LocalSdoPreferences.current.collapseLongSections
     if (!collapsible) {

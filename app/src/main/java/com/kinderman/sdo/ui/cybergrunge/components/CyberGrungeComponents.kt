@@ -44,14 +44,16 @@ internal fun CyberGrungePanel(
     compact: Boolean,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val possessionSeed = remember { System.identityHashCode(Any()) }
     val shape = CutCornerShape(topEnd = CyberGrungeTokens.cut, bottomStart = CyberGrungeTokens.cut)
     Box(
         modifier
+            .cyberGrungePossessed(possessionSeed)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface.copy(alpha = .94f), shape)
             .border(1.dp, accent.copy(alpha = .78f), shape),
     ) {
-        CyberGrungeInterference(seed = accent.hashCode())
+        CyberGrungeInterference(seed = possessionSeed)
         Box(Modifier.fillMaxWidth().height(3.dp).background(accent).align(Alignment.TopStart))
         Box(Modifier.width(CyberGrungeTokens.railWidth).fillMaxSize().background(accent.copy(alpha = .78f)))
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
@@ -186,7 +188,11 @@ internal fun CyberGrungeChoiceRow(
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             badge()
-            Text(label.uppercase(), color = if (selected) accent else MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+            AdaptiveSingleLineText(
+                text = label.uppercase(),
+                color = if (selected) accent else MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+            )
             Text(description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
         Text(if (selected) "LOCK" else "OPEN", color = accent, style = MaterialTheme.typography.labelSmall)

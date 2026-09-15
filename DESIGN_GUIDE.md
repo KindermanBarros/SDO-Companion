@@ -103,8 +103,8 @@ completa está em [docs/interface-cybergrunge.md](docs/interface-cybergrunge.md)
 - paleta Obsidian Signal com vermelho reservado a seleção/ação principal;
 - ciano para telemetria positiva e âmbar para aviso recuperável;
 - recortes mais agressivos por `SdoShapeTokens`, preservando hitbox retangular;
-- textura estática de baixa opacidade; sem flicker, animação infinita ou bitmap de ruído;
-- textos, valores e controles nunca recebem distorção ou glitch permanente;
+- corrupção animada, tremor contínuo, separação de canais e dados fantasmas no fundo;
+- textos, valores e controles podem sofrer deslocamentos breves e glitches permanentes de baixa amplitude;
 - alvos interativos usam `SdoSpacingTokens.minimumTouchTarget` (48 dp), inclusive em densidade compacta.
 
 O modo é identificado por um selo amarelo **EXPERIMENTAL**, exibido acima da opção Interface Cybergrunge.
@@ -117,7 +117,7 @@ Quando ativo, o design system aplica em todas as telas:
 - cards com borda reforçada, recortes assimétricos, código serial e barras de dados;
 - hierarquia editorial inspirada em zines industriais, relatórios anatômicos corrompidos e HUDs de erro;
 - superfícies parcialmente translúcidas que revelam a camada gráfica sem comprometer texto;
-- composição determinística e sem animação contínua, preservando bateria e fluidez no Android.
+- composição deliberadamente instável e animada; o custo visual faz parte do modo experimental opt-in.
 
 Os assets são vetoriais/code-native e pertencem a `CybergrungeAssets.kt`. Telas não devem copiar
 esses desenhos: `HudBackground`, `TechPanel`, `SdoInsetCard` e os demais componentes do design

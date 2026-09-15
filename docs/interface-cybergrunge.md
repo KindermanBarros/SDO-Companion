@@ -19,8 +19,8 @@ selecionada, a escolha de temas fica escondida porque sua paleta faz parte da pr
    pintura, parede, cartaz impresso ou colagem de papel.
 2. **Storytelling sem explicação.** Evitar frases sobre medo, destino, presença, corrupção ou
    personalidade do personagem. O efeito visual conta essa história sozinho.
-3. **Arte em primeiro plano.** O modo experimental pode ser agressivo, irregular e surpreendente.
-   Informações e ações essenciais permanecem reconhecíveis para que a ficha continue utilizável.
+3. **Arte antes da função.** O modo experimental deve ser agressivo, irregular e hostil. A operação
+   continua possível, mas estabilidade, conforto e previsibilidade não limitam sua direção artística.
 4. **Brutalismo na composição.** Usar escala, contraste, blocos rígidos, cortes e assimetria. Evitar
    transformar toda a superfície em textura desgastada.
 5. **Glitch com função.** Interferências respondem a estados reais: campo vazio, toque, abertura,
@@ -93,14 +93,16 @@ A composição é pensada primeiro para telas verticais:
 - detalhes densos concentrados nas margens e no fundo;
 - conteúdo funcional em uma coluna principal;
 - títulos grandes sem ocupar a maior parte da altura;
-- glitches pesados limitados aos elementos visíveis;
-- listas evitam animar todos os cartões simultaneamente.
+- glitches pesados atravessam fundo, chrome e cartões visíveis;
+- cartões podem tremer continuamente, perder alinhamento e sofrer rupturas independentes;
+- números, endereços, códigos e estados fantasmas ocupam o fundo como processos invasores.
 
 ## Movimento e processamento
 
-O modo pode usar shaders, camadas, máscaras, blur, partículas e renderização dinâmica quando o ganho
-visual justificar. Efeitos saem de execução junto com a tela ou componente, recursos gráficos são
-reutilizados e animações não deixam trabalhos ativos após a navegação.
+O modo usa shaders, camadas, máscaras, blur, partículas e renderização dinâmica para simular um
+cyberdeck possuído durante uma disputa na rede local. Glitches contínuos, tremor, separação de canais,
+frames duplicados e dados invasores são parte central da experiência, não ornamentação ocasional.
+Efeitos saem de execução junto com a tela ou componente e não deixam trabalhos ativos após a navegação.
 
 A experiência padrão não assume esse custo. A Interface Cybergrunge é opt-in e identificada como
 experimental.

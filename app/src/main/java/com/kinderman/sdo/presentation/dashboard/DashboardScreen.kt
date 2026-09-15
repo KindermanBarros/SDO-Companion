@@ -88,6 +88,7 @@ import com.kinderman.sdo.ui.LabelFunctional
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Panel
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoScreenMasthead
 import com.kinderman.sdo.ui.SdoEmptyState
 import com.kinderman.sdo.ui.Signal
@@ -563,10 +564,7 @@ private fun AdminCharacterFilters(
     onChooseStatus: () -> Unit,
     onClear: () -> Unit,
 ) {
-    Column(
-        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(8.dp)).padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
+    SdoInsetCard(verticalSpacing = 6.dp) {
         HudTextField(
             label = "Pesquisa administrativa",
             value = query,
@@ -599,7 +597,7 @@ private fun CompactSearchField(
     placeholder: String,
     onQueryChange: (String) -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+    SdoInsetCard(contentPadding = 8.dp, verticalSpacing = 0.dp) {
         HudTextField(label = label, value = query, placeholder = placeholder, onValue = onQueryChange)
     }
 }

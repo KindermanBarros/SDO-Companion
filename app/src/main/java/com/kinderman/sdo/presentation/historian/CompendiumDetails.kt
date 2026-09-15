@@ -24,6 +24,7 @@ import com.kinderman.sdo.domain.model.formattedAbilityDuration
 import com.kinderman.sdo.domain.model.formattedAbilityExecution
 import com.kinderman.sdo.domain.model.inventoryState
 import com.kinderman.sdo.domain.model.durabilityLabel
+import com.kinderman.sdo.ui.SdoDataModules
 
 @Composable
 internal fun CompendiumDetails(entry: CatalogEntry) {
@@ -46,9 +47,7 @@ internal fun CompendiumDetails(entry: CatalogEntry) {
             "Criação" to entry.creationCost, "Preço" to "E$ ${entry.price}",
             "Carga" to entry.load.toString(), "Durabilidade" to entry.durability, "Região" to entry.region,
         ))
-        values.filterValues(String::isNotBlank).forEach { (label, value) ->
-            Text("$label: $value", style = MaterialTheme.typography.bodySmall)
-        }
+        SdoDataModules(values.entries.map { it.key to it.value })
         PathPresets.find(entry.id)?.let { path ->
             Text("Lema: ${path.motto}")
             Text("Palavras-chave: ${path.keywords.joinToString(", ")}")

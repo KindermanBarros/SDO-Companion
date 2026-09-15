@@ -3,6 +3,9 @@ package com.kinderman.sdo.ui
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -371,6 +374,8 @@ fun SdoTheme(
         surfaceContainerHighest = baseColors.surfaceVariant,
     )
     val view = LocalView.current
+    val defaultIndication = LocalIndication.current
+    val defaultRippleConfiguration = LocalRippleConfiguration.current
     if (!view.isInEditMode) SideEffect {
         val activity = view.context as? ComponentActivity ?: return@SideEffect
         activity.enableEdgeToEdge(
@@ -383,6 +388,10 @@ fun SdoTheme(
                 colors.surface.toArgb(),
             ) { colors.surface.luminance() <= 0.5f },
         )
+        WindowCompat.getInsetsController(activity.window, view).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
     }
     MaterialTheme(
         colorScheme = colors,
@@ -393,16 +402,12 @@ fun SdoTheme(
             extraLarge = CutCornerShape(22.dp),
         ),
         content = {
-            if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
-                CompositionLocalProvider(
-                    LocalSdoPreferences provides preferences,
-                    LocalIndication provides CyberGrungeNoRippleIndication,
-                    LocalRippleConfiguration provides null,
-                    content = content,
-                )
-            } else {
-                CompositionLocalProvider(LocalSdoPreferences provides preferences, content = content)
-            }
+            CompositionLocalProvider(
+                LocalSdoPreferences provides preferences,
+                LocalIndication provides if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) CyberGrungeNoRippleIndication else defaultIndication,
+                LocalRippleConfiguration provides if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) null else defaultRippleConfiguration,
+                content = content,
+            )
         },
     )
 }
@@ -464,6 +469,7 @@ fun HudBackground(
             }
         }
         if (cybergrunge) {
+            CyberGrungeGhostNumbers()
             CyberGrungeBackdrop()
             CyberGrungeShaderLayer()
             CyberGrungeEdgeMarks()
@@ -502,13 +508,13 @@ fun TechPanel(
         modifier = modifier
             .fillMaxWidth()
             .border(
-                width = if (cybergrunge) 2.dp else 1.dp,
+                width = 1.dp,
                 color = resolvedAccent.copy(alpha = SdoOpacityTokens.BORDER),
                 shape = panelShape,
             ),
         shape = panelShape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (cybergrunge) 0.9f else 0.96f),
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
@@ -579,13 +585,11 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.labelLarge
             )
         }
-        Text(
-            title.uppercase(),
+        AdaptiveSingleLineText(
+            text = title.uppercase(),
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
         )
         Canvas(
             Modifier

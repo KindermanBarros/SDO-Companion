@@ -17,8 +17,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -26,6 +34,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /** Code-native assets for the experimental Cybergrunge terminal interface. */
 @Composable
@@ -84,6 +93,40 @@ internal fun BoxScope.CyberGrungeEdgeMarks() {
         Modifier.align(Alignment.BottomStart).padding(start = 12.dp, bottom = 8.dp)
             .width(72.dp).height(2.dp).background(MaterialTheme.colorScheme.onBackground.copy(alpha = .24f)),
     )
+}
+
+@Composable
+internal fun BoxScope.CyberGrungeGhostNumbers() {
+    val transition = rememberInfiniteTransition(label = "possessed-background-data")
+    val drift by transition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(4_600, easing = LinearEasing), RepeatMode.Reverse),
+        label = "possessed-background-drift",
+    )
+    val numbers = listOf("404", "13", "0XDEAD", "77", "NULL", "666", "//31")
+    numbers.forEachIndexed { index, value ->
+        Text(
+            text = value,
+            color = if (index % 3 == 0) MaterialTheme.colorScheme.primary.copy(alpha = .12f)
+            else MaterialTheme.colorScheme.onBackground.copy(alpha = .055f),
+            fontSize = (42 + index % 3 * 28).sp,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier
+                .align(if (index % 2 == 0) Alignment.TopEnd else Alignment.BottomStart)
+                .padding(
+                    top = (24 + index * 67).dp,
+                    end = (8 + index * 13).dp,
+                    bottom = (18 + index * 39).dp,
+                    start = (6 + index * 17).dp,
+                )
+                .graphicsLayer {
+                    translationX = drift * (12f + index * 3f) * if (index % 2 == 0) 1f else -1f
+                    translationY = drift * (4f + index)
+                    rotationZ = if (index % 2 == 0) -90f else 0f
+                },
+        )
+    }
 }
 
 @Composable
@@ -151,16 +194,20 @@ fun SdoScreenMasthead(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Canvas(Modifier.size(width = 88.dp, height = 108.dp)) {
-            drawRect(signal.copy(alpha = .14f))
-            val head = Offset(size.width * .5f, size.height * .39f)
-            drawCircle(ink.copy(alpha = .7f), size.width * .29f, head, style = Stroke(2.dp.toPx()))
-            drawLine(signal, head + Offset(-18.dp.toPx(), -4.dp.toPx()), head + Offset(-5.dp.toPx(), 4.dp.toPx()), 3.dp.toPx())
-            drawLine(signal, head + Offset(5.dp.toPx(), 4.dp.toPx()), head + Offset(18.dp.toPx(), -4.dp.toPx()), 3.dp.toPx())
-            repeat(6) { tooth ->
-                val x = size.width * .3f + tooth * size.width * .08f
-                drawLine(ink.copy(alpha = .65f), Offset(x, size.height * .58f), Offset(x, size.height * .72f), 1.dp.toPx())
+            drawRect(signal.copy(alpha = .12f))
+            repeat(17) { line ->
+                val y = (5 + line * 6).dp.toPx()
+                val start = if (line % 4 == 0) 0f else ((line * 11) % 26).dp.toPx()
+                drawLine(
+                    if (line % 3 == 0) signal.copy(alpha = .88f) else ink.copy(alpha = .5f),
+                    Offset(start, y),
+                    Offset(size.width - ((line * 7) % 31).dp.toPx(), y),
+                    if (line % 5 == 0) 3.dp.toPx() else 1.dp.toPx(),
+                )
             }
-            repeat(8) { glitch ->
+            drawLine(signal, Offset(4.dp.toPx(), 6.dp.toPx()), Offset(size.width - 3.dp.toPx(), size.height - 8.dp.toPx()), 3.dp.toPx())
+            drawLine(ink.copy(alpha = .65f), Offset(size.width - 6.dp.toPx(), 4.dp.toPx()), Offset(8.dp.toPx(), size.height - 5.dp.toPx()), 1.dp.toPx())
+            repeat(14) { glitch ->
                 drawRect(
                     if (glitch % 2 == 0) signal.copy(alpha = .7f) else ink.copy(alpha = .35f),
                     Offset(((glitch * 29) % 80).dp.toPx(), ((glitch * 17) % 104).dp.toPx()),
