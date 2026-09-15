@@ -76,17 +76,13 @@ internal fun CyberGrungeBackdrop(modifier: Modifier = Modifier) {
 
 @Composable
 internal fun BoxScope.CyberGrungeEdgeMarks() {
-    Text(
-        "SIGNAL//UNSTABLE  ◉  REC",
-        modifier = Modifier.align(Alignment.TopEnd).padding(top = 10.dp, end = 12.dp),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = .46f),
-        style = MaterialTheme.typography.labelSmall,
+    Box(
+        Modifier.align(Alignment.TopEnd).padding(top = 10.dp, end = 12.dp)
+            .width(42.dp).height(3.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = .46f)),
     )
-    Text(
-        "ERROR_TRACE  00:00:00  //  SDO FIELD OS",
-        modifier = Modifier.align(Alignment.BottomStart).padding(start = 12.dp, bottom = 8.dp),
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = .24f),
-        style = MaterialTheme.typography.labelSmall,
+    Box(
+        Modifier.align(Alignment.BottomStart).padding(start = 12.dp, bottom = 8.dp)
+            .width(72.dp).height(2.dp).background(MaterialTheme.colorScheme.onBackground.copy(alpha = .24f)),
     )
 }
 
@@ -107,12 +103,7 @@ internal fun CyberGrungePanelChrome() {
                 )
             }
         }
-        Text(
-            "FILE.404//CORRUPTED",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.labelSmall,
-        )
+        Box(Modifier.width(28.dp).height(4.dp).background(MaterialTheme.colorScheme.onSurfaceVariant))
     }
 }
 
@@ -183,7 +174,7 @@ fun SdoScreenMasthead(
                 ExperimentalBadge()
             }
             Text(title, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.headlineLarge)
-            Text("REALITY_FEED // $metadata", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Text(metadata, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 repeat(11) { index ->
                     Box(Modifier.weight(if (index % 4 == 0) 2f else 1f).height(3.dp).background(if (index < 3) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline))

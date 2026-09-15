@@ -98,7 +98,7 @@ internal fun OwnerPickerDialog(
                     if (filteredOwners.isEmpty()) {
                         item("empty-owner-search") {
                             Text(
-                                "NO_SIGNAL // NENHUM OPERADOR ENCONTRADO",
+                                "Nenhum usuário encontrado",
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.labelSmall,
                                 modifier = Modifier.padding(vertical = 18.dp),
