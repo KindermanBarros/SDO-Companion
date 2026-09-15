@@ -465,6 +465,7 @@ fun HudBackground(
         }
         if (cybergrunge) {
             CyberGrungeBackdrop()
+            CyberGrungeShaderLayer()
             CyberGrungeEdgeMarks()
         }
         content()
