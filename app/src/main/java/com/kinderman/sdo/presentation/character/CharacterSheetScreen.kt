@@ -64,6 +64,8 @@ import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TechInterfaceFont
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.Void
+import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoVisualMode
 import kotlinx.coroutines.launch
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -104,6 +106,7 @@ fun CharacterSheetScreen(
     val canChangePlayerLock = !readOnly &&
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
     val canLeaveCreation = !current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
     BackHandler { if (canLeaveCreation) onClose(current) }
 
     val changeCharacter: (Character) -> Unit = { changed ->
@@ -174,7 +177,7 @@ fun CharacterSheetScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Column {
+                        if (!cybergrunge) Column {
                             AdaptiveSingleLineText(
                                 current.name.uppercase(),
                                 style = MaterialTheme.typography.titleMedium,

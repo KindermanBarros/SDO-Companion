@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -367,22 +368,26 @@ private fun hudTypography(scale: Float) = Typography(
 private fun cyberGrungeTypography(scale: Float): Typography {
     val terminal = CyberGrungeTerminalFont
     val heading = CyberGrungeHeadingFont
+    // Pixel/display faces have taller ascenders and descenders than their nominal em box.
+    // Keeping font padding prevents accents and the bottom row of pixels from being clipped
+    // by compact cards, navigation items and text fields.
+    val safeFontMetrics = PlatformTextStyle(includeFontPadding = true)
     return Typography(
-        displayLarge = TextStyle(fontFamily = heading, fontSize = (42 * scale).sp, lineHeight = (46 * scale).sp),
-        displayMedium = TextStyle(fontFamily = heading, fontSize = (36 * scale).sp, lineHeight = (40 * scale).sp),
-        displaySmall = TextStyle(fontFamily = heading, fontSize = (31 * scale).sp, lineHeight = (35 * scale).sp),
-        headlineLarge = TextStyle(fontFamily = heading, fontSize = (34 * scale).sp, lineHeight = (38 * scale).sp),
-        headlineMedium = TextStyle(fontFamily = heading, fontSize = (29 * scale).sp, lineHeight = (33 * scale).sp),
-        headlineSmall = TextStyle(fontFamily = heading, fontSize = (25 * scale).sp, lineHeight = (29 * scale).sp),
-        titleLarge = TextStyle(fontFamily = heading, fontSize = (22 * scale).sp, lineHeight = (26 * scale).sp),
-        titleMedium = TextStyle(fontFamily = heading, fontSize = (18 * scale).sp, lineHeight = (22 * scale).sp),
-        titleSmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (17 * scale).sp),
-        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (13 * scale).sp, lineHeight = (20 * scale).sp),
-        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (18 * scale).sp),
-        bodySmall = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (15 * scale).sp),
-        labelLarge = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (15 * scale).sp),
-        labelMedium = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (14 * scale).sp),
-        labelSmall = TextStyle(fontFamily = terminal, fontSize = (8 * scale).sp, lineHeight = (13 * scale).sp),
+        displayLarge = TextStyle(fontFamily = heading, fontSize = (42 * scale).sp, lineHeight = (52 * scale).sp, platformStyle = safeFontMetrics),
+        displayMedium = TextStyle(fontFamily = heading, fontSize = (36 * scale).sp, lineHeight = (45 * scale).sp, platformStyle = safeFontMetrics),
+        displaySmall = TextStyle(fontFamily = heading, fontSize = (31 * scale).sp, lineHeight = (39 * scale).sp, platformStyle = safeFontMetrics),
+        headlineLarge = TextStyle(fontFamily = heading, fontSize = (34 * scale).sp, lineHeight = (43 * scale).sp, platformStyle = safeFontMetrics),
+        headlineMedium = TextStyle(fontFamily = heading, fontSize = (29 * scale).sp, lineHeight = (37 * scale).sp, platformStyle = safeFontMetrics),
+        headlineSmall = TextStyle(fontFamily = heading, fontSize = (25 * scale).sp, lineHeight = (32 * scale).sp, platformStyle = safeFontMetrics),
+        titleLarge = TextStyle(fontFamily = heading, fontSize = (22 * scale).sp, lineHeight = (29 * scale).sp, platformStyle = safeFontMetrics),
+        titleMedium = TextStyle(fontFamily = heading, fontSize = (18 * scale).sp, lineHeight = (25 * scale).sp, platformStyle = safeFontMetrics),
+        titleSmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (19 * scale).sp, platformStyle = safeFontMetrics),
+        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (13 * scale).sp, lineHeight = (22 * scale).sp, platformStyle = safeFontMetrics),
+        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (20 * scale).sp, platformStyle = safeFontMetrics),
+        bodySmall = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (17 * scale).sp, platformStyle = safeFontMetrics),
+        labelLarge = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (18 * scale).sp, platformStyle = safeFontMetrics),
+        labelMedium = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (17 * scale).sp, platformStyle = safeFontMetrics),
+        labelSmall = TextStyle(fontFamily = terminal, fontSize = (8 * scale).sp, lineHeight = (16 * scale).sp, platformStyle = safeFontMetrics),
     )
 }
 
