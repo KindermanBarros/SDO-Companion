@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 data class SdoNavigationItem(
     val label: String,
@@ -68,7 +69,6 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
                     .clickable(onClick = item.onClick).padding(horizontal = 9.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(item.icon, null, tint = accent)
                 Column {
                     Text("0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
                     Text(item.label.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelSmall)
@@ -103,11 +103,16 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
             Column(
                 Modifier.weight(1f).border(1.dp, accent, shape).clip(shape)
                     .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else CyberGrungeTokens.Panel)
-                    .clickable(onClick = item.onClick).padding(vertical = 7.dp),
+                    .clickable(onClick = item.onClick).padding(horizontal = 4.dp, vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Icon(item.icon, null, tint = accent)
-                Text("0${index + 1}//${item.label.uppercase()}", color = accent, style = MaterialTheme.typography.labelSmall)
+                Text("0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
+                AdaptiveSingleLineText(
+                    item.label.uppercase(),
+                    color = if (item.selected) accent else MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelSmall,
+                    minimumSize = 7.sp,
+                )
             }
         }
     }
