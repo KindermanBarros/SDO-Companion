@@ -177,8 +177,8 @@ fun CharacterSheetScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        if (!cybergrunge) Column {
-                            AdaptiveSingleLineText(
+                        Column {
+                            if (!cybergrunge) AdaptiveSingleLineText(
                                 current.name.uppercase(),
                                 style = MaterialTheme.typography.titleMedium,
                                 minimumSize = 9.sp,
