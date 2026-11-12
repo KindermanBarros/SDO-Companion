@@ -36,4 +36,4 @@ Pinned Ktlint, Detekt and Kover plugins are configured with enforced defaults an
 
 The initial full-source baseline reports 84 architecture, 227 Compose, 463 localization and 3 navigation violations. Manual DI/custom navigation/domain Android dependency need deliberate application decisions and maintenance. Default style/complexity checks reveal additional legacy debt. Fixing that behavior/architecture is not disguised as a harness validator relaxation. Runtime evidence here establishes one Room boundary, not complete UI, authentication, backend or navigation acceptance.
 
-A draft PR records the harness source/gate repairs and verification limits. No release, deployment, merge, production-data operation, catalog generation or cleanup is performed.
+[Draft PR #141](https://github.com/KindermanBarros/SDO-Companion/pull/141) records the harness source/gate repairs and verification limits. No release, deployment, merge, production-data operation, catalog generation or cleanup is performed.
