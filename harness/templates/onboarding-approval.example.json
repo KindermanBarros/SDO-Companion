@@ -1,0 +1,7 @@
+{
+  "approved_by": "<actual user who approved>",
+  "approved_at": "<actual approval timestamp>",
+  "plan": "docs/current/implementation_plan_v1.md",
+  "plan_sha256": "<SHA-256 of the exact approved plan>",
+  "profile_sha256": "<SHA-256 of the exact approved harness-project.json>"
+}

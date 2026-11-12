@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "name": ":mobile",
+      "path": "mobile",
+      "main": ["mobile/src/main/kotlin"],
+      "test": ["mobile/src/test/kotlin"],
+      "android_test": ["mobile/src/androidTest/kotlin"],
+      "layers": {
+        "ui": ["mobile/src/main/kotlin/example/ui"],
+        "domain": ["mobile/src/main/kotlin/example/domain"],
+        "data": ["mobile/src/main/kotlin/example/data"]
+      }
+    }
+  ],
+  "commands": {
+    "build": ["bash", "./gradlew", ":mobile:assembleDebug"],
+    "unit_tests": ["bash", "./gradlew", ":mobile:cleanTestDebugUnitTest", ":mobile:testDebugUnitTest", "--rerun-tasks"],
+    "source_rules": ["bash", "harness/scripts/check-full-source-rules.sh"]
+  },
+  "navigation": {
+    "destinations": "mobile/src/main/kotlin/example/ui/navigation/Destinations.kt",
+    "graph": "mobile/src/main/kotlin/example/ui/navigation/AppNavGraph.kt",
+    "host": "mobile/src/main/kotlin/example/ui/navigation/AppNavigationHost.kt",
+    "test": "mobile/src/androidTest/kotlin/example/NavigationTest.kt",
+    "contract_test": "mobile/src/androidTest/kotlin/example/NavigationContractTest.kt",
+    "required_arguments": {"Details": ["itemId"]},
+    "optional_arguments": {}
+  },
+  "instrumentation": {
+    "application_id": "example.mobile",
+    "test_application_id": "example.mobile.test",
+    "runner": "androidx.test.runner.AndroidJUnitRunner"
+  },
+  "unknowns": ["Illustrative only: discover and approve this project's actual paths and commands."]
+}

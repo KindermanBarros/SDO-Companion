@@ -1,0 +1,8 @@
+{
+  "approved_by": "Project owner (user in this session)",
+  "approved_on": "2026-11-12",
+  "statement": "No need to keep asking for aprovals until after this harness is all setup, all changes and states are pre-aproved from now until the end of it",
+  "scope": "Complete harness setup, necessary dependencies, setup compatibility repairs, evidence and stage transitions without further approval stops.",
+  "constraints": "Preserve product behavior and unrelated user work. Do not fabricate passing evidence, disable mandatory gates or treat this authorization as approval to publish, deploy production resources or access production data.",
+  "approval_basis_for_subsequent_artifacts": "Prospective setup authorization; new artifacts are recorded as covered by this instruction, not claimed to have been individually reviewed by the user."
+}

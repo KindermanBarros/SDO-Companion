@@ -1,0 +1,145 @@
+# Implementation Plan Template
+
+Use this template when producing the plan in the **Implementation Plan** stage.
+
+---
+
+## Feature / Bug
+
+> One line description of what is being implemented or fixed.
+
+---
+
+## Requirement Summary
+
+> 2–3 sentences. What is being built, why, and for whom.
+
+## Rule Applicability Implementation
+
+Canonical decisions: [`spec_v<N>.md#rule-applicability`](spec_v<N>.md#rule-applicability).
+Do not duplicate the ten-row matrix. Map every `Required` row from that exact approved
+specification to implementation work and verification evidence below. Its `Not
+applicable` and `Exception` rationales remain canonical in the specification; update
+the specification if implementation introduces a new trigger.
+
+| Required Rule ID | Implementation work / verification evidence |
+|---|---|
+| <RULE_ID> | <planned files, check, and evidence> |
+
+---
+
+## Impact Summary
+
+| Layer | Files Affected | Change Type |
+|-------|---------------|-------------|
+| UI | `path/to/Screen.kt` | modify |
+| Presentation | `path/to/ViewModel.kt` | modify |
+| Domain | `path/to/UseCase.kt` | new |
+| Data | `path/to/Dto.kt`, `path/to/Mapper.kt` | modify |
+| Navigation | `path/to/NavGraph.kt` | extend |
+| Test infrastructure | `path/to/FixtureServer.kt`, `path/to/TestHarness.kt` | new/modify |
+| Tests | `path/to/ViewModelTest.kt` | modify |
+
+---
+
+## API Changes
+
+- **Classification**: backward compatible / backward compatible but risky / breaking / none
+- **Force update required**: yes / no / unknown
+- **Fields added**: `fieldName: Type`
+- **Fields removed**: `fieldName`
+- **Fields changed**: `fieldName: OldType → NewType`
+- **OpenAPI Status**: <Already defined in sharedContracts/openapi.yaml / Requires update: list changes>
+
+---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `path/to/NewFile.kt` | reason |
+
+---
+
+## Files to Modify
+
+| File | What Changes |
+|------|-------------|
+| `path/to/ExistingFile.kt` | description of change |
+
+---
+
+## Files to Delete
+
+| File | Reason |
+|------|--------|
+| `path/to/OldFile.kt` | reason |
+
+---
+
+## UiState Design
+
+```kotlin
+data class ExampleUiState(
+    val isLoading: Boolean = false,
+    val content: ExampleUiModel? = null,
+    val error: UiError? = null,
+)
+```
+
+States covered:
+- [ ] Loading
+- [ ] Success / Content
+- [ ] Empty
+- [ ] Error
+- [ ] Retry
+- [ ] Permission / Auth (if applicable)
+
+---
+
+## UI State Stages
+
+For UI changes, copy each unique Plan stage ID from `UI_contract.md`. Give each state its own
+implementation step and a unique verification target appropriate to its Comparison. Use a JVM
+Roborazzi method and a method-scoped `verifyRoborazziDebug` command for `roborazzi` comparisons.
+Use an Android instrumented method and
+`ANDROID_SERIAL=<device> bash harness/scripts/run-android-instrumented-tests.sh --class <package.Class#method>`
+for `exact` or `structural` interaction checks. The target method can be created during
+implementation, but it must be named before approval so the implementation-plan gate can validate
+the evidence type.
+Keep the approved design image in the verification description; do not claim pixel parity for
+structural checks. Remove this section for non-UI work.
+
+| Stage ID | Implementation | Verification target | Verification |
+|---|---|---|---|
+| UI-01 | <screen/state-specific code change> | `app/src/test/java/<package>/roborazzi/<Feature>RoborazziTest.kt#<stateMethod>` or `app/src/androidTest/java/<package>/<Feature>Test.kt#<stateMethod>` | Match the command and approved image to the selected comparison: `./gradlew app:verifyRoborazziDebug --tests "<package>.<Feature>RoborazziTest.<stateMethod>"` for pixel checks, or `ANDROID_SERIAL=<device> bash harness/scripts/run-android-instrumented-tests.sh --class <package>.<Feature>Test#<stateMethod>` for instrumented interaction checks. |
+
+---
+
+## Test Plan
+
+> Produce a separate test plan document using **[`harness/templates/test-plan-template.md`](test-plan-template.md)** and link it here once created.
+
+---
+
+## Explicit Assumptions
+
+1. <assumption>
+
+---
+
+## Risks
+
+1. Risk: <what could go wrong> — Mitigation: <how to reduce it>
+
+---
+
+## Migration / Compatibility Notes
+
+> Any Room migration, backward compatibility handling, or phased rollout considerations.
+
+---
+
+## Out of Scope
+
+> List anything explicitly NOT being changed in this task to prevent scope creep.

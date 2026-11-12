@@ -1,0 +1,88 @@
+{
+  "project": "replace-with-project-name",
+  "last_updated": "YYYY-MM-DD",
+  "rules": {
+    "single_active_feature": true,
+    "passing_requires_evidence": true,
+    "passing_requires_acceptance_test_evidence": true,
+    "passing_requires_noncontradictory_evidence": true,
+    "do_not_skip_verification": true
+  },
+  "status_legend": {
+    "not_started": "Work has not begun.",
+    "in_progress": "The feature is the current active task.",
+    "blocked": "Work cannot continue until a documented blocker is resolved.",
+    "passing": "Required verification has passed and evidence is recorded."
+  },
+  "platform_validation": {
+    "required": false,
+    "unsupported_environment_policy": "fail_loudly",
+    "reason": "<why this feature has no Android/device/platform boundary — e.g. standard Jetpack Compose + Room on-device only>"
+  },
+  "features": [
+    {
+      "id": "US-1",
+      "priority": 1,
+      "area": "editor",
+      "title": "Create a new item",
+      "description": "Implement domain use case and Room entity/DAO to create and persist items.",
+      "ui_design": "docs/current/design/home_screen.png",
+      "user_visible_behavior": "User can tap add button to create a new item.",
+      "affects_ui": true,
+      "requires_visual_verification": true,
+      "production_journey": {
+        "required": true,
+        "reason": "This slice crosses the production conversation destination and returns to the originating screen.",
+        "acceptance_test_id": "TC-US-1-01",
+        "production_entry_point": "AppNavigationHost",
+        "test_file": "app/src/androidTest/java/replace/ItemJourneyTest.kt",
+        "test_method": "creatingItemReturnsToHomeScreen",
+        "user_actions": "Open the destination through the visible CTA and submit the action.",
+        "return_boundary": "The destination completes and returns to the originating screen.",
+        "post_return_assertion": "The resulting item is visible in the originating screen."
+      },
+      "status": "not_started",
+      "acceptance_test_ids": [
+        "TC-US-1-01",
+        "TC-US-1-VIS-001"
+      ],
+      "verification": [
+        "ANDROID_SERIAL=<device> bash harness/scripts/run-android-instrumented-tests.sh --class com.example.notesapp.ItemTests",
+        "./gradlew app:verifyRoborazziDebug --tests \"com.example.notesapp.ItemRoborazziTest.captureItemScreen\""
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "US-2",
+      "priority": 2,
+      "area": "editor",
+      "title": "Edit existing item",
+      "description": "Update existing item in Room database and update ViewModel state.",
+      "ui_design": "docs/current/design/editor_screen.png",
+      "user_visible_behavior": "User can modify item text and changes persist immediately.",
+      "affects_ui": true,
+      "requires_visual_verification": false,
+      "production_journey": {
+        "required": false,
+        "reason": "This slice has no navigation, saved-state, destination-recreation, or post-return persistence boundary.",
+        "acceptance_test_id": null,
+        "production_entry_point": null,
+        "test_file": null,
+        "test_method": null,
+        "user_actions": null,
+        "return_boundary": null,
+        "post_return_assertion": null
+      },
+      "status": "not_started",
+      "acceptance_test_ids": [
+        "TC-US-2-01"
+      ],
+      "verification": [
+        "ANDROID_SERIAL=<device> bash harness/scripts/run-android-instrumented-tests.sh --class com.example.notesapp.ItemEditorTests"
+      ],
+      "evidence": [],
+      "notes": ""
+    }
+  ]
+}

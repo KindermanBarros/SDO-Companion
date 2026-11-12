@@ -12,3 +12,7 @@ app/google-services.json
 /firestore-debug.log
 /.gradle-user-home/
 /.kotlin/
+/.harness-state/
+__pycache__/
+*.py[cod]
+.DS_Store

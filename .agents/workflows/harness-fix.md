@@ -1,0 +1,167 @@
+---
+description: Resolve evaluator findings for a complex feature below the acceptance score.
+---
+
+# Workflow: Harness Fix
+
+Use `implementer` to resolve findings, `tester` to verify fixes, and `evaluator` to review the result.
+If required delegation or a requested model is unavailable or unsupported, block the affected stage and report it; never silently substitute. Record requested and actual models in stage evidence when available. The evaluator must be fresh and independent, having neither implemented nor tested the change; if unavailable, keep independent review pending.
+
+Read and follow [Product documentation flow](../rules/product-documentation.md). Load affected living capability requirements before scoping or reviewing this change. Dated complex-change contracts and evidence belong under `.scratch/`.
+
+## When to use
+- Use this workflow when you are acting as the **Generator** (Implementer) agent in **Fix Mode**.
+- The active feature's tracker status is `To be fixed`. This status is set by the Evaluator ([`harness-evaluation.md`](harness-evaluation.md)) when the overall score is below `5.0 / 5`.
+- The Evaluator wrote `$FEATURE_DIR/code_review_{feature_id}.md` and `$FEATURE_DIR/test_review_{feature_id}.md`. Your job is to resolve **every** finding in those reports, re-verify against the sprint-contract acceptance gates, and transition the feature to `To be human reviewed`.
+
+> Do **NOT** run the `harness-generator.md` Stages 1–9 here — there is no new slice to implement and every slice is already `passing`. Do **NOT** flip any slice to `in_progress`, do **NOT** re-run lifecycle transition logic, and do **NOT** regenerate an implementation plan.
+
+---
+
+## 📌 Report Status Update Policy (mandatory)
+
+While fixing, you **MUST** record the resolution of each finding **inside the review reports themselves**, not only in the summary. The reports are the durable evidence the human reviewer and the next Evaluator read; a finding left at `REVISION REQUIRED` with no in-report update looks unresolved even after a fix pass.
+
+### Per-finding status convention
+Every review finding carries one of three fix statuses, set by you during this workflow:
+
+| Fix Status | Meaning |
+|---|---|
+| `Fixed ✅` | Root-cause fix applied, re-verification passed. Append the commit hash and the verification command that proves it. |
+| `Unresolved ⚠️` | The required gate remains failing after the targeted fix or a prerequisite is unavailable. Append the last error and the reason it remains open. |
+| `Won't fix — see note` | Only when the finding is a documented false positive **and** the user explicitly approves waiving it. Never use this to skip a real issue. |
+
+### Where to write the status
+- **`$FEATURE_DIR/code_review_{feature_id}.md`** — under **each** numbered item in `## Required Findings`, append a blockquote line:
+  ```
+  > **Fix Status:** Fixed ✅ — <one-line fix> (commit `<sha>`; verified: `<command>` exit 0; YYYY-MM-DD)
+  ```
+  Then update the `## Verdict` block with an overall fix outcome line: `> **Fix Pass:** <N>/<M> findings fixed; <K> unresolved (YYYY-MM-DD).`
+- **`$FEATURE_DIR/test_review_{feature_id}.md`** — in the Requirement-to-Test Traceability table, set a `Fix Status` column value (`Fixed ✅` / `Unresolved ⚠️` / `PASS (unchanged)`) on every row that was `REVISION REQUIRED` or `Missing`. Add a `## Fix Pass Summary` section listing counts and any unresolved rows with their last error.
+
+A finding is not considered resolved until its in-report status line exists and matches the summary.
+
+---
+
+## Gate Semantics
+
+Every required fix-mode gate is a hard stop. A gate may advance only after its command exits `0` and its required evidence is recorded. Any failure or unavailable prerequisite must be recorded as `⚠️ Blocked` or non-passing, and the workflow must stop before the next fix stage.
+
+
+Never introduce `@Suppress`, `@SuppressLint`, `tools:ignore`, ktlint/detekt disable comments, baselines, or rule exclusions to force a gate to pass. Only genuine code fixes are acceptable.
+
+---
+
+## 🔄 Fix Mode Pipeline
+
+### Fix-Stage 1 — Orient
+*   **Action**:
+    1. Run `bash harness/scripts/check-feature-lifecycle.sh`; confirm the active feature row is `To be fixed`. Stop if validation fails.
+    2. Read, in order:
+        1. `$FEATURE_DIR/sprint-contract.md` — Acceptance Test Cases and verification commands (the gates that must stay green).
+        2. `$FEATURE_DIR/platform-capability-matrix.md` — API/runtime contract and unsupported-environment policy (platform-bound features only).
+        3. `$FEATURE_DIR/evaluator-rubric.md` — overall score, category scores, verdict, and Required Follow-Up.
+        4. `$FEATURE_DIR/code_review_{feature_id}.md` — every `REVISION REQUIRED` / `FAIL` item.
+        5. `$FEATURE_DIR/test_review_{feature_id}.md` — every coverage gap, missing assertion, or failing scenario.
+        6. `$FEATURE_DIR/session-handoff.md` and `$FEATURE_DIR/progress.md` — prior context.
+    3. Build a consolidated, deduplicated fix list. Each item must trace to a specific report section (and line). Initialize (or append to) `$FEATURE_DIR/summary_{feature_id}.md` a **Fix Pass** section listing every fix item with status `pending`.
+*   **Objective**: A single source of truth for every review finding that must be resolved.
+
+### Fix-Stage 2 — Setup & Verify Baseline
+*   **Action**:
+    1. Run command line tools to check for active ADB devices:
+        ```bash
+        adb devices
+        ```
+       Confirm device availability for runtime testing. Always use an emulator for instrumented UI tests (e.g. `ANDROID_SERIAL=emulator-5554`), and fallback to a connected physical device only when no emulator is present.
+    2. Run the repository-wide source-rule bundle and JVM test suites:
+        ```bash
+        bash harness/scripts/check-full-source-rules.sh
+        ./gradlew assembleDebug
+        ./gradlew testDebugUnitTest
+        ```
+       The bundle always scans the complete production and test source trees and
+       aggregates every checker result. A non-zero result blocks Fix-Stage 2.
+    3. If red, mark the baseline `⚠️ Blocked`, record the failing command and raw output, and stop. Do not begin fixing review findings on a broken baseline.
+    4. If all setup and baseline commands succeed, **update `$FEATURE_DIR/summary_{feature_id}.md`** to mark the **Setup & Verify Baseline** stage status as completed (✅) with notes and the current timestamp. If any fails, record the stage as `⚠️ Blocked` and stop.
+*   **Objective**: Confirm runtime readiness and verify the repository is in a perfectly stable, compilable, and green baseline before applying fixes.
+
+### Fix-Stage 3 — Fix Findings & Update Report Status
+*   **Action**:
+    1. **INVOKE** the `android-implementation` skill via the Skill tool (name: `android-implementation`) for code changes, and the `android-testing` skill via the Skill tool (name: `android-testing`) for test changes. Reading the SKILL.md manually is not a substitute.
+    2. For each item in the fix list, apply a targeted, minimal fix that addresses the root cause. Do **NOT** introduce new scope — fix only what the reports flagged.
+    3. **Update the status inside the review reports** (per the Report Status Update Policy): as each finding is fixed, append its `> **Fix Status:** Fixed ✅ — …` line in `code_review_{feature_id}.md`, and set its `Fix Status` column / row in `test_review_{feature_id}.md`. If a required gate remains failing after the targeted fix, mark it `Unresolved ⚠️` in **both** the report and the summary and stop the pipeline.
+    4. Mark each item `fixed` (or `unresolved`) in the summary with the file/commit reference, and mark Fix-Stage 3 ✅.
+*   **Objective**: Every `code_review` and `test_review` finding has a root-cause fix **and** an in-report status line; no suppressions.
+
+### Fix-Stage 4 — Re-verify
+Before recording the fix pass, run the acceptance-test traceability validator in
+evaluation mode. It must prove every acceptance Test ID still maps to a real Kotlin
+method, a suite-scoped command, its declared scenario, and successful evidence:
+
+    bash harness/scripts/check-acceptance-test-traceability.sh "$FEATURE_DIR" --evaluate
+
+*   **Action**:
+    1. Validate an existing successful receipt with `bash harness/scripts/check-evidence-receipt.sh <receipt.json> --source <hash> --build-config <hash> --command <hash> --runtime <hash>`. Reuse it only when the validator passes; otherwise re-run, **one by one**, each affected verification command listed in `$FEATURE_DIR/sprint-contract.md` Acceptance Test Cases. If any command fails, record its command, exit status, and raw output; keep the feature non-passing and stop the pipeline.
+    2. Re-run the global quality gates: `./gradlew ktlintCheck`, `./gradlew detekt`, `./gradlew lint`, `./gradlew koverLog`, and `bash harness/scripts/check-full-source-rules.sh` (coverage ≥ 80% overall; ≥ 90% for ViewModel & Use Case). The full-source bundle is mandatory and must not be replaced by changed-file checker invocations.
+    3. Attach objective evidence (command + exit status + fix attempts) to each Test ID's `evidence` field in `$FEATURE_DIR/feature_list.json`. All slices must remain `passing`.
+    4. Run `bash harness/scripts/check-platform-evidence.sh "$FEATURE_DIR" --evaluate`. Missing matrices, unavailable/pending/skipped environments, and fake-only platform tests remain hard failures; record them as `Unresolved ⚠️` rather than passing them through.
+    5. Run `bash harness/scripts/check-visual-evidence-contract.sh "$FEATURE_DIR"` when visual verification is required. Every final visual method must be a JVM `*RoborazziTest` declared in the sprint contract, pass `verifyRoborazziDebug`, and have reference-anchor proof in `visual_evidence/reference-anchor-verification.md` for the approved Pen export. Use the `screen` comparison scope when the fixture matches the frame and `component` when the approved design isolates the changed surface. Device evidence proves behavior and platform boundaries only.
+    6. Reconcile the in-report statuses with re-verification: any finding whose verification command still fails must read `Unresolved ⚠️` in the report (not `Fixed ✅`).
+    7. Reconcile all Rule Applicability rows again. A rule newly triggered by a fix must be recorded in the specification and both review reports before the feature can proceed.
+    8. Mark Fix-Stage 4 ✅ in `$FEATURE_DIR/summary_{feature_id}.md` detailing test counts, coverage percentages, and platform/visual evidence.
+*   **Objective**: All acceptance-test commands and quality gates pass with evidence attached; report statuses are consistent with re-verification results.
+
+### Fix-Stage 5 — Finalize & Exit
+Before transitioning the tracker, run the evaluation/fix lifecycle contract:
+
+    bash harness/scripts/check-evaluation-fix-contract.sh "$FEATURE_DIR" --fix
+
+This hard gate rejects blocked or incomplete Fix-Stage rows, unresolved or stale
+review verdicts, missing in-report statuses, contradictory successful evidence, and
+acceptance Test IDs without successful evidence.
+
+*   **Action**:
+    1. Finalize the in-report status updates in `$FEATURE_DIR/code_review_{feature_id}.md` (per-finding lines + the `## Verdict` `Fix Pass` line) and `$FEATURE_DIR/test_review_{feature_id}.md` (`Fix Status` column + `## Fix Pass Summary`).
+    2. Update `$FEATURE_DIR/progress.md` and `$FEATURE_DIR/feature_list.json` evidence.
+    3. Update `docs/product/product.md`:
+        *   Transition the feature status `To be fixed` → `To be human reviewed`.
+        *   Update the date to today and append to the notes column: "Fix pass applied; re-verification evidence attached; <N>/<M> findings fixed."
+        *   Update the `*Document last updated*` date.
+        *   Run `bash harness/scripts/check-feature-lifecycle.sh` after the tracker update. Do not claim completion if it fails.
+    4. Commit the source, test, report-status, and documentation changes:
+        ```bash
+        git commit -m "fix(<area>): resolve evaluator findings from code_review and test_review"
+        ```
+    5. Review the Core and triggered conditional sections in
+       **[`clean-state-checklist-template.md`](../../harness/templates/clean-state-checklist-template.md)**.
+       Record omitted triggers with feature-specific N/A reasons. Reference valid Fix-Stage 4
+       receipts instead of rerunning unchanged commands. A required failure stops the pipeline.
+    6. Create or update **`$FEATURE_DIR/session-handoff.md`** by strictly following **[`session-handoff-template.md`](../../harness/templates/session-handoff-template.md)**, documenting what was fixed, the re-verification evidence, any `Unresolved ⚠️` findings, residual risks, and that the feature is now `To be human reviewed`.
+    7. **Update `$FEATURE_DIR/summary_{feature_id}.md`** to mark the **Finalize & Exit** stage status to completed (✅), transition the summary to Complete, and log the commit hash and key outcomes.
+*   **Objective**: Tracker transitioned to `To be human reviewed`, backed by mechanical evidence, updated review reports, and a clean self-documenting repository state.
+
+### Fix-Stage 6 — Install App To Device
+Install the fixed debug build when a resolved finding affects UI, instrumented/platform behavior,
+or the user explicitly requests installation. Otherwise record an explicit non-runtime N/A.
+
+*   **Action**:
+    1. Install the debug build to every connected device and emulator:
+        ```bash
+        ./gradlew installDebug
+        ```
+    2. **Update `$FEATURE_DIR/summary_{feature_id}.md`** to mark the **Install App To Device** stage status to completed (✅), logging device IDs, command, timestamp, and exit status.
+*   **Objective**: The fixed build is installed on every connected runtime device for immediate manual review.
+*   **Gate**: When required, the command must exit 0; failure or no connected device is blocked.
+    Otherwise the explicit N/A rationale completes the stage.
+
+---
+
+## Human-in-the-Loop Confirmation Points
+
+1. **After Fix-Stage 5 (Finalize & Exit)** — user sees the updated review reports (per-finding fix statuses), re-verification evidence, and the tracker transition to `To be human reviewed` *(mandatory)*.
+2. **Unresolved findings** — any `Unresolved ⚠️` finding must be surfaced to the user; the user decides whether to accept the residual risk or require another fix pass *(mandatory if any exist)*.
+
+## Product Requirements Reconciliation
+
+Before closing this change, read each affected capability file in full and reconcile its existing claims in place against the delivered behavior and verification. Replace or retire stale statements instead of appending a dated proposal beside them. Preserve unverified scope and pending review. Record each affected prior claim in the summary's `## Product Requirement Reconciliation` table with columns `Capability file`, `Existing claim reviewed`, `Disposition` (`Replace`, `Retire`, `Retain`, or `Confirm unchanged`), `Current requirement location or retired status`, and `Evidence / qualification`. Quote an exact, concise prior excerpt; the checker rejects a replaced/retired excerpt that remains or a retained/unchanged excerpt that is absent. For an already-correct bug contract, use `Confirm unchanged` and explain why. Run `python3 harness/scripts/check-product-docs.py --summary <change-summary.md>` and the lifecycle validator; for new change specs also use `--change-dir <active-workspace>`. Relocation never renews approvals or runtime evidence.
