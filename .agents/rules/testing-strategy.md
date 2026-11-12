@@ -1,0 +1,117 @@
+---
+trigger: always_on
+---
+
+# Testing Strategy Rules
+
+## Purpose
+
+Define the always-applicable test-layer, coverage, and evidence contract. Load detailed
+authoring practices only during testing or review, and load runtime evidence rules only when UI,
+navigation, visual, platform, locale, permission, lifecycle, or Android SDK behavior is in scope.
+
+## Choose the execution intent first
+
+Requests to explore an installed app or temporarily simulate backend conditions use the
+`exploratory-qa` skill with `agent-device`. This is ephemeral testing: keep scenarios,
+WireMock mappings, captures, reports, and cleanup receipts in `.qa-artifacts/<run-id>/`.
+Do not create AndroidJUnit/`androidTest` classes, shared regression scenarios, app test
+dependencies, journey-registry entries, or CI jobs merely to execute that QA request.
+Promoting a finding or journey into a maintained regression requires an explicit product
+change/bug-fixing scope. Unavailable CI is not a blocker for an authorized local QA run.
+
+The test-layer, per-endpoint integration, and platform regression requirements below apply
+to maintained application changes. Ephemeral runtime evidence does not replace a required
+feature regression gate, and a source test does not replace the requested device exploration.
+
+## Maintained test pyramid
+
+```text
+      [Instrumented UI tests]      <- smallest layer
+      [Integration tests (JVM)]    <- primary cross-layer verification
+      [Unit tests (JVM)]           <- foundation
+```
+
+Start at the lowest layer that proves the requirement. A lower layer cannot replace a declared
+Android runtime or production-entry boundary.
+
+## Layer Selection
+
+### Unit tests (`app/src/test/`)
+
+Use for business rules, domain use cases, ViewModel state transitions, mappers, formatters,
+reducers, and fallback logic that do not require Android runtime behavior.
+
+- ViewModel tests inherit from `BaseViewModelTest`.
+- Test class names end with `Test.kt`.
+- Keep one main scenario per test.
+
+### Integration tests (`app/src/test/` or the instrumented loopback boundary)
+
+Use for repository/use-case/ViewModel data flow, DTO parsing, error mapping, cache behavior, retry,
+and fallback behavior that can run deterministically on the JVM.
+
+- ViewModel integration tests inherit from `BaseViewModelIntegrationTest`.
+- Test class names end with `IntegrationTest.kt`.
+- API tests use shared JSON scenarios; do not inline mock response bodies.
+- Assert `expected.ui` when the ViewModel owns the endpoint and `expected.domain` when only the
+  repository or use case owns it.
+- When the claim crosses the real app process and Retrofit/OkHttp transport, the integration owner may live in
+  `app/src/androidTest/` beside a deterministic loopback HTTP server. The test must launch the shipped app, exercise
+  the shipped client, assert server request receipts and decoded state, and never call the server helper directly as
+  a substitute for the client boundary.
+
+### Instrumented tests (`app/src/androidTest/`)
+
+Use only when Compose rendering, gestures, navigation, lifecycle, Android SDK behavior, device
+capability, permission, locale, or another real runtime boundary is part of the claim. Load
+`.agents/rules/testing-runtime-evidence.md` before planning, implementing, or reviewing such
+evidence.
+
+Do not use instrumented tests for behavior that a deterministic JVM test proves completely.
+
+## Coverage Requirements
+
+| Scope | Minimum line coverage |
+|---|---|
+| Overall project | 80% |
+| New ViewModel classes | 90% |
+| New domain use case classes | 90% |
+| Compose screens/components | Excluded; verify runtime semantics and interaction with instrumented tests when triggered; use Roborazzi for approved visual comparison |
+
+Machine-readable verification:
+
+```bash
+./gradlew :app:koverXmlReportDebug
+bash harness/scripts/check-coverage.sh app/build/reports/kover/reportDebug.xml
+```
+
+## Feature and Bug Policy
+
+- Feature and enhancement workflows implement approved behavior before the Testing stage. The
+  Testing stage then creates or completes the planned tests and verifies them GREEN.
+- Bug fixing is the only TDD workflow: `bug-reproduction` must produce a relevant RED test before
+  the approved fix is implemented, and the later Testing stage must prove it GREEN.
+- Every new feature includes ViewModel/state tests, use-case tests when business logic changes,
+  mapper tests when mapping is non-trivial, and at least one shared-scenario integration test per
+  affected API endpoint.
+- Every bug fix includes at least one regression test that proves the reported behavior.
+
+## Evidence Invariants
+
+- A test result is passing only when the declared command ran, exited 0, executed a non-zero test
+  count when applicable, and produced the required source-fed evidence.
+- Missing runtimes, devices, models, locales, permissions, services, skipped tests, empty output,
+  fake-only platform evidence, and unexecuted commands cannot be recorded as passing.
+- Reuse a prior successful command only when its source, build configuration, declared command,
+  and runtime fingerprints are unchanged and `check-evidence-receipt.sh` accepts its receipt.
+- Keep verbose output in a referenced log/report; summaries record the command, exit status, test
+  count or coverage, evidence path, and fingerprint receipt.
+- Load `.agents/rules/testing-practices.md` during test authoring and test review.
+
+## Shared JSON Scenarios
+
+Every affected API endpoint has at least one integration test backed by
+`sharedContracts/test-scenarios/` or a feature-owned test-target scenario resource when the endpoint is exercised
+through an instrumented loopback server. A scenario may contain `apiMocks`, `expected.domain`, and
+`expected.ui`; each test asserts only the layer it owns.

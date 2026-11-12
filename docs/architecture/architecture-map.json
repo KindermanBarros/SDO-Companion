@@ -1,0 +1,2182 @@
+{
+  "fingerprints": {
+    "app/build.gradle.kts": "c8c2be83f17ca5352062e22c2454c09cb6077b88d62ef6617ff0797ca92e0a29",
+    "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt": "e246da40a3efd1acd1e0a03a7f378fb8c4a7be1eaba196438f94b5a1fad9d7f7",
+    "app/src/androidTest/java/com/kinderman/sdo/presentation/character/CharacterCreationWizardResponsiveTest.kt": "005afd02f75f072951f1b2a381584b0d47419f8b8e6384d0d0dcd3600d02459c",
+    "app/src/androidTest/java/com/kinderman/sdo/ui/CyberGrungeComponentsInstrumentedTest.kt": "4925044f52ca5808e333443e1cec13b6b5675fd1b217faf09fa6b743fcc7dbc9",
+    "app/src/main/AndroidManifest.xml": "82f06f12a1dbe9d2182d5946469fbbe74220abaa7e8c8e89b9f19d685644d009",
+    "app/src/main/java/com/kinderman/sdo/MainActivity.kt": "d79f25330853ea0f25614f676a14c1d8b5576587fb383e55d75139397d82c9cc",
+    "app/src/main/java/com/kinderman/sdo/SdoApplication.kt": "156e8b6ecb8a188aac9b86de5853dac49fabca25975f95d74f67a1d20ea3fc69",
+    "app/src/main/java/com/kinderman/sdo/data/auth/FirebaseAuthRepository.kt": "520f26e64c8ebb716972c72a23a755395dfaafc3dff65458d308054c4d313993",
+    "app/src/main/java/com/kinderman/sdo/data/local/AppDatabase.kt": "c8eb538fc7a4ca6068adf949f59b15857da7ce2de63e978e32cfaf0d81bb6889",
+    "app/src/main/java/com/kinderman/sdo/data/local/CampaignDao.kt": "999c9796dc79852348b78087e20d2152ac00afe1b795cd573dbd8e5b6f57c5df",
+    "app/src/main/java/com/kinderman/sdo/data/local/CampaignPayloadCodec.kt": "5b09f749bc3146e206e60a5edb65c37e88b83d05aa5fdbcf133e3d30210c17f8",
+    "app/src/main/java/com/kinderman/sdo/data/local/CampaignRecords.kt": "faba21a845ce23186120eb55103ef41fb2aa208ca3654efb80a732e5048d80fe",
+    "app/src/main/java/com/kinderman/sdo/data/local/CatalogDao.kt": "8552a399b03c5a9c3141f350f1a2257167e843b1f6fc9431481fa23eb972a872",
+    "app/src/main/java/com/kinderman/sdo/data/local/CatalogEntryRecord.kt": "0f10c7711ead790135d3167dac78d9453807a1a83806a7705f43cc7d1d683fec",
+    "app/src/main/java/com/kinderman/sdo/data/local/CharacterConverters.kt": "8b2866f603c22a509b05a74b7b11297906a2ab1f3279f6f53ba0b7801ffe74b9",
+    "app/src/main/java/com/kinderman/sdo/data/local/CharacterDao.kt": "3a6972801a5825c4c04a62248d7537c73764cc9073415acf05587d2a39dc453d",
+    "app/src/main/java/com/kinderman/sdo/data/local/CharacterMigrationManager.kt": "e0260450e96f44a0b4c590945541aed9ee83145b60b3bfcd702b7bd2a894c1a0",
+    "app/src/main/java/com/kinderman/sdo/data/local/CharacterRecord.kt": "31a6627ca0fd95b56b7ed811e4d2116e706c9008da5d652353937fd7a09f14a2",
+    "app/src/main/java/com/kinderman/sdo/data/local/OperationRecords.kt": "d62a75082766e21ef2249d4371198c9c9c50cdae2f4b1cc851fb4b39ede68d50",
+    "app/src/main/java/com/kinderman/sdo/data/local/OperationsDao.kt": "c4469473683e919f1de4e7b36c9c36a59667278212b4730efd7644a57ad9d1f8",
+    "app/src/main/java/com/kinderman/sdo/data/local/OwnerDao.kt": "2cb972df79b908f32763a0cb9f233eb58a792b79f6484d84b2c19230868c8550",
+    "app/src/main/java/com/kinderman/sdo/data/local/OwnerRecord.kt": "63fe226591b56b532485a3b2fb1047161e5218cddec1aa977a3ebdca99aefcd0",
+    "app/src/main/java/com/kinderman/sdo/data/repository/FirestoreCollections.kt": "410dbce5a6b634783a094b471bdd8634fbcc82c1a62113af734577ebfff5d60c",
+    "app/src/main/java/com/kinderman/sdo/data/repository/LocalCatalogRepository.kt": "4d02f445a87662aad95562cd1feb03b0db12b9af4b23af6274be39b67963fff3",
+    "app/src/main/java/com/kinderman/sdo/data/repository/SyncedCampaignRepository.kt": "747ac46f9be5c60566977e4c8df876efb71da84497ba541c35201d76af8a7f09",
+    "app/src/main/java/com/kinderman/sdo/data/repository/SyncedCharacterRepository.kt": "5a5233cc82898f41efd96aa5f0a1a4e4c1366030e96cb2de0ca443e1b6b27bed",
+    "app/src/main/java/com/kinderman/sdo/data/repository/SyncedOperationsRepository.kt": "4197b1350c1112409b1d299f3cf89eb3e86ae5c825be76f952065fb376e2f6c1",
+    "app/src/main/java/com/kinderman/sdo/data/repository/SyncedOwnerRepository.kt": "e46f18943fd6101ce46788e6a5b65b658fed85e51173b51e60005be26b893800",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/BuiltInCatalog.kt": "fb0cc45b7270e370bdc65382b7eea6bd0267470c2dc49d35f1987db9b2a12923",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/BundledItemCatalog.kt": "8eb47c7ffc8cc41a8edf89af17695f467dff97c7d19f0b001029065abdfbb14d",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/CombatPowerCatalog.kt": "6ff547264e882e5a7938377d6ff90892960fc094a8cbc60ffe6cd35abb5c41da",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/EnhancementOperations.kt": "13244fc8133ab406179df4cb9b1fb55307f237b37934f590134fdb5d0174ab83",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/EquipmentGlossary.kt": "c60b551ce354d9d887740a0e948f5cec8438fe40958415c3a6b60de2ee96ee30",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedCatalogEntries.kt": "58fd9acf6ed44afffcc486a0debefa9cbe9f10d0c6efa8f828ebd0b7d331e248",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedGemCatalog.kt": "02abb5064a8d6a0574e640fcd45edfa6f1b1d626562b458462d145db2444250e",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedItemParts.kt": "7e90e68893f71d9b1453da1270ca0480c940d6b0e40f99554f02d0af8b0bf0cd",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedStructuredItemCatalog.kt": "a72deb7a9f4d8bb77ebd93a964e310ab14df8f468cd5766e09b1f666294982dd",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/ItemCreationRules.kt": "e0f8300782b0e8a03600b03ec311509835c04bb333f9af20cfe2248692a8a704",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/ItemNormalization.kt": "53f2a4e550e55f973bc6b0c56f328a59170f77e951ce5102561632e6d2ec2c4a",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/KnowledgeCatalog.kt": "fe5aff0a43de97c9f97e46c92f26b040d28463a4e379d8eb97f4cea04bb0084b",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/KnowledgeProgression.kt": "1a4967667f2c30d054150d64cee76d26d04936f42299252ddc8ebdeff785c9ca",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/PathPresets.kt": "471773f4836f092690896b942b95ab2cb152ef640854a40fa78ead9793fbb9aa",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/RaceCatalog.kt": "aefefed4ad8924ff25e1cb228b1cb3174755dc39180ab07af593b7d7a93d7f9e",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/RaceSelection.kt": "c473851dd84a30204890d8facea962bc26e2bddcf127946746b0f7484918bc49",
+    "app/src/main/java/com/kinderman/sdo/domain/catalog/StructuredPowers.kt": "9aa9d301c986e4f508b06f54d41510da255b93fa43189df4ce916a1d41d49c70",
+    "app/src/main/java/com/kinderman/sdo/domain/creation/CharacterCreation.kt": "00c04fe8a55eeb59f0e1b8a904f641fd13f46bb21885fbd51ff8084fe4e3879c",
+    "app/src/main/java/com/kinderman/sdo/domain/model/AbilityManagement.kt": "4e24ec94ddec389313862e6cae59b161f767f186b8e648fbb84759417d88c0c8",
+    "app/src/main/java/com/kinderman/sdo/domain/model/Campaign.kt": "b4c073f53956d5f980682a6a2a4daa7b96e7db48bb3ccc25dd256735a52a99c6",
+    "app/src/main/java/com/kinderman/sdo/domain/model/CampaignContent.kt": "b48b50a3b6fcbb4678a5970081ef2d7caec2b2698bb11b759cadc1bf0b3c7057",
+    "app/src/main/java/com/kinderman/sdo/domain/model/Catalog.kt": "0f73c2ae386b00a1a0f00a46c20bdbec239c6c4768d665bef80a6f1682bd8227",
+    "app/src/main/java/com/kinderman/sdo/domain/model/Character.kt": "3f7ff81a76201bde2098e33bee3941edff68c876bc20aac89cd79724d15f9840",
+    "app/src/main/java/com/kinderman/sdo/domain/model/CharacterSyncConflict.kt": "3976df5e0fb6be106010ea276fe16bfecfff35333b456f7a0f57ad2062afd724",
+    "app/src/main/java/com/kinderman/sdo/domain/model/ItemCreation.kt": "363a7385892d700d212cdca404788da0768bb0279e56b2dfcfdedb221cab663f",
+    "app/src/main/java/com/kinderman/sdo/domain/model/ProtectionBreakdowns.kt": "3a4c6179abdb9aa9abee7b9baca7fae7d8c262a784abd3d2b83f4890e775689d",
+    "app/src/main/java/com/kinderman/sdo/domain/model/ResourceBreakdowns.kt": "2a95b5e0f7947496e687f975262b786f46530e5e50aafb5f722adfbc55aaf077",
+    "app/src/main/java/com/kinderman/sdo/domain/model/SessionOperations.kt": "378b9cd77fa96ef5063fe5e35b01de08d9d0892b90002d8f5a04d32748d4f9c3",
+    "app/src/main/java/com/kinderman/sdo/domain/model/StructuredRules.kt": "c878e791d084a213808f3b77a9db5d1562185502271d9cac4e411f9a28c7cf72",
+    "app/src/main/java/com/kinderman/sdo/domain/model/UserProfile.kt": "ea2bb23a10e08ece3cddf0f015c0b3049b7660b4c21974a2f13546223329939f",
+    "app/src/main/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicy.kt": "88233dd00a7dc7355731f045865fe0cc198b7e731326300834477004bd33f84a",
+    "app/src/main/java/com/kinderman/sdo/domain/progression/LevelProgression.kt": "09d6e6f4f8da3a8b858fa9e4026671b388cab429b536eea6bb2ab5554fbc116a",
+    "app/src/main/java/com/kinderman/sdo/domain/repository/AuthRepository.kt": "b8ea5b5e74348be5769add9c682e1eebd7b07c5c4455a9c86a35edd2ba0e07e5",
+    "app/src/main/java/com/kinderman/sdo/domain/repository/CampaignRepository.kt": "03a71d19bc77b07fef763a44b2c5b26150fd36233172d8550005c2cf5d3835cb",
+    "app/src/main/java/com/kinderman/sdo/domain/repository/CatalogRepository.kt": "3573491ea6ac3353c56043d6a178da42ece497ac6070335bbbb8960c246cf379",
+    "app/src/main/java/com/kinderman/sdo/domain/repository/CharacterRepository.kt": "3fa9c2f40d3f88979c734e7b351c858c3654b90b3b3d34ace2a9f80d3aa1623b",
+    "app/src/main/java/com/kinderman/sdo/domain/repository/OperationsRepository.kt": "f61f299fdf86a315aa7cbd0e536bdb04b33f416910eff0d26778ab164a67df1b",
+    "app/src/main/java/com/kinderman/sdo/domain/repository/OwnerRepository.kt": "e458a1c79f92293f1896a26bc518b7cd105673b8f4c213468170c331a5a96efd",
+    "app/src/main/java/com/kinderman/sdo/domain/usecase/CharacterUseCases.kt": "b20933f7ff4fc8bc199f3af4f7f6eba4c5cec6e407252b0f351418b42f770814",
+    "app/src/main/java/com/kinderman/sdo/presentation/AppViewModel.kt": "771a09ff74926860827ff0370cad8ff4c5fd83c2674a1ea6679bbad92fefb804",
+    "app/src/main/java/com/kinderman/sdo/presentation/AuthViewModel.kt": "a45c94bfb8afc12ee7b6bd4f965a2b7f9e677073e22d0c43fb5155033fd4f060",
+    "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt": "1805f0c73e82ae227935679bc7ed7cebe1a99abe89c919e943d11ece22d49a4a",
+    "app/src/main/java/com/kinderman/sdo/presentation/ViewModelFactories.kt": "de01b2fc6c3df120da4e98788a84348c98d8d001c8adefcd62cbc264c2e505eb",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/AbilitySection.kt": "b1c2407b337b5ec24fe2adc81ee21a9a275032924eb66774adc3f5b08aaafa77",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CatalogPickerDialog.kt": "922b930900316232bcda1839a78a51ead15eefa92dd80382e79f564e8049e494",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterAdvancedSections.kt": "8e5aa89c2023acb187662a1017d3540a8d25dc3c7177a396bb31716ad6ac34f9",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterCoreSections.kt": "a65c8e6a97a65a933e225d65f12329cb85e5f2b0bb30ef179032d2d36300afcf",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterCreationWizard.kt": "c6fb00edb0ce9fec1ef99c9b455da77019cc0126cf5dfc8fab012e84acbed8f8",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterFields.kt": "8b595a90b4cf20def713d0e325a435ee56fddd2608763effbe6afcec1ef98ca1",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterNotesSection.kt": "0cdc4283d31ed397881f9596f75260720266133c346adbd826248c568b45e5a0",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterSheetPager.kt": "ab482f171e7f48b6c1b1a7aa6f63d447a52f108b4a30871a33b0159c194f4823",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterSheetScreen.kt": "29cf3e4bdee35cee444b27a7a88a537b58db82012dc6136dff96d5d1c45ba4e3",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/ItemDialogs.kt": "4e3a7e6e3d338f965e4af9815579ab0411c77110f9ea8d0abc80d19761057794",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/LevelProgressionDialog.kt": "f1aebad22f6c4aa04ad0118cc12cb0cbde87d3ef994178631245e16e42b1fb5b",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/PhaseOneItemBonuses.kt": "e926976428f97addea1deca179455e93e054fac26c922f77bb610ed4649d188c",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/PhaseOneSections.kt": "5a60dd8d3343df08b2ebeadb637fe313e96580b75a7a883ca85459db1e8116e7",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/PhaseOneStrictInventory.kt": "ab0b8146cf5378172801f5248c787f5d6e3772e40c447214d2f98081c0d3d611",
+    "app/src/main/java/com/kinderman/sdo/presentation/character/RacePickerDialog.kt": "057618bfc6e06fa6e75bfc87e05ed214b973174317ac099dddce81fc1f793d5c",
+    "app/src/main/java/com/kinderman/sdo/presentation/dashboard/DashboardScreen.kt": "9f68300d3ed2327aa3e58d6e9f74e12f8808bfeb8046e5faafc4e6365d3c6db9",
+    "app/src/main/java/com/kinderman/sdo/presentation/dashboard/OwnerPickerDialog.kt": "7c6545e0a6f000a51d8a180c92a1c3423e83815988c6dc2914c45c2f4671b0d9",
+    "app/src/main/java/com/kinderman/sdo/presentation/historian/CompendiumDetails.kt": "ef5ff98efa9ddebd0984068ccdfa82f28bef04322b8e226dc01c53ffae5f2c1f",
+    "app/src/main/java/com/kinderman/sdo/presentation/historian/HistorianDashboardScreen.kt": "4d9c498900f75b87eb8c5b76d11e460e6eacd03f4bf5de353994b40bd73be82c",
+    "app/src/main/java/com/kinderman/sdo/presentation/login/LoginScreen.kt": "1ad08cee7e4558ded6c50b54df94bf84552fd871acc7d18ec8127a683f44a5c1",
+    "app/src/main/java/com/kinderman/sdo/presentation/session/SessionModeScreen.kt": "dddab71c9f425c472da327c61d676af51ac253e0fa1cc3a51ac9325802756215",
+    "app/src/main/java/com/kinderman/sdo/presentation/settings/SettingsScreen.kt": "58beed37678c92cf37b757a3f566205d9f49ce0a3622855d7ab5492a7381b62c",
+    "app/src/main/java/com/kinderman/sdo/presentation/sync/CharacterConflictDialog.kt": "22df79cae3a0490062fa0732f17db396a180137261de8ffabf80f38be71fa38a",
+    "app/src/main/java/com/kinderman/sdo/ui/core/SdoPreferences.kt": "b1c5739b910f33befaa0697d1363400f02a54732e304103db1e9d2d1c8a88505",
+    "app/src/main/java/com/kinderman/sdo/ui/core/SdoResponsive.kt": "6330adbae26b5f1e6386536733d4e22ce4c3256e703798dd1372f5aea58bcb3f",
+    "app/src/main/java/com/kinderman/sdo/ui/core/SdoTheme.kt": "0d3222745351fa219d6c60c4ea95133fb5264f49a42abea08f3ddaa0745c4c19",
+    "app/src/main/java/com/kinderman/sdo/ui/core/SdoTokens.kt": "4bd76eef29b03631616820460d79e1fdbb14b9401cecd8334a2850043b995994",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/CybergrungeAssets.kt": "14a915632beb3b00cfae3c4afd7e910ac5376ff3b78994856688d3e012055bdb",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/components/CybergrungeComponents.kt": "63e459d4f0609df42c080fcc7185d646189505806b56874b2ec36dc6c593ba7f",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/components/CybergrungeNavigation.kt": "da527131aaf2ec47d895e5044448559c7ae16a4ad0b76b7db060d741014e84c9",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/effects/CybergrungeEffects.kt": "a242e0a124a437309109aa3d6fdaaae7da99aafa9527775039f16ab562bd4c09",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/effects/CybergrungeSignalLayer.kt": "4ca97439c6732ed071e151391e92ece1ce5393b9c743b435f6aae991348734e0",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/motion/CybergrungeMotion.kt": "3bf7939169e0518f6575672bb60e5e4323cab1f02783e57d6ee3a64ec093b759",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/preview/CybergrungeLab.kt": "0f2e26c11d6885b85116e523967d0f19b57f8d46826e335e3e0c895ec9a8c521",
+    "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/theme/CybergrungeTokens.kt": "d8c60e869d981117ba7a41aaf6c31f64a14ac7193d5224630071bdbec9cc4910",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoAdaptiveComponents.kt": "32cdf1f34b4d52ee3cb48ebb39e6b2142c8bcc51646462616517a2b6c5412c73",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoCardComponents.kt": "7613406e1eb71c539f5b48b8c08fbb6f8910279e1a8f965d6283e696e82f4ba9",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoControlComponents.kt": "f090e7de8417296fde3f90843718dfb84a2f7d26647fb0c2b48557539536b357",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoFieldComponents.kt": "cd0ffcedb86e7b28f58d7effa768ac1cdd983fda1c43ed86320ef9c5ea370711",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoLoading.kt": "2baa5da613e120825bb4e6da113bf054d7e05a17fb6b28ecfa7bcb35163d8578",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoPreferenceComponents.kt": "e553850c73009082fd007f51fd29273ecfeffd3662070946a9286df3f70c131b",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoPrimitiveControls.kt": "e8bcf912914306e2be0086d2f5f3a7228d27cf32e3c26f0d2dc958f04a1b8431",
+    "app/src/main/java/com/kinderman/sdo/ui/shared/SdoStateComponents.kt": "4f122fb7612b437eef1a1997b2da44422b7f7b6fb6f63e2bafc6b1a489a4bb71",
+    "app/src/main/java/com/kinderman/sdo/ui/standard/components/StandardControls.kt": "d3a420fa0ac754bf96916d96efc907ca145a6eb14cdf5c90bc5ee0394fbe978b",
+    "app/src/test/java/com/kinderman/sdo/data/auth/AdministratorAccountTest.kt": "0be073fcea181baa47e6f23a7749502a7e72f0355bbd0df4d6d847aab3b83e51",
+    "app/src/test/java/com/kinderman/sdo/data/local/CampaignPayloadCodecTest.kt": "107bb1eb93a56c3c5fdd4bcb67ee00cd05248498d1fc6a9c10039f1dec911f8c",
+    "app/src/test/java/com/kinderman/sdo/data/local/CatalogEntryRecordTest.kt": "cfb06f20eff5f66539d067123ffbf2b0efe6894063ea3cc66de5d425d8a495ca",
+    "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt": "46c21def5b0cd06f1b86531891455dbb5825b89db648648495f282efcc6893dc",
+    "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationTestSupport.kt": "e262b40d09b88f4cddf4c51cd95b9c716f23db5ae57b66166e789a1a4addaf08",
+    "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt": "e7c5f29928fec299465057b7f14d6357fedbbcf2bc9341193d33cf70ffb7593c",
+    "app/src/test/java/com/kinderman/sdo/data/repository/DeliveryApplicationTest.kt": "b336ddb26d2cc64c1d19268ece7fe18e7d3a400d9073f3c9456093849ef5376e",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt": "4d1c2056f480988b9f03bf77407757c78e39e8b3e686b0ba7a86bcffa3326547",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt": "e5742c8388a82b86a2f377c00ba84744e195b6678e8fe719934c724b68362e76",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt": "21e863614c0c30fc77a728cfd60548f0e874a3ac80ac67daacbc5988cae6d301",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt": "b9b2cb67bb3a5e0cecfef9201256c2b4c5785155790c2cdb7c27282ef64f4b16",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt": "21e7e1184e9f86e879d77f64e415d40a394d69d9fee84318bdb85f437a61d571",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt": "4d7098d63d56b0eae9d7707f2f7992a993f320f2857c5ae37402db21cc3d924a",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/PathPresetsTest.kt": "4a577a6addc411f3baa8e6db06abe981b3a5a177d37d8bdb505e410cabec8b60",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt": "abc37a783fcccda8a934d1aca73ab0503c7d1cceb437b0c6f96ca9644183208e",
+    "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt": "419c5714e1f39aa9bcb5797d1ce2d40fdd9f6269b9eacf98b6fa518401220549",
+    "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt": "71f62160ca1632f744864c817ae7ddc1cd29da297bf64335514d49c9e0ac5304",
+    "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt": "31aa30d563e310dc6af9c433dc47d96504f2f0a69cd7a0e36d8ca3e57e559fa8",
+    "app/src/test/java/com/kinderman/sdo/domain/model/CampaignDeletionTest.kt": "f7ac4bad2f7a1bf9dadf9368ebbabddce607e06b67752a7703c3a063e58256b8",
+    "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt": "d246df50a75d02ac8364689c0d145b2904415e84236550069b1b9a18e394832f",
+    "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt": "d544a58dd8c3c80c372ca74a645db967f5301f81a817229e531236f069ae13f5",
+    "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt": "2ba1d6e00b8eca16e66c51e7ee101cfd877e3a46ce82e068ae1e5f8c1d29fa07",
+    "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt": "fb6bfb7110df1020c7029cc397325a790c8b005588e7ced16e37c2fce91515d2",
+    "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt": "9b2edcf4abd6777216593c122a07d153ad4866a50221fc4d58cf011f655c5d06",
+    "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt": "b13450885752f616ad661c0621a1622cbb52adfdd787dc8eca8d84269c577959",
+    "app/src/test/java/com/kinderman/sdo/domain/model/ResourceBreakdownsTest.kt": "59028a0baba88501036a2b8253c90fcbf6ba3cf349bab9e6686c2e124ed32158",
+    "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt": "d35ec1e77881de69487d34a5d907065b9b465aaadefea3359816cde1dfa01680",
+    "app/src/test/java/com/kinderman/sdo/domain/model/UserProfileTest.kt": "78cbb846bd8bea04edaa3d42b26961d5e1ce0038e94f37a1ce53df9fe7d90b49",
+    "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt": "9fce73ecb59c52ead52c7ebf46ecda241b773e174422c7065664280142ad6d60",
+    "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt": "3d191e6b8c74f06cc3049b52ee61a4168e294a2181d3f99a7059edde48ee2348",
+    "app/src/test/java/com/kinderman/sdo/presentation/RemoteSyncPolicyTest.kt": "aae06b743a0aa0678a7f6d188b978c0957baa1c97d8edbc1cac81442845ead65",
+    "app/src/test/java/com/kinderman/sdo/presentation/character/AbilityCostFieldTest.kt": "3a33aa3af32f01b64dbb62b9a2a0d0263e83673a572dac762148974d13962a3b",
+    "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterDraftTest.kt": "1e030a6a183123e615d2da9bf900330868387f9fd363c49f11ae8e9ccb367bcf",
+    "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterSheetPagerTest.kt": "b049f221749c7614054b5f14836702b79581b3766a4ada9a4edb704d3ae9459a",
+    "app/src/test/java/com/kinderman/sdo/presentation/character/EquipmentRegionTest.kt": "3c35baaaaf8b38401606c3eaafd2682575cc788ac1979f37e8dc1b831e6ed2cc",
+    "app/src/test/java/com/kinderman/sdo/presentation/character/ItemEffectPresentationTest.kt": "762a6a6affdcdc67b0c55aad66aa6e9b0a52d9dc6f2078fbbe5659636acc34be",
+    "app/src/test/java/com/kinderman/sdo/ui/CyberGrungeMotionTest.kt": "db2dcfa6e9cc4c19f8465b221c3cccfd88894191870d0981fa2cd7d8941ff4a3",
+    "app/src/test/java/com/kinderman/sdo/ui/CybergrungeRenderBudgetTest.kt": "58cf2f50e35087c905dbf56fe467d404db4a9da282cd833e52f5678162fdba53",
+    "app/src/test/java/com/kinderman/sdo/ui/SdoControlComponentsTest.kt": "d13e2f9625ba971498ee2f02bd676492bcb60b9a839c85d05d739db317875770",
+    "app/src/test/java/com/kinderman/sdo/ui/SdoVisualModeTest.kt": "7f4e17679f2f8ce3c6fb8a817e1a870a9c08ccbc402d48c678e253b8fd92c269",
+    "build.gradle.kts": "6a2bfde0838f5f958a32bb3bcc9070333c5cce6422ba45b708d3c7516216eace",
+    "gradle.properties": "f19da0ba50a9016326cdc873ec3963e03d87390360cf835ffa295b9e05df63be",
+    "gradle/libs.versions.toml": "c7b789d896351937375894e7e05076c720e65ac79a81eb2c62e0a9764bf763c0",
+    "harness-project.json": "4da214fe2c8ef1878791d882528b121302c14472128f68d60668636e31f8d5d4",
+    "settings.gradle.kts": "db18ffc7253eb5ff05f096e84150c9325694d47a27e559c1a4ca53a6c0a3ca1a"
+  },
+  "mode": "adopt",
+  "modules": [
+    {
+      "android_test": [
+        "app/src/androidTest/java"
+      ],
+      "dependencies": [],
+      "evidence": "app/build.gradle.kts:1",
+      "layers": {
+        "data": [
+          "app/src/main/java/com/kinderman/sdo/data"
+        ],
+        "domain": [
+          "app/src/main/java/com/kinderman/sdo/domain"
+        ],
+        "ui": [
+          "app/src/main/java/com/kinderman/sdo/ui"
+        ]
+      },
+      "main": [
+        "app/src/main/java"
+      ],
+      "name": ":app",
+      "path": "app",
+      "test": [
+        "app/src/test/java"
+      ]
+    }
+  ],
+  "packages": [
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/presentation/character/CharacterCreationWizardResponsiveTest.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/ui/CyberGrungeComponentsInstrumentedTest.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/MainActivity.kt:1",
+      "name": "com.kinderman.sdo"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/SdoApplication.kt:1",
+      "name": "com.kinderman.sdo"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/auth/FirebaseAuthRepository.kt:1",
+      "name": "com.kinderman.sdo.data.auth"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/AppDatabase.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignDao.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignPayloadCodec.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignRecords.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CatalogDao.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CatalogEntryRecord.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CharacterConverters.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CharacterDao.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CharacterMigrationManager.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CharacterRecord.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OperationRecords.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OperationsDao.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OwnerDao.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OwnerRecord.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/repository/FirestoreCollections.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/repository/LocalCatalogRepository.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/repository/SyncedCampaignRepository.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/repository/SyncedCharacterRepository.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/repository/SyncedOperationsRepository.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/data/repository/SyncedOwnerRepository.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/BuiltInCatalog.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/BundledItemCatalog.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/CombatPowerCatalog.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/EnhancementOperations.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/EquipmentGlossary.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedCatalogEntries.kt:2",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedGemCatalog.kt:2",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedItemParts.kt:2",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedStructuredItemCatalog.kt:2",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/ItemCreationRules.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/ItemNormalization.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/KnowledgeCatalog.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/KnowledgeProgression.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/PathPresets.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/RaceCatalog.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/RaceSelection.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/StructuredPowers.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/creation/CharacterCreation.kt:1",
+      "name": "com.kinderman.sdo.domain.creation"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/AbilityManagement.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/Campaign.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/CampaignContent.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/Catalog.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/Character.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/CharacterSyncConflict.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/ItemCreation.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/ProtectionBreakdowns.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/ResourceBreakdowns.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/SessionOperations.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/StructuredRules.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/model/UserProfile.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicy.kt:1",
+      "name": "com.kinderman.sdo.domain.policy"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/progression/LevelProgression.kt:1",
+      "name": "com.kinderman.sdo.domain.progression"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/repository/AuthRepository.kt:1",
+      "name": "com.kinderman.sdo.domain.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/repository/CampaignRepository.kt:1",
+      "name": "com.kinderman.sdo.domain.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/repository/CatalogRepository.kt:1",
+      "name": "com.kinderman.sdo.domain.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/repository/CharacterRepository.kt:1",
+      "name": "com.kinderman.sdo.domain.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/repository/OperationsRepository.kt:1",
+      "name": "com.kinderman.sdo.domain.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/repository/OwnerRepository.kt:1",
+      "name": "com.kinderman.sdo.domain.repository"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/domain/usecase/CharacterUseCases.kt:1",
+      "name": "com.kinderman.sdo.domain.usecase"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/AppViewModel.kt:1",
+      "name": "com.kinderman.sdo.presentation"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/AuthViewModel.kt:1",
+      "name": "com.kinderman.sdo.presentation"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:1",
+      "name": "com.kinderman.sdo.presentation"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/ViewModelFactories.kt:1",
+      "name": "com.kinderman.sdo.presentation"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/AbilitySection.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CatalogPickerDialog.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterAdvancedSections.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterCoreSections.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterCreationWizard.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterFields.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterNotesSection.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterSheetPager.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterSheetScreen.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/ItemDialogs.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/LevelProgressionDialog.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/PhaseOneItemBonuses.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/PhaseOneSections.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/PhaseOneStrictInventory.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/RacePickerDialog.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/dashboard/DashboardScreen.kt:1",
+      "name": "com.kinderman.sdo.presentation.dashboard"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/dashboard/OwnerPickerDialog.kt:1",
+      "name": "com.kinderman.sdo.presentation.dashboard"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/historian/CompendiumDetails.kt:1",
+      "name": "com.kinderman.sdo.presentation.historian"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/historian/HistorianDashboardScreen.kt:1",
+      "name": "com.kinderman.sdo.presentation.historian"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/login/LoginScreen.kt:1",
+      "name": "com.kinderman.sdo.presentation.login"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/session/SessionModeScreen.kt:1",
+      "name": "com.kinderman.sdo.presentation.session"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/settings/SettingsScreen.kt:1",
+      "name": "com.kinderman.sdo.presentation.settings"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/presentation/sync/CharacterConflictDialog.kt:1",
+      "name": "com.kinderman.sdo.presentation.sync"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/core/SdoPreferences.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/core/SdoResponsive.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/core/SdoTheme.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/core/SdoTokens.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/CybergrungeAssets.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/components/CybergrungeComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/components/CybergrungeNavigation.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/effects/CybergrungeEffects.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/effects/CybergrungeSignalLayer.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/motion/CybergrungeMotion.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/preview/CybergrungeLab.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/cybergrunge/theme/CybergrungeTokens.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoAdaptiveComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoCardComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoControlComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoFieldComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoLoading.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoPreferenceComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoPrimitiveControls.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/shared/SdoStateComponents.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/main/java/com/kinderman/sdo/ui/standard/components/StandardControls.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/auth/AdministratorAccountTest.kt:1",
+      "name": "com.kinderman.sdo.data.auth"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CampaignPayloadCodecTest.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CatalogEntryRecordTest.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationTestSupport.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:1",
+      "name": "com.kinderman.sdo.data.local"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/repository/DeliveryApplicationTest.kt:1",
+      "name": "com.kinderman.sdo.data.repository"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PathPresetsTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt:1",
+      "name": "com.kinderman.sdo.domain.catalog"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:1",
+      "name": "com.kinderman.sdo.domain.creation"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CampaignDeletionTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ResourceBreakdownsTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/UserProfileTest.kt:1",
+      "name": "com.kinderman.sdo.domain.model"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:1",
+      "name": "com.kinderman.sdo.domain.policy"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:1",
+      "name": "com.kinderman.sdo.domain.progression"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/RemoteSyncPolicyTest.kt:1",
+      "name": "com.kinderman.sdo.presentation"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/AbilityCostFieldTest.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterDraftTest.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterSheetPagerTest.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/EquipmentRegionTest.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/ItemEffectPresentationTest.kt:1",
+      "name": "com.kinderman.sdo.presentation.character"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/CyberGrungeMotionTest.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/CybergrungeRenderBudgetTest.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoControlComponentsTest.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoVisualModeTest.kt:1",
+      "name": "com.kinderman.sdo.ui"
+    }
+  ],
+  "signals": {
+    "dependency_injection": [
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignPayloadCodec.kt:39"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignPayloadCodec.kt:40"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignPayloadCodec.kt:41"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/character/CharacterSheetScreen.kt:118"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:45"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:91"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:109"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:126"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:148"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:149"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:150"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:97"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:126"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:140"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:180"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:181"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:253"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:254"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/data/repository/DeliveryApplicationTest.kt:33"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:150"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:45"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:46"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:205"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:207"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:208"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:39"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:87"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:113"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:114"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:126"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:130"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:131"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:150"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:165"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:196"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:201"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:211"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:232"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:244"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:253"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:266"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:267"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:268"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:269"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:275"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:280"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:310"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:26"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:27"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:30"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:31"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:34"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:35"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:36"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:45"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:46"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:67"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:69"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:78"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:96"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:113"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:112"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:13"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:20"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:21"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:27"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:36"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:37"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:41"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:91"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:94"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:95"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:96"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:97"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:101"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:128"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:164"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:224"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:13"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:14"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:19"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:21"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:22"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt:27"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt:28"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:32"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:33"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:93"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ResourceBreakdownsTest.kt:59"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:59"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:262"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:263"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:269"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:270"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:287"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:327"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:346"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:456"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:29"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:53"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:54"
+      }
+    ],
+    "navigation": [
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:89"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:147"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:148"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:149"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:150"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:175"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:187"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:189"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:190"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:219"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:236"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:238"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:265"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:268"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:283"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:284"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:285"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt:286"
+      }
+    ],
+    "networking": [],
+    "persistence": [
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:4"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:197"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/SdoApplication.kt:5"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/SdoApplication.kt:40"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/AppDatabase.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/AppDatabase.kt:4"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/AppDatabase.kt:9"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/AppDatabase.kt:26"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignDao.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CampaignDao.kt:8"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CatalogDao.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CatalogDao.kt:9"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CharacterDao.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/CharacterDao.kt:8"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OperationsDao.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OperationsDao.kt:12"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OwnerDao.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/data/local/OwnerDao.kt:8"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/CombatPowerCatalog.kt:58"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/domain/catalog/CombatPowerCatalog.kt:63"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:19"
+      }
+    ],
+    "presentation": [
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/AppViewModel.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/AppViewModel.kt:61"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/AuthViewModel.kt:7"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/AuthViewModel.kt:22"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/ViewModelFactories.kt:3"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/ViewModelFactories.kt:20"
+      },
+      {
+        "confidence": "lexical candidate; AI must inspect declaration",
+        "evidence": "app/src/main/java/com/kinderman/sdo/presentation/ViewModelFactories.kt:26"
+      }
+    ]
+  },
+  "test_entry_points": [
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:27"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:38"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:58"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:72"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:87"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:104"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:125"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:146"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/data/local/AppDatabaseMigrationInstrumentedTest.kt:168"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/presentation/character/CharacterCreationWizardResponsiveTest.kt:18"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/presentation/character/CharacterCreationWizardResponsiveTest.kt:30"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/ui/CyberGrungeComponentsInstrumentedTest.kt:18"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/ui/CyberGrungeComponentsInstrumentedTest.kt:31"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/ui/CyberGrungeComponentsInstrumentedTest.kt:42"
+    },
+    {
+      "evidence": "app/src/androidTest/java/com/kinderman/sdo/ui/CyberGrungeComponentsInstrumentedTest.kt:58"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/auth/AdministratorAccountTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/auth/AdministratorAccountTest.kt:16"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/auth/AdministratorAccountTest.kt:24"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CampaignPayloadCodecTest.kt:19"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CampaignPayloadCodecTest.kt:43"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CampaignPayloadCodecTest.kt:65"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CatalogEntryRecordTest.kt:9"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:18"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:50"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:58"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:82"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:96"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:113"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:119"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:132"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterMigrationManagerTest.kt:156"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:24"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:57"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:76"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:92"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:100"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:113"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:129"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:145"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:161"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:174"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:185"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:193"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:203"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:214"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:244"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/local/CharacterRecordFirestoreContractTest.kt:257"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/repository/DeliveryApplicationTest.kt:16"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/data/repository/DeliveryApplicationTest.kt:38"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:13"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:28"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:35"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:48"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:58"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:87"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:103"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:121"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:147"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:156"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/BuiltInCatalogTest.kt:175"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt:15"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt:21"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt:30"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt:36"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EnhancementRulesTest.kt:46"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt:11"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt:32"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt:46"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt:55"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/EquipmentGlossaryTest.kt:63"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:15"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:29"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:33"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:52"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:63"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:80"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:90"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:99"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:104"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:110"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:120"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:131"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:154"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:160"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:167"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:181"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:192"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:213"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:225"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:237"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemCreationRulesTest.kt:247"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:30"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:46"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:59"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:72"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:92"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:118"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:135"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:156"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:170"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:190"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:204"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:215"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:235"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:256"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:273"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:285"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/ItemNormalizationTest.kt:300"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:20"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:39"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:50"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:62"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:72"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:81"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:99"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:106"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/KnowledgeProgressionTest.kt:117"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PathPresetsTest.kt:11"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PathPresetsTest.kt:28"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:22"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:27"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:63"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:70"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:96"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:111"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:132"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/PhaseOneCatalogTest.kt:147"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt:14"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt:24"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt:46"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt:63"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/catalog/RaceSelectionTest.kt:95"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:19"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:23"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:32"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:43"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:47"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:76"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:91"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:117"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:131"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:141"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:146"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:152"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/creation/CharacterCreationTest.kt:165"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:9"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:25"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:33"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:48"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:73"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:79"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:88"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:105"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:113"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:120"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:137"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:152"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/AbilityManagementTest.kt:160"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CampaignDeletionTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CampaignDeletionTest.kt:12"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:17"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:26"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:45"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:54"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:76"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:106"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterSyncConflictTest.kt:142"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:24"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:46"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:53"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:64"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:79"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:88"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:96"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:106"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:147"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:157"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:170"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:179"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:219"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:230"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:241"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:253"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:267"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:276"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/CharacterTest.kt:295"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/OrganImplantTest.kt:17"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt:31"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseOneCalculatedValuesTest.kt:45"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt:10"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt:17"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt:26"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt:37"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/PhaseTwoCampaignTest.kt:44"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:37"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:56"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:75"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ProtectionBreakdownsTest.kt:98"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ResourceBreakdownsTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/ResourceBreakdownsTest.kt:37"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:21"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:31"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:38"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:47"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:57"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:65"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:79"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:91"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:98"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:130"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:150"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:191"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:219"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:273"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:291"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:308"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:332"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:349"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:374"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:398"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:432"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/StructuredRulesTest.kt:459"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/UserProfileTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/model/UserProfileTest.kt:14"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:16"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:22"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:29"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:38"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:43"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/policy/CharacterAccessPolicyTest.kt:51"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:14"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:32"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/domain/progression/LevelProgressionTest.kt:41"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/RemoteSyncPolicyTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/RemoteSyncPolicyTest.kt:14"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/AbilityCostFieldTest.kt:12"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterDraftTest.kt:8"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterSheetPagerTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/CharacterSheetPagerTest.kt:15"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/EquipmentRegionTest.kt:9"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/EquipmentRegionTest.kt:17"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/ItemEffectPresentationTest.kt:10"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/presentation/character/ItemEffectPresentationTest.kt:14"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/CyberGrungeMotionTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/CybergrungeRenderBudgetTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/CybergrungeRenderBudgetTest.kt:15"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoControlComponentsTest.kt:7"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoControlComponentsTest.kt:12"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoControlComponentsTest.kt:18"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoVisualModeTest.kt:9"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoVisualModeTest.kt:15"
+    },
+    {
+      "evidence": "app/src/test/java/com/kinderman/sdo/ui/SdoVisualModeTest.kt:21"
+    }
+  ],
+  "unknowns": [
+    "Static discovery does not evaluate Gradle, convention plugins, aliases, projectDir remaps, custom source sets or runtime wiring.",
+    "Layer names and dependency/service signals are candidates, not proof of architectural ownership.",
+    "AI must reconcile every declared Gradle module and source set with the profile before approval."
+  ],
+  "version": 1
+}

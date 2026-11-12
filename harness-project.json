@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "name": ":app",
+      "path": "app",
+      "main": [
+        "app/src/main/java"
+      ],
+      "test": [
+        "app/src/test/java"
+      ],
+      "android_test": [
+        "app/src/androidTest/java"
+      ],
+      "layers": {
+        "data": [
+          "app/src/main/java/com/kinderman/sdo/data"
+        ],
+        "domain": [
+          "app/src/main/java/com/kinderman/sdo/domain"
+        ],
+        "ui": [
+          "app/src/main/java/com/kinderman/sdo/ui",
+          "app/src/main/java/com/kinderman/sdo/presentation"
+        ]
+      }
+    }
+  ],
+  "commands": {
+    "build": ["cmd", "/c", "gradlew.bat", ":app:assembleDebug"],
+    "unit_tests": ["cmd", "/c", "gradlew.bat", ":app:cleanTestDebugUnitTest", ":app:testDebugUnitTest", "--rerun-tasks"],
+    "source_rules": ["bash", "harness/scripts/check-full-source-rules.sh"],
+    "ktlint": ["cmd", "/c", "gradlew.bat", "ktlintCheck"],
+    "detekt": ["cmd", "/c", "gradlew.bat", "detekt"],
+    "lint": ["cmd", "/c", "gradlew.bat", ":app:lintDebug"],
+    "coverage_report": ["cmd", "/c", "gradlew.bat", ":app:koverXmlReportDebug"],
+    "coverage": ["bash", "harness/scripts/check-coverage.sh", "app/build/reports/kover/reportDebug.xml"]
+  },
+  "navigation": {
+    "destinations": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt",
+    "graph": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt",
+    "host": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt",
+    "required_arguments": {},
+    "optional_arguments": {}
+  },
+  "instrumentation": {
+    "application_id": "com.kinderman.sdo",
+    "test_application_id": "com.kinderman.sdo.test",
+    "runner": "androidx.test.runner.AndroidJUnitRunner"
+  },
+  "unknowns": [
+    "Manual DI requires an explicit Hilt policy decision; no exception or migration is approved.",
+    "Custom AppSurface navigation requires a policy/checker compatibility decision and real navigation regression contracts; empty argument maps are unresolved, not proof of no arguments.",
+    "Full-source, Ktlint and Detekt report existing application violations; 61.24 percent overall coverage is below the mandatory 80 percent threshold."
+  ]
+}

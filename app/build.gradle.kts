@@ -1,10 +1,31 @@
 import java.util.Properties
 
 plugins {
+    id("org.jlleitschuh.gradle.ktlint")
+    id("dev.detekt")
+    id("org.jetbrains.kotlinx.kover")
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
+}
+
+ktlint {
+    android.set(true)
+}
+
+detekt {
+    buildUponDefaultConfig = true
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                packages("*.screen", "*.components")
+            }
+        }
+    }
 }
 
 if (file("google-services.json").exists() || rootProject.file("google-services.json").exists()) {

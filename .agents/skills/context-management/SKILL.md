@@ -1,0 +1,99 @@
+---
+name: context-management
+description: Set up focused session context and project rules for the active task.
+---
+
+# Context Management
+
+Follow `.agents/rules/product-documentation.md`. Read affected `docs/product/requirements/<capability>.md` files and update those same files for behavior changes. Keep dated change contracts/evidence in `.scratch/`. New specs include `## Product Requirements` with capability links, changed requirements, and approval-time SHA-256 hashes. Completion reconciles verified behavior or records `Confirmed unchanged` for an already-correct bug contract.
+
+## Session Start — Load in Order
+
+1. `AGENTS.md`
+2. `rules/android-architecture.md` (skip if already loaded this session)
+3. `rules/testing-strategy.md` (auto-loaded as system rule — do not re-read)
+4. The workflow or direct skill that matches the task
+5. The skill(s) for the current stage only
+6. Source files for the specific feature area (ViewModel, use case, repository interface)
+
+**Implementation-only:** load `rules/implementation-rules.md` only after the
+Implementation stage is selected. Do not infer or preload Android security guidance at session
+start; the selected stage skill loads it only after inspected scope triggers its boundary.
+
+**Rule:** Never preload all skills or conditional rules. Use the Rule Applicability trigger
+catalog, or the complex-slice context index, and load only Required, excepted, or newly triggered
+documents. During testing/review load `rules/testing-practices.md`; add
+`rules/testing-runtime-evidence.md` only for runtime-bound claims.
+
+---
+
+## What to Load per Layer
+
+| Layer | Load these files |
+|-------|-----------------|
+| UI / Presentation | Screen composable · `UiState` · ViewModel · UI model · mapper |
+| Domain | Use case · domain model · repository interface |
+| Data | Repository impl · DAO · DTO · mapper |
+
+---
+
+## Workflow Selection
+
+| Task type | File to load |
+|-----------|-------------|
+| New feature or enhancement | `workflows/feature-delivery.md` |
+| Bug, crash, or regression | `workflows/bug-fixing.md` |
+| Any user-visible UI implementation or update, including a single component or state | `workflows/create-ui-and-verify.md` |
+| API contract change | `workflows/api-contract-update.md` |
+
+
+---
+
+## Project Map Quick Reference
+
+When present, `harness-project.json` owns actual module/source paths and commands;
+`docs/architecture/architecture-map.md` contains observed source evidence, not policy.
+Run `python3 harness/scripts/project_onboarding.py check` before using that map.
+On staleness, explicitly refresh with `discover --refresh` and inspect changed
+boundaries; never expand an approved implementation scope silently. The table below
+is the legacy default only. First setup uses the project-onboarding workflow and
+root `setup_prompt.md`, including AI creation of an approved empty-project foundation.
+
+| Directory | Contains |
+|-----------|----------|
+| `app/src/main/java/...` | App code (`ui/`, `domain/`, `data/`) |
+| `app/src/test/` | Unit and integration tests (JVM) |
+| `app/src/androidTest/` | Instrumented UI tests |
+| `sharedContracts/` | API specs and shared JSON test scenarios |
+| `docs/knowledge/` | Historical decisions and known pitfalls |
+
+---
+
+## Context Drift — Warning Signs
+
+- Wrong package structure or naming conventions
+- Composable calling a repository directly
+- `Thread.sleep` in tests instead of `waitUntil`
+- Hardcoded strings instead of `stringResource()`
+- Missing `testTag` on interactive elements
+- `LiveData` instead of `StateFlow`
+- DTO outside the data layer
+- Hallucinated class names
+
+## Context Drift — Recovery
+
+1. Stop generating code
+2. Re-read the violated rule file
+3. Re-read the affected source files
+4. State the correction explicitly before rewriting
+
+---
+
+## Session Start Checklist
+
+- [ ] `AGENTS.md` + both L1 rule files loaded
+- [ ] Correct workflow or direct skill identified
+- [ ] Only current-stage skill(s) loaded
+- [ ] Implementation rules loaded only when the Implementation stage is selected
+- [ ] Feature-area source files loaded
+- [ ] No unresolved assumptions

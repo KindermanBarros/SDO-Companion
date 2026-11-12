@@ -1,0 +1,239 @@
+# Compose Rules
+
+## Purpose
+Rules for writing Jetpack Compose UI in this project.
+
+---
+
+## Composable Responsibilities
+
+A Composable should:
+- Receive `UiState` and event callbacks as parameters
+- Render the current state
+- Call callbacks on user interactions — it does not call the ViewModel directly
+
+A Composable must NOT:
+- Call use cases or repositories
+- Contain business logic or data transformation
+- Import ViewModel directly inside the composable body (use DI patterns at the screen level)
+- Use hardcoded strings — always use `stringResource()`
+- Use hardcoded colors — always use `LocalAppColors.current.<token>` (see Colors section)
+
+---
+
+## Stateless / Stateful Pattern
+
+Split screens into:
+
+```kotlin
+// Stateful wrapper — wires ViewModel (tested through production-graph journeys
+// when navigation or lifecycle behavior is in scope)
+@Composable
+fun NoteDetailScreen(viewModel: NoteDetailViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    NoteDetailContent(
+        uiState = uiState,
+        onSaveClick = viewModel::onSaveClick,
+    )
+}
+
+// Stateless content — tested in isolation via createComposeRule()
+@Composable
+fun NoteDetailContent(
+    uiState: NoteDetailUiState,
+    onSaveClick: () -> Unit,
+) { ... }
+```
+
+Test `NoteDetailContent` (stateless) in isolation for rendering and callback behavior.
+When navigation, destination lifecycle, `SavedStateHandle`, or post-return persistence
+is in scope, also test the stateful wrapper through the production Activity or
+navigation graph; a Content-only test cannot replace that journey.
+
+---
+
+## Screen File Boundaries
+
+Each screen must live in its own Compose source file.
+
+Allowed:
+- `EditorScreen.kt` contains `EditorScreen`, `EditorContent`, and private helpers used only by that screen
+- `ProjectListScreen.kt` contains `ProjectListScreen`, `ProjectListContent`, and private helpers used only by that screen
+- Shared or repeated UI is extracted to focused files under `components/`
+
+Not allowed:
+- Multiple independent screens in one Kotlin file
+- A single catch-all UI file that contains an entire feature flow
+- Putting screen-specific implementations for unrelated destinations into one file because they share navigation or tab state
+
+If a screen grows too large, extract sections into screen-owned files or reusable components. Do not combine screens into one file to avoid creating new files.
+
+---
+
+## Test Tags
+
+Add `Modifier.testTag(...)` to all:
+- Primary CTAs and action buttons
+- Key content containers (note card, list items)
+- Empty state and error state views
+- Loading indicators
+- Navigation elements (tabs, back buttons)
+
+Use descriptive, stable names:
+```kotlin
+Modifier.testTag("note_detail_save_button")      // ✅
+Modifier.testTag("button_${note.id}")            // ❌ — unstable, ID-dependent
+Modifier.testTag("btn")                          // ❌ — not descriptive
+```
+
+Dynamic tags are allowed only when the interpolated value is an immutable,
+domain-owned identifier or a fixed catalog key. Each must be registered in
+`docs/harness/documented-dynamic-test-tags.json`; the Compose
+checker validates the source file, approved template, source type, and line pattern.
+Transient indexes, random IDs, timestamps, and user-generated text remain prohibited.
+
+---
+
+## String Resources
+
+All user-visible text must use `stringResource()`:
+```kotlin
+Text(stringResource(R.string.note_detail_title))   // ✅
+Text("Note title")                                  // ❌
+```
+
+String resource key naming convention: `<screen>_<element>_<type>`
+```
+note_detail_title_label
+home_empty_state_message
+folders_create_button_label
+```
+
+---
+
+## Colors
+
+**Never hardcode colors inline in Composables.** Hardcoded colors prevent theming and make night mode impossible to implement.
+
+```kotlin
+Text(color = Color(0xFF7281A7))          // ❌ — hardcoded, cannot be themed
+Text(color = Color.Red)                  // ❌ — hardcoded
+
+Text(color = LocalAppColors.current.textSecondary)  // ✅
+```
+
+### Where to define colors
+
+All shared colors must be defined in a dedicated theme file (e.g. `ui/theme/AppColors.kt`):
+
+```kotlin
+data class AppColors(
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val backgroundSurface: Color,
+    val commentHighlight: Color,
+    // add more as needed
+)
+
+val LightAppColors = AppColors(
+    textPrimary = Color(0xFF1A1A2E),
+    textSecondary = Color(0xFF7281A7),
+    backgroundSurface = Color(0xFFF5F5F5),
+    commentHighlight = Color(0xFFFFF9C4),
+)
+
+val DarkAppColors = AppColors(
+    textPrimary = Color(0xFFE0E0E0),
+    textSecondary = Color(0xFFAABBCC),
+    backgroundSurface = Color(0xFF1E1E2E),
+    commentHighlight = Color(0xFF3A3A20),
+)
+
+val LocalAppColors = compositionLocalOf { LightAppColors }
+```
+
+Provide at the app root and switch based on system dark mode:
+```kotlin
+val colors = if (isSystemInDarkTheme()) DarkAppColors else LightAppColors
+CompositionLocalProvider(LocalAppColors provides colors) {
+    AppContent()
+}
+```
+
+### Rules
+- **All color values go in `AppColors.kt`** — no `Color(0x...)` anywhere else in the codebase
+- **Access via `LocalAppColors.current.<token>`** — never via a global singleton or hardcoded value
+- **Name by semantic purpose** (`textSecondary`, `commentHighlight`) — not by value (`gray`, `yellow`)
+- Adding a new color requires adding it to **both** `LightAppColors` and `DarkAppColors`
+
+---
+
+## Component Extraction
+
+Extract reusable Composables to `components/` when:
+- The same UI structure appears in more than one screen
+- A component has its own internal state or complexity
+- A component is independently testable
+
+Keep components focused — one visual responsibility per component.
+
+---
+
+## State Hoisting
+
+Always hoist state to the lowest common ancestor that needs it.
+Do not hoist state higher than necessary.
+Avoid `remember` in tests by keeping stateless content Composables as the primary test surface.
+
+---
+
+## Performance Rules
+
+- Prefer `LazyColumn` over `Column` with `forEach` for lists
+- Avoid unnecessary recompositions: pass stable types as parameters
+- Use `key()` in lazy lists when items have stable IDs
+- Avoid creating lambdas inside the composable body — pass them as parameters
+
+---
+
+## Keyboard / IME Behavior
+
+**When screen content (or a bottom sheet) contains text input, the bottom toolbar must dismiss while the keyboard (IME) is visible.**
+
+- A bottom toolbar / bottom bar must never sit behind the keyboard, overlap the focused field, or shrink the visible typing area.
+- Dismiss the bottom toolbar while `WindowInsets.isImeVisible` is `true` and restore it when the IME hides.
+- Apply `imePadding()` to the content (or an equivalent insets strategy) so the focused field and remaining controls stay visible and reachable above the keyboard.
+- This rule applies to full screens and bottom sheets alike, including screens without a bottom toolbar. The UI contract and its mapped Pen design must depict the keyboard-visible state for every screen or sheet whose content has editable text input. Use the full window viewport with the focused field, required controls, and system IME together; a component crop or unfocused search query is insufficient. Inventory closed/open/dismissed states in `UI_contract.md` and prove real IME geometry through the production Activity boundary defined in `testing-runtime-evidence.md`. When the screen has a bottom toolbar, the keyboard-visible state must show that toolbar dismissed. (A modal bottom sheet already hides the screen's toolbar behind it, so no dismissal is needed there.)
+
+### Bottom Sheets with Text Input
+
+- Tapping a text box, text field, or search field inside a bottom sheet must **not** dismiss the sheet. The sheet stays open and expands above the keyboard while the IME is visible; only a scrim tap, swipe-down, or an explicit close action dismisses it.
+- Apply `imePadding()` to the sheet content so the focused field and remaining controls stay visible above the keyboard, and keep the sheet's results region scrollable.
+- `UI_contract.md` must declare `sheet-stays-open` keyboard behavior and map a distinct keyboard-visible Pen screen/export showing the sheet **still open**, alongside the base state.
+
+### Bottom-Sheet Composition
+
+- Use the platform presentation drag handle as the sheet's single grabber. Do not add a custom drag capsule when the native handle is visible.
+- Do not add an `Icons.Default.Close` or other generic header close button to a bottom sheet unless the approved design or requirement explicitly calls for that control.
+- Native swipe-down and scrim dismissal are the default sheet exit affordances; any additional dismissal control requires a documented design reason and a stable test tag.
+
+---
+
+## Jetpack Compose Verification
+
+Automated source evidence:
+
+```bash
+bash harness/scripts/check-compose-rules.sh
+bash harness/scripts/check-localization-rules.sh
+```
+
+The full-source rules bundle is the required CI evidence. When the diff changes a
+Compose surface, review the semantic concerns it introduces: rendering versus
+business-logic ownership, state hoisting and stateful/stateless boundaries,
+component extraction, semantic token use, accessible interaction labels and
+testTags, lazy list performance, and keyboard-visible behavior. Runtime and visual
+claims require the declared UI evidence; they are not inferred from a source check.
+
+Human approval and exceptions are handled by the review and merge workflow, not by
+duplicated per-rule documentation.
