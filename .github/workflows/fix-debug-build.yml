@@ -1,4 +1,4 @@
-name: Fix debug APK
+name: Fix debug APK (demo on branches)
 
 on:
   push:
@@ -12,8 +12,8 @@ concurrency:
 
 jobs:
   build-debug:
-    name: Build debug APK for fix commit
-    if: startsWith(github.event.head_commit.message, 'fix:') || startsWith(github.event.head_commit.message, 'fix(')
+    name: Build demo-only APK for branch fix
+    if: github.ref != 'refs/heads/main' && (startsWith(github.event.head_commit.message, 'fix:') || startsWith(github.event.head_commit.message, 'fix('))
     runs-on: ubuntu-latest
 
     steps:
@@ -26,18 +26,16 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Set up Gradle 9.7.1
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: '9.7.1'
 
       - name: Build debug APK
-        run: gradle assembleDebug --build-cache --stacktrace
+        run: ./gradlew assembleDebug --build-cache --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: sdo-companion-debug-${{ github.sha }}
+          name: sdo-companion-demo-only-${{ github.sha }}
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
@@ -48,9 +46,53 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           {
-            echo '### Debug APK generated'
+            echo '### Demo-only APK generated (Google Login and Firebase unavailable)'
             echo
             echo '- Commit: `${{ github.sha }}`'
             printf -- '- Message: `%s`\n' "$COMMIT_MESSAGE"
-            echo '- Artifact: `sdo-companion-debug-${{ github.sha }}`'
+            echo '- Artifact: `sdo-companion-demo-only-${{ github.sha }}`'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  build-authenticated-debug:
+    name: Build authenticated debug APK on trusted main
+    if: github.ref == 'refs/heads/main' && (startsWith(github.event.head_commit.message, 'fix:') || startsWith(github.event.head_commit.message, 'fix('))
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      SDO_KEYSTORE_BASE64: ${{ secrets.SDO_KEYSTORE_BASE64 }}
+      SDO_KEYSTORE_PASSWORD: ${{ secrets.SDO_KEYSTORE_PASSWORD }}
+      SDO_KEY_ALIAS: ${{ secrets.SDO_KEY_ALIAS }}
+      SDO_KEY_PASSWORD: ${{ secrets.SDO_KEY_PASSWORD }}
+      SDO_KEYSTORE_FILE: ${{ github.workspace }}/app/sdo-companion-release.jks
+    steps:
+      - name: Checkout trusted main commit
+        uses: actions/checkout@v6
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Restore protected build files
+        uses: ./.github/actions/restore-android-secrets
+      - name: Build authenticated debug APK
+        run: ./gradlew assembleDebug --build-cache --stacktrace
+      - name: Verify debug APK certificate
+        uses: ./.github/actions/verify-android-signature
+        with:
+          apk: app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload authenticated debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdo-companion-authenticated-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Record authenticated build
+        run: echo 'Authenticated debug APK generated from trusted main with the registered Firebase configuration and certificate.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove protected build files
+        if: always()
+        run: |
+          rm -f app/google-services.json
+          rm -f "$SDO_KEYSTORE_FILE"
