@@ -11,8 +11,8 @@ stage order, role assignments, gates, approval stops, and completion criteria.
 
 ## Resolve project context
 
-- For first setup, adopting an app, creating a project foundation, or deliberately
-  refreshing onboarding, read `setup_prompt.md` and route to
+- For deliberately refreshing the configured SDO baseline or planning adoption repairs,
+  read root `AGENTS.md`, `.docs/PROJECT_CONTEXT.md` and `.agents/gates/project-contract.md`, then route to
   `.agents/workflows/project-onboarding.md`. Do not require an existing Gradle
   baseline before the approved create stage. A broken existing app is not greenfield.
 - When `harness-project.json` exists, load its module/source/command configuration

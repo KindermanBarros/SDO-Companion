@@ -44,7 +44,7 @@ documents. During testing/review load `rules/testing-practices.md`; add
 | New feature or enhancement | `workflows/feature-delivery.md` |
 | Bug, crash, or regression | `workflows/bug-fixing.md` |
 | Any user-visible UI implementation or update, including a single component or state | `workflows/create-ui-and-verify.md` |
-| API contract change | `workflows/api-contract-update.md` |
+| API contract change | `workflows/feature-delivery.md` with the api-contract-update skill |
 
 
 ---
@@ -57,7 +57,7 @@ Run `python3 harness/scripts/project_onboarding.py check` before using that map.
 On staleness, explicitly refresh with `discover --refresh` and inspect changed
 boundaries; never expand an approved implementation scope silently. The table below
 is the legacy default only. First setup uses the project-onboarding workflow and
-root `setup_prompt.md`, including AI creation of an approved empty-project foundation.
+the configured SDO baseline in `.docs/PROJECT_CONTEXT.md` and `.agents/gates/project-contract.md`; no setup prompt is required.
 
 | Directory | Contains |
 |-----------|----------|

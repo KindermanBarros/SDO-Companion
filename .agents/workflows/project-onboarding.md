@@ -1,95 +1,30 @@
 ---
-description: Adopt an Android app or let AI create its approved foundation before feature delivery.
+description: Refresh the configured SDO harness or explicitly plan an application adoption repair.
 ---
+# Workflow: Project Onboarding
 
-# Project onboarding
+Read [Project contract](../gates/project-contract.md). SDO already has an Android foundation and a populated .docs baseline. No setup prompt is required.
 
-This workflow owns first setup and deliberate onboarding refreshes. It does not
-replace product specification, UI design approval, normal delivery, or acceptance.
-Invoke `project-onboarding` through the available skill interface; if unavailable,
-read its `SKILL.md` and record that interface limitation in onboarding evidence.
+## Documentation refresh
 
-## 1. Discover
+1. Inspect root policy, affected .docs files, module/build/manifest/source evidence and git status.
+2. Create/resume the .docs task state. Keep observations distinct from desired architecture and historical test results.
+3. Resolve missing product decisions with the owner; record explicit Pending/None when appropriate.
+4. Update only the authorized baseline/instructions; sealed files require an explicit owner request.
+5. Run the structural command in [CI checks](../gates/ci-checks.md), append history and hand off as InDevReview.
+6. Remove disposable setup inputs only when the owner requests it; keep architecture, approvals, product contracts and previous test evidence.
 
-Read root `setup_prompt.md` if present, `AGENTS.md`, and L1 rules. User preferences
-persist, but a prompt cannot fabricate approval or turn a failed gate into a pass.
-Run `python3 harness/scripts/project_onboarding.py discover` from the consumer root.
-Inspect `docs/architecture/architecture-map.md` and its JSON source evidence.
-Use `adopt` for an existing app and `create` when a project foundation is absent;
-static detection is only a proposal. Distinguish a broken existing build from an
-empty project. A broken baseline must not be relabeled greenfield to bypass repair.
+## Full application adoption repair
 
-## 2. Define and approve the foundation
+This is separate from documentation refresh. Use project-onboarding and the existing docs/current onboarding plan/spec/test records as evidence; verify that any recorded approval still covers the proposed scope.
 
-Use the existing requirements/specification skills and Rule Applicability template.
-Record the complete ten-row matrix in the approved specification. For UI scope,
-follow the existing UX stage and design-system approval before UI implementation.
-Write `docs/current/implementation_plan_v1.md`, linking the canonical specification
-and its `#rule-applicability` anchor. Cover:
+- Inspect harness-project.json and docs/architecture/architecture-map.md against current Gradle and source.
+- The observed map is not policy and is not fresh merely because it exists.
+- The existing application uses manual DI, custom navigation and an Android-dependent auth contract. Propose bounded repairs or explicit decisions before changing them.
+- Do not relabel a failing existing application as a new empty project.
+- Approval of documentation cleanup does not authorize source, schema, build, Firebase or architecture changes.
 
-- adoption/creation mode, product boundaries, architecture decisions and exceptions;
-- actual Gradle module names, directories, source sets, layer roots, navigation
-  contracts, build commands and test reports in `harness-project.json`;
-- any root-module builds, convention plugins, aliases, projectDir remaps, Java-only
-  modules and custom source sets that automatic discovery could not resolve;
-- required tools/dependencies, first-build acceptance, runtime boundaries and setup
-  file ownership/cleanup; do not install a browser unless the approved design path needs it;
-- exact existing deliverables and protected instruction files requiring changes.
-
-Review and resolve every profile unknown with source evidence or a documented
-decision. Profiles configure paths/contracts, never source-rule exclusions.
-Keep the canonical specification and planned tests in `docs/current/spec_v<N>.md`
-and `docs/current/test_plan_v<N>.md` for the reused Android stage skills. Include
-their exact paths and approval-time hashes in the implementation plan, so the same
-user approval covers the foundation and its tests. Increment versions for revisions
-and set `approval.json.plan` to the exact approved implementation-plan version.
-Present the plan and profile for explicit user approval before application source
-changes. Approval of initial product scope is not approval of an unseen scaffold.
-Record actual consent in `docs/onboarding/approval.json` using the approval template,
-with the approved plan/profile SHA-256 hashes. Reapproval is required when those
-approved inputs change. Never fill approval fields on the user's behalf before consent.
-
-## 3. Adopt or create
-
-Follow the `project-onboarding` skill. In adoption, preserve existing source and
-identify policy mismatches for explicit resolution, rather than silently migrating.
-In creation, AI writes the approved Gradle/application/test foundation, including a
-real first behavior and meaningful tests. Use `android-implementation` and
-`android-testing`; load their required stage rules. No dummy production callbacks.
-This stage is the explicit exception to requiring an existing green build *before*
-creating a new project. It does not waive any gate after creation.
-
-Use the approved command arrays rather than assuming `:app`. Existing custom
-instrumented/visual runners must be adapted through separately authorized files
-when they cannot execute the approved module/runtime boundary; never record their
-legacy `app` configuration as evidence for a different module.
-
-## 4. Verify
-
-Refresh the observed map with `discover --refresh`, review it against the profile,
-and run `python3 harness/scripts/project_onboarding.py check`.
-Run `python3 harness/scripts/project_onboarding.py verify`. It requires matching
-plan/profile approvals, product documentation, fresh fingerprints, the lifecycle
-gate, full source checks, a build and non-zero passing Gradle test XML evidence.
-Run other required gates from the approved applicability decisions, including
-quality, coverage, design and real runtime checks when triggered. The base verifier
-does not substitute for these gates. Missing devices/toolchains/dependencies remain
-blocked. Keep results under `.harness-state/` and reference them in
-`docs/current/onboarding-summary.md` with paths and one-line excerpts.
-
-## 5. Cleanup and handoff
-
-Only successful base verification automatically removes unchanged temporary setup
-files from the installation manifest. Runtime harness links/files, architecture,
-approvals and evidence remain. User edits are preserved. Failed or interrupted
-setup retains its files for diagnosis and can be rerun.
-
-For deliberate removal, first review
-`python3 harness/scripts/project_onboarding.py cleanup --uninstall`, then use
-`--uninstall --apply` when removal is authorized. Uninstall removes only unchanged
-owned files/links, never recursively deletes directories or shared dependencies,
-and retains its manifest/receipt. Scheduled jobs, SDKs and shared browser caches
-are outside this installer and require their own explicit removal.
-
-Handoff to the appropriate delivery workflow only when the approved onboarding
-gates pass. The generator retains its normal baseline, approval and review gates.
+When the required tooling exists, run python3 harness/scripts/project_onboarding.py discover, reconcile the profile, and run check/verify.
+Required verify evidence includes matching approved inputs, fresh source fingerprints, lifecycle/source checks, build and nonzero passing test reports.
+The scripts are currently absent; full application onboarding remains blocked until the missing prerequisites are resolved within authorized scope.
+Do not delete historical approval, source-map or runtime evidence as setup debris.

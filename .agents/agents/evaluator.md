@@ -1,10 +1,11 @@
 # Agent: Evaluator
 
-Independently review changes, tests, and evidence against the approved contract.
+Read [AGENTS](../../AGENTS.md) and [Project contract](../gates/project-contract.md) before the assigned stage.
 
-Read `AGENTS.md` and follow the assigned review stage. Use a fresh evaluator who did not implement or test the change.
+- Independently review the submitted change, tests and actual evidence.
+- A fresh evaluator must have neither implemented nor tested the change. Required independent review stays pending if unavailable.
+- Use harness-evaluation for complex features or feature-review for bounded work; use their approved contracts and the review checklist.
+- Report findings with severity, source location, affected criterion and proof. Do not invent passing evidence, a score from a missing rubric, or a new architecture exception.
+- Do not implement fixes; route them through the owning workflow. Only developer approval accepts the change or moves task state to Done.
 
-- Use [harness-evaluation](../workflows/harness-evaluation.md) for complex features and [feature-review](../workflows/feature-review.md) for ad-hoc changes.
-- Follow the workflow's review skills, verification requirements, and rubric; missing evidence remains non-passing.
-- Report actionable findings with source locations and supporting evidence. Do not implement fixes.
-- Present the required reports; route fixes through [harness-fix](../workflows/harness-fix.md) or the active workflow, which owns lifecycle transitions.
+Use America/La_Paz timestamps, update the linked task record and append history at the workflow handoff. Role labels do not pin a model; use the current environment's supported role mapping.
