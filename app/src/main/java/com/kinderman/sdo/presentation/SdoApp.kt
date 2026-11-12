@@ -1,29 +1,30 @@
 package com.kinderman.sdo.presentation
 
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.MainActivity
 import com.kinderman.sdo.SdoApplication
@@ -37,13 +38,13 @@ import com.kinderman.sdo.presentation.settings.SettingsScreen
 import com.kinderman.sdo.presentation.sync.CharacterConflictDialog
 import com.kinderman.sdo.ui.CyberLoadingMode
 import com.kinderman.sdo.ui.CyberLoadingScreen
+import com.kinderman.sdo.ui.LocalSdoUseNavigationRail
 import com.kinderman.sdo.ui.SdoContentDensity
-import com.kinderman.sdo.ui.SdoPreferences
-import com.kinderman.sdo.ui.LocalSdoWindowClass
-import com.kinderman.sdo.ui.SdoWindowClass
+import com.kinderman.sdo.ui.SdoContentFrame
+import com.kinderman.sdo.ui.SdoNavigationBar
 import com.kinderman.sdo.ui.SdoNavigationItem
 import com.kinderman.sdo.ui.SdoNavigationRail
-import com.kinderman.sdo.ui.SdoNavigationBar
+import com.kinderman.sdo.ui.SdoPreferences
 
 private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, SETTINGS }
 
@@ -121,13 +122,13 @@ fun SdoApp(
 
         authViewModel.state.loading -> CyberLoadingScreen(CyberLoadingMode.GOOGLE_AUTH)
 
-        authenticatedSession == null && !demo -> LoginScreen(
+        authenticatedSession == null && !demo -> SdoContentFrame(maxContentWidth = 640.dp) { LoginScreen(
             activity = activity,
             state = authViewModel.state,
             allowDemo = !authViewModel.configured,
             onGoogleLogin = { authViewModel.login(activity) },
             onDemo = { demo = true },
-        )
+        ) }
 
         appSession == null ->
             CyberLoadingScreen(CyberLoadingMode.CHARACTERS)
@@ -140,7 +141,7 @@ fun SdoApp(
             val membership = memberships.firstOrNull { it.campaignId == selectedCampaignId }
             val isCampaignHistorian = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
             val isCampaignResponsible = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
-            val wide = LocalSdoWindowClass.current == SdoWindowClass.EXPANDED
+            val wide = LocalSdoUseNavigationRail.current
             val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { it.ownerId == appSession?.uid }
             Row(Modifier.fillMaxSize()) {
                 if (wide) SdoNavigationRail(buildList {
@@ -150,7 +151,7 @@ fun SdoApp(
                     add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
                 })
                 Column(Modifier.weight(1f).fillMaxSize()) {
-                Box(Modifier.weight(1f).fillMaxSize()) {
+                SdoContentFrame(Modifier.weight(1f)) {
             screenState.SaveableStateProvider("${appSession?.uid}:${surface.name}") {
             when (surface) {
                 AppSurface.DASHBOARD -> DashboardScreen(

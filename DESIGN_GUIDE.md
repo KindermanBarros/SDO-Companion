@@ -429,9 +429,16 @@ Movimento comunica mudança de estado; não é decoração contínua fora de pro
 
 ## Layout Responsivo
 
-- Telefones compactos: uma coluna; pares somente para campos curtos.
-- Larguras maiores: conteúdo central limitado e painéis em duas colunas quando não quebrar a ordem
-  canônica da ficha.
+- Telefones compactos: uma coluna; pares somente para campos curtos. Grades reservam mais largura
+  por célula quando o texto do sistema ou a preferência de leitura aumenta.
+- Navegação lateral a partir de 600 dp de largura e 480 dp de altura útil; janelas menores ou
+  baixas usam barra inferior. A ficha continua sem barra inferior em janelas compactas.
+- O conteúdo principal é centralizado e limitado a 1120 dp; login é limitado a 640 dp.
+  Barras de navegação permanecem fora desse limite e respeitam as áreas seguras do sistema.
+- Ajustes usa uma grade adaptativa com painéis de no mínimo 360 dp antes da escala de texto;
+  cabeçalho e aviso local ocupam toda a linha. Filtros administrativos reorganizam-se sem
+  truncar nomes de conta/campanha numa única linha.
+- Painéis podem ocupar múltiplas colunas quando não quebrar a ordem canônica da ficha.
 - Listas longas usam blocos repetíveis com ação de remoção no cabeçalho.
 - A ficha usa oito páginas com swipe, abas roláveis e menu “Ir para”.
 - `HorizontalPager` mantém somente a página necessária no viewport; cada página usa sua própria
@@ -469,7 +476,12 @@ animada e a paleta preto/papel/vermelho-sinal/verde-terminal/laranja-ferrugem.
 - Cada card tem interferência animada e um rasgo de borda sincronizado ao shake: a borda esquerda
   se fragmenta durante deslocamento à esquerda e a direita durante deslocamento à direita.
 - Efeitos visuais pertencem aos limites do componente e não podem cobrir controles aninhados.
-- Áreas clicáveis preservam o alvo mínimo de 48 dp e o ripple fica recortado pelo shape local.
+- Áreas clicáveis preservam o alvo mínimo de 48 dp; navegação compacta usa pelo menos 64 dp de
+  altura por destino. A seleção é exposta à acessibilidade e não depende apenas da cor.
+- Rótulos de navegação e ações podem quebrar linha; ações usam até duas linhas antes da elipse.
+  Fontes funcionais Cybergrunge variam de 10–14 sp antes da escala de leitura, preservando
+  Press Start 2P; títulos continuam expressivos. O vermelho funcional é #FF4D70 com texto
+  #090608 em botões, enquanto #E0003B permanece disponível como vermelho estrutural.
 - Campos vazios usam ruído tipográfico como placeholder, sem substituir label ou semântica.
 - Telas consomem contratos `Sdo*`; a seleção entre Standard e Cybergrunge acontece no design
   system, evitando condicionais visuais espalhadas na apresentação.

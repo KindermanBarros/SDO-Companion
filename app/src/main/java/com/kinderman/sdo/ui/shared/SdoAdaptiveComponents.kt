@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -46,11 +47,8 @@ fun AdaptiveActionLabel(text: String, color: Color = MaterialTheme.colorScheme.p
     BasicText(
         text = text,
         style = MaterialTheme.typography.labelLarge.copy(color = color, letterSpacing = 0.sp),
-        maxLines = 1,
-        autoSize = TextAutoSize.StepBased(
-            minFontSize = 8.sp,
-            maxFontSize = MaterialTheme.typography.labelLarge.fontSize
-        ),
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
     )
 }
 

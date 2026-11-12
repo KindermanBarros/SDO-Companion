@@ -2,7 +2,6 @@ package com.kinderman.sdo.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,11 +29,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -177,7 +179,8 @@ internal fun CyberGrungeField(
             minLines = if (multiline) 3 else 1,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
-            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 88.dp else 48.dp).then(
+            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 88.dp else 48.dp)
+                .semantics { contentDescription = label }.then(
                 if (value.isEmpty()) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
             ),
             decorationBox = { inner ->
@@ -219,7 +222,8 @@ internal fun CyberGrungeChoiceRow(
         Modifier.fillMaxWidth()
             .border(1.dp, accent, CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
             .clip(CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
-            .clickable(role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = 48.dp)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -228,7 +232,7 @@ internal fun CyberGrungeChoiceRow(
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             badge()
-            AdaptiveSingleLineText(
+            Text(
                 text = label.uppercase(),
                 color = if (selected) accent else MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleMedium,

@@ -97,6 +97,7 @@ import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.Void
 import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoResponsiveGrid
 import com.kinderman.sdo.ui.SdoVisualMode
 
 @Composable
@@ -239,17 +240,15 @@ fun DashboardScreen(
                         if (admin) "${filteredCharacters.size}/${characters.size} FICHAS // $activeCampaignCount CAMPANHAS ATIVAS"
                         else "$activeCampaignCount CAMPANHAS ATIVAS // ${characters.count { it.ownerId == uid && normalizeCampaignId(it.campaignId).isBlank() }} FICHAS SEM CAMPANHA",
                     )
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        DashboardSection.entries.forEach { target ->
+                    SdoResponsiveGrid(DashboardSection.entries.toList(), minItemWidth = 148.dp, maxColumns = 2) { target, itemModifier ->
                             SdoTextButton(
                                 onClick = { section = target },
-                                modifier = Modifier.weight(1f).then(
+                                modifier = itemModifier.then(
                                     if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
                                 ),
                             ) {
                                 Text(target.label, color = if (section == target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                        }
                     }
                     if (!cybergrunge) TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                         TelemetryTag("QUICK_ACCESS")
@@ -574,20 +573,20 @@ private fun AdminCharacterFilters(
             placeholder = "Nome, raça, ocupação, e-mail ou UID",
             onValue = onQueryChange,
         )
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            SdoTextButton(onClick = onChooseOwner, modifier = Modifier.weight(1f)) {
-                Text("OWNER // ${ownerLabel.uppercase()}", maxLines = 1)
-            }
-            SdoTextButton(onClick = onChooseCampaign, modifier = Modifier.weight(1f)) {
-                Text("CAMPANHA // ${campaignLabel.uppercase()}", maxLines = 1)
-            }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            SdoTextButton(onClick = onChooseStatus, modifier = Modifier.weight(1f)) {
-                Text("STATUS // ${statusLabel.uppercase()}", maxLines = 1)
-            }
-            SdoTextButton(onClick = onClear, modifier = Modifier.weight(1f)) {
-                Text("LIMPAR", color = MaterialTheme.colorScheme.error)
+        SdoResponsiveGrid(listOf("OWNER", "CAMPAIGN", "STATUS", "CLEAR"), minItemWidth = 200.dp, maxColumns = 2) { filter, itemModifier ->
+            when (filter) {
+                "OWNER" -> SdoTextButton(onClick = onChooseOwner, modifier = itemModifier) {
+                    Text("OWNER // ${ownerLabel.uppercase()}")
+                }
+                "CAMPAIGN" -> SdoTextButton(onClick = onChooseCampaign, modifier = itemModifier) {
+                    Text("CAMPANHA // ${campaignLabel.uppercase()}")
+                }
+                "STATUS" -> SdoTextButton(onClick = onChooseStatus, modifier = itemModifier) {
+                    Text("STATUS // ${statusLabel.uppercase()}")
+                }
+                else -> SdoTextButton(onClick = onClear, modifier = itemModifier) {
+                    Text("LIMPAR", color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }

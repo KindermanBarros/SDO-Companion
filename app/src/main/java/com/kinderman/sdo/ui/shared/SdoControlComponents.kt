@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -109,8 +110,11 @@ fun <T> SdoResponsiveGrid(
     verticalSpacing: Dp = 8.dp,
     content: @Composable (T, Modifier) -> Unit,
 ) {
+    val textScale = LocalDensity.current.fontScale * LocalSdoPreferences.current.fontScale.multiplier
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val columns = responsiveColumnCount(maxWidth.value, minItemWidth.value, maxColumns, horizontalSpacing.value)
+        val columns = responsiveColumnCount(
+            maxWidth.value, minItemWidth.value, maxColumns, horizontalSpacing.value, textScale,
+        )
         androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
             items.chunked(columns).forEach { rowItems ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
@@ -127,5 +131,11 @@ internal fun responsiveColumnCount(
     minimumItemWidthDp: Float,
     maxColumns: Int = 4,
     spacingDp: Float = 0f,
-): Int = ((widthDp + spacingDp) / (minimumItemWidthDp + spacingDp)).toInt()
-    .coerceIn(1, maxColumns.coerceAtLeast(1))
+    fontScale: Float = 1f,
+): Int {
+    val textScale = if (fontScale.isFinite()) fontScale.coerceAtLeast(1f) else 1f
+    val minimumWidth = minimumItemWidthDp.coerceAtLeast(1f) * textScale
+    val spacing = spacingDp.coerceAtLeast(0f)
+    return ((widthDp.coerceAtLeast(0f) + spacing) / (minimumWidth + spacing)).toInt()
+        .coerceIn(1, maxColumns.coerceAtLeast(1))
+}
