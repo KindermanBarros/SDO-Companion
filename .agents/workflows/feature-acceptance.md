@@ -1,146 +1,48 @@
 ---
-description: Gate post-merge Android/iOS feature acceptance with planned cases and separate exploratory risk findings.
+description: Verify a merged SDO Android build with approved acceptance cases and separate exploratory evidence.
 ---
+# Workflow: Feature Acceptance
 
-# Workflow: Feature Acceptance — Stage 2
+Read [Project contract](../gates/project-contract.md); planner owns the acceptance plan and tester owns execution.
+Entry requires a named merged change, integration branch, approved requirements and the integrated QA build. A checkout SHA alone does not identify an installed APK.
 
-Use `planner` for the acceptance plan and `tester` for execution and evidence.
-If required delegation or a requested model is unavailable or unsupported, block the affected stage and report it; never silently substitute. Record requested and actual models in stage evidence when available.
+## 0. Bootstrap
 
-Use after a PR has merged into the integration/QA branch and before release promotion.
-This workflow consumes approved requirements and the integrated QA build. It does not
-change Stage 1 implementation, development verification, review, or merge gates.
+Use exploratory-qa's suite layout under .qa-artifacts with separate suites per build/device/environment.
+Inspect prerequisites without activating device journeys, mocks, routing changes, captures or QA-data mutations.
+Verify installed package com.kinderman.sdo, version/build/signing identity and CI artifact provenance; absent identity is INCONCLUSIVE.
+Use disposable QA accounts and synthetic data in the approved environment.
+No production-data operation, tool installation or application modification is authorized by acceptance.
 
-| Owner | Responsibility |
-|---|---|
-| [test-design](../skills/test-design/SKILL.md) | Select planned acceptance cases and identify separate exploratory risk targets. |
-| This workflow | Obtain plan approval, invoke QA execution, consolidate evidence and manage the release gate. |
-| [exploratory-qa](../skills/exploratory-qa/SKILL.md) | Execute the approved test plan, then investigate separate risk targets adaptively; keep results distinct. |
-| [api-mocking](../skills/api-mocking/SKILL.md) | Own backend routing, fixtures, isolation, verification and mock cleanup. |
+## 1. Plan — test-design
 
-Invoke skills through the available skill interface. If unavailable, read the complete
-linked `SKILL.md`, follow it, and record the unavailable interface in the suite's
-`suite-report.md` under `Run context`.
+Write the versioned suite test plan with selected acceptance cases, complete oracles, environment/fixture hashes and a separate exploration budget.
+Present the plan and obtain actual approval before execution; record response, date, approved version/hash and bound inputs in suite-report.md.
+Changed build/platform/environment/fixture/scope returns to plan approval; preserve earlier attempts.
+Use exploratory-qa approved-plan mode for execution; retain each case's result and evidence.
+When real backend behavior is blocked, preserve INCONCLUSIVE real-server assertions.
+Investigate mocks only within approved scope using api-mocking; revise and reapprove acceptance cases before executing the new mocked plan.
+Mock success never proves the real Firebase backend.
 
-## Phase 0 — Bootstrap
+## 2. Explore — exploratory-qa
 
-Prepare the run and inspect prerequisites without starting device journeys, changing
-routing, applying mocks, mutating QA data or starting captures. Activate those resources
-only after the Phase 1 test-plan review and explicit user approval.
+Run acceptance-support mode with distinct risk targets and an explicit time/action budget.
+Keep exploratory findings separate from planned-case outcomes; preserve each original verdict and stop reason.
+Use the skill's adaptive investigation and dogfood-report reconciliation procedures.
 
-1. Create the suite and `suite-report.md` using the shared
-   [artifact layout and Run context contract](../skills/exploratory-qa/references/artifact-layout.md).
-   Keep each platform/build/device/environment combination in a separate suite.
-2. Verify the commit was merged into the named branch and the CI artifact was built
-   from it. Compare **the installed app** with that artifact: package/bundle ID,
-   versionName/versionCode or CFBundleShortVersionString/CFBundleVersion, signing/build
-   metadata and installed artifact identity where available. Version text alone cannot
-   establish the SHA. Retain installation/package inspection receipts and CI provenance;
-   absent or conflicting identity is INCONCLUSIVE. Do not substitute the checkout HEAD.
-3. Select approved disposable QA accounts, isolated fixture identifiers and devices.
-   Use QA/debug builds for internal instrumentation. No production operations, customer
-   accounts or real payment instruments. Use synthetic data and approved staging APIs.
-   Discover the actual app ID; example IDs in existing skills are not target defaults.
-4. Inspect device/capture prerequisites through [exploratory-qa](../skills/exploratory-qa/SKILL.md)
-   and backend prerequisites through [api-mocking](../skills/api-mocking/SKILL.md).
-   Record required capability gaps and optional limitations; do not add instrumentation
-   or install/upgrade tools during acceptance. Verify physical iOS capture support separately.
-5. Bootstrap failure still proceeds to consolidation and cleanup with partial evidence.
+## 3. Consolidate
 
-## Phase 1 — Planned feature acceptance
+Only cases with every required assertion PASS cover their acceptance criterion.
+Critical defects produce BLOCKED; missing critical proof/environment/build identity produces INCONCLUSIVE when not already blocked.
+Unresolved noncritical risks require an owner disposition; never lower criticality during execution.
+READY FOR HUMAN SIGN-OFF needs critical planned proof, no open critical defects, bounded exploration or an explicit human disposition, residual-risk decisions and verified cleanup.
+Readiness does not authorize release/promotion or modify the product tracker.
+Post-merge defects route through an authorized fix/revert and a new integrated-build run; never patch source inside acceptance.
 
-### Generate the test plan and request review — STOP
+## 4. Cleanup — always
 
-Before executing any case, invoke `test-design` to finalize
-`.qa-artifacts/<suite-id>/test_plan_v<N>.md` with the verified build/environment and
-available capabilities. Follow its [plan-content contract](../skills/test-design/SKILL.md#produce-the-test-plan)
-without maintaining another case schema here.
-
-Present the complete versioned test plan to the user, highlight gaps and the proposed
-exploration budget, and **stop for explicit approval before planned execution or Phase 2**.
-Record the actual user response, approver/date and approved plan version/SHA-256 in the
-suite's `suite-report.md` under `Approval`, binding the plan's source/contract/fixture hashes, build/artifact,
-platform/device, environment and exploration scope/budget. Never invent approval or infer
-it from silence. On resume, verify that those inputs still match. If they change, revise
-the plan and request approval again before affected planned execution; preserve prior versions/results.
-Keep approval entries unchanged when appending results or renewed approvals. Hash the
-approved plan and bound inputs, not the evolving report that contains the approval record.
-
-After explicit approval, invoke [exploratory-qa](../skills/exploratory-qa/SKILL.md) in
-**approved-plan** mode to execute `test_plan_v<N>.md`. Pass the approved test plan,
-the suite's `Approval` record and the bound inputs required by that mode. Collect every
-case/attempt result and evidence link under `Planned acceptance`; the skill owns execution.
-
-### Mock-flow replanning
-
-When real-server testing is blocked, preserve its attempt and unproven backend assertions
-as INCONCLUSIVE. Invoke `exploratory-qa` in **acceptance-support** mode to investigate an
-isolated mock flow within the approved exploration scope/budget; obtain approval for that
-investigation first if it is not covered. Apply api-mocking's
-[local-state boundary](../skills/api-mocking/SKILL.md#local-state-side-effects).
-
-Then invoke `test-design` to revise the plan with the investigated flow, API mode,
-fixture hashes, restoration and remaining real-backend evidence gaps. Return to
-[plan review](#generate-the-test-plan-and-request-review--stop) for renewed explicit approval
-before running the revised acceptance cases. Preserve prior plans, approvals and attempts;
-continue unchanged independent cases where safe. An execution addendum cannot replace this approval.
-
-## Phase 2 — Exploratory QA
-
-Invoke `exploratory-qa` in **acceptance-support** mode with feature scope, separate risk
-targets, planned coverage/results and gaps, environment/build identity, available mock
-providers, suite ID and an explicit time/action budget (for example 20 minutes/60 actions,
-stopping at whichever limit is reached first). Use fresh execution leaves from the shared
-artifact layout. Collect the skill's findings and stop reason under `Exploratory findings`;
-follow its [adaptive investigation procedure](../skills/exploratory-qa/SKILL.md#adaptive-investigation-in-acceptance-support-mode).
-
-## Phase 3 — Consolidate and gate
-
-Consolidate results using the shared [suite report contract](../skills/exploratory-qa/references/artifact-layout.md#suite-report).
-An AC is covered only when all its required selected cases/assertions PASS. List unselected
-ACs with rationale; report any ratio only over the explicitly enumerated approved AC set.
-A leaf reporter's PASS covers only its declared checks; verify the approved case's complete
-oracles before assigning AC coverage. Exploration contributes risk evidence separately.
-
-Before suite consolidation, complete the exploratory-qa skill's
-[dogfood report reconciliation](../skills/exploratory-qa/SKILL.md#dogfood-report-reconciliation).
-Link the generated case report from the suite report; keep exploratory findings separate from
-planned AC results and preserve each case verdict.
-
-Apply these gate rules in order; evidence tables are required, not optional narrative:
-
-1. Critical planned acceptance FAILs or confirmed critical exploratory defects → BLOCKED.
-   A missing critical oracle/evidence, broken environment, unknown build identity, critical
-   SKIPPED/INCONCLUSIVE case or unresolved critical AC gap → INCONCLUSIVE when no known
-   critical defect already blocks. Both recommendations prohibit release promotion.
-2. Noncritical failures/gaps and exploratory hypotheses remain explicit risk decisions with
-   owner and disposition. They do not automatically fail other acceptance cases. An unresolved
-   risk needing an owner decision prevents a ready recommendation. Never downgrade criticality
-   during execution to obtain a passing gate.
-3. Passing planned cases contribute to readiness. Exploration contributes a separate risk
-   assessment. `READY FOR HUMAN SIGN-OFF` requires complete critical planned proof, no open
-   critical defects, completed bounded exploration (or an explicit human disposition of its
-   missing investigation), disposition of residual risks and verified cleanup. It authorizes
-   neither deployment nor promotion; human product/UAT/release sign-off still applies.
-4. Post-merge defects go through a fix PR or authorized revert. Test the resulting integrated
-   QA build in a new run with targeted revalidation plus related acceptance/recovery checks;
-   do not patch the app or redefine ACs inside an acceptance session. Link old/new builds and
-   evidence. Never overwrite the failing report or mark lifecycle status from exploration alone.
-
-## Phase 4 — Cleanup (always)
-
-Require [exploratory-qa cleanup](../skills/exploratory-qa/SKILL.md#cleanup) for every activated
-run, including interrupted or failed runs. Verify receipts in the suite's `Cleanup` section
-against the original settings and resources. Failed/unverified restoration makes readiness
-INCONCLUSIVE unless already BLOCKED; finalize the release recommendation only after this check.
-
-## Invocation examples
-
-- “Follow `.agents/workflows/feature-acceptance.md` for merged PR 42, integration SHA
-  `<sha>`, Android QA build `<artifact>`, staging deployment `<version>`, and approved spec
-  `<path>`. Use a 20-minute/60-action exploratory budget.”
-- “Repeat Stage 2 for the iOS QA artifact `<artifact>` on simulator `<UDID>` with the same
-  approved ACs; record unavailable instrumentation separately.”
-
-See the [node-sharing test plan](../skills/test-design/examples/node-sharing.md) for the
-planned/exploratory distinction. It is illustrative and does not replace approved product requirements.
+Apply exploratory-qa and api-mocking cleanup even after failure/interruption.
+Verify restoration against original resources/settings and retain cleanup receipts.
+Failed restoration makes readiness INCONCLUSIVE unless already BLOCKED.
+Complete .docs task/history records; [Release checklist](../gates/release-checklist.md) controls the human release handoff.
+Commit only maintained acceptance documentation when applicable and validated; do not stage ignored ephemeral captures or secrets automatically.

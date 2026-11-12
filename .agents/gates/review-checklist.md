@@ -1,86 +1,42 @@
-# Review Checklist
+# Review checklist
 
-## Purpose
-Checklist for reviewing any code change before it is considered complete.
+Read [Project contract](project-contract.md) and select the triggered [CI checks](ci-checks.md).
 
-## Merge Approval
+## Authority and scope
 
-- [ ] A designated human reviewer has reviewed the report and explicitly approved the change before merge.
-- [ ] Any rule exception cites the user's direct approval and its exact boundary.
+- [ ] Read root policy, approved spec/plan or sprint contract and the linked task state.
+- [ ] Preserve unrelated changes, product backlog, previous approvals and evidence.
+- [ ] Architecture matches .docs/ARCHITECTURE.md or an explicitly approved scoped change.
+- [ ] Generic Hilt, NavHost and single-UiState guidance is not reported as implemented SDO behavior.
+- [ ] Existing domain Activity dependency and manual wiring remain explicit observations, not silent policy waivers.
+- [ ] No speculative refactor, toolchain upgrade or package move was introduced.
 
----
+## Application review when source changes
 
-## Layer Boundaries
+- [ ] Review business-rule ownership, repository boundaries, mappings, auth/session and error/cancellation behavior.
+- [ ] State transitions have an owner and loading/error/empty/success behavior is covered.
+- [ ] Preserve Standard/Cybergrunge tokens and the approved design system; do not invent LocalAppColors APIs.
+- [ ] Visible text, resource names, imports and concurrency follow .docs/CODE_STANDARDS.md.
+- [ ] Load android-security rules only for triggered boundaries; verify untrusted input, IPC, storage and network risks.
+- [ ] No credentials, tokens, personal data or signing material are exposed.
+- [ ] Relevant ViewModel/use-case/mapper/API regressions have meaningful assertions.
+- [ ] Applicable build, tests, Lint, static analysis, source and coverage gates pass with actual evidence.
 
-- [ ] UI layer does not call repositories or data sources directly
-- [ ] ViewModel does not import Retrofit, Room, or data-layer classes
-- [ ] Domain layer has no Android framework imports (`Context`, `Bundle`, SDK types)
-- [ ] DTOs are not exposed outside the data layer
-- [ ] No domain models are used directly in Compose without mapping to UI models (if formatting is needed)
-- [ ] No fully-qualified class names used inline in **any** file — production **or** test code — all classes referenced via `import` at the top of the file (e.g. no `com.example.Foo()` in function bodies, no `io.mockk.mockk` in property declarations)
+## Runtime and visual claims
 
----
+- [ ] Required production-entry journey tests exercise real actions, return boundaries and visible post-return results.
+- [ ] Platform-bound behavior uses the real shipped Android boundary; fake-only proof is supplemental.
+- [ ] IME tests exercise shipped-Activity open/dismiss geometry and successful named JUnit cases.
+- [ ] UI screenshots are captured and retained separately from approved design references.
+- [ ] Declared visual/rendered-text comparisons have the required configured renderer, method, reference and bounds proof.
+- [ ] Missing devices, services, models, templates or checkers remain non-passing.
 
-## State and UI
+## Documentation and handoff
 
-- [ ] Each modified screen renders from a single `UiState`
-- [ ] All user-visible text uses `stringResource()` — no hardcoded strings
-- [ ] All colors use `LocalAppColors.current.<token>` — no hardcoded `Color(0x...)` or `Color.Red` etc.
-- [ ] All interactive elements have `Modifier.testTag(...)` with stable names
-- [ ] One-off events (navigation, toast, dialog) use `Channel` or `SharedFlow` — not permanent `UiState` fields
-- [ ] Loading, success, empty, and error states are all handled in `UiState`
-
----
-
-## Testing
-
-- [ ] New use cases, ViewModels, and mappers have unit tests
-- [ ] At least one integration test per new API endpoint; an instrumented loopback boundary is valid when the shipped app process is part of the claim
-- [ ] Shared JSON scenarios used — no inline API mock data in test cases or fixture-server contract payloads
-- [ ] Loopback-boundary tests start the server before app launch, drive the shipped Retrofit/OkHttp client, record redacted receipts, and fail closed on listener/setup failure
-- [ ] Platform capability matrix exists and covers minimum, target, and important API boundaries
-- [ ] Unsupported runtime/device/model/locale/permission conditions fail loudly; no skipped environment is recorded as pass
-- [ ] Platform-bound behavior has a real instrumented boundary test; fake recognizers and JVM-only intent tests are supplemental only
-- [ ] Navigation, saved-state, back-stack, destination-recreation, and post-return persistence behavior has a named production-entry instrumented journey; Content/ViewModel tests are supplemental only
-- [ ] Rich-text/inline-formatting appearance claims have `captureRoboImage()` evidence in the named `*RoborazziTest`; model marks and device screenshots alone are supplemental — acceptance/visual validators pass
-- [ ] `koverLog` coverage ≥ 80% overall, ≥ 90% for new classes
-- [ ] All tests pass: `./gradlew testDebugUnitTest`
-- [ ] Declared offline assets (`file:///android_asset/`) exist on disk — run `bash harness/scripts/check-declared-assets.sh`
-- [ ] Full-source rules bundle passes — run `bash harness/scripts/check-full-source-rules.sh` (or `harness\scripts\check-full-source-rules.cmd` on Windows); this includes the AI/WebView security evaluator and contract test
-- [ ] Rendering/generation tests assert semantic content (node labels, shapes, connectors), not just envelope tags (`<svg>`, `<html>`) — confirm the test-assertion result from the full-source bundle or run `bash harness/scripts/check-test-assertions-quality.sh` for diagnosis
-
-## Test Code Quality
-
-- [ ] No fully-qualified class names in test files — use top-level `import` declarations (e.g. no `io.mockk.mockk(...)` or `com.example.Foo` inline in property/parameter declarations)
-- [ ] No wildcard imports in test files — all imports must be fully explicit (e.g. no `import io.mockk.*`)
-- [ ] Test file imports are sorted lexicographically with no blank lines between them
-
----
-
-## Scope Discipline
-
-- [ ] No unrelated changes mixed into this diff
-- [ ] No speculative refactoring of files not required by the task
-- [ ] Gradle/plugin versions not changed unless explicitly required
-- [ ] No broad theming redesign or repository-wide package moves
-
----
-
-## Security
-
-- [ ] If an Android security boundary changed, `.agents/rules/android-security.md` was loaded and the review records its trust boundary, validation/failure behavior, and evidence; the full-source bundle's AI/WebView evaluator and contract passed
-- [ ] No secrets, API keys, or tokens hardcoded in source
-- [ ] No PII (name, email, phone) logged
-- [ ] Sensitive data not stored in plaintext
-- [ ] No unsafe WebView or deep link handling introduced
-- [ ] Auth/session behavior not weakened
-
----
-
-## Build and Quality
-
-- [ ] `./gradlew assembleDebug` passes
-- [ ] `./gradlew testDebugUnitTest` passes
-- [ ] `./gradlew ktlintCheck` passes
-- [ ] `./gradlew detekt` passes
-- [ ] `./gradlew lintDebug` passes (errors only)
+- [ ] Documentation-only work passes the native structural gate and its regression fixtures.
+- [ ] Changed product claims are reconciled in their existing capability files; planned work is not called delivered.
+- [ ] Technical docs, task index and append-only history match the change.
+- [ ] Independent evaluator did not implement or test the submitted work.
+- [ ] Task enters InDevReview with blockers stated; only developer approval moves it to Done.
+- [ ] Automatic commit contains only the validated task scope and a sign-off; no unsolicited push/PR/branch/merge/release.
+- [ ] Human approval remains required before merge or release; a commit is not acceptance.

@@ -1,10 +1,11 @@
 # Agent: Implementer (Generator)
 
-Implement approved changes and resolve implementation findings.
+Read [AGENTS](../../AGENTS.md) and [Project contract](../gates/project-contract.md) before the assigned stage.
 
-Read `AGENTS.md` and follow the assigned implementation stage. The active workflow owns scope, skills, stage order, and approvals.
+- Implement only the approved SDO change and report its evidence.
+- Use harness-generator for approved slices and harness-fix for reported evaluator findings; bounded work follows its selected workflow.
+- Follow .docs architecture: manual application wiring, repository contracts and custom navigation are the observed baseline, not permission for an unplanned migration.
+- Respect the adopted persona's test-first policy. Hand assigned test work to tester; bug fixes require relevant RED evidence before the fix.
+- Preserve unrelated edits. Commit the validated task automatically, then hand off to a fresh independent evaluator; do not push or open PRs without a request.
 
-- Use [harness-generator](../workflows/harness-generator.md) for complex slices and [harness-fix](../workflows/harness-fix.md) for evaluator findings.
-- Follow the applicable architecture, security, and design rules; return scope or contract changes to the planner.
-- Hand test authoring and execution to the [tester](tester.md). Bug fixes require relevant RED evidence before production changes.
-- Record changes, build results, and blockers; hand verified work to an independent evaluator through the active workflow.
+Use America/La_Paz timestamps, update the linked task record and append history at the workflow handoff. Role labels do not pin a model; use the current environment's supported role mapping.

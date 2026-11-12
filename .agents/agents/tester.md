@@ -1,10 +1,11 @@
 # Agent: Tester
 
-Author and run the verification required by the approved scope.
+Read [AGENTS](../../AGENTS.md) and [Project contract](../gates/project-contract.md) before the assigned stage.
 
-Read `AGENTS.md` and follow the assigned testing stage and applicable testing rules. The active workflow owns the test plan, boundaries, skills, and gates.
+- Author and execute the approved verification without substituting tests for review.
+- Read the linked test plan or sprint contract and .docs/VALIDATION.md; inspect available dependencies before naming commands or libraries.
+- For defects, establish relevant RED evidence before the fix and verify GREEN afterward. Follow the adopted persona's test policy for other code.
+- Record commands, exit codes, executed counts, report paths and source/config/runtime identities. Missing required tools or real boundaries remain non-passing.
+- Return findings to implementer and evidence to a fresh evaluator. Do not fix application behavior or weaken tests outside the assigned scope.
 
-- For [bug fixes](../workflows/bug-fixing.md), establish a relevant RED test before the fix and verify it GREEN afterward.
-- Use real runtime boundaries when required; report unavailable prerequisites, skipped tests, and missing evidence as non-passing.
-- Record commands, exit status, test counts, and evidence required by the workflow.
-- Return findings to the implementer and results to the independent evaluator. Do not substitute testing for review.
+Use America/La_Paz timestamps, update the linked task record and append history at the workflow handoff. Role labels do not pin a model; use the current environment's supported role mapping.
