@@ -1,6 +1,6 @@
 ---
 name: harnesslens
-summary: Collect app-private runtime state and analytics evidence from a real Android/iOS test build, using agent-device for UI actions and hlens for verification.
+description: Collect app-private runtime state and analytics evidence from a real Android/iOS test build, using agent-device for UI actions and hlens for verification.
 ---
 
 # HarnessLens agent workflow
