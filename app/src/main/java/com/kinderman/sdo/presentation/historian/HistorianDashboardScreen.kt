@@ -92,6 +92,8 @@ import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.SdoScreenMasthead
+import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoVisualMode
 import java.text.DateFormat
 import java.util.Date
 
@@ -213,13 +215,14 @@ fun HistorianDashboardScreen(
     }.sortedByDescending(SessionOperation::createdAt)
     val selectedLibrary = library.filter { it.campaignId == selectedCampaignId }
     val libraryWritable = selectedCampaign != null && !selectedCampaign.isArchived
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
 
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { Text("PAINEL DO HISTORIADOR") },
+                    title = { if (!cybergrunge) Text("PAINEL DO HISTORIADOR") },
                     navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -415,7 +418,7 @@ private fun OperationalCharacterCard(
     onOpenSheet: (String) -> Unit,
     onQuickAction: () -> Unit,
 ) {
-    var expanded by rememberSaveable(character.id) { mutableStateOf(true) }
+    var expanded by rememberSaveable(character.id) { mutableStateOf(false) }
     val typedConditions = character.canonicalConditions()
     val body = runCatching { character.canonicalBodyState() }.getOrNull()
     val failedRegions = body?.regions.orEmpty().filter { it.failures > 0 }
@@ -443,41 +446,54 @@ private fun OperationalCharacterCard(
             ) { Text(initials, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium) }
             Column(Modifier.weight(1f)) {
                 Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-                Text("${character.race.ifBlank { "SEM RAÇA" }} // ${character.pathName.ifBlank { "SEM CAMINHO" }} // NV ${character.level}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                Text("VIDA ${character.life.current}/${character.lifeMaximum}  //  SAN ${character.sanity.current}/${character.sanityMaximum}  //  EXA ${character.exhaustion.current}/${character.exhaustion.maximum}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "${character.race.ifBlank { "SEM RAÇA" }} // ${character.pathName.ifBlank { "SEM CAMINHO" }}",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 2,
+                )
             }
-            TelemetryTag(if (character.dirty) "LOCAL_DELTA" else "SYNC_OK")
-            Icon(
-                if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                if (expanded) "Recolher personagem" else "Expandir personagem",
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                TelemetryTag("NV.${character.level}")
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    if (expanded) "Recolher personagem" else "Expandir personagem",
+                )
+            }
         }
-        if (alerts.isNotEmpty()) Text(alerts.joinToString(" // "), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+        SdoDataModules(
+            listOf(
+                "Vida" to "${character.life.current}/${character.lifeMaximum}",
+                "Sanidade" to "${character.sanity.current}/${character.sanityMaximum}",
+                "Exaustão" to "${character.exhaustion.current}/${character.exhaustion.maximum}",
+                "Sincronização" to if (character.dirty) "ALTERAÇÃO LOCAL" else "EM DIA",
+            )
+        )
+        if (alerts.isNotEmpty()) {
+            SdoInsetCard(accent = MaterialTheme.colorScheme.error) {
+                Text("ALERTAS", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(alerts.joinToString("\n"), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
+            }
+        }
         if (expanded) {
-            Text(
-                "ARC ${character.arcane.current}/${character.arcaneMaximum} // ENE ${character.energy.current}/${character.energyMaximum} // DES ${character.destiny.current}/${character.destinyMaximum} // COR ${character.corruption.current}/${character.corruption.maximum}%",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                "PG/GERAL ${character.protectionTotal("Geral")} // ESQ ${character.protectionTotal("Esquiva")} // POS ${character.protectionTotal("Postura")} // MEN ${character.protectionTotal("Mental")} // ARC ${character.protectionTotal("Arcana")}",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
-            )
-            Text(
-                "CONDIÇÕES // " + typedConditions.joinToString(" // ") { condition ->
-                    condition.name.uppercase() + condition.intensity?.let { " $it" }.orEmpty()
-                }.ifBlank { "NENHUMA" },
-                color = if (typedConditions.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                "CORPO // " + buildList {
-                    addAll(failedRegions.map { "${it.region.label.uppercase()} ${it.failures}/4" })
-                    addAll(failedOrgans.map { "${it.organ.label.uppercase()} ${it.failures}/3" })
-                }.joinToString(" // ").ifBlank { "SEM FALHAS" },
-                color = if (failedRegions.isEmpty() && failedOrgans.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+            SdoDataModules(
+                listOf(
+                    "Arcano" to "${character.arcane.current}/${character.arcaneMaximum}",
+                    "Energia" to "${character.energy.current}/${character.energyMaximum}",
+                    "Destino" to "${character.destiny.current}/${character.destinyMaximum}",
+                    "Corrupção" to "${character.corruption.current}/${character.corruption.maximum}%",
+                    "Proteção geral" to character.protectionTotal("Geral").toString(),
+                    "Esquiva" to character.protectionTotal("Esquiva").toString(),
+                    "Postura" to character.protectionTotal("Postura").toString(),
+                    "Mental / Arcana" to "${character.protectionTotal("Mental")} / ${character.protectionTotal("Arcana")}",
+                    "Condições" to typedConditions.joinToString("\n") { condition ->
+                        condition.name.uppercase() + condition.intensity?.let { " $it" }.orEmpty()
+                    }.ifBlank { "NENHUMA" },
+                    "Corpo" to buildList {
+                        addAll(failedRegions.map { "${it.region.label.uppercase()} ${it.failures}/4" })
+                        addAll(failedOrgans.map { "${it.organ.label.uppercase()} ${it.failures}/3" })
+                    }.joinToString("\n").ifBlank { "SEM FALHAS" },
+                )
             )
             SdoResponsiveGrid(listOf("SESSION", "ACTION", "SHEET"), minItemWidth = 136.dp) { action, modifier ->
                 when (action) {
