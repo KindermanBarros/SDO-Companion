@@ -2,33 +2,44 @@ package com.kinderman.sdo.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 data class SdoNavigationItem(
     val label: String,
@@ -51,9 +62,12 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
         return
     }
     Column(
-        modifier.fillMaxHeight().widthIn(min = 104.dp)
+        modifier.fillMaxHeight().width(136.dp)
             .background(CyberGrungeTokens.Void)
             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .7f))
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical))
+            .verticalScroll(rememberScrollState())
+            .selectableGroup()
             .padding(vertical = 14.dp, horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(9.dp),
     ) {
@@ -63,14 +77,16 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
         items.forEachIndexed { index, item ->
             val accent = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             Row(
-                Modifier.border(1.dp, accent, CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
+                Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .border(1.dp, accent, CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
                     .clip(CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
                     .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .45f) else CyberGrungeTokens.Panel)
-                    .clickable(onClick = item.onClick).padding(horizontal = 9.dp, vertical = 12.dp),
+                    .selectable(selected = item.selected, role = Role.Tab, onClick = item.onClick)
+                    .padding(horizontal = 9.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
-                    Text("0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
+                    Text(if (item.selected) "▶ 0${index + 1}" else "0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
                     Text(item.label.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelSmall)
                 }
             }
@@ -94,6 +110,8 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
     Row(
         modifier.fillMaxWidth().background(CyberGrungeTokens.Void)
             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .7f))
+            .navigationBarsPadding()
+            .selectableGroup()
             .padding(horizontal = 5.dp, vertical = 7.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
@@ -101,17 +119,18 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
             val shape = CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp)
             val accent = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             Column(
-                Modifier.weight(1f).border(1.dp, accent, shape).clip(shape)
+                Modifier.weight(1f).heightIn(min = 64.dp).border(1.dp, accent, shape).clip(shape)
                     .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else CyberGrungeTokens.Panel)
-                    .clickable(onClick = item.onClick).padding(horizontal = 4.dp, vertical = 10.dp),
+                    .selectable(selected = item.selected, role = Role.Tab, onClick = item.onClick)
+                    .padding(horizontal = 4.dp, vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
-                AdaptiveSingleLineText(
+                Text(if (item.selected) "▶ 0${index + 1}" else "0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
+                Text(
                     item.label.uppercase(),
                     color = if (item.selected) accent else MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.labelSmall,
-                    minimumSize = 7.sp,
+                    textAlign = TextAlign.Center,
                 )
             }
         }

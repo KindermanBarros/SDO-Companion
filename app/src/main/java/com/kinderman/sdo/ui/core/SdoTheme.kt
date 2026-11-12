@@ -128,7 +128,7 @@ private val hudColors = darkColorScheme(
 )
 
 private val cybergrungeColors = darkColorScheme(
-    primary = Color(0xFFE0003B), onPrimary = Color(0xFFF2E9EC),
+    primary = Color(0xFFFF4D70), onPrimary = Color(0xFF090608),
     primaryContainer = Color(0xFF72001F), onPrimaryContainer = Color(0xFFF2E9EC),
     secondary = Color(0xFF00D9D0), onSecondary = Color(0xFF090608),
     secondaryContainer = Color(0xFF063C3B), onSecondaryContainer = Color(0xFFD8FFFC),
@@ -382,12 +382,12 @@ private fun cyberGrungeTypography(scale: Float): Typography {
         titleLarge = TextStyle(fontFamily = heading, fontSize = (22 * scale).sp, lineHeight = (29 * scale).sp, platformStyle = safeFontMetrics),
         titleMedium = TextStyle(fontFamily = heading, fontSize = (18 * scale).sp, lineHeight = (25 * scale).sp, platformStyle = safeFontMetrics),
         titleSmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (19 * scale).sp, platformStyle = safeFontMetrics),
-        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (13 * scale).sp, lineHeight = (22 * scale).sp, platformStyle = safeFontMetrics),
-        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (20 * scale).sp, platformStyle = safeFontMetrics),
-        bodySmall = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (17 * scale).sp, platformStyle = safeFontMetrics),
-        labelLarge = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (18 * scale).sp, platformStyle = safeFontMetrics),
-        labelMedium = TextStyle(fontFamily = terminal, fontSize = (9 * scale).sp, lineHeight = (17 * scale).sp, platformStyle = safeFontMetrics),
-        labelSmall = TextStyle(fontFamily = terminal, fontSize = (8 * scale).sp, lineHeight = (16 * scale).sp, platformStyle = safeFontMetrics),
+        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (14 * scale).sp, lineHeight = (24 * scale).sp, platformStyle = safeFontMetrics),
+        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (13 * scale).sp, lineHeight = (23 * scale).sp, platformStyle = safeFontMetrics),
+        bodySmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (21 * scale).sp, platformStyle = safeFontMetrics),
+        labelLarge = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (21 * scale).sp, platformStyle = safeFontMetrics),
+        labelMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (20 * scale).sp, platformStyle = safeFontMetrics),
+        labelSmall = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (19 * scale).sp, platformStyle = safeFontMetrics),
     )
 }
 
