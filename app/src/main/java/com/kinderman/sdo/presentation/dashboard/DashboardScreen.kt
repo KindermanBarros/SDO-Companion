@@ -96,6 +96,8 @@ import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.Void
+import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoVisualMode
 
 @Composable
 fun DashboardScreen(
@@ -133,6 +135,7 @@ fun DashboardScreen(
     onRespondDelivery: (CampaignDelivery, Boolean) -> Unit,
     onLogout: () -> Unit,
 ) {
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
     val admin = session?.isAdmin == true
     val uid = session?.uid.orEmpty()
     val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
@@ -248,7 +251,7 @@ fun DashboardScreen(
                             }
                         }
                     }
-                    TechPanel(accent = MaterialTheme.colorScheme.secondary) {
+                    if (!cybergrunge) TechPanel(accent = MaterialTheme.colorScheme.secondary) {
                         TelemetryTag("QUICK_ACCESS")
                         Text("Acessos rápidos", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
