@@ -42,6 +42,7 @@ Do not restore deleted tooling, install dependencies or rewrite application poli
 Do not claim Roborazzi, mock libraries, Hilt or a CI job exists without configuration evidence.
 Runtime claims follow [Runtime evidence](../rules/testing-runtime-evidence.md); fake-only tests cannot prove production boundaries.
 Screenshots are mandatory for UI tasks; save the approved reference separately from defect/implementation captures.
+APKs delivered for owner testing must be authenticated: use the existing protected-file restoration and signature verification actions, and fail if inputs are absent; no demo fallback.
 Structural harness validation proves instruction integrity only. It is sufficient for documentation-only changes and does not certify the app.
 
 ## Handoff and git

@@ -37,6 +37,7 @@ If a requirement or product decision is unclear, ask. Don't guess.
 
 - **Git:** automatically commit completed changes after applicable validation, following GIT_STANDARDS; stage only the task's files and sign off. Create branches, push and open pull requests only when the user asks.
 - **UI tasks:** screenshots are mandatory for UI tasks; capture them using Android CLI or adb commands.
+- **Test APKs:** always deliver authenticated builds with Firebase configuration and the registered signing certificate. Missing required inputs fail delivery; never substitute a demo-only APK.
 - **Docs are part of done:** update them in the same change as the code.
 - **Timestamps:** `YYYY-MM-DD HH:MM America/La_Paz`. On POSIX use `TZ=America/La_Paz date '+%Y-%m-%d %H:%M'`. Never write relative dates.
 - **Never invent** versions, Jira IDs or product decisions. Read them from the source, or ask.

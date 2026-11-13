@@ -40,6 +40,7 @@ versionCode defaults to 1 (releaseCode override); versionName defaults to 0.1.0 
 | local.properties | Absent; values not inspected |
 | Local libs | No AAR/JAR found under root/module libs |
 | Google services | Plugin applied only when root/app google-services.json exists |
+| Delivered test APKs | Authenticated CI debug builds on push/manual dispatch; restore Firebase/signing inputs and verify certificate before upload; no demo fallback |
 
 ## Commands
 
