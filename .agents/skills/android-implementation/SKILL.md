@@ -34,7 +34,7 @@ Do not load or execute a Data, Domain, or UI section merely because another laye
 - `docs/current/design/` — user-provided screenshots or AI-generated `mockup_*.png` images (view these for visual layout reference before implementing UI)
 
 **Harness workflow** (`harness-generator`):
-- Run `bash harness/scripts/print-context-index.sh --feature-dir "$FEATURE_DIR" --slice "$FEATURE_ID"` and use its hashes and source pointers.
+- Select source pointers and required-rule guidance from the approved slice; record current source/configuration hashes.
 - Read only the selected sprint-contract user story, mapped requirement rows, and acceptance rows. Read the selected `feature_list.json` entry for execution flags and verification IDs.
 - Read the summary only for execution-stage evidence, blockers, and decisions made after approval; never treat it as a second requirement source.
 

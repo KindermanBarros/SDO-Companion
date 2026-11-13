@@ -223,12 +223,9 @@ Avoid `remember` in tests by keeping stateless content Composables as the primar
 
 Automated source evidence:
 
-```bash
-bash harness/scripts/check-compose-rules.sh
-bash harness/scripts/check-localization-rules.sh
-```
+Use the configured Gradle checks and the semantic review below.
 
-The full-source rules bundle is the required CI evidence. When the diff changes a
+When the diff changes a
 Compose surface, review the semantic concerns it introduces: rendering versus
 business-logic ownership, state hoisting and stateful/stateless boundaries,
 component extraction, semantic token use, accessible interaction labels and

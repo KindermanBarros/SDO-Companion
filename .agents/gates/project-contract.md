@@ -32,12 +32,12 @@ Preserve prior approvals and evidence. Do not infer approval from a folder, file
 Reuse valid session authorization for its exact scope. Changed product/design/implementation scope returns to its owning approval stage.
 Reconcile product claims through [Product documentation flow](../rules/product-documentation.md) only when behavior changes; harness-only work records behavior unchanged.
 
-## Verification and missing prerequisites
+## Active verification
 
 [CI checks](ci-checks.md) owns gate selection. [Review](review-checklist.md) owns review criteria.
 A required command must exit zero with its actual evidence. Failed, absent, skipped or unavailable evidence is non-passing.
-Missing harness/scripts or harness/templates is a prerequisite gap, never permission to skip a required application gate.
-Inspect current filesystem before running a command; record the exact missing path and blocked stage.
+The owner retired gates backed by absent legacy scripts. They are not required and must not be reintroduced by workflows, skills or generic rules.
+Only the current CI catalog defines executable gates; retain tests, evidence review and human approvals for the declared scope.
 Do not restore deleted tooling, install dependencies or rewrite application policy merely to complete an unrelated documentation task.
 Do not claim Roborazzi, mock libraries, Hilt or a CI job exists without configuration evidence.
 Runtime claims follow [Runtime evidence](../rules/testing-runtime-evidence.md); fake-only tests cannot prove production boundaries.

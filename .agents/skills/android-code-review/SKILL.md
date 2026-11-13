@@ -50,14 +50,10 @@ unavailable required evidence remains failed or blocked.
 ./gradlew ktlintCheck
 ./gradlew detekt
 ./gradlew lintDebug
-bash harness/scripts/check-full-source-rules.sh
 ./gradlew :app:koverXmlReportDebug
-bash harness/scripts/check-coverage.sh app/build/reports/kover/reportDebug.xml
 ```
 
-The full-source bundle is mandatory and scans all production and test sources. Record command,
-exit code, commit, evidence path, and actionable failure details. Reuse a previous successful
-result only when `bash harness/scripts/check-evidence-receipt.sh ...` accepts all fingerprints.
+Record each configured check's command, exit code, source/configuration/runtime identity, evidence path and actionable failure details. Reuse a previous result only after reviewing matching fingerprints; do not claim an absent receipt validator executed.
 
 ### 4. Trace requirements to production
 

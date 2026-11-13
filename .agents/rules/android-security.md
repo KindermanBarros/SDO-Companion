@@ -111,16 +111,7 @@ For a change marked `SEC: Required`:
    exported components, URI grants, permissions, or lifecycle/security state.
    JVM-only fakes are supplemental; an unavailable runtime/device/model/permission
    must fail loudly or remain blocked, never be recorded as a pass.
-4. Run the canonical source gate from the project root:
-
-   ```bash
-   bash harness/scripts/check-full-source-rules.sh
-   ```
-
-   The bundle invokes `check-ai-security-rules.sh` and its negative-case contract
-   test. The evaluator mechanically rejects app-wide cleartext, unsafe WebView or
-   Mermaid settings, AI-input logging, and direct untrusted HTML sinks; it does not
-   replace human review of storage, IPC, permissions, SDKs, or release settings.
+4. Review cleartext/network configuration, WebView settings, untrusted-output sinks, sensitive logging, storage and IPC boundaries against the actual diff. No retired source/security script gate applies.
 5. Also run Android Lint, Detekt, Ktlint, and the applicable contract/gate checks.
    Do not suppress a finding, add a baseline, or broaden an exclusion to make a
    security check pass. Fix the root cause or document an explicitly approved

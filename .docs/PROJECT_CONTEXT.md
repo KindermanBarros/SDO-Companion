@@ -47,7 +47,7 @@ Paths below are relative to app/src/main/java/com/kinderman/sdo/.
 | Manual DI; custom navigation | Do not document Hilt or NavHost as implemented |
 | Several independent state flows | Do not claim a single UiState contract |
 | Existing onboarding reports failing quality/coverage gates | Full onboarding acceptance remains unverified |
-| Deleted harness scripts in initial git status | Script-based gates cannot currently run |
+| Legacy script gates removed by owner | Use current CI catalog and distinguish test execution from evidence review |
 
 The baseline survey found 41 JVM-test Kotlin files and 5 instrumented files; no local.properties or local libs artifacts.
 Existing product/onboarding records remain historical evidence. Operational instructions: [Project contract](../.agents/gates/project-contract.md).

@@ -83,7 +83,6 @@ Machine-readable verification:
 
 ```bash
 ./gradlew :app:koverXmlReportDebug
-bash harness/scripts/check-coverage.sh app/build/reports/kover/reportDebug.xml
 ```
 
 ## Feature and Bug Policy
@@ -104,7 +103,7 @@ bash harness/scripts/check-coverage.sh app/build/reports/kover/reportDebug.xml
 - Missing runtimes, devices, models, locales, permissions, services, skipped tests, empty output,
   fake-only platform evidence, and unexecuted commands cannot be recorded as passing.
 - Reuse a prior successful command only when its source, build configuration, declared command,
-  and runtime fingerprints are unchanged and `check-evidence-receipt.sh` accepts its receipt.
+  and runtime fingerprints are unchanged and their recorded provenance has been reviewed.
 - Keep verbose output in a referenced log/report; summaries record the command, exit status, test
   count or coverage, evidence path, and fingerprint receipt.
 - Load `.agents/rules/testing-practices.md` during test authoring and test review.

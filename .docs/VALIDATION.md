@@ -34,7 +34,7 @@ Commands run from the root on Windows; POSIX uses ./gradlew instead of .\gradlew
 | Coverage report | .\gradlew.bat :app:koverXmlReportDebug |
 | Full build | .\gradlew.bat build |
 
-Existing source-rule scripts and project_onboarding.py are deleted in the initial working tree; do not claim their checks pass.
+Legacy gates backed by absent scripts were removed at the owner's request. The current CI catalog lists executable checks; no retired checker is required.
 Prior build, test and gate results in docs/current/onboarding-summary.md are historical evidence, not current-run results.
 
 For documentation-only changes, check all placeholders, line limits, relative file links and anchors, CLAUDE import and allowed file scope. Build/device tests are not required and cannot establish documentation correctness.

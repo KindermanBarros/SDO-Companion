@@ -53,9 +53,8 @@ documents. During testing/review load `rules/testing-practices.md`; add
 
 When present, `harness-project.json` owns actual module/source paths and commands;
 `docs/architecture/architecture-map.md` contains observed source evidence, not policy.
-Run `python3 harness/scripts/project_onboarding.py check` before using that map.
-On staleness, explicitly refresh with `discover --refresh` and inspect changed
-boundaries; never expand an approved implementation scope silently. The table below
+Inspect Gradle, manifests and source before relying on the observed map.
+Update stale observations within approved scope; never expand an approved implementation scope silently. The table below
 is the legacy default only. First setup uses the project-onboarding workflow and
 the configured SDO baseline in `.docs/PROJECT_CONTEXT.md` and `.agents/gates/project-contract.md`; no setup prompt is required.
 

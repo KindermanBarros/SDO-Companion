@@ -65,6 +65,18 @@ foreach ($relative in @('AGENTS.md','.docs/ARCHITECTURE.md','.docs/CODE_STANDARD
     if ((Test-Path -LiteralPath $path) -and [IO.File]::ReadAllText($path) -notmatch '\*\*Sealed') { Add-Issue "Missing sealed banner: $relative" }
 }
 if (Test-Path -LiteralPath (Join-Path $rootPath 'setup_prompt.md')) { Add-Issue 'Stale setup input: setup_prompt.md' }
+$activeInstructions = Join-Path $rootPath '.agents'
+if (Test-Path -LiteralPath $activeInstructions) {
+    foreach ($instruction in Get-ChildItem -LiteralPath $activeInstructions -Recurse -Filter '*.md' -File) {
+        if ([IO.File]::ReadAllText($instruction.FullName) -match 'harness[/\\]scripts[/\\]') {
+            Add-Issue "Retired script gate reference: $($instruction.FullName.Substring($rootPath.Length + 1))"
+        }
+    }
+}
+$profile = Join-Path $rootPath 'harness-project.json'
+if (Test-Path -LiteralPath $profile) {
+    if ([IO.File]::ReadAllText($profile) -match 'harness[/\\]scripts[/\\]') { Add-Issue 'Retired script gate reference: harness-project.json' }
+}
 if ($issues.Count) { $issues | ForEach-Object { Write-Output "FAIL: $_" }; exit 1 }
 Write-Output "PASS: $($files.Count) harness documents; links, anchors, limits, imports, banners, placeholders and cleanup."
 Write-Output 'Scope: instruction integrity only; no application/source/runtime gate was executed.'

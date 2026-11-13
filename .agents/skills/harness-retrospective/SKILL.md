@@ -15,7 +15,7 @@ Work only on harness-environment concerns:
 
 - `.agents/workflows/`, `.agents/rules/`, and `.agents/gates/` instructions;
 - `harness/templates/` and harness artifact schemas;
-- `harness/scripts/` validators, environment probes, and contract tests;
+- existing local validators, environment probes and contract tests;
 - test fixtures that validate harness behavior;
 - `docs/knowledge/pitfalls/` and `docs/changes/` audit records.
 
@@ -47,7 +47,7 @@ Never relabel a `MODEL_OR_PLATFORM_CAPABILITY` or `APPLICATION_DEFECT` as a harn
 
 1. Read `AGENTS.md` and `.agents/rules/android-architecture.md` (skip if already loaded this session). `rules/testing-strategy.md` is auto-loaded as a system rule.
 2. Read the specific workflow, gate, template, or validator named by the incident. Read it completely before editing.
-3. Run `bash harness/scripts/check-feature-lifecycle.sh` when the incident concerns a complex feature. Do not change the tracker or select a slice.
+3. Review the tracker and linked approved contract when the incident concerns a complex feature. Do not change the tracker or select a slice.
 4. Collect the smallest raw evidence set: failing command, exit code, relevant log, artifact path, and the harness rule that should have caught it.
 5. Check `git status --short` and preserve unrelated user changes.
 
@@ -110,15 +110,8 @@ Apply [Evidence Invariants](../../rules/testing-strategy.md#evidence-invariants)
 
 Run the narrowest relevant checks, then the project gates affected by the change. Typical checks are:
 
-```bash
-bash -n <changed-shell-scripts>
-bash harness/scripts/check-feature-lifecycle.sh
-bash harness/scripts/check-stage-artifacts.sh <workflow> <stage> <feature-dir>
-bash harness/scripts/check-platform-evidence.sh <feature-dir> --planning
-bash harness/scripts/check-platform-evidence.sh <feature-dir> --evaluate
-bash harness/scripts/tests/<relevant-contract-test>.sh
-git diff --check
-```
+Use the current commands in `.agents/gates/ci-checks.md`, the regression tests for changed local validators, and scoped `git diff --check`.
+Legacy script-backed gates have been retired by the owner; do not restore them as prerequisites.
 
 Expected negative cases must be asserted as expected failures in a contract test; do not hide them with `|| true` or suppress their output. Run Android build, unit, coverage, lint, or instrumented checks when the harness change affects app compilation or that gate’s behavior. Otherwise, state explicitly that no app source changed and why those gates were not relevant.
 

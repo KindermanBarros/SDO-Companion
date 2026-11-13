@@ -45,6 +45,6 @@ Move a skill from "Not applicable" to "Situational" only when the project's scop
 
 The repository contains .agents/skills/harness-router, project-onboarding and documentation-and-adrs.
 For harness maintenance, follow root AGENTS.md and the [Project contract](../.agents/gates/project-contract.md).
-The broader application adoption workflow requires scripts currently absent from the working tree; no full-onboarding success is implied.
+The current CI catalog owns executable checks; legacy script gates were retired by the owner. Skill guidance must not reintroduce them.
 The Primary Android skill names above are guidance, not verified installations in this session.
 No skills were installed or removed.

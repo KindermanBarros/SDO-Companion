@@ -31,6 +31,10 @@ try {
         Run-Gate 1 $case[0] $case[2]
         Remove-Item -LiteralPath $probe
     }
+    $retired = Join-Path $fixture '.agents/skills/retired_probe.md'
+    [IO.File]::WriteAllText($retired, 'Run bash harness/scripts/check-missing.sh before proceeding.', $utf8)
+    Run-Gate 1 'retired script caller in a skill' 'Retired script gate reference'
+    Remove-Item -LiteralPath $retired
     $claude = Join-Path $fixture 'CLAUDE.md'
     [IO.File]::WriteAllText($claude, '@OTHER.md', $utf8)
     Run-Gate 1 'wrong import' 'Import content'
@@ -44,7 +48,7 @@ try {
     Remove-Item -LiteralPath (Join-Path $fixture 'setup_prompt.md')
     Remove-Item -LiteralPath (Join-Path $fixture '.docs/TECH_STACK.md')
     Run-Gate 1 'missing required baseline' 'Missing: .docs/TECH_STACK.md'
-    Write-Output 'PASS: 9 contract cases (1 positive, 8 negative).'
+    Write-Output 'PASS: 10 contract cases (1 positive, 9 negative).'
 }
 finally {
     if ($fixture.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $fixture)) {

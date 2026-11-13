@@ -9,7 +9,7 @@ Read [Project contract](project-contract.md). Documentation readiness or an auto
 - [ ] Independent code/test review and human acceptance are recorded.
 - [ ] [Feature acceptance](../workflows/feature-acceptance.md) covers the integrated build; critical gaps prohibit promotion.
 - [ ] Smartphone target is confirmed; actual tested models/API levels and remaining coverage gaps are stated.
-- [ ] Existing onboarding quality/source/coverage blockers are resolved or explicitly handled through the owning policy; no fabricated pass.
+- [ ] Existing onboarding quality/coverage findings are resolved or explicitly handled through the owning policy; no fabricated pass.
 
 ## Data, authentication and compatibility
 
