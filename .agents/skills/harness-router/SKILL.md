@@ -16,8 +16,8 @@ stage order, role assignments, gates, approval stops, and completion criteria.
   `.agents/workflows/project-onboarding.md`. Do not require an existing Gradle
   baseline before the approved create stage. A broken existing app is not greenfield.
 - When `harness-project.json` exists, load its module/source/command configuration
-  and the observed architecture map. Run `project_onboarding.py check` before
-  relying on the map; stale evidence returns to discovery, not guessed architecture.
+  and the observed architecture map. Inspect current Gradle, manifest and source evidence before
+  relying on the map; stale evidence returns to direct discovery, not guessed architecture.
 
 - Resolve every path below from the consuming application's repository root.
   `.agents/` and `harness/` may point into the shared `.harness/` submodule; this
@@ -42,9 +42,8 @@ Load only the candidate work needed to identify the target.
 
 - Continue the work clearly identified by the request and evidence. Ask which target
   the user means only when several candidates remain plausible.
-- Before selecting a complex feature, run
-  `bash harness/scripts/check-feature-lifecycle.sh`. Failure blocks selection;
-  report the inconsistency and use the harness-maintenance route for diagnosis.
+- Before selecting a complex feature, review the tracker, approved contracts and workspace links.
+  Report inconsistent lifecycle/approval evidence before selecting dependent work; no legacy script gate applies.
 - Use recorded status and approvals, rather than folder location, timestamps, or
   the mere existence of an artifact. `Blocked` means inspect the recorded blocker.
   Pending approvals or human review remain pending until their owning workflow's
@@ -156,8 +155,7 @@ UI lane also retains its existing approval prerequisites. Keep required stage ga
 runtime boundaries, and independent review non-passing when their prerequisites
 are unavailable. The router does not create substitute approvals or evidence.
 
-After complex-slice selection, generate the context index as required by `AGENTS.md`:
-`bash harness/scripts/print-context-index.sh --feature-dir "$FEATURE_DIR" --slice "$FEATURE_ID"`.
+After complex-slice selection, read the approved slice's source/rule/evidence mappings directly and record current hashes.
 Load stage-specific rules progressively; reconcile all ten Rule Applicability rows
 in requirements, planning, and review through their existing template and skills.
 

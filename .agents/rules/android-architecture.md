@@ -162,14 +162,11 @@ These are never allowed without explicit architectural justification:
 Automated structural checks are the evidence for mechanically detectable rules:
 
 ```bash
-bash harness/scripts/check-architecture-rules.sh
 ./gradlew ktlintCheck
 ./gradlew detekt
 ```
 
-The repository-wide `bash harness/scripts/check-full-source-rules.sh` remains the
-required CI evidence; run an individual checker only to diagnose a failure. Do not
-repeat automated checker findings as manual review work.
+Use the configured Gradle quality tasks and review changed boundaries against these rules. The retired source-script bundle is not an active gate.
 
 When the diff introduces or changes an architectural boundary, review only the
 semantic risks it triggers:

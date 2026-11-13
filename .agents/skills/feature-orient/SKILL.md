@@ -18,13 +18,9 @@ Gather complete session, requirement, and git context, establishing a single sou
 At a new session, load L1: `rules/android-architecture.md` (skip if already loaded this session).
 `rules/testing-strategy.md` is auto-loaded as a system rule — do not re-read.
 
-After selecting the slice, run `bash harness/scripts/print-context-index.sh
---feature-dir "$FEATURE_DIR" --slice "$FEATURE_ID"`. Load the exact paths in
-`rule_context.files`; do not translate rule IDs into a second hand-maintained list. During the
-Test stage load `stage_context.testing`. The index includes `android-security.md` when
-the approved `SEC` decision is Required or excepted. Load
-`docs/product/design_system.md`, `UI_contract.md`, and its Pen/reference mappings only when `affects_ui` is
-true. The index is derived from the approved contract; it does not replace it.
+After selecting the slice, read its approved Rule Applicability and planned evidence mappings directly.
+Load only triggered implementation/testing/runtime/security guidance; include design-system and UI references only for affected UI.
+Record current source/configuration hashes in the summary. No generated context-index gate is required.
 
 ---
 
@@ -34,8 +30,8 @@ This is a gated spec-driven workflow: `$FEATURE_DIR/spec.md` (Phase 1: Specify) 
 
 Before making any changes or planning code, gather complete session and git context:
 
-1. **Validate and select `FEATURE_DIR` first**: run `bash harness/scripts/check-feature-lifecycle.sh`, then read the Harness Feature Tracker in `docs/product/product.md`. Continue an `In Progress` product workspace, or select the approved `Awaiting implementation approval` product workspace. Stop if validation fails; never infer lifecycle state by scanning directories or start a second feature while one is `In Progress`.
-2. **Select the slice, then generate the context index**: read the selected slice in `$FEATURE_DIR/feature_list.json`, run `bash harness/scripts/print-context-index.sh --feature-dir "$FEATURE_DIR" --slice "$FEATURE_ID"`, and retain its source hashes. Read only the `FR-*` / `AC-*` rows mapped to that slice, the selected user-story section, and the matching acceptance rows in `$FEATURE_DIR/spec.md` and `$FEATURE_DIR/sprint-contract.md`.
+1. **Validate and select FEATURE_DIR first**: review the Harness Feature Tracker in docs/product/product.md, approval provenance and linked workspace. Continue the approved work; do not infer lifecycle from directory location or start a second feature while another is In Progress.
+2. **Select the slice and context**: inspect its feature_list.json entry and mapped FR/AC, story and acceptance rows in the specification/sprint contract. Retain current source/configuration hashes.
 3. **Read `$FEATURE_DIR/evaluator-rubric.md`** only when it names unresolved findings for the selected slice.
 4. **Read active logs**: start with the latest relevant entry in `$FEATURE_DIR/progress.md` (or session logs); expand only when it names an unresolved dependency or blocker.
 5. **Run recent git history analysis** (`git log -n 5 --oneline`).
@@ -45,7 +41,7 @@ Before making any changes or planning code, gather complete session and git cont
    - Record any relevant findings in the summary file's **Knowledge Artifacts** section so they are visible throughout the session.
 7. **Select the next task & initialize summary**:
    - Review `$FEATURE_DIR/feature_list.json` and select the highest-priority incomplete task (status `not_started`). Do not work on multiple tasks in parallel.
-   - Update its status in `$FEATURE_DIR/feature_list.json` to `in_progress`, update the tracker row to `In Progress`, and run `bash harness/scripts/check-feature-lifecycle.sh` again before continuing.
+   - Update its status in `$FEATURE_DIR/feature_list.json` to `in_progress`, update the tracker row to `In Progress`, and review its consistency before continuing.
    - Generate `$FEATURE_DIR/summary_{feature_id}.md` from `harness/templates/summary-template.md`
      plus only `harness/templates/summary-profiles/harness-generator.md`. Its **Context
      Provenance** section cites the approved `sprint-contract.md`, `feature_list.json`, selected

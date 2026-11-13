@@ -38,8 +38,7 @@ Visual acceptance runs through `./gradlew app:verifyRoborazziDebug`. A dedicated
 `*RoborazziTest` renders every named state using deterministic fixtures and calls
 `captureRoboImage()` with the approved Pen export. Instrumented tests remain required for the
 behavior, navigation, or platform boundaries they cover, but do not provide visual-comparison
-evidence. When one of those runtime claims is in scope, use
-`harness/scripts/run-android-instrumented-tests.sh` as documented by the `android-testing` skill.
+evidence. When a runtime claim is in scope, use an actual Gradle instrumented task or direct adb instrumentation as documented by android-testing.
 
 For evidence-backed reports, `design_anchors` and `runtime_evidence` are a pair. Expected geometry
 lives only in `design_anchors.json`; captured bounds live only in `ui_frames.json`. Version 2+
@@ -100,7 +99,7 @@ Do not run `recordRoborazziDebug`, `verifyAndRecordRoborazziDebug`, or the remov
 comparator as acceptance evidence. `compareRoborazziDebug` is optional local review output; only
 `verifyRoborazziDebug` is the binding pixel gate.
 
-- Every feature has one approved `visual_evidence/visual-target.json` manifest defining the target appearance, logical size, locale, named content states, canonical `pen_source`, `pen_node_id`, and Roborazzi comparison scope. The mockup generator reads it through `visual-target-prompt.sh`.
+- Every feature has one approved `visual_evidence/visual-target.json` manifest defining the target appearance, logical size, locale, named content states, canonical `pen_source`, `pen_node_id`, and Roborazzi comparison scope. Design and runtime capture use the same manifest values directly.
 - Each sprint-contract row names one stable `contentState` from that manifest. The target state resolves the approved Pen-export PNG, deterministic content scope, geometry, and dynamic handling; `reference-map.json` is not used.
 - Time, user content, identifiers, and keyboard variation each require an explicit approved handling. A `mask` must name only the dynamic region it excludes and state a rationale.
 - Every target passes `verifyRoborazziDebug` against the approved Pen export. No implementation-recorded golden is used.
@@ -133,20 +132,14 @@ For rich-text or inline-formatting appearance claims, the named `*RoborazziTest`
 approved formatted state and call `captureRoboImage()`. Model marks, text content, toolbar state,
 and device screenshot existence are supplemental. Run:
 
-```bash
-bash harness/scripts/check-rendered-output-contract.sh \
-  --project-root . --test-file <file> --test-method <method> --claim <claim>
-```
+Review the named rendering test, approved reference and actual comparison output; no retired rendered-output script gate applies.
 
 ## Output
 
 Copy `harness/templates/ui-verification-template.json`, replace every placeholder, and write the
-active workflow's `ui_verification.json`. Validate it with:
+active workflow's `ui_verification.json`. Review it as follows:
 
-```bash
-bash harness/scripts/check-ui-verification-artifact.sh <ui_verification.json>
-bash harness/scripts/check-visual-evidence-contract.sh "$FEATURE_DIR" --evaluate
-```
+Review the report's state/reference/method mappings and actual comparison artifacts directly; no legacy report/visual script gate applies.
 
 For `create-ui-and-verify`, populate one `state_results` entry for each `UI_contract.md` row.
 Bind it to the approved state image and a unique Roborazzi state in `runtime_evidence.states`; record

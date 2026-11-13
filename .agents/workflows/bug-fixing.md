@@ -9,7 +9,7 @@ Read [Project contract](../gates/project-contract.md); planner owns diagnosis/pl
 
 Use for crashes, regressions or behavior that violates the current contract.
 Reuse a complete selected exploratory-QA finding: report, build identity, runtime, steps, expected/actual behavior and evidence.
-When available, harness/scripts/read-qa-bug-context.py validates that handoff. Missing tooling remains explicit.
+Read the selected report/finding directly and verify its target, retained observations and evidence.
 Collect only missing runtime evidence; do not replay an already-established journey merely to regenerate its report.
 Environment failures route to harness maintenance, and new product behavior routes to requirements.
 
@@ -20,7 +20,7 @@ Environment failures route to harness maintenance, and new product behavior rout
 3. **Plan — implementation-plan.** Link the RED proof, minimal fix, touched boundaries, test plan and applicable UI/IME contracts. Obtain approval covering the fix plan before source implementation.
 4. **Implement — android-implementation.** Apply the scoped root-cause fix; no unrelated refactoring. Require debug build and affected boundary checks.
 5. **Verify — android-testing.** The original reproduction and related tests must be GREEN with nonzero executed counts. Remove any temporary Ignore marker; do not suppress failures.
-6. **Quality — code-quality-fix.** Apply [CI checks](../gates/ci-checks.md); a required failure or missing checker blocks progression.
+6. **Quality — code-quality-fix.** Apply [CI checks](../gates/ci-checks.md); required executable failures and unproven test claims remain non-passing.
 7. **Replay and review.** For runtime defects, install the target debug build and repeat the original journey. Retain expected/actual results and mandatory UI screenshots. Route to independent [Feature review](feature-review.md).
 8. **Reconcile and hand off.** Reconcile affected product claims in place, update .docs and append history. Enter InDevReview and commit the validated task automatically.
 
@@ -31,9 +31,9 @@ Navigation/saved-state/back-stack/post-return regressions require production-ent
 IME regressions require shipped-Activity keyboard-open/dismiss tests asserting real insets/window geometry; Content-only fixtures and generic Activities are supplemental.
 Keep approved reference images separate from defect screenshots. Visual/rich-text appearance requires declared rendered-output evidence, not model marks.
 
-## Mechanical gates
+## Stage evidence
 
-Run harness/scripts/check-stage-artifacts.sh for bug-fixing requirement-analysis, bug-reproduction, implementation-plan and testing.
-For declared visual, journey, product and platform claims, also run the triggered validators in [CI checks](../gates/ci-checks.md).
-Missing scripts, runtime prerequisites or matching test reports remain Blocked; do not replace required proof with manual assertions.
+Use the available commands in [CI checks](../gates/ci-checks.md).
+Review the requirement, RED reproduction, approved plan, GREEN results and matching acceptance rows directly.
+Retired script gates do not apply. Missing required runtime or matching test reports leaves the behavior unproven.
 If the defect cannot be reproduced, report that gap before attempting the production fix.

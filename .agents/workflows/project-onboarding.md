@@ -24,7 +24,7 @@ This is separate from documentation refresh. Use project-onboarding and the exis
 - Do not relabel a failing existing application as a new empty project.
 - Approval of documentation cleanup does not authorize source, schema, build, Firebase or architecture changes.
 
-When the required tooling exists, run python3 harness/scripts/project_onboarding.py discover, reconcile the profile, and run check/verify.
-Required verify evidence includes matching approved inputs, fresh source fingerprints, lifecycle/source checks, build and nonzero passing test reports.
-The scripts are currently absent; full application onboarding remains blocked until the missing prerequisites are resolved within authorized scope.
+Inspect build/source/manifest files directly to reconcile the profile and observed map.
+Verification uses matching approved inputs, current source fingerprints, available Gradle checks and nonzero passing test reports.
+Legacy discovery/check/verify script gates are removed; report actual application findings and runtime limitations.
 Do not delete historical approval, source-map or runtime evidence as setup debris.

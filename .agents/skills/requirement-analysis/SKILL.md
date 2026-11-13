@@ -29,7 +29,7 @@ Do not write any code in this stage.
 
 ### Entry from an existing Exploratory QA finding
 
-When bug-fixing receives a QA report, use `harness/scripts/read-qa-bug-context.py --report <report.json> --finding <id>`.
+When bug-fixing receives a QA report, read the selected finding and verify its retained observations and evidence directly.
 Reuse its target, steps, expected/actual result, and evidence as the runtime reproduction; record the report/finding
 references in the bug spec's `## Exploratory QA Handoff`. Inspect the relevant current source for the root cause
 and load only missing requirement/UI-contract context. Reuse existing approved states when they cover the defect.

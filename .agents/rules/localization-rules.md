@@ -97,13 +97,11 @@ IconButton(onClick = onDeleteClick) {
 
 Automated source evidence:
 
-```bash
-bash harness/scripts/check-localization-rules.sh
-```
+Use the configured Gradle checks and the semantic review below.
 
 When a diff adds or changes localized copy, review only the semantic risks it
 introduces: ownership in `strings.xml`, descriptive key naming, plural and
 format-argument behavior, and accessibility content descriptions for non-text controls. The
-full-source rules bundle is the required CI evidence; review and merge approval are
+current CI catalog owns executable checks; review and merge approval are
 handled in the review workflow.
 ```

@@ -11,11 +11,7 @@ the procedures below; it never grants implementation authorization.
 
 ## Discover and reconcile
 
-Run `python3 harness/scripts/project_onboarding.py discover` from the consuming
-project root. The deterministic map inventories Gradle/source/manifest fingerprints,
-candidate modules, literal project dependencies, packages, tests and architecture
-signals with path/line evidence. Inspect the actual files to confirm meaning.
-The map is observed architecture, not desired policy. Missing evidence is unknown.
+Inspect Gradle settings/build files, version catalogs, manifests, packages, tests and architecture signals directly. Record paths and source/configuration hashes. The observed map is not desired policy; missing evidence is unknown.
 
 Inspect settings, module build files, version catalogs, convention plugins,
 projectDir mappings and source-set declarations. Correct the proposed
@@ -50,25 +46,17 @@ Use existing Android implementation/testing skills and generate real tests.
 Do not claim Gradle wrapper JARs, Android SDKs, signing files or runtime evidence
 exist until verified. Use trusted dependency tooling for binary artifacts.
 
-Configure `commands.build`, `commands.unit_tests`, and `commands.source_rules` as
+Configure `commands.build`, `commands.unit_tests`, and available quality commands as
 argument arrays. Commands are executed without shell interpolation; invoke `bash`
-or `cmd /c` explicitly when a platform wrapper requires it. The verifier always
-runs the canonical source-rule bundle independently of configured commands.
+or `cmd /c` explicitly when a platform wrapper requires it. Only the active CI catalog defines executable gates.
 Use clean/rerun test tasks so executed tests produce fresh XML, and include all
 approved test modules. Product documentation must be authored from requirements
 and approved; installation does not invent it.
 
 ## Refresh and verify
 
-Run `discover --refresh` after source/build/profile changes. This updates only
-unchanged installer-owned map files; it preserves user modifications and errors
-instead of overwriting them. Reconcile observed dependencies and unknowns against
-the approved architecture in the plan. The profile's `unknowns` array must be empty
-only after documented resolution.
+After source/build/profile changes, inspect and update observed source-map facts within the approved scope. Preserve unrelated edits and document resolutions before clearing unknowns. No legacy discovery/refresh script gate applies.
 
 Run the workflow's gates and record command, exit code, executed test count,
 fingerprints, log/report locations and remaining blockers in onboarding summary.
-The installer preserves a manifest across interrupted runs. `verify` automatically
-cleans its unchanged temporary session file; `cleanup --uninstall` previews owned
-persistent removal. Never delete the initializer, shared harness, source, tests,
-approvals or evidence as "temporary setup".
+Preserve existing application sources, approvals, evidence and shared tools. Cleanup requires explicit scope and must not delete durable records as temporary setup.

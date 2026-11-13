@@ -18,9 +18,7 @@ or approved exceptions.
 
 When a change touches authentication, sensitive storage, URI/IPC, exported
 components, networking/TLS, WebView, AI/model, SDK, or release-security boundaries,
-also load `.agents/rules/android-security.md`. The full-source bundle is the
-canonical mechanical security entry point and includes the AI/WebView evaluator and
-its contract test; do not add suppressions or bypasses to make it pass.
+also load `.agents/rules/android-security.md`. Use configured quality tasks and review actual security boundaries; do not suppress findings to make a check pass.
 
 ## When to Use
 
@@ -74,20 +72,12 @@ Android Lint checks for Android-specific problems.
 1. **Run All Checks**: Start by running all tools to get a full picture of the debt.
    ```bash
    ./gradlew ktlintCheck detekt lintDebug
-   bash harness/scripts/check-full-source-rules.sh
    ./gradlew :app:koverXmlReportDebug
-   bash harness/scripts/check-coverage.sh app/build/reports/kover/reportDebug.xml
    ```
 
-   The full-source bundle passes `--all` to the architecture, Compose, and
-   localization AST checkers, scans both test roots for assertion quality, runs
-   navigation checks, and aggregates every checker result. A non-zero result is a
-   hard failure, including for pre-existing violations.
+   Required configured checks must actually run and pass; review architecture, Compose/localization and test assertions against the changed source.
 
-   On Windows (using PowerShell or Command Prompt), run the native script launchers instead:
-   ```powershell
-   harness\scripts\check-full-source-rules.cmd
-   ```
+   On Windows use gradlew.bat for these tasks.
 
 2. **Fix Formatting First**: Run `ktlintFormat` to handle low-hanging fruit.
    ```bash
@@ -117,6 +107,5 @@ The task is complete when:
 - [ ] `./gradlew ktlintCheck` passes.
 - [ ] `./gradlew detekt` passes.
 - [ ] `./gradlew lintDebug` passes (0 errors).
-- [ ] `bash harness/scripts/check-full-source-rules.sh` or `harness\scripts\check-full-source-rules.cmd` passes (0 violations).
-- [ ] `bash harness/scripts/check-coverage.sh app/build/reports/kover/reportDebug.xml` passes weighted coverage thresholds.
+- [ ] Fresh coverage XML counts and applicable thresholds are reviewed and recorded.
 - [ ] Rule Applicability Harness Contract is reconciled with the diff and evidence.

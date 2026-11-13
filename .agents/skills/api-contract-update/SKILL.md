@@ -46,14 +46,14 @@ Adapt the skill output to cover:
 - The complete Rule Applicability matrix is required for this workflow. API is Required;
   every other rule needs an explicit decision and evidence plan.
 
-Run `bash harness/scripts/check-stage-artifacts.sh api-contract-update requirement-analysis` — must exit 0 before proceeding.
+Review requirement completeness and the affected API/acceptance mappings before proceeding.
 
 ---
 
 ### Stage 2 — Implementation Plan ⛔ STOP ✅ Always
 **INVOKE** the `implementation-plan` skill via the Skill tool (name: `implementation-plan`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
 
-Run `bash harness/scripts/check-stage-artifacts.sh api-contract-update implementation-plan` — must exit 0.
+Review plan scope, dependencies and test selectors against the approved specification before proceeding.
 
 **Stop and present the plan. Do not proceed until the user explicitly approves.**
 

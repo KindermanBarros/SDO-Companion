@@ -52,6 +52,6 @@ Loop from verification to implementation within scope, at most three failed repa
 ## 5. Quality, review and handoff
 
 Apply [CI checks](../gates/ci-checks.md) and [Feature review](feature-review.md).
-Required script stages: create-ui-and-verify ui-contract, reference-design, implementation-plan and ui-verification via harness/scripts/check-stage-artifacts.sh.
-The Pen export log, visual and IME contracts remain required when triggered; absent scripts stay blocked.
+Review UI inventory, approved references, implementation plan and verification evidence directly.
+Inspect Pen export logs, visual comparisons and real IME results when in scope; no legacy script gate applies.
 Reconcile product requirements in place, update .docs, append history, enter InDevReview and commit the validated task automatically.

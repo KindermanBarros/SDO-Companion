@@ -15,6 +15,7 @@ This checks active harness links, line limits, imports, sealed banners and setup
 Its regression fixtures reject broken links, anchors, placeholders, oversized documents and stale setup inputs.
 It does not execute Android/source-rule checks or prove application readiness.
 Run scoped git diff --check for maintained changes; pre-existing unrelated whitespace is recorded separately.
+When changing the adaptive CI runner, also run powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/tests/adaptive-ui-runner-tests.ps1.
 
 ## Application gates
 
@@ -27,22 +28,19 @@ Windows commands below use the existing :app module. POSIX uses ./gradlew instea
 | Ktlint | .\gradlew.bat :app:ktlintCheck | Successful task; no suppressions |
 | Detekt | .\gradlew.bat :app:detekt | Successful task; no failure masking |
 | Android Lint | .\gradlew.bat :app:lintDebug | No errors; review changed-file warnings |
-| Coverage | .\gradlew.bat :app:koverXmlReportDebug | Report and mandatory threshold validation |
+| Coverage | .\gradlew.bat :app:koverXmlReportDebug | Report with reviewed coverage counts |
 | Android boundary | .\gradlew.bat :app:connectedDebugAndroidTest | Declared runtime/build, named successful cases |
-| Source rules | bash harness/scripts/check-full-source-rules.sh | Complete production/test scan; zero exit |
 
 Coverage thresholds remain 80% overall and 90% for new ViewModels/domain use cases.
-Validate weighted XML counts and per-file thresholds with the required checker; report generation alone does not prove the thresholds.
+Review weighted XML counts and applicable per-file thresholds; report generation alone does not prove the thresholds. No separate script gate applies.
 No Roborazzi task/dependency is declared in the observed baseline; a required visual comparison remains blocked until its infrastructure is explicitly planned and configured.
-Do not use connectedDebugAndroidTest as a substitute for the direct instrumented runner when the approved contract requires installation-preservation receipts.
+Use the configured Gradle instrumented task or the documented direct adb command for the declared boundary; record actual test counts and runtime identity.
 
-## Detailed contracts
+## Available gates
 
-[Required source and conditional contracts](Contracts/source_and_runtime.md) preserves the command inventory and trigger requirements.
-Its full-source, stage, lifecycle, acceptance, runtime and visual validators remain mandatory for their declared claims.
-The harness/scripts and harness/templates paths are currently absent; record missing prerequisites and stop affected application stages.
-Do not restore deleted tooling or modify product code merely to make documentation checks green.
-
+The legacy script-backed source, stage-artifact, lifecycle, traceability, receipt, journey, platform, visual-contract and harness self-test gates have been removed.
+Workflows still require meaningful tests, reviewed acceptance mappings, actual runtime evidence and human approvals; these are not claims of automated validation.
+Do not require an absent checker or restore retired tooling as a prerequisite to ordinary work.
 ## Evidence
 
 Every selected gate records command, exit status, executed test count where relevant, runtime identity and retained report paths.

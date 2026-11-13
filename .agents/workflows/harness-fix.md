@@ -21,15 +21,14 @@ Use file/diff references before an automatic commit exists, then record its hash
 3. **Fix.** Apply android-implementation/android-testing only to the reported root causes. Respect the selected persona's testing policy. Do not weaken checks, add suppressions or enlarge scope.
 4. **Re-verify.** Run each affected acceptance command and all required [CI checks](../gates/ci-checks.md). Preserve actual command, exit status, counts and reports. Reused receipts require matching source/config/command/runtime hashes.
 5. **Reconcile.** Update every finding in-report and summary; failed proof stays Unresolved. Reconcile all ten rule decisions and product claims against actual verification.
-6. **Handoff.** Run the evaluation/fix lifecycle gate before progression. Only a complete successful fix pass may route to To be human reviewed. Append .docs history, enter InDevReview and commit the validated task automatically.
+6. **Handoff.** Review in-report statuses and evidence consistency before progression. Only a complete successful fix pass may route to To be human reviewed. Append .docs history, enter InDevReview and commit the validated task automatically.
 7. **Runtime.** Install to the declared target when a finding affects UI/platform behavior; retain required screenshots and replay evidence.
 
-## Mandatory scripts
+## Verification evidence
 
-Under harness/scripts, use check-feature-lifecycle.sh, check-full-source-rules.sh, check-acceptance-test-traceability.sh --evaluate and check-evidence-receipt.sh.
-Run triggered check-platform-evidence.sh --evaluate, check-visual-evidence-contract.sh and rendered-output/journey checks.
-Before state transition, check-evaluation-fix-contract.sh --fix must pass; then validate lifecycle, product reconciliation and metrics.
-Required missing scripts/templates or unavailable runtime stay non-passing.
+Use available [CI commands](../gates/ci-checks.md) and each affected acceptance-test selector.
+Review per-finding status, matching test reports, source/config/command/runtime fingerprints and platform/visual/journey claims directly.
+Retired script-backed gates do not apply. Required runtime failures and unverified test assertions remain non-passing.
 
 ## Final report
 

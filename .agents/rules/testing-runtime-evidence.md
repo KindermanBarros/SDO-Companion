@@ -69,9 +69,7 @@ For navigation, saved-state, back-stack, destination recreation, or post-return 
 
 Direct ViewModel calls, internal state mutation, manually invoked callbacks, and Content-only tests
 are supplemental. Register shipped required journeys in `docs/product/journey-registry.yaml`.
-During an ad-hoc Testing stage, run each affected registered journey with
-`bash harness/scripts/check-journey-registry.sh --run-one <journey-id>`. Run `--run-all`
-when the active harness or review workflow requires the full journey regression gate.
+During Testing, execute the actual test selectors for affected registered journeys and record their real results. No registry-script gate applies.
 
 ## Visual Evidence Capture
 
@@ -92,8 +90,7 @@ visibly rendered require a Roborazzi comparison of the named deterministic state
 must contain the approved formatted appearance and the JVM test must call `captureRoboImage()`.
 
 Model marks, `AnnotatedString` contents, toolbar state, text content, and a non-empty PNG are
-supplemental and do not prove rendered appearance. Run
-`bash harness/scripts/check-rendered-output-contract.sh` for the named method.
+supplemental and do not prove rendered appearance. Review the named rendering test and its actual approved-reference comparison artifacts.
 
 ## Visual Comparison Contract
 

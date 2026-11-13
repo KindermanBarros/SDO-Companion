@@ -39,7 +39,7 @@ approved behavior before invoking this skill.
 - `docs/current/test_plan_v<N>.md` — test cases, layers, and coverage targets approved by user
 
 **Harness workflow** (`harness-generator`):
-- Run `bash harness/scripts/print-context-index.sh --feature-dir "$FEATURE_DIR" --slice "$FEATURE_ID"`.
+- Read the selected slice and its approved rule/evidence mappings directly.
 - Read only the selected acceptance-test rows and matching `feature_list.json` entry. Read the summary only for prior evidence, blockers, and handoff decisions.
 
 ---
@@ -89,37 +89,24 @@ Run every selected test with a suite-scoped selector. For example:
 
 ```bash
 ./gradlew :app:testDebugUnitTest --tests '<fully.qualified.TestClass>'
-ANDROID_SERIAL=<device-serial> bash harness/scripts/run-android-instrumented-tests.sh --class <fully.qualified.InstrumentedTestClass>[#method]
+./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class="<fully.qualified.InstrumentedTestClass>#<method>"
 ```
 
-The shared runner assembles both APKs, installs/updates them with `adb install -r`, invokes
-`AndroidJUnitRunner` directly, records a log, and verifies the app and test packages remain
-installed. It rejects empty or failing test results. Use `--class <Class#method>` for the exact
-method when supported, or `--all` for the full instrumented suite. Set `ANDROID_SERIAL` or pass
-`--serial` so the intended device is explicit. Do not invoke Gradle's connected instrumentation
-task: its UTP cleanup uninstalls the app package and removes its private data. For Roborazzi,
-use the approved state's scoped verification command. Run instrumented tests whenever the runtime
-analysis requires them, including existing tests affected by the change; adding a new
-instrumented test is not the only trigger. Prefer an emulator, using a connected physical device
-when the required capability or availability calls for one. Do not run unfiltered
-`testDebugUnitTest`, `koverLog`, or full coverage reports in this skill. The later workflow or CI
-gate owns repository-wide test and coverage evidence.
+Run instrumented tests through the available commands in `.agents/gates/ci-checks.md`.
+Use scoped class/method selectors where supported and record the connected runtime/build and actual executed counts.
+When installation/data preservation matters, build both APKs, install them to the selected serial and run AndroidJUnitRunner with adb directly.
+Do not claim that a custom runner executed or guaranteed cleanup. Use disposable test data and retain real receipts for the actions performed.
+Run Android tests whenever the declared boundary requires them; fake/JVM tests do not replace those claims.
+Use the approved state's configured visual verification command for appearance claims.
+Scoped testing does not establish repository-wide coverage; the later CI stage owns that report.
 
 Record each selected test ID or method, exact command, exit code, non-zero executed test count,
 and runtime in the stage evidence. Keep verbose output in a referenced log or generated report.
 Do not report project coverage from a scoped test run.
 
-For the harness workflow, after writing tests and before leaving this stage, run the
-acceptance-test traceability checker in evaluation mode:
-
-    bash harness/scripts/check-acceptance-test-traceability.sh "$FEATURE_DIR" --evaluate "$FEATURE_ID"
-
-The gate requires every selected acceptance Test ID to name a real Kotlin test method,
-a suite-scoped Gradle selector, and any declared shared JSON scenario to be referenced
-from the named method. For a required production journey, also run
-`bash harness/scripts/check-journey-test-contract.sh` with the planned test file,
-method, and production entry point; the source checker must find the real graph,
-gestures, return boundary, and visible post-return assertion.
+Before leaving the harness Test stage, review each selected acceptance Test ID against its real Kotlin method, scoped test selector, shared scenario and successful report.
+For production journeys, inspect the shipped entry, real actions, return boundary and visible post-return assertion.
+Record this as traceability review; no legacy script gate applies.
 
 ---
 
@@ -143,7 +130,7 @@ evidence remains in the bug specification and its dedicated stage evidence.
 - [ ] At least one integration test per new or changed API endpoint (when API is in scope), owned by the lowest useful target; an instrumented loopback boundary is valid when the real app process is part of the claim
 - [ ] Shared JSON scenarios used — no inline mock response data in test files (when API is in scope)
 - [ ] Every required instrumented boundary passes on the declared runtime; unavailable required runtimes are `Blocked`/`Revise`
-- [ ] Harness workflow: acceptance-test traceability gate passes in evaluation mode for the selected slice
+- [ ] Harness workflow: acceptance-to-method/scenario/result mappings were reviewed for the selected slice
 
 **APPROVED →** Return to the active workflow file and proceed to the next stage defined there.
 

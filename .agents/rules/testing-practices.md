@@ -27,7 +27,7 @@
 
 - Assert observable behavior, not only that an envelope such as HTML, SVG, or JSON is non-empty.
 - For rendered-output claims, follow `.agents/rules/testing-runtime-evidence.md`.
-- Run `bash harness/scripts/check-test-assertions-quality.sh` for repository test sources.
+- Review test assertions for observable outcomes, including negative cases; no retired assertion-script gate applies.
 
 ## Naming and Imports
 

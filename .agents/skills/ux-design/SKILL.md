@@ -61,21 +61,13 @@ Do not create an implementation screenshot baseline.
 
 ### 2. Validate the inventory before generating visuals
 
-Run the calling workflow's pre-design gate:
-
-- `bash harness/scripts/check-stage-artifacts.sh feature-delivery ui-contract docs/current`
-- `bash harness/scripts/check-stage-artifacts.sh harness-planning ui-contract "$FEATURE_DIR"`
-- `bash harness/scripts/check-stage-artifacts.sh create-ui-and-verify ui-contract docs/current`
-
-The gate checks complete state behavior, one-to-one spec/state mappings when supplied, unique
-fixtures/stage IDs, viewports, controls, and IME coverage. It accepts `Pending` only for the four
-design-reference fields. Resolve missing states or product questions before Pen generation.
-This gate does not approve a visual design or satisfy a planning/runtime gate.
+Review complete state behavior, one-to-one spec/state mappings, unique fixtures/stage IDs, viewports, controls and IME coverage.
+Only the four design-reference fields may initially be Pending. Resolve missing states/product questions before Pen generation.
+This inventory review does not approve a visual design or prove runtime behavior; no legacy inventory-script gate applies.
 
 For complex features, derive runtime target metadata from this inventory before Pen work:
 use the same state IDs and viewports, add appearance/device/locale/dynamic-region handling, and
-choose the planned export paths. Run `visual-target-prompt.sh --target <manifest> --state <state_id>`
-for each target so Pen generation and later runtime capture consume identical target values.
+choose planned export paths. Read the manifest directly so Pen generation and runtime capture use identical target values.
 
 ### 3. Generate Pen design from the contract
 
@@ -90,7 +82,7 @@ content, controls, and keyboard behavior. Update only that row's Pen source, nod
 and exported PNG after rendering and inspecting it. A control-only crop cannot replace a complete
 screen reference. The Pen source contains the actual visual design; the PNG is its review export.
 
-Capture complete export logs and run `bash harness/scripts/check-pen-export-log.sh <log>`.
+Capture and inspect complete export logs.
 Font/asset failures and missing glyphs fail the reference gate. Inspect alignment, clipping,
 typography, icon identity, contrast, and required controls.
 
@@ -100,14 +92,7 @@ exact within the approved screen/component scope.
 
 ### 4. Gate, approve, and finalize
 
-Run the caller's full UX gate after every reference is completed:
-
-- `bash harness/scripts/check-stage-artifacts.sh feature-delivery ux-design docs/current`
-- `bash harness/scripts/check-stage-artifacts.sh harness-planning ux-design "$FEATURE_DIR"`
-- UI-update workflow: its `create-ui-and-verify reference-design` gate
-
-The full gate rejects pending references and verifies source/node/image mappings. The complex
-gate also checks that runtime target states, viewports, and PNG paths mirror UI_contract.md.
+After every reference is complete, review source/node/image mappings and reject Pending references. For complex features, also compare runtime target states, viewports and PNG paths to UI_contract.md. No retired UX-stage script gate applies.
 
 Present the contract and verified Pen exports for explicit design approval. Visual feedback
 updates the Pen design and affected contract references within this stage. After approval, follow

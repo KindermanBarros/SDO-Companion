@@ -30,12 +30,10 @@
   "commands": {
     "build": ["cmd", "/c", "gradlew.bat", ":app:assembleDebug"],
     "unit_tests": ["cmd", "/c", "gradlew.bat", ":app:cleanTestDebugUnitTest", ":app:testDebugUnitTest", "--rerun-tasks"],
-    "source_rules": ["bash", "harness/scripts/check-full-source-rules.sh"],
     "ktlint": ["cmd", "/c", "gradlew.bat", "ktlintCheck"],
     "detekt": ["cmd", "/c", "gradlew.bat", "detekt"],
     "lint": ["cmd", "/c", "gradlew.bat", ":app:lintDebug"],
-    "coverage_report": ["cmd", "/c", "gradlew.bat", ":app:koverXmlReportDebug"],
-    "coverage": ["bash", "harness/scripts/check-coverage.sh", "app/build/reports/kover/reportDebug.xml"]
+    "coverage_report": ["cmd", "/c", "gradlew.bat", ":app:koverXmlReportDebug"]
   },
   "navigation": {
     "destinations": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt",
