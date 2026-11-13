@@ -1,4 +1,4 @@
-# Always deliver authenticated test APKs - InAgentValidation
+# Always deliver authenticated test APKs - InDevReview
 
 - Date time: 2026-11-12 22:45 America/La_Paz
 - Task objective: Replace demo CI artifacts with authenticated debug APKs, persist the owner's preference, and publish a verified test artifact.
@@ -17,11 +17,13 @@
         - Technology and module changes: None
         - Definition of done:
             - [x] Test APK delivery has no demo fallback and uses validated Firebase/signing inputs.
-    - 3 Verify and deliver - InAgentValidation
+    - 3 Verify and deliver - InDevReview
         - Run harness checks, commit only scoped files, push, and verify the actual Actions build and artifact.
         - Dependencies: See D1
         - Technology and module changes: None
         - Definition of done:
-            - [ ] Successful signature-verified authenticated APK artifact linked to the owner.
+            - [x] Actions run 43355100969 succeeded, including Firebase/signing restoration, certificate verification, artifact upload and cleanup.
 
-Local validation: native structural gate and scoped git diff --check pass. Actual protected-input restoration and signature verification require the GitHub Actions run after push.
+Local validation: native structural gate and scoped git diff --check pass.
+CI evidence: [Authenticated build](https://github.com/KindermanBarros/SDO-Companion/actions/runs/43355100969), commit 78b7b99.
+This proves the configured signed artifact; an interactive device sign-in journey was not run.
