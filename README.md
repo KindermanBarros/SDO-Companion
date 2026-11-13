@@ -24,6 +24,8 @@ On Windows:
 
 Gradle selects JetBrains JDK 25; Android SDK 37 is required. Google-services configuration enables Firebase integration when present; signing reads optional external credentials. See [TECH_STACK](.docs/TECH_STACK.md) for exact versions and configuration.
 
+Test APKs delivered by CI are always authenticated with the configured Firebase project and registered signing certificate. Missing protected inputs fail the build; no demo APK is substituted.
+
 ## Permissions
 
 - android.permission.INTERNET; no dangerous runtime permission is declared.

@@ -63,3 +63,4 @@ Plan every task that modifies files before you edit anything. Questions and read
 |---|---|---|
 | Align harness and remove setup inputs | [Task state](OngoingTasks/harness_alignment_task_state.md) | 2026-11-12 |
 | Remove absent-script gates | [Task state](OngoingTasks/remove_missing_gates_task_state.md) | 2026-11-12 |
+| Authenticated test APKs | [Task state](OngoingTasks/authenticated_builds_task_state.md) | 2026-11-12 |
