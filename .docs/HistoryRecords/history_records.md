@@ -21,3 +21,8 @@ Updated all 10 .agents workflows, 4 agent profiles and 3 gate checklists; added 
 **Date:** 2026-11-12 · **Time:** 22:31 · America/La_Paz
 
 Removed obsolete legacy-script gates and their active workflow/skill/rule/prompt callers, deleted the four contract-inventory documents, and removed source_rules/coverage script commands from harness-project.json. Kept available Gradle/native checks, review criteria, real test evidence and approval requirements. The adaptive CI runner now uses existing Gradle/adb commands for the same test classes and retains logs/screenshots. Structural validation, 10 structural regression cases, 4 CI shell-control cases, JSON parsing, shell syntax and scoped whitespace checks passed. adb devices listed no connected runtime; actual Android execution remains unverified. Historical product/onboarding records and unrelated application/tooling changes were preserved. Task enters InDevReview; automatic signed-off commit follows the owner's preference, without push or PR.
+
+## Always deliver authenticated test APKs
+**Date:** 2026-11-12 · **Time:** 22:55 · America/La_Paz
+
+Removed demo CI delivery and enabled authenticated debug builds on repository push/manual dispatch, reusing existing protected-input restoration and certificate verification before upload. Persisted the owner preference in root policy and harness docs. Structural/whitespace checks passed; Actions run 43355100969 at commit 78b7b99 passed Firebase/signing restoration, build, certificate verification, upload and cleanup. The authenticated artifact is available; interactive device sign-in was not tested. No application code or dependency version changed. Task handed off as InDevReview.
