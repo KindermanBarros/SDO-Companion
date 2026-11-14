@@ -42,6 +42,7 @@ Add new findings to the backlog without silently expanding the active task. Comp
 ## Ongoing tasks
 | Task | File | Started |
 |---|---|---|
+| Publish v0.51.1 | [Task state](OngoingTasks/release_0_51_1_task_state.md) | 2026-11-13 |
 | Reconcile pending worktrees | [Task state](OngoingTasks/worktree_reconciliation_task_state.md) | 2026-11-13 |
 
 Accepted records: [2026-11-13](CompletedTasks/accepted_2026_11_13.md).

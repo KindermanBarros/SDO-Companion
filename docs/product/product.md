@@ -31,6 +31,8 @@ Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem pr
 | BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
 
 ## Workflow do backlog
+Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Release task](../../.docs/OngoingTasks/release_0_51_1_task_state.md): InProgress; existing product priorities unchanged.
+
 - Ao começar, selecionar o pedido autorizado e consultar o requisito relacionado; prioridades não definidas continuam sem ordem inventada.
 - Acrescentar pedidos e achados úteis com origem, estado e dúvidas, sem expandir a tarefa atual.
 - Ao entregar, atualizar o item para refletir pendência, bloqueio, revisão ou aceite; somente o proprietário aprova o encerramento.
