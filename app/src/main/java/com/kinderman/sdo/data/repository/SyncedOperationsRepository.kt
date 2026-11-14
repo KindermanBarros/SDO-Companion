@@ -60,7 +60,8 @@ class SyncedOperationsRepository(
 
     override suspend fun apply(session: UserSession, character: Character, command: SessionCommand): Boolean {
         val mutation = character.applySessionCommand(command, session.uid)
-        return dao.applyOnce(mutation.operation.toRecord(), mutation.character.toRecord())
+        val stampedCharacter = mutation.character.copy(lastEditedBy = session.uid)
+        return dao.applyOnce(mutation.operation.toRecord(), stampedCharacter.toRecord())
     }
 
     override suspend fun saveLibrary(session: UserSession, entry: CampaignLibraryEntry) {
@@ -126,7 +127,11 @@ class SyncedOperationsRepository(
         if (!accept) return dao.upsertDelivery(responded.toRecord())
         val record = dao.character(delivery.recipientCharacterId)?.let { migrationManager.migrate(it, markDirty = true) }
             ?: error("Ficha destinatária não encontrada.")
-        val character = applyDelivery(record.toDomain(), delivery).copy(updatedAt = now, dirty = true)
+        val character = applyDelivery(record.toDomain(), delivery).copy(
+            updatedAt = now,
+            lastEditedBy = session.uid,
+            dirty = true,
+        )
         dao.acceptDeliveryOnce(responded.toRecord(), character.toRecord())
     }
 

@@ -35,6 +35,23 @@ fun automaticRemoteFieldIds(conflict: CharacterSyncConflict): Set<String>? {
     }
 }
 
+/**
+ * Resolves sync conflicts using account awareness:
+ * - Same-account edits always converge automatically (last-write-wins regardless of field count).
+ * - Cross-account edits reserve manual resolution for concurrent multi-field conflicts.
+ */
+fun automaticRemoteFieldIds(conflict: CharacterSyncConflict, sessionUid: String): Set<String>? {
+    val isSameAccount = sessionUid.isNotBlank() && conflict.remote.lastEditedBy == sessionUid
+    if (isSameAccount) {
+        return if (conflict.remoteUpdatedAt > conflict.local.updatedAt) {
+            conflict.fields.mapTo(mutableSetOf(), CharacterConflictField::id)
+        } else {
+            emptySet()
+        }
+    }
+    return automaticRemoteFieldIds(conflict)
+}
+
 fun characterConflictFields(local: Character, remote: Character): List<CharacterConflictField> = buildList {
     fun <T> changed(id: String, label: String, localValue: T, remoteValue: T, summary: (T) -> String = { it.toString() }) {
         if (localValue != remoteValue) {

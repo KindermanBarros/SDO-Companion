@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 28,
+    version = 29,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -392,6 +392,19 @@ abstract class AppDatabase : RoomDatabase() {
                 listOf("canonicalItemsPayload", "scopedItemCatalogPayload", "canonicalProgressionPayload")
                     .filterNot(columns::contains)
                     .forEach { column -> db.execSQL("ALTER TABLE characters ADD COLUMN $column TEXT NOT NULL DEFAULT ''") }
+            }
+        }
+
+        /** Tracks the last editor account on each character for same-account conflict convergence. */
+        val MIGRATION_28_29 = object : Migration(28, 29) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columns = db.query("PRAGMA table_info(characters)").use { cursor ->
+                    val nameColumn = cursor.getColumnIndex("name")
+                    buildSet { while (cursor.moveToNext()) add(cursor.getString(nameColumn)) }
+                }
+                if ("lastEditedBy" !in columns) {
+                    db.execSQL("ALTER TABLE characters ADD COLUMN lastEditedBy TEXT NOT NULL DEFAULT ''")
+                }
             }
         }
     }

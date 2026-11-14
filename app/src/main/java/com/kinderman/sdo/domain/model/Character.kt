@@ -419,6 +419,7 @@ data class Character(
     val lockedBy: String = "",
     val lockedAt: Long? = null,
     val updatedAt: Long = System.currentTimeMillis(),
+    val lastEditedBy: String = "",
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
     val deleted: Boolean = false,

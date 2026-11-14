@@ -5,10 +5,12 @@ import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 interface CharacterRepository {
     fun observe(session: UserSession): Flow<List<Character>>
     fun observeOne(id: String): Flow<Character?>
+    fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = emptyFlow()
     suspend fun create(session: UserSession, ownerId: String = session.uid, campaignId: String = ""): Character
     suspend fun save(session: UserSession, character: Character)
     suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean)

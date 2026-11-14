@@ -155,6 +155,7 @@ data class CharacterRecord(
     val notes: String = "",
     val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
+    val lastEditedBy: String = "",
     val dirty: Boolean = false,
     @get:Exclude
     @field:Exclude
@@ -312,6 +313,7 @@ fun CharacterRecord.toDomain(): Character {
     lockedBy = lockedBy,
     lockedAt = lockedAt,
     updatedAt = updatedAt,
+    lastEditedBy = lastEditedBy,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
@@ -380,6 +382,7 @@ fun Character.toRecord(): CharacterRecord {
     notes = "",
     personalNotes = personalNotes,
     updatedAt = updatedAt,
+    lastEditedBy = lastEditedBy,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
     height = height,
