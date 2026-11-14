@@ -2,7 +2,7 @@
 
 **Capability ID**: `synchronization`
 
-Status: implemented in `InDevReview` (`BACKLOG-006` / `SYNC-PLAN-001` and `BACKLOG-007` / `SYNC-PLAN-002`, 2026-11-14); JVM and Firestore Emulator verification completed, emulator/device runtime verification pending.
+Status: owner-approved closure 2026-11-14 16:03. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog) for delivered versus cancelled scope; existing evidence limits remain unchanged.
 
 ## User goal
 
@@ -33,7 +33,7 @@ Open refinement items: which data sets remain cached for offline inspection; eff
 
 ### SYNC-PLAN-002 — Firestore data, query, and payload optimization
 
-Selected by owner on 2026-11-14 (`BACKLOG-007`; implemented in `InDevReview` on `feature/backlog-007-firestore-optimization`):
+Selected by owner on 2026-11-14 (`BACKLOG-007`; implemented and owner-accepted as `Done` on `feature/backlog-007-firestore-optimization`):
 
 | ID | Optimization target |
 |---|---|

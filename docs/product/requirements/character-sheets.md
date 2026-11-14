@@ -2,7 +2,7 @@
 
 **Capability ID**: `character-sheets`
 
-Status: adoption draft, pending approval.
+Status: owner-approved closure 2026-11-14 16:03. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog) for delivered versus cancelled scope; existing evidence limits remain unchanged.
 
 ## User goal
 
@@ -25,6 +25,8 @@ Compact UI review: body/armor uses section index 11; race choices show catalog-d
 ## Planned changes
 
 ### SHEET-PLAN-001 — Character profile photos
+
+Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
 
 Backlog requested by owner on 2026-11-12; not yet implemented. Allow adding a profile photo and displaying it in the sheet, character list, Session Mode, and Historian/GM Mode. Reuse the photo in the coin-shaped battle-grid tokens planned in CAMPAIGN-PLAN-004.
 

@@ -2,7 +2,7 @@
 
 **Capability ID**: `codex`
 
-Status: adoption draft, pending approval.
+Status: owner-approved closure 2026-11-14 16:03. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog) for delivered versus cancelled scope; existing evidence limits remain unchanged.
 
 ## User goal
 
@@ -18,7 +18,7 @@ Existing catalog schemas and normalization contracts remain authoritative for th
 
 ## Compact UI review
 
-Compact UI review: origin/category choices use one modal trigger per existing enum; search, archive and create behavior remain in scope. See [approved UI contract](../../current/UI_contract.md). Component regression tests pass; owner visual acceptance pending.
+Compact UI review: origin/category choices use one modal trigger per existing enum; search, archive and create behavior remain in scope. See [approved UI contract](../../current/UI_contract.md). Component regression tests pass; owner accepted closure; no new runtime evidence claimed.
 
 ## Planned changes
 

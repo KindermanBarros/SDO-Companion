@@ -1,6 +1,6 @@
 # SDO Companion
 
-Status: onboarding draft, pending approval. Product intent comes from setup_prompt.md; implementation observations are not release acceptance.
+Status: owner closed all open tasks on 2026-11-14 16:03 America/La_Paz. Delivered review items are accepted; unimplemented requests are closed without delivery. Verification limitations remain in [Memory](../MEMORY.md).
 
 SDO Companion helps players create and manage RPG character sheets and use them in campaigns. The growing beta also includes a codex for the SDO RPG system. No additional release exclusions have been requested.
 
@@ -11,7 +11,7 @@ SDO Companion helps players create and manage RPG character sheets and use them 
 | Character sheets | [Character sheets](requirements/character-sheets.md) | Source and tests present; runtime acceptance unverified |
 | Campaign use | [Campaigns](requirements/campaigns.md) | Source and tests present; runtime acceptance unverified |
 | RPG codex | [Codex](requirements/codex.md) | Bundled catalog and screens present; runtime acceptance unverified |
-| Synchronization & connectivity | [Synchronization](requirements/synchronization.md) | Implemented in `InDevReview` (`BACKLOG-006`, `BACKLOG-007`); emulator/device runtime verification pending |
+| Synchronization & connectivity | [Synchronization](requirements/synchronization.md) | Done; owner accepted closure of BACKLOG-006/007. Recorded runtime verification limits remain unchanged |
 
 ## Delivery direction
 
@@ -21,21 +21,21 @@ First establish an accurate adoption baseline. Propose specific architecture, qu
 
 Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or delivery order. Details live in the capability requirements; this living backlog participates in workflow selection, execution, and reconciliation, though recording an item does not authorize implementation.
 
-| ID | Item | Requirements |
-|---|---|---|
-| BACKLOG-001 | Shared campaign journal | [Campaigns — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) |
-| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) |
-| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) |
-| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) |
-| BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) |
-| BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
-| BACKLOG-007 | Firestore read/write & payload optimization (delta sync, audit limits, dedupe character payload, parallel/batched queries) | [Synchronization — SYNC-PLAN-002](requirements/synchronization.md#planned-changes) |
+| ID | Item | Requirements | Status |
+|---|---|---|---|
+| BACKLOG-001 | Shared campaign journal | [Campaigns — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) | Done |
+| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) | Cancelled; not implemented |
+| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) | Cancelled; not implemented |
+| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) | Cancelled; not implemented |
+| BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) | Cancelled; not implemented |
+| BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) | Done |
+| BACKLOG-007 | Firestore read/write & payload optimization (delta sync, audit limits, dedupe character payload, parallel/batched queries) | [Synchronization — SYNC-PLAN-002](requirements/synchronization.md#planned-changes) | Done |
 
-BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Memory](../MEMORY.md).
-BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner handed off InDevReview. [Memory](../MEMORY.md).
-BACKLOG-007 selected by owner on 2026-11-14 on `feature/backlog-007-firestore-optimization`; canonical character payload deduplication, automatic migration of previous-version records, incremental delta sync cursors (`campaignAudit` bounded to 200, `campaignLibrary`), parallelized per-campaign queries, no-op write skipping, and Firestore rules unlink updates handed off InDevReview. [Memory](../MEMORY.md).
+BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests accepted as Done by owner 2026-11-14 16:03; prior runtime verification limits preserved. [Memory](../MEMORY.md).
+BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner accepted as Done by owner 2026-11-14 16:03. [Memory](../MEMORY.md).
+BACKLOG-007 selected by owner on 2026-11-14 on `feature/backlog-007-firestore-optimization`; canonical character payload deduplication, automatic migration of previous-version records, incremental delta sync cursors (`campaignAudit` bounded to 200, `campaignLibrary`), parallelized per-campaign queries, no-op write skipping, and Firestore rules unlink updates accepted as Done by owner 2026-11-14 16:03. [Memory](../MEMORY.md).
 
-Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Memory](../MEMORY.md): redesigned journal approved by owner with minor Standard color refinement; home settings icon contrast fixed in Standard mode; implementation handed off InDevReview. No product priorities changed.
+Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Memory](../MEMORY.md): redesigned journal approved by owner with minor Standard color refinement; home settings icon contrast fixed in Standard mode; implementation accepted as Done by owner 2026-11-14 16:03. No product priorities changed.
 
 ## Backlog workflow
 Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Memory](../MEMORY.md): Done; owner accepted 2026-11-14; published with verified signed APK, CI run 43540829981 successful; existing product priorities unchanged.
@@ -61,4 +61,6 @@ No complex work package is selected during onboarding. The empty tracker records
 |---|---|---|---|---|---|
 <!-- HARNESS_TRACKER_END -->
 
-Owner request 2026-11-14 15:46: consolidate documentation/design/agent ownership from the redundancy audit. [Memory](../MEMORY.md): InDevReview; one docs root, canonical design ownership and thin role adapters validated. Product behavior and existing priorities unchanged.
+Owner request 2026-11-14 15:46: consolidate documentation/design/agent ownership from the redundancy audit. [Memory](../MEMORY.md): Done; owner accepted closure 2026-11-14 16:03; one docs root, canonical design ownership and thin role adapters validated. Product behavior and existing priorities unchanged.
+
+All previously open task records are closed by owner request 2026-11-14 16:03. BACKLOG-002 through BACKLOG-005 are cancelled without implementation; their requirement descriptions are retained for provenance, not active delivery scope. No remote merge or publication is asserted by this administrative closure.

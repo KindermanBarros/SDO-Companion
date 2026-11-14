@@ -2,7 +2,7 @@
 
 **Capability ID**: `campaigns`
 
-Status: adoption draft, pending approval.
+Status: owner-approved closure 2026-11-14 16:03. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog) for delivered versus cancelled scope; existing evidence limits remain unchanged.
 
 ## User goal
 
@@ -28,17 +28,23 @@ Backlog requested by owner on 2026-11-12. These are unimplemented proposals; eac
 
 Add a shared campaign journal. Define authorship, read/write permissions, entry ordering, and edit/sync behavior during refinement. Distinguish the journal from personal character notes and the existing technical operation history.
 
-Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered InDevReview (device runtime and local emulator acceptance pending). See [Memory](../../MEMORY.md).
+Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered and owner-accepted as Done; earlier runtime verification limits remain recorded. See [Memory](../../MEMORY.md).
 
 ### CAMPAIGN-PLAN-002 — Session Mode evolution
+
+Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
 
 Improve the UI and complete Session Mode features, focusing on quick actions and compact presentation while preserving all gameplay-relevant information. Define the inventory of actions, essential info, shortcuts, and states from existing flows; the request does not fix specific controls yet.
 
 ### CAMPAIGN-PLAN-003 — Historian / GM Mode evolution
 
+Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
+
 Improve the UI and complete Historian/GM Mode features, focusing on quick actions, compact controls, and access to all information needed to run the campaign. Refine which info must stay visible and which actions need immediate access without assuming permission changes.
 
 ### CAMPAIGN-PLAN-004 — Real-time battle grid
+
+Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
 
 Add a shared combat board over a grid in Session Mode where the GM can draw in real time and move characters represented by coin-shaped tokens with their profile photos.
 
