@@ -28,7 +28,7 @@ foreach ($relative in $required) {
     if (!(Test-Path -LiteralPath (Join-Path $rootPath $relative) -PathType Leaf)) { Add-Issue "Missing: $relative" }
 }
 $files = @($required[0..3] | ForEach-Object { Get-Item (Join-Path $rootPath $_) -ErrorAction SilentlyContinue })
-foreach ($folder in @('.docs','.agents/workflows','.agents/agents','.agents/gates')) {
+foreach ($folder in @('.docs','.agents/rules','.agents/workflows','.agents/skills','.agents/agents','.agents/gates')) {
     $path = Join-Path $rootPath $folder
     if (Test-Path -LiteralPath $path) { $files += @(Get-ChildItem -LiteralPath $path -Recurse -Filter '*.md' -File) }
     else { Add-Issue "Missing folder: $folder" }
@@ -68,11 +68,13 @@ foreach ($relative in @('AGENTS.md','.docs/ARCHITECTURE.md','.docs/CODE_STANDARD
 }
 if (Test-Path -LiteralPath (Join-Path $rootPath 'setup_prompt.md')) { Add-Issue 'Stale setup input: setup_prompt.md' }
 if (Test-Path -LiteralPath (Join-Path $rootPath '.scratch')) { Add-Issue 'Scratch must be removed before handoff/commit' }
-$activeInstructions = Join-Path $rootPath '.agents'
-if (Test-Path -LiteralPath $activeInstructions) {
-    foreach ($instruction in Get-ChildItem -LiteralPath $activeInstructions -Recurse -Filter '*.md' -File) {
-        if ([IO.File]::ReadAllText($instruction.FullName) -match 'harness[/\\]scripts[/\\]') {
-            Add-Issue "Retired script gate reference: $($instruction.FullName.Substring($rootPath.Length + 1))"
+foreach ($scanDir in @('.agents','harness/templates')) {
+    $scanPath = Join-Path $rootPath $scanDir
+    if (Test-Path -LiteralPath $scanPath) {
+        foreach ($instruction in Get-ChildItem -LiteralPath $scanPath -Recurse -File | Where-Object { $_.Extension -in @('.md','.json') }) {
+            if ([IO.File]::ReadAllText($instruction.FullName) -match 'harness[/\\]scripts[/\\]') {
+                Add-Issue "Retired script gate reference: $($instruction.FullName.Substring($rootPath.Length + 1))"
+            }
         }
     }
 }

@@ -1,124 +1,14 @@
 # Android Security Code Rules
 
-## Purpose and Scope
+Apply this rule (`SEC: Required`) whenever a change touches authentication, session state, local storage, `Intent`/`Bundle`/URI inputs, exported components, network/TLS, Firestore security rules, WebView, or release signing/shrinking. Otherwise record `SEC: Not applicable — no security boundary changed`.
 
-These rules define the mandatory security baseline for Android code that crosses a
-trust boundary. Apply them whenever a change handles authentication or session
-data, local sensitive data, `Intent`/`Bundle`/URI input, files, deep links,
-exported components or IPC, networking/TLS, `WebView`, third-party SDKs, AI/model
-input or output, rendering, or release/build security settings.
+## Trust-boundary invariants
+1. **Untrusted input**: Treat user text, remote Firestore/auth payloads, `Intent` extras, deep links, URIs, and imported files as untrusted. Validate type, bounds, scheme, and allowed values before use; fail closed with a safe fallback.
+2. **Secrets & PII**: Never hardcode or commit API keys, signing credentials, `google-services.json` secrets, or tokens. Never log tokens, passwords, credentials, or full user sheet/campaign payloads in Logcat, exceptions, or telemetry. Clear sensitive in-memory and local session state on logout.
+3. **Transport & backend**: Enforce HTTPS/TLS in production (`usesCleartextTraffic="false"`). Any local emulator/loopback test endpoint must be strictly gated to debug/test runs (`127.0.0.1` / `10.0.2.2`) and never fall back to production. Client checks do not replace Firestore security rules.
+4. **Component exposure**: Keep Android components `android:exported="false"` unless required (`MainActivity` launcher is the only exported component). Validate any incoming intent data before privileged actions.
+5. **Release hardening**: Release builds must not be debuggable or bundle test hooks/staging endpoints. Delivered test/release APKs must be authenticated with the configured Firebase project and signed with the registered certificate.
 
-This is the conditional `SEC` row in the ten-row Rule Applicability matrix. When a
-change touches one of the boundaries above, record `SEC: Required` and the relevant
-evidence in the plan/review. When none apply, record `SEC: Not applicable — no
-Android security boundary is changed`.
-
-## Trust-Boundary Invariants
-
-### 1. Treat external input as hostile
-
-- Treat user text, backend responses, model output, `Intent` extras, deep-link
-  parameters, `Bundle` values, navigation arguments, file metadata, and `content:`
-  or remote URIs as untrusted.
-- Validate type, size, encoding, scheme, authority, MIME type, and allowed values
-  before use. Prefer bounded fields and explicit allow-lists over best-effort
-  filtering.
-- Reject malformed, blank, oversized, unknown, or ambiguous values and use a
-  deterministic safe fallback. Do not turn validation failures into privileged
-  navigation or data access.
-
-### 2. Protect secrets and private content
-
-- Never hardcode API keys, credentials, access/refresh/ID tokens, or signing
-  material. Keep environment-specific values in approved configuration such as
-  `local.properties` and `BuildConfig` without committing secrets.
-- Never log, send to analytics, include in exception messages, or expose in UI
-  diagnostics: credentials, tokens, full note content, prompts, model output,
-  PII, or sensitive identifiers. Redact before telemetry or crash reporting.
-- Store tokens and highly sensitive local data in encrypted storage where
-  practical; clear in-memory and persisted session state on logout. Review
-  backups, screenshots, notifications, clipboard, widgets, and previews for
-  accidental disclosure.
-
-### 3. Enforce network and transport security
-
-- Production traffic must use HTTPS. Keep `usesCleartextTraffic="false"` and
-  reject app-wide cleartext or TLS-verification bypasses.
-- Any development or host-specific exception must be narrowly scoped, documented,
-  approved, and excluded from release configuration. Never trust all certificates
-  or hostnames in production.
-- An instrumented-test-only cleartext endpoint is permitted only when the test
-  composition is explicitly gated, the host is allow-listed to the emulator or
-  device-local loopback boundary (`127.0.0.1`, `10.0.2.2`, or another approved
-  local address) with a valid port, and invalid or missing configuration fails
-  closed. It must never fall back to the live production API.
-- Validate and map remote payloads before domain/UI use; do not let a transport
-  success imply authorization.
-
-### 4. Keep WebView and rendered content least-privileged
-
-- Avoid `WebView` unless required. For untrusted or inline content, disable
-  JavaScript, DOM storage, file access, content access, and network loads unless
-  a documented product requirement proves each setting necessary.
-- Do not add JavaScript bridges for untrusted content, load arbitrary URLs, use a
-  `file:///` base URL, or write untrusted model/user content directly to an HTML
-  sink such as `innerHTML`.
-- Mermaid or other diagram renderers must use strict security mode and sanitize or
-  bound source text before rendering. Never use a loose security mode for
-  untrusted diagrams.
-
-### 5. Minimize Android component and IPC exposure
-
-- Components are non-exported by default. An exported Activity, Service, Receiver,
-  or Provider requires a clear product need, the narrowest permission model, and
-  review of every incoming action, extra, URI, and caller.
-- Validate incoming values before accessing data or entering privileged flows.
-  Do not grant broad URI permissions or expose providers/intents for convenience.
-- Request only the minimum manifest and runtime permissions and document why each
-  permission is needed.
-
-### 6. Constrain AI/model boundaries
-
-- Bound every prompt field and clearly delimit untrusted user, note, backend, or
-  file content before it reaches a model. Do not include secrets or unnecessary
-  private content.
-- Treat model responses as untrusted data. Accept only an exact, typed,
-  allow-listed result; reject prose, markup, unknown values, blank values, and
-  oversized output. Use a deterministic fallback and isolate requests so one
-  request cannot influence another.
-- Do not add an external model/service, upload private content, or expose model
-  prompts without an explicit product and security review.
-
-### 7. Harden release configuration and dependencies
-
-- Release builds must not be debuggable and must not contain staging endpoints,
-  inspectors, test hooks, or verbose sensitive logging. Review the merged release
-  manifest/configuration rather than source defaults alone.
-- Use R8/resource shrinking where the release policy requires it; keep rules must
-  be minimal and justified. Obfuscation is not a substitute for access control.
-- Review third-party SDK collection, permissions, transitive vulnerabilities, and
-  update policy before adoption. Disable unnecessary identifiers and telemetry.
-
-## Required Evidence and Enforcement
-
-For a change marked `SEC: Required`:
-
-1. Explain the affected trust boundary and the validation, least-privilege, and
-   failure behavior in the implementation/review evidence.
-2. Add unit/integration tests for validation, redaction, secure fallback, malformed
-   URI/file/backend input, or authentication failures as applicable.
-3. Add a real instrumented boundary test for platform behavior such as WebView,
-   exported components, URI grants, permissions, or lifecycle/security state.
-   JVM-only fakes are supplemental; an unavailable runtime/device/model/permission
-   must fail loudly or remain blocked, never be recorded as a pass.
-4. Review cleartext/network configuration, WebView settings, untrusted-output sinks, sensitive logging, storage and IPC boundaries against the actual diff. No retired source/security script gate applies.
-5. Also run Android Lint, Detekt, Ktlint, and the applicable contract/gate checks.
-   Do not suppress a finding, add a baseline, or broaden an exclusion to make a
-   security check pass. Fix the root cause or document an explicitly approved
-   false positive.
-
-## Out of Scope
-
-Backend-only controls (for example CSP, HSTS, cookie flags, server-side rate
-limiting), formal compliance certification, and penetration testing require their
-own owners and review. They do not waive these client-side rules.
+## Evidence when triggered
+- Document the affected trust boundary and failure/fallback behavior.
+- Add unit/integration tests for input validation, auth/sync failure handling, or Firestore rules (`npm --prefix firebase run test:rules` when rules change), plus real runtime proof when platform/IPC behavior changes.

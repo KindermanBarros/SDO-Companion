@@ -30,8 +30,8 @@
   "commands": {
     "build": ["cmd", "/c", "gradlew.bat", ":app:assembleDebug"],
     "unit_tests": ["cmd", "/c", "gradlew.bat", ":app:cleanTestDebugUnitTest", ":app:testDebugUnitTest", "--rerun-tasks"],
-    "ktlint": ["cmd", "/c", "gradlew.bat", "ktlintCheck"],
-    "detekt": ["cmd", "/c", "gradlew.bat", "detekt"],
+    "ktlint": ["cmd", "/c", "gradlew.bat", ":app:ktlintCheck"],
+    "detekt": ["cmd", "/c", "gradlew.bat", ":app:detekt"],
     "lint": ["cmd", "/c", "gradlew.bat", ":app:lintDebug"],
     "coverage_report": ["cmd", "/c", "gradlew.bat", ":app:koverXmlReportDebug"]
   },

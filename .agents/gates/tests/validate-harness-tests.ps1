@@ -16,7 +16,7 @@ function Run-Gate([int]$expected, [string]$reason, [string]$diagnostic = '') {
 }
 try {
     [IO.Directory]::CreateDirectory($fixture) | Out-Null
-    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','.docs','.agents','.codex','.githooks','docs')) {
+    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','.docs','.agents','.codex','.githooks','docs','harness')) {
         Copy-Item -LiteralPath (Join-Path $source $name) -Destination $fixture -Recurse
     }
     Run-Gate 0 'valid current harness'

@@ -42,6 +42,7 @@ Add new findings to the backlog without silently expanding the active task. Comp
 ## Ongoing tasks
 | Task | File | Started |
 |---|---|---|
+| Optimize workflows and tools | [Task state](OngoingTasks/lean_workflows_and_tools_task_state.md) | 2026-11-14 |
 | Publish v0.51.1 | [Task state](OngoingTasks/release_0_51_1_task_state.md) | 2026-11-13 |
 | Reconcile pending worktrees | [Task state](OngoingTasks/worktree_reconciliation_task_state.md) | 2026-11-13 |
 

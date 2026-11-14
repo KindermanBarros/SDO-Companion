@@ -1,110 +1,15 @@
 ---
 name: bug-reproduction
-description: Reproduce a bug with a failing test before fixing it.
+description: Reproduce a behavioral bug with a failing test before fixing it.
 ---
-
 # Skill — Bug Reproduction (TDD)
 
-## Purpose
+Follow [Bug Fixing](../../workflows/bug-fixing.md) and [testing-strategy.md](../../rules/testing-strategy.md). Apply to behavioral defects; cosmetic/copy/documentation adjustments use proportional build/review verification without ceremonial RED tests.
 
-Prove the root cause is correct by writing a **failing test** that mechanically reproduces the bug.
-The test must turn RED before any fix is written.
-This is the gate that separates "we believe we found it" from "we have proven it".
-
-Do not implement any fix in this stage.
-
----
-
-## Load
-
-Load `docs/current/spec_v<N>.md` first. `rules/testing-strategy.md` is auto-loaded as a system rule — do not re-read. After
-selecting the lowest sufficient reproduction layer, load only its guidance:
-
-- `skills/android-unit-test/SKILL.md` for a unit or JVM integration reproduction
-- `skills/ui-verification/SKILL.md` for a rendered-appearance reproduction
-- `rules/testing-runtime-evidence.md` for navigation or other Android runtime behavior
-- `skills/shared-json-scenarios/SKILL.md` only when an API response is part of the root cause
-
-When the spec declares an Exploratory QA handoff, use that selected finding's observed trigger and outcome to
-design the regression. Its existing runtime reproduction does not need another exploratory session. The QA
-report is historical evidence; this stage still requires an executed, failing deterministic test.
-
----
-
-## Execute
-
-### 1. Select the reproduction test layer
-
-Pick the **lowest** layer that is sufficient to reproduce the bug (per `testing-strategy.md`, already loaded):
-
-| Bug type | Preferred layer |
-|---|---|
-| Logic / calculation error | Unit test (`app/src/test/`) |
-| Data-flow / API mapping / error state | Integration test (`app/src/test/`) |
-| Rendered visual mismatch | JVM Roborazzi test (`app/src/test/java/<package>/roborazzi/`) |
-| Unresponsive element | Instrumented UI test (`app/src/androidTest/`) |
-| Navigation crash / deep-link issue | Instrumented UI test (`app/src/androidTest/`) |
-
-### 2. Write the reproduction test — RED phase
-
-Write a failing test that reproduces the defect before attempting a fix:
-
-1. **Write the test first**: Do not write the fix first. Do not touch application code.
-2. **Name the test descriptively**: Pattern: `"given <precondition>, when <action>, then <expected outcome>"`
-3. **Write the minimal test** that targets the root cause statement in `spec_v<N>.md`.
-4. **Do not write the fix**. Do not adjust application code to make the test pass.
-5. **Use shared JSON scenarios** if an API response is involved — do not inline mock data.
-6. **Add `@Ignore("BUG: <short description> — remove when fixed")`** if the test would block CI before the fix lands; remove the annotation in the Implementation stage.
-
-### 3. Run the test — confirm RED
-
-```bash
-./gradlew testDebugUnitTest --tests "<FullyQualifiedTestClass>"
-```
-
-or for instrumented tests:
-
-```bash
-./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class="<FullyQualifiedTestClass>#<method>"
-```
-
-**The test must fail.** A test that passes immediately means one of:
-- The bug is already fixed (re-examine the root cause)
-- The test is not actually reproducing the bug (fix the test)
-
-Do not advance until you have observed a RED result.
-
----
-
-## Output
-
-The new (failing) reproduction test file, committed with `@Ignore` if needed.
-
-Append to `docs/current/spec_v<N>.md`:
-
-```
-## Reproduction Test
-
-- File: `<relative path to test file>`
-- Class: `<TestClassName>`
-- Test name: `<test function name>`
-- Layer: Unit | Integration | Instrumented UI
-- Run result: FAILED ✓ (expected — bug confirmed)
-- Failure message: <paste the key assertion failure line>
-```
-
-Update `summary_v<N>.md`: mark this stage complete.
-
----
-
-## Done When
-
-**This stage is complete when all of the following are true — all must be mechanically verifiable:**
-
-- [ ] A reproduction test exists that targets the root cause statement in `spec_v<N>.md`
-- [ ] The selected JVM or instrumented test command exits **non-zero** for the new test, confirming RED
-- [ ] The failure message matches the root cause — not a compilation error or unrelated assertion
-- [ ] No application source code has been modified in this stage
-- [ ] `spec_v<N>.md` is updated with the Reproduction Test section
-
-**APPROVED →** Return to the active workflow file and proceed to the Fix Plan stage.
+## Execution
+1. **Select lowest reproduction layer**:
+   - Domain/calculation/ViewModel state bug → JVM unit test (`app/src/test/`)
+   - Repository/serialization/sync mapping bug → JVM integration test (`app/src/test/`)
+   - Room migration, Compose gesture/semantics, or `AppSurface` lifecycle bug → Instrumented test (`app/src/androidTest/`)
+2. **Write minimal RED test**: Do not modify production code yet. Name the test clearly (`given_when_then`) and target the exact root cause. If needed from an `exploratory-qa` handoff, translate its recorded finding into this deterministic test without re-running the QA session.
+3. **Confirm RED**: Run the single test selector (`.\gradlew.bat :app:testDebugUnitTest --tests "<ClassName>"` or `connectedDebugAndroidTest` with `-Pandroid.testInstrumentationRunnerArguments.class="<ClassName>#<method>"`) and verify it fails for the expected reason before implementing the fix.

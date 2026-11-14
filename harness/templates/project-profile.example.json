@@ -15,9 +15,11 @@
     }
   ],
   "commands": {
-    "build": ["bash", "./gradlew", ":mobile:assembleDebug"],
-    "unit_tests": ["bash", "./gradlew", ":mobile:cleanTestDebugUnitTest", ":mobile:testDebugUnitTest", "--rerun-tasks"],
-    "source_rules": ["bash", "harness/scripts/check-full-source-rules.sh"]
+    "build": ["cmd", "/c", "gradlew.bat", ":app:assembleDebug"],
+    "unit_tests": ["cmd", "/c", "gradlew.bat", ":app:cleanTestDebugUnitTest", ":app:testDebugUnitTest", "--rerun-tasks"],
+    "ktlint": ["cmd", "/c", "gradlew.bat", ":app:ktlintCheck"],
+    "detekt": ["cmd", "/c", "gradlew.bat", ":app:detekt"],
+    "lint": ["cmd", "/c", "gradlew.bat", ":app:lintDebug"]
   },
   "navigation": {
     "destinations": "mobile/src/main/kotlin/example/ui/navigation/Destinations.kt",

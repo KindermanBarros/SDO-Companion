@@ -1,121 +1,17 @@
 ---
 name: api-contract-update
-description: Deliver a backend API contract change through data, domain, UI, and verification.
+description: Deliver a data, catalog, or Firebase contract change through domain, UI, and tests.
 ---
+# Skill — API & Data Contract Update
 
-# Skill — API Contract Update
+Follow [api-contract-rules.md](../../rules/api-contract-rules.md) and [firebase_contract.md](../../../.docs/Architecture/firebase_contract.md).
 
-## Purpose
-Drive a complete API contract change end-to-end. Covers DTO updates, domain mapping, optional UI changes, integration tests with shared JSON scenarios, and code quality checks.
-
-Use this skill when:
-- A backend API changes its request or response contract.
-
----
-
-## Scope
-
-Determine scope before running any stage:
-
-| Scope | Stages to run |
-|-------|--------------|
-| **Full** (contract + repo + UI + tests) | All stages (1 → 2 → 3 → 4 → 5 → 6) |
-| **Data & Domain only** (no UI changes) | 1 → 2 → 3 → 4 → 5 (lightweight). Skip UI in stage 3, skip 6. |
-
----
-
-## Load
-- `rules/android-architecture.md` (skip if already loaded this session — L1 is session-scoped)
-- `rules/implementation-rules.md` (skip if already loaded this session)
-- `rules/testing-strategy.md` is auto-loaded as a system rule — do not re-read
-- `rules/api-contract-rules.md`
-- `harness/templates/rule-applicability-template.md`
-- `docs/current/implementation_plan_v<N>.md` (once generated in Stage 2)
-
----
-
-## Execute
-
-### Stage 1 — Requirement, Impact & Design Analysis ✅ Always
-**INVOKE** the `requirement-analysis` skill via the Skill tool (name: `requirement-analysis`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
-
-Adapt the skill output to cover:
-- API impact classification (additive, breaking, partial)
-- DTO and Domain model changes required
-- Identify which layers are affected (data, domain, UI)
-- The complete Rule Applicability matrix is required for this workflow. API is Required;
-  every other rule needs an explicit decision and evidence plan.
-
-Review requirement completeness and the affected API/acceptance mappings before proceeding.
-
----
-
-### Stage 2 — Implementation Plan ⛔ STOP ✅ Always
-**INVOKE** the `implementation-plan` skill via the Skill tool (name: `implementation-plan`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
-
-Review plan scope, dependencies and test selectors against the approved specification before proceeding.
-
-**Stop and present the plan. Do not proceed until the user explicitly approves.**
-
----
-
-### Stage 3 — Implementation (Data + Domain + UI) ✅ Always
-**INVOKE** the `android-implementation` skill via the Skill tool (name: `android-implementation`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
-
-Implement affected layers sequentially:
-1. Update `sharedContracts/openapi.yaml` first if contract changed.
-2. Implement DTOs and Data Layer.
-3. Implement Domain models, repository interface, and use cases.
-4. Implement UI layer (ViewModel, Compose) only if contract change surfaces in UI.
-
----
-
-### Stage 4 — Testing ✅ Always
-**INVOKE** the `android-testing` skill via the Skill tool (name: `android-testing`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
-
-Mandatory: at least one integration test per changed API endpoint using shared JSON scenarios. See `testing-strategy.md`.
-
----
-
-### Stage 5 — Code Quality Fix ⚠️ Lightweight if Data & Domain only
-**INVOKE** the `code-quality-fix` skill via the Skill tool (name: `code-quality-fix`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
-
-Scope guidance:
-- Always run static analysis checks (Ktlint, Detekt, Lint).
-- Skip UI-related scripts or rules if UI was not modified.
-
----
-
-### Stage 6 — Knowledge Capture ⏭️ Skip unless change is non-obvious
-**INVOKE** the `knowledge-capture` skill via the Skill tool (name: `knowledge-capture`). Reading the SKILL.md manually is not a substitute — the Skill tool is the required mechanism.
-
-Only run if the contract change involves a tricky mapping, a breaking change, a non-standard pattern, or a decision future agents need to understand.
-
----
-
-## Output
-
-- Updated `sharedContracts/openapi.yaml`
-- Updated DTOs, mappers, Room entities/DAOs (if affected)
-- Updated domain models and use cases (if affected)
-- Updated Compose screens/ViewModels (if UI scope)
-- Integration tests for every changed endpoint using shared JSON scenarios
-- `docs/current/coding_report_v<N>.md` updated through each stage
-- `docs/current/summary_v<N>.md` with all completed stages marked
-- Rule Applicability decisions preserved with evidence for every Required row
-
----
-
-## Done When
-
-**All of the following must be true:**
-- [ ] `sharedContracts/openapi.yaml` reflects the new contract
-- [ ] No DTOs referenced outside the data layer
-- [ ] All changed API endpoints have at least one integration test using shared JSON scenarios
-- [ ] Ktlint, Detekt, and Lint pass with zero new violations
-- [ ] Navigation and coverage harness checks pass when their rules are triggered
-- [ ] Build passes: `./gradlew assembleDebug`
-- [ ] Unit + integration tests pass: `./gradlew testDebugUnitTest`
-- [ ] `summary_v<N>.md` marks all executed stages as complete with artifact references
-
-**APPROVED →** This skill is complete. Return control to the caller or close the task.
+## Workflow
+1. **Classify impact**: Identify whether the Firestore document, Room schema, or bundled JSON catalog change is backward-compatible, risky, or breaking, and list affected layers (`data/`, `domain/`, `presentation/`, `ui/`).
+2. **Implement ([android-implementation](../android-implementation/SKILL.md))**:
+   - Update canonical catalog JSON + generator scripts (`tools/generate_*.py --check`) or Firestore/Room mappings first.
+   - Decode optional fields and unknown enums defensively; keep DTO/entity types inside `data/`.
+   - Update domain models/interfaces and UI screens only when the contract change surfaces there.
+3. **Verify ([android-testing](../android-testing/SKILL.md), [code-quality-fix](../code-quality-fix/SKILL.md))**:
+   - Add/update JVM unit/integration or Room migration tests covering valid, missing, and unknown/fallback payloads.
+   - Run triggered checks from [CI checks](../../gates/ci-checks.md).
