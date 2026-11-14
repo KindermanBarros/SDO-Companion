@@ -112,17 +112,24 @@ fun SdoApp(
 
     var backStack by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
     val screenState = rememberSaveableStateHolder()
-    fun navigate(target: AppSurface, characterId: String? = selectedId) {
-        if (target == surface && characterId == selectedId) return
-        backStack = ArrayList(backStack + "${surface.name}|${selectedId.orEmpty()}")
+    fun navigate(
+        target: AppSurface,
+        characterId: String? = selectedId,
+        campaignId: String? = selectedJournalCampaignId,
+    ) {
+        if (target == surface && characterId == selectedId && campaignId == selectedJournalCampaignId) return
+        backStack = ArrayList(backStack + "${surface.name}|${selectedId.orEmpty()}|${selectedJournalCampaignId.orEmpty()}")
         selectedId = characterId
+        selectedJournalCampaignId = campaignId
         surface = target
     }
     fun goBack() {
         val previous = backStack.lastOrNull()
         backStack = ArrayList(backStack.dropLast(1))
-        surface = previous?.substringBefore('|')?.let(AppSurface::valueOf) ?: AppSurface.DASHBOARD
-        selectedId = previous?.substringAfter('|')?.takeIf(String::isNotBlank)
+        val parts = previous?.split('|').orEmpty()
+        surface = parts.getOrNull(0)?.takeIf(String::isNotBlank)?.let(AppSurface::valueOf) ?: AppSurface.DASHBOARD
+        selectedId = parts.getOrNull(1)?.takeIf(String::isNotBlank)
+        selectedJournalCampaignId = parts.getOrNull(2)?.takeIf(String::isNotBlank)
     }
 
     LaunchedEffect(authenticatedSession, demo, preferences.autoSync) {
@@ -208,8 +215,7 @@ fun SdoApp(
                     onDeleteCampaign = appViewModel::deleteCampaign,
                     onLeaveCampaign = appViewModel::leaveCampaign,
                     onOpenJournal = { campaign ->
-                        selectedJournalCampaignId = campaign.id
-                        navigate(AppSurface.JOURNAL)
+                        navigate(AppSurface.JOURNAL, campaignId = campaign.id)
                     },
                     onPreviewInvite = appViewModel::previewCampaignInvite,
                     onAcceptInvite = appViewModel::acceptCampaignInvite,
@@ -252,6 +258,17 @@ fun SdoApp(
                         selectedCharacter?.let(appViewModel::closeCharacter)
                         navigate(AppSurface.SESSION, it)
                     },
+                    onOpenJournal = selectedCharacter?.let { character ->
+                        val cid = normalizeCampaignId(character.campaignId)
+                        if (campaigns.any { it.id == cid }) {
+                            {
+                                appViewModel.closeCharacter(character)
+                                navigate(AppSurface.JOURNAL, campaignId = cid)
+                            }
+                        } else {
+                            null
+                        }
+                    },
                     onSave = appViewModel::save,
                     onAutosave = appViewModel::autosave,
                     onPlayerLock = appViewModel::setPlayerLocked,
@@ -270,6 +287,16 @@ fun SdoApp(
                     onSelect = { navigate(AppSurface.SESSION, it) },
                     onOpenSheet = {
                         navigate(AppSurface.SHEET, it)
+                    },
+                    canOpenJournal = { character ->
+                        val cid = normalizeCampaignId(character.campaignId)
+                        campaigns.any { it.id == cid }
+                    },
+                    onOpenJournal = { character ->
+                        val cid = normalizeCampaignId(character.campaignId)
+                        if (campaigns.any { it.id == cid }) {
+                            navigate(AppSurface.JOURNAL, characterId = character.id, campaignId = cid)
+                        }
                     },
                     onCommand = appViewModel::applySessionCommand,
                     onBack = { goBack() },
