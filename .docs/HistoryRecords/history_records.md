@@ -79,3 +79,8 @@ Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving a
 - Owner approved release v0.51.1 and workflow optimization; archived task records as Done, preserving evidence/limitations.
 - Started shared journal refinement; captured owner permissions/text-only decisions and draft specification with acceptance criteria. Task remains InProgress pending spec approval.
 - Checks: validate-harness.ps1 PASS (116 documents); git diff --check PASS. Documentation only; Android build/device checks not run.
+
+## 2026-11-14 01:23 America/La_Paz - Require styleguide in Pen skill
+- Owner approved BACKLOG-001 specification, then rejected visual candidates and requested adding the styleguide to pen-design-editor.
+- Added mandatory guide/component/token references, source-to-Pen mapping and representative-frame review; discarded rejected candidates and preserved journal design InProgress. Skill correction enters InDevReview.
+- Checks: skill-creator quick_validate.py PASS; validate-harness.ps1 PASS (116 documents); scoped diff PASS. No app code changed; Android/runtime and corrected-design verification not run.
