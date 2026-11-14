@@ -1,7 +1,7 @@
 # Shared Campaign Journal — BACKLOG-001 (`CAMPAIGN-PLAN-001`)
 
 - **Date / Status**: `2026-11-14` / Spec & UI approved (with Standard blue/cyan accent refinement); Implementation `InProgress`.
-- **Visual Assets**: [journal.pen](assets/2026-11-14-shared-campaign-journal/journal.pen), [review-board-v2.png](assets/2026-11-14-shared-campaign-journal/review-board-v2.png), [visual_references.json](assets/2026-11-14-shared-campaign-journal/visual_references.json), [previews-v2/](assets/2026-11-14-shared-campaign-journal/previews-v2/).
+- **Visual Assets**: [journal.pen](assets/2026-11-14-shared-campaign-journal/journal.pen), [review-board-v2.png](assets/2026-11-14-shared-campaign-journal/review-board-v2.png), [visual_references.json](assets/2026-11-14-shared-campaign-journal/visual_references.json).
 
 ## 1. Objective & Scope
 Campaign participants record their shared story separately from personal notes and technical operation history.

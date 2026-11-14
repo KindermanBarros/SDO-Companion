@@ -1,5 +1,5 @@
 # Living product documentation
-The [backlog](../../docs/product/product.md#backlog-de-produto) is part of daily workflow, not an archive.
+The [backlog](../../docs/product/product.md#product-backlog) is part of daily workflow, not an archive.
 
 1. At orientation read the requested backlog row and affected capability requirements; use existing IDs.
 2. Record newly requested work, regressions and useful discoveries in that same backlog, with source, status and unresolved decisions.

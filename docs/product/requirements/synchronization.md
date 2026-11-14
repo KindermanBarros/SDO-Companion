@@ -1,39 +1,39 @@
-# Sincronização e conectividade
+# Synchronization & Connectivity
 
 **Capability ID**: `synchronization`
 
-Status: implementada em `InDevReview` (`BACKLOG-006` / `SYNC-PLAN-001`, 2026-11-14); verificação JVM concluída e validação runtime em emulador/dispositivo pendente.
+Status: implemented in `InDevReview` (`BACKLOG-006` / `SYNC-PLAN-001`, 2026-11-14); JVM verification completed and emulator/device runtime verification pending.
 
 ## User goal
 
-Permitir edição simultânea com atualização em tempo real e evitar problemas de sincronização, exigindo conexão para qualquer edição.
+Enable simultaneous real-time editing and prevent sync issues by requiring an online connection for every mutation.
 
 ## Requirements
 
-O aplicativo existente possui persistência local, sincronização e tratamento de conflitos, conforme os registros de adoção. Este documento não certifica o comportamento atual nem afirma que a política online abaixo já esteja aplicada.
+The existing app has local persistence, sync, and conflict handling per onboarding records. This document does not certify legacy runtime behavior beyond verified tests.
 
 ## Planned changes
 
-### SYNC-PLAN-001 — Edição simultânea e política online
+### SYNC-PLAN-001 — Simultaneous editing and online-only policy
 
-Pedido direto do proprietário: adicionar edição simultânea em tempo real; reservar a resolução de conflito para edições de contas diferentes; exigir uso online para editar, com tela de conexão/falha e modo offline sem nenhuma edição.
+Direct owner request: add real-time simultaneous editing; reserve conflict resolution for edits from different accounts; require online connection to edit, with connection/failure states and read-only offline mode without any edits.
 
-| ID | Comportamento solicitado |
+| ID | Requested behavior |
 |---|---|
-| SYNC-PLAN-001-A | Propagar edições simultâneas em tempo real entre as sessões participantes. |
-| SYNC-PLAN-001-B | Edições de uma mesma conta, inclusive em sessões/dispositivos diferentes, devem convergir sem exigir resolução manual de conflitos. |
-| SYNC-PLAN-001-C | Reservar a resolução de conflitos para edições concorrentes de contas diferentes; a sincronização normal entre contas não deve exigir intervenção quando não houver conflito. |
-| SYNC-PLAN-001-D | Exigir conexão online para editar em todo o aplicativo. Sem conexão, nenhum fluxo pode permitir alterações, incluindo ficha, campanha, diário, fotos, ações de sessão, desenho e movimentação de tokens. |
-| SYNC-PLAN-001-E | Apresentar estados/telas de conexão e falha de conexão, distinguindo indisponibilidade de uma operação concluída. |
-| SYNC-PLAN-001-F | Oferecer modo offline somente leitura, sem permitir nenhuma edição. Não criar novas edições offline para envio posterior como alternativa ao bloqueio. |
+| SYNC-PLAN-001-A | Propagate simultaneous edits in real time across participating sessions. |
+| SYNC-PLAN-001-B | Edits from the same account, including across different sessions/devices, must converge without requiring manual conflict resolution. |
+| SYNC-PLAN-001-C | Reserve manual conflict resolution for concurrent edits by different accounts; normal cross-account sync must not prompt when there is no conflict. |
+| SYNC-PLAN-001-D | Require online connection to edit across the entire app. When offline, no flow may allow changes, including sheets, campaigns, journal, photos, session actions, drawing, and token movement. |
+| SYNC-PLAN-001-E | Display connection and connection-failure states/screens, distinguishing unavailability from a completed operation. |
+| SYNC-PLAN-001-F | Offer read-only offline mode without allowing any edits. Do not create queued offline edits for later upload as an alternative to blocking. |
 
-O modo offline de consulta é a exceção à obrigatoriedade de uso online; não concede permissão para alterar dados. A nova política deve ser considerada no refinamento dos itens de diário, modos Sessão/Mestre, fotos e grid de batalha.
+Read-only offline inspection is the sole exception to mandatory online use; it grants no write permission. This policy applies to journal, Session/GM modes, photos, and battle grid refinements.
 
-Decisões ainda para refinamento: quais dados estarão disponíveis para consulta offline; critério de conexão efetiva com o serviço, além da presença de rede; tratamento de uma edição em andamento quando a conexão cai; confirmação e recuperação de gravações cujo resultado é desconhecido; convergência de alterações simultâneas no mesmo campo pela mesma conta; granularidade dos conflitos entre contas e apresentação da comparação; autorização de escrita e retomada da edição após reconectar. A política não promete eliminar todas as falhas de rede nem fixa tecnologia, algoritmo de mesclagem ou modelo de armazenamento.
+Open refinement items: which data sets remain cached for offline inspection; effective backend reachability criteria beyond network presence; handling in-progress edits when connection drops; confirmation/recovery for uncertain writes; same-field simultaneous edits by the same account; cross-account conflict granularity/comparison UI; write authorization and resuming edits upon reconnect.
 
 ## References
 
-- Solicitação direta do proprietário em 2026-11-12 sobre edição simultânea, conflitos apenas entre contas diferentes e uso online obrigatório para edição.
-- `docs/current/onboarding-summary.md`: observações de adoção sobre Room, Firebase e sincronização existente.
-- [Campanhas e modos de jogo](campaigns.md#planned-changes).
-- [Fotos de personagens](character-sheets.md#planned-changes).
+- Direct owner request on 2026-11-12 for simultaneous editing, cross-account-only conflicts, and mandatory online editing.
+- `docs/current/onboarding-summary.md`: onboarding observations on Room, Firebase, and existing sync.
+- [Campaigns & play modes](campaigns.md#planned-changes).
+- [Character photos](character-sheets.md#planned-changes).
