@@ -1,8 +1,8 @@
 # QA suite and execution-run artifacts
 
-Standalone exploratory QA keeps its existing default `.qa-artifacts/<run-id>/` layout.
+Standalone exploratory QA keeps its existing default `.scratch/qa/<run-id>/` layout.
 Standalone run IDs have no required date/prefix naming scheme. For a test plan with many cases, use
-`.qa-artifacts/<suite-id>/` to group the test plan and one `suite-report.md`. Each case attempt
+`.scratch/qa/<suite-id>/` to group the test plan and one `suite-report.md`. Each case attempt
 and exploratory session is an independent execution run with the same existing files.
 
 ## Suite ID naming
@@ -16,7 +16,7 @@ YYYYMMDD-<feature-slug>-<platform>-<sequence>
 ## Folder structure
 
 ```text
-.qa-artifacts/
+.scratch/qa/
 └── 20261104-node-sharing-android-01/             # suite-id; one build/device/environment
     ├── test_plan_v1.md                          # cases, AC coverage, gaps and risk targets
     ├── suite-report.md                         # context, approval, planned results,
@@ -56,7 +56,7 @@ or exploratory finding.
 
 ## Suite report
 
-Maintain these sections in `.qa-artifacts/<suite-id>/suite-report.md`.
+Maintain these sections in `.scratch/qa/<suite-id>/suite-report.md`.
 Use the blank [suite-report.md example](../examples/suite-report.md) as a starting point:
 
 | Section | Content |
@@ -88,7 +88,7 @@ in leaves rather than copying it into multiple human-facing reports.
   case ID or full filesystem path. Verify/export before session reset and cleanup.
 - For mitmproxy, set `QA_RUN_ROOT` to the leaf's parent (`cases/NS-01` in the example),
   then pass the leaf run ID to the existing proxy helper. Its default remains
-  `.qa-artifacts` for standalone runs. Keep `QA_MOCK_SCENARIO` in that same leaf.
+  `.scratch/qa` for standalone runs. Keep `QA_MOCK_SCENARIO` in that same leaf.
 - Each leaf owns its scenario hash, observations, fixture/contract snapshots, request
   journal window, native HarnessLens run ID and manifest. HarnessLens's 32-hex ID is
   separate from the folder run ID. Never share captures or append retry evidence to

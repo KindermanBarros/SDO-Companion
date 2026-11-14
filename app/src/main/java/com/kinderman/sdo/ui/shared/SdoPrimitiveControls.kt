@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
@@ -16,7 +15,6 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -60,12 +58,12 @@ fun SdoButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = RoundedCornerShape(20.dp),
+    shape: Shape = SdoShapeTokens.control,
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable RowScope.() -> Unit,
 ) {
     val cyber = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
-    val resolvedShape = if (cyber) CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp) else shape
+    val resolvedShape = shape
     val interaction = remember { MutableInteractionSource() }
     Button(
         onClick = onClick, modifier = modifier.clip(resolvedShape).then(if (cyber) Modifier.cyberGrungePress(interaction) else Modifier),
@@ -78,16 +76,19 @@ fun SdoOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = RoundedCornerShape(20.dp),
+    shape: Shape = SdoShapeTokens.control,
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
     border: BorderStroke? = null,
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit,
 ) {
     val cyber = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
-    val resolvedShape = if (cyber) CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp) else shape
-    val resolvedBorder = if (cyber) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .72f))
-    else border ?: ButtonDefaults.outlinedButtonBorder(enabled)
+    val resolvedShape = shape
+    val resolvedBorder = border ?: if (cyber) {
+        BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .72f))
+    } else {
+        ButtonDefaults.outlinedButtonBorder(enabled)
+    }
     val interaction = remember { MutableInteractionSource() }
     OutlinedButton(
         onClick = onClick, modifier = modifier.clip(resolvedShape).then(if (cyber) Modifier.cyberGrungePress(interaction) else Modifier),
@@ -99,13 +100,20 @@ fun SdoOutlinedButton(
 @Composable
 fun SdoCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(12.dp),
-    colors: CardColors = CardDefaults.cardColors(),
+    shape: Shape = SdoShapeTokens.panel,
+    colors: CardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ),
+    border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        CyberGrungePanel(modifier, MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content)
-    } else Card(modifier = modifier, shape = shape, colors = colors, content = content)
+        CyberGrungePanel(modifier, MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content, shape, border)
+    } else Card(
+        modifier = modifier, shape = shape, colors = colors,
+        border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), content = content,
+    )
 }
 
 @Composable
@@ -113,16 +121,22 @@ fun SdoCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = RoundedCornerShape(12.dp),
-    colors: CardColors = CardDefaults.cardColors(),
+    shape: Shape = SdoShapeTokens.panel,
+    colors: CardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ),
+    border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        val resolved = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)
         androidx.compose.foundation.layout.Box(
-            modifier.clip(resolved).clickable(enabled = enabled, onClick = onClick),
-        ) { CyberGrungePanel(Modifier, MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content) }
-    } else Card(onClick = onClick, modifier = modifier, enabled = enabled, shape = shape, colors = colors, content = content)
+            modifier.clickable(enabled = enabled, onClick = onClick),
+        ) { CyberGrungePanel(Modifier, MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content, shape, border) }
+    } else Card(
+        onClick = onClick, modifier = modifier, enabled = enabled, shape = shape, colors = colors,
+        border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), content = content,
+    )
 }
 
 @Composable
@@ -165,15 +179,10 @@ fun SdoIconButton(
 
 /**
  * Shared click surface for rows and custom layouts that cannot be expressed as buttons or cards.
- * Clipping before indication keeps nested feedback inside the owning element.
+ * The owning surface draws its outline; clipping a text row here would mask its glyphs.
  */
 @Composable
 fun Modifier.sdoClickable(
     enabled: Boolean = true,
-    shape: CornerBasedShape = if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp)
-    } else {
-        RoundedCornerShape(8.dp)
-    },
     onClick: () -> Unit,
-): Modifier = clip(shape).clickable(enabled = enabled, onClick = onClick)
+): Modifier = clickable(enabled = enabled, onClick = onClick)

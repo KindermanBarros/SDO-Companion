@@ -1,0 +1,386 @@
+﻿[
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "PAINEL",
+        "width":  112,
+        "style":  "standard",
+        "height":  43,
+        "file":  "identity-standard-0.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "BIBLIOTECA",
+        "width":  187,
+        "style":  "standard",
+        "height":  44,
+        "file":  "identity-standard-1.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "SESSÃO",
+        "width":  122,
+        "style":  "standard",
+        "height":  45,
+        "file":  "identity-standard-2.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "FICHA",
+        "width":  90,
+        "style":  "standard",
+        "height":  44,
+        "file":  "identity-standard-3.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "RAÇAS",
+        "width":  98,
+        "style":  "standard",
+        "height":  42,
+        "file":  "identity-standard-4.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "FILTROS",
+        "width":  138,
+        "style":  "standard",
+        "height":  44,
+        "file":  "identity-standard-5.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "DETALHES",
+        "width":  164,
+        "style":  "standard",
+        "height":  41,
+        "file":  "identity-standard-6.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "CORPO",
+        "width":  104,
+        "style":  "standard",
+        "height":  38,
+        "file":  "identity-standard-7.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "MODO SESSÃO",
+        "width":  216,
+        "style":  "standard",
+        "height":  45,
+        "file":  "identity-standard-8.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "CRIAR PERSONAGEM",
+        "width":  307,
+        "style":  "standard",
+        "height":  44,
+        "file":  "identity-standard-9.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "FICHA DE PERSONAGEM",
+        "width":  354,
+        "style":  "standard",
+        "height":  44,
+        "file":  "identity-standard-10.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "COMPONENTES",
+        "width":  232,
+        "style":  "standard",
+        "height":  41,
+        "file":  "identity-standard-11.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "FILTRAR FICHAS",
+        "width":  254,
+        "style":  "standard",
+        "height":  44,
+        "file":  "identity-standard-12.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "CATEGORIA",
+        "width":  177,
+        "style":  "standard",
+        "height":  43,
+        "file":  "identity-standard-13.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "SELECIONAR RAÇA",
+        "width":  276,
+        "style":  "standard",
+        "height":  46,
+        "file":  "identity-standard-14.png"
+    },
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "ESCOLHER RAÇA",
+        "width":  244,
+        "style":  "standard",
+        "height":  43,
+        "file":  "identity-standard-15.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "PAINEL",
+        "width":  139,
+        "style":  "cyber",
+        "height":  37,
+        "file":  "identity-cyber-0.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "BIBLIOTECA",
+        "width":  235,
+        "style":  "cyber",
+        "height":  37,
+        "file":  "identity-cyber-1.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "SESSÃO",
+        "width":  145,
+        "style":  "cyber",
+        "height":  37,
+        "file":  "identity-cyber-2.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "FICHA",
+        "width":  124,
+        "style":  "cyber",
+        "height":  38,
+        "file":  "identity-cyber-3.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "RAÇAS",
+        "width":  117,
+        "style":  "cyber",
+        "height":  43,
+        "file":  "identity-cyber-4.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "FILTROS",
+        "width":  165,
+        "style":  "cyber",
+        "height":  39,
+        "file":  "identity-cyber-5.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "DETALHES",
+        "width":  189,
+        "style":  "cyber",
+        "height":  38,
+        "file":  "identity-cyber-6.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "CORPO",
+        "width":  121,
+        "style":  "cyber",
+        "height":  36,
+        "file":  "identity-cyber-7.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "MODO SESSÃO",
+        "width":  268,
+        "style":  "cyber",
+        "height":  38,
+        "file":  "identity-cyber-8.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "CRIAR PERSONAGEM",
+        "width":  391,
+        "style":  "cyber",
+        "height":  39,
+        "file":  "identity-cyber-9.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "FICHA DE PERSONAGEM",
+        "width":  464,
+        "style":  "cyber",
+        "height":  39,
+        "file":  "identity-cyber-10.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "COMPONENTES",
+        "width":  261,
+        "style":  "cyber",
+        "height":  36,
+        "file":  "identity-cyber-11.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "FILTRAR FICHAS",
+        "width":  333,
+        "style":  "cyber",
+        "height":  39,
+        "file":  "identity-cyber-12.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "CATEGORIA",
+        "width":  219,
+        "style":  "cyber",
+        "height":  39,
+        "file":  "identity-cyber-13.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "SELECIONAR RAÇA",
+        "width":  363,
+        "style":  "cyber",
+        "height":  43,
+        "file":  "identity-cyber-14.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "ESCOLHER RAÇA",
+        "width":  315,
+        "style":  "cyber",
+        "height":  43,
+        "file":  "identity-cyber-15.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "PAINEL",
+        "width":  146,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-0.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "BIBLIOTECA",
+        "width":  243,
+        "style":  "acidic",
+        "height":  37,
+        "file":  "identity-acidic-1.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "SESSÃO",
+        "width":  165,
+        "style":  "acidic",
+        "height":  44,
+        "file":  "identity-acidic-2.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "FICHA",
+        "width":  122,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-3.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "RAÇAS",
+        "width":  146,
+        "style":  "acidic",
+        "height":  42,
+        "file":  "identity-acidic-4.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "FILTROS",
+        "width":  171,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-5.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "DETALHES",
+        "width":  213,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-6.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "CORPO",
+        "width":  147,
+        "style":  "acidic",
+        "height":  37,
+        "file":  "identity-acidic-7.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "MODO SESSÃO",
+        "width":  297,
+        "style":  "acidic",
+        "height":  44,
+        "file":  "identity-acidic-8.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "CRIAR PERSONAGEM",
+        "width":  417,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-9.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "FICHA DE PERSONAGEM",
+        "width":  475,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-10.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "COMPONENTES",
+        "width":  304,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-11.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "FILTRAR FICHAS",
+        "width":  327,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-12.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "CATEGORIA",
+        "width":  241,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-acidic-13.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "SELECIONAR RAÇA",
+        "width":  387,
+        "style":  "acidic",
+        "height":  42,
+        "file":  "identity-acidic-14.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "ESCOLHER RAÇA",
+        "width":  344,
+        "style":  "acidic",
+        "height":  42,
+        "file":  "identity-acidic-15.png"
+    }
+]

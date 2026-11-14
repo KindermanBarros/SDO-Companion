@@ -7,6 +7,7 @@
 - The owner prefers automatic commits after applicable checks pass; stage only the completed task's files.
 - Create branches, pushes and pull requests only when requested.
 - Preserve unrelated working-tree changes. Never stage secrets, signing keys, local.properties, build outputs or IDE caches.
+- Agent temporary files belong only in .scratch; promote necessary final records and remove the entire folder before EVERY commit. Enable .githooks/pre-commit with git config --local core.hooksPath .githooks; never bypass it to retain temporary output.
 - Jira prefix: None; no confirmed Jira ID exists. Do not invent one.
 - Until an owner supplies a Jira ID, only lab branches are allowed under this harness.
 - Existing fix/cybergrunge-improvements predates setup and is preserved.

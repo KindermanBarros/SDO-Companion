@@ -1,5 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
+import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,8 @@ import com.kinderman.sdo.domain.catalog.toStructuredPower
 import com.kinderman.sdo.domain.model.*
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
@@ -99,13 +102,13 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
     fun update(value: Ability) = onChange(character.copy(
         abilities = character.allCanonicalAbilitiesSafely().map { if (it.id == ability.id) value.copy(revision = ability.revision + 1) else it },
     ))
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    SdoInsetCard(contentPadding = 12.dp) {
         Row(
             Modifier.fillMaxWidth().sdoClickable { expanded = !expanded },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
+            SdoCardTitle(
                 if (ability.kind == AbilityKind.POWER) ability.name else ability.kind.label.uppercase(),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.primary,
@@ -117,13 +120,13 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
             }
         }
         if (ability.kind != AbilityKind.POWER) {
-            Text(ability.name, style = MaterialTheme.typography.titleMedium)
+            SdoCardTitle(ability.name, style = MaterialTheme.typography.titleMedium)
         }
-        Text(ability.compactSummary(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-        if (isRacial) Text("PODER RACIAL // VINCULADO À RAÇA", color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.labelSmall)
+        SdoMetadataText(ability.compactSummary(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        if (isRacial) SdoMetadataText("PODER RACIAL // VINCULADO À RAÇA", color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.labelSmall)
         if (!expanded) {
             Text(ability.effect.ifBlank { "Sem descrição." }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 2)
-            return@Column
+            return@SdoInsetCard
         }
         else HudTextField("Nome", nameDraft, enabled = mechanicsEditable) { value ->
             nameDraft = value

@@ -1,13 +1,18 @@
-# Product documentation flow
+# Living product documentation
+The [backlog](../../docs/product/product.md#backlog-de-produto) is part of daily workflow, not an archive.
 
-Keep consumer documentation under the consumer repository root. Product capability requirements live in `docs/product/requirements/<capability>.md`; dated complex-change workspaces live in `.scratch/<YYYY-MM-DD>-<change>/`. Keep `.scratch/` version controlled and retain records throughout their lifecycle. Ad-hoc artifacts remain in `docs/current/`. Never write consumer records into a nested shared harness checkout.
+1. At orientation read the requested backlog row and affected capability requirements; use existing IDs.
+2. Record newly requested work, regressions and useful discoveries in that same backlog, with source, status and unresolved decisions.
+3. Select only owner-authorized scope; backlog presence does not grant implementation or priority.
+4. Link the task state and approved contract. Reuse the same record on continuation.
+5. At handoff reconcile implemented, awaiting-review, blocked and deferred scope; only owner approval closes accepted work.
+6. Preserve requests/decisions and their history; do not silently delete undelivered backlog items or claim partial UI work delivers broader capabilities.
 
-Before requirements analysis or orientation, read the full affected living capability file(s). Identify the existing statements and planned changes that the approved delta touches; trace each against the approved scope, current source, and verification evidence. `docs/product/product.md` is a navigation overview and the sole work-package lifecycle tracker. Detailed product behavior belongs in capability files. Keep implementation decisions and reusable pitfalls in `docs/knowledge/`.
+Product index/lifecycle: docs/product/product.md. Detailed living requirements: docs/product/requirements/.
+Durable dated complex contracts/evidence: docs/changes/YYYY-MM-DD-feature-name/. Ad-hoc spec/plan/summary: docs/current/.
+Temporary investigation/QA output: .scratch/ only, always removed before commit after promoting necessary final evidence.
+Never put approvals, task states, backlog or durable contracts in scratch.
 
-Add `## Product Requirements` to each new change specification. Link the repository-relative capability file(s), identify the affected requirements, and record their SHA-256 hashes when approved. The living files own product intent; the approved change spec owns the delta and Rule Applicability, and the sprint contract/feature list own execution. An edit to a living file does not authorize a scope change; reapprove any changed delta through the selected workflow.
-
-During planning keep proposed/approved-but-undelivered behavior distinct under `## Planned changes`. Preserve delivered requirements until replacement is verified. At reconciliation, edit existing requirement rows and paragraphs in place when behavior changes; retire stale IDs, destinations, counts, and proposal claims instead of appending a new dated/versioned subsection that repeats or contradicts them. Keep genuinely undelivered scope and incomplete acceptance under `## Planned changes`, with implemented-but-unverified behavior explicitly qualified. Do not promote source presence or partial tests to verified product status.
-
-Record one row for each affected prior claim in the existing change summary under `## Product Requirement Reconciliation`, using columns `Capability file`, `Existing claim reviewed`, `Disposition`, `Current requirement location or retired status`, and `Evidence / qualification`. Quote an exact, concise excerpt in `Existing claim reviewed`. Use only `Replace`, `Retire`, `Retain`, or `Confirm unchanged`; a `Confirm unchanged` row needs a reason. The checker rejects a `Replace`/`Retire` excerpt that remains in the capability file and a `Retain`/`Confirm unchanged` excerpt that is absent. The table is a review trail, not a replacement for editing stale capability text. Reviewers compare the prior claim, current requirement, approved scope, source, and evidence.
-
-Review the reconciliation table and linked capability/specification/workspace records before closing behavior-changing work. Verify the cited excerpts and dispositions against the actual files, and review tracker consistency after edits. No retired product/lifecycle script gate applies. Requirements consolidation or relocation does not create new approvals or runtime evidence.
+Update existing capability claims in place; distinguish proposed intent, implemented source and verified acceptance.
+For meaningful behavior changes, link the affected requirement IDs and record the concise disposition in the active summary.
+For documentation-only workflow maintenance, record product behavior unchanged; do not generate fake product specifications.

@@ -109,7 +109,9 @@ fun SdoApp(
         }
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { appViewModel.onAppForegrounded() }
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { appViewModel.onAppBackgrounded() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        appViewModel.onAppBackgrounded(changingConfiguration = activity.isChangingConfigurations)
+    }
     LaunchedEffect(message) {
         message?.let {
             snackbar.showSnackbar(it)

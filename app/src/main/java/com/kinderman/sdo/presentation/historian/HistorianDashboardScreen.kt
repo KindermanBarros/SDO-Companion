@@ -1,26 +1,33 @@
 package com.kinderman.sdo.presentation.historian
 
+import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.AlertDialog
@@ -40,9 +47,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kinderman.sdo.R
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignAlertSettings
 import com.kinderman.sdo.domain.model.CampaignContentKind
@@ -82,10 +97,14 @@ import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.Signal
+import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.ui.SdoActionButton
 import com.kinderman.sdo.ui.SdoActionStyle
 import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoOutlinedButton
+import com.kinderman.sdo.ui.SdoShapeTokens
 import com.kinderman.sdo.ui.SdoDataModules
 import com.kinderman.sdo.ui.SdoResponsiveGrid
 import com.kinderman.sdo.ui.SectionHeader
@@ -124,6 +143,18 @@ private fun LibraryCategory.matches(kind: CatalogKind): Boolean = when (this) {
     LibraryCategory.ABILITY -> kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH, CatalogKind.BATTLE_TECHNIQUE)
     LibraryCategory.CONDITION, LibraryCategory.NOTE -> false
     LibraryCategory.KNOWLEDGE -> kind in setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE)
+}
+
+private fun CatalogKind.labelResource(): Int = when (this) {
+    CatalogKind.PATH -> R.string.library_kind_path
+    CatalogKind.POWER -> R.string.library_kind_power
+    CatalogKind.MAGIC -> R.string.library_kind_magic
+    CatalogKind.ASH -> R.string.library_kind_ash
+    CatalogKind.RUNE -> R.string.library_kind_rune
+    CatalogKind.ITEM -> R.string.library_kind_item
+    CatalogKind.ACQUIRED_KNOWLEDGE -> R.string.library_kind_acquired_knowledge
+    CatalogKind.ARCANE_KNOWLEDGE -> R.string.library_kind_arcane_knowledge
+    CatalogKind.BATTLE_TECHNIQUE -> R.string.library_kind_battle_technique
 }
 
 private fun CampaignLibraryEntry.matchesSearch(query: String): Boolean {
@@ -173,6 +204,7 @@ fun HistorianDashboardScreen(
     var search by rememberSaveable { mutableStateOf("") }
     var librarySource by rememberSaveable { mutableStateOf(LibrarySource.ALL) }
     var libraryCategory by rememberSaveable { mutableStateOf(LibraryCategory.ALL) }
+    var libraryChoice by rememberSaveable { mutableStateOf<String?>(null) }
     var showArchivedLibrary by rememberSaveable { mutableStateOf(false) }
     var actionTarget by remember { mutableStateOf<Character?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
@@ -232,7 +264,7 @@ fun HistorianDashboardScreen(
             },
         ) { padding ->
             LazyColumn(
-                modifier = Modifier.padding(padding).fillMaxSize(),
+                modifier = Modifier.padding(padding).fillMaxSize().testTag("historian_screen_list"),
                 contentPadding = PaddingValues(18.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -302,26 +334,38 @@ fun HistorianDashboardScreen(
                     }
                     HistorianSection.LIBRARY -> {
                         item {
-                            TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                                TelemetryTag("LOCAL.CATALOG")
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 SectionHeader("02", "Biblioteca de referência")
-                                Text("Filtre modelos da campanha e referências canônicas por origem e categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 HudTextField(
-                                    label = "Buscar nome, categoria, efeito ou regra",
+                                    label = stringResource(R.string.library_search_label),
                                     value = search,
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().testTag("library_search"),
                                     onValue = { search = it },
                                 )
-                                Text("ORIGEM", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                                SdoResponsiveGrid(LibrarySource.entries, minItemWidth = 104.dp) { source, modifier ->
-                                    SdoFilterChip(source.label, librarySource == source, { librarySource = source }, modifier)
+                                val textScale = LocalDensity.current.fontScale * LocalSdoPreferences.current.fontScale.multiplier
+                                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                                    if (maxWidth >= (500 * textScale).dp) {
+                                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            LibrarySelector(stringResource(R.string.library_origin_label), librarySource.label, "library_origin_trigger", Modifier.weight(.45f)) { libraryChoice = "origin" }
+                                            LibrarySelector(stringResource(R.string.library_category_label), libraryCategory.label, "library_category_trigger", Modifier.weight(.55f)) { libraryChoice = "category" }
+                                        }
+                                    } else {
+                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            LibrarySelector(stringResource(R.string.library_origin_label), librarySource.label, "library_origin_trigger", Modifier.fillMaxWidth()) { libraryChoice = "origin" }
+                                            LibrarySelector(stringResource(R.string.library_category_label), libraryCategory.label, "library_category_trigger", Modifier.fillMaxWidth()) { libraryChoice = "category" }
+                                        }
+                                    }
                                 }
-                                Text("CATEGORIA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                                SdoResponsiveGrid(LibraryCategory.entries, minItemWidth = 128.dp) { category, modifier ->
-                                    SdoFilterChip(category.label, libraryCategory == category, { libraryCategory = category }, modifier)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                        .toggleable(value = showArchivedLibrary, role = Role.Checkbox, onValueChange = { showArchivedLibrary = it })
+                                        .testTag("library_archived_toggle"),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    AdaptiveSingleLineText(stringResource(R.string.library_include_archived), modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelSmall, minimumSize = 9.sp)
+                                    Checkbox(checked = showArchivedLibrary, onCheckedChange = null)
                                 }
-                                SdoFilterChip("INCLUIR ARQUIVADOS", showArchivedLibrary, { showArchivedLibrary = !showArchivedLibrary })
-                                SdoActionButton("NOVO MODELO", {
+                                SdoActionButton(stringResource(R.string.library_new_template), {
                                     selectedCampaign?.takeUnless { it.isArchived }?.let { editingLibrary = CampaignLibraryEntry(campaignId = it.id, createdBy = session.uid) }
                                 }, enabled = libraryWritable, style = SdoActionStyle.PRIMARY, modifier = Modifier.fillMaxWidth())
                                 if (!libraryWritable && selectedCampaign != null) {
@@ -338,9 +382,17 @@ fun HistorianDashboardScreen(
                             libraryCategory.matches(entry.kind) && (search.isBlank() || entry.searchableText().contains(search.trim(), true))
                         }
                         item {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("${if (librarySource == LibrarySource.CATALOG) 0 else filteredLibrary.size} MODELOS // ${if (librarySource == LibrarySource.CAMPAIGN) 0 else filtered.size} REFERÊNCIAS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-                                Text("${deliveries.count { it.campaignId == selectedCampaignId && it.state.name == "PENDING" }} ENTREGAS PENDENTES", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                SdoMetadataText(
+                                    stringResource(R.string.library_result_counts, if (librarySource == LibrarySource.CATALOG) 0 else filteredLibrary.size, if (librarySource == LibrarySource.CAMPAIGN) 0 else filtered.size),
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                                Text(
+                                    stringResource(R.string.library_pending_deliveries, deliveries.count { it.campaignId == selectedCampaignId && it.state.name == "PENDING" }),
+                                    modifier = Modifier.testTag("library_pending_count"),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
                             }
                         }
                         if (librarySource != LibrarySource.CATALOG) {
@@ -402,9 +454,77 @@ fun HistorianDashboardScreen(
             }
         }
     }
+    if (libraryChoice == "origin") {
+        LibraryChoiceDialog(
+            title = stringResource(R.string.library_origin_label),
+            options = LibrarySource.entries.map { it.name to it.label },
+            selected = librarySource.name,
+            onDismiss = { libraryChoice = null },
+            onSelect = { value ->
+                librarySource = LibrarySource.entries.first { it.name == value }
+                libraryChoice = null
+            },
+        )
+    }
+    if (libraryChoice == "category") {
+        LibraryChoiceDialog(
+            title = stringResource(R.string.library_category_label),
+            options = LibraryCategory.entries.map { it.name to it.label },
+            selected = libraryCategory.name,
+            onDismiss = { libraryChoice = null },
+            onSelect = { value ->
+                libraryCategory = LibraryCategory.entries.first { it.name == value }
+                libraryChoice = null
+            },
+        )
+    }
     actionTarget?.let { character -> QuickActionsDialog(character, { actionTarget = null }) { command -> onApplyCommand(character, command); actionTarget = null } }
     editingLibrary?.takeIf { libraryWritable }?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns.filterNot { it.isArchived }, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
     delivering?.takeIf { libraryWritable }?.let { entry -> DeliveryDialog(entry, characters.filter { normalizeCampaignId(it.campaignId) == entry.campaignId }, { delivering = null }) { selected, mappings -> onDeliverLibrary(entry, selected, mappings); delivering = null } }
+}
+
+@Composable
+private fun LibrarySelector(label: String, value: String, tag: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    SdoOutlinedButton(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 48.dp).testTag(tag),
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 5.dp),
+    ) {
+        AdaptiveSingleLineText(
+            text = "${label.uppercase()} // $value",
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.labelSmall,
+            minimumSize = 9.sp,
+        )
+        Icon(Icons.Default.KeyboardArrowDown, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+    }
+}
+
+@Composable
+private fun LibraryChoiceDialog(title: String, options: List<Pair<String, String>>, selected: String, onDismiss: () -> Unit, onSelect: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = SdoShapeTokens.panel,
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = { Text(title) },
+        text = {
+            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
+                items(options, key = { it.first }) { (value, label) ->
+                    val isSelected = value == selected
+                    SdoFilterChip(
+                        label = label,
+                        selected = isSelected,
+                        onClick = { onSelect(value) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            .semantics { this.selected = isSelected }
+                            .testTag("library_choice_$value"),
+                    )
+                }
+            }
+        },
+        confirmButton = { SdoTextButton(onClick = onDismiss) { Text(stringResource(R.string.library_choices_close)) } },
+    )
 }
 
 private fun formatAuditTime(timestamp: Long): String =
@@ -445,7 +565,7 @@ private fun OperationalCharacterCard(
                 contentAlignment = Alignment.Center,
             ) { Text(initials, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium) }
             Column(Modifier.weight(1f)) {
-                Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                SdoCardTitle(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 Text(
                     "${character.race.ifBlank { "SEM RAÇA" }} // ${character.pathName.ifBlank { "SEM CAMINHO" }}",
                     color = MaterialTheme.colorScheme.primary,
@@ -475,6 +595,7 @@ private fun OperationalCharacterCard(
                 Text(alerts.joinToString("\n"), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
             }
         }
+        SdoActionButton(stringResource(R.string.historian_quick_action), onQuickAction, Modifier.fillMaxWidth())
         if (expanded) {
             SdoDataModules(
                 listOf(
@@ -495,10 +616,9 @@ private fun OperationalCharacterCard(
                     }.joinToString("\n").ifBlank { "SEM FALHAS" },
                 )
             )
-            SdoResponsiveGrid(listOf("SESSION", "ACTION", "SHEET"), minItemWidth = 136.dp) { action, modifier ->
+            SdoResponsiveGrid(listOf("SESSION", "SHEET"), minItemWidth = 136.dp) { action, modifier ->
                 when (action) {
                     "SESSION" -> SdoActionButton("ABRIR SESSÃO", { onOpenSession(character.id) }, modifier, style = SdoActionStyle.PRIMARY)
-                    "ACTION" -> SdoActionButton("AÇÃO RÁPIDA", onQuickAction, modifier)
                     else -> SdoActionButton("ABRIR FICHA", { onOpenSheet(character.id) }, modifier)
                 }
             }
@@ -524,14 +644,15 @@ private fun SessionOperationType.displayLabel(): String = when (this) {
     SessionOperationType.ITEM_CONSUME -> "CONSUMO"
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CatalogReferenceCard(entry: CatalogEntry) {
     TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TelemetryTag(entry.kind.name)
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            TelemetryTag(stringResource(entry.kind.labelResource()))
             TelemetryTag("V.${entry.version}")
         }
-        Text(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+        SdoCardTitle(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         Text(entry.group, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         CompendiumDetails(entry)
@@ -584,7 +705,7 @@ private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onAp
                 }
                 Text("2. DEFINA OS DADOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 SdoInsetCard(verticalSpacing = 8.dp) {
-                    Text("VALOR // $amount", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                    SdoCardTitle("VALOR // $amount", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
                     SdoResponsiveGrid(listOf("DECREASE", "INCREASE"), minItemWidth = 140.dp) { action, modifier ->
                         when (action) {
                             "DECREASE" -> SdoActionButton("DIMINUIR", { amount = (amount - 1).coerceAtLeast(1) }, modifier)
@@ -641,7 +762,7 @@ private fun LibraryCard(
             }
             TelemetryTag(if (entry.dirty) "LOCAL_DELTA" else "V.${entry.version}")
         }
-        Text(entry.name.ifBlank { "Modelo sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+        SdoCardTitle(entry.name.ifBlank { "Modelo sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         if (entry.summary.isNotBlank()) Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant)
         LibraryStructuredDetails(entry)
         if (entry.payload.isNotBlank()) SdoInsetCard {

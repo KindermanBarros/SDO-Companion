@@ -1,0 +1,77 @@
+diff --git a/.docs/HISTORY.md b/.docs/HISTORY.md
+index 9957e6c..f279096 100644
+--- a/.docs/HISTORY.md
++++ b/.docs/HISTORY.md
+@@ -14,0 +15,2 @@
++
++- 2026-11-13 00:30 America/La_Paz — Compact UI visual review: restored existing Standard/Cybergrunge identity in Pen, applied single-line short controls and unnumbered quick access, preserved library choices. Fresh reopen/export: 41 frames, 39 original roots preserved, zero clipping/wrapped short text. Visual checkpoint InDevReview; design/implementation approvals and Android runtime verification pending. Skills: ux-design, pen-design-editor, adaptive. References: docs/current/UI_contract.md.
+diff --git a/docs/product/product.md b/docs/product/product.md
+index 8cc94de..baedfe4 100644
+--- a/docs/product/product.md
++++ b/docs/product/product.md
+@@ -13,0 +14 @@ SDO Companion helps players create and manage RPG character sheets and use them
++| Sincronização e conectividade | [Sincronização](requirements/synchronization.md) | Nova política registrada no backlog; não implementada |
+@@ -18,0 +20,13 @@ First establish an accurate adoption baseline. Propose specific architecture, qu
++## Backlog de produto
++
++Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem prioridade ou ordem de entrega definida. O detalhamento está nos requisitos das capacidades; este registro não inicia implementação nem altera o ciclo de execução de features.
++
++| ID | Item | Requisitos |
++|---|---|---|
++| BACKLOG-001 | Diário compartilhado da campanha | [Campanhas — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) |
++| BACKLOG-002 | Modo Sessão mais completo, compacto e com ações rápidas | [Campanhas — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) |
++| BACKLOG-003 | Modo Mestre mais completo, compacto e com ações rápidas | [Campanhas — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) |
++| BACKLOG-004 | Fotos de perfil dos personagens nas fichas, listas e modos de jogo | [Fichas — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) |
++| BACKLOG-005 | Grid de batalha compartilhado em tempo real no Modo Sessão | [Campanhas — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) |
++| BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
++
+diff --git a/docs/product/requirements/campaigns.md b/docs/product/requirements/campaigns.md
+index 8e18f15..6398445 100644
+--- a/docs/product/requirements/campaigns.md
++++ b/docs/product/requirements/campaigns.md
+@@ -21 +21,29 @@ Source observations include invitations, membership, roles and session operation
+-Onboarding documents existing boundaries. No campaign data, invitation, role, session, authentication or backend behavior changes are proposed.
++Backlog solicitado pelo proprietário em 2026-11-12. São propostas não implementadas; cada item precisa de refinamento, especificação, design e critérios de aceite antes da entrega. Não representam aprovação de uma solução técnica nem comprovação do comportamento atual.
++
++### CAMPAIGN-PLAN-001 — Diário compartilhado
++
++Adicionar um diário compartilhado da campanha. Definir no refinamento autoria, permissões de leitura/escrita, organização dos registros e comportamento de edição/sincronização. Distinguir o diário das notas pessoais da ficha e do histórico técnico de operações já existentes.
++
++### CAMPAIGN-PLAN-002 — Evolução do Modo Sessão
++
++Melhorar a interface e completar as funcionalidades do Modo Sessão, com foco em ações rápidas e apresentação compacta, preservando toda a informação necessária ao jogo. O inventário de ações, informações essenciais, atalhos e estados deve ser definido a partir dos fluxos existentes; o pedido não fixa ainda quais controles ou funcionalidades serão adicionados.
++
++### CAMPAIGN-PLAN-003 — Evolução do Modo Mestre
++
++Melhorar a interface e completar as funcionalidades do Modo Mestre, com foco em ações rápidas, controles compactos e acesso a toda a informação necessária para conduzir a campanha. Refinar quais informações precisam permanecer visíveis e quais ações exigem acesso imediato, sem presumir mudanças nas permissões existentes.
++
++### CAMPAIGN-PLAN-004 — Grid de batalha em tempo real
++
++Adicionar ao Modo Sessão um quadro de combate compartilhado, sobre um grid, no qual a pessoa mestre possa desenhar em tempo real e movimentar personagens representados por tokens em formato de moeda com suas fotos de perfil.
++
++Escopo inicial solicitado:
++
++- Grid e desenho sobre o quadro, com atualização compartilhada em tempo real.
++- Movimentação dos personagens por tokens de moeda usando as fotos previstas em SHEET-PLAN-001.
++- Cálculo de deslocamento.
++- Representação e consideração de terrenos altos e baixos.
++- Possibilidade de evolução com outras funcionalidades de combate, ainda a definir; a expressão “muitas outras coisas” não é tratada como escopo fechado.
++
++Decisões para refinamento: escala/unidades do grid, diagonais e regras de deslocamento do SDO; significado e efeito de altura/terreno; quem pode mover cada token; ferramentas de desenho; persistência dos mapas; concorrência, reconexão e consulta offline. Edições offline ficam proibidas pela política [SYNC-PLAN-001](synchronization.md#planned-changes), também aplicável ao diário e aos modos Sessão/Mestre. Alcance, linha de visão, obstáculos, iniciativa, automação de regras e outras ferramentas poderão ser avaliados, mas não estão confirmados pelo pedido atual.
++
++Dependências de produto identificadas: fotos dos personagens para os tokens; integração com a campanha e o Modo Sessão. A ordem de entrega e a tecnologia de sincronização ainda não foram escolhidas.
+@@ -25,0 +54 @@ Onboarding documents existing boundaries. No campaign data, invitation, role, se
++- Solicitação direta do proprietário em 2026-11-12: diário, evolução dos modos de jogo e grid de batalha.
+diff --git a/docs/product/requirements/character-sheets.md b/docs/product/requirements/character-sheets.md
+index 7951b76..002f5d9 100644
+--- a/docs/product/requirements/character-sheets.md
++++ b/docs/product/requirements/character-sheets.md
+@@ -23 +23,5 @@ Source observations: Room persistence, migrations and Firebase synchronization e
+-Onboarding adds documentation and baseline evidence only. No new sheet behavior, schema, calculation, ownership, synchronization, or UI change is proposed.
++### SHEET-PLAN-001 — Foto de perfil dos personagens
++
++Backlog solicitado pelo proprietário em 2026-11-12; ainda não implementado. Permitir adicionar foto de perfil e exibi-la na ficha, na lista de personagens, no Modo Sessão e no Modo Mestre. Reutilizar a foto nos tokens em formato de moeda do grid de batalha previsto em CAMPAIGN-PLAN-004.
++
++Pelos pontos de exibição e uso em tokens, o item é registrado como retrato do personagem. Confirmar no refinamento se também existe demanda separada para foto da conta do usuário. Definir origem da imagem, troca/remoção, apresentação sem foto, recorte, armazenamento/sincronização e permissões antes da implementação; nenhuma dessas soluções foi escolhida neste registro.
+@@ -27,0 +32 @@ Onboarding adds documentation and baseline evidence only. No new sheet behavior,
++- Solicitação direta do proprietário em 2026-11-12: foto na ficha, lista, modos de jogo e tokens do grid.

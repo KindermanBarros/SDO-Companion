@@ -14,7 +14,7 @@ from harnesslens.wiremock import Admin, WireMockError
 
 class WireMockReportTest(unittest.TestCase):
     def setUp(self):
-        self.run = Path('/unused/.qa-artifacts/run-a')
+        self.run = Path('/unused/.scratch/qa/run-a')
         self.scenario = {'expectations': {'wiremock': [{'name': 'accounts-empty', 'fixture_sha256': 'a' * 64}]}}
         self.obs = {'wiremock_routing_verified': True}
 

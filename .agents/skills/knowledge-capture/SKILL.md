@@ -5,7 +5,7 @@ description: Record ADRs, post-mortems, and reusable lessons after feature or bu
 
 # Skill — Knowledge Capture
 
-Follow `.agents/rules/product-documentation.md`. Read affected `docs/product/requirements/<capability>.md` files and update those same files for behavior changes. Keep dated change contracts/evidence in `.scratch/`. New specs include `## Product Requirements` with capability links, changed requirements, and approval-time SHA-256 hashes. Completion reconciles verified behavior or records `Confirmed unchanged` for an already-correct bug contract.
+Follow `.agents/rules/product-documentation.md`. Read affected `docs/product/requirements/<capability>.md` files and update those same files for behavior changes. Keep dated change contracts/evidence in `docs/changes/`. New specs include `## Product Requirements` with capability links, changed requirements, and approval-time SHA-256 hashes. Completion reconciles verified behavior or records `Confirmed unchanged` for an already-correct bug contract.
 
 ## Purpose
 Record **only high-value institutional knowledge** that cannot be recovered from source code alone.

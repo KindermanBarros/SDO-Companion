@@ -1,0 +1,28 @@
+<resources>
+    <string name="session_eyebrow">Sessão</string>
+    <string name="session_title">MODO SESSÃO</string>
+    <string name="session_read_only">Somente leitura</string>
+    <string name="session_pending_sync">Alterações pendentes</string>
+    <string name="session_synced">Sincronizado</string>
+    <string name="session_controls_locked">Controles bloqueados</string>
+    <string name="session_resources_summary">Vida %1$d/%2$d // Energia %3$d/%4$d // Arcano %5$d/%6$d // Carga %7$d/%8$d</string>
+    <string name="session_overloaded">Sobrecarregado</string>
+    <string name="session_overload_details">Movimento −5 m // Esquiva −2 // Corrida +1 PE // Desvantagem: Movimento, Furtividade e Atletismo</string>
+    <string name="session_immobile">Imóvel</string>
+    <string name="session_immobile_details">Movimento e esquiva indisponíveis</string>
+    <string name="session_all_abilities">Todas</string>
+    <string name="session_ability_filter">Tipo</string>
+    <string name="session_ability_section">Habilidades</string>
+    <string name="session_no_abilities">Nenhuma habilidade nesta categoria.</string>
+    <string name="session_use_short">Usar</string>
+    <string name="session_use_ability">Usar habilidade</string>
+    <string name="session_unavailable">Indisponível</string>
+    <string name="session_unavailable_mark">—</string>
+    <string name="session_expand_ability">Ver detalhes</string>
+    <string name="session_collapse_ability">Recolher detalhes</string>
+    <string name="session_no_ability_details">Sem descrição adicional.</string>
+    <plurals name="session_ash_cost">
+        <item quantity="one">%d dose</item>
+        <item quantity="other">%d doses</item>
+    </plurals>
+</resources>

@@ -2,8 +2,6 @@ package com.kinderman.sdo.presentation.session
 
 import androidx.activity.compose.BackHandler
 import com.kinderman.sdo.ui.sdoClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -22,9 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.Healing
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
@@ -32,6 +29,9 @@ import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.compose.material3.Text
 import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material3.TopAppBar
@@ -46,9 +46,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kinderman.sdo.R
 import com.kinderman.sdo.domain.model.Ability
 import com.kinderman.sdo.domain.model.AbilityCost
+import com.kinderman.sdo.domain.model.AbilityKind
 import com.kinderman.sdo.domain.model.BodyRegionSlot
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ConditionInstance
@@ -63,20 +77,21 @@ import com.kinderman.sdo.domain.model.LoadCondition
 import com.kinderman.sdo.domain.model.InventoryState
 import com.kinderman.sdo.domain.model.inventoryState
 import com.kinderman.sdo.domain.model.effectiveLoad
-import com.kinderman.sdo.ui.Acid
-import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.HudBackground
-import com.kinderman.sdo.ui.Ice
-import com.kinderman.sdo.ui.Muted
-import com.kinderman.sdo.ui.Signal
+import com.kinderman.sdo.ui.LocalSdoPreferences
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.SectionHeader
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.SdoScreenMasthead
 import com.kinderman.sdo.presentation.character.CharacterActionButton
 import com.kinderman.sdo.presentation.character.CharacterActionStyle
+import com.kinderman.sdo.presentation.character.ChoiceField
 
-private data class SessionAbilityEntry(val ability: Ability, val description: String)
+private const val ALL_ABILITIES = "ALL"
+
+private data class SessionAbilityEntry(val ability: Ability, val description: String, val key: String)
 private data class SessionResourceValue(
     val label: String,
     val current: Int,
@@ -136,9 +151,7 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
     ) {
         item {
             TechPanel {
-                TelemetryTag("SELECT_OPERATIVE")
                 Text("Escolha uma ficha para a sessão", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-                Text("Ajustes rápidos são salvos neste aparelho e entram na fila de sincronização.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         items(characters, key = Character::id) { character ->
@@ -194,55 +207,114 @@ private fun SessionContent(
     modifier: Modifier,
     onCommand: (Character, SessionCommand) -> Unit,
 ) {
-    var damageDialog by remember { mutableStateOf(false) }
-    var healingDialog by remember { mutableStateOf(false) }
-    var pendingAbilityId by remember { mutableStateOf<String?>(null) }
+    var damageDialog by rememberSaveable(character.id) { mutableStateOf(false) }
+    var healingDialog by rememberSaveable(character.id) { mutableStateOf(false) }
+    var pendingAbilityId by rememberSaveable(character.id) { mutableStateOf<String?>(null) }
+    var abilityFilter by rememberSaveable(character.id) { mutableStateOf(ALL_ABILITIES) }
+    val entries = remember(character.abilities, character.powers, character.mysticAbilities) {
+        val occurrences = mutableMapOf<String, Int>()
+        character.allCanonicalAbilitiesSafely()
+            .sortedWith(compareByDescending<Ability> { it.favorite }.thenBy { it.name })
+            .map { ability ->
+                val occurrence = occurrences.getOrDefault(ability.id, 0)
+                occurrences[ability.id] = occurrence + 1
+                SessionAbilityEntry(ability, buildString {
+                    if (ability.effect.isNotBlank()) append(ability.effect)
+                    ability.mechanicalEffect?.operations.orEmpty().forEach { operation ->
+                        if (isNotEmpty()) append('\n')
+                        append("• ")
+                        append(operation.sessionLabel())
+                    }
+                }, "ability:${ability.id}:$occurrence")
+            }
+    }
+    val filteredEntries = remember(entries, abilityFilter) {
+        entries.filter { abilityFilter == ALL_ABILITIES || it.ability.kind.name == abilityFilter }
+    }
+    val allAbilitiesLabel = stringResource(R.string.session_all_abilities)
     val spacing = if (compact) 8.dp else 14.dp
     LazyColumn(
-        modifier.fillMaxSize(),
+        modifier.fillMaxSize().testTag("session_list"),
         contentPadding = PaddingValues(if (compact) 12.dp else 18.dp),
         verticalArrangement = Arrangement.spacedBy(spacing),
     ) {
         item {
             SdoScreenMasthead(
-                eyebrow = "SESSION//LIVE",
-                title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
-                metadata = if (readOnly) "ARQUIVO // SOMENTE LEITURA" else "OPERAÇÃO ATIVA // AUTOSAVE LOCAL",
+                eyebrow = stringResource(R.string.session_eyebrow),
+                title = stringResource(R.string.session_title),
+                metadata = stringResource(
+                    when {
+                        readOnly -> R.string.session_read_only
+                        character.dirty -> R.string.session_pending_sync
+                        else -> R.string.session_synced
+                    },
+                ),
             )
         }
         item {
-            TechPanel(accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TelemetryTag("SESSION.MODE")
-                    TelemetryTag(
-                        when {
-                            readOnly -> "ARCHIVE.READ_ONLY"
-                            character.dirty -> "OFFLINE_READY"
-                            else -> "SYNC_OK"
-                        },
-                    )
-                }
-                SectionHeader("00", "Resumo operacional")
-                Text(
-                    "VIDA ${character.life.current}/${character.lifeMaximum} // ENERGIA ${character.energy.current}/${character.energyMaximum} // CARGA ${character.currentLoad}/${character.maximumLoad}",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium,
+            SdoInsetCard(
+                accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                contentPadding = 8.dp,
+                verticalSpacing = 6.dp,
+            ) {
+                SdoMetadataText(
+                    text = stringResource(
+                        R.string.session_resources_summary,
+                        character.life.current,
+                        character.lifeMaximum,
+                        character.energy.current,
+                        character.energyMaximum,
+                        character.arcane.current,
+                        character.arcaneMaximum,
+                        character.currentLoad,
+                        character.maximumLoad,
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
                 )
                 when (character.loadCondition) {
-                    LoadCondition.OVERLOADED -> Text("SOBRECARREGADO // MOVIMENTO −5 m // ESQUIVA −2 // CORRIDA +1 PE // DESVANTAGEM: Movimento, Furtividade e Atletismo", color = MaterialTheme.colorScheme.error)
-                    LoadCondition.IMMOBILE -> Text("IMÓVEL // MOVIMENTO E ESQUIVA INDISPONÍVEIS", color = MaterialTheme.colorScheme.error)
+                    LoadCondition.OVERLOADED -> {
+                        Text(stringResource(R.string.session_overloaded), color = MaterialTheme.colorScheme.error)
+                        SdoMetadataText(stringResource(R.string.session_overload_details), style = MaterialTheme.typography.labelSmall)
+                    }
+                    LoadCondition.IMMOBILE -> {
+                        Text(stringResource(R.string.session_immobile), color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.session_immobile_details), color = MaterialTheme.colorScheme.error)
+                    }
                     else -> Unit
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CharacterActionButton("Aplicar dano", !readOnly, CharacterActionStyle.PRIMARY, Modifier.weight(1f)) { damageDialog = true }
                     CharacterActionButton("Aplicar cura", !readOnly, CharacterActionStyle.SECONDARY, Modifier.weight(1f)) { healingDialog = true }
                 }
-                if (readOnly) Text("SOMENTE LEITURA // controles operacionais bloqueados", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                if (readOnly) Text(stringResource(R.string.session_controls_locked), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
             }
         }
         item {
+            ChoiceField(
+                label = stringResource(R.string.session_ability_filter),
+                value = abilityFilter,
+                options = listOf(ALL_ABILITIES) + AbilityKind.entries.map { it.name },
+                enabled = true,
+                modifier = Modifier.fillMaxWidth().testTag("session_ability_filter"),
+                display = { value -> AbilityKind.entries.firstOrNull { it.name == value }?.label ?: allAbilitiesLabel },
+            ) { abilityFilter = it }
+        }
+        item {
+            SectionHeader("01", stringResource(R.string.session_ability_section))
+            if (filteredEntries.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.session_no_abilities),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+        items(filteredEntries, key = { "${character.id}:${it.key}" }) { entry ->
+            SessionAbilityCard(entry, compact, !readOnly) { pendingAbilityId = entry.ability.id }
+        }
+        item {
             TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                SectionHeader("01", "Recursos rápidos")
+                SectionHeader("02", "Recursos rápidos")
                 val resources = listOf(
                     SessionResourceValue("VIDA", character.life.current, character.lifeMaximum, SessionResource.LIFE),
                     SessionResourceValue("SANIDADE", character.sanity.current, character.sanityMaximum, SessionResource.SANITY),
@@ -275,7 +347,7 @@ private fun SessionContent(
         }
         item {
             TechPanel {
-                SectionHeader("02", "Proteções")
+                SectionHeader("03", "Proteções")
                 character.calculatedProtections().forEach { (name, value) ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(name, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -286,16 +358,16 @@ private fun SessionContent(
         }
         item {
             TechPanel(accent = MaterialTheme.colorScheme.error) {
-                SectionHeader("03", "Corpo")
+                SectionHeader("04", "Corpo")
                 character.canonicalBodyState().regions.chunked(2).forEach { pair ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         pair.forEach { region ->
-                            Column(
-                                Modifier.weight(1f).background(MaterialTheme.colorScheme.surfaceVariant).padding(if (compact) 6.dp else 9.dp),
-                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                            SdoInsetCard(
+                                modifier = Modifier.weight(1f), contentPadding = if (compact) 6.dp else 9.dp,
+                                verticalSpacing = 2.dp,
                             ) {
                                 Text(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-                                Text("${region.state.label.uppercase()} // ${region.failures}/4", style = MaterialTheme.typography.labelSmall, color = if (region.failures > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                                SessionBodyStatus(region.state.label.uppercase(), region.failures)
                                 Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
@@ -310,48 +382,29 @@ private fun SessionContent(
                     it.category.equals("Munição", true) || it.linkedAshId.isNotBlank()
             }
             TechPanel {
-                SectionHeader("04", "Equipamento pronto")
+                SectionHeader("05", "Equipamento pronto")
                 if (readyItems.isEmpty()) Text("Nenhum equipamento operacional.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 readyItems.forEach { item ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(item.name.ifBlank { "Item sem nome" }, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
-                            Text(
-                                buildList {
-                                    add(item.inventoryState.label.uppercase())
-                                    add("CARGA ${item.effectiveLoad()}")
-                                    if (item.category.equals("Munição", true) || item.linkedAshId.isNotBlank()) add("QTD ${item.quantity}")
-                                }.joinToString(" // "),
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        }
-                        TelemetryTag(item.category.ifBlank { "ITEM" }.uppercase())
+                    SdoInsetCard(contentPadding = 8.dp, verticalSpacing = 4.dp) {
+                        SdoCardTitle(
+                            item.name.ifBlank { "Item sem nome" }, modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            item.category.ifBlank { "ITEM" }.uppercase(), modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall,
+                        )
+                        SdoMetadataText(
+                            buildList {
+                                add(item.inventoryState.label.uppercase())
+                                add("CARGA ${item.effectiveLoad()}")
+                                if (item.category.equals("Munição", true) || item.linkedAshId.isNotBlank()) add("QTD ${item.quantity}")
+                            }.joinToString(" // "),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                     }
                 }
-                Text("Consulta apenas // altere equipamento e munição na ficha completa", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-            }
-        }
-        item {
-            val entries = character.allCanonicalAbilitiesSafely()
-                .sortedWith(compareByDescending<Ability> { it.favorite }.thenBy { it.name })
-                .map { ability -> SessionAbilityEntry(ability, buildString {
-                    append(if (ability.favorite) "★ " else "")
-                    append(ability.name)
-                    append(" // ")
-                    append(abilityCostLabel(ability.cost))
-                    if (ability.effect.isNotBlank()) append("\n${ability.effect}")
-                    ability.mechanicalEffect?.operations.orEmpty().forEach { operation ->
-                        append("\n• ")
-                        append(operation.sessionLabel())
-                    }
-                }) }
-            TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                SectionHeader("05", "Poderes // Magias // Runas // Cinzas")
-                if (entries.isEmpty()) Text("Nenhuma habilidade cadastrada na ficha.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                entries.forEach { entry ->
-                    SessionAbilityCard(entry, compact, !readOnly) { pendingAbilityId = entry.ability.id }
-                }
+                SdoMetadataText("Consulta apenas // altere equipamento e munição na ficha completa", style = MaterialTheme.typography.labelSmall)
             }
         }
         item {
@@ -361,7 +414,7 @@ private fun SessionContent(
                 if (conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 conditions.forEach { condition ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text(condition.sessionLabel(), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                        SdoMetadataText(condition.sessionLabel(), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                         SdoTextButton(
                             enabled = !readOnly,
                             onClick = {
@@ -389,16 +442,29 @@ private fun SessionContent(
         onCommand(character, SessionCommand(type = SessionOperationType.HEAL, resource = SessionResource.LIFE, amount = amount))
     }
     pendingAbilityId?.let { id ->
-        val ability = character.allCanonicalAbilitiesSafely().firstOrNull { it.id == id }
-        val name = ability?.name.orEmpty()
-        val cost = ability?.let { abilityCostLabel(it.cost) }.orEmpty()
-        AlertDialog(
-            onDismissRequest = { pendingAbilityId = null },
-            title = { Text("CONFIRMAR USO") },
-            text = { Text("$name // ${cost.ifBlank { "sem custo" }}. O custo será descontado antes da ação e o recurso nunca ficará negativo.") },
-            confirmButton = { SdoTextButton({ pendingAbilityId = null; onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id)) }) { Text("USAR") } },
-            dismissButton = { SdoTextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
-        )
+        val ability = entries.firstOrNull { it.ability.id == id }?.ability
+        if (ability != null) {
+            AlertDialog(
+                onDismissRequest = { pendingAbilityId = null },
+                title = { Text("CONFIRMAR USO") },
+                text = {
+                    SdoMetadataText(
+                        "${ability.name} // ${abilityCostLabel(ability.cost)}. O custo será descontado antes da ação e o recurso nunca ficará negativo.",
+                    )
+                },
+                confirmButton = {
+                    SdoTextButton(
+                        onClick = {
+                            pendingAbilityId = null
+                            onCommand(character, SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = id))
+                        },
+                        modifier = Modifier.testTag("session_confirm_ability"),
+                        enabled = !readOnly && ability.available,
+                    ) { Text("USAR") }
+                },
+                dismissButton = { SdoTextButton({ pendingAbilityId = null }) { Text("CANCELAR") } },
+            )
+        }
     }
 }
 
@@ -406,29 +472,54 @@ private fun SessionContent(
 private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, editable: Boolean, onUse: () -> Unit) {
     var expanded by rememberSaveable(entry.ability.id) { mutableStateOf(false) }
     val accent = if (entry.ability.available) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .border(1.dp, accent.copy(alpha = .7f), CutCornerShape(topEnd = 10.dp, bottomStart = 8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(if (compact) 7.dp else 10.dp),
-        verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 7.dp),
+    val expandedLabel = stringResource(if (expanded) R.string.session_collapse_ability else R.string.session_expand_ability)
+    val unavailableLabel = stringResource(R.string.session_unavailable)
+    val largeText = LocalDensity.current.fontScale * LocalSdoPreferences.current.fontScale.multiplier > 1.15f
+    SdoInsetCard(
+        modifier = Modifier.fillMaxWidth(),
+        accent = if (entry.ability.available) MaterialTheme.colorScheme.outlineVariant else accent,
+        contentPadding = if (compact) 6.dp else 8.dp,
+        verticalSpacing = 4.dp,
     ) {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = 48.dp).sdoClickable { expanded = !expanded },
+            Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Column(Modifier.weight(1f)) {
-                Text((if (entry.ability.favorite) "★ " else "") + entry.ability.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
-                Text("${entry.ability.kind.label.uppercase()} // ${abilityCostLabel(entry.ability.cost)}", color = accent, style = MaterialTheme.typography.labelSmall)
+            Row(
+                Modifier.weight(1f).heightIn(min = 48.dp)
+                    .testTag("session_ability_expand")
+                    .semantics { stateDescription = expandedLabel }
+                    .sdoClickable { expanded = !expanded },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        (if (entry.ability.favorite) "★ " else "") + entry.ability.name,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    if (!largeText) SessionAbilityMetadata(entry)
+                }
+                Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, expandedLabel)
             }
-            Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher habilidade" else "Ver detalhes")
+            if (!expanded) {
+                CharacterActionButton(
+                    label = stringResource(if (entry.ability.available) R.string.session_use_short else R.string.session_unavailable_mark),
+                    enabled = editable && entry.ability.available,
+                    style = CharacterActionStyle.PRIMARY,
+                    modifier = Modifier.widthIn(min = 64.dp, max = 96.dp).testTag("session_ability_use")
+                        .then(if (entry.ability.available) Modifier else Modifier.semantics { contentDescription = unavailableLabel }),
+                    onClick = onUse,
+                )
+            }
         }
+        if (largeText) SessionAbilityMetadata(entry)
         if (expanded) {
-            Text(entry.description.substringAfter('\n', entry.ability.effect.ifBlank { "Sem descrição adicional." }), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            val description = if (entry.description.isBlank()) stringResource(R.string.session_no_ability_details) else entry.description
+            Text(description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             CharacterActionButton(
-                label = if (entry.ability.available) "Usar habilidade" else "Indisponível",
+                label = stringResource(if (entry.ability.available) R.string.session_use_ability else R.string.session_unavailable),
                 enabled = editable && entry.ability.available,
                 style = CharacterActionStyle.PRIMARY,
                 modifier = Modifier.fillMaxWidth(),
@@ -436,6 +527,34 @@ private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, edi
             )
         }
     }
+}
+
+@Composable
+private fun SessionAbilityMetadata(entry: SessionAbilityEntry) {
+    SdoMetadataText(
+        "${entry.ability.kind.label.uppercase()} // ${abilityCostLabel(entry.ability.cost)}",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun SessionBodyStatus(label: String, failures: Int) {
+    val statusColor = if (failures > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+    val delimiterColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val countColor = MaterialTheme.colorScheme.secondary
+    BasicText(
+        text = buildAnnotatedString {
+            withStyle(SpanStyle(color = statusColor)) { append(label) }
+            withStyle(SpanStyle(color = delimiterColor)) { append(" // ") }
+            withStyle(SpanStyle(color = countColor)) { append("$failures/4") }
+        },
+        style = MaterialTheme.typography.labelSmall,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Clip,
+        autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = MaterialTheme.typography.labelSmall.fontSize),
+    )
 }
 
 @Composable
@@ -494,8 +613,8 @@ private fun MoneyControl(
 
 @Composable
 private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm: (Int, BodyRegionSlot) -> Unit) {
-    var amount by remember { mutableIntStateOf(1) }
-    var regionIndex by remember { mutableIntStateOf(0) }
+    var amount by rememberSaveable(character.id) { mutableIntStateOf(1) }
+    var regionIndex by rememberSaveable(character.id) { mutableIntStateOf(0) }
     val regions = character.canonicalBodyState().regions
     val region = regions.getOrElse(regionIndex) { character.canonicalBodyState().region(BodyRegionSlot.Torso) }
     val protection = character.localProtection(region)
@@ -506,7 +625,7 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("1. Informe o dano")
-                Stepper(amount, 0, 999) { amount = it }
+                Stepper(amount, 0, 999, Modifier.testTag("session_damage_amount")) { amount = it }
                 Text("2. Escolha a região")
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     SdoTextButton({ regionIndex = (regionIndex - 1).floorMod(regions.size) }) { Text("‹") }
@@ -525,7 +644,7 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
 
 @Composable
 private fun AmountDialog(title: String, current: Int, maximum: Int, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
-    var amount by remember { mutableIntStateOf(1) }
+    var amount by rememberSaveable { mutableIntStateOf(1) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -541,21 +660,22 @@ private fun AmountDialog(title: String, current: Int, maximum: Int, onDismiss: (
 }
 
 @Composable
-private fun Stepper(value: Int, minimum: Int, maximum: Int, onChange: (Int) -> Unit) {
+private fun Stepper(value: Int, minimum: Int, maximum: Int, valueModifier: Modifier = Modifier, onChange: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         SdoIconButton({ onChange((value - 1).coerceAtLeast(minimum)) }) { Icon(Icons.Default.Remove, "Reduzir") }
-        Text(value.toString(), modifier = Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.titleLarge)
+        Text(value.toString(), modifier = valueModifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.titleLarge)
         SdoIconButton({ onChange((value + 1).coerceAtMost(maximum)) }) { Icon(Icons.Default.Add, "Aumentar") }
     }
 }
 
 private fun Int.floorMod(divisor: Int): Int = if (divisor <= 0) 0 else Math.floorMod(this, divisor)
 
+@Composable
 private fun abilityCostLabel(cost: AbilityCost): String = when (cost) {
     is AbilityCost.PowerCost -> if (cost.amount == 0) "SEM CUSTO" else "${cost.amount} ${cost.resource}"
     is AbilityCost.SpellCost -> "${cost.amount} PM"
     is AbilityCost.RuneCost -> "${cost.amount} PM"
-    is AbilityCost.AshCost -> "${cost.amount} dose(s)"
+    is AbilityCost.AshCost -> pluralStringResource(R.plurals.session_ash_cost, cost.amount, cost.amount)
 }
 
 private fun com.kinderman.sdo.domain.model.EffectOperation.sessionLabel(): String = when (this) {

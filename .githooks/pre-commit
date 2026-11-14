@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+root=$(git rev-parse --show-toplevel)
+if [ -e "$root/.scratch" ]; then
+    echo "Commit blocked: remove the entire .scratch folder, even when empty." >&2
+    echo "Promote required final evidence/contracts to durable docs first." >&2
+    exit 1
+fi
+if git diff --cached --name-only --diff-filter=ACMR | LC_ALL=C grep -Eq '^(\.scratch|\.harness-state|\.qa-artifacts)(/|$)'; then
+    echo "Commit blocked: temporary output is staged. Unstage it and remove .scratch." >&2
+    exit 1
+fi

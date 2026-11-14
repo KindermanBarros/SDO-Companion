@@ -1,0 +1,10 @@
+<resources>
+    <string name="race_picker_current_race">RAÇA // %1$s</string>
+    <string name="race_picker_choose_race">ESCOLHER RAÇA</string>
+    <string name="race_picker_search">Buscar raça</string>
+    <string name="race_picker_no_results">Nenhuma raça encontrada</string>
+    <string name="race_picker_close">FECHAR</string>
+    <string name="race_picker_attribute">ATRIBUTO</string>
+    <string name="race_picker_keep_one">MANTENHA 1 PODER RACIAL</string>
+    <string name="race_picker_powers">PODERES RACIAIS</string>
+</resources>

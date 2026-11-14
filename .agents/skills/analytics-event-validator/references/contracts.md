@@ -33,7 +33,7 @@ Then run from the project root:
 
 ```bash
 python3 .agents/skills/analytics-event-validator/scripts/validate.py \
-  --run-dir .qa-artifacts/<fresh-demo-run> \
+  --run-dir .scratch/qa/<fresh-demo-run> \
   --contract .agents/skills/analytics-event-validator/examples/contract.example.json \
   --offline --capture .agents/skills/analytics-event-validator/examples/events.pass.example.ndjson
 ```

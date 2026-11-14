@@ -1,51 +1,42 @@
-# VALIDATION — SDO Companion
+# VALIDATION - SDO Companion
+Select the smallest sufficient checks once before execution. The [CI catalog](../.agents/gates/ci-checks.md) owns commands; it is not a requirement to run every command for every task.
 
-Dependencies: [TECH_STACK](TECH_STACK.md#dependencies).
+## Selection
+| Changed boundary | Relevant evidence |
+|---|---|
+| Documentation only | Links, anchors, line limits and scoped diff; no Android build/device suite |
+| Harness/gate/hook | Structural gate plus regression fixtures for the changed validator |
+| Small UI/copy/layout | Build and focused review/capture; reuse existing reference states |
+| Behavioral defect | One relevant RED/GREEN regression, then related checks |
+| Data/domain/API/security | Relevant unit/integration/security checks and triggered lint/coverage |
+| Navigation/lifecycle/IME/platform | Actual changed runtime boundary; JVM/component tests cannot substitute |
 
-## Test types
+An explicit owner instruction to use CI/build-only and manually verify runtime takes precedence for that task. Record the limitation; it does not grant merge/release acceptance.
 
-| Type | Source set | Runtime | Observed scope |
-|---|---|---|---|
-| Local | app/src/test/java/ | JVM, JUnit 4.13.2 | 41 Kotlin files, including one migration-support file |
-| Instrumented | app/src/androidTest/java/ | AndroidJUnitRunner | 5 Kotlin test files; actual Compose UI tests exist |
-
-[Test inventory](Validation/test_inventory.md) names every current test class and summarizes its source assertions.
-No dedicated screenshot suite was found. ui-test-manifest is a debug-only dependency; UI-test existence is established by the androidTest sources.
-
-## Test creation pattern
-
-- Mirror production packages and use existing descriptive test names.
-- Arrange, act, assert; verify observable behavior using existing domain rules and repository boundaries.
-- JUnit 4 and AndroidX JUnit/Compose testing are declared.
-- No MockK, Mockito, Turbine or kotlinx-coroutines-test dependency is declared; do not assume runTest is available.
-- Current source tests do not establish complete ViewModel, Firebase or end-to-end coverage.
-
-## Checks
-
-Commands run from the root on Windows; POSIX uses ./gradlew instead of .\gradlew.bat.
-
+## Commands
+Windows from the repository root; POSIX uses ./gradlew.
 | Check | Command |
 |---|---|
-| Unit tests | .\gradlew.bat :app:testDebugUnitTest |
-| Instrumented | .\gradlew.bat :app:connectedDebugAndroidTest |
-| Android Lint | .\gradlew.bat :app:lintDebug |
+| JVM | .\gradlew.bat :app:testDebugUnitTest |
+| Android | .\gradlew.bat :app:connectedDebugAndroidTest |
+| Lint | .\gradlew.bat :app:lintDebug |
 | Ktlint | .\gradlew.bat :app:ktlintCheck |
 | Detekt | .\gradlew.bat :app:detekt |
-| Coverage report | .\gradlew.bat :app:koverXmlReportDebug |
-| Full build | .\gradlew.bat build |
+| Coverage | .\gradlew.bat :app:koverXmlReportDebug |
+| Build | .\gradlew.bat :app:assembleDebug |
 
-Legacy gates backed by absent scripts were removed at the owner's request. The current CI catalog lists executable checks; no retired checker is required.
-Prior build, test and gate results in docs/current/onboarding-summary.md are historical evidence, not current-run results.
+Harness: powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/validate-harness.ps1.
+Run .agents/gates/tests/validate-harness-tests.ps1 when structural policy changes, and scratch-cleanup-tests.ps1 when cleanup enforcement changes. Tests create fixtures only in .scratch and clean them in finally.
 
-For documentation-only changes, check all placeholders, line limits, relative file links and anchors, CLAUDE import and allowed file scope. Build/device tests are not required and cannot establish documentation correctness.
+## Stop repeated work
+- One verification plan, one result summary. A stage handoff does not invalidate a successful check.
+- Reuse evidence only for unchanged source/config/command/runtime; identify the commit or receipt.
+- Rerun the affected check after a relevant change/failure; broaden only for a concrete unresolved risk.
+- Inspect concise failures/report excerpts, not entire logs. Raw logs/downloads/PR drafts stay in .scratch and are removed before commit.
+- Record failed, skipped or unavailable checks honestly. Stop at an external blocker; do not repeat the same failed prerequisite.
+- Use existing JUnit/AndroidX patterns and focused selectors; add no test dependency without approval.
+- Coverage thresholds remain 80% overall and 90% for new ViewModels/use cases when applicable; report generation alone is not acceptance.
+- UI screenshots and approved references are different artifacts. Missing runtime/pixel evidence is not PASS.
+- Before commit remove .scratch entirely and run the pre-commit hook plus scoped git diff --check.
 
-For harness-only changes run powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/validate-harness.ps1 and tests/validate-harness-tests.ps1.
-The [CI checks](../.agents/gates/ci-checks.md) distinguish structural validation from required application gates.
-
-## Device workflow validation
-
-None for dedicated camera, Bluetooth or sensor hardware. Android UI, authentication, lifecycle transitions and network failure behavior still need runtime evidence for application changes; confirmed target is smartphone, specific models Pending.
-
-## UI tasks and screenshots
-
-Capture screenshots with Android CLI or adb for UI changes. This setup changes documentation only and requires no UI screenshots.
+[Test inventory](Validation/test_inventory.md) is historical inventory; current test counts come from actual reports.

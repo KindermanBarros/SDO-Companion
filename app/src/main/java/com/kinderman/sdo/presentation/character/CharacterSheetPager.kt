@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -184,14 +186,15 @@ private fun SheetPageNavigator(
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
                     ) {
-                        Text(page.code, modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp), style = MaterialTheme.typography.labelMedium)
+                        AdaptiveSingleLineText(page.code, modifier = Modifier.padding(horizontal = 7.dp, vertical = 5.dp), style = MaterialTheme.typography.labelSmall, minimumSize = 8.sp, color = MaterialTheme.colorScheme.onPrimary)
                     }
                     Column(Modifier.weight(1f)) {
-                        Text(page.label, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-                        Text(
+                        AdaptiveSingleLineText(page.label, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, minimumSize = 10.sp)
+                        AdaptiveSingleLineText(
                             "SEÇÃO ${currentPage + 1} DE ${pages.size}",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.labelSmall,
+                            minimumSize = 7.sp,
                         )
                     }
                     Icon(Icons.Default.ExpandMore, "Escolher seção", tint = MaterialTheme.colorScheme.primary)

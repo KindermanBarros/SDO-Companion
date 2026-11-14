@@ -1,49 +1,34 @@
 # CI checks
+Select once using [VALIDATION](../../.docs/VALIDATION.md); stage transitions do not require rerunning unchanged checks.
 
-Read [Project contract](project-contract.md). Select gates by the actual changed boundary; never report unavailable proof as PASS.
+## Harness/documentation
+- Structural: powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/validate-harness.ps1
+- Structural regression (when changed): .agents/gates/tests/validate-harness-tests.ps1
+- Cleanup regression (when changed): .agents/gates/tests/scratch-cleanup-tests.ps1
+- Adaptive runner regression only when that runner changes: .agents/gates/tests/adaptive-ui-runner-tests.ps1
+- Scoped staged diff: git diff --cached --check
+- Commit guard: .githooks/pre-commit; .scratch must not exist, even empty.
 
-## Documentation-only harness gate
+These prove instruction/cleanup integrity, not Android behavior. Fixtures and raw logs go in .scratch and are deleted before commit.
 
-Run from the repository root:
+## Application command catalog
+Run only triggered checks or the explicitly requested owner/CI lane.
+| Boundary | Command |
+|---|---|
+| Build | .\gradlew.bat :app:assembleDebug |
+| JVM | .\gradlew.bat :app:testDebugUnitTest |
+| Android runtime | .\gradlew.bat :app:connectedDebugAndroidTest |
+| Lint | .\gradlew.bat :app:lintDebug |
+| Formatting/static | .\gradlew.bat :app:ktlintCheck / :app:detekt |
+| Coverage | .\gradlew.bat :app:koverXmlReportDebug |
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/validate-harness.ps1
-powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/tests/validate-harness-tests.ps1
-```
+Use class/method selectors for relevant regressions. Full suites are justified by broad changes or concrete unresolved risk, not every UI/copy edit.
+Coverage thresholds remain 80% overall and 90% for new ViewModels/use cases when applicable.
+No Roborazzi task/dependency is currently declared; required pixel comparison is unproven until approved infrastructure exists.
+Retired script gates must not be reintroduced by generic skills.
 
-This checks active harness links, line limits, imports, sealed banners and setup cleanup.
-Its regression fixtures reject broken links, anchors, placeholders, oversized documents and stale setup inputs.
-It does not execute Android/source-rule checks or prove application readiness.
-Run scoped git diff --check for maintained changes; pre-existing unrelated whitespace is recorded separately.
-When changing the adaptive CI runner, also run powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/tests/adaptive-ui-runner-tests.ps1.
-
-## Application gates
-
-Windows commands below use the existing :app module. POSIX uses ./gradlew instead of .\gradlew.bat.
-
-| Gate | Command | Required evidence |
-|---|---|---|
-| Debug build | .\gradlew.bat :app:assembleDebug | Actual successful build |
-| JVM tests | .\gradlew.bat :app:testDebugUnitTest | Fresh XML, nonzero counts, no failures |
-| Ktlint | .\gradlew.bat :app:ktlintCheck | Successful task; no suppressions |
-| Detekt | .\gradlew.bat :app:detekt | Successful task; no failure masking |
-| Android Lint | .\gradlew.bat :app:lintDebug | No errors; review changed-file warnings |
-| Coverage | .\gradlew.bat :app:koverXmlReportDebug | Report with reviewed coverage counts |
-| Android boundary | .\gradlew.bat :app:connectedDebugAndroidTest | Declared runtime/build, named successful cases |
-
-Coverage thresholds remain 80% overall and 90% for new ViewModels/domain use cases.
-Review weighted XML counts and applicable per-file thresholds; report generation alone does not prove the thresholds. No separate script gate applies.
-No Roborazzi task/dependency is declared in the observed baseline; a required visual comparison remains blocked until its infrastructure is explicitly planned and configured.
-Use the configured Gradle instrumented task or the documented direct adb command for the declared boundary; record actual test counts and runtime identity.
-
-## Available gates
-
-The legacy script-backed source, stage-artifact, lifecycle, traceability, receipt, journey, platform, visual-contract and harness self-test gates have been removed.
-Workflows still require meaningful tests, reviewed acceptance mappings, actual runtime evidence and human approvals; these are not claims of automated validation.
-Do not require an absent checker or restore retired tooling as a prerequisite to ordinary work.
 ## Evidence
-
-Every selected gate records command, exit status, executed test count where relevant, runtime identity and retained report paths.
-Reuse evidence only with matching source/config/command/runtime fingerprints.
-Conditional N/A needs a scope-specific reason; missing required evidence is Blocked.
-Earlier onboarding reports remain historical and do not certify the current checkout.
+One concise summary records commit, command, exit/count and relevant runtime or CI URL.
+Reuse only matching source/config/command/runtime evidence. Failed, missing, skipped and historical results are not current passes.
+Promote minimal final evidence/decisions into durable docs; raw logs/build archives/PR drafts stay temporary.
+Stop at unresolved external blockers; do not repeat the same command hoping for different prerequisites.

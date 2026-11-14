@@ -2,8 +2,9 @@ param([string]$Bash = 'C:/Program Files/Git/bin/bash.exe')
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 $runner = (Join-Path $root '.github/scripts/run-adaptive-ui-tests.sh').Replace('\','/')
-$fixture = [IO.Path]::GetFullPath((Join-Path ([IO.Path]::GetTempPath()) ('sdo-adaptive-runner-' + [guid]::NewGuid().ToString('N'))))
-$tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\') + '\'
+$scratchRoot = Join-Path $root '.scratch'
+$fixture = [IO.Path]::GetFullPath((Join-Path $scratchRoot ('sdo-adaptive-runner-' + [guid]::NewGuid().ToString('N'))))
+$tempRoot = [IO.Path]::GetFullPath($scratchRoot).TrimEnd('\') + '\'
 if (!$fixture.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Fixture escaped temp root' }
 $encoding = New-Object Text.UTF8Encoding($false)
 try {
@@ -43,5 +44,8 @@ fi
 finally {
     if ($fixture.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $fixture)) {
         Remove-Item -LiteralPath $fixture -Recurse -Force
+    }
+    if ((Test-Path -LiteralPath $scratchRoot) -and !(Get-ChildItem -LiteralPath $scratchRoot -Force | Select-Object -First 1)) {
+        Remove-Item -LiteralPath $scratchRoot
     }
 }

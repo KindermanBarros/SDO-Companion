@@ -1,50 +1,47 @@
-# AGENTS.md — SDO Companion
-
-> **Sealed.** Edit only when the user explicitly asks. If you think a rule here should change, propose it in your summary.
-
-SDO Companion is an Android API 30+ RPG companion for character sheets, campaigns and the SDO codex; confirmed target hardware is a smartphone. Read this file fully; open other docs only when their "Read when" applies.
+# AGENTS.md - SDO Companion
+> **Sealed.** Edit only when the user explicitly asks.
+Android API 30+ companion for character sheets, campaigns and the SDO codex; confirmed target: smartphone.
 
 ## Workflow
+1. Read this file once. Adopt [PERSONAS](.docs/PERSONAS.md); load only skills needed for the current stage.
+2. Read the [living backlog](docs/product/product.md#backlog-de-produto); select the requested item, preserve other priorities, and record new findings there.
+3. Resume/create one [task state](.docs/TASK_PLANNING.md). For bounded work, a short scope/files/checks plan is enough.
+4. Implement the smallest authorized change using [ARCHITECTURE](.docs/ARCHITECTURE.md) and [CODE_STANDARDS](.docs/CODE_STANDARDS.md).
+5. Select checks once using [VALIDATION](.docs/VALIDATION.md). Reuse matching evidence; rerun only after a relevant change/failure.
+6. Reconcile backlog and affected docs, append [history](.docs/HISTORY.md), remove .scratch, check the staged diff, commit and hand off InDevReview.
 
-1. Adopt the persona for the task ([PERSONAS](.docs/PERSONAS.md)).
-2. If the task modifies files, plan it before editing ([TASK_PLANNING](.docs/TASK_PLANNING.md)).
-3. Load every skill that matches the task ([SKILLS](.docs/SKILLS.md)).
-4. Implement following [ARCHITECTURE](.docs/ARCHITECTURE.md) and [CODE_STANDARDS](.docs/CODE_STANDARDS.md).
-5. Validate ([VALIDATION](.docs/VALIDATION.md)).
-6. Update every doc whose "Update when" applies, append a history record ([HISTORY](.docs/HISTORY.md)), and hand the task to the developer for review.
-
-If a requirement or product decision is unclear, ask. Don't guess.
+Ask only about unresolved product decisions, destructive ambiguity or missing authorization; reuse existing approvals.
 
 ## Documents
-
-[SEALED] = sealed: edit only when the user explicitly asks.
+[SEALED] means edit only on explicit user request. Open other docs only when their Read when applies.
 
 | Doc | Read when | Update when |
 |---|---|---|
-| [README](README.md) | You need product context | A user-visible feature, target device or permission changes |
-| [ARCHITECTURE](.docs/ARCHITECTURE.md) [SEALED] | You write, move or refactor code | The user explicitly asks |
-| [CODE_STANDARDS](.docs/CODE_STANDARDS.md) [SEALED] | You write code | The user explicitly asks |
-| [GIT_STANDARDS](.docs/GIT_STANDARDS.md) [SEALED] | **Only** when the user asks for a git action | The user explicitly asks |
-| [PROJECT_CONTEXT](.docs/PROJECT_CONTEXT.md) | You decide where a feature or refactor goes | Modules, their responsibilities or their communication change |
-| [TECH_STACK](.docs/TECH_STACK.md) | You touch dependencies, plugins, SDK levels or the build | Any of those changes, or a plan confirms a new technology |
-| [VALIDATION](.docs/VALIDATION.md) | You write tests, or before you finish | The test pattern or the check commands change |
-| [PERSONAS](.docs/PERSONAS.md) [SEALED] | You start a task | The user explicitly asks |
-| [SKILLS](.docs/SKILLS.md) | You start a task | A skill is installed or removed, or the project scope changes |
-| [TASK_PLANNING](.docs/TASK_PLANNING.md) | You receive a task that modifies files | A task-state file is created or deleted (§ Ongoing tasks only) |
-| [HISTORY](.docs/HISTORY.md) [SEALED] | You finish a modification | The user explicitly asks |
+| [README](README.md) | Product context needed | User-visible feature, device or permission changes |
+| [ARCHITECTURE](.docs/ARCHITECTURE.md) [SEALED] | Writing/moving/refactoring code | Explicit user request |
+| [CODE_STANDARDS](.docs/CODE_STANDARDS.md) [SEALED] | Writing code | Explicit user request |
+| [GIT_STANDARDS](.docs/GIT_STANDARDS.md) [SEALED] | Git action requested | Explicit user request |
+| [PROJECT_CONTEXT](.docs/PROJECT_CONTEXT.md) | Locating a feature/refactor | Module responsibilities/communication change |
+| [TECH_STACK](.docs/TECH_STACK.md) | Build/dependencies/SDK work | Those inputs or confirmed technology decisions change |
+| [VALIDATION](.docs/VALIDATION.md) | Selecting checks or finishing | Check selection/commands change |
+| [PERSONAS](.docs/PERSONAS.md) [SEALED] | Starting a task | Explicit user request |
+| [SKILLS](.docs/SKILLS.md) | Selecting task skills | Installation/removal or project scope changes |
+| [TASK_PLANNING](.docs/TASK_PLANNING.md) | Modifying files | Task-state index changes or explicit planning-policy request |
+| [HISTORY](.docs/HISTORY.md) [SEALED] | Finishing a modification | Explicit user request; append audit records separately |
 
 ## Rules
-
-- **Git:** automatically commit completed changes after applicable validation, following GIT_STANDARDS; stage only the task's files and sign off. Create branches, push and open pull requests only when the user asks.
-- **UI tasks:** screenshots are mandatory for UI tasks; capture them using Android CLI or adb commands.
-- **Test APKs:** always deliver authenticated builds with Firebase configuration and the registered signing certificate. Missing required inputs fail delivery; never substitute a demo-only APK.
-- **Docs are part of done:** update them in the same change as the code.
-- **Timestamps:** `YYYY-MM-DD HH:MM America/La_Paz`. On POSIX use `TZ=America/La_Paz date '+%Y-%m-%d %H:%M'`. Never write relative dates.
-- **Never invent** versions, Jira IDs or product decisions. Read them from the source, or ask.
-- **Your part is done** when the checks in VALIDATION pass, the docs are updated, the history record is appended and the task is `InDevReview`. Only the developer's approval moves it to `Done`. Your summary names what you couldn't run.
+- **Temporary files:** all agent-created throwaway files go under repository .scratch/. Remove the entire folder ALWAYS before every commit, including empty folders; never stage it. Promote necessary final evidence/contracts into docs/changes or docs/current first. Registered checkouts and standard tool-managed caches are infrastructure, not a scratch-file workaround.
+- **Backlog:** docs/product/product.md is living workflow documentation: select work from it, add findings/requests, and reconcile status at handoff. Keep detailed intent in capability requirements; no unapproved scope or invented priorities.
+- **Lean execution:** one owner for bounded tasks; delegate only when requested or when independent review/parallel work materially helps. No repeated planning, reapproval or validation for unchanged scope.
+- **Context/output:** use rg and bounded reads; do not dump whole status/logs or reread loaded docs. Store one durable summary with commands/results/limitations; link instead of copying. Routine final output: result, check status, next action/PR.
+- **Validation:** honor explicit owner build-only/manual-test preferences; report omitted checks, never fabricate acceptance. Security, data-loss and changed runtime boundaries still need appropriate evidence before acceptance.
+- **Git:** scoped signed-off commits after applicable validation; branches/push/PR only when requested. Pre-commit scratch enforcement: .githooks/pre-commit; enable with git config --local core.hooksPath .githooks.
+- **UI:** capture Android CLI/adb screenshots unless the owner explicitly owns runtime verification for that task.
+- **APKs:** deliver only Firebase-configured builds signed with the registered certificate; missing inputs fail delivery.
+- **Docs:** update only documents affected by the change; append one concise history record at handoff.
+- **Time:** YYYY-MM-DD HH:MM America/La_Paz. Never invent versions, issue IDs or product decisions.
+- **Done:** agent work ends InDevReview with honest evidence/limitations; only developer approval makes it Done.
 
 ## Document conventions
-
-- Root docs: `SCREAMINGCASE.md`. Main docs in `.docs/`: `SCREAMING_SNAKE_CASE.md`. Subfolders: `PascalCase/`. Sub docs: `snake_case.md`.
-- A sub doc only details its main doc, and that main doc links to it. Don't create a sub doc without a parent. Add every new main doc to the table above.
-- Keep AGENTS.md at most 60 lines and every other doc at most 120. Move longer sections into a linked sub doc.
+Root docs: SCREAMINGCASE.md; .docs main docs: SCREAMING_SNAKE_CASE.md; subfolders: PascalCase; subdocs: snake_case.md.
+Link each subdoc from its parent. Keep this file <=60 lines and other maintained docs <=120; historical append-only audit records are exempt.

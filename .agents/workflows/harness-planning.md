@@ -9,7 +9,7 @@ Use for multiple independently deliverable behaviors with ordering/dependency de
 ## Workspace and authorities
 
 Read affected living capability requirements and inspect current source before proposing scope.
-Create one dated .scratch/YYYY-MM-DD-feature-name workspace and link it from docs/product/product.md.
+Create one dated docs/changes/YYYY-MM-DD-feature-name workspace and link it from docs/product/product.md.
 Keep its lifecycle in the existing Harness Feature Tracker; task state in .docs links that contract and records progress only.
 Do not infer lifecycle from folder location or introduce a competing feature tracker.
 Review tracker status, approval provenance and linked workspace before selection and after edits.

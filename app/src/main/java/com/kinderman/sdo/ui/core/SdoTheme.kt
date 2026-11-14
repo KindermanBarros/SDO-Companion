@@ -36,7 +36,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -51,6 +51,8 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -365,6 +367,18 @@ private fun hudTypography(scale: Float) = Typography(
     ),
 )
 
+/** Shared paragraph policy; narrow components must also accommodate their longest word. */
+private fun Typography.withWholeWordWrapping(): Typography {
+    fun apply(style: TextStyle) = style.copy(lineBreak = LineBreak.Paragraph, hyphens = Hyphens.None)
+    return copy(
+        displayLarge = apply(displayLarge), displayMedium = apply(displayMedium),
+        displaySmall = apply(displaySmall), headlineLarge = apply(headlineLarge),
+        headlineMedium = apply(headlineMedium), headlineSmall = apply(headlineSmall),
+        titleLarge = apply(titleLarge), titleMedium = apply(titleMedium), titleSmall = apply(titleSmall),
+        bodyLarge = apply(bodyLarge), bodyMedium = apply(bodyMedium), bodySmall = apply(bodySmall),
+        labelLarge = apply(labelLarge), labelMedium = apply(labelMedium), labelSmall = apply(labelSmall),
+    )
+}
 private fun cyberGrungeTypography(scale: Float): Typography {
     val terminal = CyberGrungeTerminalFont
     val heading = CyberGrungeHeadingFont
@@ -382,12 +396,12 @@ private fun cyberGrungeTypography(scale: Float): Typography {
         titleLarge = TextStyle(fontFamily = heading, fontSize = (22 * scale).sp, lineHeight = (29 * scale).sp, platformStyle = safeFontMetrics),
         titleMedium = TextStyle(fontFamily = heading, fontSize = (18 * scale).sp, lineHeight = (25 * scale).sp, platformStyle = safeFontMetrics),
         titleSmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (19 * scale).sp, platformStyle = safeFontMetrics),
-        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (14 * scale).sp, lineHeight = (24 * scale).sp, platformStyle = safeFontMetrics),
-        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (13 * scale).sp, lineHeight = (23 * scale).sp, platformStyle = safeFontMetrics),
-        bodySmall = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (21 * scale).sp, platformStyle = safeFontMetrics),
-        labelLarge = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (21 * scale).sp, platformStyle = safeFontMetrics),
-        labelMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (20 * scale).sp, platformStyle = safeFontMetrics),
-        labelSmall = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (19 * scale).sp, platformStyle = safeFontMetrics),
+        bodyLarge = TextStyle(fontFamily = terminal, fontSize = (12 * scale).sp, lineHeight = (18 * scale).sp, platformStyle = safeFontMetrics),
+        bodyMedium = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (17 * scale).sp, platformStyle = safeFontMetrics),
+        bodySmall = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (15 * scale).sp, platformStyle = safeFontMetrics),
+        labelLarge = TextStyle(fontFamily = terminal, fontSize = (11 * scale).sp, lineHeight = (16 * scale).sp, platformStyle = safeFontMetrics),
+        labelMedium = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (15 * scale).sp, platformStyle = safeFontMetrics),
+        labelSmall = TextStyle(fontFamily = terminal, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp, platformStyle = safeFontMetrics),
     )
 }
 
@@ -418,8 +432,8 @@ fun SdoTheme(
     val view = LocalView.current
     val defaultIndication = LocalIndication.current
     val defaultRippleConfiguration = LocalRippleConfiguration.current
-    if (!view.isInEditMode) SideEffect {
-        val activity = view.context as? ComponentActivity ?: return@SideEffect
+    if (!view.isInEditMode) LaunchedEffect(view, colors.background, colors.surface) {
+        val activity = view.context as? ComponentActivity ?: return@LaunchedEffect
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
                 colors.background.toArgb(),
@@ -437,11 +451,11 @@ fun SdoTheme(
     }
     MaterialTheme(
         colorScheme = colors,
-        typography = if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
+        typography = (if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) {
             cyberGrungeTypography(preferences.fontScale.multiplier)
         } else {
             hudTypography(preferences.fontScale.multiplier)
-        },
+        }).withWholeWordWrapping(),
         shapes = androidx.compose.material3.Shapes(
             extraSmall = CutCornerShape(4.dp), small = CutCornerShape(8.dp),
             medium = CutCornerShape(12.dp), large = CutCornerShape(16.dp),
@@ -496,12 +510,6 @@ fun HudBackground(
                     y += minor
                 }
             } else {
-                drawLine(
-                    color = signalColor.copy(alpha = 0.28f),
-                    start = Offset(size.width * .055f, 0f),
-                    end = Offset(size.width * .055f, size.height),
-                    strokeWidth = 2.dp.toPx(),
-                )
                 var slash = -size.height
                 while (slash < size.width) {
                     drawLine(

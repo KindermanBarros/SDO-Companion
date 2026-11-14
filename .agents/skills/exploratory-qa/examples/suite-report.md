@@ -1,6 +1,6 @@
 # Suite report
 
-Blank example for `.qa-artifacts/<suite-id>/suite-report.md`. No QA execution or approval
+Blank example for `.scratch/qa/<suite-id>/suite-report.md`. No QA execution or approval
 is recorded here. Fill observations from actual execution and link evidence in run folders.
 
 ## Run context

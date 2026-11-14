@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dashboard_quick_access">Acessos rápidos</string>
+    <string name="dashboard_quick_session">Sessão</string>
+    <string name="dashboard_quick_historian">Mestre</string>
+    <string name="dashboard_quick_settings">Configurações</string>
+    <string name="dashboard_search_label">Buscar ficha</string>
+    <string name="dashboard_search_hint">Nome, raça, ocupação, e-mail ou UID</string>
+    <string name="dashboard_filters_label">Filtros</string>
+    <string name="dashboard_filters_title">Filtrar fichas</string>
+    <string name="dashboard_filters_owner">Proprietário</string>
+    <string name="dashboard_filters_campaign">Campanha</string>
+    <string name="dashboard_filters_status">Status</string>
+    <string name="dashboard_filters_clear">Limpar</string>
+    <string name="dashboard_filters_apply">Aplicar</string>
+    <string name="dashboard_filters_close">Fechar filtros</string>
+    <string name="library_origin_label">Origem</string>
+    <string name="library_category_label">Categoria</string>
+    <string name="library_search_label">Buscar referência</string>
+    <string name="library_include_archived">Incluir arquivados</string>
+    <string name="library_new_template">Novo modelo</string>
+    <string name="library_choices_close">Fechar</string>
+    <string name="library_result_counts">%1$d MODELOS // %2$d REFERÊNCIAS</string>
+    <string name="library_pending_deliveries">%1$d ENTREGAS PENDENTES</string>
+    <string name="library_kind_path">Caminho</string>
+    <string name="library_kind_power">Poder</string>
+    <string name="library_kind_magic">Magia</string>
+    <string name="library_kind_ash">Cinza</string>
+    <string name="library_kind_rune">Runa</string>
+    <string name="library_kind_item">Item</string>
+    <string name="library_kind_acquired_knowledge">Conhecimento adquirido</string>
+    <string name="library_kind_arcane_knowledge">Conhecimento arcano</string>
+    <string name="library_kind_battle_technique">Poder marcial</string>
+    <string name="historian_quick_action">AÇÃO RÁPIDA</string>
+</resources>

@@ -36,7 +36,7 @@ internal fun sdoUsesNavigationRail(widthDp: Float, heightDp: Float): Boolean =
 @Composable
 fun SdoResponsiveFrame(content: @Composable () -> Unit) {
     BoxWithConstraints(
-        Modifier.fillMaxSize()
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
     ) {
         CompositionLocalProvider(

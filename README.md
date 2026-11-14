@@ -12,6 +12,7 @@ Android companion for creating and managing SDO RPG character sheets, using camp
 - Character creation, sheets, progression, equipment and access rules.
 - Campaigns, invitations, membership, session operations and historian screens.
 - Bundled codex catalogs, local persistence, synchronization and conflict handling.
+- Compact dashboard/library filters, expandable session abilities and catalog-derived race guidance were accepted by the owner on 2026-11-13. Owner review repairs restore angular cards/selectors, readable Cybergrunge headers and library controls, and remove Session/Master from panel quick access; automated lifecycle/IME and pixel-verification limitations remain documented.
 - Shared journal, character photos, battle grid and online-only editing are planned, not delivered: see [Product overview](docs/product/product.md).
 
 ## Build
@@ -40,3 +41,7 @@ Test APKs delivered by CI are always authenticated with the configured Firebase 
 - [Existing onboarding evidence and blockers](docs/current/onboarding-summary.md)
 
 This documentation setup does not resolve the earlier onboarding quality or coverage blockers.
+
+The master operation exposes quick actions without expanding character cards. Dashboard settings is beside sync; Cybergrunge navigation is compact and centered.
+
+Functional text uses wrapping/autosizing instead of ellipsis; names, selections, counters and conflict summaries retain their full text.

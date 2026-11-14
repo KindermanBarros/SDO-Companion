@@ -13,7 +13,7 @@ Select the feature's approved analytics tracking specification, explicit analyti
 
 Source call sites are discovery hints; actual events are observations. Neither defines the expected contract automatically. When requirements are missing, draft expectations for review and report the gap. Approval metadata records human authorization; it does not grant it.
 
-Create a fresh `.qa-artifacts/<run-id>/scenario.json` with the contract's `scenario_id` and the actual `app_id`. Describe only the actions needed to trigger the declared events, using requirements, an existing workflow/replay, and source hints. This minimal run file is sufficient; no broader QA report or observations file is required.
+Create a fresh `.scratch/qa/<run-id>/scenario.json` with the contract's `scenario_id` and the actual `app_id`. Describe only the actions needed to trigger the declared events, using requirements, an existing workflow/replay, and source hints. This minimal run file is sufficient; no broader QA report or observations file is required.
 
 ```json
 {"scenario_id":"<contract-scenario-id>","app_id":"com.example.funphotoeditor"}
@@ -33,7 +33,7 @@ For live collection, inspect the existing build:
 
 ```bash
 python3 .agents/skills/analytics-event-validator/scripts/capture.py inspect \
-  --run-dir .qa-artifacts/<run-id> --serial <selected-serial>
+  --run-dir .scratch/qa/<run-id> --serial <selected-serial>
 ```
 
 Inspect is read-only and writes `analytics/capability.json`. Missing/non-debuggable app, absent recorder, or unsupported protocol is INCONCLUSIVE. A healthy capture requires initialization and a completed flush marker. The supplied starter recorder's ready-only stream needs adaptation before live use.
@@ -42,17 +42,17 @@ For an approved contract and already-compatible debug build:
 
 ```bash
 python3 .agents/skills/analytics-event-validator/scripts/capture.py reset \
-  --run-dir .qa-artifacts/<run-id> --serial <selected-serial> \
-  --contract .qa-artifacts/<run-id>/analytics/contract.json
+  --run-dir .scratch/qa/<run-id> --serial <selected-serial> \
+  --contract .scratch/qa/<run-id>/analytics/contract.json
 # Perform the declared analytics-trigger actions using an existing workflow/replay
 # or the installed agent-device CLI. Check its local help for exact syntax.
 # Invoke the existing recorder's documented flush barrier before collection.
 python3 .agents/skills/analytics-event-validator/scripts/capture.py collect \
-  --run-dir .qa-artifacts/<run-id> --serial <selected-serial> \
-  --contract .qa-artifacts/<run-id>/analytics/contract.json
+  --run-dir .scratch/qa/<run-id> --serial <selected-serial> \
+  --contract .scratch/qa/<run-id>/analytics/contract.json
 python3 .agents/skills/analytics-event-validator/scripts/validate.py \
-  --run-dir .qa-artifacts/<run-id> \
-  --contract .qa-artifacts/<run-id>/analytics/contract.json
+  --run-dir .scratch/qa/<run-id> \
+  --contract .scratch/qa/<run-id>/analytics/contract.json
 ```
 
 Reset stops only the selected package and removes only its fixed debug capture file; it does not clear app data. Avoid resetting another active session. Collection checks the target/build/window receipts and discards every parameter value before writing `events.checked.json`. Invalid parameter checks survive redaction. Artifacts use mode 0600 in a local ignored directory; raw device content/stderr is not retained.

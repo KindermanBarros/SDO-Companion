@@ -10,7 +10,7 @@ SDK behavior, hardware/device services, models, locales, permissions, or visual 
 
 First classify the request using `testing-strategy.md`. For an ephemeral exploratory run,
 drive the installed app through `agent-device`; collect actual UI actions, state, request
-receipts, and cleanup under `.qa-artifacts/<run-id>/`. Do not translate a WireMock/device
+receipts, and cleanup under `.scratch/qa/<run-id>/`. Do not translate a WireMock/device
 journey into a permanent instrumented test merely because it crosses Android networking.
 The instrumented source/XML requirements below govern maintained feature/bug regression
 acceptance; they do not require authoring test code for standalone exploratory QA.

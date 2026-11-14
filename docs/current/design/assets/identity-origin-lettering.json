@@ -1,0 +1,26 @@
+﻿[
+    {
+        "font":  "mb_forever_raw.ttf",
+        "text":  "ORIGEM",
+        "width":  117,
+        "style":  "standard",
+        "height":  43,
+        "file":  "identity-origin-standard-0.png"
+    },
+    {
+        "font":  "drunk_fonts_regular.otf",
+        "text":  "ORIGEM",
+        "width":  150,
+        "style":  "cyber",
+        "height":  39,
+        "file":  "identity-origin-cyber-0.png"
+    },
+    {
+        "font":  "acidic.ttf",
+        "text":  "ORIGEM",
+        "width":  159,
+        "style":  "acidic",
+        "height":  38,
+        "file":  "identity-origin-acidic-0.png"
+    }
+]
