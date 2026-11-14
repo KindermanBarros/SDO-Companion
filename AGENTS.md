@@ -4,11 +4,11 @@ Android API 30+ companion for character sheets, campaigns and the SDO codex; con
 
 ## Workflow
 1. Read this file once. Adopt [PERSONAS](.docs/PERSONAS.md); load only skills needed for the current stage.
-2. Read the [living backlog](docs/product/product.md#backlog-de-produto) and [Memory](docs/MEMORY.md); select the requested item, preserve other priorities, and record new findings there.
+2. Read the [living backlog](docs/product/product.md#product-backlog) and [Memory](docs/MEMORY.md); select the requested item, preserve other priorities, and record new findings there.
 3. Resume/update the task summary in [Memory](docs/MEMORY.md) using [TASK_PLANNING](.docs/TASK_PLANNING.md); never create separate task-state or history files.
 4. Implement the smallest authorized change using [ARCHITECTURE](.docs/ARCHITECTURE.md) and [CODE_STANDARDS](.docs/CODE_STANDARDS.md).
 5. Select checks once using [VALIDATION](.docs/VALIDATION.md). Reuse matching evidence; rerun only after a relevant change/failure.
-6. Reconcile backlog, affected docs and [Memory](docs/MEMORY.md), remove `.scratch`, check the staged diff, commit and hand off `InDevReview`.
+6. Reconcile backlog, affected docs and [Memory](docs/MEMORY.md), run `tools/pre-commit-cleanup.ps1`, check the staged diff, commit and hand off `InDevReview`.
 
 Ask only about unresolved product decisions, destructive ambiguity or missing authorization; reuse existing approvals.
 
@@ -30,7 +30,8 @@ Ask only about unresolved product decisions, destructive ambiguity or missing au
 | [HISTORY](.docs/HISTORY.md) [SEALED] | Finishing a modification | Explicit user request; summarize in [Memory](docs/MEMORY.md) |
 
 ## Rules
-- **Temporary files:** all agent-created throwaway files go under repository `.scratch/`. Remove the entire folder ALWAYS before every commit, including empty folders; never stage it.
+- **Mandatory pre-commit cleanup:** run `tools/pre-commit-cleanup.ps1` ALWAYS before every commit to remove `.scratch/`, `.codex-attachments/`, `.worktrees/`, `firestore-debug.log`, `.DS_Store`/`Thumbs.db`, `*.orig`/`*.rej`, and `previews-*`; never stage them.
+- **English repo files:** keep all documentation, rules, memory, and code comments in English; only in-app UI copy/domain messages remain in Portuguese.
 - **Single history & change files:** summarize all task states and history strictly in [Memory](docs/MEMORY.md); keep complex change specs/plans in one `docs/changes/<slug>.md` file. Never create separate files in `.docs/HistoryRecords/`, `.docs/OngoingTasks/` or `.docs/CompletedTasks/`.
 - **Backlog:** `docs/product/product.md` is living workflow documentation: select work from it, add findings/requests, and reconcile status at handoff.
 - **Lean execution:** one owner for bounded tasks; delegate only when requested or when independent review/parallel work materially helps.

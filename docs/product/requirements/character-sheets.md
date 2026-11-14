@@ -24,11 +24,11 @@ Compact UI review: body/armor uses section index 11; race choices show catalog-d
 
 ## Planned changes
 
-### SHEET-PLAN-001 — Foto de perfil dos personagens
+### SHEET-PLAN-001 — Character profile photos
 
-Backlog solicitado pelo proprietário em 2026-11-12; ainda não implementado. Permitir adicionar foto de perfil e exibi-la na ficha, na lista de personagens, no Modo Sessão e no Modo Mestre. Reutilizar a foto nos tokens em formato de moeda do grid de batalha previsto em CAMPAIGN-PLAN-004.
+Backlog requested by owner on 2026-11-12; not yet implemented. Allow adding a profile photo and displaying it in the sheet, character list, Session Mode, and Historian/GM Mode. Reuse the photo in the coin-shaped battle-grid tokens planned in CAMPAIGN-PLAN-004.
 
-Pelos pontos de exibição e uso em tokens, o item é registrado como retrato do personagem. Confirmar no refinamento se também existe demanda separada para foto da conta do usuário. Definir origem da imagem, troca/remoção, apresentação sem foto, recorte, armazenamento/sincronização e permissões antes da implementação; nenhuma dessas soluções foi escolhida neste registro.
+Given the display surfaces and token reuse, this item is tracked as a character portrait. Confirm during refinement whether a separate user-account avatar is also requested. Define image source, replacement/removal, empty-state presentation, cropping, storage/sync, and permissions before implementation; none of these choices are fixed here.
 
 ## References
 

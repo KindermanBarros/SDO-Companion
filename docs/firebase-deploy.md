@@ -1,15 +1,15 @@
-# Deploy e rollback das regras do Firebase
+# Firebase rules deploy and rollback
 
-As regras e os índices do Firestore são validados no emulador antes de qualquer publicação.
+Firestore rules and indexes are validated in the emulator before any deployment.
 
-## Publicação automática
+## Automatic publishing
 
-- Pull requests apenas validam as regras.
-- Alterações em `firebase/**`, `firebase.json` ou no workflow publicadas em `main` são validadas e enviadas ao projeto `sdo-companion`.
-- Cada GitHub Release republica a configuração contida na tag da versão, mantendo as regras alinhadas à versão do app.
-- Cada execução guarda por 90 dias um artefato com `firebase.json`, regras e índices validados.
+- Pull requests only validate the rules.
+- Changes to `firebase/**`, `firebase.json`, or the workflow merged to `main` are validated and deployed to the `sdo-companion` project.
+- Each GitHub Release republishes the configuration from that release tag, keeping rules aligned with the app version.
+- Each run retains a 90-day artifact containing the validated `firebase.json`, rules, and indexes.
 
-O ambiente `firebase-production` usa, na ordem, o primeiro secret disponível entre:
+The `firebase-production` environment uses the first available secret in order:
 
 1. `FIREBASE_SERVICE_ACCOUNT_SDO_COMPANION`
 2. `FIREBASE_SERVICE_ACCOUNT`
@@ -17,14 +17,14 @@ O ambiente `firebase-production` usa, na ordem, o primeiro secret disponível en
 4. `GCP_SA_KEY`
 5. `GOOGLE_APPLICATION_CREDENTIALS_JSON`
 
-O valor deve ser o JSON integral de uma conta de serviço autorizada a publicar regras e índices no projeto.
-Como compatibilidade com configurações antigas, o workflow também aceita `FIREBASE_TOKEN`.
+The value must be the full JSON of a service account authorized to publish rules and indexes to the project.
+For legacy compatibility, the workflow also accepts `FIREBASE_TOKEN`.
 
 ## Rollback
 
-1. Abra **Actions > Firebase rules deploy > Run workflow**.
-2. Informe em `ref` a tag ou o SHA que contém a configuração estável, por exemplo `v0.24.0`.
-3. Execute o workflow.
-4. Confira no resumo da execução o projeto, a referência e o commit publicados.
+1. Open **Actions > Firebase rules deploy > Run workflow**.
+2. Enter the stable tag or SHA in `ref` (for example, `v0.24.0`).
+3. Run the workflow.
+4. Confirm the target project, ref, and published commit in the run summary.
 
-O rollback restaura as regras e a declaração de índices daquela referência. Índices adicionais já construídos não são excluídos automaticamente, evitando remoções destrutivas durante uma recuperação.
+Rollback restores the rules and index declarations from that ref. Existing built indexes are not automatically deleted to avoid destructive removals during recovery.

@@ -11,44 +11,44 @@ SDO Companion helps players create and manage RPG character sheets and use them 
 | Character sheets | [Character sheets](requirements/character-sheets.md) | Source and tests present; runtime acceptance unverified |
 | Campaign use | [Campaigns](requirements/campaigns.md) | Source and tests present; runtime acceptance unverified |
 | RPG codex | [Codex](requirements/codex.md) | Bundled catalog and screens present; runtime acceptance unverified |
-| Sincronização e conectividade | [Sincronização](requirements/synchronization.md) | Implementada em `InDevReview` (`BACKLOG-006`); runtime em emulador/dispositivo pendente |
+| Synchronization & connectivity | [Synchronization](requirements/synchronization.md) | Implemented in `InDevReview` (`BACKLOG-006`); emulator/device runtime verification pending |
 
 ## Delivery direction
 
 First establish an accurate adoption baseline. Propose specific architecture, quality and test repairs using that evidence before selecting a new product feature. Detailed requirements belong in the capability files.
 
-## Backlog de produto
+## Product Backlog
 
-Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem prioridade ou ordem de entrega definida. O detalhamento está nos requisitos das capacidades; este backlog vivo participa da seleção, execução e reconciliação do workflow; registrar um item não autoriza sua implementação.
+Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or delivery order. Details live in the capability requirements; this living backlog participates in workflow selection, execution, and reconciliation, though recording an item does not authorize implementation.
 
-| ID | Item | Requisitos |
+| ID | Item | Requirements |
 |---|---|---|
-| BACKLOG-001 | Diário compartilhado da campanha | [Campanhas — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) |
-| BACKLOG-002 | Modo Sessão mais completo, compacto e com ações rápidas | [Campanhas — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) |
-| BACKLOG-003 | Modo Mestre mais completo, compacto e com ações rápidas | [Campanhas — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) |
-| BACKLOG-004 | Fotos de perfil dos personagens nas fichas, listas e modos de jogo | [Fichas — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) |
-| BACKLOG-005 | Grid de batalha compartilhado em tempo real no Modo Sessão | [Campanhas — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) |
-| BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
+| BACKLOG-001 | Shared campaign journal | [Campaigns — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) |
+| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) |
+| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) |
+| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) |
+| BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) |
+| BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
 
-BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Memory](../MEMORY.md), [change record](../changes/2026-11-14-shared-campaign-journal.md). Other backlog items retain their unordered status.
+BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Memory](../MEMORY.md), [change record](../changes/2026-11-14-shared-campaign-journal.md).
 BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner handed off InDevReview. [Memory](../MEMORY.md), [change record](../changes/2026-11-14-sync-online-only.md).
 
 Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Change record](../changes/2026-11-14-shared-campaign-journal.md): redesigned journal approved by owner with minor Standard color refinement; home settings icon contrast fixed in Standard mode; implementation handed off InDevReview. No product priorities changed.
 
-## Workflow do backlog
+## Backlog workflow
 Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Memory](../MEMORY.md): Done; owner accepted 2026-11-14; published with verified signed APK, CI run 43540829981 successful; existing product priorities unchanged.
 Owner request 2026-11-14: create feature branch with Companion improvements and optimize workflows, skills, rules, templates and tools for lower token usage. [Memory](../MEMORY.md): Done; owner accepted 2026-11-14; on `feature/lean-workflows-and-tools`; ~6,250 lines removed across 73 harness files and validated by `validate-harness.ps1`.
 
-- Ao começar, selecionar o pedido autorizado e consultar o requisito relacionado; prioridades não definidas continuam sem ordem inventada.
-- Acrescentar pedidos e achados úteis com origem, estado e dúvidas, sem expandir a tarefa atual.
-- Ao entregar, atualizar o item para refletir pendência, bloqueio, revisão ou aceite; somente o proprietário aprova o encerramento.
-- Melhorias visuais em revisão não concluem o escopo amplo dos modos Sessão/Mestre.
+- On start, select the authorized request and read its linked requirement; undefined priorities remain unordered.
+- Add useful requests and findings with origin, state, and open questions without expanding the active task.
+- On handoff, update the item to reflect pending, blocked, in-review, or accepted state; only the owner approves completion (`Done`).
+- Visual review refinements do not complete the broader Session/GM mode scope.
 
-## Entregas aprovadas
-| Pedido | Registro | Estado |
+## Approved deliveries
+| Request | Record | Status |
 |---|---|---|
-| Compactação e correções da UI | [Memory](../MEMORY.md) | Done; aceite explícito em 2026-11-13 |
-| Limpeza e workflow econômico | [Memory](../MEMORY.md) | Done; aceite explícito em 2026-11-13 |
+| UI compaction and fixes | [Memory](../MEMORY.md) | Done; explicitly accepted 2026-11-13 |
+| Workflow cleanup and lean workflow | [Memory](../MEMORY.md) | Done; explicitly accepted 2026-11-13 |
 
 ## Harness Feature Tracker
 

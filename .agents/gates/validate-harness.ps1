@@ -68,6 +68,25 @@ foreach ($relative in @('AGENTS.md','.docs/ARCHITECTURE.md','.docs/CODE_STANDARD
 }
 if (Test-Path -LiteralPath (Join-Path $rootPath 'setup_prompt.md')) { Add-Issue 'Stale setup input: setup_prompt.md' }
 if (Test-Path -LiteralPath (Join-Path $rootPath '.scratch')) { Add-Issue 'Scratch must be removed before handoff/commit' }
+foreach ($junk in @('.harness-state','.qa-artifacts','.codex-attachments','.worktrees','firestore-debug.log')) {
+    if (Test-Path -LiteralPath (Join-Path $rootPath $junk)) {
+        Add-Issue "Pre-commit cleanup required (run tools/pre-commit-cleanup.ps1): $junk"
+    }
+}
+$scanRoots = @('.agents','.docs','.githooks','docs','app/src','catalogs','firebase/firestore.rules','tools') |
+    ForEach-Object { Join-Path $rootPath $_ } |
+    Where-Object { Test-Path -LiteralPath $_ }
+foreach ($scanRoot in $scanRoots) {
+    foreach ($osJunk in @(Get-ChildItem -LiteralPath $scanRoot -Force -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -in @('.DS_Store','Thumbs.db') -or $_.Extension -in @('.orig','.rej') })) {
+        Add-Issue "OS/merge junk must be removed (run tools/pre-commit-cleanup.ps1): $($osJunk.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
+    }
+}
+$assetsPath = Join-Path $rootPath 'docs/changes/assets'
+if (Test-Path -LiteralPath $assetsPath) {
+    foreach ($previewDir in @(Get-ChildItem -LiteralPath $assetsPath -Recurse -Directory -Filter 'previews-*' -ErrorAction SilentlyContinue)) {
+        Add-Issue "Intermediate preview folder must not be committed: $($previewDir.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
+    }
+}
 foreach ($scanDir in @('.agents','harness/templates')) {
     $scanPath = Join-Path $rootPath $scanDir
     if (Test-Path -LiteralPath $scanPath) {

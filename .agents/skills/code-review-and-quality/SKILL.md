@@ -15,5 +15,5 @@ Follow [Project contract](../../gates/project-contract.md) and [Review checklist
 
 ## Execution
 1. Read only the active task/spec, diff, and triggered rules — do not preload unrelated rules or rerun valid fingerprint-matched checks.
-2. Categorize findings clearly: **Critical** (blocks handoff: security, data loss, broken behavior), **Required** (must fix in scope), **Nit / Optional** (non-blocking), or route out-of-scope observations to [living backlog](../../../docs/product/product.md#backlog-de-produto).
+2. Categorize findings clearly: **Critical** (blocks handoff: security, data loss, broken behavior), **Required** (must fix in scope), **Nit / Optional** (non-blocking), or route out-of-scope observations to [living backlog](../../../docs/product/product.md#product-backlog).
 3. Verify that triggered checks from [CI checks](../../gates/ci-checks.md) ran and passed, or that limitations are explicitly stated.

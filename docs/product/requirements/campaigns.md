@@ -22,37 +22,37 @@ Compact UI review: dashboard filters use compact modal choices and session abili
 
 ## Planned changes
 
-Backlog solicitado pelo proprietário em 2026-11-12. São propostas não implementadas; cada item precisa de refinamento, especificação, design e critérios de aceite antes da entrega. Não representam aprovação de uma solução técnica nem comprovação do comportamento atual.
+Backlog requested by owner on 2026-11-12. These are unimplemented proposals; each item needs refinement, specification, design, and acceptance criteria before delivery. They do not represent approval of a technical solution or certification of current behavior.
 
-### CAMPAIGN-PLAN-001 — Diário compartilhado
+### CAMPAIGN-PLAN-001 — Shared campaign journal
 
-Adicionar um diário compartilhado da campanha. Definir no refinamento autoria, permissões de leitura/escrita, organização dos registros e comportamento de edição/sincronização. Distinguir o diário das notas pessoais da ficha e do histórico técnico de operações já existentes.
+Add a shared campaign journal. Define authorship, read/write permissions, entry ordering, and edit/sync behavior during refinement. Distinguish the journal from personal character notes and the existing technical operation history.
 
 Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered InDevReview (device runtime and local emulator acceptance pending). See [Shared campaign journal record](../../changes/2026-11-14-shared-campaign-journal.md).
 
-### CAMPAIGN-PLAN-002 — Evolução do Modo Sessão
+### CAMPAIGN-PLAN-002 — Session Mode evolution
 
-Melhorar a interface e completar as funcionalidades do Modo Sessão, com foco em ações rápidas e apresentação compacta, preservando toda a informação necessária ao jogo. O inventário de ações, informações essenciais, atalhos e estados deve ser definido a partir dos fluxos existentes; o pedido não fixa ainda quais controles ou funcionalidades serão adicionados.
+Improve the UI and complete Session Mode features, focusing on quick actions and compact presentation while preserving all gameplay-relevant information. Define the inventory of actions, essential info, shortcuts, and states from existing flows; the request does not fix specific controls yet.
 
-### CAMPAIGN-PLAN-003 — Evolução do Modo Mestre
+### CAMPAIGN-PLAN-003 — Historian / GM Mode evolution
 
-Melhorar a interface e completar as funcionalidades do Modo Mestre, com foco em ações rápidas, controles compactos e acesso a toda a informação necessária para conduzir a campanha. Refinar quais informações precisam permanecer visíveis e quais ações exigem acesso imediato, sem presumir mudanças nas permissões existentes.
+Improve the UI and complete Historian/GM Mode features, focusing on quick actions, compact controls, and access to all information needed to run the campaign. Refine which info must stay visible and which actions need immediate access without assuming permission changes.
 
-### CAMPAIGN-PLAN-004 — Grid de batalha em tempo real
+### CAMPAIGN-PLAN-004 — Real-time battle grid
 
-Adicionar ao Modo Sessão um quadro de combate compartilhado, sobre um grid, no qual a pessoa mestre possa desenhar em tempo real e movimentar personagens representados por tokens em formato de moeda com suas fotos de perfil.
+Add a shared combat board over a grid in Session Mode where the GM can draw in real time and move characters represented by coin-shaped tokens with their profile photos.
 
-Escopo inicial solicitado:
+Initial requested scope:
 
-- Grid e desenho sobre o quadro, com atualização compartilhada em tempo real.
-- Movimentação dos personagens por tokens de moeda usando as fotos previstas em SHEET-PLAN-001.
-- Cálculo de deslocamento.
-- Representação e consideração de terrenos altos e baixos.
-- Possibilidade de evolução com outras funcionalidades de combate, ainda a definir; a expressão “muitas outras coisas” não é tratada como escopo fechado.
+- Grid and freehand drawing on the board with real-time shared updates.
+- Character movement via coin tokens using the profile photos from SHEET-PLAN-001.
+- Movement distance calculation.
+- Representation and handling of high/low elevation terrain.
+- Future combat feature expansion, still open-ended; "many other things" is not treated as closed scope.
 
-Decisões para refinamento: escala/unidades do grid, diagonais e regras de deslocamento do SDO; significado e efeito de altura/terreno; quem pode mover cada token; ferramentas de desenho; persistência dos mapas; concorrência, reconexão e consulta offline. Edições offline ficam proibidas pela política [SYNC-PLAN-001](synchronization.md#planned-changes), também aplicável ao diário e aos modos Sessão/Mestre. Alcance, linha de visão, obstáculos, iniciativa, automação de regras e outras ferramentas poderão ser avaliados, mas não estão confirmados pelo pedido atual.
+Decisions for refinement: grid scale/units, diagonals, and SDO movement rules; elevation/terrain meaning and effects; who can move each token; drawing tools; map persistence; concurrency, reconnection, and offline inspection. Offline edits remain forbidden under [SYNC-PLAN-001](synchronization.md#planned-changes), which also applies to the journal and Session/GM modes. Range, line of sight, obstacles, initiative, rule automation, and other tools may be evaluated later but are not confirmed by the current request.
 
-Dependências de produto identificadas: fotos dos personagens para os tokens; integração com a campanha e o Modo Sessão. A ordem de entrega e a tecnologia de sincronização ainda não foram escolhidas.
+Identified product dependencies: character profile photos for tokens; integration with campaigns and Session Mode. Delivery order and sync technology are not fixed here.
 
 ## References
 

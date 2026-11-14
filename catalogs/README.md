@@ -1,47 +1,47 @@
-# Catálogos plug-and-play — SDO Companion
+# Plug-and-play Catalogs — SDO Companion
 
-Os JSONs são a fonte estruturada dos 500 registros. A mesma edição é proposta no repositório `solidao-dos-oprimidos`, em `03 - Regras/Catalogos estruturados`. Não é necessário extrair valores de Markdown, preencher campos na primeira seleção ou acessar a rede durante o uso do app.
+These JSON files are the structured source of the 500 entries, mirroring `03 - Regras/Catalogos estruturados` in `solidao-dos-oprimidos`. No Markdown parsing, first-selection field entry, or network access is required during app use.
 
-| Arquivo | Registros |
+| File | Entries |
 | --- | ---: |
-| powers.json | 100 poderes |
-| magic.json | 50 magias |
-| ashes.json | 150 cinzas: 50 nomes × 3 purezas |
-| runes.json | 50 runas |
-| knowledge.json | 50 adquiridos + 50 arcanos + 50 técnicas, no contrato especializado v2 |
-| gems.json | Gemas menores, maiores e de aprimoramento com efeitos tipados por empunhadura |
-| modifications.json | Modificações compatíveis por tipo de equipamento e efeitos normalizados |
+| powers.json | 100 powers |
+| magic.json | 50 spells |
+| ashes.json | 150 ashes: 50 names x 3 purities |
+| runes.json | 50 runes |
+| knowledge.json | 50 learned + 50 arcane + 50 techniques (specialized v2 contract) |
+| gems.json | Minor, major, and enhancement gems with wield-typed effects |
+| modifications.json | Compatible modifications per equipment type with normalized effects |
 
-## Contrato
+## Contract
 
-Poderes usam `catalog.schema.json`. Magias, runas e cinzas usam `abilities.schema.json`; conhecimentos usam `knowledge.schema.json`. Os contratos especializados seguem o formato plano de grimório Roll20: um documento nomeado contém uma lista homogênea, e cada registro possui apenas campos do seu domínio. O gerador converte os três contratos para `CatalogEntry`; na ficha, Conhecimentos viram `SpecialKnowledge`. IDs de catálogo são estáveis e IDs de instância são criados ao adicionar à ficha.
+Powers use `catalog.schema.json`. Spells, runes, and ashes use `abilities.schema.json`; knowledges use `knowledge.schema.json`. The specialized contracts follow the flat Roll20 grimoire format: a named document holds a homogeneous list, and each entry keeps only its domain fields. The generator converts all three contracts to `CatalogEntry`; on the sheet, Knowledges become `SpecialKnowledge`. Catalog IDs are stable and instance IDs are created when added to a sheet.
 
-| Campos | Destino |
+| Fields | Target |
 | --- | --- |
 | id, version | catalogEntryId, catalogVersion |
-| name, group, source, ruleReference | nome, categoria, origem e referência |
-| costType, costValue, execution, range, targetArea, duration, resistance | campos canônicos usados diretamente pela UI |
-| knowledge, level | vínculo obrigatório da Magia ou Runa ao Conhecimento possuído |
-| source, purity | Fonte e Pureza da Cinza |
+| name, group, source, ruleReference | name, category, source, and reference |
+| costType, costValue, execution, range, targetArea, duration, resistance | canonical fields read directly by UI |
+| knowledge, level | required link from Spell or Rune to owned Knowledge |
+| source, purity | Ash Source and Purity |
 | mechanicalEffect | effect |
-| prerequisites, activationCondition, limit, enhancements, deactivationCondition | detalhes do Poder |
-| attribute, initialLevel | attribute, value do Conhecimento |
-| maxLevel | limite validado do catálogo (5) |
-| summary, keywords, repeatable | descrição, busca e duplicidade |
+| prerequisites, activationCondition, limit, enhancements, deactivationCondition | Power details |
+| attribute, initialLevel | Knowledge attribute and value |
+| maxLevel | validated catalog limit (5) |
+| summary, keywords, repeatable | description, search, and repeatability |
 
-Na ficha, custo é formado por um tipo canônico e um valor inteiro. `Nenhum` não possui valor, `Dose` é exclusivo de Cinzas e Runas usam Arcano. Execução e Duração possuem valores de tempo independentes. Magias, Runas e Cinzas são carregadas diretamente dos campos tipados, sem inferência textual.
+On the sheet, cost consists of a canonical type and integer value (`Nenhum` has no value, `Dose` is exclusive to Ashes, Runes use Arcane). Execution and Duration have independent time values. Spells, Runes, and Ashes load directly from typed fields without text inference.
 
-## Proveniência e complementação
+## Provenance & notes
 
-Textos-base conferidos em `solidao-dos-oprimidos`. Efeitos e aprimoramentos dos exemplos publicados são preservados. Cada Pureza de uma Cinza é uma entrada independente, pois muda seu efeito e sua carga. Os 150 Conhecimentos têm nível inicial 1, máximo 5 e Atributo principal editável na ficha. Conhecimentos Arcanos incluem escolas e também conhecimentos gerais de magia, como disciplinas, ofícios e fenômenos sobrenaturais. As técnicas não concedem ataques extras ou dano implícito.
+Source texts were cross-checked against `solidao-dos-oprimidos`. Effects and enhancements from published examples are preserved. Each Ash Purity is an independent entry because it changes both effect and load. All 150 Knowledges start at level 1, max out at 5, and have an editable primary Attribute on the sheet. Arcane Knowledges include schools as well as general magic knowledges (disciplines, crafts, supernatural phenomena). Techniques do not grant extra attacks or implicit damage.
 
-A proposta de formato não se torna cânone publicado antes da integração da PR do repositório de regras. Fichas já criadas preservam seus snapshots e alterações pessoais.
+Format proposals do not become published canon until merged in the rules repo. Existing character sheets preserve their snapshots and personal edits.
 
-## Atualizar
+## Updating
 
-1. Edite os JSONs completos, preservando IDs, e incremente o `catalogVersion` correspondente quando alterar o contrato publicado.
-2. Execute `python3 tools/generate_catalog.py` na raiz do Companion.
-3. Execute `python3 tools/generate_catalog.py --check`.
-4. Commite JSONs e o Kotlin gerado juntos. O Actions rejeita divergências.
+1. Edit the full JSON files, preserving IDs, and bump `catalogVersion` when changing the published contract.
+2. Run `python3 tools/generate_catalog.py` from the Companion root.
+3. Run `python3 tools/generate_catalog.py --check`.
+4. Commit the JSONs and generated Kotlin together; Actions rejects mismatches.
 
-O gerador valida campos, tipos, contagens, IDs únicos e preenchimento antes de gerar Kotlin tipado. Não infere custos, condições ou mecânicas. A migração Room 17→18 adiciona os campos estruturados somente ao catálogo local; as fichas existentes de todas as contas permanecem intactas.
+The generator validates fields, types, counts, unique IDs, and completeness before generating typed Kotlin. It does not infer costs, conditions, or mechanics. Room migration 17->18 adds structured fields only to the local catalog; existing sheets across all accounts remain untouched.
