@@ -189,6 +189,7 @@ fun HistorianDashboardScreen(
     library: List<CampaignLibraryEntry>,
     deliveries: List<CampaignDelivery>,
     alertSettings: List<CampaignAlertSettings>,
+    readOnly: Boolean = false,
     onApplyCommand: (Character, SessionCommand) -> Unit,
     onSaveLibrary: (CampaignLibraryEntry) -> Unit,
     onDuplicateLibrary: (CampaignLibraryEntry) -> Unit,
@@ -202,11 +203,13 @@ fun HistorianDashboardScreen(
     BackHandler(onBack = onBack)
     var section by rememberSaveable { mutableStateOf(HistorianSection.OPERATION) }
     var search by rememberSaveable { mutableStateOf("") }
+    var operationSearch by rememberSaveable { mutableStateOf("") }
+    var operationFilter by rememberSaveable { mutableStateOf(OperationFilter.ALL) }
     var librarySource by rememberSaveable { mutableStateOf(LibrarySource.ALL) }
     var libraryCategory by rememberSaveable { mutableStateOf(LibraryCategory.ALL) }
     var libraryChoice by rememberSaveable { mutableStateOf<String?>(null) }
     var showArchivedLibrary by rememberSaveable { mutableStateOf(false) }
-    var actionTarget by remember { mutableStateOf<Character?>(null) }
+    var actionTarget by remember { mutableStateOf<Pair<Character, QuickActionKind?>?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var choosingCampaign by remember { mutableStateOf(false) }
@@ -246,7 +249,8 @@ fun HistorianDashboardScreen(
                 .any { it.contains(auditSearch.trim(), ignoreCase = true) })
     }.sortedByDescending(SessionOperation::createdAt)
     val selectedLibrary = library.filter { it.campaignId == selectedCampaignId }
-    val libraryWritable = selectedCampaign != null && !selectedCampaign.isArchived
+    val operationWritable = selectedCampaign != null && !selectedCampaign.isArchived && !readOnly
+    val libraryWritable = operationWritable
     val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
 
     HudBackground {
@@ -307,27 +311,112 @@ fun HistorianDashboardScreen(
                         }
                         selectedCampaign?.let { campaign ->
                             val campaignCharacters = selectedCharacters
+                            val campaignSettings = alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id)
+                            val telemetryByCharacter = campaignCharacters.associateWith {
+                                evaluateOperationalTelemetry(it, campaignSettings)
+                            }
+                            val filteredCharacters = campaignCharacters.filter { character ->
+                                val telemetry = telemetryByCharacter.getValue(character)
+                                val matchesSearch = operationSearch.isBlank() || listOf(
+                                    character.name,
+                                    character.race,
+                                    character.pathName,
+                                ).any { it.contains(operationSearch.trim(), ignoreCase = true) }
+                                val matchesFilter = when (operationFilter) {
+                                    OperationFilter.ALL -> true
+                                    OperationFilter.WITH_ALERTS -> telemetry.alerts.isNotEmpty()
+                                    OperationFilter.CRITICAL -> telemetry.isCritical
+                                    OperationFilter.CONDITIONS -> telemetry.conditionCount > 0
+                                }
+                                matchesSearch && matchesFilter
+                            }
+                            val alertCount = telemetryByCharacter.values.count { it.alerts.isNotEmpty() }
+                            val criticalCount = telemetryByCharacter.values.count { it.isCritical }
+                            val conditionedCount = telemetryByCharacter.values.count { it.conditionCount > 0 }
+                            val failureCount = telemetryByCharacter.values.sumOf { it.failureCount }
+                            val dirtyCount = campaignCharacters.count { it.dirty }
+
                             item("campaign:${campaign.id}") {
-                                TechPanel(accent = if (campaign.isArchived) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary) {
+                                TechPanel(accent = if (campaign.isArchived || readOnly) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary) {
                                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                        TelemetryTag(if (campaign.isArchived) "ARCHIVED" else "LIVE")
+                                        TelemetryTag(
+                                            when {
+                                                campaign.isArchived -> "ARCHIVED"
+                                                readOnly -> "SOMENTE LEITURA"
+                                                else -> "LIVE"
+                                            },
+                                        )
                                         TelemetryTag("FILES.${campaignCharacters.size}")
                                     }
                                     SectionHeader("01", campaign.name)
+                                    SdoDataModules(
+                                        listOf(
+                                            "Com alerta" to "$alertCount/${campaignCharacters.size}",
+                                            "Críticos" to criticalCount.toString(),
+                                            "Condições" to conditionedCount.toString(),
+                                            "Falhas / Sync" to "$failureCount / $dirtyCount pend.",
+                                        ),
+                                    )
                                     if (campaignCharacters.isEmpty()) Text("Nenhuma ficha vinculada.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     AlertSettingsRow(
-                                        alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id),
-                                        onSaveAlertSettings,
+                                        settings = campaignSettings,
+                                        enabled = operationWritable,
+                                        onSave = onSaveAlertSettings,
                                     )
                                 }
                             }
-                            items(campaignCharacters, key = { "operative:${campaign.id}:${it.id}" }) { character ->
+                            if (campaignCharacters.isNotEmpty()) {
+                                item("operation_filters:${campaign.id}") {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        HudTextField(
+                                            label = "Buscar personagem",
+                                            value = operationSearch,
+                                            onValue = { operationSearch = it },
+                                        )
+                                        SdoResponsiveGrid(OperationFilter.entries, minItemWidth = 112.dp) { filter, modifier ->
+                                            SdoFilterChip(
+                                                label = filter.label,
+                                                selected = operationFilter == filter,
+                                                onClick = { operationFilter = filter },
+                                                modifier = modifier,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            if (campaignCharacters.isNotEmpty() && filteredCharacters.isEmpty()) {
+                                item("operation_empty:${campaign.id}") {
+                                    SdoInsetCard {
+                                        Text(
+                                            "Nenhuma ficha corresponde aos filtros atuais.",
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                            items(filteredCharacters, key = { "operative:${campaign.id}:${it.id}" }) { character ->
                                 OperationalCharacterCard(
-                                    character,
-                                    alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id),
-                                    onOpenSession,
-                                    onOpenSheet,
-                                    onQuickAction = { if (!campaign.isArchived) actionTarget = character },
+                                    character = character,
+                                    telemetry = telemetryByCharacter.getValue(character),
+                                    writable = operationWritable,
+                                    onOpenSession = onOpenSession,
+                                    onOpenSheet = onOpenSheet,
+                                    onQuickAction = { preset ->
+                                        if (operationWritable) actionTarget = character to preset
+                                    },
+                                    onRemoveCondition = { condition ->
+                                        if (operationWritable) {
+                                            onApplyCommand(
+                                                character,
+                                                SessionCommand(
+                                                    type = SessionOperationType.CONDITION_REMOVE,
+                                                    conditionId = condition.instanceId,
+                                                    targetId = condition.instanceId.value,
+                                                    reason = "Removida pelo Historiador",
+                                                ),
+                                            )
+                                        }
+                                    },
                                 )
                             }
                         }
@@ -478,7 +567,19 @@ fun HistorianDashboardScreen(
             },
         )
     }
-    actionTarget?.let { character -> QuickActionsDialog(character, { actionTarget = null }) { command -> onApplyCommand(character, command); actionTarget = null } }
+    actionTarget?.let { (character, preset) ->
+        QuickActionsDialog(
+            character = character,
+            campaignCharacters = selectedCharacters,
+            initialAction = preset,
+            writable = operationWritable,
+            onDismiss = { actionTarget = null },
+            onApply = { commands ->
+                commands.forEach { (target, command) -> onApplyCommand(target, command) }
+                actionTarget = null
+            },
+        )
+    }
     editingLibrary?.takeIf { libraryWritable }?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns.filterNot { it.isArchived }, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
     delivering?.takeIf { libraryWritable }?.let { entry -> DeliveryDialog(entry, characters.filter { normalizeCampaignId(it.campaignId) == entry.campaignId }, { delivering = null }) { selected, mappings -> onDeliverLibrary(entry, selected, mappings); delivering = null } }
 }
@@ -533,37 +634,33 @@ private fun formatAuditTime(timestamp: Long): String =
 @Composable
 private fun OperationalCharacterCard(
     character: Character,
-    settings: CampaignAlertSettings,
+    telemetry: OperationalTelemetry,
+    writable: Boolean,
     onOpenSession: (String) -> Unit,
     onOpenSheet: (String) -> Unit,
-    onQuickAction: () -> Unit,
+    onQuickAction: (QuickActionKind?) -> Unit,
+    onRemoveCondition: (com.kinderman.sdo.domain.model.ConditionInstance) -> Unit,
 ) {
     var expanded by rememberSaveable(character.id) { mutableStateOf(false) }
     val typedConditions = character.canonicalConditions()
     val body = runCatching { character.canonicalBodyState() }.getOrNull()
     val failedRegions = body?.regions.orEmpty().filter { it.failures > 0 }
     val failedOrgans = body?.organs.orEmpty().filter { it.failures > 0 }
-    val alerts = buildList {
-        if (character.lifeMaximum > 0 && character.life.current * 100 <= character.lifeMaximum * settings.lifeThresholdPercent) add("VIDA CRÍTICA")
-        if (character.sanityMaximum > 0 && character.sanity.current * 100 <= character.sanityMaximum * settings.sanityThresholdPercent) add("SANIDADE CRÍTICA")
-        if (character.exhaustion.maximum > 0 && character.exhaustion.current * 100 >= character.exhaustion.maximum * settings.exhaustionThresholdPercent) add("EXAUSTÃO ALTA")
-        if (settings.alertConditions && typedConditions.isNotEmpty()) add("${typedConditions.size} CONDIÇÃO(ÕES)")
-        if (settings.alertBodyFailures && (failedRegions.isNotEmpty() || failedOrgans.isNotEmpty())) add("FALHA CORPORAL")
-        if (character.lastSyncedAt > 0 && System.currentTimeMillis() - character.lastSyncedAt > settings.staleAfterHours * 3_600_000L) add("SYNC ANTIGO")
-        if (character.dirty) add("ALTERAÇÃO LOCAL")
-    }
-    val initials = character.name.trim().split(Regex("\\s+")).filter(String::isNotBlank)
-        .take(2).mapNotNull { it.firstOrNull()?.uppercase() }.joinToString("").ifBlank { "?" }
-    TechPanel(accent = if (alerts.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
+    val alerts = telemetry.alerts
+    val accentColor = if (alerts.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+
+    TechPanel(accent = accentColor) {
         Row(
             Modifier.fillMaxWidth().sdoClickable { expanded = !expanded },
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                Modifier.size(48.dp).border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)),
-                contentAlignment = Alignment.Center,
-            ) { Text(initials, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium) }
+            com.kinderman.sdo.ui.SdoCharacterAvatar(
+                photoUri = character.photoUri,
+                name = character.name,
+                size = 48.dp,
+                accent = accentColor,
+            )
             Column(Modifier.weight(1f)) {
                 SdoCardTitle(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                 Text(
@@ -585,9 +682,11 @@ private fun OperationalCharacterCard(
             listOf(
                 "Vida" to "${character.life.current}/${character.lifeMaximum}",
                 "Sanidade" to "${character.sanity.current}/${character.sanityMaximum}",
-                "Exaustão" to "${character.exhaustion.current}/${character.exhaustion.maximum}",
+                "Energia / Arcano" to "${character.energy.current}/${character.energyMaximum} • ${character.arcane.current}/${character.arcaneMaximum}",
+                "Exaustão / Destino" to "${character.exhaustion.current}/${character.exhaustion.maximum} • ${character.destiny.current}/${character.destinyMaximum}",
+                "Corrupção / Dinheiro" to "${character.corruption.current}% • ${character.money}",
                 "Sincronização" to if (character.dirty) "ALTERAÇÃO LOCAL" else "EM DIA",
-            )
+            ),
         )
         if (alerts.isNotEmpty()) {
             SdoInsetCard(accent = MaterialTheme.colorScheme.error) {
@@ -595,26 +694,77 @@ private fun OperationalCharacterCard(
                 Text(alerts.joinToString("\n"), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
             }
         }
-        SdoActionButton(stringResource(R.string.historian_quick_action), onQuickAction, Modifier.fillMaxWidth())
+        if (typedConditions.isNotEmpty()) {
+            SdoInsetCard(accent = MaterialTheme.colorScheme.tertiary, verticalSpacing = 6.dp) {
+                Text("CONDIÇÕES ATIVAS (${typedConditions.size})", color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.labelSmall)
+                typedConditions.forEach { condition ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = condition.summaryLabel(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (writable) {
+                            SdoActionButton(
+                                label = "Remover",
+                                onClick = { onRemoveCondition(condition) },
+                                style = SdoActionStyle.DESTRUCTIVE,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        if (failedRegions.isNotEmpty() || failedOrgans.isNotEmpty()) {
+            SdoInsetCard(accent = MaterialTheme.colorScheme.error, verticalSpacing = 4.dp) {
+                Text("FALHAS CORPORAIS", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    buildList {
+                        addAll(failedRegions.map { "${it.region.label.uppercase()} ${it.failures}/4" })
+                        addAll(failedOrgans.map { "${it.organ.label.uppercase()} ${it.failures}/3" })
+                    }.joinToString(" • "),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+        val quickPresets = listOf(
+            "Dano" to QuickActionKind.DAMAGE,
+            "Cura" to QuickActionKind.HEAL,
+            "Recurso" to QuickActionKind.RESOURCE,
+            "+Condição" to QuickActionKind.CONDITION_ADD,
+            "-Condição" to QuickActionKind.CONDITION_REMOVE,
+            "Falha" to QuickActionKind.REGION,
+            "Dinheiro/Destino" to QuickActionKind.MONEY,
+            "Reiniciar Usos" to QuickActionKind.USAGE_RESET,
+        )
+        SdoResponsiveGrid(quickPresets, minItemWidth = 112.dp) { (presetLabel, kind), modifier ->
+            SdoActionButton(
+                label = presetLabel,
+                onClick = { if (writable) onQuickAction(kind) },
+                modifier = modifier,
+                enabled = writable && (kind != QuickActionKind.CONDITION_REMOVE || typedConditions.isNotEmpty()),
+            )
+        }
+        SdoActionButton(
+            label = stringResource(R.string.historian_quick_action),
+            onClick = { onQuickAction(null) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = writable,
+        )
         if (expanded) {
             SdoDataModules(
                 listOf(
-                    "Arcano" to "${character.arcane.current}/${character.arcaneMaximum}",
-                    "Energia" to "${character.energy.current}/${character.energyMaximum}",
-                    "Destino" to "${character.destiny.current}/${character.destinyMaximum}",
-                    "Corrupção" to "${character.corruption.current}/${character.corruption.maximum}%",
                     "Proteção geral" to character.protectionTotal("Geral").toString(),
                     "Esquiva" to character.protectionTotal("Esquiva").toString(),
                     "Postura" to character.protectionTotal("Postura").toString(),
                     "Mental / Arcana" to "${character.protectionTotal("Mental")} / ${character.protectionTotal("Arcana")}",
-                    "Condições" to typedConditions.joinToString("\n") { condition ->
-                        condition.name.uppercase() + condition.intensity?.let { " $it" }.orEmpty()
-                    }.ifBlank { "NENHUMA" },
-                    "Corpo" to buildList {
-                        addAll(failedRegions.map { "${it.region.label.uppercase()} ${it.failures}/4" })
-                        addAll(failedOrgans.map { "${it.organ.label.uppercase()} ${it.failures}/3" })
-                    }.joinToString("\n").ifBlank { "SEM FALHAS" },
-                )
+                ),
             )
             SdoResponsiveGrid(listOf("SESSION", "SHEET"), minItemWidth = 136.dp) { action, modifier ->
                 when (action) {
@@ -660,89 +810,21 @@ private fun CatalogReferenceCard(entry: CatalogEntry) {
 }
 
 @Composable
-private fun AlertSettingsRow(settings: CampaignAlertSettings, onSave: (CampaignAlertSettings) -> Unit) {
+private fun AlertSettingsRow(
+    settings: CampaignAlertSettings,
+    enabled: Boolean,
+    onSave: (CampaignAlertSettings) -> Unit,
+) {
     SdoInsetCard(verticalSpacing = 8.dp) {
         Text("ALERTAS // VIDA ≤${settings.lifeThresholdPercent}% // SAN ≤${settings.sanityThresholdPercent}% // EXA ≥${settings.exhaustionThresholdPercent}%", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         SdoResponsiveGrid(listOf("LIFE_DOWN", "LIFE_UP", "SYNC"), minItemWidth = 112.dp) { action, modifier ->
             when (action) {
-                "LIFE_DOWN" -> SdoActionButton("VIDA −", { onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent - 5).coerceAtLeast(5))) }, modifier)
-                "LIFE_UP" -> SdoActionButton("VIDA +", { onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent + 5).coerceAtMost(95))) }, modifier)
-                else -> SdoActionButton("SYNC ${settings.staleAfterHours}H", { onSave(settings.copy(staleAfterHours = if (settings.staleAfterHours == 24) 48 else 24)) }, modifier)
+                "LIFE_DOWN" -> SdoActionButton("VIDA −", { onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent - 5).coerceAtLeast(5))) }, modifier, enabled = enabled)
+                "LIFE_UP" -> SdoActionButton("VIDA +", { onSave(settings.copy(lifeThresholdPercent = (settings.lifeThresholdPercent + 5).coerceAtMost(95))) }, modifier, enabled = enabled)
+                else -> SdoActionButton("SYNC ${settings.staleAfterHours}H", { onSave(settings.copy(staleAfterHours = if (settings.staleAfterHours == 24) 48 else 24)) }, modifier, enabled = enabled)
             }
         }
     }
-}
-
-@Composable
-private fun QuickActionsDialog(character: Character, onDismiss: () -> Unit, onApply: (SessionCommand) -> Unit) {
-    var amount by remember { mutableIntStateOf(1) }
-    var label by remember { mutableStateOf("") }
-    var selected by remember { mutableStateOf<QuickActionKind?>(null) }
-    var selectedCondition by remember { mutableStateOf(ConditionKind.Abalado) }
-    var resource by remember { mutableStateOf(SessionResource.ENERGY) }
-    var regionIndex by remember { mutableIntStateOf(0) }
-    val regions = character.canonicalBodyState().regions
-    val region = regions.getOrNull(regionIndex)
-    val command = when (selected) {
-        QuickActionKind.DAMAGE -> SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, bodyRegion = region?.region, reason = label)
-        QuickActionKind.HEAL -> SessionCommand(type = SessionOperationType.HEAL, amount = amount, resource = SessionResource.LIFE, reason = label)
-        QuickActionKind.RESOURCE -> SessionCommand(type = SessionOperationType.RESOURCE, amount = amount, resource = resource, reason = label)
-        QuickActionKind.CONDITION -> SessionCommand(type = SessionOperationType.CONDITION_ADD, condition = ConditionPayload(kind = selectedCondition, intensity = amount), reason = label)
-        QuickActionKind.MONEY -> SessionCommand(type = SessionOperationType.MONEY, amount = amount, reason = label)
-        QuickActionKind.DESTINY -> SessionCommand(type = SessionOperationType.DESTINY, amount = amount, resource = SessionResource.DESTINY, reason = label)
-        QuickActionKind.NOTE -> SessionCommand(type = SessionOperationType.NOTE, label = label.ifBlank { "Anotação do Historiador" }, detail = "Registro operacional", reason = label)
-        QuickActionKind.REGION -> SessionCommand(type = SessionOperationType.REGION_FAILURE, amount = amount, bodyRegion = region?.region, reason = label)
-        null -> null
-    }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("AÇÃO RÁPIDA // ${character.name.uppercase()}") },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("1. ESCOLHA A AÇÃO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                SdoResponsiveGrid(QuickActionKind.entries, minItemWidth = 126.dp) { action, modifier ->
-                    SdoFilterChip(action.label, selected == action, { selected = action }, modifier)
-                }
-                Text("2. DEFINA OS DADOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                SdoInsetCard(verticalSpacing = 8.dp) {
-                    SdoCardTitle("VALOR // $amount", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
-                    SdoResponsiveGrid(listOf("DECREASE", "INCREASE"), minItemWidth = 140.dp) { action, modifier ->
-                        when (action) {
-                            "DECREASE" -> SdoActionButton("DIMINUIR", { amount = (amount - 1).coerceAtLeast(1) }, modifier)
-                            else -> SdoActionButton("AUMENTAR", { amount += 1 }, modifier)
-                        }
-                    }
-                }
-                if (selected == QuickActionKind.RESOURCE) {
-                    SdoActionButton("RECURSO // ${resource.name}", {
-                        val options = listOf(SessionResource.ENERGY, SessionResource.ARCANE, SessionResource.SANITY, SessionResource.LIFE)
-                        resource = options[(options.indexOf(resource) + 1) % options.size]
-                    }, modifier = Modifier.fillMaxWidth())
-                }
-                if (selected == QuickActionKind.DAMAGE || selected == QuickActionKind.REGION) {
-                    SdoActionButton("REGIÃO // ${region?.name?.uppercase() ?: "NENHUMA"}", {
-                        if (regions.isNotEmpty()) regionIndex = (regionIndex + 1) % regions.size
-                    }, modifier = Modifier.fillMaxWidth(), enabled = regions.isNotEmpty())
-                }
-                if (selected == QuickActionKind.CONDITION) {
-                    ChoiceField("Condição", selectedCondition, ConditionKind.entries, true, display = { it.label }) {
-                        selectedCondition = it
-                    }
-                }
-                HudTextField("Motivo / anotação", label, onValue = { label = it })
-                Text("3. CONFIRME", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                Text(selected?.let { "${it.label} // valor $amount // ${character.name}" } ?: "Selecione uma ação acima.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        },
-        confirmButton = { SdoActionButton("APLICAR", { command?.let(onApply) }, enabled = command != null, style = SdoActionStyle.PRIMARY) },
-        dismissButton = { SdoActionButton("CANCELAR", onDismiss) },
-    )
-}
-
-private enum class QuickActionKind(val label: String) {
-    DAMAGE("DANO"), HEAL("CURA"), RESOURCE("RECURSO"),
-    CONDITION("CONDIÇÃO"), MONEY("DINHEIRO"), DESTINY("DESTINO"),
-    NOTE("ANOTAÇÃO"), REGION("FALHA LOCAL"),
 }
 
 @Composable

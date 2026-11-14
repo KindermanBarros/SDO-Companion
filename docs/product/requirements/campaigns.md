@@ -40,9 +40,9 @@ Delivered scope: direct section access, compact resource spending, favorite/avai
 
 ### CAMPAIGN-PLAN-003 — Historian / GM Mode evolution
 
-Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
+Status: InDevReview; compact GM Mode with quick actions implemented. Final debug build passed; tests skipped by owner, runtime acceptance pending.
 
-Improve the UI and complete Historian/GM Mode features, focusing on quick actions, compact controls, and access to all information needed to run the campaign. Refine which info must stay visible and which actions need immediate access without assuming permission changes.
+Improve the UI and complete Historian/GM Mode features, focusing on quick actions, compact controls, and access to all information needed to run the campaign. Delivered scope: party telemetry summary strip, search and alert filter chips (`TODOS`, `COM ALERTA`, `CRÍTICOS`, `CONDIÇÕES`), compact `OperationalCharacterCard` with `SdoCharacterAvatar`, resource/protection/condition/body-failure telemetry, quick condition removal, preset quick-action chips, upgraded `QuickActionsDialog` (all 7 `SessionResource`s with `+/-` delta toggle, typed condition duration/intensity, condition removal, `USAGE_RESET`, multi-target selection), and archive/offline read-only guards. See [Memory](../../MEMORY.md).
 
 ### CAMPAIGN-PLAN-004 — Real-time battle grid
 

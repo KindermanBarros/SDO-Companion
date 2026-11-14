@@ -7,7 +7,7 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ## Active / In-Review Tasks
 
-BACKLOG-002, BACKLOG-008, BACKLOG-009 and BACKLOG-010 are InDevReview; BACKLOG-003 through BACKLOG-005 retain their separate backlog scope. Earlier delivered-task acceptance is unchanged.
+BACKLOG-002, BACKLOG-003, BACKLOG-004, BACKLOG-008, BACKLOG-009, and BACKLOG-010 are InDevReview; BACKLOG-005 remains ToDo. Earlier delivered-task acceptance is unchanged.
 
 ---
 
@@ -81,3 +81,19 @@ Status: InDevReview; 2026-11-14 17:34 America/La_Paz.
 ItemRuntimeState projects Dose, Ammo, Charge and Ash counters. Canonical loaded ammunition and charges are distinct from reserve stack quantities; legacy ammunition/charge counters remain supported. Ash is identified through linkedAshId, canonical ASH abilities and CatalogKind.ASH entries. Direct Cinza consumption and AshCost/legacy dose costs update both inventory quantities and canonical doses; ability cost deduction suppresses duplicate effect execution.
 Consumption accepts an explicit positive quantity and applies structured scoped-item MechanicalEffect operations, ItemEffect.onConsume operations and linked Ash mechanical operations with the counter change. Passive equipment effects and prose descriptions are not guessed as consumption effects. The optional onConsume operation is appended to the existing inventory codec; no Room schema change. Failed/insufficient/invalid/cyclic effect execution aborts the full mutation; recursive consumption is guarded. Session UI exposes each counter, quantity/confirmation, remaining amounts and direct item/Cinza/condition shortcuts while preserving read-only guards and both themes.
 Validation preference: compile only, no test suites. Final runtime/visual and authenticated multi-device acceptance remain pending; no production deployment or APK release is claimed.
+
+## BACKLOG-003 / CAMPAIGN-PLAN-003 - Compact Historian / GM Mode with quick actions
+
+Status: InDevReview; compact Historian/GM Mode and upgraded quick actions implemented. Last update: 2026-11-14 17:02 America/La_Paz.
+Scope: `HistorianDashboardScreen` and `HistorianQuickActions.kt` with party telemetry summary strip, search and alert filter chips (`TODOS`, `COM ALERTA`, `CRÍTICOS`, `CONDIÇÕES`), compact `OperationalCharacterCard` (avatar, all key resources, protections, active conditions with one-tap removal, body/organ failures, one-tap preset chips), upgraded `QuickActionsDialog` (all 7 `SessionResource`s with `+/-` toggle, typed condition duration/intensity, `CONDITION_REMOVE`, `USAGE_RESET`, multi-target selection), and archive/offline read-only guards from `SdoApp`.
+Validation: `:app:assembleDebug` passed; test suites skipped per explicit owner preference; runtime and visual acceptance pending.
+
+## BACKLOG-004 / SHEET-PLAN-001 - Character profile photos
+
+Status: InDevReview; character profile photos implemented. Last update: 2026-11-14 17:02 America/La_Paz.
+Scope: `photoUri` added to `Character` and `CharacterRecord`, mapped in `toDomain()`/`toRecord()`, tracked under `"identity"` in `CharacterSyncConflict`; Room bumped to v31 with `MIGRATION_30_31` registered in `SdoApplication` and `AppDatabaseMigrationInstrumentedTest`; `SdoCharacterAvatar` (Standard/Cybergrunge cut-corner frame, circular coin-token mode, initials fallback) and `SdoCharacterPhotoPicker` (`PickVisualMedia`, `<=256x256` center-cropped JPEG Base64 data URI, replace/remove when online and editable); integrated into `SheetHero`, `IdentitySection`, `CharacterCreationWizard`, `DashboardScreen`, `SessionModeScreen`, and `HistorianDashboardScreen`.
+Validation: `:app:assembleDebug` passed; test suites skipped per explicit owner preference; runtime, migration, and visual acceptance pending.
+
+## Multi-agent Codex orchestration skill
+
+Added [.agents/skills/multi-agent-codex-orchestration/SKILL.md](../.agents/skills/multi-agent-codex-orchestration/SKILL.md) and registered it in [SKILLS.md](engineering/SKILLS.md) and [.agents/skills/harness-router/SKILL.md](../.agents/skills/harness-router/SKILL.md) to capture non-interactive `codex exec resume --all`, `share` worktree isolation, single-owner Room migration assignment, non-blocking shepherd/monitor handling, and pre-kill cherry-pick integration.

@@ -333,6 +333,7 @@ fun SdoApp(
                     library = campaignLibrary,
                     deliveries = deliveries,
                     alertSettings = alertSettings,
+                    readOnly = offlineReadOnly,
                     onApplyCommand = appViewModel::applySessionCommand,
                     onSaveLibrary = appViewModel::saveLibrary,
                     onDuplicateLibrary = appViewModel::duplicateLibrary,

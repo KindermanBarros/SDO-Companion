@@ -60,6 +60,12 @@ internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, 
     var selectingLevel by remember { mutableStateOf(false) }
     TechPanel {
         SectionHeader("01", "Identidade")
+        com.kinderman.sdo.ui.SdoCharacterPhotoPicker(
+            photoUri = character.photoUri,
+            name = character.name,
+            enabled = enabled,
+            onPhotoChange = { onChange(character.copy(photoUri = it)) },
+        )
         HudTextField("Nome", character.name, enabled = enabled) { onChange(character.copy(name = it)) }
         Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = MaterialTheme.colorScheme.onSurface)
         Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)

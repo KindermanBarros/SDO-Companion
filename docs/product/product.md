@@ -25,8 +25,8 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 |---|---|---|---|
 | BACKLOG-001 | Shared campaign journal | [Campaigns — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) | Done |
 | BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) | InDevReview; player quick actions implemented |
-| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
-| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) | ToDo; not implemented |
+| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) | InDevReview; build passed, tests skipped by owner |
+| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) | InDevReview; build passed, tests skipped by owner |
 | BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
 | BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) | Done |
 | BACKLOG-007 | Firestore read/write & payload optimization (delta sync, audit limits, dedupe character payload, parallel/batched queries) | [Synchronization — SYNC-PLAN-002](requirements/synchronization.md#planned-changes) | Done |

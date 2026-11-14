@@ -26,11 +26,9 @@ Compact UI review: body/armor uses section index 11; race choices show catalog-d
 
 ### SHEET-PLAN-001 — Character profile photos
 
-Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
+Status: InDevReview; character profile photos implemented. Final debug build passed; tests skipped by owner, runtime acceptance pending.
 
-Backlog requested by owner on 2026-11-12; not yet implemented. Allow adding a profile photo and displaying it in the sheet, character list, Session Mode, and Historian/GM Mode. Reuse the photo in the coin-shaped battle-grid tokens planned in CAMPAIGN-PLAN-004.
-
-Given the display surfaces and token reuse, this item is tracked as a character portrait. Confirm during refinement whether a separate user-account avatar is also requested. Define image source, replacement/removal, empty-state presentation, cropping, storage/sync, and permissions before implementation; none of these choices are fixed here.
+Allow adding a profile photo and displaying it in the sheet, character list, Session Mode, and Historian/GM Mode, with circular coin-token mode for future battle-grid tokens (`CAMPAIGN-PLAN-004`). Delivered scope: `photoUri` on `Character`/`CharacterRecord` (Room v31 `MIGRATION_30_31`, `"identity"` sync conflict tracking), `SdoCharacterAvatar` + `SdoCharacterPhotoPicker` (`PickVisualMedia` center-cropped and scaled to `<=256x256` JPEG Base64 data URI with replace/remove when online and editable), and integration across `SheetHero`, `IdentitySection`, `CharacterCreationWizard`, `DashboardScreen`, `SessionModeScreen`, and `HistorianDashboardScreen`. See [Memory](../../MEMORY.md).
 
 ## References
 

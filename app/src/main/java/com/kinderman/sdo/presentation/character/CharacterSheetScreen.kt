@@ -318,13 +318,33 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
             )
         }
         Text("ARQUIVO", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-        Text(
-            character.name.uppercase(),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontFamily = TechInterfaceFont,
-            fontWeight = FontWeight.SemiBold,
-            style = MaterialTheme.typography.titleLarge,
-        )
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            com.kinderman.sdo.ui.SdoCharacterAvatar(
+                photoUri = character.photoUri,
+                name = character.name,
+                size = 64.dp,
+                accent = if (character.isLocked) Signal else Acid,
+            )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    character.name.uppercase(),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = TechInterfaceFont,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    listOf(character.race, character.occupation).filter(String::isNotBlank).joinToString(" // ")
+                        .ifBlank { "SEM RAÇA // SEM OCUPAÇÃO" },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
         Barcode("${character.id}-${character.name}")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             ComplianceMark()

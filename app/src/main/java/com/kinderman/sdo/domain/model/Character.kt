@@ -360,6 +360,7 @@ data class Character(
     val age: String = "",
     val sex: String = "",
     val size: String = "",
+    val photoUri: String = "",
     val level: Int = 1,
     val creationStatus: CharacterCreationStatus = CharacterCreationStatus.DRAFT,
     val creationStep: Int = 1,

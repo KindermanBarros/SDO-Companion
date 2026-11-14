@@ -1017,6 +1017,11 @@ private fun CampaignCharacterRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        com.kinderman.sdo.ui.SdoCharacterAvatar(
+            photoUri = character.photoUri,
+            name = character.name,
+            size = if (compact) 36.dp else 42.dp,
+        )
         Column(Modifier.weight(1f)) {
             Text(character.name.ifBlank { "PERSONAGEM SEM NOME" }.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
             Text(
@@ -1163,9 +1168,11 @@ private fun CharacterAccessCard(
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(if (compact) 44.dp else 54.dp).background(MaterialTheme.colorScheme.primary, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)), contentAlignment = Alignment.Center) {
-                    Text(character.name.take(2).uppercase(), color = MaterialTheme.colorScheme.onPrimary, style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)
-                }
+                com.kinderman.sdo.ui.SdoCharacterAvatar(
+                    photoUri = character.photoUri,
+                    name = character.name,
+                    size = if (compact) 44.dp else 54.dp,
+                )
                 Spacer(Modifier.size(if (compact) 9.dp else 13.dp))
                 Column(Modifier.weight(1f)) {
                     SdoCardTitle(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)

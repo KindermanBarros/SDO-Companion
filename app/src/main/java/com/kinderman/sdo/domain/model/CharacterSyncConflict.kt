@@ -80,6 +80,7 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("height", "Altura", local.height, remote.height, ::textSummary)
     changed("age", "Idade", local.age, remote.age, ::textSummary)
     changed("sex", "Gênero", local.sex, remote.sex, ::textSummary)
+    changed("identity", "Foto de perfil", local.photoUri, remote.photoUri) { if (it.isBlank()) "—" else "Foto definida" }
     changed("level", "Nível", local.level, remote.level)
     changed("size", "size", local.size, remote.size)
     changed("creationStatus", "creationStatus", local.creationStatus, remote.creationStatus)
@@ -173,6 +174,7 @@ fun mergeCharacterConflict(
         age = selected("age", local.age, remote.age),
         sex = selected("sex", local.sex, remote.sex),
         size = selected("size", local.size, remote.size),
+        photoUri = selected("identity", local.photoUri, remote.photoUri),
         creationStatus = selected("creationStatus", local.creationStatus, remote.creationStatus),
         creationStep = selected("creationStep", local.creationStep, remote.creationStep),
         creationCompletedAt = selected("creationCompletedAt", local.creationCompletedAt, remote.creationCompletedAt),

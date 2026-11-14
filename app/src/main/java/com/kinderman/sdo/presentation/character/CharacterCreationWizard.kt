@@ -136,8 +136,21 @@ private fun CreationPowersOverview(character: Character) {
 @Composable
 private fun CreationReview(character: Character) {
     TechPanel {
-        Text(character.name.uppercase(), style = MaterialTheme.typography.titleLarge)
-        Text("${character.race} // ${character.occupation} // NÍVEL ${character.level}")
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            com.kinderman.sdo.ui.SdoCharacterAvatar(
+                photoUri = character.photoUri,
+                name = character.name,
+                size = 56.dp,
+            )
+            Column(Modifier.weight(1f)) {
+                Text(character.name.uppercase(), style = MaterialTheme.typography.titleLarge)
+                Text("${character.race} // ${character.occupation} // NÍVEL ${character.level}")
+            }
+        }
         Text("ATRIBUTOS // ${CharacterCreation.attributePointsSpent(character)} / 10")
         Text("CONHECIMENTOS ESPECIAIS // ${CharacterCreation.initialSpecialKnowledges(character).size} / 5")
         Text("PONTOS DE CONHECIMENTO // ${CharacterCreation.knowledgePointsSpent(character)} / 15")

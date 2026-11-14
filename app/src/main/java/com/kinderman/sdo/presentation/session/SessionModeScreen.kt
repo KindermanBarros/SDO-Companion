@@ -193,10 +193,11 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(
-                        character.name.ifBlank { "?" }.take(2).uppercase(),
-                        color = lifeColor,
-                        style = MaterialTheme.typography.headlineSmall,
+                    com.kinderman.sdo.ui.SdoCharacterAvatar(
+                        photoUri = character.photoUri,
+                        name = character.name,
+                        size = 48.dp,
+                        accent = lifeColor,
                     )
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                         Text(
@@ -310,6 +311,28 @@ private fun SessionContent(
                     contentPadding = 8.dp,
                     verticalSpacing = 6.dp,
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        com.kinderman.sdo.ui.SdoCharacterAvatar(
+                            photoUri = character.photoUri,
+                            name = character.name,
+                            size = 44.dp,
+                        )
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                character.name.ifBlank { "Personagem sem nome" }.uppercase(),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            SdoMetadataText(
+                                text = listOf(character.race, "NV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
                     SdoMetadataText(
                         text = stringResource(
                             R.string.session_resources_summary,

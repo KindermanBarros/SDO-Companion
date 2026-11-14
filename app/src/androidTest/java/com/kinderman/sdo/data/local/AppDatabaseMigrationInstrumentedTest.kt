@@ -209,8 +209,23 @@ class AppDatabaseMigrationInstrumentedTest {
         migrated.close()
     }
 
+    @Test fun migration30To31PreservesSheetsAndAddsEmptyPhotoUri() {
+        val name = "migration-30-31.db".also(databases::add)
+        openSqlite(name, 30, onCreate = { db ->
+            db.execSQL("CREATE TABLE characters (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL)")
+            db.execSQL("INSERT INTO characters (id, name) VALUES ('sheet', 'Ayla')")
+        }).close()
+        val migrated = openSqlite(name, 31, onUpgrade = { db, _, _ -> AppDatabase.MIGRATION_30_31.migrate(db) })
+        migrated.writableDatabase.query("SELECT name, photoUri FROM characters WHERE id = 'sheet'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Ayla", cursor.getString(0))
+            assertEquals("", cursor.getString(1))
+        }
+        migrated.close()
+    }
+
     private fun openRoom(name: String) = Room.databaseBuilder(context, AppDatabase::class.java, name)
-        .addMigrations(AppDatabase.MIGRATION_21_22)
+        .addMigrations(AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_30_31)
         .build()
 
     private fun openSqlite(

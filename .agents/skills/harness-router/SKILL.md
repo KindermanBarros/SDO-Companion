@@ -26,6 +26,7 @@ Root AGENTS and the [Project contract](../../gates/project-contract.md) take pre
 | Harness workflow/gate/evidence repair | skills/harness-retrospective/SKILL.md |
 | Docs/backlog only | skills/documentation-and-adrs/SKILL.md |
 | Existing static checks | skills/android-code-quality-checks/SKILL.md |
+| Parallel Gemini + Codex orchestration | skills/multi-agent-codex-orchestration/SKILL.md |
 
 Resolve these paths from .agents/. Read only the selected current-stage skill and triggered rules.
 For bounded work use one owner and a short task plan. Delegate only when requested or when justified by distinct work/review risk.
