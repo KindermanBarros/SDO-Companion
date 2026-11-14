@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.R
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.ConditionKind
+import com.kinderman.sdo.domain.model.ConsumableStateKind
+import com.kinderman.sdo.domain.model.itemRuntimeStates
 import com.kinderman.sdo.domain.model.ConditionPayload
 import com.kinderman.sdo.domain.model.Duration
 import com.kinderman.sdo.domain.model.DurationKind
@@ -49,9 +51,10 @@ internal fun SessionInventoryActions(
     onInventoryStateChange: (Character, String, InventoryState) -> Unit,
 ) {
     var pendingItemId by rememberSaveable(character.id) { mutableStateOf<String?>(null) }
+    var pendingKind by rememberSaveable(character.id) { mutableStateOf(ConsumableStateKind.Dose.name) }
     if (character.inventory.isEmpty()) Text(stringResource(R.string.session_inventory_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
     character.inventory.forEach { item ->
-        val consumable = character.itemStates.firstOrNull { it.id.value == item.id }?.consumable
+        val runtimeStates = character.itemRuntimeStates(item)
         SdoInsetCard(contentPadding = 8.dp, verticalSpacing = 4.dp) {
             SdoCardTitle(item.name, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleSmall)
             SdoMetadataText(item.inventoryState.label, style = MaterialTheme.typography.labelSmall)
@@ -64,33 +67,42 @@ internal fun SessionInventoryActions(
                 modifier = Modifier.testTag("session_item_state_${item.id}"),
                 display = InventoryState::label,
             ) { next -> if (!readOnly) onInventoryStateChange(character, item.id, next) }
-            if (consumable != null) {
+            runtimeStates.forEach { runtime ->
                 SdoTextButton(
-                    onClick = { pendingItemId = item.id },
-                    enabled = !readOnly && consumable.doses > 0,
-                    modifier = Modifier.fillMaxWidth().testTag("session_consume_${item.id}"),
-                ) { Text(stringResource(R.string.session_consume_dose, consumable.doses)) }
+                    onClick = { pendingKind = runtime.kind.name; pendingItemId = item.id },
+                    enabled = !readOnly && runtime.remaining > 0,
+                    modifier = Modifier.fillMaxWidth().testTag("session_consume_${item.id}_${runtime.kind.name}"),
+                ) { Text(stringResource(R.string.session_consume_counter, stringResource(consumptionLabel(runtime.kind)), runtime.remaining)) }
             }
         }
     }
     val item = character.inventory.firstOrNull { it.id == pendingItemId }
     if (item != null) {
-        val doses = character.itemStates.firstOrNull { it.id.value == item.id }?.consumable?.doses ?: 0
+        val kind = ConsumableStateKind.entries.firstOrNull { it.name == pendingKind } ?: ConsumableStateKind.Dose
+        val remaining = character.itemRuntimeStates(item).firstOrNull { it.kind == kind }?.remaining ?: 0
+        var amount by rememberSaveable(item.id, pendingKind) { mutableStateOf(1) }
         AlertDialog(
             onDismissRequest = { pendingItemId = null },
             title = { Text(stringResource(R.string.session_consume_title)) },
-            text = { Text(stringResource(R.string.session_consume_confirmation, item.name)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.session_consume_automatic, item.name))
+                    Text(stringResource(R.string.session_consume_remaining, stringResource(consumptionLabel(kind)), remaining))
+                    IntegerField(stringResource(R.string.session_consume_amount), amount, !readOnly) { amount = it.coerceAtLeast(1) }
+                }
+            },
+            modifier = Modifier.imePadding(),
             confirmButton = {
                 SdoTextButton(
-                    enabled = !readOnly && doses > 0,
+                    enabled = !readOnly && amount in 1..remaining,
                     modifier = Modifier.testTag("session_confirm_consume"),
                     onClick = {
                         pendingItemId = null
-                        if (!readOnly && doses > 0) onCommand(
+                        if (!readOnly && amount in 1..remaining) onCommand(
                             character,
                             SessionCommand(
                                 type = SessionOperationType.EFFECT_OPERATION,
-                                effectOperation = EffectOperation.ConsumeItemState(ItemInstanceId(item.id)),
+                                effectOperation = EffectOperation.ConsumeItemState(ItemInstanceId(item.id), amount, kind),
                             ),
                         )
                     },
@@ -101,6 +113,13 @@ internal fun SessionInventoryActions(
             },
         )
     }
+}
+
+private fun consumptionLabel(kind: ConsumableStateKind): Int = when (kind) {
+    ConsumableStateKind.Dose -> R.string.session_counter_doses
+    ConsumableStateKind.Ammo -> R.string.session_counter_ammo
+    ConsumableStateKind.Charge -> R.string.session_counter_charges
+    ConsumableStateKind.Ash -> R.string.session_counter_ash
 }
 
 @Composable

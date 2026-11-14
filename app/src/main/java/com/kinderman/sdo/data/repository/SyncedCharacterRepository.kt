@@ -14,6 +14,11 @@ import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.data.local.CharacterMigrationManager
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.needsLegacySyncReview
+import com.kinderman.sdo.domain.model.withPendingEditKeys
+import com.kinderman.sdo.domain.model.commitCharacterEditKeys
+import com.kinderman.sdo.domain.model.pendingCharacterEditKeys
+import com.kinderman.sdo.domain.model.characterEditKeys
 import com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.CharacterLock
@@ -23,7 +28,6 @@ import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.CampaignMemberState
 import com.kinderman.sdo.domain.model.CampaignRole
 import com.kinderman.sdo.domain.model.characterConflictFields
-import com.kinderman.sdo.domain.model.automaticRemoteFieldIds
 import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
@@ -43,10 +47,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.atomic.AtomicBoolean
 
+
 private sealed interface CharacterSyncWrite {
-    data class Saved(val updatedAt: Long) : CharacterSyncWrite
-    data class AcceptedRemote(val record: CharacterRecord) : CharacterSyncWrite
-    data class Conflict(val value: CharacterSyncConflict) : CharacterSyncWrite
+    data class Accepted(val record: CharacterRecord) : CharacterSyncWrite
+    data class LegacyReview(val conflict: CharacterSyncConflict) : CharacterSyncWrite
 }
 
 class SyncedCharacterRepository(
@@ -251,13 +255,31 @@ class SyncedCharacterRepository(
                 normalizeCampaignId(remote.campaignId) in ownedCampaignIds
             if ((migrated != remote || remote.hasRedundantLegacyProjections()) && canWriteRemote) {
                 val reference = collection.document(remote.id)
-                store.runTransaction { transaction ->
-                    val latest = transaction.get(reference).toObject(CharacterRecord::class.java)
-                        ?.copy(id = reference.id)
-                        ?: return@runTransaction
-                    val latestOptimized = latest.optimizedForFirestore(migrationManager)
-                    if (latestOptimized != latest) transaction.set(reference, latestOptimized)
-                    Unit
+                return@map store.runTransaction { transaction ->
+                    val snapshot = transaction.get(reference)
+                    val latest = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
+                        ?: return@runTransaction migrated
+                    val optimized = latest.optimizedForFirestore(migrationManager)
+                    val comparable = latest.copy(
+                        dirty = false, lastSyncedAt = 0,
+                        protections = optimized.protections, notes = optimized.notes,
+                        bodyRegions = optimized.bodyRegions, organs = optimized.organs, conditions = optimized.conditions,
+                    )
+                    val removable = buildSet {
+                        add("dirty")
+                        if (optimized.protections.isEmpty()) add("protections")
+                        if (optimized.notes.isBlank()) add("notes")
+                        if (optimized.bodyRegions.isEmpty()) add("bodyRegions")
+                        if (optimized.organs.isEmpty()) add("organs")
+                        if (optimized.conditions.isEmpty()) add("conditions")
+                    }
+                    val hasRemovable = snapshot.data.orEmpty().keys.any { it in removable }
+                    if (optimized == comparable && !hasRemovable) return@runTransaction latest
+                    val before = latest.toDomain()
+                    val after = optimized.toDomain()
+                    val committed = commitCharacterEditKeys(before, after, characterEditKeys(before, after)).toRecord()
+                    transaction.set(reference, committed.optimizedForFirestore(migrationManager))
+                    committed
                 }.await()
             }
             migrated
@@ -309,55 +331,36 @@ class SyncedCharacterRepository(
             } else {
                 val normalizedRecord = record.copy(campaignId = normalizeCampaignId(record.campaignId))
                 val reference = collection.document(record.id)
-                if (record.id !in remoteIds) {
-                    // A read of a missing document cannot be authorized by character rules that
-                    // inspect resource.data. Publish a new local sheet directly; later writes use
-                    // the transaction below so remote conflicts are still detected.
-                    val writeTimestamp = maxOf(
-                        System.currentTimeMillis(),
-                        normalizedRecord.updatedAt,
-                        normalizedRecord.lastSyncedAt + 1,
-                    )
-                    reference.set(normalizedRecord.copy(updatedAt = writeTimestamp).optimizedForFirestore(migrationManager)).await()
-                    dao.acknowledgeIfUnchanged(record.id, record.updatedAt, writeTimestamp)
-                    return@forEach
-                }
-                val result = store.runTransaction { transaction ->
+                val result = store.runTransaction<CharacterSyncWrite> { transaction ->
                     val snapshot = transaction.get(reference)
                     val rawRemote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
                     val remote = rawRemote?.let { migrationManager.migrate(it, markDirty = false) }
                     if (remote != null) {
                         val localCharacter = normalizedRecord.toDomain()
                         val remoteCharacter = remote.toDomain()
-                        val conflict = CharacterSyncConflict(localCharacter, remoteCharacter, remote.updatedAt)
-                        val merged = mergeCharacterConflict(localCharacter, remoteCharacter, automaticRemoteFieldIds(conflict, session.uid))
-                        if (characterConflictFields(merged, remoteCharacter).isEmpty() &&
-                            merged.fieldUpdatedAt == remoteCharacter.fieldUpdatedAt && !rawRemote.hasRedundantLegacyProjections()) {
-                            return@runTransaction CharacterSyncWrite.AcceptedRemote(remote)
+                        if (needsLegacySyncReview(localCharacter, remoteCharacter)) {
+                            return@runTransaction CharacterSyncWrite.LegacyReview(CharacterSyncConflict(localCharacter, remoteCharacter, remote.updatedAt))
                         }
-                        val writeAt = maxOf(System.currentTimeMillis(), normalizedRecord.updatedAt, remote.updatedAt + 1)
-                        val mergedRecord = merged.copy(updatedAt = writeAt, lastEditedBy = session.uid).toRecord()
+                        val keys = pendingCharacterEditKeys(localCharacter, remoteCharacter)
+                        if (keys.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
+                            return@runTransaction CharacterSyncWrite.Accepted(remote)
+                        }
+                        val merged = commitCharacterEditKeys(remoteCharacter, localCharacter, keys)
+                        val mergedRecord = merged.toRecord()
                         transaction.set(reference, mergedRecord.optimizedForFirestore(migrationManager))
-                        return@runTransaction CharacterSyncWrite.AcceptedRemote(mergedRecord)
+                        return@runTransaction CharacterSyncWrite.Accepted(mergedRecord)
 
                     }
-                    val writeTimestamp = maxOf(
-                        System.currentTimeMillis(),
-                        normalizedRecord.updatedAt,
-                        normalizedRecord.lastSyncedAt + 1,
-                    )
-                    transaction.set(
-                        reference,
-                        normalizedRecord.copy(updatedAt = writeTimestamp).optimizedForFirestore(migrationManager),
-                    )
-                    CharacterSyncWrite.Saved(writeTimestamp)
+                    check(record.lastSyncedAt == 0L) { "The remote sheet was deleted; stale edits cannot recreate it." }
+                    val local = normalizedRecord.toDomain()
+                    val empty = Character(id = local.id, updatedAt = 0, dirty = false)
+                    val initial = commitCharacterEditKeys(empty, local, characterEditKeys(empty, local)).toRecord()
+                    transaction.set(reference, initial.optimizedForFirestore(migrationManager))
+                    CharacterSyncWrite.Accepted(initial)
                 }.await()
                 when (result) {
-                    is CharacterSyncWrite.Conflict -> conflicts += result.value
-                    is CharacterSyncWrite.AcceptedRemote -> {
-                        dao.acceptSnapshot(result.record, record.updatedAt)
-                    }
-                    is CharacterSyncWrite.Saved -> dao.acknowledgeIfUnchanged(record.id, record.updatedAt, result.updatedAt)
+                    is CharacterSyncWrite.Accepted -> dao.acceptSnapshot(result.record, record.updatedAt, record)
+                    is CharacterSyncWrite.LegacyReview -> conflicts += result.conflict
                 }
             }
         }
@@ -371,13 +374,15 @@ class SyncedCharacterRepository(
     ) = syncMutex.withLock {
         val merged = mergeCharacterConflict(conflict.local, conflict.remote, remoteFieldIds)
         if (characterConflictFields(merged, conflict.remote).isEmpty()) {
-            dao.upsertTracked(
+            dao.acceptSnapshot(
                 conflict.remote.copy(
                     campaignId = normalizeCampaignId(conflict.remote.campaignId),
                     dirty = false,
                     lastSyncedAt = conflict.remoteUpdatedAt,
                     deleted = false,
                 ).toRecord(),
+                conflict.local.updatedAt,
+                conflict.local.toRecord(),
             )
             return@withLock
         }
@@ -385,15 +390,17 @@ class SyncedCharacterRepository(
         check(CharacterAccessPolicy.canEdit(session, conflict.remote, isCampaignHistorian(session, conflict.remote))) {
             "A versão online está bloqueada. Para continuar, escolha todos os valores online."
         }
-        dao.upsertTracked(
-            merged.copy(
+        dao.acceptSnapshot(conflict.remote.toRecord(), conflict.local.updatedAt, conflict.local.toRecord())
+        dao.saveEditorChange(
+            merged.withPendingEditKeys(characterEditKeys(conflict.remote, merged)).copy(
                 campaignId = normalizeCampaignId(merged.campaignId),
                 updatedAt = System.currentTimeMillis(),
                 lastEditedBy = session.uid,
                 dirty = true,
                 lastSyncedAt = conflict.remoteUpdatedAt,
                 deleted = false,
-            ).toRecord(),
+                editingBase = conflict.remote,
+            ),
         )
     }
 

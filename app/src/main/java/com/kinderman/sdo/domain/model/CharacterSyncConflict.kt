@@ -46,16 +46,19 @@ fun Character.withFieldEditTimes(previous: Character?, at: Long = updatedAt): Ch
         characterConflictFields(Character(id = id, updatedAt = 0, dirty = false), baseline)
             .associate { it.id to baseline.updatedAt }
     val changed = characterConflictFields(baseline, this)
+    val editKeys = characterEditKeys(baseline, this)
     // Membership removal has a narrowly-scoped backend contract; retain existing metadata.
     if (previous != null && campaignId.isBlank() && changed.map { it.id }.toSet() == setOf("campaignId")) {
         return copy(fieldUpdatedAt = previous.fieldUpdatedAt)
     }
     val times = inherited + fieldUpdatedAt
-    val editAt = if (changed.isEmpty()) at else maxOf(at, (previous?.updatedAt ?: 0L) + 1)
+    val editAt = if (changed.isEmpty()) at else maxOf(at, Math.addExact(previous?.updatedAt ?: 0L, 1L))
     val updatedTimes = times + changed.associate { field ->
-        field.id to maxOf(editAt, (times[field.id] ?: 0L) + 1)
+        field.id to maxOf(editAt, Math.addExact(times[field.id] ?: 0L, 1L))
     }
-    return copy(fieldUpdatedAt = updatedTimes, updatedAt = maxOf(at, updatedTimes.values.maxOrNull() ?: 0L))
+    check((previous?.updatedAt ?: 0L) < Long.MAX_VALUE) { "Sheet timestamp overflow" }
+    return copy(fieldUpdatedAt = updatedTimes, updatedAt = maxOf(at, updatedTimes.filterKeys { !it.startsWith("@") }.values.maxOrNull() ?: 0L))
+        .withPendingEditKeys(editKeys)
 }
 
 fun characterConflictFields(local: Character, remote: Character): List<CharacterConflictField> = buildList {

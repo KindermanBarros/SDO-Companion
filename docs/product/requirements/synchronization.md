@@ -48,12 +48,19 @@ Owner requested automatic preference for the latest field changes and permitted 
 - Add fieldUpdatedAt timestamps to sheet records; local Room schema 30 migrates from 29 with an empty map default. This is additive compatibility with a local migration, not an application-domain schema reset.
 - Stamp only edited conflict groups and merge independent changes. Equal revisions prefer the committed remote value; account identity and field count no longer trigger manual conflict prompts.
 - Rebase delayed editor changes against their in-memory baseline. A response to an older upload cannot clear a newer pending change or revive a local deletion.
-- Preserve coupled inventory/canonical-state groups and grow-only delivery receipts. Legacy records use document timestamps until field metadata exists; older clients still use legacy behavior.
-- Publishing retains the existing automatic-sync setting. Current revision times are client-derived, not globally server-ordered. Full authenticated cross-device acceptance remains unverified.
+- BACKLOG-009 extends the initial coarse groups to stable per-element/property keys and tombstones, including canonical/legacy projections; grow-only delivery receipts are preserved.
+- Background publishing retains the automatic-sync setting; explicit session commands commit remotely. BACKLOG-009 logical revisions, rather than client wall clocks, order upgraded writes. Full authenticated cross-device acceptance remains unverified.
 
 #### Remaining collaboration backlog
 
-BACKLOG-009 (ToDo): server-authoritative ordering under device-clock skew; per-item/subfield merges and deletion semantics inside inventories, conditions, attributes and notes; simultaneous arithmetic resource spending without lost increments; mixed-version rollout guarantees; backend reachability/uncertain-write recovery; authenticated multi-device load/conflict validation. Evaluate a dedicated Realtime Database path only if measured requirements cannot be met with Firestore. No such migration or external deployment is performed in this delivery.
+BACKLOG-009 status: InDevReview (build-only validation requested by owner).
+- Per-item/property patches cover inventory/itemStates, canonical and legacy conditions, abilities/powers/mysticAbilities, notes, attributes and nested skills. Stable ID tombstones prevent delayed updates from reviving deleted elements; unchanged remote fields/elements remain intact.
+- Existing fieldUpdatedAt stores local intent, committed property revisions, tombstones, a logical sheet sequence and operation receipts; Room remains at version 30 with no new columns.
+- Firestore transactions assign the next logical revision, validate the latest sheet and active campaign, apply arithmetic resource deltas, and atomically commit sheet/audit. Reusing an operation key does not repeat its mutation.
+- Upload acknowledgements preserve edits made while a response was in flight. Overflow checks protect monotonic counters; display timestamps are not treated as trusted global UTC.
+- Publish the updated Firestore rules before the client: upgraded sheets reject stale/legacy revision writes, while permission rules remain enforced. Old unmarked pending edits require explicit migration review; normal upgraded edits merge automatically.
+- No Realtime Database migration or backend deployment is performed. Test suites were skipped at owner request; authenticated multi-device and deployed-rule acceptance remain unverified. Backend outage/uncertain-write errors are surfaced, not treated as successful actions.
+
 
 ## References
 

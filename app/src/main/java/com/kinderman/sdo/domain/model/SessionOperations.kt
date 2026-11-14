@@ -135,7 +135,7 @@ fun Character.applySessionCommand(command: SessionCommand, actorId: String): Ses
         SessionOperationType.MONEY -> {
             target = "MONEY"
             previous = money.toString()
-            copy(money = (money + command.amount).coerceAtLeast(0)).also { next = it.money.toString() }
+            copy(money = (money.toLong() + command.amount).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()).also { next = it.money.toString() }
         }
         SessionOperationType.NOTE -> {
             target = "NOTE"
@@ -277,12 +277,12 @@ private fun Character.payAbilityCost(ability: Ability): Character = when (val co
     is AbilityCost.SpellCost -> mutateResource(SessionResource.ARCANE, -cost.amount)
     is AbilityCost.RuneCost -> mutateResource(SessionResource.ARCANE, -cost.amount)
     is AbilityCost.AshCost -> {
-        val itemId = ability.ashData?.linkedItemId?.value
-            ?: throw DomainError.InvalidReference("Cinza sem vínculo tipado com item.")
-        val item = inventory.firstOrNull { it.id == itemId }
-            ?: throw DomainError.InvalidReference("Item de Cinza não encontrado.")
-        if (item.quantity < cost.amount) throw DomainError.InsufficientResource("Doses de Cinza insuficientes.")
-        copy(inventory = inventory.map { if (it.id == item.id) it.copy(quantity = it.quantity - cost.amount) else it })
+        val itemId = ability.ashData?.linkedItemId
+            ?: throw DomainError.InvalidReference("Vínculo de inventário da Cinza ausente.")
+        consumeRuntimeItem(
+            EffectOperation.ConsumeItemState(itemId, cost.amount, ConsumableStateKind.Ash, applyEffects = false),
+            "", "ash-cost:${ability.id}", "Ash cost", emptySet(),
+        )
     }
 }
 
@@ -298,8 +298,11 @@ internal fun Character.payCanonicalAbilityCost(type: AbilityCostType, amount: In
     if (type == AbilityCostType.NONE || value == 0) return this
     if (type == AbilityCostType.DOSE) {
         val item = inventory.firstOrNull { it.linkedAshId == abilityId }
-        require(item != null && item.quantity >= value) { "Sem cinzas necessárias" }
-        return copy(inventory = inventory.map { if (it.id == item.id) it.copy(quantity = it.quantity - value) else it })
+            ?: throw DomainError.InvalidReference("Vínculo de inventário da Cinza ausente.")
+        return consumeRuntimeItem(
+            EffectOperation.ConsumeItemState(ItemInstanceId(item.id), value, ConsumableStateKind.Ash, applyEffects = false),
+            "", "ash-cost:$abilityId", "Ash cost", emptySet(),
+        )
     }
     val resource = when (type) {
         AbilityCostType.ARCANE -> SessionResource.ARCANE
@@ -315,8 +318,9 @@ internal fun Character.payCanonicalAbilityCost(type: AbilityCostType, amount: In
 private fun Character.mutateResource(resource: SessionResource, delta: Int): Character {
     val value = resourceValue(resource)
     val maximum = resourceMaximum(resource)
-    if (delta < 0) require(value.current + delta >= 0) { "Recurso insuficiente para esta ação." }
-    val changed = value.withSessionCurrent(value.current + delta, maximum)
+    val total = value.current.toLong() + delta.toLong()
+    if (delta < 0) require(total >= 0) { "Recurso insuficiente para esta ação." }
+    val changed = value.withSessionCurrent(total.coerceIn(0L, maximum.coerceAtLeast(0).toLong()).toInt(), maximum)
     return when (resource) {
         SessionResource.LIFE -> copy(life = changed)
         SessionResource.SANITY -> copy(sanity = changed)
@@ -358,6 +362,7 @@ fun Character.applyEffectOperation(
     actorId: String = "",
     idempotencyKey: String = UUID.randomUUID().toString(),
     reason: String = "Operação Canônica",
+    consumptionStack: Set<String> = emptySet(),
 ): SessionMutation {
     val now = System.currentTimeMillis()
     var target = ""
@@ -462,30 +467,16 @@ fun Character.applyEffectOperation(
             res
         }
         is EffectOperation.ConsumeItemState -> {
-            if (operation.state != ConsumableStateKind.Dose) {
-                throw DomainError.ValidationError("Este item ainda não possui estado canônico de carga/munição; operação recusada.")
-            }
             val item = inventory.firstOrNull { it.id == operation.itemInstanceId.value }
                 ?: throw DomainError.InvalidReference("Item não encontrado no inventário.")
-            val canonicalItem = itemStates.firstOrNull { it.id == operation.itemInstanceId }
-                ?: throw DomainError.InvalidReference("Estado canônico do item não encontrado; migre a ficha antes do consumo.")
-            val consumable = canonicalItem.consumable
-                ?: throw DomainError.InvalidReference("Item não possui doses estruturadas.")
             target = item.name
-            previous = consumable.doses.toString()
-            if (consumable.doses < operation.amount) throw DomainError.InsufficientResource("Doses insuficientes do item.")
-            val nextQuantity = consumable.doses - operation.amount
-            next = nextQuantity.toString()
-            copy(
-                inventory = inventory.map { if (it.id == item.id) it.copy(quantity = nextQuantity) else it },
-                itemStates = itemStates.map {
-                    if (it.id == canonicalItem.id) it.copy(
-                        stack = it.stack.copy(quantity = nextQuantity),
-                        consumable = consumable.copy(doses = nextQuantity),
-                    ) else it
-                },
-            )
+            previous = itemRuntimeStates(item).firstOrNull { it.kind == operation.state }?.remaining?.toString().orEmpty()
+            val consumed = consumeRuntimeItem(operation, actorId, idempotencyKey, reason, consumptionStack)
+            next = consumed.itemRuntimeStates(consumed.inventory.first { it.id == item.id })
+                .firstOrNull { it.kind == operation.state }?.remaining?.toString().orEmpty()
+            consumed
         }
+
     }.copy(updatedAt = now, dirty = true)
 
     return SessionMutation(

@@ -75,4 +75,9 @@ Master operation exposes the existing quick-action dialog through a visible butt
 
 ## Session follow-up
 
-BACKLOG-010 (ToDo): extend canonical ammunition/charge operations and explicit automatic consumable-effect application using approved rules. Current quick consumption subtracts one structured dose; users apply other effects through existing session controls. Confirm unsupported legacy item states instead of synthesizing doses or effects. Existing quick resource controls remain available for energy, arcane, sanity, exhaustion and divine corruption.
+BACKLOG-010 status: InDevReview; owner explicitly included consumption of Cinza.
+- Expose Dose, Ammo, Charge and Ash counters with quantity selection and confirmation in Session Mode. Show remaining values and preserve read-only guards; item/Cinza and condition shortcuts remain accessible.
+- Consume canonical loaded ammunition separately from reserve inventory, canonical charges/doses, and explicit legacy ammunition/charge counters. Cinza supports linked inventory items, canonical ASH abilities and CatalogKind.ASH entries; canonical and legacy dose values stay aligned.
+- Apply structured item MechanicalEffect operations, explicit ItemEffect.onConsume operations and linked Ash effects in the same transaction as counter expenditure. Failed effects or insufficient quantities commit nothing; repeating the operation key does not spend twice.
+- Ash ability costs use the same counter path with duplicate automatic effect execution suppressed. Passive equipment bonuses and free-text effects remain distinct; prose is not interpreted as an executable rule.
+- Room remains at version 30; onConsume is an optional appended inventory-codec field. No forbidden Hydrogen-owned screen or database-version file is changed. Validation is assembleDebug only; runtime/visual acceptance remains pending.

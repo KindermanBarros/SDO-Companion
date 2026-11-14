@@ -9,6 +9,8 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.withFieldEditTimes
+import com.kinderman.sdo.domain.model.preserveEditsAfterUpload
+import com.kinderman.sdo.domain.model.preservePendingCharacterEdits
 
 @Dao
 interface OperationsDao {
@@ -37,6 +39,19 @@ interface OperationsDao {
     @Query("UPDATE campaign_deliveries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markDeliverySynced(id: String, at: Long)
     @Query("SELECT COALESCE(MAX(lastSyncedAt), 0) FROM session_operations WHERE campaignId = :campaignId") suspend fun maxSyncedAuditAt(campaignId: String): Long
     @Query("SELECT COALESCE(MAX(lastSyncedAt), 0) FROM campaign_library_entries WHERE campaignId = :campaignId") suspend fun maxSyncedLibraryAt(campaignId: String): Long
+
+    @Transaction
+    suspend fun acceptCommittedOperation(snapshot: CharacterRecord, operation: SessionOperationRecord?, uploaded: CharacterRecord?) {
+        val current = character(snapshot.id)
+        if (current?.deleted == true && current.dirty) return
+        val adopted = when {
+            current == null -> snapshot.toDomain()
+            uploaded != null -> preserveEditsAfterUpload(snapshot.toDomain(), current.toDomain(), uploaded.toDomain())
+            else -> preservePendingCharacterEdits(snapshot.toDomain(), current.toDomain())
+        }
+        upsertCharacter(adopted.toRecord())
+        if (operation != null) insertOperation(operation)
+    }
 
     @Transaction
     suspend fun applyOnce(operation: SessionOperationRecord, updatedCharacter: CharacterRecord): Boolean {

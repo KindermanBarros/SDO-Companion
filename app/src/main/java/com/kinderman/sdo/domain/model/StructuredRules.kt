@@ -637,7 +637,7 @@ sealed interface PassiveState {
 enum class EffectOperationKind { Damage, Healing, ApplyCondition, AddModifier, SpendResource, ConsumeItemState }
 
 @Serializable
-enum class ConsumableStateKind { Dose, Charge, Ammo }
+enum class ConsumableStateKind { Dose, Charge, Ammo, Ash }
 
 @Serializable
 enum class UsagePeriod { Turn, Scene, Session, Day, Permanent }
@@ -763,6 +763,7 @@ sealed interface EffectOperation {
         val itemInstanceId: ItemInstanceId,
         val amount: Int = 1,
         val state: ConsumableStateKind = ConsumableStateKind.Dose,
+        val applyEffects: Boolean = true,
     ) : EffectOperation {
         init {
             require(amount > 0) { "Quantidade a consumir deve ser positiva." }

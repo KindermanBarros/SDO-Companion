@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.local
 
 import androidx.room.TypeConverter
+import com.kinderman.sdo.domain.model.EffectOperation
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.AbilityCostType
 import com.kinderman.sdo.domain.model.AbilityDuration
@@ -381,7 +382,7 @@ class CharacterConverters {
             item.catalogEntryId, item.catalogVersion.toString(), item.acquiredAt.toString(), item.canonical.toString(),
             item.baseId, item.materialId, item.modificationIds.nested(), "",
             item.mechanicalEffects.joinToString(MODIFIER_ROW) { effect ->
-                listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description, effect.resolvedTargetId).joinToString(MODIFIER_FIELD)
+                listOf(effect.id, effect.type.name, effect.value.toString(), effect.target, effect.condition.name, effect.description, effect.resolvedTargetId, effect.onConsume?.let { canonicalJson.encodeToString(EffectOperation.serializer(), it) }.orEmpty()).joinToString(MODIFIER_FIELD)
             },
             item.dataVersion.toString(), item.durabilityMax.toString(), item.itemCondition.name,
             item.backpackCapacity.toString(), "", "0", "0",
@@ -431,6 +432,9 @@ class CharacterConverters {
                             condition = runCatching { ItemEffectCondition.valueOf(fields.getOrElse(4) { "" }) }.getOrDefault(ItemEffectCondition.WIELDED),
                             description = fields.getOrElse(5) { "" },
                             resolvedTargetId = fields.getOrElse(6) { "" },
+                            onConsume = fields.getOrNull(7)?.takeIf(String::isNotBlank)?.let {
+                                canonicalJson.decodeFromString(EffectOperation.serializer(), it)
+                            },
                         )
                     }.orEmpty(),
                 secondaryMaterialId = p.getOrElse(36) { "" }.takeIf { p.getOrNull(13) in setOf("canonical-v7", "canonical-v8") }.orEmpty(),

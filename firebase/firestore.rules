@@ -356,6 +356,23 @@ service cloud.firestore {
     }
 
     match /characters/{characterId} {
+      function validCollaborationRevision() {
+        let before = resource.data.get('fieldUpdatedAt', {});
+        let after = request.resource.data.get('fieldUpdatedAt', {});
+        return (
+          before.get('@protocol', 0) == 0 && after.get('@protocol', 0) == 0
+        ) || (
+          after.get('@protocol', 0) == 1
+          && after.get('@revision', 0) == before.get('@revision', 0) + 1
+        ) || (
+          before == after && onlyUnlinkChanges()
+        );
+      }
+
+      // A transaction may check a missing UUID before an authorized create.
+      allow get: if signedIn()
+        && !exists(/databases/$(database)/documents/characters/$(characterId));
+
       // Legacy projections dropped from optimized character documents (SYNC-PLAN-002-B).
       function legacyCharacterKeys() {
         return ['dirty', 'notes', 'protections', 'bodyRegions', 'organs', 'conditions'].toSet();
@@ -388,6 +405,7 @@ service cloud.firestore {
         && request.resource.data.deleted == false;
 
       allow update: if signedIn()
+        && validCollaborationRevision()
         && (
           (
             normalizedCampaignId(resource.data) != ''

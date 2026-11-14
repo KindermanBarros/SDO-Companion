@@ -340,6 +340,14 @@ private fun SessionContent(
                         CharacterActionButton(stringResource(R.string.session_damage), !readOnly, CharacterActionStyle.PRIMARY, Modifier.weight(1f).testTag("session_damage")) { damageDialog = true }
                         CharacterActionButton(stringResource(R.string.session_heal), !readOnly, CharacterActionStyle.SECONDARY, Modifier.weight(1f).testTag("session_heal")) { healingDialog = true }
                     }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        CharacterActionButton(stringResource(R.string.session_quick_items), true, CharacterActionStyle.SECONDARY, Modifier.weight(1f).testTag("session_quick_items")) {
+                            scope.launch { listState.scrollToItem(sectionIndices.getValue(SessionSection.EQUIPMENT)) }
+                        }
+                        CharacterActionButton(stringResource(R.string.session_quick_conditions), true, CharacterActionStyle.SECONDARY, Modifier.weight(1f).testTag("session_quick_conditions")) {
+                            scope.launch { listState.scrollToItem(sectionIndices.getValue(SessionSection.CONDITIONS)) }
+                        }
+                    }
                     if (readOnly) Text(stringResource(R.string.session_controls_locked), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
             }

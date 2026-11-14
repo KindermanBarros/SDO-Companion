@@ -5,10 +5,12 @@ import androidx.room.Query
 import androidx.room.Upsert
 import androidx.room.Transaction
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.characterConflictFields
-import com.kinderman.sdo.domain.model.CharacterSyncConflict
-import com.kinderman.sdo.domain.model.automaticRemoteFieldIds
-import com.kinderman.sdo.domain.model.mergeCharacterConflict
+import com.kinderman.sdo.domain.model.characterEditKeys
+import com.kinderman.sdo.domain.model.applyCharacterEditKeys
+import com.kinderman.sdo.domain.model.preserveEditsAfterUpload
+import com.kinderman.sdo.domain.model.preservePendingCharacterEdits
+import com.kinderman.sdo.domain.model.pendingCharacterEditKeys
+import com.kinderman.sdo.domain.model.withPendingEditKeys
 import com.kinderman.sdo.domain.model.withFieldEditTimes
 import kotlinx.coroutines.flow.Flow
 
@@ -67,11 +69,13 @@ interface CharacterDao {
     suspend fun saveEditorChange(candidate: Character) {
         val current = get(candidate.id)?.toDomain()
         val rebased = if (current != null && candidate.editingBase != null) {
-            val edited = characterConflictFields(candidate.editingBase, candidate)
-                .mapTo(mutableSetOf()) { it.id }
-            mergeCharacterConflict(current, candidate, edited).copy(
+            val normalized = candidate.toRecord().toDomain()
+            val base = candidate.editingBase.toRecord().toDomain()
+            val edited = characterEditKeys(base, normalized)
+            applyCharacterEditKeys(current, normalized, edited).copy(
                 updatedAt = candidate.updatedAt, lastEditedBy = candidate.lastEditedBy, dirty = true,
             )
+
         } else candidate
         upsertTracked(rebased.toRecord())
     }
@@ -83,20 +87,23 @@ interface CharacterDao {
         if (character.dirty) {
             upsert(character.toDomain().withFieldEditTimes(current?.toDomain()).toRecord())
         } else if (current?.dirty == true) {
-            val conflict = CharacterSyncConflict(current.toDomain(), character.toDomain(), character.updatedAt)
-            val merged = mergeCharacterConflict(conflict.local, conflict.remote, automaticRemoteFieldIds(conflict))
-            upsert(merged.copy(dirty = true, updatedAt = maxOf(current.updatedAt, character.updatedAt), lastSyncedAt = character.updatedAt).toRecord())
+            val local = current.toDomain()
+            val remote = character.toDomain()
+            val marked = local.withPendingEditKeys(pendingCharacterEditKeys(local, remote))
+            upsert(preservePendingCharacterEdits(remote, marked).toRecord())
         } else {
             upsert(character)
         }
     }
 
     @Transaction
-    suspend fun acceptSnapshot(snapshot: CharacterRecord, expectedUpdatedAt: Long) {
+    suspend fun acceptSnapshot(snapshot: CharacterRecord, expectedUpdatedAt: Long, uploaded: CharacterRecord? = null) {
         val current = get(snapshot.id)
         if (current?.dirty == true && current.deleted) return
         val clean = snapshot.copy(dirty = false, lastSyncedAt = snapshot.updatedAt, deleted = false)
-        if (current?.updatedAt == expectedUpdatedAt) upsert(clean) else upsertTracked(clean)
+        if (current?.updatedAt == expectedUpdatedAt) upsert(clean)
+        else if (current != null && uploaded != null) upsert(preserveEditsAfterUpload(clean.toDomain(), current.toDomain(), uploaded.toDomain()).toRecord())
+        else upsertTracked(clean)
     }
 
     @Transaction

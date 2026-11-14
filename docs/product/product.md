@@ -31,8 +31,8 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) | Done |
 | BACKLOG-007 | Firestore read/write & payload optimization (delta sync, audit limits, dedupe character payload, parallel/batched queries) | [Synchronization — SYNC-PLAN-002](requirements/synchronization.md#planned-changes) | Done |
 | BACKLOG-008 | Latest-field realtime sheet convergence | [Synchronization - SYNC-PLAN-003](requirements/synchronization.md#sync-plan-003---latest-field-realtime-sheet-convergence) | InDevReview; build passed, tests skipped by owner |
-| BACKLOG-009 | Server-ordered collaboration and per-item/list merges | [Synchronization follow-up](requirements/synchronization.md#remaining-collaboration-backlog) | ToDo |
-| BACKLOG-010 | Canonical ammo/charge consumption and automated item effects | [Session follow-up](requirements/campaigns.md#session-follow-up) | ToDo |
+| BACKLOG-009 | Server-ordered collaboration and per-item/list merges | [Synchronization follow-up](requirements/synchronization.md#remaining-collaboration-backlog) | InDevReview; build-only validation |
+| BACKLOG-010 | Canonical ammo/charge consumption and automated item effects | [Session follow-up](requirements/campaigns.md#session-follow-up) | InDevReview; build-only validation |
 
 BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests accepted as Done by owner 2026-11-14 16:03; prior runtime verification limits preserved. [Memory](../MEMORY.md).
 BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner accepted as Done by owner 2026-11-14 16:03. [Memory](../MEMORY.md).
@@ -69,3 +69,5 @@ Owner request 2026-11-14 15:46: consolidate documentation/design/agent ownership
 Prior closure applied only to delivered tasks. BACKLOG-002 was subsequently selected and is now InDevReview; BACKLOG-003 through BACKLOG-005 remain ToDo with unchanged scope. No remote publication is asserted.
 
 Owner steering 2026-11-14 16:37: deliver player quick actions and latest-field realtime sheet convergence using the best supported existing path; defer remaining collaboration and consumable-state work. BACKLOG-002/008: InDevReview; final debug build passed, tests skipped by explicit owner request. BACKLOG-009/010: ToDo.
+
+Owner request 2026-11-14 17:34: complete BACKLOG-009 and BACKLOG-010, explicitly including Cinza, with Room 30 preserved. Both are InDevReview; Firestore rules must be published with the client rollout. Test suites skipped per owner preference. Other backlog items are unchanged. [Memory](../MEMORY.md).

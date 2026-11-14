@@ -85,6 +85,7 @@ data class ItemEffect(
     val condition: ItemEffectCondition = ItemEffectCondition.WIELDED,
     val description: String = "",
     val resolvedTargetId: String = "",
+    val onConsume: EffectOperation? = null,
 )
 
 data class ActiveItemEffect(
