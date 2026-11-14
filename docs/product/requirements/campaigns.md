@@ -28,7 +28,7 @@ Backlog solicitado pelo proprietário em 2026-11-12. São propostas não impleme
 
 Adicionar um diário compartilhado da campanha. Definir no refinamento autoria, permissões de leitura/escrita, organização dos registros e comportamento de edição/sincronização. Distinguir o diário das notas pessoais da ficha e do histórico técnico de operações já existentes.
 
-Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation pending. See [Shared campaign journal record](../../changes/2026-11-14-shared-campaign-journal.md).
+Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered InDevReview (device runtime and local emulator acceptance pending). See [Shared campaign journal record](../../changes/2026-11-14-shared-campaign-journal.md).
 
 ### CAMPAIGN-PLAN-002 — Evolução do Modo Sessão
 

@@ -32,6 +32,8 @@ import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
 import com.kinderman.sdo.presentation.historian.HistorianDashboardScreen
+import com.kinderman.sdo.presentation.journal.JournalScreen
+import com.kinderman.sdo.presentation.journal.JournalViewModel
 import com.kinderman.sdo.presentation.login.LoginScreen
 import com.kinderman.sdo.presentation.session.SessionModeScreen
 import com.kinderman.sdo.presentation.settings.SettingsScreen
@@ -46,7 +48,7 @@ import com.kinderman.sdo.ui.SdoNavigationItem
 import com.kinderman.sdo.ui.SdoNavigationRail
 import com.kinderman.sdo.ui.SdoPreferences
 
-private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, SETTINGS }
+private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, JOURNAL, SETTINGS }
 
 @Composable
 fun SdoApp(
@@ -65,6 +67,7 @@ fun SdoApp(
         ),
     )
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
+    val journalViewModel: JournalViewModel = viewModel(factory = JournalViewModelFactory(application.campaignJournalRepository))
     val authenticatedSession by authViewModel.session.collectAsStateWithLifecycle()
     val appSession by appViewModel.session.collectAsStateWithLifecycle()
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
@@ -80,10 +83,26 @@ fun SdoApp(
     val saveErrors by appViewModel.saveErrors.collectAsStateWithLifecycle()
     val catalog by appViewModel.catalog.collectAsStateWithLifecycle()
     val deliveries by appViewModel.deliveries.collectAsStateWithLifecycle()
+    val journalState by journalViewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var demo by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedJournalCampaignId by rememberSaveable { mutableStateOf<String?>(null) }
     var surface by rememberSaveable { mutableStateOf(AppSurface.DASHBOARD) }
+
+    LaunchedEffect(surface, selectedJournalCampaignId, appSession?.uid, campaigns, memberships) {
+        if (appSession == null) {
+            journalViewModel.clearContext()
+            return@LaunchedEffect
+        }
+        if (surface == AppSurface.JOURNAL) {
+            val selectedCampaign = campaigns.firstOrNull { it.id == selectedJournalCampaignId }
+            val isActiveMember = selectedCampaign != null && memberships.any {
+                it.campaignId == selectedCampaign.id && it.isActive
+            }
+            journalViewModel.bind(appSession, selectedCampaign, isActiveMember)
+        }
+    }
 
     var backStack by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
     val screenState = rememberSaveableStateHolder()
@@ -182,6 +201,10 @@ fun SdoApp(
                     onArchiveCampaign = appViewModel::archiveCampaign,
                     onDeleteCampaign = appViewModel::deleteCampaign,
                     onLeaveCampaign = appViewModel::leaveCampaign,
+                    onOpenJournal = { campaign ->
+                        selectedJournalCampaignId = campaign.id
+                        navigate(AppSurface.JOURNAL)
+                    },
                     onPreviewInvite = appViewModel::previewCampaignInvite,
                     onAcceptInvite = appViewModel::acceptCampaignInvite,
                     onDismissInvitePreview = appViewModel::dismissInvitePreview,
@@ -195,9 +218,11 @@ fun SdoApp(
                     onRespondDelivery = appViewModel::respondDelivery,
                     onLogout = {
                         selectedId = null
+                        selectedJournalCampaignId = null
                         surface = AppSurface.DASHBOARD
                         backStack = arrayListOf()
                         demo = false
+                        journalViewModel.clearContext()
                         authViewModel.logout()
                         appViewModel.clearSession()
                     },
@@ -273,6 +298,31 @@ fun SdoApp(
                     onBack = { goBack() },
                     )
                 }
+
+                AppSurface.JOURNAL -> JournalScreen(
+                    state = journalState,
+                    onRetry = journalViewModel::retryObserve,
+                    onOpenEntry = journalViewModel::openEntry,
+                    onNewEntry = journalViewModel::startNewEntry,
+                    onEditEntry = journalViewModel::startEditEntry,
+                    onUpdateDraft = journalViewModel::updateDraft,
+                    onSaveDraft = journalViewModel::saveDraft,
+                    onReloadConflict = journalViewModel::reloadConflict,
+                    onRequestReplaceConflict = journalViewModel::requestReplaceConflict,
+                    onDismissReplaceConflict = journalViewModel::dismissReplaceConflict,
+                    onConfirmReplaceConflict = journalViewModel::confirmReplaceConflict,
+                    onRequestDelete = journalViewModel::requestDelete,
+                    onDismissDelete = journalViewModel::dismissDelete,
+                    onConfirmDelete = journalViewModel::confirmDelete,
+                    onBackPressed = {
+                        journalViewModel.handleBack {
+                            journalViewModel.clearContext()
+                            goBack()
+                        }
+                    },
+                    onDismissDiscard = journalViewModel::dismissDiscard,
+                    onConfirmDiscard = journalViewModel::confirmDiscard,
+                )
 
                 AppSurface.SETTINGS -> SettingsScreen(
                     preferences = preferences,

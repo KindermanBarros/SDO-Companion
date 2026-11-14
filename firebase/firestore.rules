@@ -425,6 +425,56 @@ service cloud.firestore {
       );
     }
 
+    match /campaignJournal/{entryId} {
+      function validJournalFields(data) {
+        return data.campaignId is string
+          && data.campaignId != ''
+          && data.authorId is string
+          && data.authorId != ''
+          && data.title is string
+          && data.body is string
+          && data.title.size() <= 120
+          && data.body.size() <= 20000
+          && data.revision is int
+          && data.lastEditorId is string
+          && data.deleted is bool;
+      }
+
+      allow read: if signedIn()
+        && canReadCampaign(resource.data.campaignId)
+        && get(campaignPath(resource.data.campaignId)).data.state != 'DELETED';
+
+      allow create: if signedIn()
+        && validJournalFields(request.resource.data)
+        && campaignIsActive(request.resource.data.campaignId)
+        && (isCampaignResponsible(request.resource.data.campaignId) || isActiveMember(request.resource.data.campaignId))
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.lastEditorId == request.auth.uid
+        && request.resource.data.deleted == false
+        && request.resource.data.title.size() > 0
+        && request.resource.data.body.size() > 0
+        && request.resource.data.revision == 1;
+
+      allow update: if signedIn()
+        && validJournalFields(request.resource.data)
+        && campaignIsActive(resource.data.campaignId)
+        && (
+          isCampaignResponsible(resource.data.campaignId)
+          || (isActiveMember(resource.data.campaignId) && resource.data.authorId == request.auth.uid)
+        )
+        && request.resource.data.campaignId == resource.data.campaignId
+        && request.resource.data.authorId == resource.data.authorId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.lastEditorId == request.auth.uid
+        && request.resource.data.revision == resource.data.revision + 1
+        && (
+          request.resource.data.deleted == true
+          || (request.resource.data.title.size() > 0 && request.resource.data.body.size() > 0)
+        );
+
+      allow delete: if false;
+    }
+
     match /users/{uid} {
       allow read: if signedIn() && (uid == request.auth.uid || isAdministrator());
 

@@ -134,6 +134,7 @@ fun DashboardScreen(
     onArchiveCampaign: (Campaign, Boolean) -> Unit,
     onDeleteCampaign: (Campaign) -> Unit,
     onLeaveCampaign: (Campaign) -> Unit,
+    onOpenJournal: (Campaign) -> Unit = {},
     onPreviewInvite: (String) -> Unit,
     onAcceptInvite: (String, Character?, Boolean) -> Unit,
     onDismissInvitePreview: () -> Unit,
@@ -399,6 +400,7 @@ fun DashboardScreen(
                                     onArchive = { onArchiveCampaign(campaign, true) },
                                     onDelete = { deletingCampaign = campaign },
                                     onLeave = { onLeaveCampaign(campaign) },
+                                    onOpenJournal = { onOpenJournal(campaign) },
                                     index = (campaignIndex + 1).toString().padStart(2, '0'),
                                 )
                             }
@@ -429,6 +431,7 @@ fun DashboardScreen(
                                     onArchive = { onArchiveCampaign(campaign, false) },
                                     onDelete = { deletingCampaign = campaign },
                                     onLeave = {},
+                                    onOpenJournal = { onOpenJournal(campaign) },
                                     index = "AR",
                                 )
                             }
@@ -814,6 +817,7 @@ private fun CampaignPanel(
     onArchive: () -> Unit,
     onDelete: () -> Unit,
     onLeave: () -> Unit,
+    onOpenJournal: () -> Unit,
     index: String,
 ) {
     var expanded by rememberSaveable(campaign.id) { mutableStateOf(initiallyExpanded) }
@@ -924,6 +928,15 @@ private fun CampaignPanel(
                             onOpen = { onOpenCharacter(character) },
                             onUnlink = { onUnlinkCharacter(character) },
                         )
+                    }
+                    SdoOutlinedButton(
+                        onClick = onOpenJournal,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .testTag("campaign_open_journal_${campaign.id}"),
+                    ) {
+                        Text(stringResource(com.kinderman.sdo.R.string.journal_open_action))
                     }
                     if (!archived && canAdd) {
                         Text("AÇÕES DA CAMPANHA", color = accent, style = MaterialTheme.typography.labelSmall)
