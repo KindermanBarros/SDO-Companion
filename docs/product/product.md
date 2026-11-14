@@ -30,13 +30,13 @@ Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem pr
 | BACKLOG-005 | Grid de batalha compartilhado em tempo real no Modo Sessão | [Campanhas — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) |
 | BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
 
-BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Task state](../../.docs/OngoingTasks/shared_campaign_journal_task_state.md), [change record](../changes/2026-11-14-shared-campaign-journal.md). Other backlog items retain their unordered status.
+BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Memory](../MEMORY.md), [change record](../changes/2026-11-14-shared-campaign-journal.md). Other backlog items retain their unordered status.
 
 Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Change record](../changes/2026-11-14-shared-campaign-journal.md): redesigned journal approved by owner with minor Standard color refinement; home settings icon contrast fixed in Standard mode; implementation handed off InDevReview. No product priorities changed.
 
 ## Workflow do backlog
-Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Release task](../../.docs/CompletedTasks/release_0_51_1_task_state.md): Done; owner accepted 2026-11-14; published with verified signed APK, CI run 43540829981 successful; existing product priorities unchanged.
-Owner request 2026-11-14: create feature branch with Companion improvements and optimize workflows, skills, rules, templates and tools for lower token usage. [Optimization task](../../.docs/CompletedTasks/lean_workflows_and_tools_task_state.md): Done; owner accepted 2026-11-14; on `feature/lean-workflows-and-tools`; ~6,250 lines removed across 73 harness files and 114 documents validated by `validate-harness.ps1`.
+Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Memory](../MEMORY.md): Done; owner accepted 2026-11-14; published with verified signed APK, CI run 43540829981 successful; existing product priorities unchanged.
+Owner request 2026-11-14: create feature branch with Companion improvements and optimize workflows, skills, rules, templates and tools for lower token usage. [Memory](../MEMORY.md): Done; owner accepted 2026-11-14; on `feature/lean-workflows-and-tools`; ~6,250 lines removed across 73 harness files and validated by `validate-harness.ps1`.
 
 - Ao começar, selecionar o pedido autorizado e consultar o requisito relacionado; prioridades não definidas continuam sem ordem inventada.
 - Acrescentar pedidos e achados úteis com origem, estado e dúvidas, sem expandir a tarefa atual.
@@ -46,8 +46,8 @@ Owner request 2026-11-14: create feature branch with Companion improvements and 
 ## Entregas aprovadas
 | Pedido | Registro | Estado |
 |---|---|---|
-| Compactação e correções da UI | [Task state](../../.docs/CompletedTasks/compact_ui_polish_task_state.md) | Done; aceite explícito em 2026-11-13 |
-| Limpeza e workflow econômico | [Task state](../../.docs/CompletedTasks/workflow_cleanup_task_state.md) | Done; aceite explícito em 2026-11-13 |
+| Compactação e correções da UI | [Memory](../MEMORY.md) | Done; aceite explícito em 2026-11-13 |
+| Limpeza e workflow econômico | [Memory](../MEMORY.md) | Done; aceite explícito em 2026-11-13 |
 
 ## Harness Feature Tracker
 

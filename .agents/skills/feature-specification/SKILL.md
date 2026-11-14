@@ -4,7 +4,7 @@ description: Clarify product requirements and write an approved spec before UX d
 ---
 # Skill — Feature Specification
 
-Follow [product-documentation.md](../../rules/product-documentation.md) and read affected files in `docs/product/requirements/`. Use for substantial new features or [Harness Planning](../../workflows/harness-planning.md); bounded fixes use a short task plan in `.docs/OngoingTasks/`.
+Follow [product-documentation.md](../../rules/product-documentation.md) and read affected files in `docs/product/requirements/`. Use for substantial new features or [Harness Planning](../../workflows/harness-planning.md); bounded fixes use a short inline plan summarized in `docs/MEMORY.md`.
 
 ## Execution
 1. **Classify scope**: Determine whether the request is a new screen, an enhancement to an existing screen, or logic-only. Preserve any user-supplied mockups under the workspace's `design/` folder.

@@ -19,7 +19,7 @@ $required = @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md',
     '.docs/PROJECT_CONTEXT.md','.docs/TECH_STACK.md','.docs/VALIDATION.md',
     '.docs/PERSONAS.md','.docs/SKILLS.md','.docs/TASK_PLANNING.md','.docs/HISTORY.md',
     '.docs/ArchitectureDecisions/architecture_decisions.md',
-    '.docs/HistoryRecords/history_records.md','.docs/Personas/laziest_senior_developer.md',
+    'docs/MEMORY.md','.docs/Personas/laziest_senior_developer.md',
     '.agents/gates/project-contract.md','.agents/gates/ci-checks.md',
     '.agents/gates/review-checklist.md','.agents/gates/release-checklist.md',
     '.agents/agents/laziest_senior_developer.md','.codex/agents/laziest_senior_developer.toml',
@@ -38,7 +38,7 @@ foreach ($file in $files) {
     $relative = $file.FullName.Substring($rootPath.Length + 1).Replace('\','/')
     $limit = 120
     if ($relative -eq 'AGENTS.md') { $limit = 60 }
-    if ($relative -notmatch '^\.docs/HistoryRecords/' -and @($body.TrimEnd() -split '\r?\n').Count -gt $limit) {
+    if ($relative -ne 'docs/MEMORY.md' -and @($body.TrimEnd() -split '\r?\n').Count -gt $limit) {
         Add-Issue "Line limit: $relative"
     }
     if ($body -match '<(APP_NAME|TIMEZONE|ZONE|PREFIX|BASE_BRANCH|HOST|Kotlin \| Java|module|library|version|n)>') {
@@ -85,6 +85,14 @@ if (Test-Path -LiteralPath $profile) {
 if (Test-Path -LiteralPath (Join-Path $rootPath 'docs/changes')) {
     foreach ($nested in Get-ChildItem -LiteralPath (Join-Path $rootPath 'docs/changes') -Directory | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Recurse -Filter '*.md' -File }) {
         Add-Issue "Nested change markdown (use single docs/changes/<slug>.md): $($nested.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
+    }
+}
+foreach ($forbiddenDir in @('.docs/HistoryRecords','.docs/OngoingTasks','.docs/CompletedTasks')) {
+    $forbiddenPath = Join-Path $rootPath $forbiddenDir
+    if (Test-Path -LiteralPath $forbiddenPath) {
+        foreach ($extra in Get-ChildItem -LiteralPath $forbiddenPath -Recurse -Filter '*.md' -File) {
+            Add-Issue "Separate history/task file forbidden (use docs/MEMORY.md): $($extra.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
+        }
     }
 }
 if ($issues.Count) { $issues | ForEach-Object { Write-Output "FAIL: $_" }; exit 1 }

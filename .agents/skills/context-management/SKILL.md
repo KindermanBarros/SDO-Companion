@@ -8,7 +8,7 @@ Follow root [AGENTS.md](../../../AGENTS.md), [working-economically.md](../../rul
 
 ## Load order (minimal by default)
 1. Read `AGENTS.md` once per session (`testing-strategy.md` is already auto-loaded).
-2. Read the requested item in `docs/product/product.md` and resume `.docs/OngoingTasks/<task>_task_state.md`.
+2. Read the requested item in `docs/product/product.md` and resume its summary in `docs/MEMORY.md`.
 3. Load only the active workflow/skill and the rules triggered by the touched boundary:
    - UI / Compose → [compose-rules.md](../../rules/compose-rules.md), [localization-rules.md](../../rules/localization-rules.md)
    - Architecture / layers → [android-architecture.md](../../rules/android-architecture.md), [implementation-rules.md](../../rules/implementation-rules.md)

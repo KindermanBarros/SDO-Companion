@@ -4,7 +4,7 @@ description: Analyze requirements, data/sync impact, UI states, and surface navi
 ---
 # Skill — Requirement & Impact Analysis
 
-Follow [product-documentation.md](../../rules/product-documentation.md). For bounded tasks, record scope directly in `.docs/OngoingTasks/`; use `docs/current/spec_v{N}.md` ([spec-template.md](../../../harness/templates/spec-template.md)) and `summary_v{N}.md` ([summary-template.md](../../../harness/templates/summary-template.md)) when a full ad-hoc spec is required.
+Follow [product-documentation.md](../../rules/product-documentation.md). For bounded tasks, summarize scope in `docs/MEMORY.md`; for complex features, use one `docs/changes/YYYY-MM-DD-feature-name.md` file ([spec-template.md](../../../harness/templates/spec-template.md), [summary-template.md](../../../harness/templates/summary-template.md)).
 
 ## Execution
 1. **Exploratory QA handoff (if bug-fixing)**: Reuse the finding's steps, expected/actual outcome, and evidence from `report.json` without repeating the QA run.

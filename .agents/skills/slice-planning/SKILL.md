@@ -4,7 +4,7 @@ description: Decompose complex requirements into vertical slices and a sprint co
 ---
 # Skill — Slice Planning
 
-Use only when a complex feature spans multiple logical areas and uses [Harness Planning](../../workflows/harness-planning.md). Bounded tasks use a short task plan in `.docs/OngoingTasks/`.
+Use only when a complex feature spans multiple logical areas and uses [Harness Planning](../../workflows/harness-planning.md). Bounded tasks use a short inline plan summarized in `docs/MEMORY.md`.
 
 ## Inputs & templates
 Read the approved `spec.md` (and `UI_contract.md` when UI is in scope), then follow:

@@ -7,7 +7,7 @@ description: Record high-value ADRs, post-mortems, or pitfalls after resolving n
 Follow [documentation-and-adrs](../documentation-and-adrs/SKILL.md) and [product-documentation.md](../../rules/product-documentation.md).
 
 ## High-value filter
-Ask: *"Would a developer or agent lose significant time without this record?"* If **no**, write zero knowledge files — routine bugs and self-evident code changes need only the standard `.docs/HistoryRecords/history_records.md` entry and task summary.
+Ask: *"Would a developer or agent lose significant time without this record?"* If **no**, write zero knowledge files — routine bugs and self-evident code changes need only the standard `docs/MEMORY.md` summary entry.
 
 ## When warranted
 - **Architecture trade-off**: Append to [.docs/ArchitectureDecisions/architecture_decisions.md](../../../.docs/ArchitectureDecisions/architecture_decisions.md) (or `docs/knowledge/architecture-decisions/` when scoped there).
