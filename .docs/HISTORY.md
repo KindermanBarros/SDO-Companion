@@ -2,13 +2,11 @@
 
 > **Sealed.** Edit only when the user explicitly asks.
 
-[History records](HistoryRecords/history_records.md) is the append-only audit log of agent modifications.
+[Memory](../docs/MEMORY.md) is the **single** canonical history and task-summary log of all agent modifications and task states.
 
 ## Rules
 
-- Append one entry when a modification enters InDevReview; documentation-only changes count.
-- Do not read, edit or delete prior records. Initial setup may populate template fields to establish the baseline.
-- Use actual YYYY-MM-DD HH:MM timestamps in America/La_Paz.
-- On POSIX: TZ=America/La_Paz date '+%Y-%m-%d %H:%M'.
-- Record objective, date, time, changed scope, verification results and checks not run.
-- A later review revision gets a new entry.
+- Never create separate history or task-state files under `.docs/HistoryRecords/`, `.docs/OngoingTasks/`, or `.docs/CompletedTasks/`.
+- Update the matching task summary row/section in [Memory](../docs/MEMORY.md) when a task starts, enters `InDevReview`, or is accepted as `Done` (documentation-only changes included).
+- Use actual `YYYY-MM-DD HH:MM` timestamps in `America/La_Paz`.
+- Record objective, date, time, changed scope, verification results, and checks not run concisely inside [Memory](../docs/MEMORY.md).

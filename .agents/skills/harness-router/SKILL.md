@@ -32,7 +32,7 @@ For bounded work use one owner and a short task plan. Delegate only when request
 Complex work still uses its approved feature list/sprint contract; do not duplicate it with another plan.
 
 ## Durable versus temporary
-Backlog: docs/product/product.md. Requirements: docs/product/requirements/. Task state: .docs/OngoingTasks/.
+Backlog: docs/product/product.md. Requirements: docs/product/requirements/. Task memory & history: docs/MEMORY.md.
 Ad-hoc contracts: docs/current/. Complex contracts/evidence: one file docs/changes/YYYY-MM-DD-feature-name.md.
 Temporary QA/logs/downloads/drafts: .scratch only. Promote final evidence and remove the entire scratch folder before every commit.
 

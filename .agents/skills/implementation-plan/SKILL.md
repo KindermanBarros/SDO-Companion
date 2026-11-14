@@ -4,7 +4,7 @@ description: Create a concise implementation and test plan before coding.
 ---
 # Skill — Implementation Plan
 
-For bounded fixes, record the 3–7 step plan and selected checks directly in `.docs/OngoingTasks/{task}_task_state.md` per [.docs/TASK_PLANNING.md](../../../.docs/TASK_PLANNING.md). When a full ad-hoc contract is required, generate `docs/current/implementation_plan_v{N}.md` and `docs/current/test_plan_v{N}.md`.
+For bounded fixes, keep a short 3–7 step inline plan and selected checks, and summarize in `docs/MEMORY.md` per [.docs/TASK_PLANNING.md](../../../.docs/TASK_PLANNING.md). For complex changes, use one `docs/changes/YYYY-MM-DD-feature-name.md` file.
 
 ## Execution
 1. **Implementation Plan**: Follow [implementation-plan-template.md](../../../harness/templates/implementation-plan-template.md):

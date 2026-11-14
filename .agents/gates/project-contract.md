@@ -12,7 +12,7 @@ Use the [execution checklist](../rules/working-economically.md) when optimizing 
 |---|---|
 | Backlog and capability index | docs/product/product.md |
 | Living behavior | docs/product/requirements/ |
-| Task state | .docs/OngoingTasks/ |
+| Task memory & history | docs/MEMORY.md (single file; never create separate history/task-state files) |
 | Ad-hoc contracts/summary | docs/current/ |
 | Durable complex contracts/decisions | docs/changes/YYYY-MM-DD-feature-name.md (single file; optional assets under docs/changes/assets/) |
 | Final evidence | Linked docs/current or docs/changes record |
