@@ -9,7 +9,7 @@ The [backlog](../../docs/product/product.md#backlog-de-produto) is part of daily
 6. Preserve requests/decisions and their history; do not silently delete undelivered backlog items or claim partial UI work delivers broader capabilities.
 
 Product index/lifecycle: docs/product/product.md. Detailed living requirements: docs/product/requirements/.
-Durable dated complex contracts/evidence: docs/changes/YYYY-MM-DD-feature-name/. Ad-hoc spec/plan/summary: docs/current/.
+Durable dated complex contracts/evidence: one single file docs/changes/YYYY-MM-DD-feature-name.md (optional binary assets under docs/changes/assets/). Ad-hoc spec/plan/summary: docs/current/.
 Temporary investigation/QA output: .scratch/ only, always removed before commit after promoting necessary final evidence.
 Never put approvals, task states, backlog or durable contracts in scratch.
 

@@ -25,6 +25,6 @@
         - Definition of done:
             - [x] Actual checks, removals and limitations recorded; task enters Done.
 
-- Evidence: [Retrospective](../../docs/changes/harness-retro-2026-11-13-lean-workflow/retrospective.md).
+- Evidence: [Retrospective](../../docs/changes/harness-retro-2026-11-13-lean-workflow.md).
 
 Owner explicitly approved closure of all five tasks, including UI, on 2026-11-13. Historical check limitations remain unchanged.

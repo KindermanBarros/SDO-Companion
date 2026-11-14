@@ -82,6 +82,11 @@ $profile = Join-Path $rootPath 'harness-project.json'
 if (Test-Path -LiteralPath $profile) {
     if ([IO.File]::ReadAllText($profile) -match 'harness[/\\]scripts[/\\]') { Add-Issue 'Retired script gate reference: harness-project.json' }
 }
+if (Test-Path -LiteralPath (Join-Path $rootPath 'docs/changes')) {
+    foreach ($nested in Get-ChildItem -LiteralPath (Join-Path $rootPath 'docs/changes') -Directory | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Recurse -Filter '*.md' -File }) {
+        Add-Issue "Nested change markdown (use single docs/changes/<slug>.md): $($nested.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
+    }
+}
 if ($issues.Count) { $issues | ForEach-Object { Write-Output "FAIL: $_" }; exit 1 }
 Write-Output "PASS: $($files.Count) harness documents; links, anchors, limits, imports, banners, placeholders and cleanup."
 Write-Output 'Scope: instruction integrity only; no application/source/runtime gate was executed.'

@@ -22,7 +22,7 @@ Owner explicitly accepted all five prior tasks, including UI, on 2026-11-13. The
 No application behavior changes. Owner runtime acceptance is recorded separately from automated evidence. Structural documentation and whitespace checks are selected; Android suites are not required for reconciliation. Scratch must be absent and both owned checkouts clean at handoff. External worktrees and owner attachments remain untouched.
 Checks: 45-document structural validation and git diff --check passed. All 26 root app/test/resource blobs already occur in committed PR history. No Android tests rerun.
 
-The four root-only documentation snapshots are preserved exactly in [root-documentation.patch](root-documentation.patch), relative to root commit 3a5280a; they do not supersede the canonical current documents. The other 66 modified tracked files match committed Git blobs exactly.
+The four root-only documentation snapshots are preserved exactly in [worktree-reconciliation-2026-11-13-root-documentation.patch](worktree-reconciliation-2026-11-13-root-documentation.patch), relative to root commit 3a5280a; they do not supersede the canonical current documents. The other 66 modified tracked files match committed Git blobs exactly.
 
 ## Outcome
 

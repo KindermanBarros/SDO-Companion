@@ -24,6 +24,6 @@
         - Definition of done:
             - [x] Structural checks and scoped whitespace checks pass; prior application blockers remain explicit.
 
-[Maintenance record](../../docs/changes/harness-retro-2026-11-12-harness-alignment/retrospective.md)
+[Maintenance record](../../docs/changes/harness-retro-2026-11-12-harness-alignment.md)
 
 Owner explicitly approved closure of all five tasks, including UI, on 2026-11-13. Historical check limitations remain unchanged.

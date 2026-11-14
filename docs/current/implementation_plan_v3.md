@@ -37,7 +37,7 @@ Canonical decisions: [spec_v2.md#rule-applicability](spec_v2.md#rule-applicabili
 | `docs/current/spec_v2.md`, `test_plan_v2.md`, `implementation_plan_v3.md` | Updated setup contract and bindings |
 | `docs/onboarding/approval.json`, `setup-authorization.json` | Actual scoped consent and prospective authorization basis |
 | `docs/current/summary_v2.md`, `onboarding-summary.md`, `docs/onboarding/discovery-review.md` | Actual stage/results/evidence reconciliation |
-| `docs/changes/harness-retro-2026-11-12-sdo-windows-setup/retrospective.md`, `docs/knowledge/pitfalls/windows-consuming-app-harness.md` | Root-cause audit and reusable lesson |
+| `docs/changes/harness-retro-2026-11-12-sdo-windows-setup.md`, `docs/knowledge/pitfalls/windows-consuming-app-harness.md` | Root-cause audit and reusable lesson |
 | `.harness-state/runtime/`, `.harness-state/onboarding-baseline-v2/` | Ignored portable runtime, receipt/log/report artifacts |
 
 Protected instruction file edit list: none. Existing AGENTS.md/README.md edits are preserved. Application source, test behavior, data schemas, catalogs and memory remain unchanged. Harness source/fixture mismatches require a draft PR with the actual verification limits recorded; no merge or release is authorized.

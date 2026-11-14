@@ -16,8 +16,10 @@ function Run-Gate([int]$expected, [string]$reason, [string]$diagnostic = '') {
 }
 try {
     [IO.Directory]::CreateDirectory($fixture) | Out-Null
-    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','.docs','.agents','.codex','.githooks','docs','harness')) {
-        Copy-Item -LiteralPath (Join-Path $source $name) -Destination $fixture -Recurse
+    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','DESIGN_GUIDE.md','.docs','.agents','.codex','.githooks','docs','harness','app/src/main/java/com/kinderman/sdo/ui')) {
+        $dest = Join-Path $fixture $name
+        New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $source $name) -Destination $dest -Recurse
     }
     Run-Gate 0 'valid current harness'
     [IO.Directory]::CreateDirectory((Join-Path $fixture '.scratch')) | Out-Null

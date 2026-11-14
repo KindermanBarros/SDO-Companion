@@ -27,6 +27,6 @@
 Runtime limitation: adb devices reports no connected runtime; the actual Android CI journey was not executed locally.
 The adaptive CI script builds through Gradle and invokes adb directly, preserving screenshots without the absent shared runner.
 
-[Maintenance record](../../docs/changes/harness-retro-2026-11-12-remove-missing-gates/retrospective.md)
+[Maintenance record](../../docs/changes/harness-retro-2026-11-12-remove-missing-gates.md)
 
 Owner explicitly approved closure of all five tasks, including UI, on 2026-11-13. Historical check limitations remain unchanged.

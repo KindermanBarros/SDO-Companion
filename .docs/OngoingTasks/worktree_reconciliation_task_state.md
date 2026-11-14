@@ -20,7 +20,7 @@
         - Dependencies: Step 2.
         - Technology and module changes: None.
         - Definition of done: [x] No unstaged/staged/untracked pending work in owned checkouts; scratch absent.
-- Evidence: [Disposition and checks](../../docs/changes/worktree-reconciliation-2026-11-13/summary.md). Both owned checkouts were clean at 376198d; final documentation commit is synchronized before handoff. Owner explicitly authorized the scoped root reconciliation after automatic-review rejection; no unpreserved file was removed.
+- Evidence: [Disposition and checks](../../docs/changes/worktree-reconciliation-2026-11-13.md). Both owned checkouts were clean at 376198d; final documentation commit is synchronized before handoff. Owner explicitly authorized the scoped root reconciliation after automatic-review rejection; no unpreserved file was removed.
 
 - PR rebase correction - InDevReview:
     - Owner authorized fixing PR142 after GitHub reported mergeable=true and rebaseable=false.

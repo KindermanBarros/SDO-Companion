@@ -14,7 +14,7 @@ Use the [execution checklist](../rules/working-economically.md) when optimizing 
 | Living behavior | docs/product/requirements/ |
 | Task state | .docs/OngoingTasks/ |
 | Ad-hoc contracts/summary | docs/current/ |
-| Durable complex contracts/decisions | docs/changes/YYYY-MM-DD-feature-name/ |
+| Durable complex contracts/decisions | docs/changes/YYYY-MM-DD-feature-name.md (single file; optional assets under docs/changes/assets/) |
 | Final evidence | Linked docs/current or docs/changes record |
 | Temporary QA/logs/downloads/PR drafts | .scratch/; delete before every commit |
 
