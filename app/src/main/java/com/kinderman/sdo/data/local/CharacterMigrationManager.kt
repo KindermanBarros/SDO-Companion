@@ -99,7 +99,8 @@ private fun CharacterRecord.requiresCurrentDataRepair(): Boolean =
         canonicalProgressionPayload.isBlank() ||
         itemSchemaVersion < CURRENT_ITEM_DATA_VERSION ||
         creationRulesVersion < CURRENT_CREATION_RULES_VERSION ||
-        inventory.any { it.dataVersion < CURRENT_ITEM_DATA_VERSION }
+        inventory.any { it.dataVersion < CURRENT_ITEM_DATA_VERSION } ||
+        hasRedundantLegacyProjections()
 
 private fun migrateCurrentData(record: CharacterRecord): CharacterRecord = with(record) {
     if (!requiresCurrentDataRepair()) return record

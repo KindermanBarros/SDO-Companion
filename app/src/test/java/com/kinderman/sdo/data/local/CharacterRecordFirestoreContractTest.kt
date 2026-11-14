@@ -261,4 +261,81 @@ class CharacterRecordFirestoreContractTest {
         assertEquals("AGI", record.toDomain().raceAttribute)
         assertEquals("AGI", record.migratedRecord(markDirty = false).toDomain().toRecord().raceAttribute)
     }
+
+    @Test
+    fun dirtyFlagStaysOnlyInTheLocalDatabase() {
+        val getterAnnotation = CharacterRecord::class.java
+            .getDeclaredMethod("getDirty")
+            .getAnnotation(Exclude::class.java)
+        val fieldAnnotation = CharacterRecord::class.java
+            .getDeclaredField("dirty")
+            .getAnnotation(Exclude::class.java)
+
+        assertNotNull(getterAnnotation)
+        assertNotNull(fieldAnnotation)
+    }
+
+    @Test
+    fun canonicalRecordStripsRedundantLegacyProjectionsAndReconstructsDomain() {
+        val character = Character(
+            bodyState = BodyState().withInjury(
+                BodyRegionSlot.Torso,
+                InjuryEvent(failuresAdded = 2, source = Source.narrative(NarrativeSourceId("combat-1"))),
+            ),
+            conditionInstances = listOf(
+                ConditionInstance(
+                    instanceId = ConditionInstanceId("cond-1"),
+                    payload = ConditionPayload(kind = ConditionKind.Abalado, intensity = 1),
+                    source = Source.narrative(NarrativeSourceId("fear-1")),
+                ),
+            ),
+            personalNotes = listOf(PersonalNote(id = "note-1", title = "Nota", text = "Texto")),
+        )
+
+        val record = character.toRecord()
+        assertTrue(record.protections.isEmpty())
+        assertEquals("", record.notes)
+        assertTrue(record.bodyRegions.isEmpty())
+        assertTrue(record.organs.isEmpty())
+        assertTrue(record.conditions.isEmpty())
+
+        val roundTripped = record.toDomain()
+        assertEquals(2, roundTripped.bodyRegions.first { it.name == BodyRegionSlot.Torso.label }.failures)
+        assertEquals(1, roundTripped.conditions.size)
+        assertEquals("Abalado", roundTripped.conditions.single().name)
+        assertEquals(character.personalNotes, roundTripped.personalNotes)
+    }
+
+    @Test
+    fun previousVersionRecordWithRedundantProjectionsConvertsToOptimizedFormat() {
+        val canonicalRecord = Character().toRecord()
+        val unoptimizedFromPreviousVersion = canonicalRecord.copy(
+            protections = defaultProtections(),
+            notes = "Anotação antiga",
+            bodyRegions = defaultBodyRegions(),
+            conditions = listOf(ConditionEffect(id = "cond-1", name = "Abalado", intensity = "1")),
+            canonicalConditionsPayload = CharacterConverters().canonicalConditionsToString(
+                listOf(
+                    ConditionInstance(
+                        instanceId = ConditionInstanceId("cond-1"),
+                        payload = ConditionPayload(kind = ConditionKind.Abalado, intensity = 1),
+                        source = Source.narrative(NarrativeSourceId("legacy-condition:cond-1")),
+                    ),
+                ),
+            ),
+            dirty = true,
+            lastSyncedAt = 999L,
+        )
+
+        assertTrue(unoptimizedFromPreviousVersion.hasRedundantLegacyProjections())
+        val optimized = unoptimizedFromPreviousVersion.optimizedForFirestore()
+        assertTrue(!optimized.hasRedundantLegacyProjections())
+        assertTrue(optimized.protections.isEmpty())
+        assertEquals("", optimized.notes)
+        assertTrue(optimized.bodyRegions.isEmpty())
+        assertTrue(optimized.conditions.isEmpty())
+        assertTrue(!optimized.dirty)
+        assertEquals(0L, optimized.lastSyncedAt)
+        assertEquals("Anotação antiga", optimized.toDomain().personalNotes.single().text)
+    }
 }

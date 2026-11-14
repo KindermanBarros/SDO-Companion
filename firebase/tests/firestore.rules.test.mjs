@@ -10,6 +10,7 @@ import {
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -390,6 +391,29 @@ test('campaign master cannot alter sheet data while unlinking another player she
   const db = env.authenticatedContext(ids.owner).firestore();
   await assertFails(updateDoc(doc(db, 'characters', ids.character), {
     campaignId: '', name: 'Alterada durante desvinculação', updatedAt: 3,
+  }));
+});
+
+test('campaign master unlink may stamp lastEditedBy and drop legacy projections', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'characters', ids.character), {
+      dirty: false, notes: '', protections: {}, bodyRegions: [], organs: [], conditions: [],
+    });
+  });
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'characters', ids.character), {
+    campaignId: '', updatedAt: 3, lastEditedBy: ids.owner,
+    dirty: deleteField(), notes: deleteField(), protections: deleteField(),
+    bodyRegions: deleteField(), organs: deleteField(), conditions: deleteField(),
+  }));
+});
+
+test('campaign master unlink cannot rewrite legacy projections', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertFails(updateDoc(doc(db, 'characters', ids.character), {
+    campaignId: '', updatedAt: 3, notes: 'injected by unlink',
   }));
 });
 

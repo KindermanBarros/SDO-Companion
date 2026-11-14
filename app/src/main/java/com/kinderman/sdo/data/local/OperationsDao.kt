@@ -34,6 +34,8 @@ interface OperationsDao {
     @Query("UPDATE session_operations SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markOperationSynced(id: String, at: Long)
     @Query("UPDATE campaign_library_entries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markLibrarySynced(id: String, at: Long)
     @Query("UPDATE campaign_deliveries SET dirty = 0, lastSyncedAt = :at WHERE id = :id") suspend fun markDeliverySynced(id: String, at: Long)
+    @Query("SELECT COALESCE(MAX(lastSyncedAt), 0) FROM session_operations WHERE campaignId = :campaignId") suspend fun maxSyncedAuditAt(campaignId: String): Long
+    @Query("SELECT COALESCE(MAX(lastSyncedAt), 0) FROM campaign_library_entries WHERE campaignId = :campaignId") suspend fun maxSyncedLibraryAt(campaignId: String): Long
 
     @Transaction
     suspend fun applyOnce(operation: SessionOperationRecord, updatedCharacter: CharacterRecord): Boolean {

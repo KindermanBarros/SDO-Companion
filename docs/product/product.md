@@ -11,7 +11,7 @@ SDO Companion helps players create and manage RPG character sheets and use them 
 | Character sheets | [Character sheets](requirements/character-sheets.md) | Source and tests present; runtime acceptance unverified |
 | Campaign use | [Campaigns](requirements/campaigns.md) | Source and tests present; runtime acceptance unverified |
 | RPG codex | [Codex](requirements/codex.md) | Bundled catalog and screens present; runtime acceptance unverified |
-| Synchronization & connectivity | [Synchronization](requirements/synchronization.md) | Implemented in `InDevReview` (`BACKLOG-006`); emulator/device runtime verification pending |
+| Synchronization & connectivity | [Synchronization](requirements/synchronization.md) | Implemented in `InDevReview` (`BACKLOG-006`, `BACKLOG-007`); emulator/device runtime verification pending |
 
 ## Delivery direction
 
@@ -33,6 +33,7 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 
 BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Memory](../MEMORY.md).
 BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner handed off InDevReview. [Memory](../MEMORY.md).
+BACKLOG-007 selected by owner on 2026-11-14 on `feature/backlog-007-firestore-optimization`; canonical character payload deduplication, automatic migration of previous-version records, incremental delta sync cursors (`campaignAudit` bounded to 200, `campaignLibrary`), parallelized per-campaign queries, no-op write skipping, and Firestore rules unlink updates handed off InDevReview. [Memory](../MEMORY.md).
 
 Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Memory](../MEMORY.md): redesigned journal approved by owner with minor Standard color refinement; home settings icon contrast fixed in Standard mode; implementation handed off InDevReview. No product priorities changed.
 

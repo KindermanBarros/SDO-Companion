@@ -356,6 +356,19 @@ service cloud.firestore {
     }
 
     match /characters/{characterId} {
+      // Legacy projections dropped from optimized character documents (SYNC-PLAN-002-B).
+      function legacyCharacterKeys() {
+        return ['dirty', 'notes', 'protections', 'bodyRegions', 'organs', 'conditions'].toSet();
+      }
+
+      // An unlink may change only campaignId/updatedAt/lastEditedBy, and may only REMOVE
+      // legacy projections (never add or alter them).
+      function onlyUnlinkChanges() {
+        let affected = request.resource.data.diff(resource.data).affectedKeys();
+        return affected.difference(legacyCharacterKeys()).hasOnly(['campaignId', 'updatedAt', 'lastEditedBy'])
+          && request.resource.data.keys().toSet().intersection(affected.intersection(legacyCharacterKeys())).size() == 0;
+      }
+
       allow read: if signedIn() && (
         isAdministrator()
         || resource.data.ownerId == request.auth.uid
@@ -381,7 +394,7 @@ service cloud.firestore {
             && isCampaignResponsible(normalizedCampaignId(resource.data))
             && getAfter(campaignPath(normalizedCampaignId(resource.data))).data.state == 'DELETED'
             && normalizedCampaignId(request.resource.data) == ''
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
+            && onlyUnlinkChanges()
           )
           || (
             normalizedCampaignId(resource.data) != ''
@@ -389,7 +402,7 @@ service cloud.firestore {
             && normalizedCampaignId(request.resource.data) == ''
             && request.resource.data.ownerId == resource.data.ownerId
             && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['campaignId', 'updatedAt'])
+            && onlyUnlinkChanges()
           )
           || (
             isAdministrator()
