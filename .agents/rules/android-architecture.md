@@ -1,6 +1,6 @@
 # Android Architecture Rules
 
-Follow the confirmed baseline in [.docs/ARCHITECTURE.md](../../.docs/ARCHITECTURE.md) and [.docs/PROJECT_CONTEXT.md](../../.docs/PROJECT_CONTEXT.md). Generic templates do not authorize architectural migrations.
+Follow the confirmed baseline in [docs/engineering/ARCHITECTURE.md](../../docs/engineering/ARCHITECTURE.md) and [docs/engineering/PROJECT_CONTEXT.md](../../docs/engineering/PROJECT_CONTEXT.md). Generic templates do not authorize architectural migrations.
 
 ## Module & layer boundaries
 - Single `:app` module (`com.kinderman.sdo`). Dependencies flow inward: `presentation` / `ui` → `domain` ← `data`.

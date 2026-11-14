@@ -47,7 +47,7 @@ Store temporary artifacts under `.scratch/qa/<run-id>/` and remove `.scratch/` b
 
 ## Coverage & Verification Commands
 - Overall line coverage `>= 80%`; new ViewModels / UseCases `>= 90%`.
-- Commands (from [.docs/VALIDATION.md](../../.docs/VALIDATION.md)):
+- Commands (from [docs/engineering/VALIDATION.md](../../docs/engineering/VALIDATION.md)):
   - `./gradlew :app:testDebugUnitTest`
   - `./gradlew :app:koverXmlReportDebug`
   - `./gradlew :app:connectedDebugAndroidTest` *(when instrumented runtime boundary is in scope)*

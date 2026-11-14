@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT — SDO Companion
 
-Current source snapshot; [ARCHITECTURE](ARCHITECTURE.md) governs its baseline. Product context: [README](../README.md).
+Current source snapshot; [ARCHITECTURE](ARCHITECTURE.md) governs its baseline. Product context: [README](../../README.md).
 
 ## Modules
 
@@ -50,4 +50,4 @@ Paths below are relative to app/src/main/java/com/kinderman/sdo/.
 | Legacy script gates removed by owner | Use current CI catalog and distinguish test execution from evidence review |
 
 The baseline survey found 41 JVM-test Kotlin files and 5 instrumented files; no local.properties or local libs artifacts.
-Existing product/onboarding records remain historical evidence. Operational instructions: [Project contract](../.agents/gates/project-contract.md).
+Existing product/onboarding records remain historical evidence. Operational instructions: [Project contract](../../.agents/gates/project-contract.md).

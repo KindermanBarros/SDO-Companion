@@ -10,13 +10,13 @@ for junk in .scratch .harness-state .qa-artifacts .codex-attachments .worktrees 
     fi
 done
 
-if find "$root/.agents" "$root/.docs" "$root/.githooks" "$root/docs" "$root/app/src" "$root/catalogs" "$root/tools" -maxdepth 5 \( -name '.DS_Store' -o -name 'Thumbs.db' -o -name '*.orig' -o -name '*.rej' \) 2>/dev/null | grep -q .; then
+if find "$root/.agents" "$root/.githooks" "$root/docs" "$root/app/src" "$root/catalogs" "$root/tools" -maxdepth 5 \( -name '.DS_Store' -o -name 'Thumbs.db' -o -name '*.orig' -o -name '*.rej' \) 2>/dev/null | grep -q .; then
     echo "Commit blocked: remove OS/merge junk (.DS_Store, Thumbs.db, *.orig, *.rej) before committing." >&2
     echo "Run: powershell -ExecutionPolicy Bypass -File tools/pre-commit-cleanup.ps1" >&2
     exit 1
 fi
 
-if git diff --cached --name-only --diff-filter=ACMR | LC_ALL=C grep -Eq '^(\.scratch|\.harness-state|\.qa-artifacts|\.codex-attachments|\.worktrees)(/|$)|(^|/)(\.DS_Store|Thumbs\.db|firestore-debug\.log)$|docs/changes/assets/.*/previews-|^docs/changes/.*\.(md|patch)$|^\.docs/(HistoryRecords|OngoingTasks|CompletedTasks)/'; then
+if git diff --cached --name-only --diff-filter=ACMR | LC_ALL=C grep -Eq '^(\.scratch|\.harness-state|\.qa-artifacts|\.codex-attachments|\.worktrees|\.docs)(/|$)|(^|/)(\.DS_Store|Thumbs\.db|firestore-debug\.log)$|docs/changes/assets/.*/previews-|^docs/changes/.*\.(md|patch)$|^docs/engineering/(HistoryRecords|OngoingTasks|CompletedTasks)/|^DESIGN_GUIDE\.md$|^docs/(product/design_system|interface-cybergrunge|cybergrunge-implementation-plan)\.md$'; then
     echo "Commit blocked: temporary/junk or separate history file staged. Use docs/MEMORY.md and run tools/pre-commit-cleanup.ps1." >&2
     exit 1
 fi

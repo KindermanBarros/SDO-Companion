@@ -7,7 +7,7 @@ Checkout: .worktrees/pr-compact-ui; disposable tooling was removed.
 ## Approved scope
 
 Owner-approved compact controls, themed cards/navigation, readable metadata and session equipment layout are implemented. Text wraps between words without ellipsis; single-word Cybergrunge headings resize.
-See [UI contract](UI_contract.md), [implementation plan](implementation_plan_v4.md) and [task state](../../.docs/CompletedTasks/compact_ui_polish_task_state.md).
+See [UI contract](UI_contract.md), [implementation plan](implementation_plan_v4.md) and [task state](../MEMORY.md).
 The final Pen reference is [compact-ui-identity-final.pen](design/compact-ui-identity-final.pen). Final exports and selected runtime screenshots remain under docs/current.
 
 ## Evidence and limits

@@ -16,16 +16,31 @@ function Run-Gate([int]$expected, [string]$reason, [string]$diagnostic = '') {
 }
 try {
     [IO.Directory]::CreateDirectory($fixture) | Out-Null
-    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','DESIGN_GUIDE.md','.docs','.agents','.codex','.githooks','docs','harness','app/src/main/java/com/kinderman/sdo/ui')) {
+    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','.agents','.codex','.githooks','docs','harness','app/src/main/java/com/kinderman/sdo/ui')) {
         $dest = Join-Path $fixture $name
         New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
         Copy-Item -LiteralPath (Join-Path $source $name) -Destination $dest -Recurse
     }
     Run-Gate 0 'valid current harness'
+    $legacyDocs = Join-Path $fixture '.docs'
+    [IO.Directory]::CreateDirectory($legacyDocs) | Out-Null
+    Run-Gate 1 'second documentation root rejected' 'Legacy documentation root'
+    Remove-Item -LiteralPath $legacyDocs
+    $legacyGuide = Join-Path $fixture 'DESIGN_GUIDE.md'
+    [IO.File]::WriteAllText($legacyGuide, '# Duplicate design authority', $utf8)
+    Run-Gate 1 'second design authority rejected' 'Legacy design authority'
+    Remove-Item -LiteralPath $legacyGuide
+    $adapter = Join-Path $fixture '.codex/agents/implementer.toml'
+    $originalAdapter = [IO.File]::ReadAllText($adapter)
+    [IO.File]::WriteAllText($adapter, $originalAdapter.Replace('.agents/agents/implementer.md', '.agents/agents/missing.md'), $utf8)
+    Run-Gate 1 'adapter must reference matching role' 'Canonical role reference'
+    [IO.File]::WriteAllText($adapter, $originalAdapter + "`ndeveloper_instructions = 'Second policy owner'", $utf8)
+    Run-Gate 1 'adapter cannot duplicate behavioral policy' 'Thin adapter'
+    [IO.File]::WriteAllText($adapter, $originalAdapter, $utf8)
     [IO.Directory]::CreateDirectory((Join-Path $fixture '.scratch')) | Out-Null
     Run-Gate 1 'scratch left before handoff' 'Scratch must be removed'
     Remove-Item -LiteralPath (Join-Path $fixture '.scratch')
-    $probe = Join-Path $fixture '.docs/contract_probe.md'
+    $probe = Join-Path $fixture 'docs/engineering/contract_probe.md'
     $cases = @(
         @('broken file', "[missing](missing.md)", 'Broken link'),
         @('broken anchor', "[missing](VALIDATION.md#missing-anchor)", 'Broken anchor'),
@@ -52,9 +67,9 @@ try {
     [IO.File]::WriteAllText((Join-Path $fixture 'setup_prompt.md'), '# obsolete', $utf8)
     Run-Gate 1 'stale setup input' 'Stale setup input'
     Remove-Item -LiteralPath (Join-Path $fixture 'setup_prompt.md')
-    Remove-Item -LiteralPath (Join-Path $fixture '.docs/TECH_STACK.md')
-    Run-Gate 1 'missing required baseline' 'Missing: .docs/TECH_STACK.md'
-    Write-Output 'PASS: 11 contract cases (1 positive, 10 negative).'
+    Remove-Item -LiteralPath (Join-Path $fixture 'docs/engineering/TECH_STACK.md')
+    Run-Gate 1 'missing required baseline' 'Missing: docs/engineering/TECH_STACK.md'
+    Write-Output 'PASS: 15 contract cases (1 positive, 14 negative).'
 }
 finally {
     if ($fixture.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $fixture)) {

@@ -15,23 +15,43 @@ function Get-Anchors([string]$body) {
     }
 }
 $required = @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md',
-    '.docs/ARCHITECTURE.md','.docs/CODE_STANDARDS.md','.docs/GIT_STANDARDS.md',
-    '.docs/PROJECT_CONTEXT.md','.docs/TECH_STACK.md','.docs/VALIDATION.md',
-    '.docs/PERSONAS.md','.docs/SKILLS.md','.docs/TASK_PLANNING.md','.docs/HISTORY.md',
-    '.docs/ArchitectureDecisions/architecture_decisions.md',
-    'docs/MEMORY.md','.docs/Personas/laziest_senior_developer.md',
+    'docs/engineering/ARCHITECTURE.md','docs/engineering/CODE_STANDARDS.md','docs/engineering/GIT_STANDARDS.md',
+    'docs/engineering/PROJECT_CONTEXT.md','docs/engineering/TECH_STACK.md','docs/engineering/VALIDATION.md',
+    'docs/engineering/PERSONAS.md','docs/engineering/SKILLS.md','docs/engineering/TASK_PLANNING.md',
+    'docs/engineering/ArchitectureDecisions/architecture_decisions.md',
+    'docs/MEMORY.md','docs/engineering/Personas/laziest_senior_developer.md',
     '.agents/gates/project-contract.md','.agents/gates/ci-checks.md',
     '.agents/gates/review-checklist.md','.agents/gates/release-checklist.md',
     '.agents/agents/laziest_senior_developer.md','.codex/agents/laziest_senior_developer.toml',
-    '.githooks/pre-commit','docs/product/product.md')
+    '.githooks/pre-commit','docs/product/product.md','docs/README.md','.agents/README.md',
+    'docs/design/design_system.md','docs/design/standard.md','docs/design/standard_tokens.md','docs/design/cybergrunge.md')
 foreach ($relative in $required) {
     if (!(Test-Path -LiteralPath (Join-Path $rootPath $relative) -PathType Leaf)) { Add-Issue "Missing: $relative" }
 }
 $files = @($required[0..3] | ForEach-Object { Get-Item (Join-Path $rootPath $_) -ErrorAction SilentlyContinue })
-foreach ($folder in @('.docs','.agents/rules','.agents/workflows','.agents/skills','.agents/agents','.agents/gates')) {
+$files += @('docs/README.md','.agents/README.md' | ForEach-Object { Get-Item (Join-Path $rootPath $_) -ErrorAction SilentlyContinue })
+foreach ($folder in @('docs/engineering','docs/design','.agents/rules','.agents/workflows','.agents/skills','.agents/agents','.agents/gates')) {
     $path = Join-Path $rootPath $folder
     if (Test-Path -LiteralPath $path) { $files += @(Get-ChildItem -LiteralPath $path -Recurse -Filter '*.md' -File) }
     else { Add-Issue "Missing folder: $folder" }
+}
+if (Test-Path -LiteralPath (Join-Path $rootPath '.docs')) { Add-Issue 'Legacy documentation root: use docs/README.md' }
+foreach ($legacy in @('DESIGN_GUIDE.md','docs/product/design_system.md','docs/interface-cybergrunge.md','docs/cybergrunge-implementation-plan.md')) {
+    if (Test-Path -LiteralPath (Join-Path $rootPath $legacy)) { Add-Issue "Legacy design authority: $legacy; use docs/design/design_system.md" }
+}
+foreach ($role in @('planner','implementer','tester','evaluator','laziest_senior_developer')) {
+    $adapter = Join-Path $rootPath ".codex/agents/$role.toml"
+    $definition = Join-Path $rootPath ".agents/agents/$role.md"
+    if (!(Test-Path -LiteralPath $definition -PathType Leaf)) { Add-Issue "Missing canonical role: $role" }
+    if (!(Test-Path -LiteralPath $adapter -PathType Leaf)) { Add-Issue "Missing adapter: $role"; continue }
+    $body = [IO.File]::ReadAllText($adapter)
+    $expected = "developer_instructions = `"Read AGENTS.md and .agents/agents/$role.md; follow that canonical role definition.`""
+    if ($body -notmatch [regex]::Escape($expected)) { Add-Issue "Canonical role reference: $role" }
+    $declarations = @([regex]::Matches($body, '(?m)^developer_instructions\s*='))
+    $lines = @($body.TrimEnd() -split '\r?\n')
+    if ($declarations.Count -ne 1 -or $lines.Count -gt 4 -or $lines.Where({ $_ -notmatch '^(name|description|model|developer_instructions) = "[^"\r\n]*"$' }).Count) {
+        Add-Issue "Thin adapter: $role must contain metadata and one canonical role reference only"
+    }
 }
 foreach ($file in $files) {
     $body = [IO.File]::ReadAllText($file.FullName)
@@ -62,7 +82,7 @@ foreach ($pair in @(@('CLAUDE.md','@AGENTS.md'),@('GEMINI.md','Read AGENTS.md fi
     $path = Join-Path $rootPath $pair[0]
     if ((Test-Path -LiteralPath $path) -and [IO.File]::ReadAllText($path).Trim() -cne $pair[1]) { Add-Issue "Import content: $($pair[0])" }
 }
-foreach ($relative in @('AGENTS.md','.docs/ARCHITECTURE.md','.docs/CODE_STANDARDS.md','.docs/GIT_STANDARDS.md','.docs/PERSONAS.md','.docs/HISTORY.md','.docs/Personas/laziest_senior_developer.md')) {
+foreach ($relative in @('AGENTS.md','docs/engineering/ARCHITECTURE.md','docs/engineering/CODE_STANDARDS.md','docs/engineering/GIT_STANDARDS.md','docs/engineering/PERSONAS.md','docs/engineering/Personas/laziest_senior_developer.md')) {
     $path = Join-Path $rootPath $relative
     if ((Test-Path -LiteralPath $path) -and [IO.File]::ReadAllText($path) -notmatch '\*\*Sealed') { Add-Issue "Missing sealed banner: $relative" }
 }
@@ -73,7 +93,7 @@ foreach ($junk in @('.harness-state','.qa-artifacts','.codex-attachments','.work
         Add-Issue "Pre-commit cleanup required (run tools/pre-commit-cleanup.ps1): $junk"
     }
 }
-$scanRoots = @('.agents','.docs','.githooks','docs','app/src','catalogs','firebase/firestore.rules','tools') |
+$scanRoots = @('.agents','.githooks','docs','app/src','catalogs','firebase/firestore.rules','tools') |
     ForEach-Object { Join-Path $rootPath $_ } |
     Where-Object { Test-Path -LiteralPath $_ }
 foreach ($scanRoot in $scanRoots) {
@@ -106,7 +126,7 @@ if (Test-Path -LiteralPath (Join-Path $rootPath 'docs/changes')) {
         Add-Issue "Separate history/change file forbidden (use docs/MEMORY.md): $($changeDoc.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
     }
 }
-foreach ($forbiddenDir in @('.docs/HistoryRecords','.docs/OngoingTasks','.docs/CompletedTasks')) {
+foreach ($forbiddenDir in @('docs/engineering/HistoryRecords','docs/engineering/OngoingTasks','docs/engineering/CompletedTasks')) {
     $forbiddenPath = Join-Path $rootPath $forbiddenDir
     if (Test-Path -LiteralPath $forbiddenPath) {
         foreach ($extra in Get-ChildItem -LiteralPath $forbiddenPath -Recurse -Filter '*.md' -File) {

@@ -6,7 +6,7 @@ Read [Project contract](project-contract.md) and select the triggered [CI checks
 
 - [ ] Read root policy, approved spec/plan or sprint contract and the linked task state.
 - [ ] Preserve unrelated changes, product backlog, previous approvals and evidence.
-- [ ] Architecture matches .docs/ARCHITECTURE.md or an explicitly approved scoped change.
+- [ ] Architecture matches docs/engineering/ARCHITECTURE.md or an explicitly approved scoped change.
 - [ ] Generic Hilt, NavHost and single-UiState guidance is not reported as implemented SDO behavior.
 - [ ] Existing domain Activity dependency and manual wiring remain explicit observations, not silent policy waivers.
 - [ ] No speculative refactor, toolchain upgrade or package move was introduced.
@@ -16,7 +16,7 @@ Read [Project contract](project-contract.md) and select the triggered [CI checks
 - [ ] Review business-rule ownership, repository boundaries, mappings, auth/session and error/cancellation behavior.
 - [ ] State transitions have an owner and loading/error/empty/success behavior is covered.
 - [ ] Preserve Standard/Cybergrunge tokens and the approved design system; do not invent LocalAppColors APIs.
-- [ ] Visible text, resource names, imports and concurrency follow .docs/CODE_STANDARDS.md.
+- [ ] Visible text, resource names, imports and concurrency follow docs/engineering/CODE_STANDARDS.md.
 - [ ] Load android-security rules only for triggered boundaries; verify untrusted input, IPC, storage and network risks.
 - [ ] No credentials, tokens, personal data or signing material are exposed.
 - [ ] Relevant ViewModel/use-case/mapper/API regressions have meaningful assertions.

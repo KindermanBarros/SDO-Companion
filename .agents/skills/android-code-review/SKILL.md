@@ -4,7 +4,7 @@ description: Review Android code for correctness, security, performance, and arc
 ---
 # Skill — Android Code Review
 
-Follow [code-review-and-quality](../code-review-and-quality/SKILL.md), [Review checklist](../../gates/review-checklist.md), and [.docs/ARCHITECTURE.md](../../../.docs/ARCHITECTURE.md). For complex multi-slice evaluations, populate [code-review-template.md](../../../harness/templates/code-review-template.md).
+Follow [code-review-and-quality](../code-review-and-quality/SKILL.md), [Review checklist](../../gates/review-checklist.md), and [docs/engineering/ARCHITECTURE.md](../../../docs/engineering/ARCHITECTURE.md). For complex multi-slice evaluations, populate [code-review-template.md](../../../harness/templates/code-review-template.md).
 
 ## Execution
 1. **Scope & provenance**: Record commit, baseline, changed files, and whether checks from [CI checks](../../gates/ci-checks.md) were freshly run or reused by matching fingerprint.

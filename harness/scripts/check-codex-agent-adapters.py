@@ -11,7 +11,7 @@ from pathlib import Path, PurePosixPath
 
 EXPECTED = {
     "planner": ("gpt-6.1-sol", ".agents/agents/planner.md"),
-    "implementer": ("gpt-6.1-terra", ".agents/agents/generator.md"),
+    "implementer": ("gpt-6.1-terra", ".agents/agents/implementer.md"),
     "tester": ("gpt-6-luna", ".agents/agents/tester.md"),
     "evaluator": ("gpt-6.1-sol", ".agents/agents/evaluator.md"),
 }

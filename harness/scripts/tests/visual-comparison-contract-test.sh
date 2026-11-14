@@ -80,7 +80,7 @@ printf '%s\n' \
   > "$fixture_root/spec.md"
 cat > "$fixture_root/UI_contract.md" <<'EOF'
 # UI Contract
-Project design system: `docs/product/design_system.md`
+Project design system: `docs/design/design_system.md`
 
 ## Screen States
 

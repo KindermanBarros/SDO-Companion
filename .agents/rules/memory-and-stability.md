@@ -1,10 +1,4 @@
-# Memory & Artifact Stability Rules
+# Memory and artifact stability
 
-## 1. Single Memory & History File (`docs/MEMORY.md`)
-- `docs/MEMORY.md` is the **only** canonical file for project history, task summaries (`InProgress` / `InDevReview` / `Done`), and accumulated context.
-- **No separate task/history files**: Creating separate files under `.docs/HistoryRecords/`, `.docs/OngoingTasks/`, or `.docs/CompletedTasks/` is strictly forbidden.
-- Every agent must consult `docs/MEMORY.md` at task start and update the corresponding task summary in `docs/MEMORY.md` at handoff (`InDevReview`) or completion (`Done`).
-
-## 2. Lateral Immutability of Existing Artifacts
-- Previously generated artifacts (production code, tests, specs, and docs outside the active task scope) are protected against lateral edits.
-- Do not refactor, edit, or delete unrelated code/docs as a side effect of another task; report findings to the user instead of altering them silently.
+[Planning](../../docs/engineering/TASK_PLANNING.md#history-and-handoff) owns the single [Memory](../../docs/MEMORY.md) record and task lifecycle.
+Preserve production code, tests, contracts, docs and user edits outside the active scope. Report unrelated findings rather than silently refactoring or deleting them.

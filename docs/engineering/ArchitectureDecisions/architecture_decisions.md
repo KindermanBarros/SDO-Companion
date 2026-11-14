@@ -1,6 +1,6 @@
 # Architecture decisions — SDO Companion
 
-Append-only record of changes to [`../ARCHITECTURE.md`](../ARCHITECTURE.md), oldest first. The entry format and the rules are in `ARCHITECTURE.md` § Decision record.
+Historical baseline provenance for [Architecture](../ARCHITECTURE.md). New decisions belong in [Memory](../../MEMORY.md); this file is not another active log.
 
 ## Define initial architecture
 **Date:** 2026-11-12 · **Time:** 19:05 · America/La_Paz

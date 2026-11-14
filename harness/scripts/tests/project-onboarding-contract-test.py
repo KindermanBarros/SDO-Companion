@@ -73,7 +73,7 @@ class OnboardingContracts(unittest.TestCase):
         profile["unknowns"] = []
         self.save_profile(profile)
         self.put("docs/product/product.md", "# Fixture product\n")
-        self.put("docs/product/design_system.md", "# Approved fixture design\n")
+        self.put("docs/design/design_system.md", "# Approved fixture design\n")
         plan = self.put("docs/current/implementation_plan_v1.md", "# Fixture approved plan\n")
         onboarding.write_json(self.root / "docs/onboarding/approval.json", {
             "approved_by": "contract-test-user", "approved_at": "2026-11-12T00:00:00Z",

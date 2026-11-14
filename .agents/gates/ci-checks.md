@@ -1,5 +1,5 @@
 # CI checks
-Select once using [VALIDATION](../../.docs/VALIDATION.md); stage transitions do not require rerunning unchanged checks.
+Select once using [VALIDATION](../../docs/engineering/VALIDATION.md); stage transitions do not require rerunning unchanged checks.
 
 ## Harness/documentation
 - Structural: powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/validate-harness.ps1

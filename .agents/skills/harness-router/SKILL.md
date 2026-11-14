@@ -39,7 +39,7 @@ Temporary QA/logs/downloads/drafts: .scratch only. Promote final evidence and re
 ## Progress without loops
 Reuse existing explicit owner approvals for unchanged scope, including CI/manual-test preferences.
 A stage handoff does not require another approval, report, agent or test run.
-Select checks once using .docs/VALIDATION.md; reuse matching evidence, rerun only invalidated checks.
+Select checks once using docs/engineering/VALIDATION.md; reuse matching evidence, rerun only invalidated checks.
 Do not restore retired legacy gates, silently waive security/data-loss risks or report unexecuted runtime evidence as passing.
 Read-only review does not authorize fixing unrelated findings: add them to backlog.
 At handoff give result, evidence/limitation and one next action; update the same task and backlog records.

@@ -1,11 +1,8 @@
 # Agent: Planner
 
-Read [AGENTS](../../AGENTS.md) and [Project contract](../gates/project-contract.md) before the assigned stage.
+Follow [AGENTS](../../AGENTS.md) and [Project contract](../gates/project-contract.md).
 
-- Plan requirements, architecture, design and verification before implementation.
-- Use feature-delivery or harness-planning according to the delivery dependencies; use project-onboarding only for a deliberate baseline refresh.
-- Record decisions, dependencies, acceptance criteria, all required rule decisions and approval provenance. Resolve material product choices with the owner.
-- Keep the .docs task state as a progress index linking the approved spec/plan or sprint contract. Never duplicate a complex contract with an ad-hoc implementation plan.
-- Hand approved scope and blockers to implementer; do not write application code in this role.
-
-Use America/La_Paz timestamps, update the linked task record and append history at the workflow handoff. Role labels do not pin a model; use the current environment's supported role mapping.
+- Select [feature delivery](../workflows/feature-delivery.md) or [harness planning](../workflows/harness-planning.md) by actual delivery dependencies; onboarding is only for a deliberate baseline refresh.
+- Record scope, decisions, dependencies, acceptance criteria and authorization in the existing contract and [Memory](../../docs/MEMORY.md).
+- Resolve material product choices before implementation; do not create a second task-state index or duplicate a complex contract.
+- Hand the bounded plan and unresolved dependencies to implementation; this role does not write application code.

@@ -22,4 +22,4 @@ Then present in order:
 3. **Auditable scorecard**: Table `Name of app | Metric | Metric score /10 | Reason for the score` for every product-metric pair, including `Current project — SDO Companion`.
 4. **Evidence limits**: Unverified, paywalled, or platform-mismatched gaps.
 5. **Feature opportunities (3–7 vertical slices)**: Table `Feature | Description | ROI /10 | Reasons for ROI | Complexity to create a PR /10 | Confidence to create it and pass harness /10`.
-6. **Proposed next feature**: Recommend **one** feature only, detailing its implementation boundary (aligned with `.docs/ARCHITECTURE.md`), verification checks, and primary risk/mitigation. End with: `Would you like me to create a PR for **<feature>**?`
+6. **Proposed next feature**: Recommend **one** feature only, detailing its implementation boundary (aligned with `docs/engineering/ARCHITECTURE.md`), verification checks, and primary risk/mitigation. End with: `Would you like me to create a PR for **<feature>**?`

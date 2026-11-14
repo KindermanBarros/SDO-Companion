@@ -83,7 +83,7 @@ Proposed scope for user confirmation: adopt and document existing architecture f
 - Custom navigation: `SdoApp.kt` owns AppSurface, selectedId and a saved string back stack. Navigation Compose is a dependency but no NavHost is used here. Missing navigation regression/contract files must remain unresolved.
 - Existing UI mixes presentation screens and UI component packages. Existing strings, imports and styling may fail full-source checks; do not suppress or exclude them to obtain green evidence.
 - No ktlint, Detekt or Kover plugin declarations were found in root/app builds. Adding them needs an exact build-file change proposal with compatible pinned versions.
-- `docs/product/design_system.md` is absent. Existing references are `DESIGN_GUIDE.md`, `docs/interface-cybergrunge.md`, and `docs/cybergrunge-implementation-plan.md`. Adoption does not approve a replacement design system.
+- `docs/design/design_system.md` is absent. Existing references are `docs/design/standard.md`, `docs/design/cybergrunge.md`, and `docs/design/cybergrunge.md`. Adoption does not approve a replacement design system.
 - Toolchain versions are declared, not resolved: Gradle 9.7.1, AGP 9.4.0, Kotlin 2.4.20, KSP 2.3.12, Compose BOM 2026.09.00. Dependency availability/compatibility remains unverified.
 
 ## Migration / Compatibility Notes

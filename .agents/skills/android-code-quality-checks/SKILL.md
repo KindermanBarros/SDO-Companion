@@ -4,7 +4,7 @@ description: Run Ktlint, Detekt, Android Lint, and coverage checks from the CI c
 ---
 # Android Code Quality Checks
 
-Select and run only the checks triggered by the changed boundary using [.docs/VALIDATION.md](../../../.docs/VALIDATION.md) and [CI checks](../../gates/ci-checks.md).
+Select and run only the checks triggered by the changed boundary using [docs/engineering/VALIDATION.md](../../../docs/engineering/VALIDATION.md) and [CI checks](../../gates/ci-checks.md).
 
 ## Commands (Windows from repo root)
 - **Ktlint**: `.\gradlew.bat :app:ktlintCheck` (auto-format scoped files with `.\gradlew.bat :app:ktlintFormat`)

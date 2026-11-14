@@ -18,7 +18,7 @@ foreach ($file in $transientFiles) {
     }
 }
 
-$scanRoots = @('.agents', '.docs', '.githooks', 'docs', 'app/src', 'catalogs', 'tools') |
+$scanRoots = @('.agents', '.githooks', 'docs', 'app/src', 'catalogs', 'tools') |
     ForEach-Object { Join-Path $rootPath $_ } |
     Where-Object { Test-Path -LiteralPath $_ }
 foreach ($scanRoot in $scanRoots) {

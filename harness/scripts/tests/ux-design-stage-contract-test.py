@@ -54,7 +54,7 @@ with tempfile.TemporaryDirectory(prefix="ux-design-stage-") as temporary:
     run_gate(project, "harness-planning", "feature-specification", feature)
 
     contract = (
-        "# UI Contract\nProject design system: `docs/product/design_system.md`\n\n## Screen States\n\n"
+        "# UI Contract\nProject design system: `docs/design/design_system.md`\n\n## Screen States\n\n"
         "| Screen | State ID | Design source | Design node ID | Design node role | Design image | Viewport | Required regions | State controls | Runtime fixture | Comparison | Content difference | Plan stage |\n"
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|\n"
         "| Editor | ready | Pending | Pending | Pending | Pending | 430x932 | primary-content; state-controls; persistent-controls | Save button | ready-fixture | roborazzi | None | UI-01 |\n"

@@ -28,7 +28,7 @@ Character sync exchanges CharacterRecord documents; local dirty/deleted state an
 - Normalization and RPG contracts: existing docs/contracts/ documents.
 - Repository operations: app/src/main/java/com/kinderman/sdo/data/repository/.
 - Firestore security: firebase/firestore.rules.
-- Deployment procedure: [Firebase deployment](../../docs/firebase-deploy.md).
-- Planned connectivity changes: [Synchronization requirements](../../docs/product/requirements/synchronization.md).
+- Deployment procedure: [Firebase deployment](../../firebase-deploy.md).
+- Planned connectivity changes: [Synchronization requirements](../../product/requirements/synchronization.md).
 
 No Bluetooth UUIDs, camera protocol or custom HTTP endpoint contract exists in the inspected application.

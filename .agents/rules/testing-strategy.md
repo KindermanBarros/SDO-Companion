@@ -1,6 +1,6 @@
 # Testing Strategy Rules
 
-Select the smallest sufficient checks once using [VALIDATION](../../.docs/VALIDATION.md) and [CI checks](../gates/ci-checks.md).
+Select the smallest sufficient checks once using [VALIDATION](../../docs/engineering/VALIDATION.md) and [CI checks](../gates/ci-checks.md).
 
 ## Execution intent
 - Ephemeral device/backend exploration uses `exploratory-qa` with `agent-device`; keep scenarios, captures and cleanup receipts in `.scratch/qa/<run-id>/` and delete `.scratch` before commit. Do not add permanent `androidTest` classes or CI jobs for temporary QA runs.

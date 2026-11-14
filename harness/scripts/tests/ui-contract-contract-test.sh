@@ -47,7 +47,7 @@ write_png_header "$FIXTURE/design/mockup_crop.png" 860 1864
 write_png_header "$FIXTURE/design/mockup_rotate.png" 860 1864
 cat > "$FIXTURE/UI_contract.md" <<'EOF'
 # UI Contract
-Project design system: `docs/product/design_system.md`
+Project design system: `docs/design/design_system.md`
 
 ## Screen States
 

@@ -10,4 +10,4 @@ Adopt the persona whose "Adopt when" matches the task, and read its file before 
 
 To add a persona, create `Personas/persona_name.md` with the same sections as the existing file, then add a row to this table.
 
-Project agent: [laziest_senior_developer](../.codex/agents/laziest_senior_developer.toml), with [role profile](../.agents/agents/laziest_senior_developer.md). It reuses this persona and inherits the session model/effort; no model is pinned.
+Project agent: [laziest_senior_developer](../../.codex/agents/laziest_senior_developer.toml), with [role profile](../../.agents/agents/laziest_senior_developer.md). It reuses this persona and inherits the session model/effort; no model is pinned.

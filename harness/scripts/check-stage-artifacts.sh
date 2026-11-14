@@ -176,12 +176,12 @@ require_ui_contract() {
   local specification="$1"
   shift
   require_file "UI_contract.md" "UI state contract"
-  if [ ! -f "$PROJECT_ROOT/docs/product/design_system.md" ]; then
-    echo "FAIL: docs/product/design_system.md is required for UX design." >&2
+  if [ ! -f "$PROJECT_ROOT/docs/design/design_system.md" ]; then
+    echo "FAIL: docs/design/design_system.md is required for UX design." >&2
     exit 1
   fi
-  if ! grep -Fq "docs/product/design_system.md" "$DOCS_DIR/UI_contract.md"; then
-    echo "FAIL: $DOCS_DIR/UI_contract.md must reference docs/product/design_system.md." >&2
+  if ! grep -Fq "docs/design/design_system.md" "$DOCS_DIR/UI_contract.md"; then
+    echo "FAIL: $DOCS_DIR/UI_contract.md must reference docs/design/design_system.md." >&2
     exit 1
   fi
   if [ -n "$specification" ]; then

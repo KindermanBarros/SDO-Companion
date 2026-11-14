@@ -6,7 +6,7 @@ Module responsibilities: [PROJECT_CONTEXT](PROJECT_CONTEXT.md).
 
 ## Decision record
 
-Append changes to [Architecture decisions](ArchitectureDecisions/architecture_decisions.md) with objective, date, time in America/La_Paz, modification and reason. Preserve existing records.
+Record new architecture decisions in [Memory](../MEMORY.md) with objective, timestamp, change and reason. The [baseline decisions](ArchitectureDecisions/architecture_decisions.md) are historical provenance; preserve them without starting a second log.
 
 ## Pattern
 

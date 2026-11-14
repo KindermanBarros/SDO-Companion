@@ -78,7 +78,7 @@ Record exact current spec/test/profile/capability hashes below and in approval.j
 | docs/current/test_plan_v2.md | 62095da28c8f5375ed7d31de366c2f5b8de265218605564456d7cd0ebeb83613 |
 | harness-project.json | 4da214fe2c8ef1878791d882528b121302c14472128f68d60668636e31f8d5d4 |
 | docs/product/product.md | da1b9f69c47d3838b0dbeed45b38b079b7c8e8166d387f734a38d1042814adf5 |
-| docs/product/design_system.md | b7679607ad4ce8def099c6655a1af0a430c2930314c4e67409f926248929ef36 |
+| docs/design/design_system.md | b7679607ad4ce8def099c6655a1af0a430c2930314c4e67409f926248929ef36 |
 | docs/product/requirements/README.md | 3a7c7c89d2e8812c0b450249be5ab7c388303ae07033fe20fab3d125d0367b3e |
 | docs/product/requirements/character-sheets.md | 3c3231b2b58e0d2585daa0f25d44b9273256fe68065375316ed6a6007fb514e0 |
 | docs/product/requirements/campaigns.md | 0f341cc1e14d5186a688826b3358ca259c6cc1a076b5fc9dddd53bbda0230e5a |

@@ -1,6 +1,6 @@
 # Compose Rules
 
-Follow [.docs/CODE_STANDARDS.md](../../.docs/CODE_STANDARDS.md#ui) and [design_system.md](../../docs/product/design_system.md).
+Follow [docs/engineering/CODE_STANDARDS.md](../../docs/engineering/CODE_STANDARDS.md#ui) and [design_system.md](../../docs/design/design_system.md).
 
 ## Responsibilities & state
 - Composables render state and invoke callbacks; they never call repositories, use cases, or data sources directly.
@@ -10,8 +10,8 @@ Follow [.docs/CODE_STANDARDS.md](../../.docs/CODE_STANDARDS.md#ui) and [design_s
 
 ## Theme, text & accessibility
 - Preserve both `Standard` and `Cybergrunge` themes using existing SDO design tokens and `Sdo*` shared components; never hardcode raw `Color(...)` inline or invent `LocalAppColors` APIs.
-- Use `stringResource()` for user-visible copy and provide `contentDescription` on interactive icons.
-- Whole-word wrapping is mandatory in every theme: never split words across lines, insert automatic hyphens, or hide functional UI text (titles, names, labels, selected values, counters, statuses) with ellipsis. Reflow, wrap between words, or autosize single-word Cybergrunge card headings.
+- Follow the resource/accessibility implementation rules in [Code standards](../../docs/engineering/CODE_STANDARDS.md#resources-and-strings).
+- Follow [shared design rules](../../docs/design/design_system.md#shared-rules) for complete text, wrapping, accessibility and touch behavior.
 - Add stable, descriptive `Modifier.testTag(...)` to primary interactive elements and key containers; avoid transient indexes or random IDs.
 
 ## Lists & IME behavior

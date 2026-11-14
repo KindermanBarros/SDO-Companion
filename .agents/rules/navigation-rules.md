@@ -1,6 +1,6 @@
 # Navigation Rules
 
-Follow the custom navigation baseline in [.docs/ARCHITECTURE.md](../../.docs/ARCHITECTURE.md): `SdoApp` manages `AppSurface`, selected character state, and a `rememberSaveable` back stack without Jetpack `NavHost`.
+Follow the custom navigation baseline in [docs/engineering/ARCHITECTURE.md](../../docs/engineering/ARCHITECTURE.md): `SdoApp` manages `AppSurface`, selected character state, and a `rememberSaveable` back stack without Jetpack `NavHost`.
 
 ## Rules
 - Represent destinations through typed `AppSurface` entries and explicit callbacks; do not scatter raw route strings or boolean destination flags across UI state.

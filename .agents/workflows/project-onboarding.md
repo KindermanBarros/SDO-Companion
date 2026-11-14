@@ -2,10 +2,10 @@
 description: Refresh the configured SDO harness or explicitly plan an application adoption repair.
 ---
 # Workflow: Project Onboarding
-Follow [Project contract](../gates/project-contract.md). SDO already has a populated `.docs/` baseline; no setup prompt is used.
+Follow [Project contract](../gates/project-contract.md). SDO already has a populated `docs/engineering/` baseline; no setup prompt is used.
 
 ## Documentation refresh
-1. Inspect root policy, affected `.docs/` files, Gradle/manifest/source facts, and `git status`.
+1. Inspect root policy, affected `docs/engineering/` files, Gradle/manifest/source facts, and `git status`.
 2. Resume/create the task state, update only authorized files (`[SEALED]` files require explicit owner request), run `validate-harness.ps1` from [CI checks](../gates/ci-checks.md), remove `.scratch`, append history, and commit in `InDevReview`.
 
 ## Application adoption repair

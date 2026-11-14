@@ -14,4 +14,4 @@ Write the suite test plan with acceptance cases, oracles, fixture hashes, and an
 Execute approved cases first, then run bounded risk exploration separately. Keep exploratory findings distinct from planned case verdicts.
 
 ## 3. Consolidate & cleanup
-Critical defects yield `BLOCKED`; missing critical proof or failed cleanup yields `INCONCLUSIVE`. Always restore device/mock state in a finally path, promote only concise final summary evidence to durable docs, remove `.scratch`, update `.docs` task/history, and hand off `InDevReview`.
+Critical defects yield `BLOCKED`; missing critical proof or failed cleanup yields `INCONCLUSIVE`. Always restore device/mock state in a finally path, promote only concise final summary evidence to durable docs, remove `.scratch`, update `docs/engineering` task/history, and hand off `InDevReview`.

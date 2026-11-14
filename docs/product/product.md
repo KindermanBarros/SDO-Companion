@@ -60,3 +60,5 @@ No complex work package is selected during onboarding. The empty tracker records
 | ID | Feature | Workspace | Status | Updated | Notes |
 |---|---|---|---|---|---|
 <!-- HARNESS_TRACKER_END -->
+
+Owner request 2026-11-14 15:46: consolidate documentation/design/agent ownership from the redundancy audit. [Memory](../MEMORY.md): InDevReview; one docs root, canonical design ownership and thin role adapters validated. Product behavior and existing priorities unchanged.

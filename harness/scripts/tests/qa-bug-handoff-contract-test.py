@@ -20,9 +20,9 @@ class QaBugHandoffContractTest(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix="qa-bug-handoff-")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
-        self.docs = self.root / "docs/current"
+        selfdocs/engineering = self.root / "docs/current"
         self.run = self.root / ".qa-artifacts/qa-run"
-        self.docs.mkdir(parents=True)
+        selfdocs/engineering.mkdir(parents=True)
         (self.run / "evidence").mkdir(parents=True)
         (self.run / "evidence/observation.txt").write_text("Observed empty picker after photo selection.\n")
         target = {"package": "example.app", "version": "1.0-debug", "device": "Emulator API 33"}
@@ -40,7 +40,7 @@ class QaBugHandoffContractTest(unittest.TestCase):
         }
         self.scenario["generation"] = self.report["generation"]
         self.write_run()
-        self.spec = self.docs / "spec_v1.md"
+        self.spec = selfdocs/engineering / "spec_v1.md"
         self.spec.write_text(
             "# Bug context\n\n## Exploratory QA Handoff\n\n"
             "- Report: `.qa-artifacts/qa-run/report.json`\n- Finding: `F-001`\n\n"
@@ -48,7 +48,7 @@ class QaBugHandoffContractTest(unittest.TestCase):
             "".join("| %s | Not applicable — fixture only |\n" % rule
                     for rule in ("ARCH", "IMPL", "TEST", "SUI", "L10N", "NAV", "API", "OBS", "ANL", "SEC"))
         )
-        (self.docs / "summary_v1.md").write_text("# Summary\n")
+        (selfdocs/engineering / "summary_v1.md").write_text("# Summary\n")
 
     def write_run(self):
         scenario_bytes = (json.dumps(self.scenario) + "\n").encode()
@@ -60,7 +60,7 @@ class QaBugHandoffContractTest(unittest.TestCase):
     def gate(self, stage="requirement-analysis"):
         env = dict(os.environ, HARNESS_PROJECT_ROOT=str(self.root))
         return subprocess.run(
-            ["bash", str(STAGE_GATE), "bug-fixing", stage, str(self.docs)],
+            ["bash", str(STAGE_GATE), "bug-fixing", stage, str(selfdocs/engineering)],
             env=env, capture_output=True, text=True, check=False,
         )
 

@@ -294,7 +294,7 @@ def verify(root: Path, harness: Path) -> None:
     plan = inside(root, approval.get("plan", "docs/current/implementation_plan_v1.md"))
     if not plan.is_file() or approval.get("plan_sha256") != digest(plan):
         raise ValueError("missing/stale approved onboarding implementation plan")
-    for document in ("docs/product/product.md", "docs/product/design_system.md"):
+    for document in ("docs/product/product.md", "docs/design/design_system.md"):
         if not (root / document).is_file() or not (root / document).read_text(encoding="utf-8").strip():
             raise ValueError("missing product documentation: " + document)
     required = ("build", "unit_tests", "source_rules")

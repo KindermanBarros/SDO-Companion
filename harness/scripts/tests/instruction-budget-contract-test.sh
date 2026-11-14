@@ -53,7 +53,7 @@ UI_REVIEW_BYTES=$(sum_bytes \
   .agents/skills/android-test-review/SKILL.md \
   .agents/skills/android-code-review/SKILL.md \
   .agents/skills/ui-verification/SKILL.md \
-  docs/product/design_system.md \
+  docs/design/design_system.md \
   harness/templates/ui-verification-template.json \
   harness/templates/test-review-template.md \
   harness/templates/code-review-template.md \

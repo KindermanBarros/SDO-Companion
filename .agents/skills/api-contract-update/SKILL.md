@@ -4,7 +4,7 @@ description: Deliver a data, catalog, or Firebase contract change through domain
 ---
 # Skill — API & Data Contract Update
 
-Follow [api-contract-rules.md](../../rules/api-contract-rules.md) and [firebase_contract.md](../../../.docs/Architecture/firebase_contract.md).
+Follow [api-contract-rules.md](../../rules/api-contract-rules.md) and [firebase_contract.md](../../../docs/engineering/Architecture/firebase_contract.md).
 
 ## Workflow
 1. **Classify impact**: Identify whether the Firestore document, Room schema, or bundled JSON catalog change is backward-compatible, risky, or breaking, and list affected layers (`data/`, `domain/`, `presentation/`, `ui/`).

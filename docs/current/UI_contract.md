@@ -1,7 +1,7 @@
 # UI contract — compact adaptive polish
 
 Status: revised references approved by the owner (“Implementa! Pra mim tá bom”); implementation authorized. Preserve compatibility with all existing themes.
-Source: [Requested scope](spec_v4.md). Existing design sources: docs/product/design_system.md, DESIGN_GUIDE.md and docs/interface-cybergrunge.md.
+Source: [Requested scope](spec_v4.md). Canonical design source: [Design system](../design/design_system.md) and its mode-specific guides.
 The owner explicitly requires preserving the established visual identity while compacting the UI. The existing design guides remain authoritative; compactness does not authorize replacing their typography, geometry or visual language with generic components.
 
 ## Identity acceptance criteria
@@ -11,7 +11,7 @@ Cybergrunge retains Press Start 2P functional typography, Acidic headings, Drunk
 Reduce selector footprint, excess copy and unnecessary vertical spacing before changing identity-bearing elements. Preserve 48dp touch targets.
 Glitches follow actual component bounds, interaction and state; preserve the specified latent/interference/rupture hierarchy without hiding essential actions.
 Review identity alongside density at compact sizes. A calmer generic card layout is not an acceptable substitute for either mode.
-Latest owner rule: functional text is never shortened with ellipsis. Short labels prefer one line but may wrap between complete words when needed; widen/reflow the component first. Single-word Cybergrunge card titles autosize. Preserve full names, selections and counts, enlarged text and 48dp targets. No character-level splitting or clipped replacement.
+Shared text/accessibility policy: [Design system](../design/design_system.md#shared-rules). Task-specific layout must preserve complete labels, names, selections and counts.
 Quick-access buttons and dashboard tab triggers show names without numeric prefixes or counters. Preserve section indices inside character sheets.
 Library choices preserve the current enums: origin Tudo/Modelos/Catálogo; category Todas/Itens/Habilidades/Condições/Conhecimentos/Notas. Do not replace this taxonomy with power/magic/rune kinds.
 

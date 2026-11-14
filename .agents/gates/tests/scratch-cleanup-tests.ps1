@@ -22,6 +22,15 @@ try {
     Push-Location $fixture
     git init --quiet
     Assert-Hook 0 'scratch absent'
+    foreach ($legacy in @('.docs/duplicate.md', 'DESIGN_GUIDE.md', 'docs/engineering/CompletedTasks/duplicate.md')) {
+        $legacyPath = Join-Path $fixture $legacy
+        New-Item -ItemType Directory -Path (Split-Path $legacyPath -Parent) -Force | Out-Null
+        [IO.File]::WriteAllText($legacyPath, '# Duplicate authority', $utf8)
+        git add -- $legacy
+        Assert-Hook 1 "staged legacy authority rejected: $legacy"
+        git rm --cached --force --quiet -- $legacy
+        Remove-Item -LiteralPath $legacyPath
+    }
     New-Item -ItemType Directory -Path '.scratch' | Out-Null
     Assert-Hook 1 'empty scratch rejected'
     [IO.File]::WriteAllText((Join-Path $fixture '.scratch/probe.tmp'), 'temporary', $utf8)

@@ -23,7 +23,7 @@ On Windows:
 .\gradlew.bat :app:assembleDebug
 ```
 
-Gradle selects JetBrains JDK 25; Android SDK 37 is required. Google-services configuration enables Firebase integration when present; signing reads optional external credentials. See [TECH_STACK](.docs/TECH_STACK.md) for exact versions and configuration.
+Gradle selects JetBrains JDK 25; Android SDK 37 is required. Google-services configuration enables Firebase integration when present; signing reads optional external credentials. See [TECH_STACK](docs/engineering/TECH_STACK.md) for exact versions and configuration.
 
 Test APKs delivered by CI are always authenticated with the configured Firebase project and registered signing certificate. Missing protected inputs fail the build; no demo APK is substituted.
 
@@ -35,8 +35,8 @@ Test APKs delivered by CI are always authenticated with the configured Firebase 
 ## Documentation
 
 - [Agent workflow](AGENTS.md)
-- [Architecture](.docs/ARCHITECTURE.md)
-- [Validation](.docs/VALIDATION.md)
+- [Architecture](docs/engineering/ARCHITECTURE.md)
+- [Validation](docs/engineering/VALIDATION.md)
 - [Operational workflows and gates](.agents/gates/project-contract.md)
 - [Existing onboarding evidence and blockers](docs/current/onboarding-summary.md)
 
@@ -45,3 +45,5 @@ This documentation setup does not resolve the earlier onboarding quality or cove
 The master operation exposes quick actions without expanding character cards. Dashboard settings is beside sync; Cybergrunge navigation is compact and centered.
 
 Functional text uses wrapping/autosizing instead of ellipsis; names, selections, counters and conflict summaries retain their full text.
+
+Documentation: [single index](docs/README.md). Agent configuration: [ownership map](.agents/README.md).

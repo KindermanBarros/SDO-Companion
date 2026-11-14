@@ -7,8 +7,8 @@ description: Create and edit SDO .pen designs following the project styleguide v
 Use whenever a `.pen` file is the design source of truth. Always use the headless CLI ([references/headless-cli.md](references/headless-cli.md)) — never edit `.pen` JSON directly or require the desktop GUI.
 
 ## Required SDO styleguide
-Before creating or changing frames, read [DESIGN_GUIDE.md](../../../DESIGN_GUIDE.md): current interface, components, direction/principles, typography, geometry, and sections relevant to the target screen. [design_system.md](../../../docs/product/design_system.md) is an index, not a substitute for the guide.
-For Cybergrunge, also read [the complete visual direction](../../../docs/interface-cybergrunge.md). It is a distinct interface, not a dark recolor of Standard.
+Before creating or changing frames, read the [design system](../../../docs/design/design_system.md) and the affected mode guide linked there. They own shared rules and mode-specific identity; approved task contracts refine only their scoped states.
+Read Standard tokens for Standard work and the complete Cybergrunge direction for that mode. It is a distinct interface, not a dark recolor of Standard.
 
 - Inspect the actual [theme and typography](../../../app/src/main/java/com/kinderman/sdo/ui/core/SdoTheme.kt), [shape/spacing tokens](../../../app/src/main/java/com/kinderman/sdo/ui/core/SdoTokens.kt), and implementations of the components being represented. Read the matching existing screen; compare with an Android CLI screenshot when available, and record when runtime reference is unavailable.
 - Map each reused component in `UI_contract.md` to its source, observed geometry/type/spacing/color roles, and Pen node. Reproduce these properties; naming a generic rectangle `SdoActionButton` does not establish fidelity.

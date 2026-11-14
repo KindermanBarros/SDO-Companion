@@ -29,22 +29,20 @@ forbid_text() {
 
 # Profiles point to the stage contracts instead of copying their details.
 require_link planner.md "../workflows/harness-planning.md"
-require_link generator.md "../workflows/harness-generator.md"
-require_link generator.md "../workflows/harness-fix.md"
-require_link generator.md "tester.md"
-require_link tester.md "../workflows/bug-fixing.md"
+require_link implementer.md "../workflows/harness-generator.md"
+require_link implementer.md "../workflows/harness-fix.md"
+require_link tester.md "../../docs/engineering/VALIDATION.md"
 require_link evaluator.md "../workflows/harness-evaluation.md"
 require_link evaluator.md "../workflows/feature-review.md"
-require_link evaluator.md "../workflows/harness-fix.md"
 
 # Retain the historical stale-reference regression checks.
 forbid_text planner.md "docs/current/"
 forbid_text planner.md "task-list.md"
 forbid_text planner.md "docs/templates/"
 forbid_text planner.md "only relies on stateless Composable logic"
-forbid_text generator.md ".docs/current/"
-forbid_text generator.md "Select One Task"
-forbid_text generator.md "HSL palettes"
+forbid_text implementer.md "docs/engineering/current/"
+forbid_text implementer.md "Select One Task"
+forbid_text implementer.md "HSL palettes"
 forbid_text evaluator.md "android-ui-verification"
 forbid_text evaluator.md "docs/templates/"
 

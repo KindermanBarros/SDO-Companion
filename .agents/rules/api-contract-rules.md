@@ -1,6 +1,6 @@
 # API & Data Contract Rules
 
-Apply when modifying Firestore document schemas ([firebase_contract.md](../../.docs/Architecture/firebase_contract.md)), bundled JSON catalogs (`catalogs/`), or Room entities (`sdo.db`).
+Apply when modifying Firestore document schemas ([firebase_contract.md](../../docs/engineering/Architecture/firebase_contract.md)), bundled JSON catalogs (`catalogs/`), or Room entities (`sdo.db`).
 
 ## Classification & compatibility
 Classify every contract change before coding:

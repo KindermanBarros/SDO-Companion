@@ -1,6 +1,6 @@
 # UI Contract — <feature>
 
-**Project design system**: `docs/product/design_system.md`
+**Project design system**: `docs/design/design_system.md`
 **Related spec**: `spec_v<N>.md` / `spec.md` (use the active workflow's path)
 **Reference status**: Inventory / Pen design in progress / Awaiting approval / Approved
 

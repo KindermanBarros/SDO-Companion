@@ -1,5 +1,5 @@
 # VALIDATION - SDO Companion
-Select the smallest sufficient checks once before execution. The [CI catalog](../.agents/gates/ci-checks.md) owns commands; it is not a requirement to run every command for every task.
+Select the smallest sufficient checks once before execution. The [CI catalog](../../.agents/gates/ci-checks.md) owns commands; it is not a requirement to run every command for every task.
 
 ## Selection
 | Changed boundary | Relevant evidence |
@@ -26,7 +26,7 @@ Windows from the repository root; POSIX uses ./gradlew.
 | Build | .\gradlew.bat :app:assembleDebug |
 
 Harness: powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .agents/gates/validate-harness.ps1.
-Run .agents/gates/tests/validate-harness-tests.ps1 when structural policy changes, and scratch-cleanup-tests.ps1 when cleanup enforcement changes. Tests create fixtures only in .scratch and clean them in finally.
+Run .agents/gates/tests/validate-harness-tests.ps1 when structural policy changes, and scratch-cleanup-tests.ps1 when cleanup enforcement changes. The structural gate enforces one docs root, canonical design paths and thin role adapters. Tests create fixtures only in .scratch and clean them in finally.
 
 ## Stop repeated work
 - One verification plan, one result summary. A stage handoff does not invalidate a successful check.

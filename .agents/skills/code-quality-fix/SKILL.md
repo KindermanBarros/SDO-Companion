@@ -6,7 +6,7 @@ description: Run static analysis, formatting, lint checks, and fix violations.
 # Skill — Code Quality Fix
 
 ## Execute
-1. Run applicable quality checks from [.docs/VALIDATION.md](../../../.docs/VALIDATION.md):
+1. Run applicable quality checks from [docs/engineering/VALIDATION.md](../../../docs/engineering/VALIDATION.md):
    - `./gradlew :app:assembleDebug`
    - `./gradlew :app:ktlintCheck` (or `./gradlew :app:ktlintFormat` to auto-fix formatting)
    - `./gradlew :app:detekt`

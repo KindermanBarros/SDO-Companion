@@ -4,7 +4,7 @@ description: Implement an Android feature across affected data, domain, and UI l
 ---
 # Skill — Android Implementation
 
-Implement only the layers affected by the approved change following [.docs/ARCHITECTURE.md](../../../.docs/ARCHITECTURE.md), [.docs/CODE_STANDARDS.md](../../../.docs/CODE_STANDARDS.md), and [implementation-rules.md](../../rules/implementation-rules.md). Load conditional rules ([compose-rules.md](../../rules/compose-rules.md), [localization-rules.md](../../rules/localization-rules.md), [navigation-rules.md](../../rules/navigation-rules.md), [api-contract-rules.md](../../rules/api-contract-rules.md), [android-security.md](../../rules/android-security.md)) only when triggered.
+Implement only the layers affected by the approved change following [docs/engineering/ARCHITECTURE.md](../../../docs/engineering/ARCHITECTURE.md), [docs/engineering/CODE_STANDARDS.md](../../../docs/engineering/CODE_STANDARDS.md), and [implementation-rules.md](../../rules/implementation-rules.md). Load conditional rules ([compose-rules.md](../../rules/compose-rules.md), [localization-rules.md](../../rules/localization-rules.md), [navigation-rules.md](../../rules/navigation-rules.md), [api-contract-rules.md](../../rules/api-contract-rules.md), [android-security.md](../../rules/android-security.md)) only when triggered.
 
 ## Layer checklist (execute only affected layers)
 1. **Data (`data/`, `catalogs/`)**:

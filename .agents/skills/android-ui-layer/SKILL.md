@@ -4,7 +4,7 @@ description: Implement Compose UI screens and components with unidirectional sta
 ---
 # Skill — Android UI Layer
 
-Follow [compose-rules.md](../../rules/compose-rules.md), [localization-rules.md](../../rules/localization-rules.md), [navigation-rules.md](../../rules/navigation-rules.md), and [design_system.md](../../../docs/product/design_system.md).
+Follow [compose-rules.md](../../rules/compose-rules.md), [localization-rules.md](../../rules/localization-rules.md), [navigation-rules.md](../../rules/navigation-rules.md), and [design_system.md](../../../docs/design/design_system.md).
 
 ## Execution
 1. **ViewModel & state (`presentation/`)**: Expose state via `StateFlow` (`AppViewModel`, `AuthViewModel`), coordinate domain contracts, and keep Room/Firestore types out of `presentation/`.

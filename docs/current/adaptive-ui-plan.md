@@ -16,7 +16,7 @@ Apply the bounded Feature Delivery route with explicit user-authorized CI-only v
 
 - `docs/product/requirements/character-sheets.md`, SHEET-002: retain sheet management, canonical page/section ordering, callbacks and read-only explanation. SHA-256 `3c3231b2b58e0d2585daa0f25d44b9273256fe68065375316ed6a6007fb514e0`.
 - `docs/product/requirements/campaigns.md`, CAMPAIGN-001: retain campaign sheet usage and authority semantics. SHA-256 `0f341cc1e14d5186a688826b3358ca259c6cc1a076b5fc9dddd53bbda0230e5a`.
-- `DESIGN_GUIDE.md`, Layout Responsivo: compact phones use one column; larger widths have bounded centered content and multiple columns when canonical order is retained.
+- `docs/design/standard.md`, Layout Responsivo: compact phones use one column; larger widths have bounded centered content and multiple columns when canonical order is retained.
 
 ## Observed limitations
 

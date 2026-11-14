@@ -39,12 +39,12 @@ If a required skill is missing, report the missing capability and inspect the of
 | Not applicable | `migrate-xml-views-to-jetpack-compose` | Migrating XML View UI to Compose |
 | Not applicable | `play-billing-library-version-upgrade` | Upgrading the Play Billing Library |
 
-Move a skill from "Not applicable" to "Situational" only when the project's scope changes, and record that change in HISTORY.
+Move a skill from "Not applicable" to "Situational" only when the project's scope changes, and record that change in [Memory](../MEMORY.md).
 
 ## Local setup tools
 
 The repository contains .agents/skills/harness-router, project-onboarding and documentation-and-adrs.
-For harness maintenance, follow root AGENTS.md and the [Project contract](../.agents/gates/project-contract.md).
+For harness maintenance, follow root AGENTS.md and the [Project contract](../../.agents/gates/project-contract.md).
 The current CI catalog owns executable checks; legacy script gates were retired by the owner. Skill guidance must not reintroduce them.
 The Primary Android skill names above are guidance, not verified installations in this session.
 No skills were installed or removed.

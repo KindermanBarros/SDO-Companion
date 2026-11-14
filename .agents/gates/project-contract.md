@@ -5,7 +5,7 @@ Use the [execution checklist](../rules/working-economically.md) when optimizing 
 ## Baseline
 - Single :app Android module; API 30 minimum, 37 compile/target; confirmed device is smartphone.
 - Manual wiring, repository interfaces, multiple state flows and custom saveable navigation are the observed architecture.
-- Follow .docs architecture/standards. Generic harness patterns do not authorize migrations.
+- Follow docs/engineering architecture/standards. Generic harness patterns do not authorize migrations.
 
 ## One execution record
 | Record | Authority |
@@ -15,7 +15,7 @@ Use the [execution checklist](../rules/working-economically.md) when optimizing 
 | Task memory & history | docs/MEMORY.md (single file; never create separate history/task-state files) |
 | Ad-hoc contracts/summary | docs/current/ |
 | Durable complex contracts/decisions | `docs/MEMORY.md` (single history file; optional binary assets under `docs/changes/assets/`) |
-| Final evidence | Linked docs/current or docs/changes record |
+| Final evidence | Memory links to scoped docs/current references or docs/changes/assets |
 | Temporary QA/logs/downloads/PR drafts | .scratch/; delete before every commit |
 
 Backlog is live: select requested work, add findings/requests and reconcile status. Adding an item does not approve implementation.
@@ -28,7 +28,7 @@ Registered worktrees in .worktrees are managed Git checkouts, not disposable scr
 - Review the changed risk, not the entire repository. No separate report per stage for trivial work.
 
 ## Verification and handoff
-Use [VALIDATION](../../.docs/VALIDATION.md) and [CI checks](ci-checks.md). Select once, reuse matching evidence, rerun only invalidated checks.
+Use [VALIDATION](../../docs/engineering/VALIDATION.md) and [CI checks](ci-checks.md). Select once, reuse matching evidence, rerun only invalidated checks.
 Owner build-only/manual-runtime preferences override default local execution, not truthfulness or acceptance.
 Missing devices, failed quality/coverage or absent visual infrastructure remain explicit limitations; never claim a fake/JVM check proves a platform journey.
 Legacy gates backed by absent scripts remain retired. Do not restore them or introduce dependencies to satisfy an unrelated task.

@@ -9,7 +9,7 @@ Follow [Project contract](../../gates/project-contract.md) and [Review checklist
 ## Five review axes
 1. **Correctness**: Matches approved requirements/ACs, handles null/empty/error/cancellation paths, and has meaningful test assertions.
 2. **Simplicity & readability**: Smallest diff that solves the task; clear names, no dead code, no speculative abstractions, no `TODO()`/stub paths ([implementation-rules.md](../../rules/implementation-rules.md)).
-3. **Architecture**: Preserves [.docs/ARCHITECTURE.md](../../../.docs/ARCHITECTURE.md) (`ui`/`presentation` → `domain` ← `data`, manual DI in `SdoApplication`, custom `AppSurface` navigation).
+3. **Architecture**: Preserves [docs/engineering/ARCHITECTURE.md](../../../docs/engineering/ARCHITECTURE.md) (`ui`/`presentation` → `domain` ← `data`, manual DI in `SdoApplication`, custom `AppSurface` navigation).
 4. **Security**: Validates untrusted inputs, protects secrets/PII, and enforces Firestore/Auth boundaries ([android-security.md](../../rules/android-security.md) when triggered).
 5. **Performance & UI**: Uses `LazyColumn` keys, lifecycle-aware Flow collection, Standard/Cybergrunge tokens, whole-word wrapping, and no functional ellipsis ([compose-rules.md](../../rules/compose-rules.md)).
 
