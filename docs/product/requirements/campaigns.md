@@ -28,7 +28,7 @@ Backlog requested by owner on 2026-11-12. These are unimplemented proposals; eac
 
 Add a shared campaign journal. Define authorship, read/write permissions, entry ordering, and edit/sync behavior during refinement. Distinguish the journal from personal character notes and the existing technical operation history.
 
-Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered InDevReview (device runtime and local emulator acceptance pending). See [Shared campaign journal record](../../changes/2026-11-14-shared-campaign-journal.md).
+Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered InDevReview (device runtime and local emulator acceptance pending). See [Memory](../../MEMORY.md).
 
 ### CAMPAIGN-PLAN-002 — Session Mode evolution
 

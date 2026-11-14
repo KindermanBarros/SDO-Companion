@@ -32,7 +32,7 @@ Ask only about unresolved product decisions, destructive ambiguity or missing au
 ## Rules
 - **Mandatory pre-commit cleanup:** run `tools/pre-commit-cleanup.ps1` ALWAYS before every commit to remove `.scratch/`, `.codex-attachments/`, `.worktrees/`, `firestore-debug.log`, `.DS_Store`/`Thumbs.db`, `*.orig`/`*.rej`, and `previews-*`; never stage them.
 - **English repo files:** keep all documentation, rules, memory, and code comments in English; only in-app UI copy/domain messages remain in Portuguese.
-- **Single history & change files:** summarize all task states and history strictly in [Memory](docs/MEMORY.md); keep complex change specs/plans in one `docs/changes/<slug>.md` file. Never create separate files in `.docs/HistoryRecords/`, `.docs/OngoingTasks/` or `.docs/CompletedTasks/`.
+- **Single history file:** summarize all task states, change records, and history strictly in [Memory](docs/MEMORY.md). Never create separate history/change files under `docs/changes/*.md`, `.docs/HistoryRecords/`, `.docs/OngoingTasks/`, or `.docs/CompletedTasks/`.
 - **Backlog:** `docs/product/product.md` is living workflow documentation: select work from it, add findings/requests, and reconcile status at handoff.
 - **Lean execution:** one owner for bounded tasks; delegate only when requested or when independent review/parallel work materially helps.
 - **Context/output:** use targeted reads; do not dump whole status/logs or reread loaded docs. Routine final output: result, check status, next action/PR.

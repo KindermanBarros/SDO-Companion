@@ -16,7 +16,7 @@ if find "$root/.agents" "$root/.docs" "$root/.githooks" "$root/docs" "$root/app/
     exit 1
 fi
 
-if git diff --cached --name-only --diff-filter=ACMR | LC_ALL=C grep -Eq '^(\.scratch|\.harness-state|\.qa-artifacts|\.codex-attachments|\.worktrees)(/|$)|(^|/)(\.DS_Store|Thumbs\.db|firestore-debug\.log)$|docs/changes/assets/.*/previews-'; then
-    echo "Commit blocked: temporary/junk output is staged. Unstage it and run tools/pre-commit-cleanup.ps1." >&2
+if git diff --cached --name-only --diff-filter=ACMR | LC_ALL=C grep -Eq '^(\.scratch|\.harness-state|\.qa-artifacts|\.codex-attachments|\.worktrees)(/|$)|(^|/)(\.DS_Store|Thumbs\.db|firestore-debug\.log)$|docs/changes/assets/.*/previews-|^docs/changes/.*\.(md|patch)$|^\.docs/(HistoryRecords|OngoingTasks|CompletedTasks)/'; then
+    echo "Commit blocked: temporary/junk or separate history file staged. Use docs/MEMORY.md and run tools/pre-commit-cleanup.ps1." >&2
     exit 1
 fi

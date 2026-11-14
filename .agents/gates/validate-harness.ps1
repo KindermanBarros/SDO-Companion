@@ -102,8 +102,8 @@ if (Test-Path -LiteralPath $profile) {
     if ([IO.File]::ReadAllText($profile) -match 'harness[/\\]scripts[/\\]') { Add-Issue 'Retired script gate reference: harness-project.json' }
 }
 if (Test-Path -LiteralPath (Join-Path $rootPath 'docs/changes')) {
-    foreach ($nested in Get-ChildItem -LiteralPath (Join-Path $rootPath 'docs/changes') -Directory | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Recurse -Filter '*.md' -File }) {
-        Add-Issue "Nested change markdown (use single docs/changes/<slug>.md): $($nested.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
+    foreach ($changeDoc in Get-ChildItem -LiteralPath (Join-Path $rootPath 'docs/changes') -Recurse -File | Where-Object { $_.Extension -in @('.md','.patch') }) {
+        Add-Issue "Separate history/change file forbidden (use docs/MEMORY.md): $($changeDoc.FullName.Substring($rootPath.Length + 1).Replace('\','/'))"
     }
 }
 foreach ($forbiddenDir in @('.docs/HistoryRecords','.docs/OngoingTasks','.docs/CompletedTasks')) {

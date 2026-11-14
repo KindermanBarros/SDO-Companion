@@ -12,7 +12,7 @@ Follow root AGENTS and [Product documentation flow](../../rules/product-document
 
 ## Locations
 - Product/backlog: docs/product/product.md; detailed behavior in docs/product/requirements/.
-- Durable dated contracts/change evidence: one single file docs/changes/YYYY-MM-DD-feature-name.md (optional binary assets under docs/changes/assets/).
+- Durable dated contracts/change evidence: record in `docs/MEMORY.md` (optional binary assets under `docs/changes/assets/`). Never create separate `docs/changes/*.md` files.
 - Active ad-hoc spec/plan/summary: docs/current/.
 - Architecture decisions: use the repository's existing .docs architecture decision policy; do not create another ADR index.
 - Temporary drafts/raw logs/experiments: .scratch only; promote final records and remove it before commit.
