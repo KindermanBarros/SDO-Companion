@@ -1,6 +1,8 @@
 package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterRecord
@@ -24,7 +26,9 @@ import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -32,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
+import java.util.concurrent.atomic.AtomicBoolean
 
 private sealed interface CharacterSyncWrite {
     data class Saved(val updatedAt: Long) : CharacterSyncWrite
@@ -67,6 +72,35 @@ class SyncedCharacterRepository(
         }
     }.distinctUntilChanged().flowOn(Dispatchers.Default)
 
+    override fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = callbackFlow {
+        val store = Firebase.firestore
+        val registrations = mutableListOf<ListenerRegistration>()
+
+        fun listen(query: Query) {
+            val initialized = AtomicBoolean(false)
+            registrations += query.addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+                if (!initialized.compareAndSet(false, true)) {
+                    if (!snapshot.metadata.hasPendingWrites()) {
+                        trySend(Unit)
+                    }
+                }
+            }
+        }
+
+        val characters = store.collection(FirestoreCollections.CHARACTERS)
+        listen(if (session.isAdmin) characters else characters.whereEqualTo("ownerId", session.uid))
+        listen(store.collection(FirestoreCollections.CAMPAIGN_MEMBERS).whereEqualTo("userId", session.uid))
+        listen(store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).whereEqualTo("recipientId", session.uid))
+        campaignIds.filter(String::isNotBlank).distinct().forEach { campaignId ->
+            listen(characters.whereEqualTo("campaignId", campaignId))
+            listen(store.collection(FirestoreCollections.CAMPAIGN_LIBRARY).whereEqualTo("campaignId", campaignId))
+            listen(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).whereEqualTo("campaignId", campaignId))
+        }
+
+        awaitClose { registrations.forEach(ListenerRegistration::remove) }
+    }
+
     override suspend fun create(session: UserSession, ownerId: String, campaignId: String): Character {
         val normalizedCampaignId = normalizeCampaignId(campaignId)
         if (ownerId != session.uid) {
@@ -78,7 +112,7 @@ class SyncedCharacterRepository(
                 "A ficha só pode ser atribuída a um jogador ativo da campanha."
             }
         }
-        val character = Character(ownerId = ownerId, campaignId = normalizedCampaignId)
+        val character = Character(ownerId = ownerId, campaignId = normalizedCampaignId, lastEditedBy = session.uid)
         dao.upsert(character.toRecord())
         if (normalizedCampaignId.isNotBlank()) {
             campaignDao.member(normalizedCampaignId, ownerId)?.let { membership ->
@@ -104,6 +138,7 @@ class SyncedCharacterRepository(
             character.copy(
                 campaignId = normalizeCampaignId(character.campaignId),
                 updatedAt = System.currentTimeMillis(),
+                lastEditedBy = session.uid,
                 dirty = true,
             ).toRecord(),
         )
@@ -133,6 +168,7 @@ class SyncedCharacterRepository(
             character.copy(
                 ownerId = owner.uid,
                 updatedAt = System.currentTimeMillis(),
+                lastEditedBy = session.uid,
                 dirty = true,
             ).toRecord(),
         )
@@ -147,6 +183,7 @@ class SyncedCharacterRepository(
                 lockedBy = if (locked) actorId else "",
                 lockedAt = if (locked) System.currentTimeMillis() else null,
                 updatedAt = System.currentTimeMillis(),
+                lastEditedBy = actorId,
                 dirty = true,
             ).toRecord(),
         )
@@ -156,7 +193,7 @@ class SyncedCharacterRepository(
         check(CharacterAccessPolicy.canDelete(session, character, isCampaignHistorian(session, character))) {
             "Esta ficha não pode ser removida."
         }
-        dao.upsert(character.copy(deleted = true, updatedAt = System.currentTimeMillis(), dirty = true).toRecord())
+        dao.upsert(character.copy(deleted = true, updatedAt = System.currentTimeMillis(), lastEditedBy = session.uid, dirty = true).toRecord())
     }
 
     override suspend fun sync(session: UserSession): List<CharacterSyncConflict> = syncMutex.withLock {
@@ -284,7 +321,7 @@ class SyncedCharacterRepository(
                                 remoteUpdatedAt = remote.updatedAt,
                                 fields = fields,
                             )
-                            val automaticRemoteFields = automaticRemoteFieldIds(conflict)
+                            val automaticRemoteFields = automaticRemoteFieldIds(conflict, session.uid)
                             if (automaticRemoteFields == null) {
                                 return@runTransaction CharacterSyncWrite.Conflict(conflict)
                             }
@@ -345,6 +382,7 @@ class SyncedCharacterRepository(
             merged.copy(
                 campaignId = normalizeCampaignId(merged.campaignId),
                 updatedAt = System.currentTimeMillis(),
+                lastEditedBy = session.uid,
                 dirty = true,
                 lastSyncedAt = conflict.remoteUpdatedAt,
                 deleted = false,

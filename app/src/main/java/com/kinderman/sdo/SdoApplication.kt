@@ -13,11 +13,13 @@ import com.kinderman.sdo.data.repository.SyncedCampaignRepository
 import com.kinderman.sdo.data.repository.SyncedCharacterRepository
 import com.kinderman.sdo.data.repository.SyncedOwnerRepository
 import com.kinderman.sdo.data.repository.SyncedOperationsRepository
+import com.kinderman.sdo.data.sync.AndroidConnectivityMonitor
 import com.kinderman.sdo.domain.repository.AuthRepository
 import com.kinderman.sdo.domain.repository.CampaignJournalRepository
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import com.kinderman.sdo.domain.repository.ConnectivityMonitor
 import com.kinderman.sdo.domain.repository.OwnerRepository
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +37,7 @@ class SdoApplication : Application() {
     lateinit var campaignRepository: CampaignRepository
     lateinit var campaignJournalRepository: CampaignJournalRepository
     lateinit var operationsRepository: OperationsRepository
+    lateinit var connectivityMonitor: ConnectivityMonitor
 
     override fun onCreate() {
         super.onCreate()
@@ -69,6 +72,7 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_25_26,
                 AppDatabase.MIGRATION_26_27,
                 AppDatabase.MIGRATION_27_28,
+                AppDatabase.MIGRATION_28_29,
             )
             .build()
         val characterMigrationManager = CharacterMigrationManager()
@@ -79,6 +83,7 @@ class SdoApplication : Application() {
         campaignJournalRepository = FirestoreCampaignJournalRepository()
         operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao(), characterMigrationManager)
         authRepository = FirebaseAuthRepository()
+        connectivityMonitor = AndroidConnectivityMonitor(this)
         applicationScope.launch {
             characterMigrationManager.migrateStoredCharacters(db.characterDao())
             catalogRepository.refreshBundledCatalog()

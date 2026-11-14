@@ -160,4 +160,45 @@ class CharacterSyncConflictTest {
 
         assertTrue(characterConflictFields(merged, remote).isEmpty())
     }
+
+    @Test
+    fun sameAccountLargeConflictConvergesAutomaticallyWithoutManualResolution() {
+        val local = Character(id = "char-same", ownerId = "user-1", lastEditedBy = "user-1", updatedAt = 100)
+        val remote = local.copy(
+            name = "Online",
+            race = "Elfo",
+            subRace = "Noturno",
+            occupation = "Oráculo",
+            age = "40",
+            sex = "Não-binário",
+            updatedAt = 200,
+            lastEditedBy = "user-1",
+            dirty = false,
+        )
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+
+        assertTrue(conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS)
+        val resolved = automaticRemoteFieldIds(conflict, sessionUid = "user-1")
+        assertEquals(conflict.fields.mapTo(mutableSetOf()) { it.id }, resolved)
+    }
+
+    @Test
+    fun differentAccountLargeConflictStillRequiresManualResolution() {
+        val local = Character(id = "char-diff", ownerId = "user-1", lastEditedBy = "user-1", updatedAt = 100)
+        val remote = local.copy(
+            name = "Mestre Edit",
+            race = "Elfo",
+            subRace = "Noturno",
+            occupation = "Oráculo",
+            age = "40",
+            sex = "Não-binário",
+            updatedAt = 200,
+            lastEditedBy = "historian-2",
+            dirty = false,
+        )
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+
+        assertTrue(conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS)
+        assertEquals(null, automaticRemoteFieldIds(conflict, sessionUid = "user-1"))
+    }
 }

@@ -14,9 +14,11 @@ import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.SessionCommand
+import com.kinderman.sdo.domain.repository.AlwaysOnlineConnectivityMonitor
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import com.kinderman.sdo.domain.repository.ConnectivityMonitor
 import com.kinderman.sdo.domain.repository.OwnerRepository
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import com.kinderman.sdo.domain.usecase.DeleteCharacter
@@ -25,16 +27,23 @@ import com.kinderman.sdo.domain.usecase.SetHistorianLock
 import com.kinderman.sdo.domain.usecase.SetPlayerLock
 import com.kinderman.sdo.domain.usecase.TransferCharacterOwner
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -51,14 +60,18 @@ internal enum class RemoteSyncTrigger { MANUAL, EDITING_IDLE, APP_FOREGROUND, AP
 internal fun shouldRunRemoteSync(automaticSync: Boolean, trigger: RemoteSyncTrigger): Boolean =
     trigger == RemoteSyncTrigger.MANUAL || automaticSync
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class AppViewModel(
     private val repository: CharacterRepository,
     private val ownerRepository: OwnerRepository,
     catalogRepository: CatalogRepository,
     private val campaignRepository: CampaignRepository,
     private val operationsRepository: OperationsRepository,
+    private val connectivityMonitor: ConnectivityMonitor = AlwaysOnlineConnectivityMonitor,
+    private val externalScope: CoroutineScope? = null,
 ) : ViewModel() {
+    private val scope: CoroutineScope
+        get() = externalScope ?: viewModelScope
     private val saveCharacter = SaveCharacter(repository)
     private val deleteCharacter = DeleteCharacter(repository)
     private val setPlayerLock = SetPlayerLock(repository)
@@ -80,6 +93,12 @@ class AppViewModel(
     private var remoteSyncDebounceJob: Job? = null
 
     val session = currentSession.asStateFlow()
+    val isOnline = connectivityMonitor.isOnline
+    val isOfflineReadOnly = combine(currentSession, connectivityMonitor.isOnline) { session, online ->
+        session != null && session.uid != DEMO_USER_ID && !online
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
+    private val _syncFailure = MutableStateFlow<String?>(null)
+    val syncFailure = _syncFailure.asStateFlow()
     private val _saveErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     val saveErrors = _saveErrors.asStateFlow()
     val message = _message.asStateFlow()
@@ -87,42 +106,70 @@ class AppViewModel(
     val conflicts = _conflicts.asStateFlow()
     val invitePreview = _invitePreview.asStateFlow()
     val catalog = catalogRepository.observe()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val campaigns = currentSession.flatMapLatest { session ->
         session?.let(campaignRepository::observe) ?: flowOf(emptyList())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val characters = currentSession.flatMapLatest { session ->
         session?.let(repository::observe) ?: flowOf(emptyList())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val memberships = currentSession.flatMapLatest { session ->
         session?.let(campaignRepository::observeMemberships) ?: flowOf(emptyList())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
     val campaignInvites = campaignRepository.observeAllInvites()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val owners = currentSession.flatMapLatest { session ->
         if (session?.isAdmin == true) ownerRepository.observe() else flowOf(emptyList())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val campaignMembers = campaigns.flatMapLatest { values ->
         if (values.isEmpty()) flowOf(emptyList())
         else combine(values.map { campaignRepository.observeMembers(it.id) }) { groups -> groups.flatMap { it } }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList<CampaignMember>())
     private val accessibleCampaignIds = campaigns.map { values ->
         values.filterNot(Campaign::isDeleted).mapTo(linkedSetOf(), Campaign::id)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
     private val manageableCampaignIds = combine(currentSession, campaigns) { session, values ->
         if (session == null) emptySet() else values.filter { campaign ->
             session.isAdmin || campaign.ownerId == session.uid
         }.mapTo(linkedSetOf(), Campaign::id)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
     val audit = accessibleCampaignIds.flatMapLatest(operationsRepository::observeAudit)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val library = accessibleCampaignIds.flatMapLatest(operationsRepository::observeLibrary)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val deliveries = combine(currentSession, manageableCampaignIds) { session, ids -> session to ids }
         .flatMapLatest { (session, ids) -> session?.let { operationsRepository.observeDeliveries(it, ids) } ?: flowOf(emptyList()) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val alertSettings = manageableCampaignIds.flatMapLatest(operationsRepository::observeAlertSettings)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    init {
+        var wasOnline = connectivityMonitor.isOnline.value
+        connectivityMonitor.isOnline
+            .onEach { online ->
+                if (!wasOnline && online && currentSession.value != null && currentSession.value?.uid != DEMO_USER_ID) {
+                    _syncFailure.value = null
+                    lastSyncFailure = null
+                    startSync(initial = false)
+                } else if (!online) {
+                    remoteSyncDebounceJob?.cancel()
+                    remoteSyncDebounceJob = null
+                }
+                wasOnline = online
+            }
+            .launchIn(scope)
+
+        combine(currentSession, accessibleCampaignIds, connectivityMonitor.isOnline) { session, ids, online ->
+            Triple(session, ids, online)
+        }
+            .flatMapLatest { (session, ids, online) ->
+                if (session == null || session.uid == DEMO_USER_ID || !online) emptyFlow()
+                else repository.observeRemoteChanges(session, ids)
+            }
+            .debounce(300)
+            .onEach { startSync(initial = false) }
+            .launchIn(scope)
+    }
 
     fun setSession(session: UserSession) {
         if (currentSession.value == session) return
@@ -132,16 +179,17 @@ class AppViewModel(
         _conflicts.value = emptyList()
         _invitePreview.value = null
         lastSyncFailure = null
+        _syncFailure.value = null
         currentSession.value = session
         if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_FOREGROUND)) startSync(initial = true)
     }
 
-    fun setDemoSession() = setSession(UserSession("demo-player", "", "Modo local", UserRole.USER))
+    fun setDemoSession() = setSession(UserSession(DEMO_USER_ID, "", "Modo local", UserRole.USER))
 
     fun setAutomaticSync(enabled: Boolean) {
         val shouldSyncPendingChanges = enabled && !automaticSync
         automaticSync = enabled
-        if (shouldSyncPendingChanges) viewModelScope.launch {
+        if (shouldSyncPendingChanges) scope.launch {
             flushAllPendingAutosaves()
             startSync(initial = false)
         }
@@ -161,6 +209,7 @@ class AppViewModel(
         _conflicts.value = emptyList()
         _invitePreview.value = null
         lastSyncFailure = null
+        _syncFailure.value = null
         _loadState.value = CharacterLoadState()
     }
 
@@ -171,15 +220,17 @@ class AppViewModel(
     }
 
     fun save(character: Character) {
+        if (!ensureOnlineForMutation()) return
         autosaveJobs.remove(character.id)?.cancel()
         pendingAutosaves.remove(character.id)
         saveLocally(character, notify = true)
     }
 
     fun autosave(character: Character) {
+        if (!ensureOnlineForMutation()) return
         pendingAutosaves[character.id] = character
         autosaveJobs.remove(character.id)?.cancel()
-        val job = viewModelScope.launch {
+        val job = scope.launch {
             delay(350)
             flushPendingAutosave(character.id)
         }
@@ -188,8 +239,9 @@ class AppViewModel(
     }
 
     fun applySessionCommand(character: Character, command: SessionCommand) {
+        if (!ensureOnlineForMutation()) return
         val session = currentSession.value ?: return
-        viewModelScope.launch {
+        scope.launch {
             runCatching { operationsRepository.apply(session, character, command) }
                 .onSuccess { if (it && automaticSync) startSync(initial = false) }
                 .onFailure { _message.value = userMessage(it, "Falha ao aplicar ação") }
@@ -201,7 +253,10 @@ class AppViewModel(
     fun archiveLibrary(entry: CampaignLibraryEntry, archived: Boolean) = runAction(if (archived) "Modelo arquivado" else "Modelo restaurado") { operationsRepository.archiveLibrary(it, entry, archived) }
     fun deliverLibrary(entry: CampaignLibraryEntry, recipients: List<Character>, mappings: Map<String, String>) = runAction("Entrega enviada") { operationsRepository.deliver(it, entry, recipients, mappings) }
     fun respondDelivery(delivery: CampaignDelivery, accept: Boolean) = runAction(if (accept) "Conteúdo aceito" else "Conteúdo recusado") { operationsRepository.respondToDelivery(it, delivery, accept) }
-    fun saveAlertSettings(settings: CampaignAlertSettings) = viewModelScope.launch { operationsRepository.saveAlertSettings(settings) }
+    fun saveAlertSettings(settings: CampaignAlertSettings) {
+        if (!ensureOnlineForMutation()) return
+        scope.launch { operationsRepository.saveAlertSettings(settings) }
+    }
 
     fun createCampaign(name: String, description: String) = runAction("Campanha criada") { session ->
         campaignRepository.create(session, name, description)
@@ -224,8 +279,9 @@ class AppViewModel(
     }
 
     fun createCampaignInvite(campaign: Campaign) {
+        if (!ensureOnlineForMutation()) return
         val session = currentSession.value ?: return
-        viewModelScope.launch {
+        scope.launch {
             runCatching { campaignRepository.createInvite(session, campaign) }
                 .onSuccess { invite ->
                     _message.value = "Código de convite: ${invite.code}"
@@ -236,8 +292,9 @@ class AppViewModel(
     }
 
     fun previewCampaignInvite(code: String) {
+        if (!ensureOnlineForMutation()) return
         val session = currentSession.value ?: return
-        viewModelScope.launch {
+        scope.launch {
             runCatching { campaignRepository.previewInvite(session, code) }
                 .onSuccess { preview ->
                     _invitePreview.value = preview
@@ -248,8 +305,9 @@ class AppViewModel(
     }
 
     fun acceptCampaignInvite(code: String, character: Character?, createNewCharacter: Boolean) {
+        if (!ensureOnlineForMutation()) return
         val session = currentSession.value ?: return
-        viewModelScope.launch {
+        scope.launch {
             runCatching {
                 val campaign = campaignRepository.joinByCode(session, code)
                 val selectedCharacter = when {
@@ -299,7 +357,7 @@ class AppViewModel(
 
     fun dismissMessage() { _message.value = null }
     fun sync() {
-        viewModelScope.launch {
+        scope.launch {
             flushAllPendingAutosaves()
             startSync(initial = false)
         }
@@ -312,23 +370,28 @@ class AppViewModel(
 
     fun onAppBackgrounded(changingConfiguration: Boolean = false) {
         if (!appVisibility.stopped(changingConfiguration)) return
-        viewModelScope.launch {
+        scope.launch {
             flushAllPendingAutosaves()
             if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_BACKGROUND)) startSync(initial = false)
         }
     }
 
     fun closeCharacter(character: Character) {
+        if (isMutationBlockedOffline(currentSession.value)) {
+            autosaveJobs.remove(character.id)?.cancel()
+            pendingAutosaves.remove(character.id)
+            return
+        }
         pendingAutosaves[character.id] = character
         autosaveJobs.remove(character.id)?.cancel()
-        viewModelScope.launch {
+        scope.launch {
             flushPendingAutosave(character.id, scheduleRemote = false)
             if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.SHEET_CLOSED)) startSync(initial = false)
         }
     }
 
     private fun saveLocally(character: Character, notify: Boolean) {
-        viewModelScope.launch {
+        scope.launch {
             persistLocally(character, notify)
         }
     }
@@ -373,15 +436,16 @@ class AppViewModel(
     private fun scheduleRemoteSync() {
         if (!shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.EDITING_IDLE)) return
         remoteSyncDebounceJob?.cancel()
-        remoteSyncDebounceJob = viewModelScope.launch {
-            delay(5_000)
+        remoteSyncDebounceJob = scope.launch {
+            delay(1_200)
             startSync(initial = false)
         }
     }
 
     fun resolveConflict(conflict: CharacterSyncConflict, remoteFieldIds: Set<String>) {
+        if (!ensureOnlineForMutation()) return
         val session = currentSession.value ?: return
-        viewModelScope.launch {
+        scope.launch {
             runCatching { repository.resolveConflict(session, conflict, remoteFieldIds) }
                 .onSuccess {
                     _conflicts.value = _conflicts.value.filterNot {
@@ -395,8 +459,9 @@ class AppViewModel(
     }
 
     private fun runAction(success: String? = null, action: suspend (UserSession) -> Unit) {
+        if (!ensureOnlineForMutation()) return
         val session = currentSession.value ?: return
-        viewModelScope.launch {
+        scope.launch {
             runCatching { action(session) }
                 .onSuccess {
                     if (success != null) _message.value = success
@@ -406,13 +471,30 @@ class AppViewModel(
         }
     }
 
+    private fun isMutationBlockedOffline(session: UserSession?): Boolean =
+        session != null && session.uid != DEMO_USER_ID && !connectivityMonitor.isOnline.value
+
+    private fun ensureOnlineForMutation(): Boolean {
+        val session = currentSession.value ?: return false
+        if (isMutationBlockedOffline(session)) {
+            _message.value = OFFLINE_READ_ONLY_MESSAGE
+            return false
+        }
+        return true
+    }
+
     private fun startSync(initial: Boolean) {
         val session = currentSession.value ?: return
+        if (session.uid == DEMO_USER_ID) return
+        if (!connectivityMonitor.isOnline.value) {
+            _loadState.value = CharacterLoadState()
+            return
+        }
         if (syncJob?.isActive == true) {
             syncRequested = true
             return
         }
-        syncJob = viewModelScope.launch {
+        syncJob = scope.launch {
             _loadState.value = CharacterLoadState(initialLoading = initial, syncing = true)
             try {
                 val failures = mutableListOf<Pair<String, Throwable>>()
@@ -449,8 +531,10 @@ class AppViewModel(
                     }
                 if (failures.isEmpty()) {
                     lastSyncFailure = null
+                    _syncFailure.value = null
                 } else {
                     val failureMessage = syncFailureMessage(failures)
+                    _syncFailure.value = failureMessage
                     // Automatic saves can trigger several sync cycles while the user moves
                     // through the sheet. Report one persistent failure once, instead of
                     // showing the same global snackbar on every screen.
@@ -460,7 +544,9 @@ class AppViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Throwable) {
-                _message.value = userMessage(error, "Falha ao sincronizar dados")
+                val failure = userMessage(error, "Falha ao sincronizar dados")
+                _syncFailure.value = failure
+                _message.value = failure
             } finally {
                 if (syncJob === currentCoroutineContext()[Job]) {
                     _loadState.value = CharacterLoadState()
@@ -497,5 +583,11 @@ class AppViewModel(
                 "Sem permissão para sincronizar $areas. As demais áreas continuam disponíveis e as alterações locais foram preservadas."
             else -> "Sincronização parcial em $areas. Alterações locais foram preservadas."
         }
+    }
+
+    companion object {
+        const val DEMO_USER_ID = "demo-player"
+        const val OFFLINE_READ_ONLY_MESSAGE =
+            "Sem conexão. O aplicativo está em modo somente leitura; reconecte-se para editar."
     }
 }

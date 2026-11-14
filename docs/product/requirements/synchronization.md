@@ -2,7 +2,7 @@
 
 **Capability ID**: `synchronization`
 
-Status: intenção de produto registrada no backlog em 2026-11-12; não implementada nem verificada em runtime.
+Status: implementada em `InDevReview` (`BACKLOG-006` / `SYNC-PLAN-001`, 2026-11-14); verificação JVM concluída e validação runtime em emulador/dispositivo pendente.
 
 ## User goal
 

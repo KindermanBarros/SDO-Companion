@@ -1,16 +1,26 @@
 package com.kinderman.sdo.presentation
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,8 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -47,6 +59,7 @@ import com.kinderman.sdo.ui.SdoNavigationBar
 import com.kinderman.sdo.ui.SdoNavigationItem
 import com.kinderman.sdo.ui.SdoNavigationRail
 import com.kinderman.sdo.ui.SdoPreferences
+import com.kinderman.sdo.ui.SdoTextButton
 
 private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, JOURNAL, SETTINGS }
 
@@ -64,6 +77,7 @@ fun SdoApp(
             application.catalogRepository,
             application.campaignRepository,
             application.operationsRepository,
+            application.connectivityMonitor,
         ),
     )
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
@@ -77,6 +91,8 @@ fun SdoApp(
     val campaignMembers by appViewModel.campaignMembers.collectAsStateWithLifecycle()
     val owners by appViewModel.owners.collectAsStateWithLifecycle()
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
+    val offlineReadOnly by appViewModel.isOfflineReadOnly.collectAsStateWithLifecycle()
+    val syncFailure by appViewModel.syncFailure.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
     val invitePreview by appViewModel.invitePreview.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
@@ -245,7 +261,7 @@ fun SdoApp(
                     saveError = saveErrors[selectedCharacter?.id],
                     session = appSession,
                     catalog = catalog,
-                    readOnly = archived,
+                    readOnly = archived || offlineReadOnly,
                     isCampaignHistorian = isCampaignHistorian,
                     isCampaignResponsible = isCampaignResponsible,
                     snackbarHost = { SnackbarHost(snackbar) },
@@ -283,7 +299,7 @@ fun SdoApp(
                     characters = characters,
                     selectedId = selectedId,
                     compact = preferences.density == SdoContentDensity.COMPACT,
-                    readOnly = archived,
+                    readOnly = archived || offlineReadOnly,
                     onSelect = { navigate(AppSurface.SESSION, it) },
                     onOpenSheet = {
                         navigate(AppSurface.SHEET, it)
@@ -365,6 +381,13 @@ fun SdoApp(
             }
                 }
                 }
+                if (offlineReadOnly || syncFailure != null) {
+                    SyncStatusBanner(
+                        offlineReadOnly = offlineReadOnly,
+                        syncFailure = syncFailure,
+                        onRetry = appViewModel::sync,
+                    )
+                }
                 if (!wide && surface != AppSurface.SHEET) SdoNavigationBar(buildList {
                     add(SdoNavigationItem("Painel", surface == AppSurface.DASHBOARD, Icons.Default.Home) { navigate(AppSurface.DASHBOARD, null) })
                     add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
@@ -381,5 +404,57 @@ fun SdoApp(
             conflict = conflict,
             onResolve = { remoteFieldIds -> appViewModel.resolveConflict(conflict, remoteFieldIds) },
         )
+    }
+}
+
+@Composable
+private fun SyncStatusBanner(
+    offlineReadOnly: Boolean,
+    syncFailure: String?,
+    onRetry: () -> Unit,
+) {
+    val containerColor = if (offlineReadOnly) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        MaterialTheme.colorScheme.errorContainer
+    }
+    val contentColor = if (offlineReadOnly) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.onErrorContainer
+    }
+    val bannerText = if (offlineReadOnly) {
+        "Modo offline · Somente leitura — reconecte para editar"
+    } else {
+        syncFailure.orEmpty()
+    }
+    Surface(
+        color = containerColor,
+        contentColor = contentColor,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = if (offlineReadOnly) Icons.Default.CloudOff else Icons.Default.SyncProblem,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Text(
+                text = bannerText,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            SdoTextButton(onClick = onRetry) {
+                Text(if (offlineReadOnly) "Reconectar" else "Tentar")
+            }
+        }
     }
 }

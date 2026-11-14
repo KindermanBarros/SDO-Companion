@@ -11,7 +11,7 @@ SDO Companion helps players create and manage RPG character sheets and use them 
 | Character sheets | [Character sheets](requirements/character-sheets.md) | Source and tests present; runtime acceptance unverified |
 | Campaign use | [Campaigns](requirements/campaigns.md) | Source and tests present; runtime acceptance unverified |
 | RPG codex | [Codex](requirements/codex.md) | Bundled catalog and screens present; runtime acceptance unverified |
-| Sincronização e conectividade | [Sincronização](requirements/synchronization.md) | Nova política registrada no backlog; não implementada |
+| Sincronização e conectividade | [Sincronização](requirements/synchronization.md) | Implementada em `InDevReview` (`BACKLOG-006`); runtime em emulador/dispositivo pendente |
 
 ## Delivery direction
 
@@ -31,6 +31,7 @@ Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem pr
 | BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
 
 BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests handed off InDevReview (owner runtime/emulator acceptance pending). [Memory](../MEMORY.md), [change record](../changes/2026-11-14-shared-campaign-journal.md). Other backlog items retain their unordered status.
+BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner handed off InDevReview. [Memory](../MEMORY.md), [change record](../changes/2026-11-14-sync-online-only.md).
 
 Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Change record](../changes/2026-11-14-shared-campaign-journal.md): redesigned journal approved by owner with minor Standard color refinement; home settings icon contrast fixed in Standard mode; implementation handed off InDevReview. No product priorities changed.
 
