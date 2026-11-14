@@ -1,0 +1,21 @@
+# Shared campaign journal - InProgress - 1
+
+- Date time: 2026-11-14 01:02 America/La_Paz
+- Task objective: Deliver BACKLOG-001 / CAMPAIGN-PLAN-001.
+- Owner authorization: Start journal; accept release and optimization deliveries.
+- Open questions: None; proposed specification defaults await approval.
+- Shared dependencies and references: [Specification](../../docs/changes/2026-11-14-shared-campaign-journal/spec.md), CAMPAIGN-PLAN-001 and SYNC-PLAN-001 for journal operations.
+- Sub-tasks:
+    - 1 Refine requirements and approve specification - InProgress
+        - Owner confirmed shared text entries; members create, authors edit/delete their own, GM moderates all.
+        - Source observations: GM is campaign owner; HISTORIAN member enum does not confer GM authority.
+        - Definition of done: explicit specification approval.
+    - 2 Define UI contract and implementation slices - ToDo
+        - Cover list/editor, permissions, offline, conflicts and recovery using existing smartphone components.
+        - Dependencies: approved specification and visual direction where required.
+    - 3 Implement and verify approved slices - ToDo
+        - Expected files: campaign domain/data, Firebase rules/tests, presentation and focused tests.
+        - Technology and module changes: None authorized; reuse Firebase/Android stack.
+        - Definition of done: secure access, online-only writes, cross-session updates and runtime evidence.
+- Checks selected for documentation: harness links/anchors/line limits and staged diff; Android checks selected after approved implementation scope.
+- Next action: review draft specification. No application code changed.
