@@ -30,9 +30,9 @@ Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem pr
 | BACKLOG-005 | Grid de batalha compartilhado em tempo real no Modo Sessão | [Campanhas — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) |
 | BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
 
-BACKLOG-001 selected by owner on 2026-11-14; specification approved; redesigned UI InDevReview (implementation pending). [Task state](../../.docs/OngoingTasks/shared_campaign_journal_task_state.md), [approved specification](../changes/2026-11-14-shared-campaign-journal/spec.md). Other backlog items retain their unordered status.
+BACKLOG-001 selected by owner on 2026-11-14; specification approved; UI approved with minor Standard color refinement (implementation pending). [Task state](../../.docs/OngoingTasks/shared_campaign_journal_task_state.md), [approved specification](../changes/2026-11-14-shared-campaign-journal/spec.md). Other backlog items retain their unordered status.
 
-Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Skill correction](../changes/2026-11-14-shared-campaign-journal/styleguide_skill_correction.md): InDevReview; [redesigned journal](../changes/2026-11-14-shared-campaign-journal/design_review.md) InDevReview; visual approval pending. No product priorities changed.
+Owner correction 2026-11-14: journal Pen designs rejected for styleguide noncompliance; explicitly requested enforcing the styleguide in the Pen skill. [Skill correction](../changes/2026-11-14-shared-campaign-journal/styleguide_skill_correction.md): InDevReview; [redesigned journal](../changes/2026-11-14-shared-campaign-journal/design_review.md) approved by owner with minor Standard color refinement; implementation pending. No product priorities changed.
 
 ## Workflow do backlog
 Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Release task](../../.docs/CompletedTasks/release_0_51_1_task_state.md): Done; owner accepted 2026-11-14; published with verified signed APK, CI run 43540829981 successful; existing product priorities unchanged.

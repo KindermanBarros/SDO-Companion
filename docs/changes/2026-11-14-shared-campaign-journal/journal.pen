@@ -135,7 +135,7 @@
                   "type": "text",
                   "id": "y4q3Nb",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -264,7 +264,7 @@
                   "type": "text",
                   "id": "h8b6pR",
                   "name": "List count",
-                  "fill": "#CADCF2",
+                  "fill": "#30C0B7",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "2 REGISTROS",
@@ -304,7 +304,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 143.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -416,7 +416,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 143,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -1634,7 +1634,7 @@
                   "type": "text",
                   "id": "mmVhE",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -1740,7 +1740,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 55,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -1927,7 +1927,7 @@
                   "type": "text",
                   "id": "ptI2T",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -2033,7 +2033,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 82,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -2265,7 +2265,7 @@
                   "type": "text",
                   "id": "lET4G",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -2603,7 +2603,7 @@
                   "type": "text",
                   "id": "soBDr",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -2941,7 +2941,7 @@
                   "type": "text",
                   "id": "p9fafV",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -3266,7 +3266,7 @@
                   "type": "text",
                   "id": "xzZzK",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -3484,7 +3484,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 143,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -3596,7 +3596,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 143,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -3828,7 +3828,7 @@
                   "type": "text",
                   "id": "KditT",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -4033,7 +4033,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 143.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -4145,7 +4145,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 143,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -4377,7 +4377,7 @@
                   "type": "text",
                   "id": "OmOps",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -4483,7 +4483,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 210.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -4778,7 +4778,7 @@
                   "type": "text",
                   "id": "omUmO",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -4884,7 +4884,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 210.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -5079,7 +5079,7 @@
                   "type": "text",
                   "id": "iawcn",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -5185,7 +5185,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 237.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -5493,7 +5493,7 @@
                   "type": "text",
                   "id": "VQVfm",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -5599,7 +5599,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 210.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -5943,7 +5943,7 @@
                   "type": "text",
                   "id": "flqGf",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -6049,7 +6049,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 210.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -6393,7 +6393,7 @@
                   "type": "text",
                   "id": "hfd9K",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -6824,7 +6824,7 @@
                   "type": "text",
                   "id": "YuVJ4",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -7279,7 +7279,7 @@
                   "type": "text",
                   "id": "TeUJ2",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -7759,7 +7759,7 @@
                   "type": "text",
                   "id": "A7sTz",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -7878,7 +7878,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 55,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -8263,7 +8263,7 @@
                   "type": "text",
                   "id": "k9R6i",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -8767,7 +8767,7 @@
                   "type": "text",
                   "id": "eGWW4",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -9271,7 +9271,7 @@
                   "type": "text",
                   "id": "H1gLFr",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "Crônicas de Valdora",
@@ -9751,7 +9751,7 @@
                   "type": "text",
                   "id": "TmZrW",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "Crônicas de Valdora",
@@ -10255,7 +10255,7 @@
                   "type": "text",
                   "id": "WdmWt",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -10423,7 +10423,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 81.99999999999997,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -10485,7 +10485,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 82,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -10767,7 +10767,7 @@
                   "type": "text",
                   "id": "F95WC",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -10873,7 +10873,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 210.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -11346,7 +11346,7 @@
                   "type": "text",
                   "id": "BvXeO",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -11979,7 +11979,7 @@
                   "type": "text",
                   "id": "Zsytj",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -12147,7 +12147,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 81.99999999999997,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -12209,7 +12209,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 82,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {
@@ -12669,7 +12669,7 @@
                   "type": "text",
                   "id": "t3ND9",
                   "name": "Toolbar context",
-                  "fill": "#CADCF2",
+                  "fill": "#5690DA",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "CAMPANHA",
@@ -12775,7 +12775,7 @@
                       "fill": "#191B1C",
                       "width": 394,
                       "height": 203.00000000000003,
-                      "stroke": "#546269",
+                      "stroke": "#5690DAB8",
                       "strokeWidth": 1
                     },
                     {

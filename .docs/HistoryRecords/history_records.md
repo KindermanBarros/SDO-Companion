@@ -89,3 +89,7 @@ Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving a
 - Continued BACKLOG-001 using the corrected Pen skill: source-mapped typography, geometry, semantic controls and graphic layers; rendered26 states in both modes with UI contract and implementation/test plan.
 - Checks PASS:52 unique references/430x932 PNGs; full export inspection; fresh Pen reopen52 frames/0 layout problems; representative PNG hashes identical; artifact links/limits; validate-harness.ps1 (116 documents); scoped diff and scratch cleanup.
 - Design stage enters InDevReview pending owner visual approval. No app code/build/runtime or live service acceptance; adb has no connected device.
+
+## 2026-11-14 01:41 America/La_Paz - Accept journal UI and refine Standard color
+- Owner approved UI and requested slightly more color in Standard. Added semantic secondary-blue information borders/context and cyan count; preserved layout and Cybergrunge; promoted journal.pen and refreshed26 Standard exports/review board.
+- Verification: inspected revised full-size Standard list; reused unchanged design evidence; validate-harness.ps1 PASS (116 documents); scoped diff PASS. No application/runtime checks for this design-only refinement. Implementation remains pending; color adjustment handed off InDevReview.
