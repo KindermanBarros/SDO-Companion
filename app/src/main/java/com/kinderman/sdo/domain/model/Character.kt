@@ -420,6 +420,9 @@ data class Character(
     val lockedAt: Long? = null,
     val updatedAt: Long = System.currentTimeMillis(),
     val lastEditedBy: String = "",
+    val fieldUpdatedAt: Map<String, Long> = emptyMap(),
+    /** In-memory editor baseline; never serialized into CharacterRecord or Firestore. */
+    val editingBase: Character? = null,
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
     val deleted: Boolean = false,

@@ -32,3 +32,5 @@ Character sync exchanges CharacterRecord documents; local dirty/deleted state an
 - Planned connectivity changes: [Synchronization requirements](../../product/requirements/synchronization.md).
 
 No Bluetooth UUIDs, camera protocol or custom HTTP endpoint contract exists in the inspected application.
+
+Sheet sync adds an optional fieldUpdatedAt map of conflict-group IDs to client-derived revision timestamps; absent metadata uses legacy document-time fallback. Local Room schema 30 persists it. Editor baselines are in-memory only and never serialized. [Synchronization policy](../../product/requirements/synchronization.md#sync-plan-003---latest-field-realtime-sheet-convergence) owns current guarantees and deferred work.

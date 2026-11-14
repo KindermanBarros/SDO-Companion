@@ -18,38 +18,44 @@ data class CharacterSyncConflict(
 
 const val MAX_AUTOMATIC_CONFLICT_FIELDS = 5
 
-/**
- * Returns the online fields to select for a small last-write-wins conflict.
- *
- * Character documents currently carry one write timestamp, so every conflicting field from
- * the most recently written document wins together. Equal timestamps preserve the local copy,
- * avoiding the loss of an edit made at the same instant as the online write.
- * Large conflicts remain explicit because they are more likely to contain unrelated edits.
+/** Resolve every conflict field by its own edit time, regardless of account or field count.
+ * Legacy documents without field metadata retain their document-time fallback.
+ * Exact ties keep the committed remote value so clients converge instead of oscillating.
  */
-fun automaticRemoteFieldIds(conflict: CharacterSyncConflict): Set<String>? {
-    if (conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS) return null
-    return if (conflict.remoteUpdatedAt > conflict.local.updatedAt) {
-        conflict.fields.mapTo(mutableSetOf(), CharacterConflictField::id)
-    } else {
-        emptySet()
-    }
-}
-
-/**
- * Resolves sync conflicts using account awareness:
- * - Same-account edits always converge automatically (last-write-wins regardless of field count).
- * - Cross-account edits reserve manual resolution for concurrent multi-field conflicts.
- */
-fun automaticRemoteFieldIds(conflict: CharacterSyncConflict, sessionUid: String): Set<String>? {
-    val isSameAccount = sessionUid.isNotBlank() && conflict.remote.lastEditedBy == sessionUid
-    if (isSameAccount) {
-        return if (conflict.remoteUpdatedAt > conflict.local.updatedAt) {
-            conflict.fields.mapTo(mutableSetOf(), CharacterConflictField::id)
-        } else {
-            emptySet()
+fun automaticRemoteFieldIds(conflict: CharacterSyncConflict): Set<String> {
+    fun editTime(character: Character, fieldId: String, fallback: Long): Long {
+        val group = if (fieldId == "inventory" || fieldId == "itemStates") listOf("inventory", "itemStates") else listOf(fieldId)
+        return group.maxOf { id ->
+            character.fieldUpdatedAt[id] ?: if (character.fieldUpdatedAt.isEmpty()) fallback else 0L
         }
     }
-    return automaticRemoteFieldIds(conflict)
+    return conflict.fields.filter { field ->
+        editTime(conflict.remote, field.id, conflict.remoteUpdatedAt) >=
+            editTime(conflict.local, field.id, conflict.local.updatedAt)
+    }.mapTo(mutableSetOf(), CharacterConflictField::id)
+}
+
+@Suppress("UNUSED_PARAMETER")
+fun automaticRemoteFieldIds(conflict: CharacterSyncConflict, sessionUid: String): Set<String> =
+    automaticRemoteFieldIds(conflict)
+
+/** Stamp only edited conflict groups; preserve timestamps of untouched fields. */
+fun Character.withFieldEditTimes(previous: Character?, at: Long = updatedAt): Character {
+    val baseline = previous ?: Character(id = id, updatedAt = 0, dirty = false)
+    val inherited = if (baseline.fieldUpdatedAt.isNotEmpty()) baseline.fieldUpdatedAt else
+        characterConflictFields(Character(id = id, updatedAt = 0, dirty = false), baseline)
+            .associate { it.id to baseline.updatedAt }
+    val changed = characterConflictFields(baseline, this)
+    // Membership removal has a narrowly-scoped backend contract; retain existing metadata.
+    if (previous != null && campaignId.isBlank() && changed.map { it.id }.toSet() == setOf("campaignId")) {
+        return copy(fieldUpdatedAt = previous.fieldUpdatedAt)
+    }
+    val times = inherited + fieldUpdatedAt
+    val editAt = if (changed.isEmpty()) at else maxOf(at, (previous?.updatedAt ?: 0L) + 1)
+    val updatedTimes = times + changed.associate { field ->
+        field.id to maxOf(editAt, (times[field.id] ?: 0L) + 1)
+    }
+    return copy(fieldUpdatedAt = updatedTimes, updatedAt = maxOf(at, updatedTimes.values.maxOrNull() ?: 0L))
 }
 
 fun characterConflictFields(local: Character, remote: Character): List<CharacterConflictField> = buildList {
@@ -72,6 +78,18 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("age", "Idade", local.age, remote.age, ::textSummary)
     changed("sex", "Gênero", local.sex, remote.sex, ::textSummary)
     changed("level", "Nível", local.level, remote.level)
+    changed("size", "size", local.size, remote.size)
+    changed("creationStatus", "creationStatus", local.creationStatus, remote.creationStatus)
+    changed("creationStep", "creationStep", local.creationStep, remote.creationStep)
+    changed("creationCompletedAt", "creationCompletedAt", local.creationCompletedAt, remote.creationCompletedAt)
+    changed("creationRulesVersion", "creationRulesVersion", local.creationRulesVersion, remote.creationRulesVersion)
+    changed("itemSchemaVersion", "itemSchemaVersion", local.itemSchemaVersion, remote.itemSchemaVersion)
+    changed("progressionLifeBonus", "progressionLifeBonus", local.progressionLifeBonus, remote.progressionLifeBonus)
+    changed("progressionSanityBonus", "progressionSanityBonus", local.progressionSanityBonus, remote.progressionSanityBonus)
+    changed("progressionArcaneBonus", "progressionArcaneBonus", local.progressionArcaneBonus, remote.progressionArcaneBonus)
+    changed("progressionEnergyBonus", "progressionEnergyBonus", local.progressionEnergyBonus, remote.progressionEnergyBonus)
+    changed("progressionHistory", "progressionHistory", local.progressionHistory, remote.progressionHistory)
+    changed("itemCreationDraft", "itemCreationDraft", local.itemCreationDraft, remote.itemCreationDraft)
     changed("money", "Dinheiro", local.money, remote.money)
     changed("life", "Vida", local.life, remote.life, ::resourceSummary)
     changed("sanity", "Sanidade", local.sanity, remote.sanity, ::resourceSummary)
@@ -113,13 +131,13 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("itemStates", "Estado canônico do inventário", local.itemStates, remote.itemStates) { "${it.size} item(ns)" }
     changed("customItemCatalog", "Catálogo personalizado", local.customItemCatalog, remote.customItemCatalog) { "${it.size} entrada(s)" }
     changed("progression", "Escolhas auditáveis", local.progression, remote.progression) { "${it.choices.size} escolha(s)" }
-    changed("bodyState", "Estado corporal", local.bodyState, remote.bodyState) { state ->
-        "${state?.regions?.size ?: 0} regiões, ${state?.organs?.size ?: 0} órgãos, ${state?.regions?.sumOf { it.injuries.size } ?: 0} lesão(ões)"
+    changed("bodyState", "Estado corporal", Triple(local.bodyState, local.bodyRegions, local.organs),
+        Triple(remote.bodyState, remote.bodyRegions, remote.organs)) { value ->
+        "${value.second.size} regions / ${value.third.size} organs"
     }
     changed("agilityLimit", "Limitação de Agilidade", local.agilityLimit, remote.agilityLimit, ::textSummary)
-    changed("conditionInstances", "Condições", local.conditionInstances, remote.conditionInstances) { values ->
-        values.joinToString(" • ") { "${it.name}${it.intensity?.let { level -> " $level" }.orEmpty()}" }.ifBlank { "Nenhuma" }
-    }
+    changed("conditionInstances", "Condições", local.conditionInstances to local.conditions,
+        remote.conditionInstances to remote.conditions) { values -> "${values.first.size} conditions" }
     changed("activeModifiers", "Modificadores ativos", local.activeModifiers, remote.activeModifiers) { "${it.size} modificador(es)" }
     changed("story", "História", local.story, remote.story, ::textSummary)
     changed("personalNotes", "Anotações", local.personalNotes, remote.personalNotes) { values -> namedListSummary(values) { it.title } }
@@ -136,6 +154,9 @@ fun mergeCharacterConflict(
 
     val lock = selected("lock", local.lockSnapshot(), remote.lockSnapshot())
     return local.copy(
+        fieldUpdatedAt = (local.fieldUpdatedAt.keys + remote.fieldUpdatedAt.keys).associateWith { id ->
+            maxOf(local.fieldUpdatedAt[id] ?: 0L, remote.fieldUpdatedAt[id] ?: 0L)
+        },
         canonicalSchemaVersion = selected("canonicalSchemaVersion", local.canonicalSchemaVersion, remote.canonicalSchemaVersion),
         migrationReviews = selected("migrationReviews", local.migrationReviews, remote.migrationReviews),
         ownerId = selected("ownerId", local.ownerId, remote.ownerId),
@@ -148,7 +169,19 @@ fun mergeCharacterConflict(
         height = selected("height", local.height, remote.height),
         age = selected("age", local.age, remote.age),
         sex = selected("sex", local.sex, remote.sex),
-        size = remote.size,
+        size = selected("size", local.size, remote.size),
+        creationStatus = selected("creationStatus", local.creationStatus, remote.creationStatus),
+        creationStep = selected("creationStep", local.creationStep, remote.creationStep),
+        creationCompletedAt = selected("creationCompletedAt", local.creationCompletedAt, remote.creationCompletedAt),
+        creationRulesVersion = selected("creationRulesVersion", local.creationRulesVersion, remote.creationRulesVersion),
+        itemSchemaVersion = selected("itemSchemaVersion", local.itemSchemaVersion, remote.itemSchemaVersion),
+        progressionLifeBonus = selected("progressionLifeBonus", local.progressionLifeBonus, remote.progressionLifeBonus),
+        progressionSanityBonus = selected("progressionSanityBonus", local.progressionSanityBonus, remote.progressionSanityBonus),
+        progressionArcaneBonus = selected("progressionArcaneBonus", local.progressionArcaneBonus, remote.progressionArcaneBonus),
+        progressionEnergyBonus = selected("progressionEnergyBonus", local.progressionEnergyBonus, remote.progressionEnergyBonus),
+        progressionHistory = selected("progressionHistory", local.progressionHistory, remote.progressionHistory),
+        itemCreationDraft = selected("itemCreationDraft", local.itemCreationDraft, remote.itemCreationDraft),
+
         level = selected("level", local.level, remote.level),
         money = selected("money", local.money, remote.money),
         life = selected("life", local.life, remote.life),
@@ -194,6 +227,7 @@ fun mergeCharacterConflict(
         lockType = lock.type,
         lockedBy = lock.by,
         lockedAt = lock.at,
+        appliedDeliveryIds = (local.appliedDeliveryIds + remote.appliedDeliveryIds).distinct(),
         deleted = false,
     ).withNormalizedInventory().synchronizeItemPowers()
 }

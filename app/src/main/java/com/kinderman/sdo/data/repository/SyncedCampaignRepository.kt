@@ -139,7 +139,7 @@ class SyncedCampaignRepository(
         batch.update(reference, mapOf("state" to CampaignState.DELETED.name, "updatedAt" to now))
         batch.commit().await()
         characterDao.all().filter { it.campaignId == campaign.id }.forEach {
-            characterDao.upsert(it.copy(campaignId = "", updatedAt = now, lastEditedBy = session.uid, dirty = true))
+            characterDao.upsertTracked(it.copy(campaignId = "", updatedAt = now, lastEditedBy = session.uid, dirty = true))
         }
         dao.upsertCampaign(requireCampaign(campaign.id).copy(
             state = CampaignState.DELETED, updatedAt = now, dirty = false, lastSyncedAt = now,
@@ -371,7 +371,7 @@ class SyncedCampaignRepository(
                 dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
                 if (remote.state == CampaignState.DELETED.name) {
                     characterDao.inCampaign(remote.id).forEach {
-                        characterDao.upsert(it.copy(campaignId = "", dirty = true))
+                        characterDao.upsertTracked(it.copy(campaignId = "", dirty = true))
                     }
                 }
             }
@@ -424,7 +424,7 @@ class SyncedCampaignRepository(
         member.characterIds.forEach { characterId ->
             val record = characterDao.get(characterId) ?: return@forEach
             if (normalizeCampaignId(record.campaignId) == campaignId) {
-                characterDao.upsert(
+                characterDao.upsertTracked(
                     record.copy(
                         campaignId = "",
                         updatedAt = now,

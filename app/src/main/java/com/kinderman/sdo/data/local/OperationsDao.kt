@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import com.kinderman.sdo.domain.model.DomainError
+import com.kinderman.sdo.domain.model.withFieldEditTimes
 
 @Dao
 interface OperationsDao {
@@ -47,7 +48,7 @@ interface OperationsDao {
             )
         }
         if (insertOperation(operation) == -1L) return false
-        upsertCharacter(updatedCharacter)
+        upsertCharacter(updatedCharacter.toDomain().withFieldEditTimes(current?.toDomain()).toRecord())
         return true
     }
 
@@ -58,7 +59,7 @@ interface OperationsDao {
             upsertDelivery(delivery)
             return false
         }
-        upsertCharacter(updatedCharacter)
+        upsertCharacter(updatedCharacter.toDomain().withFieldEditTimes(stored?.toDomain()).toRecord())
         upsertDelivery(delivery)
         return true
     }

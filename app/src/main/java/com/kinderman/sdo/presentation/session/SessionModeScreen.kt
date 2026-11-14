@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -38,6 +39,8 @@ import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -76,8 +79,8 @@ import com.kinderman.sdo.domain.model.canonicalConditions
 import com.kinderman.sdo.domain.model.localProtectionBreakdown
 import com.kinderman.sdo.domain.model.LoadCondition
 import com.kinderman.sdo.domain.model.InventoryState
-import com.kinderman.sdo.domain.model.inventoryState
-import com.kinderman.sdo.domain.model.effectiveLoad
+import com.kinderman.sdo.ui.SdoFilterChip
+import kotlinx.coroutines.launch
 import com.kinderman.sdo.ui.HudBackground
 import com.kinderman.sdo.ui.LocalSdoPreferences
 import com.kinderman.sdo.ui.TechPanel
@@ -91,6 +94,16 @@ import com.kinderman.sdo.presentation.character.CharacterActionStyle
 import com.kinderman.sdo.presentation.character.ChoiceField
 
 private const val ALL_ABILITIES = "ALL"
+
+private enum class SessionSection(val label: Int) {
+    OVERVIEW(R.string.session_overview),
+    RESOURCES(R.string.session_resources),
+    ABILITIES(R.string.session_ability_section),
+    PROTECTIONS(R.string.session_protections),
+    BODY(R.string.session_body),
+    EQUIPMENT(R.string.session_equipment),
+    CONDITIONS(R.string.session_conditions),
+}
 
 private data class SessionAbilityEntry(val ability: Ability, val description: String, val key: String)
 private data class SessionResourceValue(
@@ -114,6 +127,7 @@ fun SessionModeScreen(
     onBack: () -> Unit,
     canOpenJournal: (Character) -> Boolean = { false },
     onOpenJournal: (Character) -> Unit = {},
+    onInventoryStateChange: (Character, String, InventoryState) -> Unit,
 ) {
     BackHandler(onBack = onBack)
     val character = characters.firstOrNull { it.id == selectedId }
@@ -142,7 +156,9 @@ fun SessionModeScreen(
             if (character == null) {
                 CharacterSelector(characters, Modifier.padding(padding), onSelect)
             } else {
-                SessionContent(character, compact, readOnly, Modifier.padding(padding), onCommand)
+                key(character.id) {
+                    SessionContent(character, compact, readOnly, Modifier.padding(padding), onCommand, onInventoryStateChange)
+                }
             }
         }
     }
@@ -212,11 +228,17 @@ private fun SessionContent(
     readOnly: Boolean,
     modifier: Modifier,
     onCommand: (Character, SessionCommand) -> Unit,
+    onInventoryStateChange: (Character, String, InventoryState) -> Unit,
 ) {
     var damageDialog by rememberSaveable(character.id) { mutableStateOf(false) }
     var healingDialog by rememberSaveable(character.id) { mutableStateOf(false) }
     var pendingAbilityId by rememberSaveable(character.id) { mutableStateOf<String?>(null) }
     var abilityFilter by rememberSaveable(character.id) { mutableStateOf(ALL_ABILITIES) }
+    var favoritesOnly by rememberSaveable(character.id) { mutableStateOf(false) }
+    var availableOnly by rememberSaveable(character.id) { mutableStateOf(false) }
+    var allResources by rememberSaveable(character.id) { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     val entries = remember(character.abilities, character.powers, character.mysticAbilities) {
         val occurrences = mutableMapOf<String, Int>()
         character.allCanonicalAbilitiesSafely()
@@ -234,218 +256,252 @@ private fun SessionContent(
                 }, "ability:${ability.id}:$occurrence")
             }
     }
-    val filteredEntries = remember(entries, abilityFilter) {
-        entries.filter { abilityFilter == ALL_ABILITIES || it.ability.kind.name == abilityFilter }
+    val filteredEntries = remember(entries, abilityFilter, favoritesOnly, availableOnly) {
+        entries.filter {
+            (abilityFilter == ALL_ABILITIES || it.ability.kind.name == abilityFilter) &&
+                (!favoritesOnly || it.ability.favorite) && (!availableOnly || it.ability.available)
+        }
     }
+    val sectionIndices = linkedMapOf(
+        SessionSection.OVERVIEW to 0,
+        SessionSection.RESOURCES to 2,
+        SessionSection.ABILITIES to 3,
+        SessionSection.PROTECTIONS to 5 + filteredEntries.size,
+        SessionSection.BODY to 6 + filteredEntries.size,
+        SessionSection.EQUIPMENT to 7 + filteredEntries.size,
+        SessionSection.CONDITIONS to 8 + filteredEntries.size,
+    )
+    val sectionLabels = SessionSection.entries.associateWith { stringResource(it.label) }
+    val currentSection = sectionIndices.entries.lastOrNull { it.value <= listState.firstVisibleItemIndex }?.key
+        ?: SessionSection.OVERVIEW
     val allAbilitiesLabel = stringResource(R.string.session_all_abilities)
     val spacing = if (compact) 8.dp else 14.dp
-    LazyColumn(
-        modifier.fillMaxSize().testTag("session_list"),
-        contentPadding = PaddingValues(if (compact) 12.dp else 18.dp),
-        verticalArrangement = Arrangement.spacedBy(spacing),
-    ) {
-        item {
-            SdoScreenMasthead(
-                eyebrow = stringResource(R.string.session_eyebrow),
-                title = stringResource(R.string.session_title),
-                metadata = stringResource(
-                    when {
-                        readOnly -> R.string.session_read_only
-                        character.dirty -> R.string.session_pending_sync
-                        else -> R.string.session_synced
-                    },
-                ),
-            )
-        }
-        item {
-            SdoInsetCard(
-                accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
-                contentPadding = 8.dp,
-                verticalSpacing = 6.dp,
-            ) {
-                SdoMetadataText(
-                    text = stringResource(
-                        R.string.session_resources_summary,
-                        character.life.current,
-                        character.lifeMaximum,
-                        character.energy.current,
-                        character.energyMaximum,
-                        character.arcane.current,
-                        character.arcaneMaximum,
-                        character.currentLoad,
-                        character.maximumLoad,
+    Column(modifier.fillMaxSize()) {
+        ChoiceField(
+            label = stringResource(R.string.session_jump_to),
+            value = currentSection,
+            options = SessionSection.entries,
+            enabled = true,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).testTag("session_section_jump"),
+            display = { sectionLabels.getValue(it) },
+        ) { section -> scope.launch { listState.scrollToItem(sectionIndices.getValue(section)) } }
+        LazyColumn(
+            Modifier.weight(1f).fillMaxWidth().testTag("session_list"),
+            state = listState,
+            contentPadding = PaddingValues(if (compact) 12.dp else 18.dp),
+            verticalArrangement = Arrangement.spacedBy(spacing),
+        ) {
+            item(key = "session_overview") {
+                SdoScreenMasthead(
+                    eyebrow = stringResource(R.string.session_eyebrow),
+                    title = stringResource(R.string.session_title),
+                    metadata = stringResource(
+                        when {
+                            readOnly -> R.string.session_read_only
+                            character.dirty -> R.string.session_pending_sync
+                            else -> R.string.session_synced
+                        },
                     ),
+                )
+            }
+            item(key = "session_actions") {
+                SdoInsetCard(
+                    accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                    contentPadding = 8.dp,
+                    verticalSpacing = 6.dp,
+                ) {
+                    SdoMetadataText(
+                        text = stringResource(
+                            R.string.session_resources_summary,
+                            character.life.current,
+                            character.lifeMaximum,
+                            character.energy.current,
+                            character.energyMaximum,
+                            character.arcane.current,
+                            character.arcaneMaximum,
+                            character.currentLoad,
+                            character.maximumLoad,
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    when (character.loadCondition) {
+                        LoadCondition.OVERLOADED -> {
+                            Text(stringResource(R.string.session_overloaded), color = MaterialTheme.colorScheme.error)
+                            SdoMetadataText(stringResource(R.string.session_overload_details), style = MaterialTheme.typography.labelSmall)
+                        }
+                        LoadCondition.IMMOBILE -> {
+                            Text(stringResource(R.string.session_immobile), color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.session_immobile_details), color = MaterialTheme.colorScheme.error)
+                        }
+                        else -> Unit
+                    }
+                    Text(stringResource(R.string.session_quick_actions), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        CharacterActionButton(stringResource(R.string.session_damage), !readOnly, CharacterActionStyle.PRIMARY, Modifier.weight(1f).testTag("session_damage")) { damageDialog = true }
+                        CharacterActionButton(stringResource(R.string.session_heal), !readOnly, CharacterActionStyle.SECONDARY, Modifier.weight(1f).testTag("session_heal")) { healingDialog = true }
+                    }
+                    if (readOnly) Text(stringResource(R.string.session_controls_locked), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            item(key = "session_resources") {
+                TechPanel(accent = MaterialTheme.colorScheme.secondary) {
+                    SectionHeader("01", stringResource(R.string.session_resources))
+                    val resources = listOf(
+                        SessionResourceValue(stringResource(R.string.session_life), character.life.current, character.lifeMaximum, SessionResource.LIFE),
+                        SessionResourceValue(stringResource(R.string.session_energy), character.energy.current, character.energyMaximum, SessionResource.ENERGY),
+                        SessionResourceValue(stringResource(R.string.session_sanity), character.sanity.current, character.sanityMaximum, SessionResource.SANITY),
+                        SessionResourceValue(stringResource(R.string.session_arcane), character.arcane.current, character.arcaneMaximum, SessionResource.ARCANE),
+                        SessionResourceValue(stringResource(R.string.session_destiny), character.destiny.current, character.destinyMaximum, SessionResource.DESTINY, SessionOperationType.DESTINY),
+                        SessionResourceValue(stringResource(R.string.session_exhaustion), character.exhaustion.current, character.exhaustion.maximum, SessionResource.EXHAUSTION),
+                        SessionResourceValue(stringResource(R.string.session_corruption), character.corruption.current, character.corruption.maximum, SessionResource.CORRUPTION),
+                    )
+                    val columns = if (LocalDensity.current.fontScale > 1.2f) 1 else 2
+                    (if (allResources) resources else resources.take(2)).chunked(columns).forEach { pair ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            pair.forEach { resource ->
+                                ResourceControl(resource.label, resource.current, resource.maximum, !readOnly, compact, Modifier.weight(1f)) { next ->
+                                    onCommand(character, SessionCommand(type = resource.operationType, resource = resource.resource, amount = next - resource.current))
+                                }
+                            }
+                            if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                        }
+                    }
+                    SdoTextButton(
+                        onClick = { allResources = !allResources },
+                        modifier = Modifier.fillMaxWidth().testTag("session_toggle_resources"),
+                    ) { Text(stringResource(if (allResources) R.string.session_fewer_resources else R.string.session_all_resources)) }
+                    if (allResources) MoneyControl(character.money, !readOnly, compact) { next ->
+                        onCommand(
+                            character,
+                            SessionCommand(
+                                type = SessionOperationType.MONEY,
+                                amount = next - character.money,
+                            ),
+                        )
+                    }
+                }
+            }
+            item(key = "session_ability_filters") {
+                ChoiceField(
+                    label = stringResource(R.string.session_ability_filter),
+                    value = abilityFilter,
+                    options = listOf(ALL_ABILITIES) + AbilityKind.entries.map { it.name },
+                    enabled = true,
+                    modifier = Modifier.fillMaxWidth().testTag("session_ability_filter"),
+                    display = { value -> AbilityKind.entries.firstOrNull { it.name == value }?.label ?: allAbilitiesLabel },
+                ) { abilityFilter = it }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SdoFilterChip(
+                        label = stringResource(R.string.session_favorites),
+                        selected = favoritesOnly,
+                        onClick = { favoritesOnly = !favoritesOnly },
+                        modifier = Modifier.weight(1f).testTag("session_favorites"),
+                    )
+                    SdoFilterChip(
+                        label = stringResource(R.string.session_available),
+                        selected = availableOnly,
+                        onClick = { availableOnly = !availableOnly },
+                        modifier = Modifier.weight(1f).testTag("session_available"),
+                    )
+                }
+                if (abilityFilter != ALL_ABILITIES || favoritesOnly || availableOnly) {
+                    SdoTextButton(
+                        onClick = { abilityFilter = ALL_ABILITIES; favoritesOnly = false; availableOnly = false },
+                        modifier = Modifier.testTag("session_clear_filters"),
+                    ) { Text(stringResource(R.string.session_clear_filters)) }
+                }
+                SdoMetadataText(
+                    stringResource(R.string.session_ability_count, filteredEntries.size, entries.size),
                     style = MaterialTheme.typography.labelSmall,
                 )
-                when (character.loadCondition) {
-                    LoadCondition.OVERLOADED -> {
-                        Text(stringResource(R.string.session_overloaded), color = MaterialTheme.colorScheme.error)
-                        SdoMetadataText(stringResource(R.string.session_overload_details), style = MaterialTheme.typography.labelSmall)
-                    }
-                    LoadCondition.IMMOBILE -> {
-                        Text(stringResource(R.string.session_immobile), color = MaterialTheme.colorScheme.error)
-                        Text(stringResource(R.string.session_immobile_details), color = MaterialTheme.colorScheme.error)
-                    }
-                    else -> Unit
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CharacterActionButton("Aplicar dano", !readOnly, CharacterActionStyle.PRIMARY, Modifier.weight(1f)) { damageDialog = true }
-                    CharacterActionButton("Aplicar cura", !readOnly, CharacterActionStyle.SECONDARY, Modifier.weight(1f)) { healingDialog = true }
-                }
-                if (readOnly) Text(stringResource(R.string.session_controls_locked), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
             }
-        }
-        item {
-            ChoiceField(
-                label = stringResource(R.string.session_ability_filter),
-                value = abilityFilter,
-                options = listOf(ALL_ABILITIES) + AbilityKind.entries.map { it.name },
-                enabled = true,
-                modifier = Modifier.fillMaxWidth().testTag("session_ability_filter"),
-                display = { value -> AbilityKind.entries.firstOrNull { it.name == value }?.label ?: allAbilitiesLabel },
-            ) { abilityFilter = it }
-        }
-        item {
-            SectionHeader("01", stringResource(R.string.session_ability_section))
-            if (filteredEntries.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.session_no_abilities),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
-        items(filteredEntries, key = { "${character.id}:${it.key}" }) { entry ->
-            SessionAbilityCard(entry, compact, !readOnly) { pendingAbilityId = entry.ability.id }
-        }
-        item {
-            TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                SectionHeader("02", "Recursos rápidos")
-                val resources = listOf(
-                    SessionResourceValue("VIDA", character.life.current, character.lifeMaximum, SessionResource.LIFE),
-                    SessionResourceValue("SANIDADE", character.sanity.current, character.sanityMaximum, SessionResource.SANITY),
-                    SessionResourceValue("ARCANO", character.arcane.current, character.arcaneMaximum, SessionResource.ARCANE),
-                    SessionResourceValue("ENERGIA", character.energy.current, character.energyMaximum, SessionResource.ENERGY),
-                    SessionResourceValue("DESTINO", character.destiny.current, character.destinyMaximum, SessionResource.DESTINY, SessionOperationType.DESTINY),
-                    SessionResourceValue("EXAUSTÃO", character.exhaustion.current, character.exhaustion.maximum, SessionResource.EXHAUSTION),
-                    SessionResourceValue("CORRUPÇÃO", character.corruption.current, character.corruption.maximum, SessionResource.CORRUPTION),
-                )
-                resources.chunked(2).forEach { pair ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        pair.forEach { resource ->
-                            ResourceControl(resource.label, resource.current, resource.maximum, !readOnly, compact, Modifier.weight(1f)) { next ->
-                                onCommand(character, SessionCommand(type = resource.operationType, resource = resource.resource, amount = next - resource.current))
-                            }
-                        }
-                        if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-                    }
-                }
-                MoneyControl(character.money, !readOnly, compact) { next ->
-                    onCommand(
-                        character,
-                        SessionCommand(
-                            type = SessionOperationType.MONEY,
-                            amount = next - character.money,
-                        ),
+            item(key = "session_ability_header") {
+                SectionHeader("02", stringResource(R.string.session_ability_section))
+                if (filteredEntries.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.session_no_abilities),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
-        }
-        item {
-            TechPanel {
-                SectionHeader("03", "Proteções")
-                character.calculatedProtections().forEach { (name, value) ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(name, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(value.toString(), color = MaterialTheme.colorScheme.onSurface)
-                    }
-                }
+            items(filteredEntries, key = { "${character.id}:${it.key}" }) { entry ->
+                SessionAbilityCard(entry, compact, !readOnly) { pendingAbilityId = entry.ability.id }
             }
-        }
-        item {
-            TechPanel(accent = MaterialTheme.colorScheme.error) {
-                SectionHeader("04", "Corpo")
-                character.canonicalBodyState().regions.chunked(2).forEach { pair ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        pair.forEach { region ->
-                            SdoInsetCard(
-                                modifier = Modifier.weight(1f), contentPadding = if (compact) 6.dp else 9.dp,
-                                verticalSpacing = 2.dp,
-                            ) {
-                                Text(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-                                SessionBodyStatus(region.state.label.uppercase(), region.failures)
-                                Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
+            item(key = "session_protections") {
+                TechPanel {
+                    SectionHeader("03", stringResource(R.string.session_protections))
+                    character.calculatedProtections().forEach { (name, value) ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(name, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(value.toString(), color = MaterialTheme.colorScheme.onSurface)
                         }
-                        if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
                     }
                 }
             }
-        }
-        item {
-            val readyItems = character.inventory.filter {
-                it.inventoryState in setOf(InventoryState.WIELDED, InventoryState.EQUIPPED, InventoryState.QUICK_ACCESS) ||
-                    it.category.equals("Munição", true) || it.linkedAshId.isNotBlank()
-            }
-            TechPanel {
-                SectionHeader("05", "Equipamento pronto")
-                if (readyItems.isEmpty()) Text("Nenhum equipamento operacional.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                readyItems.forEach { item ->
-                    SdoInsetCard(contentPadding = 8.dp, verticalSpacing = 4.dp) {
-                        SdoCardTitle(
-                            item.name.ifBlank { "Item sem nome" }, modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall,
-                        )
-                        Text(
-                            item.category.ifBlank { "ITEM" }.uppercase(), modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall,
-                        )
-                        SdoMetadataText(
-                            buildList {
-                                add(item.inventoryState.label.uppercase())
-                                add("CARGA ${item.effectiveLoad()}")
-                                if (item.category.equals("Munição", true) || item.linkedAshId.isNotBlank()) add("QTD ${item.quantity}")
-                            }.joinToString(" // "),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
+            item(key = "session_body") {
+                TechPanel(accent = MaterialTheme.colorScheme.error) {
+                    SectionHeader("04", stringResource(R.string.session_body))
+                    character.canonicalBodyState().regions.chunked(2).forEach { pair ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            pair.forEach { region ->
+                                SdoInsetCard(
+                                    modifier = Modifier.weight(1f), contentPadding = if (compact) 6.dp else 9.dp,
+                                    verticalSpacing = 2.dp,
+                                ) {
+                                    Text(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+                                    SessionBodyStatus(region.state.label.uppercase(), region.failures)
+                                    Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                            if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                        }
                     }
                 }
-                SdoMetadataText("Consulta apenas // altere equipamento e munição na ficha completa", style = MaterialTheme.typography.labelSmall)
             }
-        }
-        item {
-            val conditions = character.canonicalConditions()
-            TechPanel(accent = if (conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
-                SectionHeader("06", "Condições // ${conditions.size}")
-                if (conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                conditions.forEach { condition ->
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        SdoMetadataText(condition.sessionLabel(), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        SdoTextButton(
-                            enabled = !readOnly,
-                            onClick = {
-                                onCommand(
-                                    character,
-                                    SessionCommand(
-                                        type = SessionOperationType.CONDITION_REMOVE,
-                                        conditionId = condition.instanceId,
-                                    ),
-                                )
-                            },
-                        ) { Text("REMOVER") }
+            item(key = "session_equipment") {
+                TechPanel {
+                    SectionHeader("05", stringResource(R.string.session_equipment))
+                    SessionInventoryActions(character, readOnly, onCommand, onInventoryStateChange)
+                }
+            }
+            item(key = "session_conditions") {
+                val conditions = character.canonicalConditions()
+                TechPanel(accent = if (conditions.isEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) {
+                    SectionHeader("06", "Condições // ${conditions.size}")
+                    if (conditions.isEmpty()) Text("Nenhuma condição ativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    SessionAddCondition(readOnly) { payload ->
+                        onCommand(character, SessionCommand(type = SessionOperationType.CONDITION_ADD, condition = payload))
+                    }
+                    conditions.forEach { condition ->
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            SdoMetadataText(condition.sessionLabel(), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                            SdoTextButton(
+                                enabled = !readOnly,
+                                onClick = {
+                                    onCommand(
+                                        character,
+                                        SessionCommand(
+                                            type = SessionOperationType.CONDITION_REMOVE,
+                                            conditionId = condition.instanceId,
+                                        ),
+                                    )
+                                },
+                            ) { Text("REMOVER") }
+                        }
                     }
                 }
             }
         }
     }
 
-    if (damageDialog) DamageDialog(character, onDismiss = { damageDialog = false }) { amount, region ->
+    if (damageDialog) DamageDialog(character, enabled = !readOnly, onDismiss = { damageDialog = false }) { amount, region ->
         damageDialog = false
-        onCommand(character, SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, bodyRegion = region))
+        if (!readOnly) onCommand(character, SessionCommand(type = SessionOperationType.DAMAGE, amount = amount, bodyRegion = region))
     }
-    if (healingDialog) AmountDialog("APLICAR CURA", character.life.current, character.lifeMaximum, { healingDialog = false }) { amount ->
+    if (healingDialog) AmountDialog(stringResource(R.string.session_heal), character.life.current, character.lifeMaximum, !readOnly, { healingDialog = false }) { amount ->
         healingDialog = false
-        onCommand(character, SessionCommand(type = SessionOperationType.HEAL, resource = SessionResource.LIFE, amount = amount))
+        if (!readOnly) onCommand(character, SessionCommand(type = SessionOperationType.HEAL, resource = SessionResource.LIFE, amount = amount))
     }
     pendingAbilityId?.let { id ->
         val ability = entries.firstOrNull { it.ability.id == id }?.ability
@@ -507,7 +563,7 @@ private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, edi
                     )
                     if (!largeText) SessionAbilityMetadata(entry)
                 }
-                Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, expandedLabel)
+                Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, expandedLabel, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (!expanded) {
                 CharacterActionButton(
@@ -578,10 +634,14 @@ private fun ResourceControl(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            SdoIconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Remove, "Reduzir $label") }
-            Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-            SdoIconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Add, "Aumentar $label") }
+            SdoIconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+                Icon(Icons.Default.Remove, stringResource(R.string.session_decrease_resource, label))
+            }
+            SdoIconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+                Icon(Icons.Default.Add, stringResource(R.string.session_increase_resource, label))
+            }
         }
     }
 }
@@ -618,7 +678,7 @@ private fun MoneyControl(
 }
 
 @Composable
-private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm: (Int, BodyRegionSlot) -> Unit) {
+private fun DamageDialog(character: Character, enabled: Boolean, onDismiss: () -> Unit, onConfirm: (Int, BodyRegionSlot) -> Unit) {
     var amount by rememberSaveable(character.id) { mutableIntStateOf(1) }
     var regionIndex by rememberSaveable(character.id) { mutableIntStateOf(0) }
     val regions = character.canonicalBodyState().regions
@@ -643,13 +703,13 @@ private fun DamageDialog(character: Character, onDismiss: () -> Unit, onConfirm:
                 Text("Nada é alterado antes da confirmação.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         },
-        confirmButton = { SdoTextButton({ onConfirm(amount, region.region) }) { Text("CONFIRMAR") } },
+        confirmButton = { SdoTextButton({ if (enabled) onConfirm(amount, region.region) }, enabled = enabled) { Text("CONFIRMAR") } },
         dismissButton = { SdoTextButton(onDismiss) { Text("CANCELAR") } },
     )
 }
 
 @Composable
-private fun AmountDialog(title: String, current: Int, maximum: Int, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
+private fun AmountDialog(title: String, current: Int, maximum: Int, enabled: Boolean, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
     var amount by rememberSaveable { mutableIntStateOf(1) }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -660,7 +720,7 @@ private fun AmountDialog(title: String, current: Int, maximum: Int, onDismiss: (
                 Text("Vida: $current → ${(current + amount).coerceAtMost(maximum)} / $maximum")
             }
         },
-        confirmButton = { SdoTextButton({ onConfirm(amount) }) { Text("CONFIRMAR") } },
+        confirmButton = { SdoTextButton({ if (enabled) onConfirm(amount) }, enabled = enabled) { Text("CONFIRMAR") } },
         dismissButton = { SdoTextButton(onDismiss) { Text("CANCELAR") } },
     )
 }

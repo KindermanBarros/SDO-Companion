@@ -1,5 +1,6 @@
 package com.kinderman.sdo.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.firebase.firestore.Exclude
@@ -156,6 +157,8 @@ data class CharacterRecord(
     val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
     val lastEditedBy: String = "",
+    @ColumnInfo(defaultValue = "'{}'")
+    val fieldUpdatedAt: Map<String, Long> = emptyMap(),
     @get:Exclude
     @field:Exclude
     val dirty: Boolean = false,
@@ -316,6 +319,7 @@ fun CharacterRecord.toDomain(): Character {
     lockedAt = lockedAt,
     updatedAt = updatedAt,
     lastEditedBy = lastEditedBy,
+    fieldUpdatedAt = fieldUpdatedAt,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
     deleted = deleted,
@@ -399,6 +403,7 @@ fun Character.toRecord(): CharacterRecord {
     personalNotes = personalNotes,
     updatedAt = updatedAt,
     lastEditedBy = lastEditedBy,
+    fieldUpdatedAt = fieldUpdatedAt,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
     height = height,

@@ -24,7 +24,7 @@ class CharacterSyncConflictTest {
     }
 
     @Test
-    fun requiresManualResolutionWhenMoreThanFiveFieldsConflict() {
+    fun automaticallyResolvesMoreThanFiveFields() {
         val local = Character(id = "character-manual", updatedAt = 100)
         val remote = local.copy(
             name = "Online",
@@ -39,16 +39,16 @@ class CharacterSyncConflictTest {
         val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
 
         assertTrue(conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS)
-        assertEquals(null, automaticRemoteFieldIds(conflict))
+        assertEquals(conflict.fields.mapTo(mutableSetOf()) { it.id }, automaticRemoteFieldIds(conflict))
     }
 
     @Test
-    fun equalTimestampsPreserveLocalCopy() {
+    fun equalTimestampsConvergeToCommittedRemote() {
         val local = Character(id = "character-tie", name = "Local", updatedAt = 100)
         val remote = local.copy(name = "Online", dirty = false)
         val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
 
-        assertEquals(emptySet<String>(), automaticRemoteFieldIds(conflict))
+        assertEquals(setOf("name"), automaticRemoteFieldIds(conflict))
     }
 
     @Test
@@ -183,7 +183,7 @@ class CharacterSyncConflictTest {
     }
 
     @Test
-    fun differentAccountLargeConflictStillRequiresManualResolution() {
+    fun differentAccountLargeConflictConvergesAutomatically() {
         val local = Character(id = "char-diff", ownerId = "user-1", lastEditedBy = "user-1", updatedAt = 100)
         val remote = local.copy(
             name = "Mestre Edit",
@@ -199,6 +199,6 @@ class CharacterSyncConflictTest {
         val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
 
         assertTrue(conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS)
-        assertEquals(null, automaticRemoteFieldIds(conflict, sessionUid = "user-1"))
+        assertEquals(conflict.fields.mapTo(mutableSetOf()) { it.id }, automaticRemoteFieldIds(conflict, sessionUid = "user-1"))
     }
 }

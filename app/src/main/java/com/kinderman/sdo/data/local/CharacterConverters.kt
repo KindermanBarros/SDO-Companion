@@ -77,6 +77,10 @@ private fun List<String>.nested() = joinToString(NESTED)
 private fun String.toNestedList() = if (isBlank()) emptyList() else split(NESTED)
 
 class CharacterConverters {
+    @TypeConverter fun fieldTimesToString(value: Map<String, Long>): String = Json.encodeToString(value)
+    @TypeConverter fun stringToFieldTimes(value: String): Map<String, Long> =
+        runCatching { Json.decodeFromString<Map<String, Long>>(value) }.getOrDefault(emptyMap())
+
     private val canonicalJson = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
     @TypeConverter fun canonicalAbilitiesToString(value: List<Ability>): String =

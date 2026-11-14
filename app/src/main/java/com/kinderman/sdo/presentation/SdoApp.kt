@@ -315,6 +315,7 @@ fun SdoApp(
                         }
                     },
                     onCommand = appViewModel::applySessionCommand,
+                    onInventoryStateChange = appViewModel::changeItemState,
                     onBack = { goBack() },
                 )
 

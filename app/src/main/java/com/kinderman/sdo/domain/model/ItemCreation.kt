@@ -398,3 +398,15 @@ const val CURRENT_ITEM_DATA_VERSION = 8
 fun InventoryItem.initialCreationCost(): Int = heritageCost.takeIf { acquisitionSource == ItemAcquisitionSource.HERITAGE } ?: 0
 
 fun InventoryItem.participatesInInitialCreation(): Boolean = acquisitionSource == ItemAcquisitionSource.HERITAGE
+
+/** Inventory-state choices shared by the sheet and player session actions. */
+fun Character.validInventoryStates(item: InventoryItem): List<InventoryState> = buildList {
+    if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
+    if (item.category.contains("armadura", true) || item.category.contains("acessório", true) || item.category.equals("Recipiente de Carga", true) || item.backpackCapacity > 0) add(InventoryState.EQUIPPED)
+    val quickAccessCount = inventory.count { it.inventoryState == InventoryState.QUICK_ACCESS && it.id != item.id }
+    if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.QUICK_ACCESS || quickAccessCount < 2)) {
+        add(InventoryState.QUICK_ACCESS)
+    }
+    if (backpackCapacity > 0) add(InventoryState.BACKPACK)
+    add(InventoryState.STORED)
+}

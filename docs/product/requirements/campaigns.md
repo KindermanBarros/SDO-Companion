@@ -32,9 +32,11 @@ Refinement started 2026-11-14. Owner confirmed shared text entries, member creat
 
 ### CAMPAIGN-PLAN-002 — Session Mode evolution
 
-Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
+Status: InDevReview; player quick actions implemented. Final debug build passed; tests skipped by owner, runtime acceptance pending.
 
 Improve the UI and complete Session Mode features, focusing on quick actions and compact presentation while preserving all gameplay-relevant information. Define the inventory of actions, essential info, shortcuts, and states from existing flows; the request does not fix specific controls yet.
+
+Delivered scope: direct section access, compact resource spending, favorite/available ability filtering, confirmed dose consumption, typed condition addition and inventory-state changes. Preserve read-only/archive guards, existing cost/load rules, complete text and Standard/Cybergrunge identity. No RPG rules or additional automatic item effects are invented. See [Memory](../../MEMORY.md).
 
 ### CAMPAIGN-PLAN-003 — Historian / GM Mode evolution
 
@@ -70,3 +72,7 @@ Identified product dependencies: character profile photos for tokens; integratio
 Owner review repair: preserve existing contracts while fixing theme outlines, clipped text and compact controls. Panel quick Session/Master removed; navigation retained. See [revision evidence](../../current/summary_v4.md). Owner explicitly accepted this UI delivery on 2026-11-13; automated evidence limitations remain in the linked summary.
 
 Master operation exposes the existing quick-action dialog through a visible button on each collapsed character card; no command rules changed.
+
+## Session follow-up
+
+BACKLOG-010 (ToDo): extend canonical ammunition/charge operations and explicit automatic consumable-effect application using approved rules. Current quick consumption subtracts one structured dose; users apply other effects through existing session controls. Confirm unsupported legacy item states instead of synthesizing doses or effects. Existing quick resource controls remain available for energy, arcane, sanity, exhaustion and divine corruption.

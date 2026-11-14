@@ -114,3 +114,5 @@ ComponentActivity/Compose lifecycle, SharedPreferences, Credential Manager, Andr
 Owner-authorized global @pen.dev/cli 0.3.16, installed with npm on Node 26.13.0/npm 11.20.0; no application dependency. Authenticated headless editing/reopen/export pass.
 
 UI validation tooling: task-owned local SDK/AVD downloads were removed during workflow cleanup. Installed Android tooling remains unchanged; no application dependency or SDK target changed.
+
+Sheet persistence uses Room schema 30: migration 29->30 adds the fieldUpdatedAt map (empty-map default) for field-level Firestore merge metadata. No dependency or backend database change.

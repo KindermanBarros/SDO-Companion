@@ -13,7 +13,7 @@
     <string name="session_all_abilities">Todas</string>
     <string name="session_ability_filter">Tipo</string>
     <string name="session_ability_section">Habilidades</string>
-    <string name="session_no_abilities">Nenhuma habilidade nesta categoria.</string>
+    <string name="session_no_abilities">Nenhuma habilidade corresponde aos filtros.</string>
     <string name="session_use_short">Usar</string>
     <string name="session_use_ability">Usar habilidade</string>
     <string name="session_unavailable">Indisponível</string>
@@ -25,4 +25,42 @@
         <item quantity="one">%d dose</item>
         <item quantity="other">%d doses</item>
     </plurals>
+    <string name="session_jump_to">Ir para</string>
+    <string name="session_overview">Ações rápidas</string>
+    <string name="session_resources">Recursos rápidos</string>
+    <string name="session_protections">Proteções</string>
+    <string name="session_body">Corpo</string>
+    <string name="session_equipment">Equipamento pronto</string>
+    <string name="session_conditions">Condições ativas</string>
+    <string name="session_favorites">Favoritas</string>
+    <string name="session_available">Disponíveis</string>
+    <string name="session_clear_filters">Limpar filtros</string>
+    <string name="session_ability_count">%1$d de %2$d habilidades</string>
+    <string name="session_quick_actions">Ações rápidas</string>
+    <string name="session_damage">Aplicar dano</string>
+    <string name="session_heal">Aplicar cura</string>
+    <string name="session_all_resources">Todos os recursos e dinheiro</string>
+    <string name="session_fewer_resources">Mostrar vida e energia</string>
+    <string name="session_life">VIDA</string>
+    <string name="session_energy">ENERGIA</string>
+    <string name="session_sanity">SANIDADE</string>
+    <string name="session_arcane">ARCANO</string>
+    <string name="session_destiny">DESTINO</string>
+    <string name="session_exhaustion">EXAUSTÃO</string>
+    <string name="session_corruption">CORRUPÇÃO</string>
+    <string name="session_decrease_resource">Reduzir %1$s</string>
+    <string name="session_increase_resource">Aumentar %1$s</string>
+    <string name="session_inventory_empty">Nenhum item no inventário.</string>
+    <string name="session_equipment_state">Equipar / guardar</string>
+    <string name="session_consume_dose">Usar 1 dose (%1$d restantes)</string>
+    <string name="session_consume_title">Usar consumível</string>
+    <string name="session_consume_confirmation">Consumir 1 dose de %1$s? Outros efeitos devem ser aplicados pelos controles da sessão.</string>
+    <string name="session_confirm">CONFIRMAR</string>
+    <string name="session_cancel">CANCELAR</string>
+    <string name="session_add_condition">Adicionar condição</string>
+    <string name="session_condition_kind">Condição</string>
+    <string name="session_condition_duration">Duração</string>
+    <string name="session_condition_intensity">Intensidade (0 = não definida)</string>
+    <string name="session_condition_turns">Turnos</string>
+    <string name="session_condition_hours">Horas</string>
 </resources>

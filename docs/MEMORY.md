@@ -7,7 +7,7 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ## Active / In-Review Tasks
 
-No delivered tasks await review. Unimplemented BACKLOG-002, BACKLOG-003, BACKLOG-004 and BACKLOG-005 remain open as ToDo in the living backlog.
+BACKLOG-002 and BACKLOG-008 are InDevReview; BACKLOG-003 through BACKLOG-005 and BACKLOG-009/010 remain ToDo. Earlier delivered-task acceptance is unchanged.
 
 ---
 
@@ -49,3 +49,17 @@ No delivered tasks await review. Unimplemented BACKLOG-002, BACKLOG-003, BACKLOG
 Owner approval closes delivered review tasks only; PR144 is administratively closed without asserting unverified remote operations. BACKLOG-002, BACKLOG-003, BACKLOG-004 and BACKLOG-005 remain open and unimplemented. Existing verification limitations remain unchanged.
 
 Correction 2026-11-14 16:05 America/La_Paz: the agent mistakenly cancelled four unimplemented backlog items while closing delivered tasks. The owner explicitly rejected cancellation. Restored BACKLOG-002 through BACKLOG-005 to ToDo with original scope; prior cancellation statements are withdrawn. Delivered task acceptance remains recorded.
+
+## BACKLOG-002 / CAMPAIGN-PLAN-002 - Session player actions
+
+Status: InDevReview; owner selected this task and specified consumables, conditions, resource spending and equipment changes. Last update: 2026-11-14 16:37 America/La_Paz.
+Scope: persistent section navigation; compact life/energy controls with access to all seven resources/money; saved favorite/available ability filters and reset; typed condition addition with duration/intensity; existing dose-consumption command with confirmation; inventory equip/wield/store choices using shared sheet rules; read-only guards on open confirmations. Sheet and authorized journal navigation remain intact. Consumable effects are explicit/manual; canonical ammunition/charge operations remain deferred, not simulated.
+Validation: final :app:assembleDebug passed. Owner explicitly requested skipping tests; runtime suite was interrupted and no further test suite was run. Existing/new regression fixtures remain in source but final runtime, migration and cross-device acceptance are unverified. A pre-final Standard capture was inspected and a text/icon contrast issue corrected; no final two-mode visual pass is claimed. Preserve unrelated staged firebase-firestore-audit.md deletion.
+
+## BACKLOG-008 / SYNC-PLAN-003 - Per-field realtime sheet convergence
+
+Status: InDevReview; owner requested automatic preference for the latest field changes and allowed deferring remaining collaboration work. Last update: 2026-11-14 16:37 America/La_Paz.
+Decision: keep Firestore realtime listeners and transactions; no database migration to Realtime Database is needed solely for realtime delivery. Firebase documents both capabilities: https://firebase.google.com/docs/firestore/query-data/listen and https://firebase.google.com/docs/firestore/manage-data/transactions.
+Implementation: fieldUpdatedAt metadata, persisted by Room 30 (29->30 migration, empty-map default) and Firestore; edited-field stamping preserves untouched revisions. Editor snapshots carry an in-memory baseline so a delayed autosave rebases only actual edits. Transactional merge chooses each conflict group's newer revision for all accounts and conflict sizes; exact ties keep the committed remote value. Acknowledgements/adoption do not clear a later local edit or resurrect a pending deletion. Session mutations read the latest local revision. Inventory and canonical item state use coupled revisions; receipt IDs remain grow-only. Existing narrow campaign-unlink rules preserve existing metadata.
+Compatibility: additive map with legacy document-time fallback; old clients do not offer field-level convergence. Collections remain atomic groups, not per-item collaborative structures. Current timestamps are client-derived and monotonic locally; arbitrary device clock skew is not solved. Existing automatic-sync preference still governs publishing; backend reachability is not guaranteed by network presence.
+Validation: final debug build passed; tests explicitly skipped by owner. Regression fixtures cover independent edits, ties, timestamps, stale editor rebasing, acknowledgement races and SQLite migration, but final tests and authenticated multi-device/backend behavior are not certified. BACKLOG-009 records stronger collaboration semantics; BACKLOG-010 records remaining consumable-state/effect work. No new dependencies or backend deployment.

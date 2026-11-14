@@ -194,6 +194,21 @@ class AppDatabaseMigrationInstrumentedTest {
         database.close()
     }
 
+    @Test fun migration29To30PreservesSheetsAndAddsEmptyFieldTimes() {
+        val name = "migration-29-30.db".also(databases::add)
+        openSqlite(name, 29, onCreate = { db ->
+            db.execSQL("CREATE TABLE characters (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL)")
+            db.execSQL("INSERT INTO characters (id, name) VALUES ('sheet', 'Ayla')")
+        }).close()
+        val migrated = openSqlite(name, 30, onUpgrade = { db, _, _ -> AppDatabase.MIGRATION_29_30.migrate(db) })
+        migrated.writableDatabase.query("SELECT name, fieldUpdatedAt FROM characters WHERE id = 'sheet'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Ayla", cursor.getString(0))
+            assertEquals("{}", cursor.getString(1))
+        }
+        migrated.close()
+    }
+
     private fun openRoom(name: String) = Room.databaseBuilder(context, AppDatabase::class.java, name)
         .addMigrations(AppDatabase.MIGRATION_21_22)
         .build()

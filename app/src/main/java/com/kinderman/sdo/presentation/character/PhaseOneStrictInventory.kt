@@ -1,5 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
+import com.kinderman.sdo.domain.model.validInventoryStates
+
 import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
@@ -234,7 +236,7 @@ internal fun PhaseOneStrictInventorySection(
                 item.mechanicalEffects.forEach { effect ->
                     Text(effect.presentationLabel(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                 }
-                val states = validItemStates(character, item)
+                val states = character.validInventoryStates(item)
                 ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
                     onChange(character.withItemInventoryState(item.id, value))
                 }
@@ -550,16 +552,6 @@ private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<Invent
     "Itens" to items.filterNot { it.category.contains("arma", true) },
 ).let { groups -> groups + ("Itens" to groups.getValue("Itens").filterNot { it.category.contains("armadura", true) || it.category.contains("acessório", true) }) }
 
-private fun validItemStates(character: Character, item: InventoryItem): List<InventoryState> = buildList {
-    if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
-    if (item.category.contains("armadura", true) || item.category.contains("acessório", true) || item.category.equals("Recipiente de Carga", true) || item.backpackCapacity > 0) add(InventoryState.EQUIPPED)
-    val quickAccessCount = character.inventory.count { it.inventoryState == InventoryState.QUICK_ACCESS && it.id != item.id }
-    if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.QUICK_ACCESS || quickAccessCount < 2)) {
-        add(InventoryState.QUICK_ACCESS)
-    }
-    if (character.backpackCapacity > 0) add(InventoryState.BACKPACK)
-    add(InventoryState.STORED)
-}
 
 @Composable
 internal fun UnifiedItemBuilderDialog(

@@ -66,7 +66,8 @@ class SyncedOperationsRepository(
             .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override suspend fun apply(session: UserSession, character: Character, command: SessionCommand): Boolean {
-        val mutation = character.applySessionCommand(command, session.uid)
+        val latest = dao.character(character.id)?.toDomain() ?: character
+        val mutation = latest.applySessionCommand(command, session.uid)
         val stampedCharacter = mutation.character.copy(lastEditedBy = session.uid)
         return dao.applyOnce(mutation.operation.toRecord(), stampedCharacter.toRecord())
     }

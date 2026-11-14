@@ -3,6 +3,13 @@ package com.kinderman.sdo.data.local
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
+import androidx.room.Transaction
+import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.characterConflictFields
+import com.kinderman.sdo.domain.model.CharacterSyncConflict
+import com.kinderman.sdo.domain.model.automaticRemoteFieldIds
+import com.kinderman.sdo.domain.model.mergeCharacterConflict
+import com.kinderman.sdo.domain.model.withFieldEditTimes
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -55,6 +62,49 @@ interface CharacterDao {
     suspend fun all(): List<CharacterRecord>
 
     @Upsert suspend fun upsert(character: CharacterRecord)
+
+    @Transaction
+    suspend fun saveEditorChange(candidate: Character) {
+        val current = get(candidate.id)?.toDomain()
+        val rebased = if (current != null && candidate.editingBase != null) {
+            val edited = characterConflictFields(candidate.editingBase, candidate)
+                .mapTo(mutableSetOf()) { it.id }
+            mergeCharacterConflict(current, candidate, edited).copy(
+                updatedAt = candidate.updatedAt, lastEditedBy = candidate.lastEditedBy, dirty = true,
+            )
+        } else candidate
+        upsertTracked(rebased.toRecord())
+    }
+
+    @Transaction
+    suspend fun upsertTracked(character: CharacterRecord) {
+        val current = get(character.id)
+        if (!character.dirty && current?.dirty == true && current.deleted) return
+        if (character.dirty) {
+            upsert(character.toDomain().withFieldEditTimes(current?.toDomain()).toRecord())
+        } else if (current?.dirty == true) {
+            val conflict = CharacterSyncConflict(current.toDomain(), character.toDomain(), character.updatedAt)
+            val merged = mergeCharacterConflict(conflict.local, conflict.remote, automaticRemoteFieldIds(conflict))
+            upsert(merged.copy(dirty = true, updatedAt = maxOf(current.updatedAt, character.updatedAt), lastSyncedAt = character.updatedAt).toRecord())
+        } else {
+            upsert(character)
+        }
+    }
+
+    @Transaction
+    suspend fun acceptSnapshot(snapshot: CharacterRecord, expectedUpdatedAt: Long) {
+        val current = get(snapshot.id)
+        if (current?.dirty == true && current.deleted) return
+        val clean = snapshot.copy(dirty = false, lastSyncedAt = snapshot.updatedAt, deleted = false)
+        if (current?.updatedAt == expectedUpdatedAt) upsert(clean) else upsertTracked(clean)
+    }
+
+    @Transaction
+    suspend fun acknowledgeIfUnchanged(id: String, expectedUpdatedAt: Long, remoteUpdatedAt: Long) {
+        val current = get(id)
+        if (current?.updatedAt == expectedUpdatedAt && !current.deleted) markSynced(id, remoteUpdatedAt)
+    }
+
 
     @Query("UPDATE characters SET dirty = 0, lastSyncedAt = :remoteUpdatedAt WHERE id = :id")
     suspend fun markSynced(id: String, remoteUpdatedAt: Long)

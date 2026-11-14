@@ -14,6 +14,9 @@ import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.SessionCommand
+import com.kinderman.sdo.domain.model.InventoryState
+import com.kinderman.sdo.domain.model.validInventoryStates
+import com.kinderman.sdo.domain.model.withItemInventoryState
 import com.kinderman.sdo.domain.repository.AlwaysOnlineConnectivityMonitor
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
@@ -236,6 +239,13 @@ class AppViewModel(
         }
         autosaveJobs[character.id] = job
         job.invokeOnCompletion { if (autosaveJobs[character.id] === job) autosaveJobs.remove(character.id) }
+    }
+
+    fun changeItemState(character: Character, itemId: String, state: InventoryState) {
+        if (!ensureOnlineForMutation()) return
+        val item = character.inventory.firstOrNull { it.id == itemId } ?: return
+        if (state !in character.validInventoryStates(item)) return
+        save(character.withItemInventoryState(itemId, state))
     }
 
     fun applySessionCommand(character: Character, command: SessionCommand) {

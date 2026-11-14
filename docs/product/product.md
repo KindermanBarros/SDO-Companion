@@ -24,12 +24,15 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | ID | Item | Requirements | Status |
 |---|---|---|---|
 | BACKLOG-001 | Shared campaign journal | [Campaigns — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) | Done |
-| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
+| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) | InDevReview; player quick actions implemented |
 | BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
 | BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) | ToDo; not implemented |
 | BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
 | BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) | Done |
 | BACKLOG-007 | Firestore read/write & payload optimization (delta sync, audit limits, dedupe character payload, parallel/batched queries) | [Synchronization — SYNC-PLAN-002](requirements/synchronization.md#planned-changes) | Done |
+| BACKLOG-008 | Latest-field realtime sheet convergence | [Synchronization - SYNC-PLAN-003](requirements/synchronization.md#sync-plan-003---latest-field-realtime-sheet-convergence) | InDevReview; build passed, tests skipped by owner |
+| BACKLOG-009 | Server-ordered collaboration and per-item/list merges | [Synchronization follow-up](requirements/synchronization.md#remaining-collaboration-backlog) | ToDo |
+| BACKLOG-010 | Canonical ammo/charge consumption and automated item effects | [Session follow-up](requirements/campaigns.md#session-follow-up) | ToDo |
 
 BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests accepted as Done by owner 2026-11-14 16:03; prior runtime verification limits preserved. [Memory](../MEMORY.md).
 BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner accepted as Done by owner 2026-11-14 16:03. [Memory](../MEMORY.md).
@@ -63,4 +66,6 @@ No complex work package is selected during onboarding. The empty tracker records
 
 Owner request 2026-11-14 15:46: consolidate documentation/design/agent ownership from the redundancy audit. [Memory](../MEMORY.md): Done; owner accepted closure 2026-11-14 16:03; one docs root, canonical design ownership and thin role adapters validated. Product behavior and existing priorities unchanged.
 
-Only delivered task records were approved for closure. BACKLOG-002 through BACKLOG-005 remain open as ToDo with their original scope and no new implementation authorization. No remote merge or publication is asserted.
+Prior closure applied only to delivered tasks. BACKLOG-002 was subsequently selected and is now InDevReview; BACKLOG-003 through BACKLOG-005 remain ToDo with unchanged scope. No remote publication is asserted.
+
+Owner steering 2026-11-14 16:37: deliver player quick actions and latest-field realtime sheet convergence using the best supported existing path; defer remaining collaboration and consumable-state work. BACKLOG-002/008: InDevReview; final debug build passed, tests skipped by explicit owner request. BACKLOG-009/010: ToDo.
