@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -89,6 +90,7 @@ fun CharacterSheetScreen(
     onPlayerLock: (Character, Boolean) -> Unit,
     onHistorianLock: (Character, Boolean) -> Unit,
     onDelete: (Character) -> Unit,
+    onOpenJournal: (() -> Unit)? = null,
 ) {
     if (character == null || session == null) {
         MissingCharacterState(sessionAvailable = session != null, snackbarHost = snackbarHost, onBack = onBack)
@@ -207,6 +209,9 @@ fun CharacterSheetScreen(
                     actions = {
                         SdoIconButton({ onOpenSession(current.id) }) {
                             Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
+                        }
+                        if (onOpenJournal != null) SdoIconButton(onOpenJournal) {
+                            Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
                         }
                         if (session.isAdmin && !readOnly && !current.isInCreation) SdoIconButton({ confirmHeritageReset = true }) {
                             Icon(Icons.Default.Refresh, "Reabrir escolha secreta de 30 PH", tint = MaterialTheme.colorScheme.secondary)

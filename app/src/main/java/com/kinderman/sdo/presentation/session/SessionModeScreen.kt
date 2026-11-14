@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Remove
@@ -111,6 +112,8 @@ fun SessionModeScreen(
     onOpenSheet: (String) -> Unit,
     onCommand: (Character, SessionCommand) -> Unit,
     onBack: () -> Unit,
+    canOpenJournal: (Character) -> Boolean = { false },
+    onOpenJournal: (Character) -> Unit = {},
 ) {
     BackHandler(onBack = onBack)
     val character = characters.firstOrNull { it.id == selectedId }
@@ -122,6 +125,9 @@ fun SessionModeScreen(
                     title = { Text(if (character == null) "MODO SESSÃO" else character.name.uppercase()) },
                     navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     actions = {
+                        if (character != null && canOpenJournal(character)) SdoIconButton({ onOpenJournal(character) }) {
+                            Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
+                        }
                         if (character != null) SdoIconButton({ onOpenSheet(character.id) }) {
                             Icon(Icons.Default.EditNote, "Abrir ficha completa")
                         }
