@@ -90,6 +90,12 @@ fun SdoApp(
     var selectedJournalCampaignId by rememberSaveable { mutableStateOf<String?>(null) }
     var surface by rememberSaveable { mutableStateOf(AppSurface.DASHBOARD) }
 
+    LaunchedEffect(surface, appSession?.uid) {
+        if (surface == AppSurface.HISTORIAN && appSession != null) {
+            appViewModel.sync()
+        }
+    }
+
     LaunchedEffect(surface, selectedJournalCampaignId, appSession?.uid, campaigns, memberships) {
         if (appSession == null) {
             journalViewModel.clearContext()
