@@ -430,7 +430,7 @@ def main(argv=None):
     try:
         args.run_dir = qa_run_dir(args.run_dir)
         if not args.scenario.resolve().is_relative_to(args.run_dir):
-            raise ValueError('Run scenario must be stored inside the selected .qa-artifacts run directory')
+            raise ValueError('Run scenario must be stored inside the selected .scratch/qa run directory')
         scenario = read_json(args.scenario)
         if not isinstance(scenario, dict):
             raise ValueError('Missing/invalid scenario object')

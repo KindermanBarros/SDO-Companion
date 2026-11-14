@@ -74,7 +74,7 @@ Include real device actions, request/result verification checkpoints, and planne
 The test plan contains planned procedures only; do not add execution records, actual results,
 or collected evidence links. Record `Not run` and subsequent outcomes, observations, run/build/
 device identity, evidence links, and cleanup receipts in `summary_v<N>.md`, keyed by QA ID.
-Keep verbose artifacts under `.qa-artifacts/<run-id>/` and link them from the summary.
+Keep verbose artifacts under `.scratch/qa/<run-id>/` and link them from the summary.
 Create a separate, comprehensive test plan document following [test-plan-template.md](../../harness/templates/test-plan-template.md).
 
 The test plan must include:

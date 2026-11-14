@@ -126,7 +126,7 @@ release risk assessment, and a confirmed critical defect blocks release promotio
 ## Target and scenario
 
 This is an ephemeral execution lane. Use `agent-device` to drive the installed app and
-keep the whole run under `.qa-artifacts/<run-id>/`. Do not create permanent `androidTest`
+keep the whole run under `.scratch/qa/<run-id>/`. Do not create permanent `androidTest`
 classes, shared regression scenarios, app/test dependencies, journey-registry entries,
 or CI changes just to execute the run. A confirmed finding can be handed to bug fixing
 for separately scoped regression coverage.
@@ -141,7 +141,7 @@ Accept a prebuilt APK or installed package; source code is optional. Use dogfood
 discovery and project device-selection rules. Record package/version, device/OS, artifact
 hash when available and requested scope; the checkout alone cannot identify a supplied app.
 
-Generate `.qa-artifacts/<run-id>/scenario.json` for the selected feature. Read [scenario sources](references/scenario-sources.md) to derive checks from the matching workflow, discover code-only targets, and retain source hashes. The example illustrates the format, not the default journey for every run. Keep observations unset until runtime exploration.
+Generate `.scratch/qa/<run-id>/scenario.json` for the selected feature. Read [scenario sources](references/scenario-sources.md) to derive checks from the matching workflow, discover code-only targets, and retain source hashes. The example illustrates the format, not the default journey for every run. Keep observations unset until runtime exploration.
 
 Keep every generated scenario, manifest, contract snapshot, capture, verifier JSON, report, log and screenshot inside this run directory. Approved reusable contracts remain at their source-controlled paths; copy the selected contracts into the run and hash them before UI actions. Never put generated run JSON in `docs/`.
 
@@ -208,8 +208,8 @@ mappings remain active**. Omit `--harnesslens-root` only when this interpreter h
 
 ```bash
 python3 .agents/skills/exploratory-qa/scripts/report.py \
-  --run-dir .qa-artifacts/<run-id> \
-  --scenario .qa-artifacts/<run-id>/scenario.json \
+  --run-dir .scratch/qa/<run-id> \
+  --scenario .scratch/qa/<run-id>/scenario.json \
   --harnesslens-root /path/to/pinned/HarnessLens
 ```
 

@@ -9,3 +9,5 @@ Adopt the persona whose "Adopt when" matches the task, and read its file before 
 | Laziest senior developer | You write, change or refactor code | [`laziest_senior_developer.md`](Personas/laziest_senior_developer.md) |
 
 To add a persona, create `Personas/persona_name.md` with the same sections as the existing file, then add a row to this table.
+
+Project agent: [laziest_senior_developer](../.codex/agents/laziest_senior_developer.toml), with [role profile](../.agents/agents/laziest_senior_developer.md). It reuses this persona and inherits the session model/effort; no model is pinned.

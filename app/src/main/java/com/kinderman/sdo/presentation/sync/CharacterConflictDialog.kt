@@ -25,7 +25,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.CharacterConflictField
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
@@ -161,8 +160,6 @@ private fun VersionChoice(
                 summary,
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis,
             )
         }
     }

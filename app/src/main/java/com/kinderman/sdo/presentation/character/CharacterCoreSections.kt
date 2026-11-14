@@ -56,7 +56,7 @@ import com.kinderman.sdo.ui.TechPanel
 
 @Composable
 internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
-    var selectingRace by remember { mutableStateOf(false) }
+    var selectingRace by rememberSaveable(character.id) { mutableStateOf(false) }
     var selectingLevel by remember { mutableStateOf(false) }
     TechPanel {
         SectionHeader("01", "Identidade")

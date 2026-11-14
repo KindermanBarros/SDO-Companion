@@ -14,7 +14,7 @@ navigation, visual, platform, locale, permission, lifecycle, or Android SDK beha
 
 Requests to explore an installed app or temporarily simulate backend conditions use the
 `exploratory-qa` skill with `agent-device`. This is ephemeral testing: keep scenarios,
-WireMock mappings, captures, reports, and cleanup receipts in `.qa-artifacts/<run-id>/`.
+WireMock mappings, captures, reports, and cleanup receipts in `.scratch/qa/<run-id>/`.
 Do not create AndroidJUnit/`androidTest` classes, shared regression scenarios, app test
 dependencies, journey-registry entries, or CI jobs merely to execute that QA request.
 Promoting a finding or journey into a maintained regression requires an explicit product

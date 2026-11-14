@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 data class SdoNavigationItem(
     val label: String,
@@ -112,24 +113,24 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .7f))
             .navigationBarsPadding()
             .selectableGroup()
-            .padding(horizontal = 5.dp, vertical = 7.dp),
+            .padding(horizontal = 6.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         items.forEachIndexed { index, item ->
             val shape = CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp)
             val accent = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             Column(
-                Modifier.weight(1f).heightIn(min = 64.dp).border(1.dp, accent, shape).clip(shape)
+                Modifier.weight(1f).heightIn(min = 48.dp).border(1.dp, accent, shape).clip(shape)
                     .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else CyberGrungeTokens.Panel)
                     .selectable(selected = item.selected, role = Role.Tab, onClick = item.onClick)
-                    .padding(horizontal = 4.dp, vertical = 10.dp),
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
-                Text(if (item.selected) "▶ 0${index + 1}" else "0${index + 1}", color = accent, style = MaterialTheme.typography.labelSmall)
                 Text(
                     item.label.uppercase(),
                     color = if (item.selected) accent else MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = 0.sp),
                     textAlign = TextAlign.Center,
                 )
             }

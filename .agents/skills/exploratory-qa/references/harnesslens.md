@@ -4,7 +4,7 @@ Read the installed HarnessLens skill and the pinned CLI's README before capture.
 
 ## Prepare the approved expectations
 
-Save the generated scenario and all run artifacts under `.qa-artifacts/<run-id>/`. The directory label may differ from HarnessLens's native 32-character run ID. Keep the native ID in `harnesslens/run.json`. Record `app_id`, `target.device_id` (explicit serial/UDID) and `target.platform` in the scenario; do not use an implicit default device.
+Save the generated scenario and all run artifacts under `.scratch/qa/<run-id>/`. The directory label may differ from HarnessLens's native 32-character run ID. Keep the native ID in `harnesslens/run.json`. Record `app_id`, `target.device_id` (explicit serial/UDID) and `target.platform` in the scenario; do not use an implicit default device.
 
 Add this shape to `expectations`, filling values from the selected approved requirements. The Home names illustrate the schema; do not copy their behavior into an unrelated feature:
 
@@ -36,7 +36,7 @@ Create `harnesslens/run.json` with `run_id` from the actual start receipt, match
 
 ## Capture the same real journey
 
-1. Select the actual app and device, inspect prerequisites and prepare the approved contracts. Set `QA_RUN_DIR=".qa-artifacts/<fresh-run>"`; create `$QA_RUN_DIR/harnesslens/contracts` and `$QA_RUN_DIR/harnesslens/checkpoints`.
+1. Select the actual app and device, inspect prerequisites and prepare the approved contracts. Set `QA_RUN_DIR=".scratch/qa/<fresh-run>"`; create `$QA_RUN_DIR/harnesslens/contracts` and `$QA_RUN_DIR/harnesslens/checkpoints`.
 2. Run `hlens capture start --platform "$PLATFORM" --app-id "$APP_ID" --device-id "$DEVICE_ID"` and retain its JSON stdout at `$QA_RUN_DIR/harnesslens/start.json`. Record its `run_id` as `LENS_RUN_ID` and in the manifest. Arm before launch/navigation; start alone does not prove recorder readiness.
 3. Before each checkpoint action, export the current cumulative capture to `$QA_RUN_DIR/harnesslens/checkpoints/<checkpoint-id>-before.ndjson` (except the first action of a fresh run), then read its largest sequence and record both that value and file path in `run.json`. For later checkpoints the boundary must be at least the previous checkpoint's last sequence. Perform the declared action through dogfood/agent-device. Observe the UI and use `hlens state get`/`state await` with the same platform, app, device and `--run-id "$LENS_RUN_ID"` to inspect/await approved fields. Retain command failures and their actual output; a timeout must not be rewritten as a pass.
 4. Export immediately after the checkpoint, before the next action: `hlens capture export --platform "$PLATFORM" --app-id "$APP_ID" --device-id "$DEVICE_ID" --run-id "$LENS_RUN_ID" --out "$QA_RUN_DIR/harnesslens/checkpoints/<checkpoint-id>.ndjson"`. Each file is a cumulative snapshot from the same run. A checkpoint requires a fresh state record for every asserted scope after its pre-action boundary. An unchanged cached value with no fresh emission cannot establish the post-action state; report the instrumentation gap.

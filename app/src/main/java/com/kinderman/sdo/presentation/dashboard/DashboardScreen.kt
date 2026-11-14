@@ -1,6 +1,10 @@
 package com.kinderman.sdo.presentation.dashboard
 
+import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.border
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -37,9 +41,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.ui.SdoCard
 import androidx.compose.material3.CardDefaults
@@ -59,9 +63,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.domain.model.Campaign
+import com.kinderman.sdo.R
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
 import com.kinderman.sdo.domain.model.CampaignInvite
 import com.kinderman.sdo.domain.model.CampaignDelivery
@@ -79,6 +87,7 @@ import com.kinderman.sdo.presentation.character.CharacterActionStyle
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.AdaptiveActionLabel
+import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.ui.Barcode
 import com.kinderman.sdo.ui.CyberLoadingIndicator
 import com.kinderman.sdo.ui.HudBackground
@@ -96,9 +105,9 @@ import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.Void
-import com.kinderman.sdo.ui.LocalSdoPreferences
 import com.kinderman.sdo.ui.SdoResponsiveGrid
-import com.kinderman.sdo.ui.SdoVisualMode
+import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoShapeTokens
 
 @Composable
 fun DashboardScreen(
@@ -136,7 +145,6 @@ fun DashboardScreen(
     onRespondDelivery: (CampaignDelivery, Boolean) -> Unit,
     onLogout: () -> Unit,
 ) {
-    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
     val admin = session?.isAdmin == true
     val uid = session?.uid.orEmpty()
     val ownersById = remember(owners) { owners.associateBy(UserProfile::uid) }
@@ -149,9 +157,14 @@ fun DashboardScreen(
     var ownerFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var campaignFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var statusFilter by rememberSaveable { mutableStateOf(AdminCharacterStatus.ALL) }
-    var choosingOwner by remember { mutableStateOf(false) }
-    var choosingCampaign by remember { mutableStateOf(false) }
-    var choosingStatus by remember { mutableStateOf(false) }
+    var showingAdminFilters by rememberSaveable { mutableStateOf(false) }
+    var choosingOwner by rememberSaveable { mutableStateOf(false) }
+    var choosingCampaign by rememberSaveable { mutableStateOf(false) }
+    var choosingStatus by rememberSaveable { mutableStateOf(false) }
+    var pendingOwnerFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingCampaignFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingStatusFilter by rememberSaveable { mutableStateOf(AdminCharacterStatus.ALL) }
+    var clearPendingSearch by rememberSaveable { mutableStateOf(false) }
     var section by rememberSaveable { mutableStateOf(DashboardSection.CHARACTERS) }
     var assigningCampaign by remember { mutableStateOf<Campaign?>(null) }
     var linkingCampaign by remember { mutableStateOf<Campaign?>(null) }
@@ -230,6 +243,9 @@ fun DashboardScreen(
                         TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
                             SdoIconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = MaterialTheme.colorScheme.primary) }
+                            SdoIconButton(onClick = onOpenSettings, modifier = Modifier.testTag("dashboard_quick_settings")) {
+                                Icon(Icons.Default.Settings, stringResource(R.string.dashboard_quick_settings))
+                            }
                             SdoIconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
                         }
                     }
@@ -241,29 +257,16 @@ fun DashboardScreen(
                         else "$activeCampaignCount CAMPANHAS ATIVAS // ${characters.count { it.ownerId == uid && normalizeCampaignId(it.campaignId).isBlank() }} FICHAS SEM CAMPANHA",
                     )
                     SdoResponsiveGrid(DashboardSection.entries.toList(), minItemWidth = 148.dp, maxColumns = 2) { target, itemModifier ->
-                            SdoTextButton(
+                            val selected = section == target
+                            SdoOutlinedButton(
                                 onClick = { section = target },
-                                modifier = itemModifier.then(
-                                    if (section == target) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CutCornerShape(6.dp)) else Modifier,
-                                ),
+                                modifier = itemModifier.testTag("dashboard_tab_${target.name.lowercase()}"),
+                                shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                                border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
+                                contentPadding = PaddingValues(horizontal = 8.dp),
                             ) {
-                                Text(target.label, color = if (section == target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                AdaptiveActionLabel(target.label, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                    }
-                    if (!cybergrunge) TechPanel(accent = MaterialTheme.colorScheme.secondary) {
-                        TelemetryTag("QUICK_ACCESS")
-                        Text("Acessos rápidos", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            SdoTextButton(onClick = onOpenSession, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.PlayCircle, "Modo sessão")
-                            }
-                            if (admin || campaigns.any { !it.isArchived && it.ownerId == uid }) SdoTextButton(onClick = onOpenHistorian, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.Visibility, "Painel do Historiador")
-                            }
-                            SdoTextButton(onClick = onOpenSettings, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.Settings, "Configurações")
-                            }
-                        }
                     }
                     val pendingDeliveries = deliveries.filter { it.state == CampaignDeliveryState.PENDING }
                     if (pendingDeliveries.isNotEmpty()) TechPanel(accent = MaterialTheme.colorScheme.error) {
@@ -271,7 +274,7 @@ fun DashboardScreen(
                         Text("Entregas da campanha", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                         pendingDeliveries.forEach { delivery ->
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text("${delivery.snapshotKind.name} // ${delivery.snapshotName}", color = MaterialTheme.colorScheme.onSurface)
+                                SdoMetadataText("${delivery.snapshotKind.name} // ${delivery.snapshotName}", color = MaterialTheme.colorScheme.onSurface)
                                 Text(delivery.snapshotSummary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     SdoTextButton({ onRespondDelivery(delivery, true) }, modifier = Modifier.weight(1f)) { Text("ACEITAR") }
@@ -282,8 +285,8 @@ fun DashboardScreen(
                     }
                     if (section == DashboardSection.CAMPAIGNS) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            SdoTextButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f)) { Text("+ CAMPANHA") }
-                            SdoTextButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f)) { Text("CÓDIGO") }
+                            SdoOutlinedButton(onClick = { createCampaign = true }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 4.dp)) { AdaptiveSingleLineText("+ CAMPANHA", style = MaterialTheme.typography.labelLarge, minimumSize = 9.sp) }
+                            SdoOutlinedButton(onClick = { joinCampaign = true }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 4.dp)) { AdaptiveSingleLineText("CÓDIGO", style = MaterialTheme.typography.labelLarge, minimumSize = 9.sp) }
                         }
                     }
                     }
@@ -300,14 +303,13 @@ fun DashboardScreen(
                         },
                         statusLabel = statusFilter.label,
                         onQueryChange = { searchQuery = it },
-                        onChooseOwner = { choosingOwner = true },
-                        onChooseCampaign = { choosingCampaign = true },
-                        onChooseStatus = { choosingStatus = true },
-                        onClear = {
-                            searchQuery = ""
-                            ownerFilter = null
-                            campaignFilter = null
-                            statusFilter = AdminCharacterStatus.ALL
+                        filtersSelected = ownerFilter != null || campaignFilter != null || statusFilter != AdminCharacterStatus.ALL,
+                        onOpenFilters = {
+                            pendingOwnerFilter = ownerFilter
+                            pendingCampaignFilter = campaignFilter
+                            pendingStatusFilter = statusFilter
+                            clearPendingSearch = false
+                            showingAdminFilters = true
                         },
                     )
                 }
@@ -481,32 +483,65 @@ fun DashboardScreen(
                 onAccept = onAcceptInvite,
             )
         }
-        if (choosingOwner) {
+        if (showingAdminFilters) {
+            val pendingOwnerLabel = pendingOwnerFilter?.let { ownersById[it]?.firstName ?: it.take(8) } ?: "Todos os owners"
+            val pendingCampaignLabel = when (pendingCampaignFilter) {
+                null -> "Todas as campanhas"
+                STANDALONE_FILTER -> "Sem campanha"
+                else -> campaigns.firstOrNull { it.id == pendingCampaignFilter }?.name ?: "Campanha"
+            }
+            AdminFilterDialog(
+                ownerLabel = pendingOwnerLabel,
+                campaignLabel = pendingCampaignLabel,
+                statusLabel = pendingStatusFilter.label,
+                onChooseOwner = { choosingOwner = true },
+                onChooseCampaign = { choosingCampaign = true },
+                onChooseStatus = { choosingStatus = true },
+                onClear = {
+                    pendingOwnerFilter = null
+                    pendingCampaignFilter = null
+                    pendingStatusFilter = AdminCharacterStatus.ALL
+                    clearPendingSearch = true
+                },
+                onDismiss = { showingAdminFilters = false },
+                onApply = {
+                    ownerFilter = pendingOwnerFilter
+                    campaignFilter = pendingCampaignFilter
+                    statusFilter = pendingStatusFilter
+                    if (clearPendingSearch) searchQuery = ""
+                    showingAdminFilters = false
+                },
+            )
+        }
+        if (showingAdminFilters && choosingOwner) {
             val ownerOptions = characters.map(Character::ownerId).distinct().map { ownerId ->
                 ownerId to (ownersById[ownerId]?.let { "${it.firstName} // ${it.email}" } ?: "UID.${ownerId.take(8)}")
             }.sortedBy { it.second }
             FilterSelectionDialog(
                 title = "FILTRAR POR OWNER",
                 options = listOf(null to "Todos os owners") + ownerOptions,
+                selectedValue = pendingOwnerFilter,
                 onDismiss = { choosingOwner = false },
-                onSelect = { ownerFilter = it; choosingOwner = false },
+                onSelect = { pendingOwnerFilter = it; choosingOwner = false },
             )
         }
-        if (choosingCampaign) FilterSelectionDialog(
+        if (showingAdminFilters && choosingCampaign) FilterSelectionDialog(
             title = "FILTRAR POR CAMPANHA",
             options = listOf(
                 null to "Todas as campanhas",
                 STANDALONE_FILTER to "Sem campanha",
             ) + campaigns.sortedBy(Campaign::name).map { it.id to it.name },
+            selectedValue = pendingCampaignFilter,
             onDismiss = { choosingCampaign = false },
-            onSelect = { campaignFilter = it; choosingCampaign = false },
+            onSelect = { pendingCampaignFilter = it; choosingCampaign = false },
         )
-        if (choosingStatus) FilterSelectionDialog(
+        if (showingAdminFilters && choosingStatus) FilterSelectionDialog(
             title = "FILTRAR POR STATUS",
             options = AdminCharacterStatus.entries.map { it.name to it.label },
+            selectedValue = pendingStatusFilter.name,
             onDismiss = { choosingStatus = false },
             onSelect = { value ->
-                statusFilter = AdminCharacterStatus.entries.firstOrNull { it.name == value } ?: AdminCharacterStatus.ALL
+                pendingStatusFilter = AdminCharacterStatus.entries.firstOrNull { it.name == value } ?: AdminCharacterStatus.ALL
                 choosingStatus = false
             },
         )
@@ -561,34 +596,89 @@ private fun AdminCharacterFilters(
     campaignLabel: String,
     statusLabel: String,
     onQueryChange: (String) -> Unit,
+    filtersSelected: Boolean,
+    onOpenFilters: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            HudTextField(
+                label = stringResource(R.string.dashboard_search_label),
+                value = query,
+                modifier = Modifier.weight(1f).testTag("dashboard_search"),
+                placeholder = stringResource(R.string.dashboard_search_hint),
+                onValue = onQueryChange,
+            )
+            SdoOutlinedButton(
+                onClick = onOpenFilters,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("dashboard_filter_trigger"),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Icon(Icons.Default.FilterList, null, modifier = Modifier.size(18.dp), tint = if (filtersSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.dashboard_filters_label))
+            }
+        }
+        if (filtersSelected) {
+            SdoMetadataText("$ownerLabel // $campaignLabel // $statusLabel", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun AdminFilterDialog(
+    ownerLabel: String,
+    campaignLabel: String,
+    statusLabel: String,
     onChooseOwner: () -> Unit,
     onChooseCampaign: () -> Unit,
     onChooseStatus: () -> Unit,
     onClear: () -> Unit,
+    onDismiss: () -> Unit,
+    onApply: () -> Unit,
 ) {
-    SdoInsetCard(verticalSpacing = 6.dp) {
-        HudTextField(
-            label = "Pesquisa administrativa",
-            value = query,
-            placeholder = "Nome, raça, ocupação, e-mail ou UID",
-            onValue = onQueryChange,
-        )
-        SdoResponsiveGrid(listOf("OWNER", "CAMPAIGN", "STATUS", "CLEAR"), minItemWidth = 200.dp, maxColumns = 2) { filter, itemModifier ->
-            when (filter) {
-                "OWNER" -> SdoTextButton(onClick = onChooseOwner, modifier = itemModifier) {
-                    Text("OWNER // ${ownerLabel.uppercase()}")
-                }
-                "CAMPAIGN" -> SdoTextButton(onClick = onChooseCampaign, modifier = itemModifier) {
-                    Text("CAMPANHA // ${campaignLabel.uppercase()}")
-                }
-                "STATUS" -> SdoTextButton(onClick = onChooseStatus, modifier = itemModifier) {
-                    Text("STATUS // ${statusLabel.uppercase()}")
-                }
-                else -> SdoTextButton(onClick = onClear, modifier = itemModifier) {
-                    Text("LIMPAR", color = MaterialTheme.colorScheme.error)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = SdoShapeTokens.panel,
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.dashboard_filters_title), modifier = Modifier.weight(1f))
+                SdoIconButton(onClick = onDismiss, modifier = Modifier.testTag("dashboard_filters_cancel")) {
+                    Icon(Icons.Default.Close, stringResource(R.string.dashboard_filters_close))
                 }
             }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterDialogTrigger(stringResource(R.string.dashboard_filters_owner), ownerLabel, "dashboard_filter_owner", onChooseOwner)
+                FilterDialogTrigger(stringResource(R.string.dashboard_filters_campaign), campaignLabel, "dashboard_filter_campaign", onChooseCampaign)
+                FilterDialogTrigger(stringResource(R.string.dashboard_filters_status), statusLabel, "dashboard_filter_status", onChooseStatus)
+            }
+        },
+        confirmButton = {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SdoOutlinedButton(onClick = onClear, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("dashboard_filters_clear"), contentPadding = PaddingValues(horizontal = 6.dp)) {
+                    Text(stringResource(R.string.dashboard_filters_clear))
+                }
+                SdoOutlinedButton(onClick = onApply, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("dashboard_filters_apply"), contentPadding = PaddingValues(horizontal = 6.dp)) {
+                    Text(stringResource(R.string.dashboard_filters_apply))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun FilterDialogTrigger(label: String, value: String, tag: String, onClick: () -> Unit) {
+    SdoOutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(tag),
+        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.labelSmall)
+            Text(value, style = MaterialTheme.typography.bodySmall)
         }
+        Icon(Icons.Default.KeyboardArrowDown, null, modifier = Modifier.size(18.dp))
     }
 }
 
@@ -608,17 +698,21 @@ private fun CompactSearchField(
 private fun FilterSelectionDialog(
     title: String,
     options: List<Pair<String?, String>>,
+    selectedValue: String?,
     onDismiss: () -> Unit,
     onSelect: (String?) -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = SdoShapeTokens.panel,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = { Text(title) },
         text = {
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
                 items(options, key = { "${it.first.orEmpty()}:${it.second}" }) { (value, label) ->
-                    SdoTextButton(onClick = { onSelect(value) }, modifier = Modifier.fillMaxWidth()) {
-                        Text(label.uppercase())
+                    SdoTextButton(onClick = { onSelect(value) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("dashboard_filter_option_${value ?: "ALL"}")) {
+                        androidx.compose.material3.RadioButton(selected = value == selectedValue, onClick = null)
+                        Text(label)
                     }
                 }
             }
@@ -693,6 +787,7 @@ private fun LinkCharacterDialog(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CampaignPanel(
     campaign: Campaign,
@@ -721,10 +816,9 @@ private fun CampaignPanel(
     val accent = if (archived) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.secondary
     val cardShape = CutCornerShape(topEnd = 22.dp, bottomStart = 14.dp)
     SdoCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, accent, cardShape),
+        modifier = Modifier.fillMaxWidth(),
         shape = cardShape,
+        border = BorderStroke(1.dp, accent),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = .96f),
             contentColor = MaterialTheme.colorScheme.onSurface,
@@ -743,7 +837,7 @@ private fun CampaignPanel(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 7.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         TelemetryTag("CMP.$index", accent)
                         TelemetryTag(
                             if (archived) "ARCHIVED" else "ACTIVE",
@@ -1024,12 +1118,12 @@ private fun CharacterAccessCard(
 ) {
     SdoCard(
         onClick = onOpen,
-        modifier = Modifier.fillMaxWidth().border(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
+        border = BorderStroke(
             1.dp,
             when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.outlineVariant },
-            CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
         ),
-        shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = .96f),
             contentColor = MaterialTheme.colorScheme.onSurface,
@@ -1057,7 +1151,7 @@ private fun CharacterAccessCard(
                 }
                 Spacer(Modifier.size(if (compact) 9.dp else 13.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)
+                    SdoCardTitle(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)
                     Text(
                         listOf(character.race, character.occupation, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

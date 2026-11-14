@@ -21,7 +21,9 @@ $required = @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md',
     '.docs/ArchitectureDecisions/architecture_decisions.md',
     '.docs/HistoryRecords/history_records.md','.docs/Personas/laziest_senior_developer.md',
     '.agents/gates/project-contract.md','.agents/gates/ci-checks.md',
-    '.agents/gates/review-checklist.md','.agents/gates/release-checklist.md')
+    '.agents/gates/review-checklist.md','.agents/gates/release-checklist.md',
+    '.agents/agents/laziest_senior_developer.md','.codex/agents/laziest_senior_developer.toml',
+    '.githooks/pre-commit','docs/product/product.md')
 foreach ($relative in $required) {
     if (!(Test-Path -LiteralPath (Join-Path $rootPath $relative) -PathType Leaf)) { Add-Issue "Missing: $relative" }
 }
@@ -65,6 +67,7 @@ foreach ($relative in @('AGENTS.md','.docs/ARCHITECTURE.md','.docs/CODE_STANDARD
     if ((Test-Path -LiteralPath $path) -and [IO.File]::ReadAllText($path) -notmatch '\*\*Sealed') { Add-Issue "Missing sealed banner: $relative" }
 }
 if (Test-Path -LiteralPath (Join-Path $rootPath 'setup_prompt.md')) { Add-Issue 'Stale setup input: setup_prompt.md' }
+if (Test-Path -LiteralPath (Join-Path $rootPath '.scratch')) { Add-Issue 'Scratch must be removed before handoff/commit' }
 $activeInstructions = Join-Path $rootPath '.agents'
 if (Test-Path -LiteralPath $activeInstructions) {
     foreach ($instruction in Get-ChildItem -LiteralPath $activeInstructions -Recurse -Filter '*.md' -File) {

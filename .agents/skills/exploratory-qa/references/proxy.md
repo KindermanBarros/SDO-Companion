@@ -7,7 +7,7 @@ The helper binds loopback and records only exact allowlisted hosts. Output conta
 Use a unique run ID from the app root:
 
 ```bash
-export QA_RUN_ROOT="$PWD/.qa-artifacts"
+export QA_RUN_ROOT="$PWD/.scratch/qa"
 export QA_ALLOWED_HOSTS='api.your-test-host.example'
 export QA_PROXY_PORT=8080
 # Mock mode only; unset for capture-only mode.

@@ -97,7 +97,7 @@ class ReportTest(unittest.TestCase):
 
     def test_workflow_sample_does_not_preapprove_runtime(self):
         with tempfile.TemporaryDirectory() as directory:
-            run_dir = Path(directory) / '.qa-artifacts' / 'example'
+            run_dir = Path(directory) / '.scratch/qa' / 'example'
             run_dir.mkdir(parents=True)
             scenario_path = run_dir / 'scenario.json'
             scenario_path.write_bytes((ROOT / 'examples/scenario.example.json').read_bytes())
@@ -148,7 +148,7 @@ class ReportTest(unittest.TestCase):
 
     def test_dogfood_report_is_reconciled_and_findings_are_exported(self):
         with tempfile.TemporaryDirectory() as directory:
-            run_dir = Path(directory) / '.qa-artifacts' / 'dogfood-report'
+            run_dir = Path(directory) / '.scratch/qa' / 'dogfood-report'
             run_dir.mkdir(parents=True)
             scenario_path = run_dir / 'scenario.json'
             scenario_path.write_text(json.dumps(SCENARIO))

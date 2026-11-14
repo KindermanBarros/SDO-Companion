@@ -72,6 +72,7 @@ class AppViewModel(
     private var syncJob: Job? = null
     private var syncRequested = false
     private var automaticSync = true
+    private val appVisibility = AppVisibility()
     private var lastSyncFailure: String? = null
     private val localSaveMutex = Mutex()
     private val autosaveJobs = mutableMapOf<String, Job>()
@@ -305,10 +306,12 @@ class AppViewModel(
     }
 
     fun onAppForegrounded() {
+        if (!appVisibility.started()) return
         if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_FOREGROUND)) startSync(initial = false)
     }
 
-    fun onAppBackgrounded() {
+    fun onAppBackgrounded(changingConfiguration: Boolean = false) {
+        if (!appVisibility.stopped(changingConfiguration)) return
         viewModelScope.launch {
             flushAllPendingAutosaves()
             if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_BACKGROUND)) startSync(initial = false)

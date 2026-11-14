@@ -87,6 +87,8 @@ import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechCutDark
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
@@ -99,11 +101,11 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
         }
         AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
         HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
-        Text("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+        SdoMetadataText("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathKeywords.forEachIndexed { index, keyword ->
             HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) { onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it))) }
         }
-        Text("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+        SdoMetadataText("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathPillars.forEachIndexed { index, pillar ->
             HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) { onChange(character.copy(pathPillars = character.pathPillars.replace(index, it))) }
         }
@@ -131,7 +133,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
         Text("CARGA ${character.currentLoad} / ${character.maximumLoad}", color = if (character.currentLoad > character.maximumLoad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
         Text("Máxima = 2 + FOR + capacidade do recipiente. Itens [G] não contam como carregados.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         if (remainingHeritage > 0) {
-            Text("CRIAÇÃO INICIAL OBRIGATÓRIA // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+            SdoMetadataText("CRIAÇÃO INICIAL OBRIGATÓRIA // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             Text("Finalize os PH para liberar o catálogo comum, o construtor livre e itens manuais.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
         character.inventory.forEachIndexed { index, item ->
@@ -180,7 +182,7 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
 
 @Composable
 private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, onRemove: () -> Unit, onValue: (InventoryItem) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    SdoInsetCard(contentPadding = 12.dp) {
         Row(Modifier.fillMaxWidth()) {
             Text("ITEM ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover item", onRemove)
@@ -191,8 +193,8 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             { IntegerField("Carga", item.load, enabled, it) { value -> onValue(item.copy(load = value.coerceAtLeast(0))) } },
         )
         IntegerField("Durabilidade atual", item.durabilityCurrent, enabled) { value -> onValue(item.copy(durabilityCurrent = value.coerceIn(0, item.durabilityMax))) }
-        Text("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.label.uppercase()} // ${item.durabilityLabel}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-        Text("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
+        SdoMetadataText("${item.category.ifBlank { "OBJETO NARRATIVO" }} // ${item.quality.label.uppercase()} // ${item.durabilityLabel}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        SdoMetadataText("REGIÃO ${item.region.ifBlank { "—" }} // PG ${item.pg} // PL ${item.pl} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurface)
         if (item.mechanicalEffects.isNotEmpty()) Text(
             "EFEITOS // " + item.mechanicalEffects.joinToString { "${it.type.name} ${if (it.value > 0) "+" else ""}${it.value} ${it.resolvedTargetId.ifBlank { it.target }}" },
             color = MaterialTheme.colorScheme.primary,
@@ -204,10 +206,11 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
 
 @Composable
 internal fun BodySection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    var equipmentRegionIndex by remember(character.id) { mutableStateOf<Int?>(null) }
+    var equipmentRegionIndex by rememberSaveable(character.id) { mutableStateOf<Int?>(null) }
     val regions = character.canonicalBodyState().regions
-    com.kinderman.sdo.ui.CollapsibleSection("Corpo e armadura") {
+    com.kinderman.sdo.ui.CollapsibleSection("Corpo e armadura", index = "11") {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SectionHeader("11", "Corpo e armadura")
             regions.forEachIndexed { index, _ ->
                 BodyRegionSection(
                     character = character,
@@ -253,8 +256,8 @@ internal fun BodyRegionSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-                Text("${region.state.label.uppercase()} // ${region.failures}/4 FALHAS // PL ${character.localProtection(region)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                SdoMetadataText("D10.${region.roll.toString().padStart(2, '0')} // ${region.name.uppercase()}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                SdoMetadataText("${region.state.label.uppercase()} // ${region.failures}/4 FALHAS // PL ${character.localProtection(region)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
             }
             Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher ${region.name}" else "Expandir ${region.name}")
         }
@@ -280,11 +283,11 @@ internal fun BodyRegionSection(
             style = MaterialTheme.typography.labelLarge,
         )
         val implantNames = region.implantInstanceIds.mapNotNull { id -> character.inventory.firstOrNull { it.id == id.value }?.name }
-        Text("IMPLANTES // ${implantNames.joinToString().ifBlank { "NENHUM" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SdoMetadataText("IMPLANTES // ${implantNames.joinToString().ifBlank { "NENHUM" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         val equippedNames = character.equippedItems(region).joinToString { it.name.ifBlank { "Item sem nome" } }
-        Text("EQUIPAMENTOS // ${equippedNames.ifBlank { "NENHUM" }}", color = if (equippedNames.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
+        SdoMetadataText("EQUIPAMENTOS // ${equippedNames.ifBlank { "NENHUM" }}", color = if (equippedNames.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
         if (region.injuries.isNotEmpty()) {
-            Text("HISTÓRICO // ${region.injuries.size} evento(s)", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+            SdoMetadataText("HISTÓRICO // ${region.injuries.size} evento(s)", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
             region.injuries.forEach { injury ->
                 val damage = injury.damage?.let { " • ${it.type.label} ${it.amount}" }.orEmpty()
                 Text("${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(injury.occurredAt))} • +${injury.failuresAdded} falha(s)$damage", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -325,18 +328,18 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
                     if (organIndex == index) updated else current
                 })))
             }
-            Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            SdoInsetCard(contentPadding = 12.dp) {
                 Row(Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(1f).sdoClickable { expanded = !expanded }) {
                         Text(organ.organ.label.uppercase(), color = MaterialTheme.colorScheme.primary)
-                        Text("${organ.state.label.uppercase()} // ${organ.failures}/3 FALHAS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                        SdoMetadataText("${organ.state.label.uppercase()} // ${organ.failures}/3 FALHAS", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     }
                     Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher órgão" else "Expandir órgão", Modifier.sdoClickable { expanded = !expanded })
                     RemoveButton(enabled, "Remover registro de órgão") {
                         onChange(character.withCanonicalBodyState(body.copy(organs = body.organs.filterIndexed { organIndex, _ -> organIndex != index })))
                     }
                 }
-                if (!expanded) return@Column
+                if (!expanded) return@SdoInsetCard
                 ChoiceField("Órgão", organ.organ, OrganSlot.entries, enabled, display = { it.label }) { slot ->
                     updateOrgan(organ.copy(organ = slot, customName = if (slot == OrganSlot.Other) organ.customName else ""))
                 }
@@ -426,7 +429,7 @@ private fun MysticEditor(
         ability.type.equals("Cinza", true) -> AbilityCostType.DOSE
         else -> AbilityCostType.ARCANE
     }
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    SdoInsetCard(contentPadding = 12.dp) {
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
                 Text(ability.name.ifBlank { "EFEITO ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
@@ -447,7 +450,7 @@ private fun MysticEditor(
         }
         if (!expanded) {
             Text(ability.effect.ifBlank { "Sem efeito descrito." }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 3)
-            return@Column
+            return@SdoInsetCard
         }
         TwoFields(
             { ChoiceField("Tipo", ability.type.ifBlank { "Magia" }, listOf("Magia", "Runa", "Cinza"), enabled, it) { value ->
@@ -570,7 +573,7 @@ private fun ConditionEditor(index: Int, condition: ConditionInstance, descriptio
     LaunchedEffect(description) {
         if (description != draftDescription) draftDescription = description
     }
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    SdoInsetCard(contentPadding = 12.dp) {
         Row(Modifier.fillMaxWidth()) {
             Text("CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover condição", onRemove)

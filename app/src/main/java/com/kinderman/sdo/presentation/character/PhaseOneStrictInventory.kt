@@ -1,5 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
+import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,6 +78,8 @@ import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.Signal
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
@@ -126,7 +129,7 @@ internal fun PhaseOneStrictInventorySection(
                     (inventoryQuery.isBlank() || listOf(item.name, item.category, item.quality.label, item.effect, item.inventoryState.label).any { it.contains(inventoryQuery, true) })
             }
             if (inventoryGroup == "Todos" || inventoryGroup == group) {
-                Text("$group // ${groupItems.size} // CARGA ${groupItems.sumOf { it.effectiveLoad() }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                SdoMetadataText("$group // ${groupItems.size} // CARGA ${groupItems.sumOf { it.effectiveLoad() }}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
                 if (groupItems.isEmpty()) Text("Nenhum item nesta categoria.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
             visible.forEach { item ->
@@ -140,14 +143,11 @@ internal fun PhaseOneStrictInventorySection(
                 }
                 add("DUR ${item.durabilityLabel}")
             }.joinToString(" // ")
-            Column(
-                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
+            SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 6.dp) {
                 Row(Modifier.fillMaxWidth().sdoClickable { expanded = !expanded }, verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
-                        Text(compactDetails, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        SdoCardTitle(item.name.ifBlank { "ITEM ${(index + 1).toString().padStart(2, '0')}" }, color = MaterialTheme.colorScheme.onSurface)
+                        SdoMetadataText(compactDetails, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
                     Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher ${item.name}" else "Expandir ${item.name}")
                     RemoveButton(enabled, "Remover item") {
@@ -159,10 +159,10 @@ internal fun PhaseOneStrictInventorySection(
                         }
                     }
                 }
-                Text("${item.category.ifBlank { "OBJETO" }} // ${item.quality.label} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                if (!expanded) return@Column
-                Text("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) Text("EMPUNHADURA // ${item.handsRequired()} MÃO(S)", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                SdoMetadataText("${item.category.ifBlank { "OBJETO" }} // ${item.quality.label} // PG ${item.pg} // PL ${item.pl}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                if (!expanded) return@SdoInsetCard
+                SdoMetadataText("REGIÃO ${item.region.ifBlank { "—" }} // CARGA ${item.effectiveLoad()} // LA ${item.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) SdoMetadataText("EMPUNHADURA // ${item.handsRequired()} MÃO(S)", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 Text("DURABILIDADE ${item.durabilityLabel}${when { item.isBroken -> " // [QUEBRADO]"; item.isScrap -> " // [SUCATA]"; else -> "" }}", color = if (item.isScrap || item.isBroken) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                 if (item.isScrap && item.category.contains("arma", true)) Text(
                     "SUCATA // DESVANTAGEM NO ATAQUE // DADO DE DANO −1 CATEGORIA // BÔNUS E MODIFICAÇÕES INATIVOS",
@@ -187,11 +187,11 @@ internal fun PhaseOneStrictInventorySection(
                     val modificationNames = (weaponModifications + armorModifications).filter { it.id in item.modificationIds }.map { it.name }
                     val installedEnhancementIds = item.installedEnhancements.map { it.catalogEntryId }.toSet()
                     val enhancementNames = enhancementComponents.filter { it.id in installedEnhancementIds }.map { it.name }
-                    materialName?.let { Text("MATERIAL // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
-                    secondaryMaterialName?.let { Text("LIGA // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
-                    if (modificationNames.isNotEmpty()) Text("MODIFICAÇÕES // ${modificationNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                    Text("ESPAÇOS DE APRIMORAMENTO // ${item.installedEnhancements.size}/${item.enhancementSlots}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
-                    if (enhancementNames.isNotEmpty()) Text("INSTALADOS // ${enhancementNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    materialName?.let { SdoMetadataText("MATERIAL // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
+                    secondaryMaterialName?.let { SdoMetadataText("LIGA // ${it.uppercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
+                    if (modificationNames.isNotEmpty()) SdoMetadataText("MODIFICAÇÕES // ${modificationNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    SdoMetadataText("ESPAÇOS DE APRIMORAMENTO // ${item.installedEnhancements.size}/${item.enhancementSlots}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+                    if (enhancementNames.isNotEmpty()) SdoMetadataText("INSTALADOS // ${enhancementNames.joinToString()}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     val basePart = (weaponBases + armorBases).firstOrNull { it.id == item.baseId }
                     val compatibleIds = basePart?.let { compatibleEnhancements(it, initialCreation = false).mapTo(hashSetOf()) { part -> part.id } }.orEmpty()
                     val availableEnhancements = character.inventory.filter { loose ->
@@ -210,14 +210,14 @@ internal fun PhaseOneStrictInventorySection(
                     }
                     item.installedEnhancements.forEach { installed ->
                         enhancementComponents.firstOrNull { it.id == installed.catalogEntryId }?.let { enhancement ->
-                            Text("${enhancement.name} // DUR ${installed.durabilityCurrent}/${installed.durabilityMax} // CARGAS ${installed.chargesCurrent}/${installed.chargesMax}", style = MaterialTheme.typography.bodySmall)
+                            SdoMetadataText("${enhancement.name} // DUR ${installed.durabilityCurrent}/${installed.durabilityMax} // CARGAS ${installed.chargesCurrent}/${installed.chargesMax}", style = MaterialTheme.typography.bodySmall)
                             if (installed.chargesMax > 0) Row {
                                 SdoTextButton(onClick = { onChange(character.spendEnhancementCharge(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent > 0) { Text("ATIVAR") }
                                 SdoTextButton(onClick = { onChange(character.rechargeEnhancement(item.id, installed.id)) }, enabled = enabled && installed.chargesCurrent < installed.chargesMax) { Text("RECARREGAR") }
                             }
                             SdoTextButton(onClick = {
                                 onChange(character.removeEnhancement(item.id, installed.id))
-                            }, enabled = enabled) { Text("REMOVER // ${enhancement.name.uppercase()}") }
+                            }, enabled = enabled) { SdoMetadataText("REMOVER // ${enhancement.name.uppercase()}") }
                         }
                     }
                 }
@@ -225,7 +225,7 @@ internal fun PhaseOneStrictInventorySection(
                     IntegerField("Doses", item.quantity, enabled) { doses ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = doses.coerceAtLeast(0)))))
                     }
-                    Text("PUREZA // ${item.ashPurity.label}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    SdoMetadataText("PUREZA // ${item.ashPurity.label}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 } else if (item.category.equals("Munição", true) || item.category.contains("Consumível", true)) {
                     IntegerField(if (item.category.equals("Munição", true)) "Munição restante" else "Doses restantes", item.quantity, enabled) { quantity ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = quantity.coerceAtLeast(0)))))
@@ -254,11 +254,11 @@ internal fun PhaseOneStrictInventorySection(
         val canAddItem = enabled && (!character.isInCreation || remainingHeritage > 0)
         AddButton("Adicionar item", canAddItem) { dialog = "add" }
         if (character.isInCreation && remainingHeritage == 0) {
-            Text("LIMITE DE PH ATINGIDO // remova ou altere um item de herança para adicionar outro.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            SdoMetadataText("LIMITE DE PH ATINGIDO // remova ou altere um item de herança para adicionar outro.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
         SdoTextButton(onClick = { dialog = "glossary" }, modifier = Modifier.fillMaxWidth()) { Text("CONSULTAR GLOSSÁRIOS") }
         if (remainingHeritage > 0) {
-            Text("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
+            SdoMetadataText("CRIAÇÃO INICIAL // $remainingHeritage / ${ItemCreationRules.HERITAGE_BUDGET} PH RESTANTES", color = MaterialTheme.colorScheme.primary)
         }
     }
 
@@ -408,7 +408,7 @@ private fun EnhancementCatalogDialog(
                 } else options.forEach { enhancement ->
                     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp)) {
                         Text(enhancement.name)
-                        Text("${ItemCreationRules.enhancementRarity(enhancement.id)} // ${ItemCreationRules.enhancementCategory(enhancement.id)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        SdoMetadataText("${ItemCreationRules.enhancementRarity(enhancement.id)} // ${ItemCreationRules.enhancementCategory(enhancement.id)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         Text(enhancement.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         SdoTextButton(onClick = { onAdd(enhancement.id) }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR") }
                     }
@@ -468,7 +468,7 @@ private fun AshBuilderDialog(
                 if (selectedAshName == null) {
                     HudTextField("Buscar por nome, fonte ou efeito", query) { query = it }
                     ChoiceField("Fonte", source, sources, true) { source = it }
-                    Text("CINZAS // ${filteredGroups.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    SdoMetadataText("CINZAS // ${filteredGroups.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     Column(
                         Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -522,8 +522,8 @@ private fun AshBuilderDialog(
                     }
                     IntegerField("Doses", doses, true) { doses = it.coerceAtLeast(1) }
                     selected?.let {
-                        Text("CARGA ${kotlin.math.ceil(doses.toDouble() / purity.dosesPerLoad).toInt()} // ${purity.dosesPerLoad} DOSE(S) POR CARGA")
-                        if (remainingHeritage != null) Text("CUSTO // $preview PH", color = MaterialTheme.colorScheme.primary)
+                        SdoMetadataText("CARGA ${kotlin.math.ceil(doses.toDouble() / purity.dosesPerLoad).toInt()} // ${purity.dosesPerLoad} DOSE(S) POR CARGA")
+                        if (remainingHeritage != null) SdoMetadataText("CUSTO // $preview PH", color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -674,7 +674,7 @@ private fun StrictItemBuilderDialog(
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(if (initialCreation) "CRIAR ITEM // $remainingHeritage PH" else "CRIAR ITEM")
-                Text("$step DE $totalSteps  //  $stepTitle", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                SdoMetadataText("$step DE $totalSteps  //  $stepTitle", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             }
         },
         text = {
@@ -685,7 +685,7 @@ private fun StrictItemBuilderDialog(
                 remainingHeritage?.let { remaining ->
                     val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
                     val preview = if (category == "Item") 0 else built.creationCost ?: 0
-                    Text("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = MaterialTheme.colorScheme.primary)
+                    SdoMetadataText("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = MaterialTheme.colorScheme.primary)
                     LinearProgressIndicator(
                         progress = { ((spent + preview).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
                         modifier = Modifier.fillMaxWidth(),
@@ -777,7 +777,7 @@ private fun StrictItemBuilderDialog(
                     }
                 }
                 if (step == gemsStep && category != "Item") {
-                    Text("ESPAÇOS DE APRIMORAMENTO // ${enhancements.size}/$enhancementSlots", color = MaterialTheme.colorScheme.primary)
+                    SdoMetadataText("ESPAÇOS DE APRIMORAMENTO // ${enhancements.size}/$enhancementSlots", color = MaterialTheme.colorScheme.primary)
                     Text("A base do item e uma modificação de Encaixe determinam o total disponível.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     val available = enhancementOptions.filterNot { candidate -> enhancements.any { it.id == candidate.id } }
                     if (quality != ItemQuality.MUNDANE && enhancements.size < enhancementSlots && available.isNotEmpty()) {
@@ -801,13 +801,13 @@ private fun StrictItemBuilderDialog(
                 }
                 if (step == totalSteps) {
                 Text("REVISE ANTES DE CRIAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                Text(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
-                if (category == "Item") Text("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
-                else Text("${if (weapon) "Arma" else "Armadura / Acessório"} // ${ItemCreationRules.mixMaterials(material, secondaryMaterial).name} // ${quality.label}")
-                if (weapon) Text("EMPUNHADURA // ${built.toInventoryItem().handsRequired()} MÃO(S)")
-                if (modifications.isNotEmpty()) Text("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (gems.isNotEmpty()) Text("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (technologies.isNotEmpty()) Text("TECNOLOGIAS // ${technologies.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SdoCardTitle(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
+                if (category == "Item") SdoMetadataText("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
+                else SdoMetadataText("${if (weapon) "Arma" else "Armadura / Acessório"} // ${ItemCreationRules.mixMaterials(material, secondaryMaterial).name} // ${quality.label}")
+                if (weapon) SdoMetadataText("EMPUNHADURA // ${built.toInventoryItem().handsRequired()} MÃO(S)")
+                if (modifications.isNotEmpty()) SdoMetadataText("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (gems.isNotEmpty()) SdoMetadataText("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (technologies.isNotEmpty()) SdoMetadataText("TECNOLOGIAS // ${technologies.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (category != "Item") {
                     val finalMaterial = ItemCreationRules.mixMaterials(material, secondaryMaterial)
                     val selectedEffects = buildList {
@@ -825,11 +825,11 @@ private fun StrictItemBuilderDialog(
                         Text("EFEITOS ESCOLHIDOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                         selectedEffects.forEach { effect -> Text("• $effect", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
                     }
-                    if (initialCreation) Text("CUSTO // ${built.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary)
-                    Text("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
-                    Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    built.agilityLimit?.let { Text("LIMITE DE AGILIDADE // $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    if (built.region.isNotBlank()) Text("REGIÃO // ${built.region}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (initialCreation) SdoMetadataText("CUSTO // ${built.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary)
+                    SdoMetadataText("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
+                    SdoMetadataText("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    built.agilityLimit?.let { SdoMetadataText("LIMITE DE AGILIDADE // $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    if (built.region.isNotBlank()) SdoMetadataText("REGIÃO // ${built.region}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -847,10 +847,7 @@ private fun StrictItemBuilderDialog(
 
 @Composable
 private fun ItemPartDetails(title: String, part: ItemPart, weapon: Boolean, showHeritageCost: Boolean) {
-    Column(
-        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
+    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 4.dp) {
         Text(title, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         Text(part.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
         if (part.traitIds.isNotEmpty()) Text(
@@ -860,20 +857,20 @@ private fun ItemPartDetails(title: String, part: ItemPart, weapon: Boolean, show
         )
         part.traitIds.forEach { traitId ->
             ItemCreationRules.traitDescription(traitId).takeIf(String::isNotBlank)?.let { description ->
-                Text("${ItemCreationRules.traitName(traitId)} // $description", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                SdoMetadataText("${ItemCreationRules.traitName(traitId)} // $description", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         }
-        if (part.damageBonus != 0) Text("DANO // +${part.damageBonus}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        if (part.damageReduction != 0) Text("REDUÇÃO // +${part.damageReduction}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        if (part.categoryDieShift != 0) Text("CATEGORIA DE DADO // ${signed(part.categoryDieShift)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (part.damageBonus != 0) SdoMetadataText("DANO // +${part.damageBonus}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (part.damageReduction != 0) SdoMetadataText("REDUÇÃO // +${part.damageReduction}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (part.categoryDieShift != 0) SdoMetadataText("CATEGORIA DE DADO // ${signed(part.categoryDieShift)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         ItemPartStats(part, showHeritageCost, includeProtection = false)
         if (!weapon) {
-            Text("PROTEÇÃO // PG ${part.pg} // PL ${part.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            SdoMetadataText("PROTEÇÃO // PG ${part.pg} // PL ${part.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             part.agilityLimit?.let { limit ->
-                Text("LIMITE DE AGILIDADE // $limit", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                SdoMetadataText("LIMITE DE AGILIDADE // $limit", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         }
-        if (part.region.isNotBlank()) Text("REGIÃO // ${part.region}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        if (part.region.isNotBlank()) SdoMetadataText("REGIÃO // ${part.region}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -891,18 +888,15 @@ private fun ItemPartStats(part: ItemPart, showHeritageCost: Boolean, includeProt
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.bodySmall,
     )
-    if (showHeritageCost) Text("CUSTO // ${part.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+    if (showHeritageCost) SdoMetadataText("CUSTO // ${part.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
 }
 
 @Composable
 private fun QualityDetails(quality: ItemQuality, weapon: Boolean, showHeritageCost: Boolean) {
-    Column(
-        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
+    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 4.dp) {
         Text("EFEITO DA QUALIDADE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         Text(ItemCreationRules.qualityEffect(quality, armor = !weapon) ?: "Funcionamento padrão, sem bônus adicionais.")
-        if (showHeritageCost) Text("AJUSTE DE CUSTO // ${signed(quality.creationAdjustment)} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+        if (showHeritageCost) SdoMetadataText("AJUSTE DE CUSTO // ${signed(quality.creationAdjustment)} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
     }
 }
 

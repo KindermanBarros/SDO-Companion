@@ -7,6 +7,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -44,14 +45,14 @@ internal val LocalCollapsibleSectionTitle = compositionLocalOf<String?> { null }
 
 @Composable
 fun AdaptiveActionLabel(text: String, color: Color = MaterialTheme.colorScheme.primary) {
-    BasicText(
+    AdaptiveSingleLineText(
         text = text,
-        style = MaterialTheme.typography.labelLarge.copy(color = color, letterSpacing = 0.sp),
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
+        color = color,
+        style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 0.sp),
     )
 }
 
+/** Prefers one line; wraps complete words rather than truncating when readable text needs more room. */
 @Composable
 fun AdaptiveSingleLineText(
     text: String,
@@ -60,15 +61,36 @@ fun AdaptiveSingleLineText(
     style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.titleMedium,
     minimumSize: androidx.compose.ui.unit.TextUnit = 11.sp,
 ) {
-    BasicText(
-        text = text,
-        modifier = modifier,
-        style = style.copy(color = color),
-        maxLines = 1,
-        autoSize = TextAutoSize.StepBased(minFontSize = minimumSize, maxFontSize = style.fontSize),
-    )
+    val measurer = rememberTextMeasurer()
+    val baseSize = if (style.fontSize.isSp) style.fontSize else MaterialTheme.typography.bodyLarge.fontSize
+    BoxWithConstraints(modifier) {
+        val availableWidth = constraints.maxWidth.coerceAtLeast(1)
+        val fittedSize = remember(text, style, baseSize, availableWidth, measurer) {
+            val words = text.split(Regex("\\s+")).filter(String::isNotEmpty)
+            fun widestWord(size: Float): Int = words.maxOfOrNull { word ->
+                measurer.measure(word, style = style.copy(fontSize = size.sp), softWrap = false).size.width
+            } ?: 0
+            var size = baseSize.value
+            val width = widestWord(size)
+            if (width > availableWidth) {
+                size = (size * availableWidth / width).coerceAtLeast(1f)
+                while (size > 1f && widestWord(size) > availableWidth) size = (size - .5f).coerceAtLeast(1f)
+            }
+            size.sp
+        }
+        val minimum = minOf(minimumSize.value, fittedSize.value).sp
+        val fitsOneLine = !text.contains('\n') && measurer.measure(
+            text, style = style.copy(fontSize = minimum), softWrap = false,
+        ).size.width <= availableWidth
+        BasicText(
+            text = text,
+            style = style.copy(color = color, fontSize = fittedSize),
+            maxLines = if (fitsOneLine || text.none(Char::isWhitespace)) 1 else Int.MAX_VALUE,
+            softWrap = !fitsOneLine && text.any(Char::isWhitespace),
+            autoSize = TextAutoSize.StepBased(minFontSize = minimum, maxFontSize = fittedSize),
+        )
+    }
 }
-
 @Composable
 fun CollapsibleSection(title: String, index: String = "", content: @Composable () -> Unit) {
     val collapsible = LocalSdoPreferences.current.collapseLongSections
@@ -98,7 +120,7 @@ fun CollapsibleSection(title: String, index: String = "", content: @Composable (
                 )
                 Spacer(Modifier.width(10.dp))
             }
-            Text(
+            AdaptiveSingleLineText(
                 title.uppercase(),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.titleMedium

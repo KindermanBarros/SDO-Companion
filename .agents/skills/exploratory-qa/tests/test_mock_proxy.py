@@ -22,7 +22,7 @@ class ProxyTest(unittest.TestCase):
         self.assertIsNotNone(shutil.which('mitmdump'), 'mitmdump is required; no skipped proxy evidence')
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.base = Path(self.temporary.name) / '.qa-artifacts'
+        self.base = Path(self.temporary.name) / '.scratch/qa'
         self.base.mkdir()
         self.scenario = json.loads((ROOT / 'tests/fixtures/mock-scenario.json').read_text())
         self.scenario_file = self.base / 'scenario.json'

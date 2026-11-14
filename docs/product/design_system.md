@@ -11,3 +11,8 @@ Status: adoption draft, pending approval. This document registers the existing d
 ## Adoption boundary
 
 Preserve both existing modes during onboarding. No visual, interaction, copy or accessibility behavior changes are proposed. Where the references or implementation differ, record the gap rather than selecting a replacement silently. Future UI work must resolve the intended behavior and reference precedence through create-ui-and-verify, including any explicit design-system exception and approved Pen targets.
+
+## Text wrapping
+Follow the mandatory whole-word rule in [.docs/CODE_STANDARDS](../../.docs/CODE_STANDARDS.md#ui): wrap at word boundaries; no automatic hyphens or broken word fragments. Adapt layout/font for words wider than their container; preserve explicit newlines. One-word Cybergrunge card titles autosize on one line.
+
+No functional text may be replaced by ellipsis. Short controls prefer one line, but must reflow or wrap complete words when needed; never keep a line cap that silently hides content.

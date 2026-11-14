@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -17,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import com.kinderman.sdo.ui.SdoOutlinedButton
@@ -25,14 +28,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
+import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoMetadataText
+import androidx.compose.foundation.layout.BoxWithConstraints
 import com.kinderman.sdo.ui.SdoActionButton
 import com.kinderman.sdo.ui.SdoActionStyle
 import com.kinderman.sdo.ui.Signal
@@ -99,9 +107,19 @@ internal fun TwoFields(
     first: @Composable (Modifier) -> Unit,
     second: @Composable (Modifier) -> Unit,
 ) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        first(Modifier.weight(1f))
-        second(Modifier.weight(1f))
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val fontScale = LocalDensity.current.fontScale * LocalSdoPreferences.current.fontScale.multiplier
+        if (maxWidth < 360.dp * fontScale) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                first(Modifier.fillMaxWidth())
+                second(Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                first(Modifier.weight(1f))
+                second(Modifier.weight(1f))
+            }
+        }
     }
 }
 
@@ -118,10 +136,12 @@ internal fun <T> ChoiceField(
     searchable: Boolean = options.size > 8,
     onValue: (T) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
+    var expanded by rememberSaveable(label) { mutableStateOf(false) }
+    var query by rememberSaveable(label) { mutableStateOf("") }
     var anchorWidth by remember { mutableStateOf(0) }
     val density = LocalDensity.current
+    val labelStyle = MaterialTheme.typography.labelLarge
+    val minimumLabelSize = (10 * LocalSdoPreferences.current.fontScale.multiplier).sp
     val visibleOptions = if (query.isBlank()) options else options.filter { display(it).contains(query, ignoreCase = true) }
     Box(modifier) {
         SdoOutlinedButton(
@@ -129,7 +149,15 @@ internal fun <T> ChoiceField(
             enabled = enabled,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).onSizeChanged { anchorWidth = it.width },
             shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-        ) { Text("$label // ${display(value)}", maxLines = 2) }
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            SdoMetadataText(
+                text = "$label // ${display(value)}",
+                color = LocalContentColor.current,
+                style = labelStyle,
+                autoSize = TextAutoSize.StepBased(minFontSize = minimumLabelSize, maxFontSize = labelStyle.fontSize),
+            )
+        }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false; query = "" },

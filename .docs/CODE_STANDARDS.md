@@ -31,6 +31,9 @@ Main language: Kotlin. Base guides: [Kotlin coding conventions](https://kotlinla
 - Render with Compose (or the UI toolkit the app uses). Keep state transitions in ViewModels; pass state and intent callbacks to screens.
 - Put `modifier: Modifier = Modifier` first among optional UI parameters in new APIs. Keep useful previews.
 - Preserve each screen's actual theme. Do not impose a theme rule the code doesn't follow.
+- Whole-word wrapping is mandatory in every theme: move complete words to the next line; never split a word across lines or insert automatic hyphens. If a word exceeds available width, reflow/widen the component or autosize the text. Keep single-word Cybergrunge card titles on one line with autosizing. Preserve user-entered explicit newlines and text semantics.
+
+- Never use ellipsis to hide functional UI text (titles, names, labels, selected values, counters or status). Show it completely by reflowing the layout, wrapping between words or autosizing when appropriate; do not substitute clipping or illegibly small text for ellipsis.
 
 ## Resources and strings
 

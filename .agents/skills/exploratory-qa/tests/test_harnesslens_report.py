@@ -23,7 +23,7 @@ class HarnessLensReportTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.run = Path(self.temp.name) / '.qa-artifacts' / 'synthetic'
+        self.run = Path(self.temp.name) / '.scratch/qa' / 'synthetic'
         self.run.mkdir(parents=True)
         self.native_run = 'a' * 32
         self.scenario = {
@@ -37,10 +37,10 @@ class HarnessLensReportTest(unittest.TestCase):
             'expectations': {'ui_checks': ['home_visible'], 'harnesslens': {
                 'capture': 'harnesslens/capture.ndjson',
                 'state_checkpoints': [{'id': 'home', 'ui_check_id': 'home_visible', 'action': 'Launch',
-                'source': '.qa-artifacts/synthetic/harnesslens/approved/home-state.json#assertions',
+                'source': '.scratch/qa/synthetic/harnesslens/approved/home-state.json#assertions',
                                        'capture': 'harnesslens/checkpoints/home.ndjson',
                                        'contract': 'harnesslens/contracts/home.json'}],
-                'analytics': {'source': '.qa-artifacts/synthetic/harnesslens/approved/home-analytics.json',
+                'analytics': {'source': '.scratch/qa/synthetic/harnesslens/approved/home-analytics.json',
                               'contract': 'harnesslens/contracts/analytics.json'}}}}
         self.records = [
             {'type': 'capture_ready', 'version': 1, 'run_id': self.native_run},
@@ -78,17 +78,17 @@ class HarnessLensReportTest(unittest.TestCase):
             source = 'harnesslens/approved/' + name
             self.write_json(source, contract)
             self.scenario['generation']['sources'].append({
-                'path': '.qa-artifacts/synthetic/' + source,
+                'path': '.scratch/qa/synthetic/' + source,
                 'sha256': hashlib.sha256((self.run / source).read_bytes()).hexdigest(),
             })
             self.write_json(path, contract)
             self.manifest['contracts'][path] = hashlib.sha256((self.run / path).read_bytes()).hexdigest()
         for checkpoint in self.scenario['expectations']['harnesslens']['state_checkpoints']:
             contract_name = Path(checkpoint['contract']).name
-            checkpoint['source'] = '.qa-artifacts/synthetic/harnesslens/approved/' + contract_name + '#assertions'
+            checkpoint['source'] = '.scratch/qa/synthetic/harnesslens/approved/' + contract_name + '#assertions'
         analytics_name = Path(self.scenario['expectations']['harnesslens']['analytics']['contract']).name
         self.scenario['expectations']['harnesslens']['analytics']['source'] = (
-            '.qa-artifacts/synthetic/harnesslens/approved/' + analytics_name)
+            '.scratch/qa/synthetic/harnesslens/approved/' + analytics_name)
         self.write_json('scenario.json', self.scenario)
         self.manifest['scenario_sha256'] = hashlib.sha256((self.run / 'scenario.json').read_bytes()).hexdigest()
         self.write_json('harnesslens/run.json', self.manifest)
@@ -267,7 +267,7 @@ class HarnessLensReportTest(unittest.TestCase):
         second = copy.deepcopy(self.scenario['expectations']['harnesslens']['state_checkpoints'][0])
         second.update(id='profile', action='Tap Profile', capture='harnesslens/checkpoints/profile.ndjson',
                       contract='harnesslens/contracts/profile.json')
-        second['source'] = '.qa-artifacts/synthetic/harnesslens/approved/profile.json#assertions'
+        second['source'] = '.scratch/qa/synthetic/harnesslens/approved/profile.json#assertions'
         self.scenario['expectations']['harnesslens']['state_checkpoints'].append(second)
         self.contracts[second['contract']] = {'schema_version': 1, 'assertions': [
             {'scope': 'home', 'field': 'screen_section', 'equals': 'profile'}]}

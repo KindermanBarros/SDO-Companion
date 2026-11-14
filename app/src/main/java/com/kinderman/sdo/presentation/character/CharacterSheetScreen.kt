@@ -38,6 +38,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -92,9 +94,12 @@ fun CharacterSheetScreen(
         MissingCharacterState(sessionAvailable = session != null, snackbarHost = snackbarHost, onBack = onBack)
         return
     }
-    var current by remember(character.id) { mutableStateOf(character) }
-    var confirmDelete by remember { mutableStateOf(false) }
-    var confirmHeritageReset by remember { mutableStateOf(false) }
+    val draft = viewModel(key = "sheet-draft:${session.uid}:${character.id}") {
+        CharacterSheetDraftViewModel(character)
+    }
+    var current by draft.current
+    var confirmDelete by rememberSaveable(character.id) { mutableStateOf(false) }
+    var confirmHeritageReset by rememberSaveable(character.id) { mutableStateOf(false) }
     val undoSnackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     LaunchedEffect(character.updatedAt) {

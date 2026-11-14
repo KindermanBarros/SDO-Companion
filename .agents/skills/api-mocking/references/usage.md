@@ -18,21 +18,21 @@ In the test runner terminal, use one helper for the same server/session. `--excl
 
 ```bash
 umask 077
-mkdir -p .qa-artifacts/qa-20261028-01/wiremock
+mkdir -p .scratch/qa/qa-20261028-01/wiremock
 HLS_ROOT=/path/to/HarnessLens
 wm() {
   hlens mock --url http://127.0.0.1:8080 --session qa-20261028-01 --exclusive "$@"
 }
 # Install cleanup before apply; on failed setup it still attempts session removal.
-trap 'wm reset > .qa-artifacts/qa-20261028-01/wiremock/cleanup.json' EXIT
+trap 'wm reset > .scratch/qa/qa-20261028-01/wiremock/cleanup.json' EXIT
 wm start
 wm apply "$HLS_ROOT/examples/wiremock/rest-query.json" \
-  > .qa-artifacts/qa-20261028-01/wiremock/apply.json
+  > .scratch/qa/qa-20261028-01/wiremock/apply.json
 wm list
 # Perform actual app actions here. Do not use curl to manufacture app evidence.
-wm requests > .qa-artifacts/qa-20261028-01/wiremock/requests.json
+wm requests > .scratch/qa/qa-20261028-01/wiremock/requests.json
 wm verify --name accounts-empty --min-hits 1 --max-hits 1 \
-  > .qa-artifacts/qa-20261028-01/wiremock/verify.json
+  > .scratch/qa/qa-20261028-01/wiremock/verify.json
 # Inspect exit status: 0 success, 1 expected-hit assertion failed, 2 setup/input error.
 # A shell journey runner must propagate failures and check cleanup's exit status.
 # Keep mappings active until any parent QA reporter has verified them.
@@ -129,8 +129,8 @@ Record a real app request correlated to the journey before setting `observations
 
 ```bash
 python3 .agents/skills/exploratory-qa/scripts/report.py \
-  --run-dir .qa-artifacts/qa-20261028-01 \
-  --scenario .qa-artifacts/qa-20261028-01/scenario.json \
+  --run-dir .scratch/qa/qa-20261028-01 \
+  --scenario .scratch/qa/qa-20261028-01/scenario.json \
   --harnesslens-root /path/to/pinned/HarnessLens \
   --wiremock-url http://127.0.0.1:8080 --wiremock-session qa-20261028-01
 ```

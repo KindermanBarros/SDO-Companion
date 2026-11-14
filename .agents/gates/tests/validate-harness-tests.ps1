@@ -1,9 +1,10 @@
 param([string]$Root = (Join-Path $PSScriptRoot '../../..'))
 $ErrorActionPreference = 'Stop'
 $source = [IO.Path]::GetFullPath($Root)
-$fixture = Join-Path ([IO.Path]::GetTempPath()) ('sdo-harness-contract-' + [guid]::NewGuid().ToString('N'))
+$scratchRoot = Join-Path $source '.scratch'
+$fixture = Join-Path $scratchRoot ('sdo-harness-contract-' + [guid]::NewGuid().ToString('N'))
 $fixture = [IO.Path]::GetFullPath($fixture)
-$tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\') + '\'
+$tempRoot = [IO.Path]::GetFullPath($scratchRoot).TrimEnd('\') + '\'
 if (!$fixture.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Fixture escaped temp root' }
 $utf8 = New-Object Text.UTF8Encoding($false)
 function Run-Gate([int]$expected, [string]$reason, [string]$diagnostic = '') {
@@ -15,10 +16,13 @@ function Run-Gate([int]$expected, [string]$reason, [string]$diagnostic = '') {
 }
 try {
     [IO.Directory]::CreateDirectory($fixture) | Out-Null
-    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','.docs','.agents','docs')) {
+    foreach ($name in @('AGENTS.md','README.md','CLAUDE.md','GEMINI.md','.docs','.agents','.codex','.githooks','docs')) {
         Copy-Item -LiteralPath (Join-Path $source $name) -Destination $fixture -Recurse
     }
     Run-Gate 0 'valid current harness'
+    [IO.Directory]::CreateDirectory((Join-Path $fixture '.scratch')) | Out-Null
+    Run-Gate 1 'scratch left before handoff' 'Scratch must be removed'
+    Remove-Item -LiteralPath (Join-Path $fixture '.scratch')
     $probe = Join-Path $fixture '.docs/contract_probe.md'
     $cases = @(
         @('broken file', "[missing](missing.md)", 'Broken link'),
@@ -48,10 +52,13 @@ try {
     Remove-Item -LiteralPath (Join-Path $fixture 'setup_prompt.md')
     Remove-Item -LiteralPath (Join-Path $fixture '.docs/TECH_STACK.md')
     Run-Gate 1 'missing required baseline' 'Missing: .docs/TECH_STACK.md'
-    Write-Output 'PASS: 10 contract cases (1 positive, 9 negative).'
+    Write-Output 'PASS: 11 contract cases (1 positive, 10 negative).'
 }
 finally {
     if ($fixture.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $fixture)) {
         Remove-Item -LiteralPath $fixture -Recurse -Force
+    }
+    if ((Test-Path -LiteralPath $scratchRoot) -and !(Get-ChildItem -LiteralPath $scratchRoot -Force | Select-Object -First 1)) {
+        Remove-Item -LiteralPath $scratchRoot
     }
 }

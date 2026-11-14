@@ -1,6 +1,8 @@
 package com.kinderman.sdo.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -45,26 +49,30 @@ internal fun CyberGrungePanel(
     accent: Color,
     compact: Boolean,
     content: @Composable ColumnScope.() -> Unit,
+    shape: Shape = CutCornerShape(topEnd = CyberGrungeTokens.cut, bottomStart = CyberGrungeTokens.cut),
+    border: BorderStroke? = null,
 ) {
     val possessionSeed = remember { System.identityHashCode(Any()) }
     val motion = rememberCyberGrungePanelMotion(possessionSeed)
-    val shape = CutCornerShape(topEnd = CyberGrungeTokens.cut, bottomStart = CyberGrungeTokens.cut)
     Box(
         modifier
-            .cyberGrungePossessed(motion)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface.copy(alpha = .94f), shape)
-            .border(1.dp, accent.copy(alpha = .78f), shape),
+            .border(border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), shape),
     ) {
-        CyberGrungeInterference(motion = motion, seed = possessionSeed)
-        Box(Modifier.fillMaxWidth().height(3.dp).background(accent).align(Alignment.TopStart))
-        Box(Modifier.width(CyberGrungeTokens.railWidth).fillMaxSize().background(accent.copy(alpha = .78f)))
+        Box(Modifier.matchParentSize().clip(shape)) {
+            CyberGrungeInterference(motion = motion, seed = possessionSeed, modifier = Modifier.matchParentSize())
+            Box(Modifier.fillMaxWidth().height(3.dp).background(accent).align(Alignment.TopStart))
+            Canvas(Modifier.matchParentSize()) {
+                drawRect(accent.copy(alpha = .78f), size = Size(CyberGrungeTokens.railWidth.toPx(), size.height))
+            }
+        }
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
             Column(
                 modifier = Modifier.padding(start = if (compact) 13.dp else 18.dp, top = 13.dp, end = 13.dp, bottom = 13.dp),
                 verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
             ) {
-                CyberGrungePanelChrome()
+                if (!compact) CyberGrungePanelChrome()
                 content()
             }
         }
@@ -84,12 +92,11 @@ internal fun CyberGrungeInsetPanel(
     val shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)
     Box(
         modifier
-            .cyberGrungePossessed(motion)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface.copy(alpha = .86f), shape)
             .border(1.dp, accent.copy(alpha = .75f), shape),
     ) {
-        CyberGrungeInterference(motion = motion, seed = possessionSeed)
+        CyberGrungeInterference(motion = motion, seed = possessionSeed, modifier = Modifier.matchParentSize().clip(shape))
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
             Column(
                 modifier = Modifier.padding(
@@ -121,9 +128,9 @@ internal fun CyberGrungeAction(
     val shape = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)
     val interaction = remember { MutableInteractionSource() }
     val content: @Composable () -> Unit = {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(12.dp).height(4.dp).background(signal))
-            AdaptiveActionLabel("[ ${label.uppercase()} ]", color = if (style == SdoActionStyle.PRIMARY) MaterialTheme.colorScheme.onPrimary else signal)
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.width(4.dp).height(4.dp).background(signal))
+            AdaptiveActionLabel(label.uppercase(), color = if (style == SdoActionStyle.PRIMARY) MaterialTheme.colorScheme.onPrimary else signal)
         }
     }
     if (style == SdoActionStyle.PRIMARY) {

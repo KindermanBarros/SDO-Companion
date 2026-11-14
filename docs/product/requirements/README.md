@@ -5,5 +5,6 @@ These are draft living requirements captured during adoption. Source observation
 - [Character sheets](character-sheets.md)
 - [Campaigns](campaigns.md)
 - [Codex](codex.md)
+- [Sincronização e conectividade](synchronization.md)
 
 Keep each capability in its existing file for future changes. The product overview owns the sole lifecycle tracker. Original RPG contracts remain under `docs/contracts/`; onboarding does not redefine their rules.

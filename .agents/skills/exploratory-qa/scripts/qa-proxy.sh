@@ -22,7 +22,7 @@ def main():
     base, command, run_id = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,95}', run_id):
         raise ValueError('Invalid run-id')
-    run = (Path(os.getenv('QA_RUN_ROOT', '.qa-artifacts')).resolve() / run_id)
+    run = (Path(os.getenv('QA_RUN_ROOT', '.scratch/qa')).resolve() / run_id)
     state_file, ready_file = run / 'proxy-state.json', run / 'proxy-ready.json'
 
     def owned_process(state):

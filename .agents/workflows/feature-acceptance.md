@@ -8,7 +8,7 @@ Entry requires a named merged change, integration branch, approved requirements 
 
 ## 0. Bootstrap
 
-Use exploratory-qa's suite layout under .qa-artifacts with separate suites per build/device/environment.
+Use exploratory-qa's suite layout under .scratch/qa with separate suites per build/device/environment.
 Inspect prerequisites without activating device journeys, mocks, routing changes, captures or QA-data mutations.
 Verify installed package com.kinderman.sdo, version/build/signing identity and CI artifact provenance; absent identity is INCONCLUSIVE.
 Use disposable QA accounts and synthetic data in the approved environment.

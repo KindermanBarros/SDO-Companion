@@ -23,16 +23,16 @@ def local_path(run_dir, value):
 
 def qa_run_dir(path):
     resolved = path.resolve()
-    if not any(parent.name == '.qa-artifacts' for parent in resolved.parents):
-        raise ValueError('Generated QA output must be inside .qa-artifacts/<run-id>/')
+    if not any(parent.name == '.scratch/qa' for parent in resolved.parents):
+        raise ValueError('Generated QA output must be inside .scratch/qa/<run-id>/')
     return resolved
 
 
 def qa_project_root(run_dir):
     for parent in run_dir.parents:
-        if parent.name == '.qa-artifacts':
+        if parent.name == '.scratch/qa':
             return parent.parent
-    raise ValueError('QA run directory is not rooted under .qa-artifacts')
+    raise ValueError('QA run directory is not rooted under .scratch/qa')
 
 
 def read_object(path):

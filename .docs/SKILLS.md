@@ -48,3 +48,5 @@ For harness maintenance, follow root AGENTS.md and the [Project contract](../.ag
 The current CI catalog owns executable checks; legacy script gates were retired by the owner. Skill guidance must not reintroduce them.
 The Primary Android skill names above are guidance, not verified installations in this session.
 No skills were installed or removed.
+
+Pen developer tooling: @pen.dev/cli 0.3.16 is installed globally under the active Node version (owner-authorized). CLI version/headless help and authenticated headless editing/reopen/export pass. This adds no application dependency.
