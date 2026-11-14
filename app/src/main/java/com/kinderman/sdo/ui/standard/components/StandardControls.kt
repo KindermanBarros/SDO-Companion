@@ -2,6 +2,8 @@ package com.kinderman.sdo.ui
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,4 +22,13 @@ internal fun StandardIconAction(
     modifier: Modifier,
     enabled: Boolean,
     content: @Composable () -> Unit,
-) = IconButton(onClick = onClick, modifier = modifier, enabled = enabled, content = content)
+) = IconButton(
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    colors = IconButtonDefaults.iconButtonColors(
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        disabledContentColor = MaterialTheme.colorScheme.outline,
+    ),
+    content = content,
+)

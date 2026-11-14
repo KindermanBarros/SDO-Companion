@@ -244,7 +244,11 @@ fun DashboardScreen(
                         Row {
                             SdoIconButton(onClick = onSync, enabled = !syncing) { Icon(Icons.Default.Sync, "Sincronizar", tint = MaterialTheme.colorScheme.primary) }
                             SdoIconButton(onClick = onOpenSettings, modifier = Modifier.testTag("dashboard_quick_settings")) {
-                                Icon(Icons.Default.Settings, stringResource(R.string.dashboard_quick_settings))
+                                Icon(
+                                    Icons.Default.Settings,
+                                    stringResource(R.string.dashboard_quick_settings),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
                             }
                             SdoIconButton(onLogout) { Icon(Icons.AutoMirrored.Filled.Logout, "Sair", tint = MaterialTheme.colorScheme.error) }
                         }
