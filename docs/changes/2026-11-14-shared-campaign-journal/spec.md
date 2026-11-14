@@ -1,6 +1,6 @@
 # Shared campaign journal - BACKLOG-001
 
-- Date / Status: 2026-11-14 / Draft awaiting owner approval.
+- Date / Status: 2026-11-14 / Approved by owner ("Do it").
 - Requirement: CAMPAIGN-PLAN-001. Owner selected this item and answered permissions/content questions.
 
 ## Objective and scope
@@ -57,6 +57,6 @@ Reuse Firebase authentication and campaign membership/GM ownership; no new depen
 Additive storage must preserve old clients and existing data. Concrete persistence/cache/revision contracts follow during planning.
 Proposed defaults for approval: limits above, newest-first order, archived read-only, original author retained during moderation and explicit conflict replacement.
 Owner confirmed: members create; authors edit/delete their own; GM moderates all; shared text-only entries with title, author and date.
-Open questions: None; specification approval pending.
+Open questions: None; owner approved specification and proposed defaults on 2026-11-14.
 Verification: focused domain/state tests; Firestore rules tests for unauthorized access, immutable fields and revisions; two-session propagation; offline/reconnect with no queued writes; Android navigation and CLI screenshots.
 Current evidence: requirements/model/rules inspection only. Implementation and runtime acceptance pending.
