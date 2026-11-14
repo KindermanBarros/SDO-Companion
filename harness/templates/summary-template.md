@@ -53,12 +53,10 @@ verbose command output in its referenced log/report.
 
 ### <Stage>
 
-- Artifact or command: `<path or exact command>`
+- Artifact or command: `<path or exact Gradle/gate command>`
 - Result: `exit <code>`; `<test count/coverage/other required signal>`
 - Evidence receipt: `<path, or N/A for non-command evidence>`
 
-Static-quality evidence must include `bash harness/scripts/check-full-source-rules.sh` against the
-complete repository source tree.
 
 ## Ephemeral Test Execution Results
 

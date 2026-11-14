@@ -66,3 +66,11 @@ Preserved valid Firebase setup, memory/knowledge/import provenance records and e
 ## 2026-11-13 21:02 America/La_Paz - PR142 rebase history correction - InDevReview
 
 Owner approved correction of the rebase-only conflict. Preserve previous tip 5879d1d locally and consolidate the approved snapshot on current main; application tree must remain identical. Use explicit force-with-lease and synchronize clean owned checkouts. Validation is structural/whitespace and app-tree equality; no Android suite required for history-only correction. GitHub rebaseability is verified after publishing.
+
+## 2026-11-13 22:12 America/La_Paz - Publish v0.51.1 - InDevReview
+
+Published owner-requested patch release v0.51.1 from 6d85b83 using existing signed Android CI run 43540829981. Catalog validation, Firebase configuration restoration, release build, certificate comparison and APK publication passed. Release task records asset digest and recovery approach. No application code changed; prior approved UI/CI evidence reused, no new device smoke test or full suite claimed. Scoped documentation diff and pre-commit scratch enforcement checked before commit.
+
+## 2026-11-14 00:26 America/La_Paz - Optimize workflows, skills, rules and tools for low token usage - InDevReview
+
+Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving all SDO Companion improvements) and compacted 11 rules, 6 workflows, 36 skills, 2 skill reference/example docs and 12 harness templates (~6,250 net lines removed, ~89% reduction across touched files). Fixed 7 broken relative links/anchors and harnesslens YAML frontmatter, removed retired harness/scripts references from templates, aligned harness-project.json (:app:ktlintCheck, :app:detekt), removed tracked .agents/workflows/.DS_Store, and extended validate-harness.ps1 to enforce line limits, placeholders, links, anchors and retired-script checks across .agents/rules, .agents/skills and harness/templates. validate-harness.ps1 (114 docs), validate-harness-tests.ps1 (11 cases), scratch-cleanup-tests.ps1 (4 cases) and whitespace checks passed; no Android build/runtime tests required for harness-only changes. See docs/changes/harness-retro-2026-11-14-token-optimization/retrospective.md.

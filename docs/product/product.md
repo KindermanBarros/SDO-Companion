@@ -31,7 +31,8 @@ Solicitações registradas em 2026-11-12. Itens ainda não implementados, sem pr
 | BACKLOG-006 | Edição simultânea em tempo real e uso online obrigatório, com offline somente leitura | [Sincronização — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) |
 
 ## Workflow do backlog
-Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Release task](../../.docs/OngoingTasks/release_0_51_1_task_state.md): InProgress; existing product priorities unchanged.
+Owner request 2026-11-13: publish the approved main-branch fixes as v0.51.1 using signed release CI. [Release task](../../.docs/OngoingTasks/release_0_51_1_task_state.md): InDevReview; published with verified signed APK, CI run 43540829981 successful; existing product priorities unchanged.
+Owner request 2026-11-14: create feature branch with Companion improvements and optimize workflows, skills, rules, templates and tools for lower token usage. [Optimization task](../../.docs/OngoingTasks/lean_workflows_and_tools_task_state.md): InDevReview on `feature/lean-workflows-and-tools`; ~6,250 lines removed across 73 harness files and 114 documents validated by `validate-harness.ps1`.
 
 - Ao começar, selecionar o pedido autorizado e consultar o requisito relacionado; prioridades não definidas continuam sem ordem inventada.
 - Acrescentar pedidos e achados úteis com origem, estado e dúvidas, sem expandir a tarefa atual.

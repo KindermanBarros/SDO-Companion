@@ -1,104 +1,16 @@
-# API Contract Rules
+# API & Data Contract Rules
 
-## Purpose
-Rules for reviewing, classifying, and handling API contract changes in this project.
+Apply when modifying Firestore document schemas ([firebase_contract.md](../../.docs/Architecture/firebase_contract.md)), bundled JSON catalogs (`catalogs/`), or Room entities (`sdo.db`).
 
----
+## Classification & compatibility
+Classify every contract change before coding:
+- **Backward compatible**: Optional/nullable fields with safe defaults, new catalog entries preserving schema version.
+- **Backward compatible but risky**: New non-null fields with defaults, new enum variants, Room schema migration (`AppDatabase`).
+- **Breaking**: Removing/renaming persisted or synced fields, incompatible type changes, or auth/ownership rule changes. Escalate breaking changes and state whether a migration or force update is required.
 
-## When to Apply
-Apply these rules whenever:
-- A new API endpoint is introduced
-- An existing endpoint changes its request or response
-- A field is added, removed, renamed, or changes type
-- Error response format changes
-
----
-
-## OpenAPI Contract
-
-The authoritative API contract is `sharedContracts/openapi.yaml`.
-
-Rules:
-- All API endpoints used by the mobile app must be defined in `openapi.yaml`
-- If a new endpoint or changed endpoint is not yet in `openapi.yaml`, update it before implementing
-- DTOs must match the contract — do not guess field names or types from behavior
-
----
-
-## Change Classification
-
-Classify every API change before implementing:
-
-| Classification | Examples |
-|---|---|
-| **Backward compatible** | Adding optional field, adding new endpoint, loosening validation |
-| **Backward compatible but risky** | New non-null field with server-side default, new enum value, nullable→optional change |
-| **Breaking change** | Removing field, renaming field, changing type, removing enum value, changing auth |
-
-State the classification explicitly before implementation. Breaking changes require escalation.
-
----
-
-## Field Handling Rules
-
-### New optional field
-- Add to DTO as nullable: `val newField: String? = null`
-- Map defensively — never crash on null: `dto.newField ?: defaultValue`
-
-### New required field
-- Confirm with backend whether old app versions receive it
-- If old versions won't receive it, treat as optional with fallback
-
-### Removed field
-- Confirm field is gone from server contract before removing from DTO
-- Keep the field if old server versions may still return it (treat as optional)
-
-### Renamed field
-- Treat as a new field + removed field
-- Confirm rollout sequence with backend
-
-### Changed type
-- Classify as breaking change
-- Add explicit conversion or fallback in mapper
-
-### New enum value
-- Always add an `UNKNOWN` / fallback variant in domain model
-- Mapper must never crash on unrecognized enum string
-```kotlin
-enum class NoteStatus {
-    ACTIVE, ARCHIVED, UNKNOWN;
-
-    companion object {
-        fun fromString(value: String): NoteStatus =
-            entries.firstOrNull { it.name == value } ?: UNKNOWN
-    }
-}
-```
-
-### Changed error response
-- Update error mapping in repository
-- Ensure error is translated to a domain error before reaching presentation
-
----
-
-## Force Update Assessment
-
-After classifying the change, explicitly state:
-- **Force update required**: Yes / No / Unknown
-- Reason: `<why>`
-
-A force update may be required when:
-- A required field is removed and old clients will break without it
-- Auth/session flow changes in a breaking way
-- A critical security vulnerability is patched
-
----
-
-## Testing Rule
-
-Every API endpoint must have at least one integration test. Use shared JSON scenarios — do not inline mock data in
-test cases. When a test must cross the shipped app process, an instrumented loopback server may own the integration
-boundary, but the test must drive the shipped Retrofit/OkHttp client and assert request receipts plus decoded behavior.
-Keep contract-shaped API payloads in shared or feature-owned JSON resources where practical; a typed fixture-server
-adapter is also allowed for UI-only state variants when its payloads are covered by boundary tests. Never inline API
-mock payloads in individual test methods.
+## Defensive mapping & validation
+- New optional remote/serialized fields must be nullable with safe fallbacks (`dto.field ?: default`).
+- Enums and catalog kinds decoded from persisted/remote strings must fall back safely without crashing on unknown values.
+- Keep persistence/DTO mapping inside `data/` and translate remote/storage failures into domain results before presentation.
+- When `catalogs/*.json` or `tools/generate_*.py` change, run the `--check` generators and `tools/validate_item_catalogs.py`.
+- Cover changed sync/serialization/migration contracts with deterministic JVM or Room migration tests.

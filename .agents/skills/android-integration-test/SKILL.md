@@ -3,14 +3,10 @@ name: android-integration-test
 description: Implement Android integration tests below the UI layer.
 ---
 
-# Android integration test skill
-
-Use this skill for Android integration tests below the UI layer.
+# Skill — Android Integration Test
 
 ## Execute
-- **Coverage per API endpoint**: Success (2xx), 4xx client error, 5xx server error, malformed payload, timeout, unknown enum fallback.
-- **Shared Scenarios**: Use shared JSON scenarios from `sharedContracts/test-scenarios/` — **never inline mock response data**.
-- **Layer assertions**: Assert `expected.ui` when endpoint is consumed by ViewModel; assert `expected.domain` when consumed only by repo/use case.
-- **Mocking**: Use MockWebServer for mocking network traffic.
-- **Persistence**: Use in-memory Room database for local persistence integration tests.
+- **Scope**: Cross-layer repository/use-case/ViewModel data flow, catalog/Firebase adapter parsing, cache/fallback, and persistence boundaries.
+- **Fixtures**: Use structured scenario fixtures or deterministic fakes/in-memory stores; do not inline large raw payloads in test methods.
+- **Assertions**: Assert `UiState` when testing ViewModel integration (`*IntegrationTest.kt`) or domain outputs when testing repository/use-case boundaries.
 

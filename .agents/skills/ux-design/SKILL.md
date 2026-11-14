@@ -1,108 +1,13 @@
 ---
 name: ux-design
-description: Define UI_contract states before Pen design, then validate and approve the completed visual references.
+description: Define UI_contract states and validate Pen visual references.
 ---
-
 # Skill — UX Design
 
-## Purpose and entry
+Run for new screens or visual redesigns after requirements clarification. Small UI repairs preserving existing identity use [Create UI and Verify](../../workflows/create-ui-and-verify.md) directly without a full UX cycle.
 
-Run the separate UX stage after requirements clarification and before implementation or slice
-planning. Use the active clarified spec and supplied visual inputs. UI_contract.md owns the UI
-state inventory and behavior-to-reference mapping; the Pen file owns the actual visual design.
-Do not generate a separate design.md.
-
-## Artifact ownership
-
-Do not create, version, or edit the spec or summary during visual iteration.
-UX owns `UI_contract.md`, Pen candidates, and review exports. The runtime visual-target manifest
-for complex features is derived from the contract's state IDs, viewports, and reference paths.
-Reuse the same artifact directory and delivery version.
-
-Spacing, hierarchy, color, typography, icons, and copy preserving approved meaning stay within UX.
-A behavior, scope, data, navigation, or required state-inventory change returns to requirements
-clarification; reconcile only the affected spec sections and contract rows. Record summary/progress
-evidence at stage completion, approval, or blockers. Design approval does not authorize app code.
-
-## Load
-
-- The clarified spec and supplied visual inputs
-- `docs/product/design_system.md`
-- `harness/templates/UI_contract-template.md`
-- `harness/templates/visual-target-template.json` for complex runtime target metadata
-- `skills/ux-design/references/quick-reference.md` and `references/pro-rules.md` as needed
-- `pen-design-editor` and its current CLI guidance after the inventory gate passes
-
-## Execute
-
-### 1. Define the contract before Pen
-
-Create `UI_contract.md` from the template in the active ad-hoc or complex-feature workspace.
-Inspect relevant Compose screens/controls and the clarified requirements. Enumerate every required
-screen/state before creating or editing Pen frames: loading, empty, ready, error, selected,
-disabled, overlay, and keyboard variants where applicable.
-
-For every row, settle its stable state ID, viewport, primary content, state-specific and persistent
-controls, deterministic runtime fixture, comparison mode, and plan stage ID. Fill State Details
-with entry/exit behavior, exact copy, interactions, accessibility, responsive constraints, visual
-anchors, and explicit approved design-system exceptions. Keep design source, node ID, node role,
-and image all `Pending` until that state's visual reference exists. These four fields are the
-only deferred fields; user behavior and keyboard coverage cannot be deferred.
-
-Inventory every editable input in `## IME State Coverage`, including closed, open, and dismissed
-states at the same full-window viewport. Declare resize/pan/overlay and the keyboard behavior:
-`screen-no-toolbar`, `screen-toolbar-dismissed`, or `sheet-stays-open`. Show the focused field,
-required controls, and real IME together; a bottom sheet remains open while typing and a screen's
-bottom toolbar is dismissed. Use authentic keyboard assets for the target device/appearance.
-
-Classify supplied images as approved references or defect evidence. Preserve approved inputs
-unchanged and keep defect evidence separate. Existing approved references can fill completed rows.
-Do not create an implementation screenshot baseline.
-
-### 2. Validate the inventory before generating visuals
-
-Review complete state behavior, one-to-one spec/state mappings, unique fixtures/stage IDs, viewports, controls and IME coverage.
-Only the four design-reference fields may initially be Pending. Resolve missing states/product questions before Pen generation.
-This inventory review does not approve a visual design or prove runtime behavior; no legacy inventory-script gate applies.
-
-For complex features, derive runtime target metadata from this inventory before Pen work:
-use the same state IDs and viewports, add appearance/device/locale/dynamic-region handling, and
-choose planned export paths. Read the manifest directly so Pen generation and runtime capture use identical target values.
-
-### 3. Generate Pen design from the contract
-
-Invoke `pen-design-editor` through the available skill mechanism with `UI_contract.md` as the
-state-by-state input. If the Skill tool is unavailable, read the repository skill and record the
-interface note once at the stage boundary. Follow its headless candidate, structural preservation,
-fresh-reopen, and visual inspection requirements. Preserve the existing design unless the user
-authorizes a change to it.
-
-Create one complete top-level screen frame per contract row, using the declared viewport,
-content, controls, and keyboard behavior. Update only that row's Pen source, node ID, node role,
-and exported PNG after rendering and inspecting it. A control-only crop cannot replace a complete
-screen reference. The Pen source contains the actual visual design; the PNG is its review export.
-
-Capture and inspect complete export logs.
-Font/asset failures and missing glyphs fail the reference gate. Inspect alignment, clipping,
-typography, icon identity, contrast, and required controls.
-
-For complex features, reconcile `visual_evidence/visual-target.json` with the completed contract:
-its state IDs, viewports, and actual exported PNG paths must match exactly. Keep Roborazzi content
-exact within the approved screen/component scope.
-
-### 4. Gate, approve, and finalize
-
-After every reference is complete, review source/node/image mappings and reject Pending references. For complex features, also compare runtime target states, viewports and PNG paths to UI_contract.md. No retired UX-stage script gate applies.
-
-Present the contract and verified Pen exports for explicit design approval. Visual feedback
-updates the Pen design and affected contract references within this stage. After approval, follow
-the Pen skill's finalization contract and retain approved review images. Record stage evidence
-once, then return to planning when implementation is requested.
-
-## Output and completion
-
-- `UI_contract.md` defines every UI state before Pen generation and links the clarified spec and design system.
-- The actual design is retained in the canonical Pen file, with verified review PNGs mapped per state.
-- Every editable input has complete IME coverage and explicit keyboard behavior.
-- Complex runtime metadata is derived from and matches the same contract.
-- Inventory and full UX gates pass at their respective phases; design approval precedes downstream planning.
+## Workflow
+1. **Define `UI_contract.md`**: Use [UI_contract-template.md](../../../harness/templates/UI_contract-template.md) and [design_system.md](../../../docs/product/design_system.md). Enumerate every required screen state (loading, empty, ready, error, overlay) and `## IME State Coverage` (closed/open/dismissed keyboard behavior: `screen-no-toolbar`, `screen-toolbar-dismissed`, or `sheet-stays-open`). For complex features, also align [visual-target-template.json](../../../harness/templates/visual-target-template.json).
+2. **Validate inventory**: Ensure every state has a stable ID, viewport, controls, copy, whole-word wrapping/no-ellipsis compliance, and fixture before generating visuals.
+3. **Generate & export `.pen` visuals**: Use [pen-design-editor](../pen-design-editor/SKILL.md) to create/update frames, export review PNGs, and fill each row's Pen source, node ID, and PNG path.
+4. **Approval**: Present `UI_contract.md` and exported PNGs for user approval, then clean temporary candidate files from `.scratch/`.

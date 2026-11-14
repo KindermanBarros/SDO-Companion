@@ -2,46 +2,10 @@
 description: Plan a complex SDO feature into approved vertical slices and a sprint contract.
 ---
 # Workflow: Harness Planning
+Follow [Project contract](../gates/project-contract.md). Use only for multi-slice features requiring ordered delivery; bounded work uses [Feature Delivery](feature-delivery.md).
 
-Read [Project contract](../gates/project-contract.md); use planner.
-Use for multiple independently deliverable behaviors with ordering/dependency decisions.
-
-## Workspace and authorities
-
-Read affected living capability requirements and inspect current source before proposing scope.
-Create one dated docs/changes/YYYY-MM-DD-feature-name workspace and link it from docs/product/product.md.
-Keep its lifecycle in the existing Harness Feature Tracker; task state in .docs links that contract and records progress only.
-Do not infer lifecycle from folder location or introduce a competing feature tracker.
-Review tracker status, approval provenance and linked workspace before selection and after edits.
-
-## 1. Specify — feature-specification
-
-Write spec.md with scope, boundaries, data/navigation impact, acceptance criteria and the required screen/state inventory.
-Include all ten Rule Applicability decisions with triggers, rationale and planned evidence.
-Resolve material product questions; preserve supplied visual inputs without designing inside the specification stage.
-Review the specification for complete scope and supported acceptance/rule decisions.
-Present the specification for explicit approval before UX.
-
-## 2. Design — ux-design
-
-For UI scope, create UI_contract.md inventory before Pen generation and apply [Create UI](create-ui-and-verify.md) reference and IME rules.
-Review the state inventory, then populate verified references and visual_evidence/visual-target.json.
-Obtain design approval before slicing.
-Logic-only work records a supported N/A. Changes to product scope return to specification approval.
-
-## 3. Slice — slice-planning
-
-Produce feature_list.json, progress.md and sprint-contract.md in the same workspace.
-Each slice delivers an observable vertical behavior with explicit dependencies, acceptance Test IDs and verification commands.
-Mirror production_journey ownership between feature_list.json and the sprint contract; real navigation/lifecycle journeys need shipped-entry tests.
-Declare platform_validation required/false with rationale; required platforms also need platform-capability-matrix.md and named real-boundary owners.
-Declare visual state ownership, approved reference mappings and acceptance evidence.
-Review slice dependencies, platform/journey ownership and UI/keyboard evidence requirements against the approved spec.
-Obtain approval covering the slices, order, sprint/platform/journey contracts before [Harness generator](harness-generator.md).
-No duplicate ad-hoc implementation plan is needed for the same complex execution contract.
-
-## Handoff
-
-Preserve approved hashes/versions and record scope exclusions.
-Use the current [CI catalog](../gates/ci-checks.md) for executable gates. Artifact review is not an automated script pass.
-Update .docs/history and commit completed validated planning artifacts automatically; do not mark the feature implemented or accepted.
+1. **Workspace**: Read affected `docs/product/requirements/` and create `docs/changes/YYYY-MM-DD-feature-name/` linked from `docs/product/product.md` and `.docs/TASK_PLANNING.md`.
+2. **Specify (`feature-specification`)**: Write `spec.md` with scope, acceptance criteria, screen/state inventory, and the Rule Applicability table. Obtain user approval before UX or slicing.
+3. **Design (`ux-design`)**: For UI scope, define `UI_contract.md` states and IME coverage, generate/export verified `.pen` references, and obtain design approval (record `N/A` for non-UI work).
+4. **Slice (`slice-planning`)**: Produce `feature_list.json`, `progress.md`, and `sprint-contract.md` (plus `platform-capability-matrix.md` only when `platform_validation.required` is true). Ensure 1:1 `US-*` mapping, vertical slices with reachable entry points, and explicit test selectors from [CI checks](../gates/ci-checks.md). Obtain user approval before [Harness Generator](harness-generator.md).
+5. **Handoff**: Remove `.scratch`, update `.docs` history, and create a scoped signed-off commit in `InDevReview`.
