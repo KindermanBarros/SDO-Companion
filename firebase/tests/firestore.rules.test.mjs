@@ -343,12 +343,14 @@ test('campaign master can create a linked sheet assigned to an active player', a
   }));
 });
 
-test('player can publish a newly created sheet without reading the missing document first', async () => {
+test('player can check a missing character UUID and publish a newly created sheet with protocol v1 revisions', async () => {
   await seed();
+  const unauthDb = env.unauthenticatedContext().firestore();
   const db = env.authenticatedContext(ids.player).firestore();
   const reference = doc(db, 'characters', 'new-player-character');
 
-  await assertFails(getDoc(reference));
+  await assertFails(getDoc(doc(unauthDb, 'characters', 'new-player-character')));
+  await assertSucceeds(getDoc(reference));
   await assertSucceeds(setDoc(reference, {
     id: 'new-player-character',
     ownerId: ids.player,
@@ -360,7 +362,18 @@ test('player can publish a newly created sheet without reading the missing docum
     lockedAt: null,
     deleted: false,
     appliedDeliveryIds: [],
+    fieldUpdatedAt: { '@protocol': 1, '@revision': 1 },
     updatedAt: 2,
+  }));
+  await assertFails(updateDoc(reference, {
+    name: 'Revisão repetida inválida',
+    fieldUpdatedAt: { '@protocol': 1, '@revision': 1 },
+    updatedAt: 3,
+  }));
+  await assertSucceeds(updateDoc(reference, {
+    name: 'Revisão incrementada válida',
+    fieldUpdatedAt: { '@protocol': 1, '@revision': 2 },
+    updatedAt: 3,
   }));
 });
 
