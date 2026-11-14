@@ -33,7 +33,7 @@ Complex work still uses its approved feature list/sprint contract; do not duplic
 
 ## Durable versus temporary
 Backlog: docs/product/product.md. Requirements: docs/product/requirements/. Task memory & history: docs/MEMORY.md.
-Ad-hoc contracts: docs/current/. Complex contracts/evidence: one file docs/changes/YYYY-MM-DD-feature-name.md.
+Ad-hoc contracts: docs/current/. All task history, change records, and evidence: `docs/MEMORY.md`.
 Temporary QA/logs/downloads/drafts: .scratch only. Promote final evidence and remove the entire scratch folder before every commit.
 
 ## Progress without loops
