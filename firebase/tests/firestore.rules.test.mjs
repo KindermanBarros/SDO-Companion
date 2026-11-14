@@ -504,6 +504,14 @@ test('campaign journal allows active member create, author edit, GM moderation w
   const ownerDb = env.authenticatedContext(ids.owner).firestore();
   const outsiderDb = env.authenticatedContext(ids.outsider).firestore();
   const historianDb = env.authenticatedContext(ids.historian).firestore();
+  const adminDb = env.authenticatedContext('admin-uid', { email: 'kindbarros@gmail.com', email_verified: true }).firestore();
+  const journalQuery = (db) => query(collection(db, 'campaignJournal'), where('campaignId', '==', ids.campaign));
+
+  // Query works even when empty for admin, GM, and active player, and denies outsider
+  await assertSucceeds(getDocs(journalQuery(adminDb)));
+  await assertSucceeds(getDocs(journalQuery(ownerDb)));
+  await assertSucceeds(getDocs(journalQuery(playerDb)));
+  await assertFails(getDocs(journalQuery(outsiderDb)));
 
   const entryRef = (db) => doc(db, 'campaignJournal', 'entry-1');
   const baseEntry = {
@@ -532,7 +540,12 @@ test('campaign journal allows active member create, author edit, GM moderation w
   await assertSucceeds(setDoc(entryRef(playerDb), baseEntry));
   await assertSucceeds(getDoc(entryRef(ownerDb)));
   await assertSucceeds(getDoc(entryRef(historianDb)));
+  await assertSucceeds(getDoc(entryRef(adminDb)));
+  await assertSucceeds(getDocs(journalQuery(adminDb)));
+  await assertSucceeds(getDocs(journalQuery(ownerDb)));
+  await assertSucceeds(getDocs(journalQuery(playerDb)));
   await assertFails(getDoc(entryRef(outsiderDb)));
+  await assertFails(getDocs(journalQuery(outsiderDb)));
 
   // Another member (even with HISTORIAN member enum) cannot edit/delete someone else's entry
   await assertFails(updateDoc(entryRef(historianDb), {
