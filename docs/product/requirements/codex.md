@@ -2,7 +2,7 @@
 
 **Capability ID**: `codex`
 
-Status: owner-approved closure 2026-11-14 16:03. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog) for delivered versus cancelled scope; existing evidence limits remain unchanged.
+Status: delivered changes accepted by the owner; unimplemented planned changes remain open. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog). Existing evidence limits remain unchanged.
 
 ## User goal
 

@@ -2,7 +2,7 @@
 
 **Capability ID**: `campaigns`
 
-Status: owner-approved closure 2026-11-14 16:03. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog) for delivered versus cancelled scope; existing evidence limits remain unchanged.
+Status: delivered changes accepted by the owner; unimplemented planned changes remain open. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog). Existing evidence limits remain unchanged.
 
 ## User goal
 
@@ -32,19 +32,19 @@ Refinement started 2026-11-14. Owner confirmed shared text entries, member creat
 
 ### CAMPAIGN-PLAN-002 — Session Mode evolution
 
-Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
+Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
 
 Improve the UI and complete Session Mode features, focusing on quick actions and compact presentation while preserving all gameplay-relevant information. Define the inventory of actions, essential info, shortcuts, and states from existing flows; the request does not fix specific controls yet.
 
 ### CAMPAIGN-PLAN-003 — Historian / GM Mode evolution
 
-Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
+Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
 
 Improve the UI and complete Historian/GM Mode features, focusing on quick actions, compact controls, and access to all information needed to run the campaign. Refine which info must stay visible and which actions need immediate access without assuming permission changes.
 
 ### CAMPAIGN-PLAN-004 — Real-time battle grid
 
-Status: Cancelled by owner 2026-11-14 16:03; not implemented. Retained requirements are historical scope only.
+Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
 
 Add a shared combat board over a grid in Session Mode where the GM can draw in real time and move characters represented by coin-shaped tokens with their profile photos.
 

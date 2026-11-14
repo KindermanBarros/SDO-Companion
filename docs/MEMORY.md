@@ -7,7 +7,7 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ## Active / In-Review Tasks
 
-None. Owner explicitly closed all open tasks on 2026-11-14 16:03 America/La_Paz.
+No delivered tasks await review. Unimplemented BACKLOG-002, BACKLOG-003, BACKLOG-004 and BACKLOG-005 remain open as ToDo in the living backlog.
 
 ---
 
@@ -46,4 +46,6 @@ None. Owner explicitly closed all open tasks on 2026-11-14 16:03 America/La_Paz.
 
 ## Owner closure disposition ? 2026-11-14 16:03 America/La_Paz
 
-Owner instruction: close all open tasks. Delivered review items are accepted as Done; PR144 is administratively closed without asserting unverified remote operations. Unimplemented BACKLOG-002, BACKLOG-003, BACKLOG-004 and BACKLOG-005 are Cancelled, not delivered. Reopening them requires a new owner request. No additional test execution or product implementation is implied by acceptance.
+Owner approval closes delivered review tasks only; PR144 is administratively closed without asserting unverified remote operations. BACKLOG-002, BACKLOG-003, BACKLOG-004 and BACKLOG-005 remain open and unimplemented. Existing verification limitations remain unchanged.
+
+Correction 2026-11-14 16:05 America/La_Paz: the agent mistakenly cancelled four unimplemented backlog items while closing delivered tasks. The owner explicitly rejected cancellation. Restored BACKLOG-002 through BACKLOG-005 to ToDo with original scope; prior cancellation statements are withdrawn. Delivered task acceptance remains recorded.

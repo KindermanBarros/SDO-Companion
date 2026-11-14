@@ -1,6 +1,6 @@
 # SDO Companion
 
-Status: owner closed all open tasks on 2026-11-14 16:03 America/La_Paz. Delivered review items are accepted; unimplemented requests are closed without delivery. Verification limitations remain in [Memory](../MEMORY.md).
+Status: delivered review tasks accepted by the owner; unimplemented backlog remains open. Verification limits are recorded in [Memory](../MEMORY.md).
 
 SDO Companion helps players create and manage RPG character sheets and use them in campaigns. The growing beta also includes a codex for the SDO RPG system. No additional release exclusions have been requested.
 
@@ -24,10 +24,10 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | ID | Item | Requirements | Status |
 |---|---|---|---|
 | BACKLOG-001 | Shared campaign journal | [Campaigns — CAMPAIGN-PLAN-001](requirements/campaigns.md#planned-changes) | Done |
-| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) | Cancelled; not implemented |
-| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) | Cancelled; not implemented |
-| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) | Cancelled; not implemented |
-| BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) | Cancelled; not implemented |
+| BACKLOG-002 | More complete, compact Session Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-002](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
+| BACKLOG-003 | More complete, compact Historian/GM Mode with quick actions | [Campaigns — CAMPAIGN-PLAN-003](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
+| BACKLOG-004 | Character profile photos in sheets, lists, and play modes | [Character sheets — SHEET-PLAN-001](requirements/character-sheets.md#planned-changes) | ToDo; not implemented |
+| BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) | ToDo; not implemented |
 | BACKLOG-006 | Real-time simultaneous editing and online-only writes with read-only offline mode | [Synchronization — SYNC-PLAN-001](requirements/synchronization.md#planned-changes) | Done |
 | BACKLOG-007 | Firestore read/write & payload optimization (delta sync, audit limits, dedupe character payload, parallel/batched queries) | [Synchronization — SYNC-PLAN-002](requirements/synchronization.md#planned-changes) | Done |
 
@@ -63,4 +63,4 @@ No complex work package is selected during onboarding. The empty tracker records
 
 Owner request 2026-11-14 15:46: consolidate documentation/design/agent ownership from the redundancy audit. [Memory](../MEMORY.md): Done; owner accepted closure 2026-11-14 16:03; one docs root, canonical design ownership and thin role adapters validated. Product behavior and existing priorities unchanged.
 
-All previously open task records are closed by owner request 2026-11-14 16:03. BACKLOG-002 through BACKLOG-005 are cancelled without implementation; their requirement descriptions are retained for provenance, not active delivery scope. No remote merge or publication is asserted by this administrative closure.
+Only delivered task records were approved for closure. BACKLOG-002 through BACKLOG-005 remain open as ToDo with their original scope and no new implementation authorization. No remote merge or publication is asserted.
