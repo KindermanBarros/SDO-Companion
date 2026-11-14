@@ -31,6 +31,16 @@ Read-only offline inspection is the sole exception to mandatory online use; it g
 
 Open refinement items: which data sets remain cached for offline inspection; effective backend reachability criteria beyond network presence; handling in-progress edits when connection drops; confirmation/recovery for uncertain writes; same-field simultaneous edits by the same account; cross-account conflict granularity/comparison UI; write authorization and resuming edits upon reconnect.
 
+### SYNC-PLAN-002 — Firestore data, query, and payload optimization
+
+Backlog item added 2026-11-14 from repository audit (`BACKLOG-007`; unimplemented, no fixed priority):
+
+| ID | Optimization target |
+|---|---|
+| SYNC-PLAN-002-A | Replace unbounded full-collection `.get()` syncs with incremental `updatedAt` / `createdAt` delta cursors and bounded `campaignAudit` pagination/limits (reusing existing composite indexes). |
+| SYNC-PLAN-002-B | Remove duplicated legacy projections and `@Exclude` local-only flags (such as `dirty`) from Firestore `characters` documents once all clients are on canonical schema. |
+| SYNC-PLAN-002-C | Parallelize or batch (`whereIn`) per-campaign Firestore queries and evaluate partial-field updates on character edits instead of full-document overwrites. |
+
 ## References
 
 - Direct owner request on 2026-11-12 for simultaneous editing, cross-account-only conflicts, and mandatory online editing.
