@@ -52,7 +52,7 @@ The preceding blocker list is historical. The user subsequently approved plan v2
 |---|---|---|
 | Requirements | Covered by actual prospective authorization | `spec_v2.md`: `Make the installed harness usable with SDO Companion on Windows` |
 | Implementation/test planning | Covered by actual prospective authorization | `implementation_plan_v3.md`: `Supersedes v2 for remaining setup work.` |
-| Harness implementation | Changes in place; final acceptance blocked | `docs/changes/harness-retro-2026-11-12-sdo-windows-setup/retrospective.md`: `The runner must consume a validated explicit app/test/runner contract` |
+| Harness implementation | Changes in place; final acceptance blocked | `docs/changes/harness-retro-2026-11-12-sdo-windows-setup.md`: `The runner must consume a validated explicit app/test/runner contract` |
 | Harness contracts | Passing | `.harness-state/onboarding-baseline-v2/onboarding-contract-green.log`: `Ran 35 tests` |
 | App verification | Mixed; not complete | `onboarding-summary.md`: `JVM suite` records 241 tests; `Full-source rules` records exit 1 |
 | Cleanup / complete onboarding | Not eligible | `.harness-state/onboarding-baseline-v2/final-verifier.log`: `FAIL: resolve profile unknowns before verification` |

@@ -8,7 +8,7 @@ Plan before editing; read-only inspection needs no task file. Resume an existing
 - Record real dependencies and technology/module changes before introducing them; use None when absent.
 - Preserve unrelated work and reuse approvals for unchanged scope. Ask only about unresolved product decisions.
 - Task states and approved contracts are durable documentation, never temporary files.
-- Durable complex workspaces live in docs/changes/YYYY-MM-DD-feature-name; ad-hoc records remain in docs/current.
+- Durable complex change records live in one file per change under docs/changes/YYYY-MM-DD-feature-name.md (optional binary assets under docs/changes/assets/); ad-hoc records remain in docs/current.
 - Throwaway files belong only in .scratch, which must be absent before every commit.
 
 ## States
