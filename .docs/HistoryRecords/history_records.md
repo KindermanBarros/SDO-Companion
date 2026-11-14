@@ -84,3 +84,8 @@ Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving a
 - Owner approved BACKLOG-001 specification, then rejected visual candidates and requested adding the styleguide to pen-design-editor.
 - Added mandatory guide/component/token references, source-to-Pen mapping and representative-frame review; discarded rejected candidates and preserved journal design InProgress. Skill correction enters InDevReview.
 - Checks: skill-creator quick_validate.py PASS; validate-harness.ps1 PASS (116 documents); scoped diff PASS. No app code changed; Android/runtime and corrected-design verification not run.
+
+## 2026-11-14 01:36 America/La_Paz - Redesign shared journal references
+- Continued BACKLOG-001 using the corrected Pen skill: source-mapped typography, geometry, semantic controls and graphic layers; rendered26 states in both modes with UI contract and implementation/test plan.
+- Checks PASS:52 unique references/430x932 PNGs; full export inspection; fresh Pen reopen52 frames/0 layout problems; representative PNG hashes identical; artifact links/limits; validate-harness.ps1 (116 documents); scoped diff and scratch cleanup.
+- Design stage enters InDevReview pending owner visual approval. No app code/build/runtime or live service acceptance; adb has no connected device.
