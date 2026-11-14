@@ -74,3 +74,8 @@ Published owner-requested patch release v0.51.1 from 6d85b83 using existing sign
 ## 2026-11-14 00:26 America/La_Paz - Optimize workflows, skills, rules and tools for low token usage - InDevReview
 
 Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving all SDO Companion improvements) and compacted 11 rules, 6 workflows, 36 skills, 2 skill reference/example docs and 12 harness templates (~6,250 net lines removed, ~89% reduction across touched files). Fixed 7 broken relative links/anchors and harnesslens YAML frontmatter, removed retired harness/scripts references from templates, aligned harness-project.json (:app:ktlintCheck, :app:detekt), removed tracked .agents/workflows/.DS_Store, and extended validate-harness.ps1 to enforce line limits, placeholders, links, anchors and retired-script checks across .agents/rules, .agents/skills and harness/templates. validate-harness.ps1 (114 docs), validate-harness-tests.ps1 (11 cases), scratch-cleanup-tests.ps1 (4 cases) and whitespace checks passed; no Android build/runtime tests required for harness-only changes. See docs/changes/harness-retro-2026-11-14-token-optimization/retrospective.md.
+
+## 2026-11-14 01:05 America/La_Paz - Accept reviews and start BACKLOG-001
+- Owner approved release v0.51.1 and workflow optimization; archived task records as Done, preserving evidence/limitations.
+- Started shared journal refinement; captured owner permissions/text-only decisions and draft specification with acceptance criteria. Task remains InProgress pending spec approval.
+- Checks: validate-harness.ps1 PASS (116 documents); git diff --check PASS. Documentation only; Android build/device checks not run.
