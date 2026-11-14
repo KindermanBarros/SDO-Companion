@@ -40,13 +40,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: '9.7.1'
 
       # Pull requests never receive signing/Firebase secrets and do not produce an APK.
       # Packaging is restricted to the trusted main-branch release job below.
       - name: Run debug checks
-        run: gradle lintDebug testDebugUnitTest assembleDebugAndroidTest --build-cache --stacktrace
+        run: ./gradlew lintDebug testDebugUnitTest assembleDebugAndroidTest --build-cache --stacktrace
 
       - name: Enforce presentation design-system boundary
         shell: bash
@@ -124,8 +122,6 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: '9.7.1'
 
       - name: Restore protected build files
         uses: ./.github/actions/restore-android-secrets
@@ -142,7 +138,7 @@ jobs:
               "-PreleaseCode=${{ steps.version.outputs.version_code }}"
             )
           fi
-          gradle assembleRelease --build-cache --stacktrace "${version_args[@]}"
+          ./gradlew assembleRelease --build-cache --stacktrace "${version_args[@]}"
           mkdir -p release
           if [[ "${{ steps.version.outputs.should_release }}" == "true" ]]; then
             apk_name="sdo-companion-v${{ steps.version.outputs.version }}.apk"
