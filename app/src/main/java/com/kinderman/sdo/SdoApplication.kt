@@ -7,12 +7,14 @@ import com.google.firebase.FirebaseApp
 import com.kinderman.sdo.data.auth.FirebaseAuthRepository
 import com.kinderman.sdo.data.local.AppDatabase
 import com.kinderman.sdo.data.local.CharacterMigrationManager
+import com.kinderman.sdo.data.repository.FirestoreCampaignJournalRepository
 import com.kinderman.sdo.data.repository.LocalCatalogRepository
 import com.kinderman.sdo.data.repository.SyncedCampaignRepository
 import com.kinderman.sdo.data.repository.SyncedCharacterRepository
 import com.kinderman.sdo.data.repository.SyncedOwnerRepository
 import com.kinderman.sdo.data.repository.SyncedOperationsRepository
 import com.kinderman.sdo.domain.repository.AuthRepository
+import com.kinderman.sdo.domain.repository.CampaignJournalRepository
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
@@ -31,6 +33,7 @@ class SdoApplication : Application() {
     lateinit var ownerRepository: OwnerRepository
     lateinit var catalogRepository: CatalogRepository
     lateinit var campaignRepository: CampaignRepository
+    lateinit var campaignJournalRepository: CampaignJournalRepository
     lateinit var operationsRepository: OperationsRepository
 
     override fun onCreate() {
@@ -73,6 +76,7 @@ class SdoApplication : Application() {
         ownerRepository = SyncedOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
         campaignRepository = SyncedCampaignRepository(db.campaignDao(), db.characterDao())
+        campaignJournalRepository = FirestoreCampaignJournalRepository()
         operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao(), characterMigrationManager)
         authRepository = FirebaseAuthRepository()
         applicationScope.launch {

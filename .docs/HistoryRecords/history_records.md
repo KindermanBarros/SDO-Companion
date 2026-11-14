@@ -93,3 +93,8 @@ Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving a
 ## 2026-11-14 01:41 America/La_Paz - Accept journal UI and refine Standard color
 - Owner approved UI and requested slightly more color in Standard. Added semantic secondary-blue information borders/context and cyan count; preserved layout and Cybergrunge; promoted journal.pen and refreshed26 Standard exports/review board.
 - Verification: inspected revised full-size Standard list; reused unchanged design evidence; validate-harness.ps1 PASS (116 documents); scoped diff PASS. No application/runtime checks for this design-only refinement. Implementation remains pending; color adjustment handed off InDevReview.
+
+## 2026-11-14 02:02 America/La_Paz - Deliver BACKLOG-001 shared campaign journal - InDevReview
+- Implemented domain models/policy, Firestore repository (`campaignJournal`), security rules/test update, `JournalViewModel`, `JournalScreen` (Standard blue/cyan + Cybergrunge + IME padding + conflict/offline/delete/discard flows), `SdoApp`/`DashboardScreen` navigation, and unit/Compose tests.
+- Checks PASS: `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`, `:app:testDebugUnitTest` (257/257 passed, 0 failed, 0 skipped), `:app:lintDebug`, `:app:koverXmlReportDebug` (59.71% line coverage).
+- Limitations: `:app:ktlintCheck`/`:app:detekt` failed on repo baseline + style items in new journal files; `npm --prefix firebase run test:rules` unavailable locally (missing `firebase/node_modules`); `JournalJourneyTest` not executed on device (`adb` empty). Reconciled `firebase_contract.md`, `product.md`, `campaigns.md`, `2026-11-14-shared-campaign-journal.md` and task state.

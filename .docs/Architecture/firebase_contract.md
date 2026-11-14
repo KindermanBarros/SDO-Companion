@@ -18,6 +18,7 @@ Source: app/src/main/java/com/kinderman/sdo/data/repository/FirestoreCollections
 | CAMPAIGN_AUDIT | campaignAudit |
 | CAMPAIGN_LIBRARY | campaignLibrary |
 | CAMPAIGN_DELIVERIES | campaignDeliveries |
+| CAMPAIGN_JOURNAL | campaignJournal |
 
 Character sync exchanges CharacterRecord documents; local dirty/deleted state and CharacterSyncConflict are implemented in SyncedCharacterRepository and domain models. Membership and ownership constrain visible character queries. This is not evidence of real-time simultaneous editing.
 

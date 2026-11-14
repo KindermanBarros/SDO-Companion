@@ -10,4 +10,5 @@ internal object FirestoreCollections {
     const val CAMPAIGN_AUDIT = "campaignAudit"
     const val CAMPAIGN_LIBRARY = "campaignLibrary"
     const val CAMPAIGN_DELIVERIES = "campaignDeliveries"
+    const val CAMPAIGN_JOURNAL = "campaignJournal"
 }

@@ -498,6 +498,94 @@ test('campaign owner can dismantle and delete an archived campaign safely', asyn
   if (preserved.data().campaignId !== '') throw new Error('Character must survive detached');
 });
 
+test('campaign journal allows active member create, author edit, GM moderation with immutable author, and blocks outsiders/archived/stale revision', async () => {
+  await seed();
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  const ownerDb = env.authenticatedContext(ids.owner).firestore();
+  const outsiderDb = env.authenticatedContext(ids.outsider).firestore();
+  const historianDb = env.authenticatedContext(ids.historian).firestore();
+
+  const entryRef = (db) => doc(db, 'campaignJournal', 'entry-1');
+  const baseEntry = {
+    id: 'entry-1',
+    campaignId: ids.campaign,
+    authorId: ids.player,
+    authorName: 'Ana',
+    title: 'A chegada a Valdora',
+    body: 'Chegamos ao anoitecer.',
+    createdAt: 10,
+    updatedAt: 10,
+    revision: 1,
+    lastEditorId: ids.player,
+    lastEditorName: 'Ana',
+    operationId: 'op-1',
+    deleted: false,
+    deletedAt: null,
+  };
+
+  // Forged author or oversized title fails
+  await assertFails(setDoc(entryRef(playerDb), { ...baseEntry, authorId: ids.owner }));
+  await assertFails(setDoc(entryRef(playerDb), { ...baseEntry, title: 'x'.repeat(121) }));
+  await assertFails(setDoc(entryRef(outsiderDb), { ...baseEntry, authorId: ids.outsider, lastEditorId: ids.outsider }));
+
+  // Valid create succeeds
+  await assertSucceeds(setDoc(entryRef(playerDb), baseEntry));
+  await assertSucceeds(getDoc(entryRef(ownerDb)));
+  await assertSucceeds(getDoc(entryRef(historianDb)));
+  await assertFails(getDoc(entryRef(outsiderDb)));
+
+  // Another member (even with HISTORIAN member enum) cannot edit/delete someone else's entry
+  await assertFails(updateDoc(entryRef(historianDb), {
+    title: 'Alterado',
+    updatedAt: 11,
+    revision: 2,
+    lastEditorId: ids.historian,
+  }));
+
+  // Author can edit with revision + 1, stale revision fails
+  await assertFails(updateDoc(entryRef(playerDb), {
+    title: 'Revisao errada',
+    updatedAt: 11,
+    revision: 1,
+    lastEditorId: ids.player,
+  }));
+  await assertSucceeds(updateDoc(entryRef(playerDb), {
+    title: 'A chegada a Valdora (rev)',
+    updatedAt: 11,
+    revision: 2,
+    lastEditorId: ids.player,
+  }));
+
+  // GM (campaign owner) moderates while preserving authorId and createdAt; forging authorId fails
+  await assertFails(updateDoc(entryRef(ownerDb), {
+    authorId: ids.owner,
+    updatedAt: 12,
+    revision: 3,
+    lastEditorId: ids.owner,
+  }));
+  await assertSucceeds(updateDoc(entryRef(ownerDb), {
+    body: 'Moderado pelo Mestre',
+    updatedAt: 12,
+    revision: 3,
+    lastEditorId: ids.owner,
+  }));
+
+  // Physical delete is always denied
+  await assertFails(deleteDoc(entryRef(ownerDb)));
+
+  // Archived campaign blocks writes while keeping reads
+  await env.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'campaigns', ids.campaign), { state: 'ARCHIVED' });
+  });
+  await assertSucceeds(getDoc(entryRef(playerDb)));
+  await assertFails(updateDoc(entryRef(playerDb), {
+    body: 'Em campanha arquivada',
+    updatedAt: 13,
+    revision: 4,
+    lastEditorId: ids.player,
+  }));
+});
+
 test('non-owner tombstones and physical campaign deletion are denied', async () => {
   await seed();
   const ownerDb = env.authenticatedContext(ids.owner).firestore();

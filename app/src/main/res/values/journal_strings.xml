@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="journal_eyebrow">DIÁRIO DA CAMPANHA</string>
+    <string name="journal_eyebrow_archived">CAMPANHA ARQUIVADA // SOMENTE LEITURA</string>
+    <string name="journal_open_action">Abrir diário</string>
+    <string name="journal_new_entry">Novo registro</string>
+    <string name="journal_retry">Tentar novamente</string>
+    <string name="journal_back">Voltar</string>
+    <string name="journal_back_to_list">Lista</string>
+    <string name="journal_edit">Editar</string>
+    <string name="journal_delete">Excluir</string>
+    <string name="journal_save">Salvar</string>
+    <string name="journal_saving">Salvando…</string>
+    <string name="journal_cancel">Cancelar</string>
+    <string name="journal_field_title">Título</string>
+    <string name="journal_field_title_hint">Título do registro (máx. 120 caracteres)</string>
+    <string name="journal_field_body">Texto do registro</string>
+    <string name="journal_field_body_hint">Eventos da sessão, pistas e anotações</string>
+
+    <string name="journal_sync_loading">Carregando</string>
+    <string name="journal_sync_live">Sincronizado</string>
+    <string name="journal_sync_cached_offline">Sem conexão · Cache local</string>
+    <string name="journal_sync_unavailable_offline">Sem conexão</string>
+    <string name="journal_sync_access_revoked">Acesso removido</string>
+    <string name="journal_sync_archived">Arquivada · Somente leitura</string>
+    <string name="journal_sync_error">Erro de sincronização</string>
+
+    <string name="journal_empty_title">Nenhum registro no diário</string>
+    <string name="journal_empty_active">Crie o primeiro registro para compartilhar notas da campanha com o grupo.</string>
+    <string name="journal_empty_readonly">Esta campanha ainda não possui registros compartilhados.</string>
+
+    <string name="journal_offline_unavailable_title">Diário indisponível sem conexão</string>
+    <string name="journal_offline_unavailable_message">Conecte-se à internet para carregar os registros pela primeira vez.</string>
+    <string name="journal_access_revoked_title">Acesso ao diário indisponível</string>
+    <string name="journal_access_revoked_message">Você não tem mais permissão para visualizar este diário de campanha.</string>
+    <string name="journal_error_title">Falha ao carregar o diário</string>
+    <string name="journal_error_message">Não foi possível sincronizar os registros no momento.</string>
+
+    <string name="journal_conflict_title">Conflito de edição detectado</string>
+    <string name="journal_conflict_message">Outro participante salvou uma versão mais recente enquanto você editava. Compare os textos antes de decidir.</string>
+    <string name="journal_conflict_yours">Seu rascunho</string>
+    <string name="journal_conflict_server">Versão no servidor</string>
+    <string name="journal_conflict_reload">Recarregar do servidor</string>
+    <string name="journal_conflict_replace">Substituir pelo meu texto</string>
+    <string name="journal_conflict_replace_title">Substituir versão do servidor?</string>
+    <string name="journal_conflict_replace_message">A versão salva no servidor será substituída pelo seu rascunho atual.</string>
+    <string name="journal_conflict_replace_confirm">Substituir</string>
+
+    <string name="journal_discard_title">Descartar alterações?</string>
+    <string name="journal_discard_message">Você possui alterações não salvas neste registro. Deseja descartar?</string>
+    <string name="journal_discard_confirm">Descartar</string>
+    <string name="journal_keep_editing">Continuar editando</string>
+
+    <string name="journal_delete_title">Excluir registro?</string>
+    <string name="journal_delete_message">Este registro será removido do diário para toda a campanha.</string>
+    <string name="journal_delete_confirm">Excluir</string>
+
+    <string name="journal_meta_author">Autor: %1$s</string>
+    <string name="journal_meta_updated">Atualizado em %1$s por %2$s · rev. %3$d</string>
+    <string name="journal_entries_count">%1$d registros</string>
+</resources>
