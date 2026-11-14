@@ -1,7 +1,7 @@
 # Shared journal implementation and verification plan
 
 - Scope: [Approved specification](spec.md); [UI contract](UI_contract.md); BACKLOG-001 only.
-- Status: planning ready; visual references await owner approval. Existing start authorization covers implementation after the visual decision.
+- Status: planning ready; owner approved visual references with a small Standard color refinement. Existing start authorization covers implementation after the visual decision.
 - Reuse Android/Firebase/coroutines/manual wiring. No new library, architecture migration, app-wide connectivity rewrite, or backend deployment authorized here.
 
 ## Delivery steps

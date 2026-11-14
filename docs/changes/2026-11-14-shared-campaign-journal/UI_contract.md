@@ -1,6 +1,6 @@
 # UI contract - Shared campaign journal
-- Status: redesigned references rendered; owner approval pending. [Approved spec](spec.md).
-- Source: journal-v2-candidate.pen; viewport 430x932, pt-BR, font scale 1.0, comfortable density.
+- Status: Approved by owner on 2026-11-14 with a small Standard color refinement. [Approved spec](spec.md).
+- Source: journal.pen; viewport 430x932, pt-BR, font scale 1.0, comfortable density.
 - Modes: Standard/Ciano industrial and Cybergrunge. Every state below has both variants.
 - [Styleguide](../../../DESIGN_GUIDE.md); [Cybergrunge direction](../../interface-cybergrunge.md).
 - Runtime reference unavailable: adb devices returned no connected devices. Source inspection is not runtime acceptance.
@@ -21,7 +21,7 @@ Custom decorative fonts must use the bundled files; fixed title artwork can be r
 Guide/source discrepancies: guide's historical grid colors differ from current HudBackground; use active semantic surfaceVariant. TechPanel Cyber cuts are an explicit component override of SdoShapeTokens.panel; preserve that override.
 Root CODE_STANDARDS forbids ellipsis, overriding historical guide text allowing it. Whole words, complete content and minimum48dp touch targets apply throughout.
 Cybergrunge references depict one static interference phase; geometry/chrome/noise remain visible, motion alone is deferred to runtime.
-No design-system exception or new dependencies. Existing palettes and component semantics remain.
+Owner color refinement: Standard information panel borders use secondary blue #5690DA at72%, toolbar context uses secondary blue and list count uses primary cyan. Layout and Cybergrunge preserved. No design-system exception or new dependencies.
 
 ## Screen states
 Every row has a stable state ID; fixture name is its lowercase ID plus -fixture, scoped to campaign/account/role.

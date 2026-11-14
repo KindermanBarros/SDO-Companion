@@ -1,6 +1,6 @@
 {
-  "source": "journal-v2-candidate.pen",
-  "status": "Awaiting owner design approval",
+  "source": "journal.pen",
+  "status": "Approved by owner with Standard color refinement",
   "viewport": {"width":430,"height":932},
   "references": [
     {"state_id":"J01-cyber","node_id":"E8aRpg","role":"screen-frame","image":"previews-v2/E8aRpg.png","fixture":"j01-fixture","mode":"cyber"},
