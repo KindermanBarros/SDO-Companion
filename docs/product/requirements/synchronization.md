@@ -2,7 +2,7 @@
 
 **Capability ID**: `synchronization`
 
-Status: implemented in `InDevReview` (`BACKLOG-006` / `SYNC-PLAN-001`, 2026-11-14); JVM verification completed and emulator/device runtime verification pending.
+Status: implemented in `InDevReview` (`BACKLOG-006` / `SYNC-PLAN-001` and `BACKLOG-007` / `SYNC-PLAN-002`, 2026-11-14); JVM and Firestore Emulator verification completed, emulator/device runtime verification pending.
 
 ## User goal
 
@@ -33,13 +33,13 @@ Open refinement items: which data sets remain cached for offline inspection; eff
 
 ### SYNC-PLAN-002 — Firestore data, query, and payload optimization
 
-Backlog item added 2026-11-14 from repository audit (`BACKLOG-007`; unimplemented, no fixed priority):
+Selected by owner on 2026-11-14 (`BACKLOG-007`; implemented in `InDevReview` on `feature/backlog-007-firestore-optimization`):
 
 | ID | Optimization target |
 |---|---|
-| SYNC-PLAN-002-A | Replace unbounded full-collection `.get()` syncs with incremental `updatedAt` / `createdAt` delta cursors and bounded `campaignAudit` pagination/limits (reusing existing composite indexes). |
-| SYNC-PLAN-002-B | Remove duplicated legacy projections and `@Exclude` local-only flags (such as `dirty`) from Firestore `characters` documents once all clients are on canonical schema. |
-| SYNC-PLAN-002-C | Parallelize or batch (`whereIn`) per-campaign Firestore queries and evaluate partial-field updates on character edits instead of full-document overwrites. |
+| SYNC-PLAN-002-A | Replace unbounded full-collection `.get()` syncs with incremental `updatedAt` / `createdAt` delta cursors (`maxSyncedAuditAt`, `maxSyncedLibraryAt`) and bounded `campaignAudit` pagination/limits (`AUDIT_SYNC_LIMIT = 200`, reusing existing composite indexes). |
+| SYNC-PLAN-002-B | Remove duplicated legacy projections (`protections`, `notes`, `bodyRegions`, `organs`, `conditions`) and `@Exclude` local-only flags (`dirty`, `lastSyncedAt`) from Firestore `characters` documents while automatically converting previous-version records via `CharacterMigrationManager` and `optimizedForFirestore()`. |
+| SYNC-PLAN-002-C | Parallelize per-campaign Firestore queries (`coroutineScope { ... async { ... }.awaitAll() }`), eliminate duplicate campaign document reads, skip no-op character transaction writes when semantic fields match, and allow `lastEditedBy` + legacy projection cleanup in `firestore.rules` unlink operations. |
 
 ## References
 

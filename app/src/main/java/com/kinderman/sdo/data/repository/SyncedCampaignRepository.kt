@@ -23,6 +23,9 @@ import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import java.security.SecureRandom
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -130,11 +133,13 @@ class SyncedCampaignRepository(
         check(characters.size <= 450) { "Desvincule algumas fichas antes de excluir: o limite seguro por operação é de 450 fichas." }
         val now = System.currentTimeMillis()
         val batch = store.batch()
-        characters.forEach { batch.update(it.reference, mapOf("campaignId" to "", "updatedAt" to now)) }
+        characters.forEach {
+            batch.update(it.reference, mapOf("campaignId" to "", "updatedAt" to now, "lastEditedBy" to session.uid))
+        }
         batch.update(reference, mapOf("state" to CampaignState.DELETED.name, "updatedAt" to now))
         batch.commit().await()
         characterDao.all().filter { it.campaignId == campaign.id }.forEach {
-            characterDao.upsert(it.copy(campaignId = "", updatedAt = now, dirty = true))
+            characterDao.upsert(it.copy(campaignId = "", updatedAt = now, lastEditedBy = session.uid, dirty = true))
         }
         dao.upsertCampaign(requireCampaign(campaign.id).copy(
             state = CampaignState.DELETED, updatedAt = now, dirty = false, lastSyncedAt = now,
@@ -348,18 +353,24 @@ class SyncedCampaignRepository(
             .mapTo(mutableSetOf()) { it.campaignId }
         val visibleCampaignDocuments = if (session.isAdmin) campaigns.get().await().documents
             else campaigns.whereEqualTo("ownerId", session.uid).get().await().documents
+        val alreadyFetchedIds = hashSetOf<String>()
         visibleCampaignDocuments.mapNotNull { document ->
             document.toObject(CampaignRecord::class.java)?.copy(id = document.id)
         }.forEach { campaign ->
             campaignIds += campaign.id
+            alreadyFetchedIds += campaign.id
             dao.upsertCampaign(campaign.copy(dirty = false, lastSyncedAt = campaign.updatedAt))
         }
-        campaignIds.forEach { campaignId ->
-            val document = campaigns.document(campaignId).get().await()
+        val memberCampaignDocuments = coroutineScope {
+            (campaignIds - alreadyFetchedIds).map { campaignId ->
+                async { campaigns.document(campaignId).get().await() }
+            }.awaitAll()
+        }
+        memberCampaignDocuments.forEach { document ->
             document.toObject(CampaignRecord::class.java)?.copy(id = document.id)?.let { remote ->
                 dao.upsertCampaign(remote.copy(dirty = false, lastSyncedAt = remote.updatedAt))
                 if (remote.state == CampaignState.DELETED.name) {
-                    characterDao.inCampaign(campaignId).forEach {
+                    characterDao.inCampaign(remote.id).forEach {
                         characterDao.upsert(it.copy(campaignId = "", dirty = true))
                     }
                 }
@@ -378,10 +389,17 @@ class SyncedCampaignRepository(
         val writableIds = dao.allCampaigns()
             .filter { record -> session.isAdmin || record.ownerId == session.uid }
             .mapTo(hashSetOf()) { it.id }
-        readableIds.forEach { campaignId ->
-            members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
-                document.toObject(CampaignMemberRecord::class.java)
-            }.forEach { remote ->
+        val readableMembersByCampaign = coroutineScope {
+            readableIds.map { campaignId ->
+                async {
+                    campaignId to members.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
+                        document.toObject(CampaignMemberRecord::class.java)
+                    }
+                }
+            }.awaitAll()
+        }
+        readableMembersByCampaign.forEach { (campaignId, remoteMembers) ->
+            remoteMembers.forEach { remote ->
                 val migrated = if (remote.role != CampaignRole.PLAYER.name) remote.copy(role = CampaignRole.PLAYER.name) else remote
                 if (campaignId in writableIds && remote.role != CampaignRole.PLAYER.name) {
                     members.document(memberId(remote.campaignId, remote.userId))
@@ -390,11 +408,16 @@ class SyncedCampaignRepository(
                 dao.upsertMember(migrated.copy(dirty = false, lastSyncedAt = migrated.updatedAt))
             }
         }
-        (campaignIds - deletedIds).forEach { campaignId ->
-            invites.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
-                document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)
-            }.forEach { dao.upsertInvite(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
+        val remoteInvites = coroutineScope {
+            (campaignIds - deletedIds).map { campaignId ->
+                async {
+                    invites.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { document ->
+                        document.toObject(CampaignInviteRecord::class.java)?.copy(id = document.id)
+                    }
+                }
+            }.awaitAll().flatten()
         }
+        remoteInvites.forEach { dao.upsertInvite(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
     }
 
     private suspend fun detachMemberCharacters(member: CampaignMember, campaignId: String, now: Long) {

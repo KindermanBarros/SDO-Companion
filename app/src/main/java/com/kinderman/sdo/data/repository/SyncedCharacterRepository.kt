@@ -8,6 +8,8 @@ import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterRecord
 import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.OwnerDao
+import com.kinderman.sdo.data.local.hasRedundantLegacyProjections
+import com.kinderman.sdo.data.local.optimizedForFirestore
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.data.local.CharacterMigrationManager
@@ -26,7 +28,10 @@ import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -213,34 +218,44 @@ class SyncedCharacterRepository(
             document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
         }
 
-        val membershipDocuments = if (session.isAdmin) emptyList()
-            else members.whereEqualTo("userId", session.uid).get().await().documents
+        val (membershipDocuments, ownedCampaignIds) = if (session.isAdmin) {
+            emptyList<com.google.firebase.firestore.DocumentSnapshot>() to mutableSetOf<String>()
+        } else {
+            coroutineScope {
+                val membershipsJob = async { members.whereEqualTo("userId", session.uid).get().await().documents }
+                val ownedJob = async {
+                    campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
+                }
+                membershipsJob.await() to ownedJob.await()
+            }
+        }
         val memberCampaignIds = membershipDocuments.mapNotNull { document ->
                 val campaignId = document.getString("campaignId").orEmpty()
                 val state = document.getString("state").orEmpty()
                 campaignId.takeIf { it.isNotBlank() && state == "ACTIVE" }
             }
             .toMutableSet()
-        val ownedCampaignIds = if (session.isAdmin) mutableSetOf()
-            else campaigns.whereEqualTo("ownerId", session.uid).get().await().documents.mapTo(mutableSetOf()) { it.id }
         val authorizedCampaignIds = (memberCampaignIds + ownedCampaignIds).toSet()
-        authorizedCampaignIds.forEach { campaignId ->
-            collection.whereEqualTo("campaignId", campaignId).get().await().documents.forEach { document ->
-                document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
-            }
+        val campaignCharacterDocuments = coroutineScope {
+            authorizedCampaignIds.map { campaignId ->
+                async { collection.whereEqualTo("campaignId", campaignId).get().await().documents }
+            }.awaitAll().flatten()
+        }
+        campaignCharacterDocuments.forEach { document ->
+            document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
         }
         val remoteRecords = remoteById.values.map { remote ->
             val migrated = migrationManager.migrate(remote, markDirty = false)
             val canWriteRemote = session.isAdmin || remote.ownerId == session.uid ||
                 normalizeCampaignId(remote.campaignId) in ownedCampaignIds
-            if (migrated != remote && canWriteRemote) {
+            if ((migrated != remote || remote.hasRedundantLegacyProjections()) && canWriteRemote) {
                 val reference = collection.document(remote.id)
                 store.runTransaction { transaction ->
                     val latest = transaction.get(reference).toObject(CharacterRecord::class.java)
                         ?.copy(id = reference.id)
                         ?: return@runTransaction
-                    val latestMigrated = migrationManager.migrate(latest, markDirty = false)
-                    if (latestMigrated != latest) transaction.set(reference, latestMigrated.copy(dirty = false))
+                    val latestOptimized = latest.optimizedForFirestore(migrationManager)
+                    if (latestOptimized != latest) transaction.set(reference, latestOptimized)
                     Unit
                 }.await()
             }
@@ -302,19 +317,22 @@ class SyncedCharacterRepository(
                         normalizedRecord.updatedAt,
                         normalizedRecord.lastSyncedAt + 1,
                     )
-                    reference.set(normalizedRecord.copy(updatedAt = writeTimestamp, dirty = false)).await()
+                    reference.set(normalizedRecord.copy(updatedAt = writeTimestamp).optimizedForFirestore(migrationManager)).await()
                     dao.markSynced(record.id, writeTimestamp)
                     return@forEach
                 }
                 val result = store.runTransaction { transaction ->
                     val snapshot = transaction.get(reference)
-                    val remote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
-                        ?.let { migrationManager.migrate(it, markDirty = false) }
-                    if (remote != null && remote.updatedAt > normalizedRecord.lastSyncedAt) {
+                    val rawRemote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
+                    val remote = rawRemote?.let { migrationManager.migrate(it, markDirty = false) }
+                    if (remote != null) {
                         val localCharacter = normalizedRecord.toDomain()
                         val remoteCharacter = remote.toDomain()
                         val fields = characterConflictFields(localCharacter, remoteCharacter)
-                        if (fields.isNotEmpty()) {
+                        if (fields.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
+                            return@runTransaction CharacterSyncWrite.AcceptedRemote(remote)
+                        }
+                        if (remote.updatedAt > normalizedRecord.lastSyncedAt && fields.isNotEmpty()) {
                             val conflict = CharacterSyncConflict(
                                 local = localCharacter,
                                 remote = remoteCharacter,
@@ -337,7 +355,10 @@ class SyncedCharacterRepository(
                         normalizedRecord.updatedAt,
                         normalizedRecord.lastSyncedAt + 1,
                     )
-                    transaction.set(reference, normalizedRecord.copy(updatedAt = writeTimestamp, dirty = false))
+                    transaction.set(
+                        reference,
+                        normalizedRecord.copy(updatedAt = writeTimestamp).optimizedForFirestore(migrationManager),
+                    )
                     CharacterSyncWrite.Saved(writeTimestamp)
                 }.await()
                 when (result) {

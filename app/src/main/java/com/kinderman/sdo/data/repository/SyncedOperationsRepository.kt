@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
@@ -11,6 +12,7 @@ import com.kinderman.sdo.data.local.CampaignDeliveryRecord
 import com.kinderman.sdo.data.local.CampaignLibraryRecord
 import com.kinderman.sdo.data.local.OperationsDao
 import com.kinderman.sdo.data.local.SessionOperationRecord
+import com.kinderman.sdo.data.local.optimizedForFirestore
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.data.local.CharacterMigrationManager
@@ -30,12 +32,17 @@ import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.applySessionCommand
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import java.util.UUID
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+
+private const val AUDIT_SYNC_LIMIT = 200L
 
 class SyncedOperationsRepository(
     private val dao: OperationsDao,
@@ -180,19 +187,46 @@ class SyncedOperationsRepository(
                 dao.markDeliverySynced(local.id, local.updatedAt)
             }
         }
-        readableCampaignIds.forEach { campaignId ->
-            operations.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(SessionOperationRecord::class.java) }
-                .forEach { dao.upsertOperation(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
-            library.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(CampaignLibraryRecord::class.java) }
-                .forEach { dao.upsertLibrary(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
+        val readableSnapshots = coroutineScope {
+            readableCampaignIds.map { campaignId ->
+                async {
+                    val lastAuditSync = dao.maxSyncedAuditAt(campaignId)
+                    val lastLibrarySync = dao.maxSyncedLibraryAt(campaignId)
+                    val auditQuery = operations.whereEqualTo("campaignId", campaignId)
+                        .let { if (lastAuditSync > 0L) it.whereGreaterThan("createdAt", lastAuditSync) else it }
+                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .limit(AUDIT_SYNC_LIMIT)
+                    val libraryQuery = library.whereEqualTo("campaignId", campaignId)
+                        .let { if (lastLibrarySync > 0L) it.whereGreaterThan("updatedAt", lastLibrarySync) else it }
+                        .orderBy("updatedAt", Query.Direction.DESCENDING)
+                    val remoteAudit = auditQuery.get().await().documents.mapNotNull { it.toObject(SessionOperationRecord::class.java) }
+                    val remoteLibrary = libraryQuery.get().await().documents.mapNotNull { it.toObject(CampaignLibraryRecord::class.java) }
+                    remoteAudit to remoteLibrary
+                }
+            }.awaitAll()
+        }
+        readableSnapshots.forEach { (remoteAudit, remoteLibrary) ->
+            remoteAudit.forEach { dao.upsertOperation(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
+            remoteLibrary.forEach { dao.upsertLibrary(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
         }
         // A player may read only deliveries addressed to them. Querying a campaign's full
         // delivery queue would expose other players' records and is therefore Historian-only.
-        writableCampaignIds.forEach { campaignId ->
-            deliveries.whereEqualTo("campaignId", campaignId).get().await().documents.mapNotNull { it.toObject(CampaignDeliveryRecord::class.java) }
-                .forEach { dao.upsertDelivery(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
+        val remoteDeliveries = coroutineScope {
+            val campaignJobs = writableCampaignIds.map { campaignId ->
+                async {
+                    deliveries.whereEqualTo("campaignId", campaignId)
+                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .get().await().documents.mapNotNull { it.toObject(CampaignDeliveryRecord::class.java) }
+                }
+            }
+            val recipientJob = async {
+                deliveries.whereEqualTo("recipientId", session.uid)
+                    .orderBy("createdAt", Query.Direction.DESCENDING)
+                    .get().await().documents.mapNotNull { it.toObject(CampaignDeliveryRecord::class.java) }
+            }
+            (campaignJobs + recipientJob).awaitAll().flatten()
         }
-        deliveries.whereEqualTo("recipientId", session.uid).get().await().documents.mapNotNull { it.toObject(CampaignDeliveryRecord::class.java) }
+        remoteDeliveries.distinctBy(CampaignDeliveryRecord::id)
             .forEach { dao.upsertDelivery(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
     }
 
@@ -213,8 +247,11 @@ class SyncedOperationsRepository(
                 ?: error("Ficha destinatária remota não encontrada.")
             val remoteCharacter = migrationManager.migrate(remoteRecord, markDirty = false).toDomain()
             val applied = if (local.id in remoteCharacter.appliedDeliveryIds) remoteCharacter
-                else applyDelivery(remoteCharacter, local.toDomain()).copy(updatedAt = maxOf(local.updatedAt, System.currentTimeMillis()))
-            transaction.set(characterReference, applied.toRecord().copy(dirty = false))
+                else applyDelivery(remoteCharacter, local.toDomain()).copy(
+                    updatedAt = maxOf(local.updatedAt, System.currentTimeMillis()),
+                    lastEditedBy = local.recipientId,
+                )
+            transaction.set(characterReference, applied.toRecord().optimizedForFirestore(migrationManager))
             if (remoteDelivery.state == CampaignDeliveryState.PENDING.name) {
                 transaction.set(deliveryReference, local.copy(dirty = false), SetOptions.merge())
             }

@@ -156,6 +156,8 @@ data class CharacterRecord(
     val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
     val lastEditedBy: String = "",
+    @get:Exclude
+    @field:Exclude
     val dirty: Boolean = false,
     @get:Exclude
     @field:Exclude
@@ -325,6 +327,20 @@ fun Character.toRecord(): CharacterRecord {
     if (canonicalSchemaVersion != com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION) {
         throw com.kinderman.sdo.domain.model.DomainError.LegacyWriteRejected()
     }
+    val persistedBody = bodyStateForPersistence()
+    val persistedConditions = conditionsForPersistence()
+    val normalizedRegions = normalizeBodyRegions(bodyRegions)
+    val defaultRegions = normalizeBodyRegions(defaultBodyRegions())
+    val canStripBodyRegions = persistedBody != null && (
+        normalizedRegions == defaultRegions ||
+            persistedBody.regions.map { it.toLegacyRegion() } == normalizedRegions
+        )
+    val canStripOrgans = persistedBody != null && (
+        organs.isEmpty() ||
+            persistedBody.organs.map { it.toLegacyStatus() } == organs
+        )
+    val canStripConditions = conditions.isEmpty() ||
+        persistedConditions.map { it.toLegacyEffect() } == conditions
     return CharacterRecord(
     id = id,
     ownerId = ownerId,
@@ -344,8 +360,8 @@ fun Character.toRecord(): CharacterRecord {
     canonicalSchemaVersion = canonicalSchemaVersion,
     migrationReviewPayload = MigrationReviewCodec.encode(migrationReviews),
     canonicalAbilitiesPayload = canonicalConverters.canonicalAbilitiesToString(abilitiesForPersistence()),
-    canonicalBodyPayload = canonicalConverters.canonicalBodyToString(bodyStateForPersistence()).orEmpty(),
-    canonicalConditionsPayload = canonicalConverters.canonicalConditionsToString(conditionsForPersistence()),
+    canonicalBodyPayload = canonicalConverters.canonicalBodyToString(persistedBody).orEmpty(),
+    canonicalConditionsPayload = canonicalConverters.canonicalConditionsToString(persistedConditions),
     activeModifiersPayload = canonicalConverters.activeModifiersToString(activeModifiers),
     canonicalItemsPayload = canonicalConverters.canonicalItemsToString(itemsForPersistence().first),
     scopedItemCatalogPayload = canonicalConverters.scopedItemCatalogToString(itemsForPersistence().second),
@@ -393,11 +409,11 @@ fun Character.toRecord(): CharacterRecord {
     battleTechniques = battleTechniques,
     pathKeywords = pathKeywords,
     pathPillars = pathPillars,
-    bodyRegions = bodyRegions,
+    bodyRegions = if (canStripBodyRegions) emptyList() else bodyRegions,
     agilityLimit = agilityLimit,
-    organs = organs,
+    organs = if (canStripOrgans) emptyList() else organs,
     mysticAbilities = mysticAbilities.map(MysticAbility::canonicalized),
-    conditions = conditions,
+    conditions = if (canStripConditions) emptyList() else conditions,
     isLocked = isLocked,
     lockType = lockType.name,
     lockedBy = lockedBy,
@@ -405,6 +421,45 @@ fun Character.toRecord(): CharacterRecord {
     deleted = deleted,
     appliedDeliveryIds = appliedDeliveryIds,
     )
+}
+
+fun CharacterRecord.hasRedundantLegacyProjections(): Boolean {
+    if (protections.isNotEmpty() || notes.isNotBlank()) return true
+    val decodedBody = canonicalBodyPayload
+        .takeIf { it.isNotBlank() && canonicalConverters.isCanonicalBodyPayloadValid(it) }
+        ?.let(canonicalConverters::stringToCanonicalBody)
+    if (decodedBody != null) {
+        val normalizedRegions = normalizeBodyRegions(bodyRegions)
+        val defaultRegions = normalizeBodyRegions(defaultBodyRegions())
+        if (bodyRegions.isNotEmpty() && (
+                normalizedRegions == defaultRegions ||
+                    decodedBody.regions.map { it.toLegacyRegion() } == normalizedRegions
+                )
+        ) {
+            return true
+        }
+        if (organs.isNotEmpty() && decodedBody.organs.map { it.toLegacyStatus() } == organs) {
+            return true
+        }
+    }
+    val decodedConditions = canonicalConditionsPayload
+        .takeIf { it.isNotBlank() && canonicalConverters.isCanonicalConditionsPayloadValid(it) }
+        ?.let(canonicalConverters::stringToCanonicalConditions)
+    if (decodedConditions != null && conditions.isNotEmpty() && decodedConditions.map { it.toLegacyEffect() } == conditions) {
+        return true
+    }
+    return false
+}
+
+fun CharacterRecord.optimizedForFirestore(
+    migrationManager: CharacterMigrationManager = CharacterMigrationManager(),
+): CharacterRecord {
+    val migrated = if (migrationManager.requiresMigration(this)) {
+        migrationManager.migrate(this, markDirty = false)
+    } else {
+        this
+    }
+    return migrated.copy(dirty = false, lastSyncedAt = 0)
 }
 
 private fun Character.itemsForPersistence(): Pair<List<com.kinderman.sdo.domain.model.ItemState>, List<com.kinderman.sdo.domain.model.ScopedItemDefinition>> {
