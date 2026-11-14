@@ -102,3 +102,7 @@ Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving a
 ## 2026-11-14 05:23 America/La_Paz - Execute Firestore rules and emulator validations
 - Installed `firebase/` dev dependencies locally and ran `npm --prefix firebase run test:rules` against Firestore Emulator: 30/30 tests passed (0 failed, 0 skipped), including `campaignJournal` create/edit/GM-moderation/stale-revision/outsider/archived rules.
 - Booted `Medium_Phone_API_37.0` (Android 17) and ran `JournalJourneyTest`: 2/2 failed in Espresso initialization (`NoSuchMethodException: android.hardware.input.InputManager.getInstance []` on API 37). Updated change record and task state.
+
+## 2026-11-14 08:37 America/La_Paz - Fix API 37 Espresso compatibility and Cybergrunge masthead sizing
+- Added `androidx.test:runner:1.7.0` and `androidx.test.espresso:espresso-core:3.7.0` to `app/build.gradle.kts` for Android 17 (API 37) compatibility, and constrained `CyberGrungeInterference` inside `SdoScreenMasthead` with `Modifier.matchParentSize()` in `CybergrungeAssets.kt`.
+- Re-ran `JournalJourneyTest` on `Medium_Phone_API_37.0`: 2/2 passed (0 failed, 0 skipped). Validated harness (116 documents) and updated change/task records.

@@ -193,7 +193,11 @@ fun SdoScreenMasthead(
             .heightIn(min = 108.dp)
             .background(surface.copy(alpha = .82f), SdoShapeTokens.panel),
     ) {
-        CyberGrungeInterference(motion = motion, seed = possessionSeed)
+        CyberGrungeInterference(
+            motion = motion,
+            seed = possessionSeed,
+            modifier = Modifier.matchParentSize(),
+        )
         Row(
             Modifier.fillMaxWidth().padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),

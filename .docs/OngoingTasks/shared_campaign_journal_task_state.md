@@ -16,8 +16,8 @@
         - Owner rejected the generated designs for styleguide noncompliance on 2026-11-14; they are not approved references.
     - 3 Implement and verify approved slices - Done
         - Delivered domain/data/rules/UI/navigation/tests across `CampaignJournalEntry`, `FirestoreCampaignJournalRepository`, `JournalViewModel`, `JournalScreen`, `SdoApp`, `DashboardScreen`, `firebase/firestore.rules` and unit/Compose tests.
-        - Checks PASS: `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`, `:app:testDebugUnitTest` (257/257 passed), `:app:lintDebug`, `:app:koverXmlReportDebug` (59.71% line coverage), `npm --prefix firebase run test:rules` (30/30 passed).
-        - Limitations: `:app:ktlintCheck`/`:app:detekt` failed on baseline + new-file style findings; `JournalJourneyTest` on `Medium_Phone_API_37.0` (Android 17) failed in Espresso (`NoSuchMethodException: android.hardware.input.InputManager.getInstance []`).
+        - Checks PASS: `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`, `:app:testDebugUnitTest` (257/257 passed), `:app:lintDebug`, `:app:koverXmlReportDebug` (59.71% line coverage), `npm --prefix firebase run test:rules` (30/30 passed), `JournalJourneyTest` (2/2 passed on `Medium_Phone_API_37.0` / API 37).
+        - Limitations: `:app:ktlintCheck`/`:app:detekt` failed on baseline + new-file style findings.
 - Checks selected for documentation: harness links/anchors/line limits and staged diff; Android checks selected after approved implementation scope.
 - Owner correction: add the styleguide to the Pen creation skill; bounded files: pen-design-editor/SKILL.md and affected workflow records. Inspect guide/component gaps, patch the skill, validate skill/harness integrity, commit for review.
 - Skill correction & UI handoff: [Change record](../../docs/changes/2026-11-14-shared-campaign-journal.md) (consolidated spec, UI contract, 52 exported references, design review and implementation/test plan). Owner approved UI and requested slightly more color in Standard; applied semantic blue borders/cyan indicators and promoted journal.pen. No app code changed. BACKLOG-001 implementation remains pending.
