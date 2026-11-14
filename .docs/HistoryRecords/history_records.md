@@ -98,3 +98,7 @@ Created branch feature/lean-workflows-and-tools from main (6d85b83, preserving a
 - Implemented domain models/policy, Firestore repository (`campaignJournal`), security rules/test update, `JournalViewModel`, `JournalScreen` (Standard blue/cyan + Cybergrunge + IME padding + conflict/offline/delete/discard flows), `SdoApp`/`DashboardScreen` navigation, and unit/Compose tests.
 - Checks PASS: `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`, `:app:testDebugUnitTest` (257/257 passed, 0 failed, 0 skipped), `:app:lintDebug`, `:app:koverXmlReportDebug` (59.71% line coverage).
 - Limitations: `:app:ktlintCheck`/`:app:detekt` failed on repo baseline + style items in new journal files; `npm --prefix firebase run test:rules` unavailable locally (missing `firebase/node_modules`); `JournalJourneyTest` not executed on device (`adb` empty). Reconciled `firebase_contract.md`, `product.md`, `campaigns.md`, `2026-11-14-shared-campaign-journal.md` and task state.
+
+## 2026-11-14 05:23 America/La_Paz - Execute Firestore rules and emulator validations
+- Installed `firebase/` dev dependencies locally and ran `npm --prefix firebase run test:rules` against Firestore Emulator: 30/30 tests passed (0 failed, 0 skipped), including `campaignJournal` create/edit/GM-moderation/stale-revision/outsider/archived rules.
+- Booted `Medium_Phone_API_37.0` (Android 17) and ran `JournalJourneyTest`: 2/2 failed in Espresso initialization (`NoSuchMethodException: android.hardware.input.InputManager.getInstance []` on API 37). Updated change record and task state.
