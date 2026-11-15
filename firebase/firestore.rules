@@ -49,6 +49,24 @@ service cloud.firestore {
         && get(memberPath(campaignId, uid)).data.state == 'ACTIVE';
     }
 
+    function isActiveMemberAfter(campaignId, uid) {
+      return campaignId != ''
+        && campaignId != 'default'
+        && getAfter(memberPath(campaignId, uid)).data.state == 'ACTIVE';
+    }
+
+    function validMembershipInvite(data) {
+      let code = data.get('joinedByInviteId', '');
+      return code != ''
+        && exists(invitePath(code))
+        && get(invitePath(code)).data.campaignId == data.campaignId
+        && get(invitePath(code)).data.get('revokedAt', null) == null
+        && (
+          get(invitePath(code)).data.get('expiresAt', null) == null
+          || get(invitePath(code)).data.expiresAt > request.time.toMillis()
+        );
+    }
+
     function isActiveMember(campaignId) {
       return signedIn() && isActiveMemberFor(campaignId, request.auth.uid);
     }
@@ -147,7 +165,7 @@ service cloud.firestore {
       let nextCampaign = normalizedCampaignId(request.resource.data);
       return nextCampaign == '' || (
         campaignIsActive(nextCampaign)
-        && (isCampaignOwner(nextCampaign) || isActiveMember(nextCampaign))
+        && (isAdministrator() || isCampaignOwner(nextCampaign) || isActiveMemberAfter(nextCampaign, request.auth.uid))
       );
     }
 
@@ -157,7 +175,7 @@ service cloud.firestore {
         nextCampaign != ''
         && campaignIsActive(nextCampaign)
         && isCampaignOwner(nextCampaign)
-        && isActiveMemberFor(nextCampaign, request.resource.data.ownerId)
+        && isActiveMemberAfter(nextCampaign, request.resource.data.ownerId)
       );
     }
 
@@ -198,37 +216,31 @@ service cloud.firestore {
     }
 
     match /campaignMembers/{membershipId} {
+      // Transactions must be able to distinguish first membership from an update.
+      allow get: if signedIn()
+        && !exists(/databases/$(database)/documents/campaignMembers/$(membershipId));
+
       allow read: if signedIn() && (
         resource.data.userId == request.auth.uid
         || canReadCampaign(resource.data.campaignId)
       );
 
-      allow create: if signedIn() && (
-        (
-          request.resource.data.userId == request.auth.uid
-          && request.resource.data.role == 'PLAYER'
-          && request.resource.data.state == 'ACTIVE'
-          && request.resource.data.joinedByInviteId == ''
-          && campaignIsActive(request.resource.data.campaignId)
-          && isCampaignOwner(request.resource.data.campaignId)
-        )
-        || (
-          request.resource.data.userId == request.auth.uid
-          && request.resource.data.role == 'PLAYER'
-          && request.resource.data.state == 'ACTIVE'
-          && request.resource.data.joinedByInviteId != ''
-          && exists(invitePath(request.resource.data.joinedByInviteId))
-          && get(invitePath(request.resource.data.joinedByInviteId)).data.campaignId == request.resource.data.campaignId
-          && get(invitePath(request.resource.data.joinedByInviteId)).data.get('revokedAt', null) == null
-          && (
-            get(invitePath(request.resource.data.joinedByInviteId)).data.get('expiresAt', null) == null
-            || get(invitePath(request.resource.data.joinedByInviteId)).data.expiresAt > request.time.toMillis()
+      allow create: if signedIn()
+        && membershipId == request.resource.data.campaignId + '::' + request.resource.data.userId
+        && request.resource.data.role == 'PLAYER'
+        && request.resource.data.state == 'ACTIVE'
+        && campaignIsActive(request.resource.data.campaignId)
+        && (
+          isCampaignResponsible(request.resource.data.campaignId)
+          || (
+            request.resource.data.userId == request.auth.uid
+            && validMembershipInvite(request.resource.data)
           )
-          && campaignIsActive(request.resource.data.campaignId)
-        )
-      );
+        );
 
-      allow update: if signedIn() && request.resource.data.campaignId == resource.data.campaignId
+      allow update: if signedIn()
+        && membershipId == request.resource.data.campaignId + '::' + request.resource.data.userId
+        && request.resource.data.campaignId == resource.data.campaignId
         && request.resource.data.userId == resource.data.userId
         && request.resource.data.role == 'PLAYER'
         && (
@@ -236,6 +248,18 @@ service cloud.firestore {
             isCampaignResponsible(resource.data.campaignId)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
               'role', 'state', 'updatedAt', 'characterIds'
+            ])
+          )
+          || (
+            campaignIsActive(resource.data.campaignId)
+            && resource.data.userId == request.auth.uid
+            && resource.data.state == 'LEFT'
+            && request.resource.data.state == 'ACTIVE'
+            && request.resource.data.joinedAt == resource.data.joinedAt
+            && request.resource.data.characterIds == resource.data.characterIds
+            && validMembershipInvite(request.resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'state', 'updatedAt', 'joinedByInviteId'
             ])
           )
           || (
@@ -445,6 +469,16 @@ service cloud.firestore {
             && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
             && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
             && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
+          )
+          || (
+            normalizedCampaignId(resource.data) == ''
+            && normalizedCampaignId(request.resource.data) != ''
+            && isCampaignOwner(normalizedCampaignId(request.resource.data))
+            && campaignIsActive(normalizedCampaignId(request.resource.data))
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
+            && isActiveMemberAfter(normalizedCampaignId(request.resource.data), resource.data.ownerId)
+            && keepsLockState()
           )
 
         );

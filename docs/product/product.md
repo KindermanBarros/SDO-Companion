@@ -71,3 +71,6 @@ Prior closure applied only to delivered tasks. BACKLOG-002 was subsequently sele
 Owner steering 2026-11-14 16:37: deliver player quick actions and latest-field realtime sheet convergence using the best supported existing path; defer remaining collaboration and consumable-state work. BACKLOG-002/008: InDevReview; final debug build passed, tests skipped by explicit owner request. BACKLOG-009/010: ToDo.
 
 Owner request 2026-11-14 17:34: complete BACKLOG-009 and BACKLOG-010, explicitly including Cinza, with Room 30 preserved. Both are InDevReview; Firestore rules must be published with the client rollout. Test suites skipped per owner preference. Other backlog items are unchanged. [Memory](../MEMORY.md).
+
+
+Campaign account membership repair (owner request 2026-11-14): InDevReview. Server-confirmed invite joins/rejoins and atomic GM sheet-owner enrollment implemented; Firestore emulator 40/40 PASS, authenticated Android debug CI passed; installed-account acceptance pending. [Campaign requirements](requirements/campaigns.md#account-membership-repair), [Memory](../MEMORY.md).
