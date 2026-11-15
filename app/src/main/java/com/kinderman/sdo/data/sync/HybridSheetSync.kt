@@ -53,8 +53,8 @@ class HybridSheetSync(
     private val context: Context,
     private val db: AppDatabase,
     private val scope: CoroutineScope,
-    private val database: FirebaseDatabase,
-    private val functions: FirebaseFunctions = FirebaseFunctions.getInstance("us-central1"),
+    private val database: FirebaseDatabase?,
+    private val functions: FirebaseFunctions? = runCatching { FirebaseFunctions.getInstance("us-central1") }.getOrNull(),
 ) {
     private val dao = db.sheetSyncDao()
     private val characters = db.characterDao()
@@ -67,12 +67,14 @@ class HybridSheetSync(
         SheetSyncStatus(rows.count { it.status == "PENDING" }, rows.count { it.status == "REJECTED" }, active, error ?: rows.firstOrNull { it.status == "REJECTED" }?.error)
     }
     fun editableIds(session: UserSession): Flow<Set<String>> = dao.observeRoutes(session.uid).map { rows -> rows.filter { it.status == "RTDB_ACTIVE" }.mapTo(mutableSetOf()) { it.sheetId } }
-    suspend fun supportsOffline(sheetId: String): Boolean = FirebaseAuth.getInstance().currentUser?.uid?.let { dao.route(it, sheetId)?.status == "RTDB_ACTIVE" } == true
+    suspend fun supportsOffline(sheetId: String): Boolean =
+        runCatching { FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()?.let { dao.route(it, sheetId)?.status == "RTDB_ACTIVE" } == true
 
     suspend fun isRtdb(accountId: String, sheetId: String): Boolean {
         val local = dao.route(accountId, sheetId)
         if (local?.status == "RTDB_ACTIVE") return true
-        val route = FirebaseFirestore.getInstance().collection("sheetRoutes").document(sheetId).get().await()
+        val firestore = runCatching { FirebaseFirestore.getInstance() }.getOrNull() ?: return false
+        val route = firestore.collection("sheetRoutes").document(sheetId).get().await()
         val status = route.getString("status") ?: "FIRESTORE_ACTIVE"
         dao.upsertRoute((local ?: SheetRouteRecord(accountId, sheetId, status)).copy(status = status, accessEpoch = route.getLong("accessEpoch") ?: 1))
         check(status != "MIGRATING") { "Esta ficha está sendo migrada. Tente novamente em instantes." }
@@ -127,13 +129,14 @@ class HybridSheetSync(
     }
 
     suspend fun drain(): Boolean = drainMutex.withLock {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@withLock true
+        val fn = functions ?: return@withLock true
+        val uid = runCatching { FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() ?: return@withLock true
         syncing.value = true
         try {
             for (operation in dao.pending(uid)) {
-                if (FirebaseAuth.getInstance().currentUser?.uid != uid) return@withLock true
+                if (runCatching { FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() != uid) return@withLock true
                 try {
-                    val result = functions.getHttpsCallable("submitSheetCommand").call(SheetWireCodec.map(operation.envelopeJson)).await().data as? Map<*, *> ?: error("Resposta de sincronização inválida.")
+                    val result = fn.getHttpsCallable("submitSheetCommand").call(SheetWireCodec.map(operation.envelopeJson)).await().data as? Map<*, *> ?: error("Resposta de sincronização inválida.")
                     val receipt = result["receipt"] as? Map<*, *> ?: error("Confirmação de sincronização ausente.")
                     val accepted = receipt["outcome"] == "COMMITTED"
                     val message = (receipt["error"] as? Map<*, *>)?.get("message")?.toString().orEmpty()
@@ -190,8 +193,9 @@ class HybridSheetSync(
     }
 
     fun observe(session: UserSession): Flow<Unit> = callbackFlow {
+        val rtdb = database ?: run { awaitClose {}; return@callbackFlow }
         val registrations = mutableMapOf<String, Pair<com.google.firebase.database.DatabaseReference, ValueEventListener>>()
-        val index = database.getReference("userSheets/${session.uid}")
+        val index = rtdb.getReference("userSheets/${session.uid}")
         val indexListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val ids = snapshot.children.mapNotNull { it.key }.toSet()
@@ -200,7 +204,7 @@ class HybridSheetSync(
                     launch { dao.removeRoute(session.uid, id) }
                 }
                 ids.filter { it !in registrations }.forEach { id ->
-                    val ref = database.getReference("sheetAggregates/$id/state")
+                    val ref = rtdb.getReference("sheetAggregates/$id/state")
                     val listener = object : ValueEventListener {
                         override fun onDataChange(value: DataSnapshot) {
                             if (value.value == null) return
@@ -228,15 +232,17 @@ class HybridSheetSync(
     }
 
     suspend fun presence(session: UserSession, sheetId: String, field: String?, active: Boolean) {
+        val rtdb = database ?: return
         if (!supportsOffline(sheetId)) return
-        val ref = database.getReference("presence/$sheetId/${session.uid}/$connectionId")
+        val ref = rtdb.getReference("presence/$sheetId/${session.uid}/$connectionId")
         if (!active || field == null) { ref.removeValue(); return }
-        if (database.getReference(".info/connected").get().await().getValue(Boolean::class.java) != true) return
+        if (rtdb.getReference(".info/connected").get().await().getValue(Boolean::class.java) != true) return
         ref.onDisconnect().removeValue().await()
         ref.setValue(mapOf("fieldKey" to field, "timestamp" to ServerValue.TIMESTAMP)).await()
     }
     fun presence(session: UserSession, sheetId: String): Flow<Map<String, String>> = callbackFlow {
-        val ref = database.getReference("presence/$sheetId")
+        val rtdb = database ?: run { trySend(emptyMap()); awaitClose {}; return@callbackFlow }
+        val ref = rtdb.getReference("presence/$sheetId")
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val values = buildMap { snapshot.children.forEach { user -> user.children.forEach { connection ->

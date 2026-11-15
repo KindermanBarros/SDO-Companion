@@ -79,8 +79,10 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_31_32,
             )
             .build()
-        val realtimeDatabase = com.google.firebase.database.FirebaseDatabase.getInstance("https://sdo-companion-default-rtdb.firebaseio.com")
-        realtimeDatabase.setPersistenceEnabled(true)
+        val realtimeDatabase = runCatching {
+            com.google.firebase.database.FirebaseDatabase.getInstance("https://sdo-companion-default-rtdb.firebaseio.com")
+                .apply { setPersistenceEnabled(true) }
+        }.getOrNull()
         hybridSheetSync = com.kinderman.sdo.data.sync.HybridSheetSync(this, db, applicationScope, realtimeDatabase)
         val characterMigrationManager = CharacterMigrationManager()
         characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao(), characterMigrationManager, hybridSheetSync)

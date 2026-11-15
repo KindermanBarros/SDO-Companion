@@ -29,7 +29,7 @@ class DeliveryApplicationTest {
         val first = applyDelivery(initial, delivery)
         val retried = applyDelivery(first, delivery)
 
-        assertEquals(listOf(item), retried.inventory)
+        assertEquals(listOf(item.copy(id = "delivery:${delivery.id}")), retried.inventory)
         assertEquals(3, retried.learnedKnowledges.single().adjustment)
         assertEquals(listOf(delivery.id), retried.appliedDeliveryIds)
         assertEquals(first, retried)
