@@ -68,3 +68,11 @@ BACKLOG-009 status: InDevReview (build-only validation requested by owner).
 - `docs/current/onboarding-summary.md`: onboarding observations on Room, Firebase, and existing sync.
 - [Campaigns & play modes](campaigns.md#planned-changes).
 - [Character photos](character-sheets.md#planned-changes).
+
+### SYNC-PLAN-004 - Hybrid Firebase refactor
+Owner authorized implementation of the revised hybrid plan, migration of all current sheets, and a pull request on 2026-11-15. BACKLOG-011 is InDevReview. This supersedes the online-only sheet-editing requirement for sheets on the new protocol; campaign administration remains online.
+- Room owns durable local intent and optimistic state; RTDB owns migrated sheets and live presence; trusted backend commands validate and commit changes with idempotent receipts. Firestore retains campaign workflows and audit projections.
+- Preserve every current sheet across accounts, including inactive accounts, standalone sheets, archived campaigns and deleted records. Inventory, fence, migrate, verify and reconcile all server records; recover device-only drafts separately when devices reconnect.
+- Complete migration requires per-sheet parity and no unresolved failures. Pilot rollout is not full migration completion. Never overwrite newer RTDB data from stale Firestore or Room copies.
+- Offline edits remain visibly pending until committed and may be rejected after access changes or competing resource use. Preserve text and recoverable intent; do not report network availability as acknowledgement.
+- Production rollout and old-writer removal require verified migration, a compatible client and rollback readiness. Actual verification and rollout state belong in Memory.

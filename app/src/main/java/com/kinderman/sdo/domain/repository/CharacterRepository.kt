@@ -8,6 +8,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 interface CharacterRepository {
+    fun observeSyncStatus(session: UserSession): Flow<com.kinderman.sdo.domain.model.SheetSyncStatus> =
+        kotlinx.coroutines.flow.flowOf(com.kinderman.sdo.domain.model.SheetSyncStatus())
+    fun observeOfflineEditableIds(session: UserSession): Flow<Set<String>> = kotlinx.coroutines.flow.flowOf(emptySet())
+    suspend fun supportsOfflineEditing(characterId: String): Boolean = false
+    suspend fun setFieldPresence(session: UserSession, characterId: String, fieldKey: String?, active: Boolean) = Unit
+    fun observeFieldPresence(session: UserSession, characterId: String): Flow<Map<String, String>> =
+        kotlinx.coroutines.flow.flowOf(emptyMap())
     fun observe(session: UserSession): Flow<List<Character>>
     fun observeOne(id: String): Flow<Character?>
     fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = emptyFlow()

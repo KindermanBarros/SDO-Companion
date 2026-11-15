@@ -99,6 +99,9 @@ BOM entries identify the declared platform; child artifact versions are not indi
 | com.google.firebase:firebase-bom | 34.19.0, catalog | app platform |
 | com.google.firebase:firebase-auth | Firebase BOM | app |
 | com.google.firebase:firebase-firestore | Firebase BOM | app |
+| com.google.firebase:firebase-database / firebase-functions | Existing Firebase BOM | Hybrid sheet reads and command transport |
+| androidx.work:work-runtime-ktx | 2.11.0 | Durable outbox scheduling |
+| com.google.code.gson:gson | 2.13.2 | CharacterRecord wire mapping with preserved defaults and R8 rules |
 | org.jetbrains.kotlinx:kotlinx-coroutines-play-services | 1.11.0, catalog | app |
 | org.jetbrains.kotlinx:kotlinx-serialization-json | 1.11.0, catalog | app |
 | junit:junit | 4.13.2, catalog | test |
@@ -111,8 +114,5 @@ ComponentActivity/Compose lifecycle, SharedPreferences, Credential Manager, Andr
 
 ## Design tooling
 
-Owner-authorized global @pen.dev/cli 0.3.16, installed with npm on Node 26.13.0/npm 11.20.0; no application dependency. Authenticated headless editing/reopen/export pass.
-
-UI validation tooling: task-owned local SDK/AVD downloads were removed during workflow cleanup. Installed Android tooling remains unchanged; no application dependency or SDK target changed.
-
-Sheet persistence uses Room schema 30: migration 29->30 adds the fieldUpdatedAt map (empty-map default) for field-level Firestore merge metadata. No dependency or backend database change.
+Owner-authorized global @pen.dev/cli 0.3.16, installed with npm on Node 26.13.0/npm 11.20.0; no application dependency. Authenticated headless editing/reopen/export pass. UI validation tooling: task-owned local SDK/AVD downloads were removed during workflow cleanup; installed Android tooling remains unchanged.
+Hybrid sync adds explicit Room migration (v32) for durable outbox and confirmed snapshots, Firebase RTDB `sdo-companion-default-rtdb` in `us-central1`, callable backend commands, and Firestore audit projections (`BACKLOG-011`). Implementation and validation status: [Memory](../MEMORY.md).

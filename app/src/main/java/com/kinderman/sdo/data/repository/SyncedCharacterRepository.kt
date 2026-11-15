@@ -32,6 +32,7 @@ import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
@@ -58,8 +59,14 @@ class SyncedCharacterRepository(
     private val ownerDao: OwnerDao,
     private val campaignDao: CampaignDao,
     private val migrationManager: CharacterMigrationManager = CharacterMigrationManager(),
+    private val hybrid: com.kinderman.sdo.data.sync.HybridSheetSync? = null,
 ) : CharacterRepository {
     private val syncMutex = Mutex()
+    override fun observeSyncStatus(session: UserSession) = hybrid?.status(session) ?: kotlinx.coroutines.flow.flowOf(com.kinderman.sdo.domain.model.SheetSyncStatus())
+    override fun observeOfflineEditableIds(session: UserSession) = hybrid?.editableIds(session) ?: kotlinx.coroutines.flow.flowOf(emptySet())
+    override suspend fun supportsOfflineEditing(characterId: String) = hybrid?.supportsOffline(characterId) == true
+    override suspend fun setFieldPresence(session: UserSession, characterId: String, fieldKey: String?, active: Boolean) { hybrid?.presence(session, characterId, fieldKey, active) }
+    override fun observeFieldPresence(session: UserSession, characterId: String) = hybrid?.presence(session, characterId) ?: kotlinx.coroutines.flow.flowOf(emptyMap())
 
     override fun observe(session: UserSession): Flow<List<Character>> =
         (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
@@ -84,6 +91,7 @@ class SyncedCharacterRepository(
     override fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = callbackFlow {
         val store = Firebase.firestore
         val registrations = mutableListOf<ListenerRegistration>()
+        val realtimeJob = hybrid?.let { engine -> launch { engine.observe(session).collect { trySend(Unit) } } }
 
         fun listen(query: Query) {
             val initialized = AtomicBoolean(false)
@@ -107,7 +115,7 @@ class SyncedCharacterRepository(
             listen(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).whereEqualTo("campaignId", campaignId))
         }
 
-        awaitClose { registrations.forEach(ListenerRegistration::remove) }
+        awaitClose { realtimeJob?.cancel(); registrations.forEach(ListenerRegistration::remove) }
     }
 
     override suspend fun create(session: UserSession, ownerId: String, campaignId: String): Character {
@@ -139,6 +147,7 @@ class SyncedCharacterRepository(
     }
 
     override suspend fun save(session: UserSession, character: Character) {
+        if (hybrid?.isRtdb(session.uid, character.id) == true) { hybrid.save(session, character); return }
         val latest = dao.get(character.id)?.toDomain() ?: character
         check(CharacterAccessPolicy.canEdit(session, latest, isCampaignHistorian(session, latest))) {
             "Você não pode editar esta ficha."
@@ -155,6 +164,7 @@ class SyncedCharacterRepository(
     }
 
     override suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) {
+        if (hybrid?.isRtdb(session.uid, character.id) == true) { hybrid.control(session, character, "SET_LOCK", mapOf("lockType" to if (locked) "PLAYER" else "NONE")); return }
         check(CharacterAccessPolicy.canChangePlayerLock(session, character, isCampaignHistorian(session, character))) {
             "O bloqueio do jogador só pode ser alterado pelo dono e não substitui o bloqueio do historiador."
         }
@@ -162,6 +172,7 @@ class SyncedCharacterRepository(
     }
 
     override suspend fun setHistorianLocked(session: UserSession, character: Character, locked: Boolean) {
+        if (hybrid?.isRtdb(session.uid, character.id) == true) { hybrid.control(session, character, "SET_LOCK", mapOf("lockType" to if (locked) "HISTORIAN" else "NONE")); return }
         check(CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian(session, character))) {
             "Somente o historiador pode alterar o bloqueio real."
         }
@@ -169,6 +180,7 @@ class SyncedCharacterRepository(
     }
 
     override suspend fun transferOwnership(session: UserSession, character: Character, owner: UserProfile) {
+        if (hybrid?.isRtdb(session.uid, character.id) == true) { hybrid.control(session, character, "TRANSFER_OWNERSHIP", mapOf("ownerId" to owner.uid)); return }
         check(CharacterAccessPolicy.canTransferOwnership(session, isCampaignResponsible(session, character))) {
             "Somente a responsável principal pode transferir uma ficha."
         }
@@ -200,6 +212,7 @@ class SyncedCharacterRepository(
     }
 
     override suspend fun delete(session: UserSession, character: Character) {
+        if (hybrid?.isRtdb(session.uid, character.id) == true) { hybrid.control(session, character, "DELETE", emptyMap(), character.copy(deleted = true)); return }
         check(CharacterAccessPolicy.canDelete(session, character, isCampaignHistorian(session, character))) {
             "Esta ficha não pode ser removida."
         }
@@ -249,7 +262,8 @@ class SyncedCharacterRepository(
         campaignCharacterDocuments.forEach { document ->
             document.toObject(CharacterRecord::class.java)?.copy(id = document.id)?.let { remoteById[it.id] = it }
         }
-        val remoteRecords = remoteById.values.map { remote ->
+        val realtimeIds = remoteById.keys.filter { hybrid?.isRtdb(session.uid, it) == true }.toSet()
+        val remoteRecords = remoteById.values.filter { it.id !in realtimeIds }.map { remote ->
             val migrated = migrationManager.migrate(remote, markDirty = false)
             val canWriteRemote = session.isAdmin || remote.ownerId == session.uid ||
                 normalizeCampaignId(remote.campaignId) in ownedCampaignIds
@@ -286,7 +300,7 @@ class SyncedCharacterRepository(
         }
         val remoteIds = remoteById.keys
 
-        val dirtyRecords = dao.dirty().map { record ->
+        val dirtyRecords = dao.dirty().filter { hybrid?.isRtdb(session.uid, it.id) != true }.map { record ->
             val migrated = migrationManager.migrate(record, markDirty = true)
             if (migrated != record) dao.upsertTracked(migrated)
             migrated
@@ -309,7 +323,7 @@ class SyncedCharacterRepository(
         }
         (if (session.isAdmin) dao.all() else dao.visible(session.uid))
             .filter {
-                !it.dirty && it.id !in remoteIds && it.id !in dirtyIds
+                !it.dirty && it.id !in remoteIds && it.id !in dirtyIds && hybrid?.supportsOffline(it.id) != true
             }
             .forEach { dao.purge(it.id) }
 

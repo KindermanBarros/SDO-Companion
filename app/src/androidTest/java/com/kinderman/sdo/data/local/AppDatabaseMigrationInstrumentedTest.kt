@@ -224,8 +224,27 @@ class AppDatabaseMigrationInstrumentedTest {
         migrated.close()
     }
 
+    @Test fun migration31To32CreatesSheetSyncTablesWithoutTouchingCharacters() {
+        val name = "migration-31-32.db".also(databases::add)
+        openSqlite(name, 31, onCreate = { db ->
+            db.execSQL("CREATE TABLE characters (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL)")
+            db.execSQL("INSERT INTO characters (id, name) VALUES ('sheet', 'Ayla')")
+        }).close()
+        val migrated = openSqlite(name, 32, onUpgrade = { db, _, _ -> AppDatabase.MIGRATION_31_32.migrate(db) })
+        migrated.writableDatabase.query("SELECT name FROM characters WHERE id = 'sheet'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Ayla", cursor.getString(0))
+        }
+        listOf("sheet_routes", "sheet_outbox", "sheet_sequences").forEach { table ->
+            migrated.writableDatabase.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+            }
+        }
+        migrated.close()
+    }
+
     private fun openRoom(name: String) = Room.databaseBuilder(context, AppDatabase::class.java, name)
-        .addMigrations(AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_30_31)
+        .addMigrations(AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_30_31, AppDatabase.MIGRATION_31_32)
         .build()
 
     private fun openSqlite(

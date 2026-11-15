@@ -1,0 +1,31 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "sheetAggregates": {
+      "$sheetId": {
+        "state": { ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true" },
+        "sync": { ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true" },
+        "control": { ".read": "auth != null && data.child('permissions').child(auth.uid).child('read').val() === true" },
+        "events": { ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true" },
+        "receipts": { "$operationId": { ".read": "auth != null && data.child('actorUid').val() === auth.uid" } }
+      }
+    },
+    "userSheets": { "$uid": { ".read": "auth != null && auth.uid === $uid" } },
+    "presence": {
+      "$sheetId": {
+        ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
+        "$uid": {
+          "$connectionId": {
+            ".write": "auth != null && auth.uid === $uid && (!newData.exists() || root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true)",
+            ".validate": "newData.hasChildren(['fieldKey', 'timestamp'])",
+            "fieldKey": { ".validate": "newData.isString() && newData.val().length <= 200" },
+            "label": { ".validate": "newData.isString() && newData.val().length <= 100" },
+            "timestamp": { ".validate": "newData.isNumber() && newData.val() <= now + 1000 && newData.val() >= now - 60000" },
+            "$other": { ".validate": false }
+          }
+        }
+      }
+    }
+  }
+}
