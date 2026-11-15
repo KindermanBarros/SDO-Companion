@@ -819,3 +819,17 @@ test('administrator links a personal sheet and enrolls its owner in the same tra
     name: 'Owner edit', fieldUpdatedAt: { '@protocol': 1, '@revision': 2 },
   }));
 });
+
+test('campaign GM lock transitions still work after membership-aware linking', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const reference = doc(db, 'characters', ids.character);
+  await assertSucceeds(updateDoc(reference, {
+    lockType: 'HISTORIAN', isLocked: true, lockedBy: ids.owner, lockedAt: 3,
+    fieldUpdatedAt: { '@protocol': 1, '@revision': 1 },
+  }));
+  await assertSucceeds(updateDoc(reference, {
+    lockType: 'NONE', isLocked: false, lockedBy: '', lockedAt: null,
+    fieldUpdatedAt: { '@protocol': 1, '@revision': 2 },
+  }));
+});

@@ -464,24 +464,21 @@ service cloud.firestore {
             && validCharacterCampaignTarget()
           )
           || (
-            normalizedCampaignId(request.resource.data) != ''
-            && isCampaignOwner(normalizedCampaignId(request.resource.data))
-            && campaignIsActive(normalizedCampaignId(request.resource.data))
-            && (
-              normalizedCampaignId(resource.data) == ''
-              || normalizedCampaignId(resource.data) == normalizedCampaignId(request.resource.data)
-            )
-            && request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && isActiveMemberAfter(normalizedCampaignId(request.resource.data), resource.data.ownerId)
-            && keepsLockState()
-          )
-          || (
             campaignCharacterWritable()
             && request.resource.data.ownerId == resource.data.ownerId
             && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
             && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
             && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
+          )
+          || (
+            normalizedCampaignId(resource.data) == ''
+            && normalizedCampaignId(request.resource.data) != ''
+            && isCampaignOwner(normalizedCampaignId(request.resource.data))
+            && campaignIsActive(normalizedCampaignId(request.resource.data))
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
+            && isActiveMemberAfter(normalizedCampaignId(request.resource.data), resource.data.ownerId)
+            && keepsLockState()
           )
 
         );
