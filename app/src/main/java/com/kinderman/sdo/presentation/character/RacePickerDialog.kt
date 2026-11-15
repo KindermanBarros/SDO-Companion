@@ -20,8 +20,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import com.kinderman.sdo.ui.SdoRadioButton
 import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -229,7 +229,7 @@ private fun RaceChoiceDialog(
                                             Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
-                                    RadioButton(selected = selected, onClick = null)
+                                    SdoRadioButton(selected = selected, onClick = null)
                                 }
                             }
                         }

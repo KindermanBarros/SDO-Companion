@@ -99,7 +99,7 @@ class AbilityManagementTest {
 
         val consumed = renamed.payCanonicalAbilityCost(AbilityCostType.DOSE, 2, ash.id)
         assertEquals(1, consumed.inventory.single().quantity)
-        assertEquals("Sem cinzas necessárias", runCatching { consumed.payCanonicalAbilityCost(AbilityCostType.DOSE, 2, ash.id) }.exceptionOrNull()?.message)
+        assertEquals("Quantidade insuficiente do item.", runCatching { consumed.payCanonicalAbilityCost(AbilityCostType.DOSE, 2, ash.id) }.exceptionOrNull()?.message)
     }
 
     @Test fun uniquenessIsNormalizedInsideEachTypeOnly() {

@@ -60,6 +60,15 @@ fun SdoTogglePanel(title: String, options: List<SdoToggleOption>) {
 }
 
 @Composable
+fun SdoRadioButton(
+    selected: Boolean,
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    RadioButton(selected = selected, onClick = onClick, modifier = modifier)
+}
+
+@Composable
 fun <T> SdoChoicePanel(
     title: String,
     options: List<T>,
