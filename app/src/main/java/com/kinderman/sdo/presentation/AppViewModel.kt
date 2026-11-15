@@ -39,6 +39,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
@@ -105,14 +106,19 @@ class AppViewModel(
     val syncFailure = _syncFailure.asStateFlow()
     val sheetSyncStatus = currentSession.flatMapLatest { session ->
         session?.let(repository::observeSyncStatus) ?: flowOf(SheetSyncStatus())
-    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), SheetSyncStatus())
+    }.catch { emit(SheetSyncStatus()) }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), SheetSyncStatus())
     val offlineEditableIds = currentSession.flatMapLatest { session ->
         session?.let(repository::observeOfflineEditableIds) ?: flowOf(emptySet())
-    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
+    }.catch { emit(emptySet()) }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
-    fun observeFieldPresence(characterId: String) = currentSession.flatMapLatest { session ->
-        session?.let { repository.observeFieldPresence(it, characterId) } ?: flowOf(emptyMap())
-    }
+    fun observeFieldPresence(characterId: String) =
+        if (characterId.isBlank()) {
+            flowOf(emptyMap())
+        } else {
+            currentSession.flatMapLatest { session ->
+                session?.let { repository.observeFieldPresence(it, characterId) } ?: flowOf(emptyMap())
+            }.catch { emit(emptyMap()) }
+        }
 
     fun setFieldPresence(characterId: String, fieldKey: String?, active: Boolean) {
         val session = currentSession.value ?: return
@@ -191,7 +197,7 @@ class AppViewModel(
         }
             .flatMapLatest { (session, ids, online) ->
                 if (session == null || session.uid == DEMO_USER_ID || !online) emptyFlow()
-                else repository.observeRemoteChanges(session, ids)
+                else repository.observeRemoteChanges(session, ids).catch { /* Ignore listener errors */ }
             }
             .debounce(300)
             .onEach { startSync(initial = false) }

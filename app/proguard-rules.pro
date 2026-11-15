@@ -1,7 +1,7 @@
 # SDO Companion - R8 & ProGuard Optimization Rules
 
-# Keep line numbers and source file attributes for readable stack traces
--keepattributes SourceFile,LineNumberTable
+# Keep line numbers, generic type signatures, and annotations for Firestore/Gson/Room reflection
+-keepattributes SourceFile,LineNumberTable,Signature,InnerClasses,EnclosingMethod,AnnotationDefault,*Annotation*
 -renamesourcefileattribute SourceFile
 
 # Preserve data models for Firebase Firestore reflection (toObject) and Room

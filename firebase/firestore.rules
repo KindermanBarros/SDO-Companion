@@ -380,19 +380,30 @@ service cloud.firestore {
     }
 
     match /sheetRoutes/{characterId} {
+      allow get: if signedIn()
+        && !exists(/databases/$(database)/documents/sheetRoutes/$(characterId));
       allow read: if signedIn() && (
         isAdministrator()
-        || get(/databases/$(database)/documents/characters/$(characterId)).data.ownerId == request.auth.uid
-        || canReadCampaign(get(/databases/$(database)/documents/characters/$(characterId)).data.get('campaignId', ''))
+        || resource.data.get('ownerId', '') == request.auth.uid
+        || (
+          normalizedCampaignId(resource.data) != ''
+          && canReadCampaign(normalizedCampaignId(resource.data))
+        )
+        || (
+          exists(/databases/$(database)/documents/characters/$(characterId))
+          && (
+            get(/databases/$(database)/documents/characters/$(characterId)).data.ownerId == request.auth.uid
+            || (
+              normalizedCampaignId(get(/databases/$(database)/documents/characters/$(characterId)).data) != ''
+              && canReadCampaign(normalizedCampaignId(get(/databases/$(database)/documents/characters/$(characterId)).data))
+            )
+          )
+        )
       );
       allow write: if false;
     }
 
     match /characters/{characterId} {
-      function legacyWriteEnabled() {
-        return !exists(/databases/$(database)/documents/sheetRoutes/$(characterId))
-          || get(/databases/$(database)/documents/sheetRoutes/$(characterId)).data.status == 'FIRESTORE_ACTIVE';
-      }
       function validCollaborationRevision() {
         let before = resource.data.get('fieldUpdatedAt', {});
         let after = request.resource.data.get('fieldUpdatedAt', {});
@@ -433,7 +444,6 @@ service cloud.firestore {
       );
 
       allow create: if signedIn()
-        && legacyWriteEnabled()
         && validCharacterCreator()
         && validCharacterCampaignTarget()
         && request.resource.data.lockType == 'NONE'
@@ -443,7 +453,6 @@ service cloud.firestore {
         && request.resource.data.deleted == false;
 
       allow update: if signedIn()
-        && legacyWriteEnabled()
         && validCollaborationRevision()
         && (
           (
@@ -498,7 +507,7 @@ service cloud.firestore {
 
         );
 
-      allow delete: if signedIn() && legacyWriteEnabled() && (
+      allow delete: if signedIn() && (
         isAdministrator()
         ||
         ownsExistingCharacter()

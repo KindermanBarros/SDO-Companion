@@ -147,6 +147,18 @@ class AppViewModelSyncPolicyTest {
         assertEquals(1, characterRepo.saveCount)
     }
 
+    @Test
+    fun fieldPresenceIgnoresBlankIdAndSwallowsUpstreamPermissionErrors() = runBlocking {
+        viewModel.setSession(session)
+
+        assertEquals(emptyMap<String, String>(), viewModel.observeFieldPresence("").first())
+        assertEquals(0, characterRepo.presenceCalls)
+
+        characterRepo.throwOnPresence = true
+        assertEquals(emptyMap<String, String>(), viewModel.observeFieldPresence("char-1").first())
+        assertEquals(1, characterRepo.presenceCalls)
+    }
+
     private class FakeConnectivityMonitor(initialOnline: Boolean) : ConnectivityMonitor {
         val onlineState = MutableStateFlow(initialOnline)
         override val isOnline = onlineState
@@ -155,6 +167,14 @@ class AppViewModelSyncPolicyTest {
     private class FakeCharacterRepository : CharacterRepository {
         val offlineIds = MutableStateFlow<Set<String>>(emptySet())
         override fun observeOfflineEditableIds(session: UserSession): Flow<Set<String>> = offlineIds
+        var throwOnPresence = false
+        var presenceCalls = 0
+        override fun observeFieldPresence(session: UserSession, characterId: String): Flow<Map<String, String>> =
+            kotlinx.coroutines.flow.flow {
+                presenceCalls++
+                if (throwOnPresence) throw IllegalStateException("Firebase Database error: Permission denied")
+                emit(emptyMap())
+            }
         val remoteChanges = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
         var saveCount = 0
         var deleteCount = 0

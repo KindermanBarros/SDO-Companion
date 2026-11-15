@@ -126,7 +126,7 @@ jobs:
             deploy
             --config firebase.json
             --project "$FIREBASE_PROJECT_ID"
-            --only firestore:rules,firestore:indexes
+            --only firestore:rules,firestore:indexes,database
             --non-interactive
           )
           if [[ -n "$FIREBASE_DEPLOY_TOKEN" ]]; then

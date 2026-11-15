@@ -68,13 +68,16 @@ class HybridSheetSync(
     }
     fun editableIds(session: UserSession): Flow<Set<String>> = dao.observeRoutes(session.uid).map { rows -> rows.filter { it.status == "RTDB_ACTIVE" }.mapTo(mutableSetOf()) { it.sheetId } }
     suspend fun supportsOffline(sheetId: String): Boolean =
-        runCatching { FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()?.let { dao.route(it, sheetId)?.status == "RTDB_ACTIVE" } == true
+        sheetId.isNotBlank() &&
+            runCatching { FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()?.let { dao.route(it, sheetId)?.status == "RTDB_ACTIVE" } == true
 
     suspend fun isRtdb(accountId: String, sheetId: String): Boolean {
+        if (accountId.isBlank() || accountId == "demo-player" || sheetId.isBlank()) return false
         val local = dao.route(accountId, sheetId)
         if (local?.status == "RTDB_ACTIVE") return true
         val firestore = runCatching { FirebaseFirestore.getInstance() }.getOrNull() ?: return false
-        val route = firestore.collection("sheetRoutes").document(sheetId).get().await()
+        val route = runCatching { firestore.collection("sheetRoutes").document(sheetId).get().await() }.getOrNull()
+            ?: return false
         val status = route.getString("status") ?: "FIRESTORE_ACTIVE"
         dao.upsertRoute((local ?: SheetRouteRecord(accountId, sheetId, status)).copy(status = status, accessEpoch = route.getLong("accessEpoch") ?: 1))
         check(status != "MIGRATING") { "Esta ficha está sendo migrada. Tente novamente em instantes." }
@@ -123,8 +126,15 @@ class HybridSheetSync(
     }
 
     fun schedule() {
-        WorkManager.getInstance(context).enqueueUniqueWork("hybrid-sheet-sync", ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequestBuilder<SheetSyncWorker>().setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build())
+        runCatching {
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "hybrid-sheet-sync",
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequestBuilder<SheetSyncWorker>()
+                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                    .build(),
+            )
+        }
         scope.launch { runCatching { drain() }.onFailure { if (it is CancellationException) throw it else errors.value = it.message } }
     }
 
@@ -192,8 +202,37 @@ class HybridSheetSync(
         characters.upsert(projected.copy(dirty = false).toRecord())
     }
 
+    fun mirrorCharacter(record: CharacterRecord, campaignOwnerId: String? = null) {
+        val rtdb = database ?: return
+        if (record.id.isBlank() || record.ownerId.isBlank() || record.ownerId == "demo-player") return
+        scope.launch {
+            runCatching {
+                val permissions = buildMap {
+                    put(record.ownerId, mapOf("read" to true, "write" to true, "manage" to true))
+                    if (!campaignOwnerId.isNullOrBlank()) {
+                        put(campaignOwnerId, mapOf("read" to true, "write" to true, "manage" to true))
+                    }
+                }
+                rtdb.getReference("sheetAggregates/${record.id}/control/permissions").setValue(permissions).await()
+                if (record.deleted) {
+                    rtdb.getReference("userSheets/${record.ownerId}/${record.id}").removeValue().await()
+                } else {
+                    rtdb.getReference("sheetAggregates/${record.id}/state").setValue(SheetWireCodec.state(record)).await()
+                    rtdb.getReference("userSheets/${record.ownerId}/${record.id}").setValue(true).await()
+                    if (!campaignOwnerId.isNullOrBlank()) {
+                        rtdb.getReference("userSheets/$campaignOwnerId/${record.id}").setValue(true).await()
+                    }
+                }
+            }
+        }
+    }
+
     fun observe(session: UserSession): Flow<Unit> = callbackFlow {
         val rtdb = database ?: run { awaitClose {}; return@callbackFlow }
+        if (session.uid.isBlank() || session.uid == "demo-player") {
+            awaitClose {}
+            return@callbackFlow
+        }
         val registrations = mutableMapOf<String, Pair<com.google.firebase.database.DatabaseReference, ValueEventListener>>()
         val index = rtdb.getReference("userSheets/${session.uid}")
         val indexListener = object : ValueEventListener {
@@ -210,21 +249,28 @@ class HybridSheetSync(
                             if (value.value == null) return
                             launch {
                                 try {
+                                    val incoming = SheetWireCodec.decode(SheetWireCodec.json(value.value)).copy(id = id, dirty = false)
                                     if (isRtdb(session.uid, id)) {
-                                        db.withTransaction { accept(session.uid, id, SheetWireCodec.decode(SheetWireCodec.json(value.value))) }
+                                        db.withTransaction { accept(session.uid, id, incoming) }
                                         trySend(Unit)
+                                    } else {
+                                        val local = characters.get(id)
+                                        if (local == null || (!local.dirty && incoming.updatedAt > local.updatedAt)) {
+                                            characters.upsert(incoming.copy(lastSyncedAt = incoming.updatedAt))
+                                            trySend(Unit)
+                                        }
                                     }
-                                } catch (error: Exception) { if (error is CancellationException) throw error; errors.value = error.message }
+                                } catch (error: Exception) { if (error is CancellationException) throw error }
                             }
                         }
-                        override fun onCancelled(error: DatabaseError) { errors.value = error.message; launch { dao.removeRoute(session.uid, id) } }
+                        override fun onCancelled(error: DatabaseError) { launch { dao.removeRoute(session.uid, id) } }
                     }
                     registrations[id] = ref to listener
                     ref.addValueEventListener(listener)
                     ref.keepSynced(true)
                 }
             }
-            override fun onCancelled(error: DatabaseError) { errors.value = error.message }
+            override fun onCancelled(error: DatabaseError) = Unit
         }
         index.addValueEventListener(indexListener)
         schedule()
@@ -233,7 +279,7 @@ class HybridSheetSync(
 
     suspend fun presence(session: UserSession, sheetId: String, field: String?, active: Boolean) {
         val rtdb = database ?: return
-        if (!supportsOffline(sheetId)) return
+        if (sheetId.isBlank() || session.uid.isBlank() || session.uid == "demo-player") return
         val ref = rtdb.getReference("presence/$sheetId/${session.uid}/$connectionId")
         if (!active || field == null) { ref.removeValue(); return }
         if (rtdb.getReference(".info/connected").get().await().getValue(Boolean::class.java) != true) return
@@ -242,19 +288,26 @@ class HybridSheetSync(
     }
     fun presence(session: UserSession, sheetId: String): Flow<Map<String, String>> = callbackFlow {
         val rtdb = database ?: run { trySend(emptyMap()); awaitClose {}; return@callbackFlow }
+        if (sheetId.isBlank() || session.uid.isBlank() || session.uid == "demo-player") {
+            trySend(emptyMap())
+            awaitClose {}
+            return@callbackFlow
+        }
         val ref = rtdb.getReference("presence/$sheetId")
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val values = buildMap { snapshot.children.forEach { user -> user.children.forEach { connection ->
-                    if (connection.key != connectionId) {
-                        val key = connection.child("fieldKey").getValue(String::class.java)
-                        val time = connection.child("timestamp").getValue(Long::class.java) ?: 0
-                        if (key != null && System.currentTimeMillis() - time < 120_000) put(key, if (user.key == session.uid) "Outro dispositivo" else "Outro participante")
-                    }
-                } } }
+                val values = runCatching {
+                    buildMap { snapshot.children.forEach { user -> user.children.forEach { connection ->
+                        if (connection.key != connectionId) {
+                            val key = connection.child("fieldKey").getValue(String::class.java)
+                            val time = connection.child("timestamp").getValue(Long::class.java) ?: 0
+                            if (key != null && System.currentTimeMillis() - time < 120_000) put(key, if (user.key == session.uid) "Outro dispositivo" else "Outro participante")
+                        }
+                    } } }
+                }.getOrDefault(emptyMap())
                 trySend(values)
             }
-            override fun onCancelled(error: DatabaseError) { close(error.toException()) }
+            override fun onCancelled(error: DatabaseError) { trySend(emptyMap()) }
         }
         ref.addValueEventListener(listener)
         awaitClose { ref.removeEventListener(listener) }

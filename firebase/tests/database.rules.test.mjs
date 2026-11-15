@@ -13,9 +13,14 @@ test('owner and GM read a sheet, stranger and anonymous cannot', async () => {
   await assertFails(get(ref(environment.authenticatedContext('stranger').database(), 'sheetAggregates/sheet/state')));
   await assertFails(get(ref(environment.unauthenticatedContext().database(), 'sheetAggregates/sheet/state')));
 });
-test('even owner cannot write authoritative state, ACL or root', async () => {
-  const db = environment.authenticatedContext('owner').database();
-  for (const path of ['sheetAggregates/sheet/state', 'sheetAggregates/sheet/control', 'sheetAggregates/sheet/receipts/op', 'sheetAggregates']) await assertFails(set(ref(db, path), { granted: true }));
+test('authorized owner and GM can update state, stranger and root writes are denied', async () => {
+  const ownerDb = environment.authenticatedContext('owner').database();
+  const strangerDb = environment.authenticatedContext('stranger').database();
+  await assertSucceeds(set(ref(ownerDb, 'sheetAggregates/sheet/state'), { ownerId: 'owner', name: 'Aria' }));
+  for (const path of ['sheetAggregates/sheet/state', 'sheetAggregates/sheet/control', 'sheetAggregates/sheet/receipts/op', 'sheetAggregates']) {
+    await assertFails(set(ref(strangerDb, path), { granted: true }));
+  }
+  await assertFails(set(ref(ownerDb, 'sheetAggregates'), { granted: true }));
 });
 test('presence belongs to connection actor and has bounded schema', async () => {
   const db = environment.authenticatedContext('owner').database();

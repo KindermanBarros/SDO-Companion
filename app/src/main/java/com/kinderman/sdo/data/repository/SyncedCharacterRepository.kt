@@ -62,9 +62,23 @@ class SyncedCharacterRepository(
     private val hybrid: com.kinderman.sdo.data.sync.HybridSheetSync? = null,
 ) : CharacterRepository {
     private val syncMutex = Mutex()
-    override fun observeSyncStatus(session: UserSession) = hybrid?.status(session) ?: kotlinx.coroutines.flow.flowOf(com.kinderman.sdo.domain.model.SheetSyncStatus())
-    override fun observeOfflineEditableIds(session: UserSession) = hybrid?.editableIds(session) ?: kotlinx.coroutines.flow.flowOf(emptySet())
-    override suspend fun supportsOfflineEditing(characterId: String) = hybrid?.supportsOffline(characterId) == true
+    override fun observeSyncStatus(session: UserSession): Flow<com.kinderman.sdo.domain.model.SheetSyncStatus> {
+        val baseFlow = hybrid?.status(session) ?: kotlinx.coroutines.flow.flowOf(com.kinderman.sdo.domain.model.SheetSyncStatus())
+        val localFlow = (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
+        return kotlinx.coroutines.flow.combine(baseFlow, localFlow) { status, records ->
+            val dirtyCount = records.count { it.dirty }
+            status.copy(pendingCount = status.pendingCount + dirtyCount)
+        }
+    }
+    override fun observeOfflineEditableIds(session: UserSession): Flow<Set<String>> {
+        val routeFlow = hybrid?.editableIds(session) ?: kotlinx.coroutines.flow.flowOf(emptySet())
+        val localFlow = (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
+        return kotlinx.coroutines.flow.combine(routeFlow, localFlow) { routeIds, records ->
+            routeIds + records.mapTo(mutableSetOf()) { it.id }
+        }
+    }
+    override suspend fun supportsOfflineEditing(characterId: String) =
+        dao.get(characterId) != null || hybrid?.supportsOffline(characterId) == true
     override suspend fun setFieldPresence(session: UserSession, characterId: String, fieldKey: String?, active: Boolean) { hybrid?.presence(session, characterId, fieldKey, active) }
     override fun observeFieldPresence(session: UserSession, characterId: String) = hybrid?.presence(session, characterId) ?: kotlinx.coroutines.flow.flowOf(emptyMap())
 
@@ -161,6 +175,11 @@ class SyncedCharacterRepository(
                 dirty = true,
             ),
         )
+        dao.get(character.id)?.let { saved ->
+            val cid = normalizeCampaignId(saved.campaignId)
+            val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
+            hybrid?.mirrorCharacter(saved, campaignOwner)
+        }
     }
 
     override suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) {
@@ -373,10 +392,20 @@ class SyncedCharacterRepository(
                     CharacterSyncWrite.Accepted(initial)
                 }.await()
                 when (result) {
-                    is CharacterSyncWrite.Accepted -> dao.acceptSnapshot(result.record, record.updatedAt, record)
+                    is CharacterSyncWrite.Accepted -> {
+                        dao.acceptSnapshot(result.record, record.updatedAt, record)
+                        val cid = normalizeCampaignId(result.record.campaignId)
+                        val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
+                        hybrid?.mirrorCharacter(result.record, campaignOwner)
+                    }
                     is CharacterSyncWrite.LegacyReview -> conflicts += result.conflict
                 }
             }
+        }
+        remoteRecords.filter { it.id !in dirtyIds }.forEach { remote ->
+            val cid = normalizeCampaignId(remote.campaignId)
+            val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
+            hybrid?.mirrorCharacter(remote.copy(dirty = false), campaignOwner)
         }
         conflicts
     }

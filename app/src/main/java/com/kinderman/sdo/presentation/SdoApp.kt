@@ -192,8 +192,9 @@ fun SdoApp(
 
         else -> {
             val selectedCharacter = characters.firstOrNull { it.id == selectedId }
-            val presenceFlow = remember(selectedId, appSession?.uid) {
-                appViewModel.observeFieldPresence(selectedId.orEmpty())
+            val activeSheetId = selectedId?.takeIf { surface == AppSurface.SHEET && it in offlineEditableIds }.orEmpty()
+            val presenceFlow = remember(activeSheetId, appSession?.uid) {
+                appViewModel.observeFieldPresence(activeSheetId)
             }
             val fieldPresence by presenceFlow.collectAsStateWithLifecycle(initialValue = emptyMap())
             val sheetReadOnlyOffline = offlineReadOnly && selectedId !in offlineEditableIds

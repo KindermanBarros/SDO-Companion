@@ -80,35 +80,47 @@ class SyncedOperationsRepository(
         val store = Firebase.firestore
         val reference = store.collection(FirestoreCollections.CHARACTERS).document(character.id)
         val receiptKey = "@operation/${command.idempotencyKey}"
-        val result = store.runTransaction { transaction ->
-            val snapshot = transaction.get(reference)
-            val raw = snapshot.toObject(CharacterRecord::class.java)?.copy(id = character.id)
-                ?: error("Sincronize a ficha antes de executar ações da sessão.")
-            val remote = migrationManager.migrate(raw, markDirty = false).toDomain()
-            check(!remote.deleted) { "Esta ficha foi excluída." }
-            if (receiptKey in remote.fieldUpdatedAt) {
-                return@runTransaction remote.toRecord() to null
+        val result = try {
+            store.runTransaction { transaction ->
+                val snapshot = transaction.get(reference)
+                val raw = snapshot.toObject(CharacterRecord::class.java)?.copy(id = character.id)
+                    ?: error("Sincronize a ficha antes de executar ações da sessão.")
+                val remote = migrationManager.migrate(raw, markDirty = false).toDomain()
+                check(!remote.deleted) { "Esta ficha foi excluída." }
+                if (receiptKey in remote.fieldUpdatedAt) {
+                    return@runTransaction remote.toRecord() to null
+                }
+                val campaignId = normalizeCampaignId(remote.campaignId)
+                if (campaignId.isNotBlank()) {
+                    val campaign = transaction.get(store.collection(FirestoreCollections.CAMPAIGNS).document(campaignId))
+                    check(campaign.getString("state") == "ACTIVE") { "A campanha não está ativa para ações da sessão." }
+                }
+                val pending = pendingCharacterEditKeys(local, remote)
+                val base = applyCharacterEditKeys(remote, local, pending)
+                val mutation = base.applySessionCommand(command, session.uid)
+                val keys = pending + characterEditKeys(base, mutation.character)
+                val committed = commitCharacterEditKeys(remote, mutation.character.copy(lastEditedBy = session.uid), keys)
+                val revision = committed.fieldUpdatedAt.getValue("@revision")
+                val record = committed.copy(fieldUpdatedAt = committed.fieldUpdatedAt + (receiptKey to revision)).toRecord()
+                val operation = mutation.operation.copy(createdAt = record.updatedAt).toRecord().copy(dirty = false, lastSyncedAt = record.updatedAt)
+                transaction.set(reference, record.optimizedForFirestore(migrationManager))
+                if (operation.campaignId.isNotBlank()) {
+                    transaction.set(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).document(operation.id), operation)
+                }
+                record to operation
+            }.await()
+        } catch (error: FirebaseFirestoreException) {
+            if (error.code == FirebaseFirestoreException.Code.UNAVAILABLE) {
+                val mutation = local.applySessionCommand(command, session.uid)
+                val now = System.currentTimeMillis()
+                val updated = mutation.character.copy(lastEditedBy = session.uid, updatedAt = now, dirty = true).toRecord()
+                val opRecord = mutation.operation.copy(createdAt = now).toRecord().copy(dirty = true)
+                return dao.applyOnce(opRecord, updated)
             }
-            val campaignId = normalizeCampaignId(remote.campaignId)
-            if (campaignId.isNotBlank()) {
-                val campaign = transaction.get(store.collection(FirestoreCollections.CAMPAIGNS).document(campaignId))
-                check(campaign.getString("state") == "ACTIVE") { "A campanha não está ativa para ações da sessão." }
-            }
-            val pending = pendingCharacterEditKeys(local, remote)
-            val base = applyCharacterEditKeys(remote, local, pending)
-            val mutation = base.applySessionCommand(command, session.uid)
-            val keys = pending + characterEditKeys(base, mutation.character)
-            val committed = commitCharacterEditKeys(remote, mutation.character.copy(lastEditedBy = session.uid), keys)
-            val revision = committed.fieldUpdatedAt.getValue("@revision")
-            val record = committed.copy(fieldUpdatedAt = committed.fieldUpdatedAt + (receiptKey to revision)).toRecord()
-            val operation = mutation.operation.copy(createdAt = record.updatedAt).toRecord().copy(dirty = false, lastSyncedAt = record.updatedAt)
-            transaction.set(reference, record.optimizedForFirestore(migrationManager))
-            if (operation.campaignId.isNotBlank()) {
-                transaction.set(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).document(operation.id), operation)
-            }
-            record to operation
-        }.await()
+            throw error
+        }
         dao.acceptCommittedOperation(result.first, result.second, if (result.second != null) localRecord else null)
+        hybrid?.mirrorCharacter(result.first.copy(dirty = false))
         return result.second != null
     }
 

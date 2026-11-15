@@ -4,14 +4,36 @@
     ".write": false,
     "sheetAggregates": {
       "$sheetId": {
-        "state": { ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true" },
-        "sync": { ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true" },
-        "control": { ".read": "auth != null && data.child('permissions').child(auth.uid).child('read').val() === true" },
-        "events": { ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true" },
-        "receipts": { "$operationId": { ".read": "auth != null && data.child('actorUid').val() === auth.uid" } }
+        "state": {
+          ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
+          ".write": "auth != null && (root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('write').val() === true || newData.parent().child('control/permissions').child(auth.uid).child('write').val() === true)"
+        },
+        "sync": {
+          ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
+          ".write": "auth != null && (root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('write').val() === true || newData.parent().child('control/permissions').child(auth.uid).child('write').val() === true)"
+        },
+        "control": {
+          ".read": "auth != null && data.child('permissions').child(auth.uid).child('read').val() === true",
+          ".write": "auth != null && ((!data.exists() && newData.child('permissions').child(auth.uid).child('write').val() === true) || data.child('permissions').child(auth.uid).child('write').val() === true)"
+        },
+        "events": {
+          ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true"
+        },
+        "receipts": {
+          "$operationId": {
+            ".read": "auth != null && data.child('actorUid').val() === auth.uid"
+          }
+        }
       }
     },
-    "userSheets": { "$uid": { ".read": "auth != null && auth.uid === $uid" } },
+    "userSheets": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$sheetId": {
+          ".write": "auth != null && (auth.uid === $uid || root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('write').val() === true)"
+        }
+      }
+    },
     "presence": {
       "$sheetId": {
         ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
