@@ -1,8 +1,10 @@
 package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.TransactionOptions
 import com.google.firebase.firestore.firestore
 import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterRecord
@@ -23,10 +25,12 @@ import com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
+import com.kinderman.sdo.domain.model.MAX_AUTOMATIC_CONFLICT_FIELDS
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.CampaignMemberState
 import com.kinderman.sdo.domain.model.CampaignRole
+import com.kinderman.sdo.domain.model.automaticRemoteFieldIds
 import com.kinderman.sdo.domain.model.characterConflictFields
 import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
@@ -344,70 +348,182 @@ class SyncedCharacterRepository(
             .filter {
                 !it.dirty && it.id !in remoteIds && it.id !in dirtyIds && hybrid?.supportsOffline(it.id) != true
             }
-            .forEach { dao.purge(it.id) }
+            .forEach {
+                val cid = normalizeCampaignId(it.campaignId)
+                val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
+                hybrid?.removeCharacterMirror(it.id, it.ownerId, campaignOwner)
+                dao.purge(it.id)
+            }
 
+        var firstDirtyError: Throwable? = null
         dirtyRecords.forEach { record ->
-            if (record.deleted) {
-                val remote = remoteById[record.id]
-                if (remote == null) {
-                    dao.purge(record.id)
-                } else {
-                    try {
-                        collection.document(record.id).delete().await()
-                        dao.purge(record.id)
-                    } catch (error: Throwable) {
-                        // Keep the pending local deletion. Losing permission must never discard
-                        // a user change that can be retried or resolved explicitly later.
-                        throw error
-                    }
-                }
-            } else {
-                val normalizedRecord = record.copy(campaignId = normalizeCampaignId(record.campaignId))
-                val reference = collection.document(record.id)
-                val result = store.runTransaction<CharacterSyncWrite> { transaction ->
-                    val snapshot = transaction.get(reference)
-                    val rawRemote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
-                    val remote = rawRemote?.let { migrationManager.migrate(it, markDirty = false) }
-                    if (remote != null) {
-                        val localCharacter = normalizedRecord.toDomain()
-                        val remoteCharacter = remote.toDomain()
-                        if (needsLegacySyncReview(localCharacter, remoteCharacter)) {
-                            return@runTransaction CharacterSyncWrite.LegacyReview(CharacterSyncConflict(localCharacter, remoteCharacter, remote.updatedAt))
-                        }
-                        val keys = pendingCharacterEditKeys(localCharacter, remoteCharacter)
-                        if (keys.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
-                            return@runTransaction CharacterSyncWrite.Accepted(remote)
-                        }
-                        val merged = commitCharacterEditKeys(remoteCharacter, localCharacter, keys)
-                        val mergedRecord = merged.toRecord()
-                        transaction.set(reference, mergedRecord.optimizedForFirestore(migrationManager))
-                        return@runTransaction CharacterSyncWrite.Accepted(mergedRecord)
-
-                    }
-                    check(record.lastSyncedAt == 0L) { "The remote sheet was deleted; stale edits cannot recreate it." }
-                    val local = normalizedRecord.toDomain()
-                    val empty = Character(id = local.id, updatedAt = 0, dirty = false)
-                    val initial = commitCharacterEditKeys(empty, local, characterEditKeys(empty, local)).toRecord()
-                    transaction.set(reference, initial.optimizedForFirestore(migrationManager))
-                    CharacterSyncWrite.Accepted(initial)
-                }.await()
-                when (result) {
-                    is CharacterSyncWrite.Accepted -> {
-                        dao.acceptSnapshot(result.record, record.updatedAt, record)
-                        val cid = normalizeCampaignId(result.record.campaignId)
-                        val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
-                        hybrid?.mirrorCharacter(result.record, campaignOwner)
-                    }
-                    is CharacterSyncWrite.LegacyReview -> conflicts += result.conflict
-                }
+            runCatching {
+                pushDirtyRecord(
+                    session = session,
+                    record = record,
+                    remoteExistsHint = remoteById[record.id] != null,
+                    collection = collection,
+                    store = store,
+                )
+            }.onSuccess { conflict ->
+                if (conflict != null) conflicts += conflict
+            }.onFailure { error ->
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                android.util.Log.e("SDO_SYNC", "Failed syncing character ${record.id}", error)
+                if (firstDirtyError == null) firstDirtyError = error
             }
         }
-        remoteRecords.filter { it.id !in dirtyIds }.forEach { remote ->
-            val cid = normalizeCampaignId(remote.campaignId)
-            val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
-            hybrid?.mirrorCharacter(remote.copy(dirty = false), campaignOwner)
-        }
+        firstDirtyError?.let { if (conflicts.isEmpty()) throw it }
         conflicts
+    }
+
+    override suspend fun syncCharacter(session: UserSession, characterId: String): List<CharacterSyncConflict> = syncMutex.withLock {
+        if (characterId.isBlank() || hybrid?.isRtdb(session.uid, characterId) == true) return@withLock emptyList()
+        val store = Firebase.firestore
+        val collection = store.collection(FirestoreCollections.CHARACTERS)
+        val local = dao.get(characterId) ?: return@withLock emptyList()
+        if (local.dirty) {
+            val migrated = migrationManager.migrate(local, markDirty = true)
+            if (migrated != local) dao.upsertTracked(migrated)
+            val conflict = pushDirtyRecord(
+                session = session,
+                record = migrated,
+                remoteExistsHint = null,
+                collection = collection,
+                store = store,
+            )
+            return@withLock listOfNotNull(conflict)
+        }
+        val snapshot = collection.document(characterId).get().await()
+        val remote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = snapshot.id)
+        if (remote == null) {
+            val cid = normalizeCampaignId(local.campaignId)
+            val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
+            hybrid?.removeCharacterMirror(local.id, local.ownerId, campaignOwner)
+            dao.purge(local.id)
+            return@withLock emptyList()
+        }
+        val migrated = migrationManager.migrate(remote, markDirty = false)
+        if (migrated.updatedAt > local.updatedAt) {
+            dao.upsertTracked(
+                migrated.copy(
+                    campaignId = normalizeCampaignId(migrated.campaignId),
+                    dirty = false,
+                    lastSyncedAt = migrated.updatedAt,
+                    deleted = false,
+                ),
+            )
+        }
+        emptyList()
+    }
+
+    private suspend fun pushDirtyRecord(
+        session: UserSession,
+        record: CharacterRecord,
+        remoteExistsHint: Boolean?,
+        collection: com.google.firebase.firestore.CollectionReference,
+        store: com.google.firebase.firestore.FirebaseFirestore,
+    ): CharacterSyncConflict? {
+        val cid = normalizeCampaignId(record.campaignId)
+        val campaignOwner = if (cid.isBlank()) null else campaignDao.campaign(cid)?.ownerId
+        if (record.deleted) {
+            val shouldDeleteRemote = remoteExistsHint ?: runCatching {
+                collection.document(record.id).get().await().exists()
+            }.getOrDefault(true)
+            if (shouldDeleteRemote) {
+                try {
+                    collection.document(record.id).delete().await()
+                } catch (error: FirebaseFirestoreException) {
+                    if (error.code != FirebaseFirestoreException.Code.NOT_FOUND) throw error
+                }
+            }
+            hybrid?.removeCharacterMirror(record.id, record.ownerId, campaignOwner)
+            dao.purge(record.id)
+            return null
+        }
+
+        val normalizedRecord = record.copy(campaignId = cid)
+        val reference = collection.document(record.id)
+        val txOptions = TransactionOptions.Builder().setMaxAttempts(2).build()
+        val result = try {
+            store.runTransaction(txOptions) { transaction ->
+                val snapshot = transaction.get(reference)
+                val rawRemote = snapshot.toObject(CharacterRecord::class.java)?.copy(id = reference.id)
+                val remote = rawRemote?.let { migrationManager.migrate(it, markDirty = false) }
+                if (remote != null) {
+                    val localCharacter = normalizedRecord.toDomain()
+                    val remoteCharacter = remote.toDomain()
+                    if (needsLegacySyncReview(localCharacter, remoteCharacter)) {
+                        return@runTransaction CharacterSyncWrite.LegacyReview(
+                            CharacterSyncConflict(localCharacter, remoteCharacter, remote.updatedAt),
+                        )
+                    }
+                    val keys = pendingCharacterEditKeys(localCharacter, remoteCharacter)
+                    if (keys.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
+                        return@runTransaction CharacterSyncWrite.Accepted(remote)
+                    }
+                    val effectiveKeys = if (
+                        remoteCharacter.updatedAt > localCharacter.lastSyncedAt &&
+                        remoteCharacter.lastEditedBy.isNotBlank() &&
+                        remoteCharacter.lastEditedBy != session.uid
+                    ) {
+                        val conflict = CharacterSyncConflict(localCharacter, remoteCharacter, remoteCharacter.updatedAt)
+                        if (conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS) {
+                            return@runTransaction CharacterSyncWrite.LegacyReview(conflict)
+                        }
+                        val remoteWins = automaticRemoteFieldIds(conflict, session.uid)
+                        keys.filterNotTo(mutableSetOf()) { key ->
+                            val group = key.substringBefore('/')
+                            group in remoteWins ||
+                                (group in setOf("powers", "mysticAbilities") && "abilities" in remoteWins) ||
+                                (group == "conditions" && "conditionInstances" in remoteWins)
+                        }
+                    } else {
+                        keys
+                    }
+                    if (effectiveKeys.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
+                        return@runTransaction CharacterSyncWrite.Accepted(remote)
+                    }
+                    val merged = commitCharacterEditKeys(remoteCharacter, localCharacter, effectiveKeys)
+                    val mergedRecord = merged.toRecord()
+                    transaction.set(reference, mergedRecord.optimizedForFirestore(migrationManager))
+                    return@runTransaction CharacterSyncWrite.Accepted(mergedRecord)
+                }
+                check(record.lastSyncedAt == 0L) { "The remote sheet was deleted; stale edits cannot recreate it." }
+                val local = normalizedRecord.toDomain()
+                val empty = Character(id = local.id, updatedAt = 0, dirty = false)
+                val initial = commitCharacterEditKeys(empty, local, characterEditKeys(empty, local)).toRecord()
+                transaction.set(reference, initial.optimizedForFirestore(migrationManager))
+                CharacterSyncWrite.Accepted(initial)
+            }.await()
+        } catch (error: FirebaseFirestoreException) {
+            if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ||
+                error.code == FirebaseFirestoreException.Code.ABORTED
+            ) {
+                val latestRemote = runCatching {
+                    reference.get().await().toObject(CharacterRecord::class.java)?.copy(id = reference.id)
+                }.getOrNull()?.let { migrationManager.migrate(it, markDirty = false) }
+                if (latestRemote != null) {
+                    val localCharacter = normalizedRecord.toDomain()
+                    val remoteCharacter = latestRemote.toDomain()
+                    if (characterConflictFields(localCharacter, remoteCharacter).isNotEmpty()) {
+                        return CharacterSyncConflict(localCharacter, remoteCharacter, latestRemote.updatedAt)
+                    }
+                }
+            }
+            throw error
+        }
+
+        return when (result) {
+            is CharacterSyncWrite.Accepted -> {
+                dao.acceptSnapshot(result.record, record.updatedAt, record)
+                val resultCid = normalizeCampaignId(result.record.campaignId)
+                val resultCampaignOwner = if (resultCid.isBlank()) null else campaignDao.campaign(resultCid)?.ownerId
+                hybrid?.mirrorCharacter(result.record, resultCampaignOwner)
+                null
+            }
+            is CharacterSyncWrite.LegacyReview -> result.conflict
+        }
     }
 
     override suspend fun resolveConflict(

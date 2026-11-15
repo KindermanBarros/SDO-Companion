@@ -25,6 +25,7 @@ interface CharacterRepository {
     suspend fun transferOwnership(session: UserSession, character: Character, owner: UserProfile)
     suspend fun delete(session: UserSession, character: Character)
     suspend fun sync(session: UserSession): List<CharacterSyncConflict>
+    suspend fun syncCharacter(session: UserSession, characterId: String): List<CharacterSyncConflict> = sync(session)
     suspend fun resolveConflict(
         session: UserSession,
         conflict: CharacterSyncConflict,

@@ -62,6 +62,7 @@ class HybridSheetSync(
     private val syncing = MutableStateFlow(false)
     private val errors = MutableStateFlow<String?>(null)
     private val connectionId = UUID.randomUUID().toString()
+    private val mirroredVersions = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, Long>>()
 
     fun status(session: UserSession): Flow<SheetSyncStatus> = combine(dao.observeOutbox(session.uid), syncing, errors) { rows, active, error ->
         SheetSyncStatus(rows.count { it.status == "PENDING" }, rows.count { it.status == "REJECTED" }, active, error ?: rows.firstOrNull { it.status == "REJECTED" }?.error)
@@ -202,9 +203,32 @@ class HybridSheetSync(
         characters.upsert(projected.copy(dirty = false).toRecord())
     }
 
-    fun mirrorCharacter(record: CharacterRecord, campaignOwnerId: String? = null) {
+    suspend fun removeCharacterMirror(sheetId: String, ownerId: String, campaignOwnerId: String? = null) {
+        if (sheetId.isBlank()) return
+        mirroredVersions.remove(sheetId)
+        if (ownerId.isNotBlank()) runCatching { dao.removeRoute(ownerId, sheetId) }
+        if (!campaignOwnerId.isNullOrBlank()) runCatching { dao.removeRoute(campaignOwnerId, sheetId) }
         val rtdb = database ?: return
+        if (ownerId == "demo-player") return
+        if (ownerId.isNotBlank()) {
+            runCatching { rtdb.getReference("userSheets/$ownerId/$sheetId").removeValue().await() }
+        }
+        if (!campaignOwnerId.isNullOrBlank()) {
+            runCatching { rtdb.getReference("userSheets/$campaignOwnerId/$sheetId").removeValue().await() }
+        }
+        runCatching { rtdb.getReference("sheetAggregates/$sheetId").removeValue().await() }
+    }
+
+    fun mirrorCharacter(record: CharacterRecord, campaignOwnerId: String? = null) {
         if (record.id.isBlank() || record.ownerId.isBlank() || record.ownerId == "demo-player") return
+        if (record.deleted) {
+            scope.launch { removeCharacterMirror(record.id, record.ownerId, campaignOwnerId) }
+            return
+        }
+        val versionKey = record.updatedAt to (record.fieldUpdatedAt["@revision"] ?: 0L)
+        if (mirroredVersions[record.id] == versionKey) return
+        val rtdb = database ?: return
+        mirroredVersions[record.id] = versionKey
         scope.launch {
             runCatching {
                 val permissions = buildMap {
@@ -214,15 +238,13 @@ class HybridSheetSync(
                     }
                 }
                 rtdb.getReference("sheetAggregates/${record.id}/control/permissions").setValue(permissions).await()
-                if (record.deleted) {
-                    rtdb.getReference("userSheets/${record.ownerId}/${record.id}").removeValue().await()
-                } else {
-                    rtdb.getReference("sheetAggregates/${record.id}/state").setValue(SheetWireCodec.state(record)).await()
-                    rtdb.getReference("userSheets/${record.ownerId}/${record.id}").setValue(true).await()
-                    if (!campaignOwnerId.isNullOrBlank()) {
-                        rtdb.getReference("userSheets/$campaignOwnerId/${record.id}").setValue(true).await()
-                    }
+                rtdb.getReference("sheetAggregates/${record.id}/state").setValue(SheetWireCodec.state(record)).await()
+                rtdb.getReference("userSheets/${record.ownerId}/${record.id}").setValue(true).await()
+                if (!campaignOwnerId.isNullOrBlank()) {
+                    rtdb.getReference("userSheets/$campaignOwnerId/${record.id}").setValue(true).await()
                 }
+            }.onFailure {
+                mirroredVersions.remove(record.id, versionKey)
             }
         }
     }
@@ -250,14 +272,35 @@ class HybridSheetSync(
                             launch {
                                 try {
                                     val incoming = SheetWireCodec.decode(SheetWireCodec.json(value.value)).copy(id = id, dirty = false)
+                                    if (incoming.deleted) {
+                                        val local = characters.get(id)
+                                        if (local != null && !local.dirty) characters.purge(id)
+                                        runCatching { rtdb.getReference("userSheets/${session.uid}/$id").removeValue() }
+                                        return@launch
+                                    }
                                     if (isRtdb(session.uid, id)) {
                                         db.withTransaction { accept(session.uid, id, incoming) }
                                         trySend(Unit)
                                     } else {
                                         val local = characters.get(id)
-                                        if (local == null || (!local.dirty && incoming.updatedAt > local.updatedAt)) {
-                                            characters.upsert(incoming.copy(lastSyncedAt = incoming.updatedAt))
-                                            trySend(Unit)
+                                        if (local == null) {
+                                            val firestoreDoc = runCatching {
+                                                FirebaseFirestore.getInstance().collection("characters").document(id).get().await()
+                                            }.getOrNull()
+                                            if (firestoreDoc != null && (!firestoreDoc.exists() || firestoreDoc.getBoolean("deleted") == true)) {
+                                                runCatching { rtdb.getReference("userSheets/${session.uid}/$id").removeValue() }
+                                                return@launch
+                                            }
+                                            if (firestoreDoc?.exists() == true) {
+                                                characters.upsert(incoming.copy(lastSyncedAt = incoming.updatedAt))
+                                                trySend(Unit)
+                                            }
+                                        } else if (!local.deleted && !local.dirty && incoming.updatedAt > local.updatedAt) {
+                                            val adopted = incoming.copy(lastSyncedAt = incoming.updatedAt)
+                                            if (adopted.copy(lastSyncedAt = local.lastSyncedAt) != local.copy(dirty = false)) {
+                                                characters.upsert(adopted)
+                                                trySend(Unit)
+                                            }
                                         }
                                     }
                                 } catch (error: Exception) { if (error is CancellationException) throw error }

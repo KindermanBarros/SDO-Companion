@@ -199,7 +199,7 @@ class AppViewModel(
                 if (session == null || session.uid == DEMO_USER_ID || !online) emptyFlow()
                 else repository.observeRemoteChanges(session, ids).catch { /* Ignore listener errors */ }
             }
-            .debounce(300)
+            .debounce(400)
             .onEach { startSync(initial = false) }
             .launchIn(scope)
     }
@@ -246,10 +246,10 @@ class AppViewModel(
         _loadState.value = CharacterLoadState()
     }
 
-    fun add() = runAction { session -> repository.create(session) }
+    fun add() = runCharacterAction { session -> repository.create(session).id }
 
-    fun addToCampaign(campaign: Campaign, ownerId: String) = runAction("Ficha criada na campanha") { session ->
-        repository.create(session, ownerId = ownerId, campaignId = campaign.id)
+    fun addToCampaign(campaign: Campaign, ownerId: String) = runCharacterAction("Ficha criada na campanha") { session ->
+        repository.create(session, ownerId = ownerId, campaignId = campaign.id).id
     }
 
     fun save(character: Character) {
@@ -374,19 +374,35 @@ class AppViewModel(
         repository.save(session, unlinked)
     }
 
-    fun setPlayerLocked(character: Character, locked: Boolean) = runAction(
+    fun setPlayerLocked(character: Character, locked: Boolean) = runCharacterAction(
         if (locked) "Bloqueio pessoal ativado" else "Bloqueio pessoal removido",
-    ) { session -> setPlayerLock(session, character, locked) }
+    ) { session ->
+        setPlayerLock(session, character, locked)
+        character.id
+    }
 
-    fun setHistorianLocked(character: Character, locked: Boolean) = runAction(
+    fun setHistorianLocked(character: Character, locked: Boolean) = runCharacterAction(
         if (locked) "Bloqueio do historiador ativado" else "Bloqueio do historiador removido",
-    ) { session -> setHistorianLock(session, character, locked) }
+    ) { session ->
+        setHistorianLock(session, character, locked)
+        character.id
+    }
 
-    fun transferOwner(character: Character, owner: UserProfile) = runAction(
+    fun transferOwner(character: Character, owner: UserProfile) = runCharacterAction(
         "Owner transferido para ${owner.firstName}",
-    ) { session -> transferCharacterOwner(session, character, owner) }
+    ) { session ->
+        transferCharacterOwner(session, character, owner)
+        character.id
+    }
 
-    fun delete(character: Character) = runAction("Personagem removido") { session -> deleteCharacter(session, character) }
+    fun delete(character: Character) {
+        autosaveJobs.remove(character.id)?.cancel()
+        pendingAutosaves.remove(character.id)
+        runCharacterAction("Personagem removido") { session ->
+            deleteCharacter(session, character)
+            character.id
+        }
+    }
 
     fun dismissMessage() { _message.value = null }
     fun sync() {
@@ -419,7 +435,7 @@ class AppViewModel(
         autosaveJobs.remove(character.id)?.cancel()
         scope.launch {
             flushPendingAutosave(character.id, scheduleRemote = false)
-            if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.SHEET_CLOSED)) startSync(initial = false)
+            if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.SHEET_CLOSED)) startCharacterSync(character.id)
         }
     }
 
@@ -440,7 +456,7 @@ class AppViewModel(
             localSaveMutex.withLock { saveCharacter(session, character) }
             _saveErrors.value = _saveErrors.value - character.id
             if (notify) _message.value = "Ficha salva localmente"
-            if (automaticSync) scheduleRemoteSync()
+            if (automaticSync) scheduleRemoteSync(character.id)
         } catch (cancelled: CancellationException) {
             // Superseding an autosave is normal while the player is editing.
             throw cancelled
@@ -471,12 +487,12 @@ class AppViewModel(
         remoteSyncDebounceJob = null
     }
 
-    private fun scheduleRemoteSync() {
+    private fun scheduleRemoteSync(characterId: String) {
         if (!shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.EDITING_IDLE)) return
         remoteSyncDebounceJob?.cancel()
         remoteSyncDebounceJob = scope.launch {
             delay(1_200)
-            startSync(initial = false)
+            startCharacterSync(characterId)
         }
     }
 
@@ -490,9 +506,22 @@ class AppViewModel(
                         it.local.id == conflict.local.id && it.remoteUpdatedAt == conflict.remoteUpdatedAt
                     }
                     _message.value = "Conflito resolvido"
-                    if (_conflicts.value.isEmpty() && automaticSync) startSync(initial = false)
+                    if (_conflicts.value.isEmpty() && automaticSync) startCharacterSync(conflict.local.id)
                 }
                 .onFailure { _message.value = userMessage(it, "Falha ao resolver conflito") }
+        }
+    }
+
+    private fun runCharacterAction(success: String? = null, action: suspend (UserSession) -> String) {
+        if (!ensureOnlineForMutation()) return
+        val session = currentSession.value ?: return
+        scope.launch {
+            runCatching { action(session) }
+                .onSuccess { characterId ->
+                    if (success != null) _message.value = success
+                    if (automaticSync) startCharacterSync(characterId)
+                }
+                .onFailure { _message.value = userMessage(it, "Falha na operação") }
         }
     }
 
@@ -506,6 +535,29 @@ class AppViewModel(
                     if (automaticSync) startSync(initial = false)
                 }
                 .onFailure { _message.value = userMessage(it, "Falha na operação") }
+        }
+    }
+
+    private fun startCharacterSync(characterId: String) {
+        val session = currentSession.value ?: return
+        if (session.uid == DEMO_USER_ID || characterId.isBlank()) return
+        if (!connectivityMonitor.isOnline.value) {
+            _loadState.value = CharacterLoadState()
+            return
+        }
+        if (syncJob?.isActive == true) {
+            syncRequested = true
+            return
+        }
+        scope.launch {
+            runCatching { repository.syncCharacter(session, characterId) }
+                .onSuccess { charConflicts ->
+                    _conflicts.value = _conflicts.value.filterNot { it.local.id == characterId } + charConflicts
+                }
+                .onFailure { error ->
+                    if (error is CancellationException) throw error
+                    android.util.Log.e("SDO_SYNC", "syncCharacter($characterId) failed", error)
+                }
         }
     }
 

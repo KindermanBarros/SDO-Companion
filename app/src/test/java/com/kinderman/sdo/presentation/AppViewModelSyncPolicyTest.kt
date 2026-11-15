@@ -159,6 +159,20 @@ class AppViewModelSyncPolicyTest {
         assertEquals(1, characterRepo.presenceCalls)
     }
 
+    @Test
+    fun deleteAndSaveTriggerSelectiveCharacterSyncInsteadOfFullSync() = runBlocking {
+        viewModel.setSession(session)
+        val initialFullSyncs = characterRepo.syncCount
+        val character = Character(id = "char-selective", ownerId = session.uid, name = "Kael")
+
+        viewModel.delete(character)
+        delay(50)
+
+        assertEquals(1, characterRepo.deleteCount)
+        assertEquals(listOf("char-selective"), characterRepo.syncedCharacterIds)
+        assertEquals(initialFullSyncs, characterRepo.syncCount)
+    }
+
     private class FakeConnectivityMonitor(initialOnline: Boolean) : ConnectivityMonitor {
         val onlineState = MutableStateFlow(initialOnline)
         override val isOnline = onlineState
@@ -179,6 +193,7 @@ class AppViewModelSyncPolicyTest {
         var saveCount = 0
         var deleteCount = 0
         var syncCount = 0
+        val syncedCharacterIds = mutableListOf<String>()
 
         override fun observe(session: UserSession): Flow<List<Character>> = flowOf(emptyList())
         override fun observeOne(id: String): Flow<Character?> = flowOf(null)
@@ -199,6 +214,11 @@ class AppViewModelSyncPolicyTest {
 
         override suspend fun sync(session: UserSession): List<CharacterSyncConflict> {
             syncCount++
+            return emptyList()
+        }
+
+        override suspend fun syncCharacter(session: UserSession, characterId: String): List<CharacterSyncConflict> {
+            syncedCharacterIds += characterId
             return emptyList()
         }
 
