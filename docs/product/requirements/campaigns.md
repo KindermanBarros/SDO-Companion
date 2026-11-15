@@ -81,3 +81,8 @@ BACKLOG-010 status: InDevReview; owner explicitly included consumption of Cinza.
 - Apply structured item MechanicalEffect operations, explicit ItemEffect.onConsume operations and linked Ash effects in the same transaction as counter expenditure. Failed effects or insufficient quantities commit nothing; repeating the operation key does not spend twice.
 - Ash ability costs use the same counter path with duplicate automatic effect execution suppressed. Passive equipment bonuses and free-text effects remain distinct; prose is not interpreted as an executable rule.
 - Room remains at version 30; onConsume is an optional appended inventory-codec field. No forbidden Hydrogen-owned screen or database-version file is changed. Validation is assembleDebug only; runtime/visual acceptance remains pending.
+
+
+## Account membership repair
+
+Owner request 2026-11-14; InDevReview. A successful invite join must be server-confirmed, preserve existing membership and linked sheets, and permit rejoining after leaving with a valid invite. Removed users require GM action. Linking a sheet as campaign GM/administrator enrolls or reactivates its owner as PLAYER and commits membership plus sheet together. Other players cannot enroll users or elevate roles. Existing orphan links can be repaired by unlinking/relinking as GM. No production bulk migration is performed. See [Memory](../../MEMORY.md) for validation and rollout limits; the new rules and authenticated client must be rolled out together.

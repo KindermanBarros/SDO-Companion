@@ -9,6 +9,8 @@ import com.kinderman.sdo.data.local.CampaignInviteRecord
 import com.kinderman.sdo.data.local.CampaignMemberRecord
 import com.kinderman.sdo.data.local.CampaignRecord
 import com.kinderman.sdo.data.local.CharacterDao
+import com.kinderman.sdo.data.local.CharacterRecord
+import com.kinderman.sdo.data.local.optimizedForFirestore
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.domain.model.Campaign
@@ -21,6 +23,9 @@ import com.kinderman.sdo.domain.model.CampaignState
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.domain.model.characterEditKeys
+import com.kinderman.sdo.domain.model.commitCharacterEditKeys
+import com.kinderman.sdo.domain.model.pendingCharacterEditKeys
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import java.security.SecureRandom
 import kotlinx.coroutines.async
@@ -214,58 +219,129 @@ class SyncedCampaignRepository(
         )
     }
 
-    override suspend fun joinByCode(session: UserSession, code: String): Campaign {
+    override suspend fun joinByCode(session: UserSession, code: String): Campaign = syncMutex.withLock {
         val preview = previewInvite(session, code) ?: error("Convite inválido, revogado ou expirado.")
-        if (preview.alreadyMember) return preview.campaign
-        val now = System.currentTimeMillis()
-        dao.upsertCampaign(preview.campaign.copy(dirty = false).toRecord())
-        dao.upsertInvite(preview.invite.copy(dirty = false).toRecord())
-        dao.upsertMember(
-            CampaignMember(
+        val store = Firebase.firestore
+        val inviteReference = store.collection(FirestoreCollections.CAMPAIGN_INVITES)
+            .document(preview.invite.id)
+        val memberReference = store.collection(FirestoreCollections.CAMPAIGN_MEMBERS)
+            .document(memberId(preview.campaign.id, session.uid))
+        val membership = store.runTransaction { transaction ->
+            val invite = transaction.get(inviteReference)
+                .toObject(CampaignInviteRecord::class.java)?.toDomain()
+            check(invite != null && invite.isUsable() && invite.campaignId == preview.campaign.id) {
+                "Convite inválido, revogado ou expirado."
+            }
+            val previous = transaction.get(memberReference)
+                .toObject(CampaignMemberRecord::class.java)?.toDomain()
+            if (previous?.isActive == true) return@runTransaction previous
+            check(previous?.state != CampaignMemberState.REMOVED) {
+                "Você foi removido desta campanha. Peça à Mestre para vincular sua ficha novamente."
+            }
+            val now = System.currentTimeMillis()
+            val joined = (previous ?: CampaignMember(
                 campaignId = preview.campaign.id,
                 userId = session.uid,
-                role = CampaignRole.PLAYER,
-                state = CampaignMemberState.ACTIVE,
                 joinedAt = now,
+            )).copy(
+                state = CampaignMemberState.ACTIVE,
+                joinedByInviteId = invite.id,
                 updatedAt = now,
-                joinedByInviteId = preview.invite.id,
-                dirty = true,
-            ).toRecord(),
-        )
-        return preview.campaign
+                dirty = false,
+                lastSyncedAt = now,
+            )
+            transaction.set(memberReference, joined.toRecord())
+            joined
+        }.await()
+        // Only expose a successful join after the server has authorized membership.
+        dao.upsertCampaign(preview.campaign.copy(dirty = false).toRecord())
+        dao.upsertInvite(preview.invite.copy(dirty = false).toRecord())
+        dao.upsertMember(membership.toRecord())
+        preview.campaign
     }
 
-    override suspend fun linkCharacter(session: UserSession, character: Character, campaign: Campaign): Character {
+    override suspend fun linkCharacter(
+        session: UserSession,
+        character: Character,
+        campaign: Campaign,
+    ): Character = syncMutex.withLock {
         val existing = requireActiveCampaign(campaign.id)
-        val member = dao.member(existing.id, session.uid)?.toDomain()
-        check(session.isAdmin || existing.ownerId == session.uid || member?.isActive == true) { "Você não participa desta campanha." }
-        val currentCampaignId = normalizeCampaignId(character.campaignId)
-        check(session.isAdmin || currentCampaignId.isBlank() || currentCampaignId == existing.id) {
-            "A ficha já está vinculada a outra campanha ativa."
+        val responsible = session.isAdmin || existing.ownerId == session.uid
+        check(responsible || character.ownerId == session.uid) {
+            "Somente o dono ou a Mestre da campanha pode vincular esta ficha."
         }
-        check(session.isAdmin || character.ownerId == session.uid) { "Somente o dono pode vincular esta ficha." }
-        if (session.isAdmin && currentCampaignId.isNotBlank() && currentCampaignId != existing.id) {
-            dao.member(currentCampaignId, character.ownerId)?.toDomain()?.let { previousMembership ->
-                if (character.id in previousMembership.characterIds) dao.upsertMember(
-                    previousMembership.copy(
-                        characterIds = previousMembership.characterIds - character.id,
-                        updatedAt = System.currentTimeMillis(),
-                        dirty = true,
-                    ).toRecord(),
-                )
+        val store = Firebase.firestore
+        val campaignReference = store.collection(FirestoreCollections.CAMPAIGNS).document(existing.id)
+        val sheetReference = store.collection(FirestoreCollections.CHARACTERS).document(character.id)
+        val members = store.collection(FirestoreCollections.CAMPAIGN_MEMBERS)
+        val memberReference = members.document(memberId(existing.id, character.ownerId))
+        val committed = store.runTransaction { transaction ->
+            val remoteCampaign = transaction.get(campaignReference).toObject(CampaignRecord::class.java)
+            check(remoteCampaign != null && remoteCampaign.state == CampaignState.ACTIVE.name) {
+                "Esta campanha não está ativa."
             }
-        }
-        val ownerMembership = dao.member(existing.id, character.ownerId)?.toDomain()
-        if (ownerMembership != null && character.id !in ownerMembership.characterIds) {
-            dao.upsertMember(
-                ownerMembership.copy(
-                    characterIds = ownerMembership.characterIds + character.id,
-                    updatedAt = System.currentTimeMillis(),
-                    dirty = true,
-                ).toRecord(),
+            val canEnroll = session.isAdmin || remoteCampaign.ownerId == session.uid
+            check(canEnroll || character.ownerId == session.uid) {
+                "Somente o dono ou a Mestre da campanha pode vincular esta ficha."
+            }
+            val remote = transaction.get(sheetReference).toObject(CharacterRecord::class.java)
+                ?.copy(id = character.id)?.toDomain()
+            check(remote == null || remote.ownerId == character.ownerId) {
+                "O dono da ficha mudou. Sincronize antes de vinculá-la."
+            }
+            check(remote != null || character.lastSyncedAt == 0L) {
+                "A ficha foi excluída online e não pode ser recriada por uma vinculação."
+            }
+            val currentCampaignId = normalizeCampaignId(remote?.campaignId ?: character.campaignId)
+            check(session.isAdmin || currentCampaignId.isBlank() || currentCampaignId == existing.id) {
+                "A ficha já está vinculada a outra campanha ativa."
+            }
+            val ownerMembership = transaction.get(memberReference)
+                .toObject(CampaignMemberRecord::class.java)?.toDomain()
+            check(canEnroll || ownerMembership?.isActive == true) { "Você não participa desta campanha." }
+            val previousReference = currentCampaignId.takeIf { it.isNotBlank() && it != existing.id }
+                ?.let { members.document(memberId(it, character.ownerId)) }
+            val previousMembership = previousReference?.let {
+                transaction.get(it).toObject(CampaignMemberRecord::class.java)?.toDomain()
+            }
+            val now = System.currentTimeMillis()
+            val membership = (ownerMembership ?: CampaignMember(
+                campaignId = existing.id,
+                userId = character.ownerId,
+                joinedAt = now,
+            )).copy(
+                role = CampaignRole.PLAYER,
+                state = CampaignMemberState.ACTIVE,
+                characterIds = (ownerMembership?.characterIds.orEmpty() + character.id).distinct(),
+                updatedAt = now,
+                dirty = false,
+                lastSyncedAt = now,
             )
-        }
-        return character.copy(campaignId = existing.id)
+            val local = character.copy(campaignId = existing.id, lastEditedBy = session.uid)
+            val baseline = remote ?: Character(id = character.id, updatedAt = 0, dirty = false)
+            val keys = if (remote == null) characterEditKeys(baseline, local)
+                else pendingCharacterEditKeys(character, remote) + "campaignId"
+            val linked = commitCharacterEditKeys(baseline, local, keys).toRecord()
+                .optimizedForFirestore()
+            val previous = previousMembership?.copy(
+                characterIds = previousMembership.characterIds - character.id,
+                updatedAt = now,
+                dirty = false,
+                lastSyncedAt = now,
+            )
+            // Membership and sheet become visible together; a denial commits neither.
+            transaction.set(memberReference, membership.toRecord())
+            transaction.set(sheetReference, linked)
+            if (previousReference != null && previous != null) {
+                transaction.set(previousReference, previous.toRecord())
+            }
+            Triple(linked, membership, previous)
+        }.await()
+        dao.upsertMember(committed.second.toRecord())
+        committed.third?.let { dao.upsertMember(it.toRecord()) }
+        characterDao.acceptSnapshot(committed.first, character.updatedAt, character.toRecord())
+        val linked = characterDao.get(character.id)?.toDomain() ?: committed.first.toDomain()
+        linked.copy(editingBase = linked)
     }
 
     override suspend fun unlinkCharacter(session: UserSession, character: Character): Character {

@@ -7,6 +7,12 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ## Active / In-Review Tasks
 
+### Campaign account membership repair — InDevReview
+
+Owner request; updated 2026-11-14 20:21 America/La_Paz. Players could receive local-only join success; rejoining a LEFT membership was rejected; GM linking only appended a sheet ID when the owner already had membership. Fixed joinByCode to commit/verify remote membership before caching success, preserve existing ACTIVE membership and original join time, and allow a valid invite to reactivate LEFT (not REMOVED). linkCharacter now transactionally commits the sheet, creates/reactivates its owner as PLAYER, preserves other character links/pending sheet edits, and cleans a previous membership on authorized admin moves. Rules validate canonical member IDs, authorize campaign-responsible enrollment, and evaluate membership after atomic writes. Invalid invites, role escalation, ownership tampering and partial commits remain rejected. Existing orphan links can be repaired by unlinking/relinking from the GM account; there is no bulk rewrite of production data.
+
+Validation: the two focused regressions failed against original rules, then passed; full Firestore emulator suite 39/39 PASS. Scoped diff check PASS. Android compilation is delegated to the authenticated-debug CI on publication; device/account runtime acceptance remains pending. No UI/dependency/Room schema changes. Agent handoff is InDevReview, not developer acceptance.
+
 BACKLOG-002, BACKLOG-003, BACKLOG-004, BACKLOG-008, BACKLOG-009, and BACKLOG-010 are InDevReview; BACKLOG-005 remains ToDo. Earlier delivered-task acceptance is unchanged.
 
 ---

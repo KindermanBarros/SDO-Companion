@@ -15,6 +15,7 @@ import {
   getDoc,
   getDocs,
   query,
+  runTransaction,
   setDoc,
   updateDoc,
   where,
@@ -664,4 +665,157 @@ test('administrator can delete an active campaign owned by another account', asy
   await assertSucceeds(batch.commit());
   const preserved = await assertSucceeds(getDoc(doc(db, 'characters', ids.character)));
   if (preserved.data().campaignId !== '') throw new Error('Character must survive detached');
+});
+
+
+test('player can rejoin after leaving with a valid invite without changing original join time', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+  const reference = doc(db, 'campaignMembers', `${ids.campaign}::${ids.player}`);
+  await assertSucceeds(updateDoc(reference, { state: 'LEFT', characterIds: [], updatedAt: 2 }));
+  await assertSucceeds(updateDoc(reference, {
+    state: 'ACTIVE', joinedByInviteId: ids.invite, updatedAt: 3,
+  }));
+  await assertSucceeds(getDoc(doc(db, 'campaigns', ids.campaign)));
+});
+
+test('GM linking an orphan campaign sheet atomically enrolls its owner and restores player access', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async context => {
+    await deleteDoc(doc(context.firestore(), 'campaignMembers', `${ids.campaign}::${ids.player}`));
+  });
+  const db = env.authenticatedContext(ids.owner).firestore();
+  await assertSucceeds(runTransaction(db, async transaction => {
+    const sheet = doc(db, 'characters', ids.character);
+    const member = doc(db, 'campaignMembers', `${ids.campaign}::${ids.player}`);
+    const snapshot = await transaction.get(sheet);
+    await transaction.get(member);
+    transaction.set(member, {
+      campaignId: ids.campaign, userId: ids.player, role: 'PLAYER', state: 'ACTIVE',
+      joinedAt: 3, updatedAt: 3, characterIds: [ids.character], joinedByInviteId: '',
+    });
+    transaction.set(sheet, {
+      ...snapshot.data(), campaignId: ids.campaign, updatedAt: 3,
+      fieldUpdatedAt: { '@protocol': 1, '@revision': 1 },
+    });
+  }));
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  await assertSucceeds(getDoc(doc(playerDb, 'campaigns', ids.campaign)));
+  await assertSucceeds(getDocs(query(collection(playerDb, 'characters'), where('campaignId', '==', ids.campaign))));
+  await assertSucceeds(updateDoc(doc(playerDb, 'characters', ids.character), {
+    name: 'Saved by owner', fieldUpdatedAt: { '@protocol': 1, '@revision': 2 },
+  }));
+});
+
+
+test('first invite join is confirmed transactionally and retry preserves existing character links', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.joiner).firestore();
+  const reference = doc(db, 'campaignMembers', `${ids.campaign}::${ids.joiner}`);
+  async function join() {
+    return runTransaction(db, async transaction => {
+      await transaction.get(doc(db, 'campaignInvites', ids.invite));
+      const member = await transaction.get(reference);
+      if (member.exists() && member.data().state === 'ACTIVE') return member.data();
+      const joined = {
+        campaignId: ids.campaign, userId: ids.joiner, role: 'PLAYER', state: 'ACTIVE',
+        joinedAt: 3, updatedAt: 3, characterIds: [], joinedByInviteId: ids.invite,
+      };
+      transaction.set(reference, joined);
+      return joined;
+    });
+  }
+  await assertSucceeds(join());
+  await assertSucceeds(getDoc(doc(db, 'campaigns', ids.campaign)));
+  await assertSucceeds(updateDoc(reference, { characterIds: ['own-sheet'], updatedAt: 4 }));
+  const retried = await assertSucceeds(join());
+  if (retried.characterIds[0] !== 'own-sheet' || retried.joinedAt !== 3) {
+    throw new Error('Retry reset existing membership');
+  }
+});
+
+test('invite rejoin rejects revoked, expired, unrelated, archived and removed memberships', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+  const reference = doc(db, 'campaignMembers', `${ids.campaign}::${ids.player}`);
+  await assertSucceeds(updateDoc(reference, { state: 'LEFT', characterIds: [], updatedAt: 2 }));
+  const rejoin = () => updateDoc(reference, { state: 'ACTIVE', updatedAt: 3 });
+  for (const fields of [{ revokedAt: 2 }, { expiresAt: 1 }, { campaignId: 'other-campaign' }]) {
+    await env.withSecurityRulesDisabled(async context => {
+      await updateDoc(doc(context.firestore(), 'campaignInvites', ids.invite), fields);
+    });
+    await assertFails(rejoin());
+    await seed();
+    await assertSucceeds(updateDoc(reference, { state: 'LEFT', characterIds: [], updatedAt: 2 }));
+  }
+  await env.withSecurityRulesDisabled(async context => {
+    await updateDoc(doc(context.firestore(), 'campaigns', ids.campaign), { state: 'ARCHIVED' });
+  });
+  await assertFails(rejoin());
+  await seed();
+  await env.withSecurityRulesDisabled(async context => {
+    await updateDoc(doc(context.firestore(), 'campaignMembers', `${ids.campaign}::${ids.player}`), {
+      state: 'REMOVED', characterIds: [],
+    });
+  });
+  await assertFails(rejoin());
+});
+
+test('GM enrollment only grants player membership and requires canonical document identity', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const fields = {
+    campaignId: ids.campaign, userId: ids.outsider, role: 'PLAYER', state: 'ACTIVE',
+    joinedAt: 3, updatedAt: 3, characterIds: [], joinedByInviteId: '',
+  };
+  await assertFails(setDoc(doc(db, 'campaignMembers', 'forged-id'), fields));
+  const member = doc(db, 'campaignMembers', `${ids.campaign}::${ids.outsider}`);
+  await assertFails(setDoc(member, { ...fields, role: 'HISTORIAN' }));
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  await assertFails(setDoc(doc(playerDb, 'campaignMembers', `${ids.campaign}::${ids.outsider}`), fields));
+  await assertSucceeds(setDoc(member, fields));
+});
+
+test('denied sheet link rolls back enrollment and preserves existing sheet data', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const member = doc(db, 'campaignMembers', `${ids.campaign}::${ids.outsider}`);
+  const batch = writeBatch(db);
+  batch.set(member, {
+    campaignId: ids.campaign, userId: ids.outsider, role: 'PLAYER', state: 'ACTIVE',
+    joinedAt: 3, updatedAt: 3, characterIds: [ids.character], joinedByInviteId: '',
+  });
+  batch.update(doc(db, 'characters', ids.character), { ownerId: ids.outsider });
+  await assertFails(batch.commit());
+  const membership = await getDoc(member);
+  if (membership.exists()) throw new Error('Denied link left partial membership');
+  const sheet = await getDoc(doc(db, 'characters', ids.character));
+  if (sheet.data().ownerId !== ids.player || sheet.data().name !== 'Personagem') {
+    throw new Error('Denied link changed sheet data');
+  }
+});
+
+test('administrator links a personal sheet and enrolls its owner in the same transaction', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async context => {
+    await updateDoc(doc(context.firestore(), 'characters', ids.character), { campaignId: '' });
+    await deleteDoc(doc(context.firestore(), 'campaignMembers', `${ids.campaign}::${ids.player}`));
+  });
+  const db = env.authenticatedContext('admin-uid', {
+    email: 'kindbarros@gmail.com', email_verified: true,
+  }).firestore();
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'campaignMembers', `${ids.campaign}::${ids.player}`), {
+    campaignId: ids.campaign, userId: ids.player, role: 'PLAYER', state: 'ACTIVE',
+    joinedAt: 3, updatedAt: 3, characterIds: [ids.character], joinedByInviteId: '',
+  });
+  batch.update(doc(db, 'characters', ids.character), {
+    campaignId: ids.campaign, fieldUpdatedAt: { '@protocol': 1, '@revision': 1 },
+  });
+  await assertSucceeds(batch.commit());
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+  await assertSucceeds(getDoc(doc(playerDb, 'campaigns', ids.campaign)));
+  await assertSucceeds(updateDoc(doc(playerDb, 'characters', ids.character), {
+    name: 'Owner edit', fieldUpdatedAt: { '@protocol': 1, '@revision': 2 },
+  }));
 });

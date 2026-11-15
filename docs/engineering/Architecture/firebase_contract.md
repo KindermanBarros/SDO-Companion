@@ -34,3 +34,6 @@ Character sync exchanges CharacterRecord documents; local dirty/deleted state an
 No Bluetooth UUIDs, camera protocol or custom HTTP endpoint contract exists in the inspected application.
 
 Sheet sync adds an optional fieldUpdatedAt map of conflict-group IDs to client-derived revision timestamps; absent metadata uses legacy document-time fallback. Local Room schema 30 persists it. Editor baselines are in-memory only and never serialized. [Synchronization policy](../../product/requirements/synchronization.md#sync-plan-003---latest-field-realtime-sheet-convergence) owns current guarantees and deferred work.
+
+
+Invite acceptance confirms `campaignMembers/{campaignId}::{uid}` on the server before caching success. GM sheet linking uses a Firestore transaction for both the character and its owner's PLAYER membership; target-membership authorization uses post-write state. Repeated joins preserve active memberships; LEFT can rejoin with a valid invite, while REMOVED requires GM enrollment. Existing character revision/intent merging remains authoritative. Roll out the matching rules with the client.
