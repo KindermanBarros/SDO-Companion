@@ -10,7 +10,7 @@ foreach ($dir in $transientDirs) {
     }
 }
 
-$transientFiles = @('firestore-debug.log')
+$transientFiles = @('firestore-debug.log', 'database-debug.log')
 foreach ($file in $transientFiles) {
     $target = Join-Path $rootPath $file
     if (Test-Path -LiteralPath $target) {

@@ -33,6 +33,7 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | BACKLOG-008 | Latest-field realtime sheet convergence | [Synchronization - SYNC-PLAN-003](requirements/synchronization.md#sync-plan-003---latest-field-realtime-sheet-convergence) | InDevReview; build passed, tests skipped by owner |
 | BACKLOG-009 | Server-ordered collaboration and per-item/list merges | [Synchronization follow-up](requirements/synchronization.md#remaining-collaboration-backlog) | InDevReview; build-only validation |
 | BACKLOG-010 | Canonical ammo/charge consumption and automated item effects | [Session follow-up](requirements/campaigns.md#session-follow-up) | InDevReview; build-only validation |
+| BACKLOG-011 | Hybrid RTDB sheet sync, durable offline commands and migration of all current sheets | [Synchronization](requirements/synchronization.md#sync-plan-004---hybrid-firebase-refactor) | InDevReview; implementation, rules, backend reducer, migration tooling & dry run verified |
 
 BACKLOG-001 selected by owner on 2026-11-14; implementation, security rules and tests accepted as Done by owner 2026-11-14 16:03; prior runtime verification limits preserved. [Memory](../MEMORY.md).
 BACKLOG-006 selected by owner on 2026-11-14; real-time snapshot sync, same-account auto-convergence, online-only mutations, read-only offline mode and connection banner accepted as Done by owner 2026-11-14 16:03. [Memory](../MEMORY.md).

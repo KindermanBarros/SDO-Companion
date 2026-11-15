@@ -54,6 +54,7 @@ class SyncedOperationsRepository(
     private val dao: OperationsDao,
     private val campaignDao: CampaignDao,
     private val migrationManager: CharacterMigrationManager = CharacterMigrationManager(),
+    private val hybrid: com.kinderman.sdo.data.sync.HybridSheetSync? = null,
 ) : OperationsRepository {
     override fun observeAudit(campaignIds: Set<String>): Flow<List<SessionOperation>> =
         dao.observeAudit(campaignIds.ifEmpty { setOf("") }).map { it.map(SessionOperationRecord::toDomain) }
@@ -72,6 +73,7 @@ class SyncedOperationsRepository(
             .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override suspend fun apply(session: UserSession, character: Character, command: SessionCommand): Boolean {
+        if (hybrid?.isRtdb(session.uid, character.id) == true) return hybrid.session(session, character, command)
         require(command.idempotencyKey.isNotBlank()) { "A ação precisa de uma chave de operação." }
         val localRecord = dao.character(character.id) ?: character.toRecord()
         val local = localRecord.toDomain()

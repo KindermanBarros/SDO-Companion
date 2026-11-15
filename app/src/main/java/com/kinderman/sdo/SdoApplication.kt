@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 class SdoApplication : Application() {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    lateinit var hybridSheetSync: com.kinderman.sdo.data.sync.HybridSheetSync
     lateinit var characterRepository: CharacterRepository
     lateinit var authRepository: AuthRepository
     lateinit var ownerRepository: OwnerRepository
@@ -75,15 +76,19 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_28_29,
                 AppDatabase.MIGRATION_29_30,
                 AppDatabase.MIGRATION_30_31,
+                AppDatabase.MIGRATION_31_32,
             )
             .build()
+        val realtimeDatabase = com.google.firebase.database.FirebaseDatabase.getInstance("https://sdo-companion-default-rtdb.firebaseio.com")
+        realtimeDatabase.setPersistenceEnabled(true)
+        hybridSheetSync = com.kinderman.sdo.data.sync.HybridSheetSync(this, db, applicationScope, realtimeDatabase)
         val characterMigrationManager = CharacterMigrationManager()
-        characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao(), characterMigrationManager)
+        characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao(), characterMigrationManager, hybridSheetSync)
         ownerRepository = SyncedOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
         campaignRepository = SyncedCampaignRepository(db.campaignDao(), db.characterDao())
         campaignJournalRepository = FirestoreCampaignJournalRepository()
-        operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao(), characterMigrationManager)
+        operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao(), characterMigrationManager, hybridSheetSync)
         authRepository = FirebaseAuthRepository()
         connectivityMonitor = AndroidConnectivityMonitor(this)
         applicationScope.launch {

@@ -103,6 +103,7 @@ android {
             signingConfigs.findByName("release")?.let { signingConfig = it }
         }
         release {
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             optimization {
                 enable = true
             }
@@ -130,6 +131,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.functions)
+    implementation(libs.gson)
+    implementation(libs.androidx.work.runtime)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)

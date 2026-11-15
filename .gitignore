@@ -9,7 +9,9 @@ app/google-services.json
 
 /firebase/node_modules/
 /firebase/package-lock.json
+/firebase/functions/node_modules/
 /firestore-debug.log
+/database-debug.log
 /.gradle-user-home/
 /.kotlin/
 /.harness-state/

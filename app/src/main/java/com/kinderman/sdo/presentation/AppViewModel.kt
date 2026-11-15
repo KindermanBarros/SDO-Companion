@@ -9,6 +9,7 @@ import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
 import com.kinderman.sdo.domain.model.CampaignMember
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.SheetSyncStatus
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserRole
@@ -102,6 +103,29 @@ class AppViewModel(
     }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
     private val _syncFailure = MutableStateFlow<String?>(null)
     val syncFailure = _syncFailure.asStateFlow()
+    val sheetSyncStatus = currentSession.flatMapLatest { session ->
+        session?.let(repository::observeSyncStatus) ?: flowOf(SheetSyncStatus())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), SheetSyncStatus())
+    val offlineEditableIds = currentSession.flatMapLatest { session ->
+        session?.let(repository::observeOfflineEditableIds) ?: flowOf(emptySet())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    fun observeFieldPresence(characterId: String) = currentSession.flatMapLatest { session ->
+        session?.let { repository.observeFieldPresence(it, characterId) } ?: flowOf(emptyMap())
+    }
+
+    fun setFieldPresence(characterId: String, fieldKey: String?, active: Boolean) {
+        val session = currentSession.value ?: return
+        scope.launch {
+            try {
+                repository.setFieldPresence(session, characterId, fieldKey, active)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Presence is advisory; a disconnected editor still retains its durable edits.
+            }
+        }
+    }
     private val _saveErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     val saveErrors = _saveErrors.asStateFlow()
     val message = _message.asStateFlow()
@@ -223,33 +247,26 @@ class AppViewModel(
     }
 
     fun save(character: Character) {
-        if (!ensureOnlineForMutation()) return
+        if (!ensureSheetMutation(character)) return
         autosaveJobs.remove(character.id)?.cancel()
         pendingAutosaves.remove(character.id)
         saveLocally(character, notify = true)
     }
 
     fun autosave(character: Character) {
-        if (!ensureOnlineForMutation()) return
-        pendingAutosaves[character.id] = character
-        autosaveJobs.remove(character.id)?.cancel()
-        val job = scope.launch {
-            delay(350)
-            flushPendingAutosave(character.id)
-        }
-        autosaveJobs[character.id] = job
-        job.invokeOnCompletion { if (autosaveJobs[character.id] === job) autosaveJobs.remove(character.id) }
+        if (!ensureSheetMutation(character)) return
+        // Persist every edit immediately; debounce network delivery in the durable sync layer.
+        saveLocally(character, notify = false)
     }
-
     fun changeItemState(character: Character, itemId: String, state: InventoryState) {
-        if (!ensureOnlineForMutation()) return
+        if (!ensureSheetMutation(character)) return
         val item = character.inventory.firstOrNull { it.id == itemId } ?: return
         if (state !in character.validInventoryStates(item)) return
         save(character.withItemInventoryState(itemId, state))
     }
 
     fun applySessionCommand(character: Character, command: SessionCommand) {
-        if (!ensureOnlineForMutation()) return
+        if (!ensureSheetMutation(character)) return
         val session = currentSession.value ?: return
         scope.launch {
             runCatching { operationsRepository.apply(session, character, command) }
@@ -387,7 +404,7 @@ class AppViewModel(
     }
 
     fun closeCharacter(character: Character) {
-        if (isMutationBlockedOffline(currentSession.value)) {
+        if (isMutationBlockedOffline(currentSession.value) && character.id !in offlineEditableIds.value) {
             autosaveJobs.remove(character.id)?.cancel()
             pendingAutosaves.remove(character.id)
             return
@@ -401,13 +418,18 @@ class AppViewModel(
     }
 
     private fun saveLocally(character: Character, notify: Boolean) {
+        val session = currentSession.value ?: return
         scope.launch {
-            persistLocally(character, notify)
+            persistLocally(character, notify, session)
         }
     }
 
-    private suspend fun persistLocally(character: Character, notify: Boolean) {
-        val session = currentSession.value ?: return
+    private suspend fun persistLocally(
+        character: Character,
+        notify: Boolean,
+        capturedSession: UserSession? = currentSession.value,
+    ) {
+        val session = capturedSession ?: return
         try {
             localSaveMutex.withLock { saveCharacter(session, character) }
             _saveErrors.value = _saveErrors.value - character.id
@@ -483,6 +505,13 @@ class AppViewModel(
 
     private fun isMutationBlockedOffline(session: UserSession?): Boolean =
         session != null && session.uid != DEMO_USER_ID && !connectivityMonitor.isOnline.value
+
+    private fun ensureSheetMutation(character: Character): Boolean {
+        val session = currentSession.value ?: return false
+        if (!isMutationBlockedOffline(session) || character.id in offlineEditableIds.value) return true
+        _message.value = "Conecte uma vez para preparar esta ficha para edição offline."
+        return false
+    }
 
     private fun ensureOnlineForMutation(): Boolean {
         val session = currentSession.value ?: return false

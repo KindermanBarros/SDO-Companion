@@ -104,10 +104,10 @@ private fun PersonalNoteCard(
                 )
                 RemoveButton(enabled, "Remover registro", onRemove)
             }
-            HudTextField("Título", note.title, enabled = enabled) {
+            CollaborativeSheetField("personalNotes/${note.id}/title", "Título", note.title, enabled = enabled) {
                 onValue(note.copy(title = it))
             }
-            HudTextField("Anotação", note.text, multiline = true, enabled = enabled) {
+            CollaborativeSheetField("personalNotes/${note.id}/text", "Anotação", note.text, multiline = true, enabled = enabled) {
                 onValue(note.copy(text = it))
             }
         }

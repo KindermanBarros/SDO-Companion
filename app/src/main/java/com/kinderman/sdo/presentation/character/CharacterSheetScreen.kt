@@ -91,6 +91,8 @@ fun CharacterSheetScreen(
     onHistorianLock: (Character, Boolean) -> Unit,
     onDelete: (Character) -> Unit,
     onOpenJournal: (() -> Unit)? = null,
+    fieldPresence: Map<String, String> = emptyMap(),
+    onFieldFocus: (String, Boolean) -> Unit = { _, _ -> },
 ) {
     if (character == null || session == null) {
         MissingCharacterState(sessionAvailable = session != null, snackbarHost = snackbarHost, onBack = onBack)
@@ -104,8 +106,8 @@ fun CharacterSheetScreen(
     var confirmHeritageReset by rememberSaveable(character.id) { mutableStateOf(false) }
     val undoSnackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    LaunchedEffect(character.updatedAt) {
-        if (shouldReplaceDraft(current.updatedAt, character.updatedAt)) current = character
+    LaunchedEffect(character) {
+        draft.accept(character)
     }
     val editable = !readOnly && CharacterAccessPolicy.canEdit(session, current, isCampaignHistorian)
     // Ownership survives campaign archive/locks: the owner can always remove their own sheet.
@@ -172,93 +174,97 @@ fun CharacterSheetScreen(
         dismissButton = { SdoTextButton(onClick = { confirmHeritageReset = false }) { Text("CANCELAR") } },
     )
 
-    HudBackground {
-        Scaffold(
-            containerColor = Color.Transparent,
-            snackbarHost = {
-                Box {
-                    snackbarHost()
-                    SnackbarHost(undoSnackbar)
-                }
-            },
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Column {
-                            if (!cybergrunge) AdaptiveSingleLineText(
-                                current.name.uppercase(),
-                                style = MaterialTheme.typography.titleMedium,
-                                minimumSize = 9.sp,
-                            )
-                            AdaptiveSingleLineText(
-                                text = when {
-                                    readOnly -> "Campanha arquivada · somente leitura"
-                                    session.isAdmin -> "Acesso administrativo"
-                                    isCampaignHistorian -> "Acesso da Mestre"
-                                    current.lockType == CharacterLock.HISTORIAN -> "Ficha bloqueada pela Mestre"
-                                    current.lockType == CharacterLock.PLAYER -> "Ficha com bloqueio pessoal"
-                                    else -> "Ficha editável"
-                                },
-                                color = if (readOnly || current.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.labelSmall,
-                                minimumSize = 7.sp,
-                            )
-                        }
-                    },
-                    navigationIcon = { SdoIconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
-                    actions = {
-                        SdoIconButton({ onOpenSession(current.id) }) {
-                            Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
-                        }
-                        if (onOpenJournal != null) SdoIconButton(onOpenJournal) {
-                            Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
-                        }
-                        if (session.isAdmin && !readOnly && !current.isInCreation) SdoIconButton({ confirmHeritageReset = true }) {
-                            Icon(Icons.Default.Refresh, "Reabrir escolha secreta de 30 PH", tint = MaterialTheme.colorScheme.secondary)
-                        }
-                        if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) SdoIconButton({
-                            onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
-                        }) {
-                            Icon(
-                                if (current.lockType == CharacterLock.HISTORIAN) Icons.Default.LockOpen else Icons.Default.Lock,
-                                if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador",
-                                tint = if (current.lockType == CharacterLock.HISTORIAN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            )
-                        } else if (canChangePlayerLock) SdoIconButton({
-                            onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
-                        }) {
-                            Icon(
-                                if (current.lockType == CharacterLock.PLAYER) Icons.Default.LockOpen else Icons.Default.Lock,
-                                if (current.lockType == CharacterLock.PLAYER) "Remover meu bloqueio" else "Impedir que eu apague esta ficha",
-                                tint = if (current.lockType == CharacterLock.PLAYER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            )
-                        }
-                        if (canDelete) SdoIconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = MaterialTheme.colorScheme.error) }
-                        if (editable) SdoIconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary) }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-                    ),
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalSheetFieldCollaboration provides SheetFieldCollaboration(fieldPresence, onFieldFocus),
+    ) {
+        HudBackground {
+            Scaffold(
+                containerColor = Color.Transparent,
+                snackbarHost = {
+                    Box {
+                        snackbarHost()
+                        SnackbarHost(undoSnackbar)
+                    }
+                },
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Column {
+                                if (!cybergrunge) AdaptiveSingleLineText(
+                                    current.name.uppercase(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    minimumSize = 9.sp,
+                                )
+                                AdaptiveSingleLineText(
+                                    text = when {
+                                        readOnly -> "Campanha arquivada · somente leitura"
+                                        session.isAdmin -> "Acesso administrativo"
+                                        isCampaignHistorian -> "Acesso da Mestre"
+                                        current.lockType == CharacterLock.HISTORIAN -> "Ficha bloqueada pela Mestre"
+                                        current.lockType == CharacterLock.PLAYER -> "Ficha com bloqueio pessoal"
+                                        else -> "Ficha editável"
+                                    },
+                                    color = if (readOnly || current.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    minimumSize = 7.sp,
+                                )
+                            }
+                        },
+                        navigationIcon = { SdoIconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                        actions = {
+                            SdoIconButton({ onOpenSession(current.id) }) {
+                                Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
+                            }
+                            if (onOpenJournal != null) SdoIconButton(onOpenJournal) {
+                                Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
+                            }
+                            if (session.isAdmin && !readOnly && !current.isInCreation) SdoIconButton({ confirmHeritageReset = true }) {
+                                Icon(Icons.Default.Refresh, "Reabrir escolha secreta de 30 PH", tint = MaterialTheme.colorScheme.secondary)
+                            }
+                            if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) SdoIconButton({
+                                onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
+                            }) {
+                                Icon(
+                                    if (current.lockType == CharacterLock.HISTORIAN) Icons.Default.LockOpen else Icons.Default.Lock,
+                                    if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador",
+                                    tint = if (current.lockType == CharacterLock.HISTORIAN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                )
+                            } else if (canChangePlayerLock) SdoIconButton({
+                                onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
+                            }) {
+                                Icon(
+                                    if (current.lockType == CharacterLock.PLAYER) Icons.Default.LockOpen else Icons.Default.Lock,
+                                    if (current.lockType == CharacterLock.PLAYER) "Remover meu bloqueio" else "Impedir que eu apague esta ficha",
+                                    tint = if (current.lockType == CharacterLock.PLAYER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                )
+                            }
+                            if (canDelete) SdoIconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = MaterialTheme.colorScheme.error) }
+                            if (editable) SdoIconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary) }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            titleContentColor = MaterialTheme.colorScheme.onBackground,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
+                        ),
+                    )
+                },
+            ) { padding ->
+                if (current.isInCreation) CharacterCreationWizard(
+                    character = current,
+                    catalog = catalog,
+                    enabled = editable,
+                    onChange = changeCharacter,
+                    modifier = Modifier.padding(padding),
+                ) else CharacterSheetPager(
+                    character = current,
+                    saveError = saveError,
+                    session = session,
+                    catalog = catalog,
+                    editable = editable,
+                    onChange = changeCharacter,
+                    modifier = Modifier.padding(padding).fillMaxSize(),
                 )
-            },
-        ) { padding ->
-            if (current.isInCreation) CharacterCreationWizard(
-                character = current,
-                catalog = catalog,
-                enabled = editable,
-                onChange = changeCharacter,
-                modifier = Modifier.padding(padding),
-            ) else CharacterSheetPager(
-                character = current,
-                saveError = saveError,
-                session = session,
-                catalog = catalog,
-                editable = editable,
-                onChange = changeCharacter,
-                modifier = Modifier.padding(padding).fillMaxSize(),
-            )
+            }
         }
     }
 }

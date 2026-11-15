@@ -37,3 +37,9 @@ Sheet sync adds an optional fieldUpdatedAt map of conflict-group IDs to client-d
 
 
 Invite acceptance confirms `campaignMembers/{campaignId}::{uid}` on the server before caching success. GM sheet linking uses a Firestore transaction for both the character and its owner's PLAYER membership; target-membership authorization uses post-write state. Repeated joins preserve active memberships; LEFT can rejoin with a valid invite, while REMOVED requires GM enrollment. Existing character revision/intent merging remains authoritative. Roll out the matching rules with the client.
+
+## Hybrid sheet synchronization (`BACKLOG-011` / `SYNC-PLAN-004`)
+
+- Firestore adds `sheetRoutes/{characterId}` (`FIRESTORE_ACTIVE | MIGRATING | RTDB_ACTIVE`, `accessEpoch`) and `sheetMigration/{characterId}` operational manifests. Legacy `characters/{characterId}` client writes are fenced by `firestore.rules` once a route leaves `FIRESTORE_ACTIVE`.
+- Firebase Realtime Database (`sdo-companion-default-rtdb`, rules in `firebase/database.rules.json`) stores migrated sheet aggregates under `sheetAggregates/{sheetId}/{control,state,sync,receipts,events}`, discovery indexes under `userSheets/{uid}/{sheetId}`, and connection-scoped field presence under `presence/{sheetId}/{uid}/{connectionId}`.
+- Clients never write `sheetAggregates` directly; `HybridSheetSync` queues sequenced commands in Room (`sheet_routes`, `sheet_outbox`, `sheet_sequences`, Room v32) and submits them to the callable function `submitSheetCommand` (`firebase/functions/src/index.js`), while `projectSheetAudit` projects committed RTDB events into `campaignAudit`.

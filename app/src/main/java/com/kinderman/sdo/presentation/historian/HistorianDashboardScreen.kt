@@ -190,6 +190,7 @@ fun HistorianDashboardScreen(
     deliveries: List<CampaignDelivery>,
     alertSettings: List<CampaignAlertSettings>,
     readOnly: Boolean = false,
+    offlineEditableIds: Set<String> = emptySet(),
     onApplyCommand: (Character, SessionCommand) -> Unit,
     onSaveLibrary: (CampaignLibraryEntry) -> Unit,
     onDuplicateLibrary: (CampaignLibraryEntry) -> Unit,
@@ -250,6 +251,8 @@ fun HistorianDashboardScreen(
     }.sortedByDescending(SessionOperation::createdAt)
     val selectedLibrary = library.filter { it.campaignId == selectedCampaignId }
     val operationWritable = selectedCampaign != null && !selectedCampaign.isArchived && !readOnly
+    fun canOperate(character: Character): Boolean = selectedCampaign != null && !selectedCampaign.isArchived &&
+        (!readOnly || character.id in offlineEditableIds)
     val libraryWritable = operationWritable
     val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
 
@@ -398,14 +401,14 @@ fun HistorianDashboardScreen(
                                 OperationalCharacterCard(
                                     character = character,
                                     telemetry = telemetryByCharacter.getValue(character),
-                                    writable = operationWritable,
+                                    writable = canOperate(character),
                                     onOpenSession = onOpenSession,
                                     onOpenSheet = onOpenSheet,
                                     onQuickAction = { preset ->
-                                        if (operationWritable) actionTarget = character to preset
+                                        if (canOperate(character)) actionTarget = character to preset
                                     },
                                     onRemoveCondition = { condition ->
-                                        if (operationWritable) {
+                                        if (canOperate(character)) {
                                             onApplyCommand(
                                                 character,
                                                 SessionCommand(
@@ -570,12 +573,12 @@ fun HistorianDashboardScreen(
     actionTarget?.let { (character, preset) ->
         QuickActionsDialog(
             character = character,
-            campaignCharacters = selectedCharacters,
+            campaignCharacters = selectedCharacters.filter(::canOperate),
             initialAction = preset,
-            writable = operationWritable,
+            writable = canOperate(character),
             onDismiss = { actionTarget = null },
             onApply = { commands ->
-                commands.forEach { (target, command) -> onApplyCommand(target, command) }
+                commands.forEach { (target, command) -> if (canOperate(target)) onApplyCommand(target, command) }
                 actionTarget = null
             },
         )

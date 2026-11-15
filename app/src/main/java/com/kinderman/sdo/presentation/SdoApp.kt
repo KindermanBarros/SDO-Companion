@@ -30,6 +30,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.kinderman.sdo.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -93,6 +95,8 @@ fun SdoApp(
     val characterLoadState by appViewModel.loadState.collectAsStateWithLifecycle()
     val offlineReadOnly by appViewModel.isOfflineReadOnly.collectAsStateWithLifecycle()
     val syncFailure by appViewModel.syncFailure.collectAsStateWithLifecycle()
+    val sheetSyncStatus by appViewModel.sheetSyncStatus.collectAsStateWithLifecycle()
+    val offlineEditableIds by appViewModel.offlineEditableIds.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
     val invitePreview by appViewModel.invitePreview.collectAsStateWithLifecycle()
     val message by appViewModel.message.collectAsStateWithLifecycle()
@@ -157,6 +161,9 @@ fun SdoApp(
         }
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { appViewModel.onAppForegrounded() }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        selectedId?.let { appViewModel.setFieldPresence(it, null, false) }
+    }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         appViewModel.onAppBackgrounded(changingConfiguration = activity.isChangingConfigurations)
     }
@@ -185,6 +192,11 @@ fun SdoApp(
 
         else -> {
             val selectedCharacter = characters.firstOrNull { it.id == selectedId }
+            val presenceFlow = remember(selectedId, appSession?.uid) {
+                appViewModel.observeFieldPresence(selectedId.orEmpty())
+            }
+            val fieldPresence by presenceFlow.collectAsStateWithLifecycle(initialValue = emptyMap())
+            val sheetReadOnlyOffline = offlineReadOnly && selectedId !in offlineEditableIds
             val selectedCampaignId = normalizeCampaignId(selectedCharacter?.campaignId.orEmpty())
             val archived = campaigns.firstOrNull { it.id == selectedCampaignId }?.isArchived == true
             val selectedCampaign = campaigns.firstOrNull { it.id == selectedCampaignId }
@@ -259,9 +271,11 @@ fun SdoApp(
                 AppSurface.SHEET -> CharacterSheetScreen(
                     character = selectedCharacter,
                     saveError = saveErrors[selectedCharacter?.id],
+                    fieldPresence = fieldPresence,
+                    onFieldFocus = { field, focused -> selectedId?.let { appViewModel.setFieldPresence(it, field, focused) } },
                     session = appSession,
                     catalog = catalog,
-                    readOnly = archived || offlineReadOnly,
+                    readOnly = archived || sheetReadOnlyOffline,
                     isCampaignHistorian = isCampaignHistorian,
                     isCampaignResponsible = isCampaignResponsible,
                     snackbarHost = { SnackbarHost(snackbar) },
@@ -299,7 +313,7 @@ fun SdoApp(
                     characters = characters,
                     selectedId = selectedId,
                     compact = preferences.density == SdoContentDensity.COMPACT,
-                    readOnly = archived || offlineReadOnly,
+                    readOnly = archived || sheetReadOnlyOffline,
                     onSelect = { navigate(AppSurface.SESSION, it) },
                     onOpenSheet = {
                         navigate(AppSurface.SHEET, it)
@@ -334,6 +348,7 @@ fun SdoApp(
                     deliveries = deliveries,
                     alertSettings = alertSettings,
                     readOnly = offlineReadOnly,
+                    offlineEditableIds = offlineEditableIds,
                     onApplyCommand = appViewModel::applySessionCommand,
                     onSaveLibrary = appViewModel::saveLibrary,
                     onDuplicateLibrary = appViewModel::duplicateLibrary,
@@ -383,10 +398,12 @@ fun SdoApp(
             }
                 }
                 }
-                if (offlineReadOnly || syncFailure != null) {
+                if (offlineReadOnly || syncFailure != null || sheetSyncStatus.pendingCount > 0 || sheetSyncStatus.rejectedCount > 0) {
                     SyncStatusBanner(
                         offlineReadOnly = offlineReadOnly,
                         syncFailure = syncFailure,
+                        status = sheetSyncStatus,
+                        offlineSheetsAvailable = offlineEditableIds.isNotEmpty(),
                         onRetry = appViewModel::sync,
                     )
                 }
@@ -413,22 +430,28 @@ fun SdoApp(
 private fun SyncStatusBanner(
     offlineReadOnly: Boolean,
     syncFailure: String?,
+    status: com.kinderman.sdo.domain.model.SheetSyncStatus,
+    offlineSheetsAvailable: Boolean,
     onRetry: () -> Unit,
 ) {
-    val containerColor = if (offlineReadOnly) {
+    val hasError = status.rejectedCount > 0 || syncFailure != null
+    val containerColor = if (!hasError) {
         MaterialTheme.colorScheme.surfaceVariant
     } else {
         MaterialTheme.colorScheme.errorContainer
     }
-    val contentColor = if (offlineReadOnly) {
+    val contentColor = if (!hasError) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
         MaterialTheme.colorScheme.onErrorContainer
     }
-    val bannerText = if (offlineReadOnly) {
-        "Modo offline · Somente leitura — reconecte para editar"
-    } else {
-        syncFailure.orEmpty()
+    val bannerText = when {
+        status.rejectedCount > 0 -> stringResource(R.string.sheet_sync_rejected, status.rejectedCount, status.lastError.orEmpty())
+        offlineReadOnly && offlineSheetsAvailable -> stringResource(R.string.sheet_sync_offline_editable)
+        offlineReadOnly -> stringResource(R.string.sheet_sync_offline_unavailable)
+        status.isSyncing -> stringResource(R.string.sheet_sync_sending, status.pendingCount)
+        status.pendingCount > 0 -> stringResource(R.string.sheet_sync_pending, status.pendingCount)
+        else -> syncFailure.orEmpty()
     }
     Surface(
         color = containerColor,
@@ -450,8 +473,6 @@ private fun SyncStatusBanner(
             Text(
                 text = bannerText,
                 style = MaterialTheme.typography.labelMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             SdoTextButton(onClick = onRetry) {

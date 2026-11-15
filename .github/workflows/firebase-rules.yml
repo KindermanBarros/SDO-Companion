@@ -35,7 +35,7 @@ env:
 
 jobs:
   validate:
-    name: Validate Firestore rules
+    name: Validate Firebase rules and sheet backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout selected version
@@ -59,8 +59,14 @@ jobs:
       - name: Install Firebase test dependencies
         run: npm install --prefix firebase --no-audit --no-fund
 
-      - name: Test Firestore rules in emulator
+      - name: Install sheet backend dependencies
+        run: npm ci --prefix firebase/functions --no-audit --no-fund
+
+      - name: Test Firebase rules in emulator
         run: npm --prefix firebase run test:rules
+
+      - name: Test sheet command and migration contracts
+        run: npm --prefix firebase/functions test
 
       - name: Archive validated Firebase configuration
         uses: actions/upload-artifact@v4
@@ -70,6 +76,7 @@ jobs:
             firebase.json
             firebase/firestore.rules
             firebase/firestore.indexes.json
+            firebase/database.rules.json
           retention-days: 90
 
   deploy:

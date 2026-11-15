@@ -128,7 +128,7 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
             Text(ability.effect.ifBlank { "Sem descrição." }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 2)
             return@SdoInsetCard
         }
-        else HudTextField("Nome", nameDraft, enabled = mechanicsEditable) { value ->
+        else CollaborativeSheetField("abilities/${ability.id}/name", "Nome", nameDraft, enabled = mechanicsEditable) { value ->
             nameDraft = value
             if (value.isNotBlank()) update(ability.copy(name = value))
         }
@@ -160,7 +160,7 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
                 update(ability.copy(mechanicalEffect = effect))
             } },
         )
-        HudTextField("Descrição", ability.effect, multiline = true, enabled = mechanicsEditable) { update(ability.copy(effect = it)) }
+        CollaborativeSheetField("abilities/${ability.id}/effect", "Descrição", ability.effect, multiline = true, enabled = mechanicsEditable) { update(ability.copy(effect = it)) }
         Text("OPERAÇÕES ESTRUTURADAS", color = MaterialTheme.colorScheme.primary)
         ability.mechanicalEffect?.operations.orEmpty().forEachIndexed { index, operation ->
             AbilityOperationEditor(operation, mechanicsEditable, { replacement ->

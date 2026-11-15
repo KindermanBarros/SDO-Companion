@@ -73,6 +73,23 @@ class AppViewModelSyncPolicyTest {
     }
 
     @Test
+    fun migratedSheetPersistsOfflineWhileCampaignAdministrationRemainsBlocked() = runBlocking {
+        characterRepo.offlineIds.value = setOf("char-1")
+        viewModel.setSession(session)
+        viewModel.offlineEditableIds.first { "char-1" in it }
+        connectivity.onlineState.value = false
+        val character = Character(id = "char-1", ownerId = session.uid, name = "Aria")
+
+        viewModel.autosave(character)
+        viewModel.applySessionCommand(character, SessionCommand(type = SessionOperationType.MONEY, amount = 5))
+        viewModel.createCampaign("Offline", "")
+
+        assertEquals(1, characterRepo.saveCount)
+        assertEquals(1, operationsRepo.applyCount)
+        assertEquals(0, campaignRepo.createCount)
+    }
+
+    @Test
     fun offlineAuthenticatedSessionBlocksMutationsWithoutQueuingEdits() = runBlocking {
         viewModel.setSession(session)
         connectivity.onlineState.value = false
@@ -136,6 +153,8 @@ class AppViewModelSyncPolicyTest {
     }
 
     private class FakeCharacterRepository : CharacterRepository {
+        val offlineIds = MutableStateFlow<Set<String>>(emptySet())
+        override fun observeOfflineEditableIds(session: UserSession): Flow<Set<String>> = offlineIds
         val remoteChanges = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
         var saveCount = 0
         var deleteCount = 0

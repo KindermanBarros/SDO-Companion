@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sheet_sync_rejected">%1$d alteração(ões) não aceita(s). %2$s</string>
+    <string name="sheet_sync_offline_editable">Modo offline · edite as fichas disponíveis; alterações ficam salvas no aparelho.</string>
+    <string name="sheet_sync_offline_unavailable">Modo offline · conecte uma vez para preparar suas fichas para edição offline.</string>
+    <string name="sheet_sync_sending">Sincronizando %1$d alteração(ões)…</string>
+    <string name="sheet_sync_pending">%1$d alteração(ões) salva(s) no aparelho · aguardando confirmação.</string>
+    <string name="sheet_field_presence">%1$s está editando este campo</string>
+</resources>

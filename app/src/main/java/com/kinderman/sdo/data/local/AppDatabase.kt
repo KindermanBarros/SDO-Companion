@@ -9,6 +9,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [
         CharacterRecord::class,
+        SheetRouteRecord::class,
+        SheetOutboxRecord::class,
+        SheetSequenceRecord::class,
         OwnerRecord::class,
         CatalogEntryRecord::class,
         CampaignRecord::class,
@@ -19,11 +22,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 31,
+    version = 32,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun sheetSyncDao(): SheetSyncDao
     abstract fun characterDao(): CharacterDao
     abstract fun ownerDao(): OwnerDao
     abstract fun catalogDao(): CatalogDao
@@ -31,6 +35,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun operationsDao(): OperationsDao
 
     companion object {
+        val MIGRATION_31_32 = object : Migration(31, 32) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS sheet_routes (accountId TEXT NOT NULL, sheetId TEXT NOT NULL, status TEXT NOT NULL, accessEpoch INTEGER NOT NULL, revision INTEGER NOT NULL, confirmedJson TEXT NOT NULL, PRIMARY KEY(accountId, sheetId))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS sheet_outbox (operationId TEXT NOT NULL PRIMARY KEY, accountId TEXT NOT NULL, sheetId TEXT NOT NULL, deviceId TEXT NOT NULL, sequence INTEGER NOT NULL, envelopeJson TEXT NOT NULL, optimisticJson TEXT NOT NULL, status TEXT NOT NULL, error TEXT NOT NULL)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS sheet_sequences (accountId TEXT NOT NULL, sheetId TEXT NOT NULL, deviceId TEXT NOT NULL, nextSequence INTEGER NOT NULL, PRIMARY KEY(accountId, sheetId))")
+            }
+        }
         val MIGRATION_30_31 = object : Migration(30, 31) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE characters ADD COLUMN photoUri TEXT NOT NULL DEFAULT ''")

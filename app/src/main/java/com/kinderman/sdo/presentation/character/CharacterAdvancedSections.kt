@@ -96,11 +96,11 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
     var selecting by remember { mutableStateOf(false) }
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("07", "Caminho")
-        HudTextField("Nome do Caminho", character.pathName, enabled = enabled) {
+        CollaborativeSheetField("path/name", "Nome do Caminho", character.pathName, enabled = enabled) {
             onChange(character.copy(pathName = it))
         }
         AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
-        HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
+        CollaborativeSheetField("path/motto", "Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
         SdoMetadataText("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathKeywords.forEachIndexed { index, keyword ->
             HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) { onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it))) }
@@ -187,7 +187,7 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             Text("ITEM ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             RemoveButton(enabled, "Remover item", onRemove)
         }
-        HudTextField("Nome", item.name, enabled = enabled) { onValue(item.copy(name = it)) }
+        CollaborativeSheetField("inventory/${item.id}/name", "Nome", item.name, enabled = enabled) { onValue(item.copy(name = it)) }
         TwoFields(
             { ChoiceField("Estado", item.inventoryState, InventoryState.entries, enabled, it, InventoryState::label) { value -> onValue(item.withInventoryState(value)) } },
             { IntegerField("Carga", item.load, enabled, it) { value -> onValue(item.copy(load = value.coerceAtLeast(0))) } },
@@ -200,7 +200,7 @@ private fun InventoryEditor(index: Int, item: InventoryItem, enabled: Boolean, o
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodySmall,
         )
-        HudTextField("Efeito", item.effect, multiline = true, enabled = enabled) { onValue(item.copy(effect = it)) }
+        CollaborativeSheetField("inventory/${item.id}/effect", "Efeito", item.effect, multiline = true, enabled = enabled) { onValue(item.copy(effect = it)) }
     }
 }
 
@@ -512,7 +512,7 @@ private fun MysticEditor(
             { IntegerField(if (ability.type.equals("Runa", true)) "Tempo de inscrição" else "Tempo de execução", ability.timeValue, enabled, it) { value -> onValue(ability.copy(timeValue = value.coerceAtLeast(0))) } },
             { ChoiceField("Unidade", ability.timeUnit, AbilityTimeUnit.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(timeUnit = value)) } },
         )
-        HudTextField("Alvo / Área (opcional)", ability.targetArea, enabled = enabled) { onValue(ability.copy(targetArea = it)) }
+        CollaborativeSheetField("mysticAbilities/${ability.id}/targetArea", "Alvo / Área (opcional)", ability.targetArea, enabled = enabled) { onValue(ability.copy(targetArea = it)) }
         TwoFields(
             { ChoiceField("Duração", ability.durationType, AbilityDuration.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(durationType = value, duration = value.label)) } },
             { ChoiceField("Resistência", ability.resistance, AbilityResistance.entries, enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(resistance = value)) } },
@@ -524,7 +524,7 @@ private fun MysticEditor(
             { IntegerField("Tempo de duração", ability.durationValue, enabled, it) { value -> onValue(ability.copy(durationValue = value.coerceAtLeast(0))) } },
             { ChoiceField("Unidade da duração", ability.durationUnit, listOf(AbilityTimeUnit.HOURS, AbilityTimeUnit.DAYS), enabled, it, display = { value -> value.label }) { value -> onValue(ability.copy(durationUnit = value)) } },
         )
-        HudTextField("Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
+        CollaborativeSheetField("mysticAbilities/${ability.id}/effect", "Efeito", ability.effect, multiline = true, enabled = enabled) { onValue(ability.copy(effect = it)) }
         AbilityAvailabilityEditor(ability.favorite, ability.available, enabled) { favorite, available ->
             onValue(ability.copy(favorite = favorite, available = available))
         }
@@ -628,6 +628,6 @@ internal fun AbilityAvailabilityEditor(
 internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
     TechPanel {
         SectionHeader("15", "História")
-        HudTextField("História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
+        CollaborativeSheetField("story", "História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
     }
 }

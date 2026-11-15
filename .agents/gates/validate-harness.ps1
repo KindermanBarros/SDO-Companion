@@ -88,7 +88,7 @@ foreach ($relative in @('AGENTS.md','docs/engineering/ARCHITECTURE.md','docs/eng
 }
 if (Test-Path -LiteralPath (Join-Path $rootPath 'setup_prompt.md')) { Add-Issue 'Stale setup input: setup_prompt.md' }
 if (Test-Path -LiteralPath (Join-Path $rootPath '.scratch')) { Add-Issue 'Scratch must be removed before handoff/commit' }
-foreach ($junk in @('.harness-state','.qa-artifacts','.codex-attachments','.worktrees','firestore-debug.log')) {
+foreach ($junk in @('.harness-state','.qa-artifacts','.codex-attachments','.worktrees','firestore-debug.log','database-debug.log')) {
     if (Test-Path -LiteralPath (Join-Path $rootPath $junk)) {
         Add-Issue "Pre-commit cleanup required (run tools/pre-commit-cleanup.ps1): $junk"
     }
