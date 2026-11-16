@@ -53,12 +53,13 @@ fun Character.withFieldEditTimes(previous: Character?, at: Long = updatedAt): Ch
     }
     val times = inherited + fieldUpdatedAt
     val editAt = if (changed.isEmpty()) at else maxOf(at, Math.addExact(previous?.updatedAt ?: 0L, 1L))
+    val baseRevision = times["@baseRevision"] ?: previous?.serverSyncRevision() ?: 0L
     val updatedTimes = times + changed.associate { field ->
         field.id to maxOf(editAt, Math.addExact(times[field.id] ?: 0L, 1L))
-    }
+    } + if (editKeys.isNotEmpty() && "@baseRevision" !in times) mapOf("@baseRevision" to baseRevision) else emptyMap()
     check((previous?.updatedAt ?: 0L) < Long.MAX_VALUE) { "Sheet timestamp overflow" }
     return copy(fieldUpdatedAt = updatedTimes, updatedAt = maxOf(at, updatedTimes.filterKeys { !it.startsWith("@") }.values.maxOrNull() ?: 0L))
-        .withPendingEditKeys(editKeys)
+        .withPendingEditKeys(editKeys, editAt)
 }
 
 fun characterConflictFields(local: Character, remote: Character): List<CharacterConflictField> = buildList {

@@ -22,6 +22,7 @@ import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.ConnectivityMonitor
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import com.kinderman.sdo.domain.repository.RemoteSyncEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -130,7 +131,7 @@ class AppViewModelSyncPolicyTest {
         viewModel.setSession(session)
         val initialSyncs = characterRepo.syncCount
 
-        characterRepo.remoteChanges.emit(Unit)
+        characterRepo.remoteChanges.emit(RemoteSyncEvent(fromCloud = true, fullSync = true))
         delay(450)
 
         assertTrue(characterRepo.syncCount > initialSyncs)
@@ -173,6 +174,64 @@ class AppViewModelSyncPolicyTest {
         assertEquals(initialFullSyncs, characterRepo.syncCount)
     }
 
+    @Test
+    fun localEditsManualSyncAndUploadAcksDoNotTriggerCloudSyncingAnimation() = runBlocking {
+        val observedCloudSyncStates = mutableListOf<Boolean>()
+        val vm = AppViewModel(
+            repository = characterRepo,
+            ownerRepository = FakeOwnerRepository(),
+            catalogRepository = FakeCatalogRepository(),
+            campaignRepository = campaignRepo,
+            operationsRepository = operationsRepo,
+            connectivityMonitor = connectivity,
+            externalScope = testScope,
+            cloudSyncPulseMs = 0L,
+        )
+        vm.setSession(session)
+        observedCloudSyncStates += vm.loadState.value.cloudSyncing
+
+        vm.save(Character(id = "char-1", ownerId = session.uid, name = "Aria"))
+        observedCloudSyncStates += vm.loadState.value.cloudSyncing
+
+        vm.sync()
+        observedCloudSyncStates += vm.loadState.value.cloudSyncing
+
+        // Simulated upload acknowledgement / unchanged snapshot
+        characterRepo.remoteChanges.emit(RemoteSyncEvent(fromCloud = false, characterIds = setOf("char-1"), fullSync = false))
+        delay(50)
+        observedCloudSyncStates += vm.loadState.value.cloudSyncing
+
+        assertTrue(observedCloudSyncStates.none { it })
+    }
+
+    @Test
+    fun committedCloudChangeTriggersCloudSyncingAndSelectiveCharacterSync() = runBlocking {
+        var cloudSyncingDuringFetch = false
+        val vm = AppViewModel(
+            repository = characterRepo,
+            ownerRepository = FakeOwnerRepository(),
+            catalogRepository = FakeCatalogRepository(),
+            campaignRepository = campaignRepo,
+            operationsRepository = operationsRepo,
+            connectivityMonitor = connectivity,
+            externalScope = testScope,
+            cloudSyncPulseMs = 0L,
+        )
+        vm.setSession(session)
+        val initialFullSyncs = characterRepo.syncCount
+        characterRepo.onSyncCharacter = { _ ->
+            cloudSyncingDuringFetch = vm.loadState.value.cloudSyncing
+        }
+
+        characterRepo.remoteChanges.emit(RemoteSyncEvent(fromCloud = true, characterIds = setOf("char-remote"), fullSync = false))
+        delay(50)
+
+        assertTrue(cloudSyncingDuringFetch)
+        assertFalse(vm.loadState.value.cloudSyncing)
+        assertEquals(listOf("char-remote"), characterRepo.syncedCharacterIds)
+        assertEquals(initialFullSyncs, characterRepo.syncCount)
+    }
+
     private class FakeConnectivityMonitor(initialOnline: Boolean) : ConnectivityMonitor {
         val onlineState = MutableStateFlow(initialOnline)
         override val isOnline = onlineState
@@ -189,15 +248,16 @@ class AppViewModelSyncPolicyTest {
                 if (throwOnPresence) throw IllegalStateException("Firebase Database error: Permission denied")
                 emit(emptyMap())
             }
-        val remoteChanges = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
+        val remoteChanges = MutableSharedFlow<RemoteSyncEvent>(extraBufferCapacity = 4)
         var saveCount = 0
         var deleteCount = 0
         var syncCount = 0
         val syncedCharacterIds = mutableListOf<String>()
+        var onSyncCharacter: (suspend (String) -> Unit)? = null
 
         override fun observe(session: UserSession): Flow<List<Character>> = flowOf(emptyList())
         override fun observeOne(id: String): Flow<Character?> = flowOf(null)
-        override fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = remoteChanges
+        override fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<RemoteSyncEvent> = remoteChanges
         override suspend fun create(session: UserSession, ownerId: String, campaignId: String): Character =
             Character(ownerId = ownerId, campaignId = campaignId)
 
@@ -219,6 +279,7 @@ class AppViewModelSyncPolicyTest {
 
         override suspend fun syncCharacter(session: UserSession, characterId: String): List<CharacterSyncConflict> {
             syncedCharacterIds += characterId
+            onSyncCharacter?.invoke(characterId)
             return emptyList()
         }
 

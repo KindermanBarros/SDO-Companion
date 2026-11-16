@@ -63,6 +63,10 @@ class HybridSheetSync(
     private val errors = MutableStateFlow<String?>(null)
     private val connectionId = UUID.randomUUID().toString()
     private val mirroredVersions = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, Long>>()
+    private val mirroredStates = java.util.concurrent.ConcurrentHashMap<String, Map<String, Any?>>()
+    private val mirroredPermissions = java.util.concurrent.ConcurrentHashMap<String, Map<String, Any>>()
+    private val mirroredUserSheets = java.util.concurrent.ConcurrentHashMap<String, Pair<String, String?>>()
+    private val routeStatusCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
     fun status(session: UserSession): Flow<SheetSyncStatus> = combine(dao.observeOutbox(session.uid), syncing, errors) { rows, active, error ->
         SheetSyncStatus(rows.count { it.status == "PENDING" }, rows.count { it.status == "REJECTED" }, active, error ?: rows.firstOrNull { it.status == "REJECTED" }?.error)
@@ -76,11 +80,18 @@ class HybridSheetSync(
         if (accountId.isBlank() || accountId == "demo-player" || sheetId.isBlank()) return false
         val local = dao.route(accountId, sheetId)
         if (local?.status == "RTDB_ACTIVE") return true
+        if (local?.status == "FIRESTORE_ACTIVE" && routeStatusCache[sheetId] == "FIRESTORE_ACTIVE") return false
         val firestore = runCatching { FirebaseFirestore.getInstance() }.getOrNull() ?: return false
         val route = runCatching { firestore.collection("sheetRoutes").document(sheetId).get().await() }.getOrNull()
-            ?: return false
+            ?: run {
+                // Avoid re-querying missing sheetRoutes on every save/sync in Spark deployments.
+                dao.upsertRoute((local ?: SheetRouteRecord(accountId, sheetId, "FIRESTORE_ACTIVE")).copy(status = "FIRESTORE_ACTIVE"))
+                routeStatusCache[sheetId] = "FIRESTORE_ACTIVE"
+                return false
+            }
         val status = route.getString("status") ?: "FIRESTORE_ACTIVE"
         dao.upsertRoute((local ?: SheetRouteRecord(accountId, sheetId, status)).copy(status = status, accessEpoch = route.getLong("accessEpoch") ?: 1))
+        routeStatusCache[sheetId] = status
         check(status != "MIGRATING") { "Esta ficha está sendo migrada. Tente novamente em instantes." }
         return status == "RTDB_ACTIVE"
     }
@@ -206,6 +217,10 @@ class HybridSheetSync(
     suspend fun removeCharacterMirror(sheetId: String, ownerId: String, campaignOwnerId: String? = null) {
         if (sheetId.isBlank()) return
         mirroredVersions.remove(sheetId)
+        mirroredStates.remove(sheetId)
+        mirroredPermissions.remove(sheetId)
+        mirroredUserSheets.remove(sheetId)
+        routeStatusCache.remove(sheetId)
         if (ownerId.isNotBlank()) runCatching { dao.removeRoute(ownerId, sheetId) }
         if (!campaignOwnerId.isNullOrBlank()) runCatching { dao.removeRoute(campaignOwnerId, sheetId) }
         val rtdb = database ?: return
@@ -237,11 +252,35 @@ class HybridSheetSync(
                         put(campaignOwnerId, mapOf("read" to true, "write" to true, "manage" to true))
                     }
                 }
-                rtdb.getReference("sheetAggregates/${record.id}/control/permissions").setValue(permissions).await()
-                rtdb.getReference("sheetAggregates/${record.id}/state").setValue(SheetWireCodec.state(record)).await()
-                rtdb.getReference("userSheets/${record.ownerId}/${record.id}").setValue(true).await()
-                if (!campaignOwnerId.isNullOrBlank()) {
-                    rtdb.getReference("userSheets/$campaignOwnerId/${record.id}").setValue(true).await()
+                if (mirroredPermissions[record.id] != permissions) {
+                    rtdb.getReference("sheetAggregates/${record.id}/control/permissions").setValue(permissions).await()
+                    mirroredPermissions[record.id] = permissions
+                }
+                val nextState = SheetWireCodec.state(record)
+                val prevState = mirroredStates[record.id]
+                if (prevState == null) {
+                    rtdb.getReference("sheetAggregates/${record.id}/state").setValue(nextState).await()
+                } else {
+                    val diff = buildMap<String, Any?> {
+                        nextState.forEach { (key, value) ->
+                            if (prevState[key] != value) put(key, value)
+                        }
+                        prevState.keys.forEach { key ->
+                            if (key !in nextState) put(key, null)
+                        }
+                    }
+                    if (diff.isNotEmpty()) {
+                        rtdb.getReference("sheetAggregates/${record.id}/state").updateChildren(diff).await()
+                    }
+                }
+                mirroredStates[record.id] = nextState
+                val userKey = record.ownerId to campaignOwnerId
+                if (mirroredUserSheets[record.id] != userKey) {
+                    rtdb.getReference("userSheets/${record.ownerId}/${record.id}").setValue(true).await()
+                    if (!campaignOwnerId.isNullOrBlank()) {
+                        rtdb.getReference("userSheets/$campaignOwnerId/${record.id}").setValue(true).await()
+                    }
+                    mirroredUserSheets[record.id] = userKey
                 }
             }.onFailure {
                 mirroredVersions.remove(record.id, versionKey)
@@ -249,7 +288,7 @@ class HybridSheetSync(
         }
     }
 
-    fun observe(session: UserSession): Flow<Unit> = callbackFlow {
+    fun observe(session: UserSession): Flow<String> = callbackFlow {
         val rtdb = database ?: run { awaitClose {}; return@callbackFlow }
         if (session.uid.isBlank() || session.uid == "demo-player") {
             awaitClose {}
@@ -272,15 +311,20 @@ class HybridSheetSync(
                             launch {
                                 try {
                                     val incoming = SheetWireCodec.decode(SheetWireCodec.json(value.value)).copy(id = id, dirty = false)
+                                    val incomingVersion = incoming.updatedAt to (incoming.fieldUpdatedAt["@revision"] ?: 0L)
+                                    if (mirroredVersions[id] == incomingVersion) return@launch
                                     if (incoming.deleted) {
                                         val local = characters.get(id)
-                                        if (local != null && !local.dirty) characters.purge(id)
+                                        if (local != null && !local.dirty) {
+                                            characters.purge(id)
+                                            trySend(id)
+                                        }
                                         runCatching { rtdb.getReference("userSheets/${session.uid}/$id").removeValue() }
                                         return@launch
                                     }
                                     if (isRtdb(session.uid, id)) {
                                         db.withTransaction { accept(session.uid, id, incoming) }
-                                        trySend(Unit)
+                                        trySend(id)
                                     } else {
                                         val local = characters.get(id)
                                         if (local == null) {
@@ -293,13 +337,18 @@ class HybridSheetSync(
                                             }
                                             if (firestoreDoc?.exists() == true) {
                                                 characters.upsert(incoming.copy(lastSyncedAt = incoming.updatedAt))
-                                                trySend(Unit)
+                                                trySend(id)
                                             }
-                                        } else if (!local.deleted && !local.dirty && incoming.updatedAt > local.updatedAt) {
-                                            val adopted = incoming.copy(lastSyncedAt = incoming.updatedAt)
-                                            if (adopted.copy(lastSyncedAt = local.lastSyncedAt) != local.copy(dirty = false)) {
-                                                characters.upsert(adopted)
-                                                trySend(Unit)
+                                        } else {
+                                            val localRev = local.fieldUpdatedAt["@revision"] ?: 0L
+                                            val incomingRev = incoming.fieldUpdatedAt["@revision"] ?: 0L
+                                            val isNewer = incomingRev > localRev || (incomingRev == localRev && incoming.updatedAt > local.updatedAt)
+                                            if (!local.deleted && !local.dirty && isNewer) {
+                                                val adopted = incoming.copy(lastSyncedAt = incoming.updatedAt)
+                                                if (adopted.copy(lastSyncedAt = local.lastSyncedAt) != local.copy(dirty = false)) {
+                                                    characters.upsert(adopted)
+                                                    trySend(id)
+                                                }
                                             }
                                         }
                                     }

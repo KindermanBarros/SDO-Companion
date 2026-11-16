@@ -119,6 +119,7 @@ fun DashboardScreen(
     owners: List<UserProfile>,
     session: UserSession?,
     syncing: Boolean,
+    cloudSyncing: Boolean = false,
     compactCards: Boolean,
     collapseCampaignCards: Boolean,
     showArchivedCampaigns: Boolean,
@@ -328,11 +329,11 @@ fun DashboardScreen(
                     )
                 }
 
-                if (syncing) item("sync-loading") {
+                if (cloudSyncing) item("sync-loading") {
                     TechPanel(accent = MaterialTheme.colorScheme.primary) {
                         TelemetryTag("SINCRONIZAÇÃO")
                         CyberLoadingIndicator("Sincronizando campanhas e personagens")
-                        Text("Enviando alterações preservadas neste aparelho", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                        Text("Atualizando alterações recebidas da nuvem", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     }
                 }
 

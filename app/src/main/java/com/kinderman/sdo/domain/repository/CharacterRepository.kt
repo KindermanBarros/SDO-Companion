@@ -7,6 +7,12 @@ import com.kinderman.sdo.domain.model.UserProfile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
+data class RemoteSyncEvent(
+    val fromCloud: Boolean = false,
+    val characterIds: Set<String> = emptySet(),
+    val fullSync: Boolean = true,
+)
+
 interface CharacterRepository {
     fun observeSyncStatus(session: UserSession): Flow<com.kinderman.sdo.domain.model.SheetSyncStatus> =
         kotlinx.coroutines.flow.flowOf(com.kinderman.sdo.domain.model.SheetSyncStatus())
@@ -17,7 +23,7 @@ interface CharacterRepository {
         kotlinx.coroutines.flow.flowOf(emptyMap())
     fun observe(session: UserSession): Flow<List<Character>>
     fun observeOne(id: String): Flow<Character?>
-    fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = emptyFlow()
+    fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<RemoteSyncEvent> = emptyFlow()
     suspend fun create(session: UserSession, ownerId: String = session.uid, campaignId: String = ""): Character
     suspend fun save(session: UserSession, character: Character)
     suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean)

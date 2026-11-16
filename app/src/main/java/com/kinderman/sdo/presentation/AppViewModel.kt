@@ -25,6 +25,7 @@ import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.ConnectivityMonitor
 import com.kinderman.sdo.domain.repository.OwnerRepository
 import com.kinderman.sdo.domain.repository.OperationsRepository
+import com.kinderman.sdo.domain.repository.RemoteSyncEvent
 import com.kinderman.sdo.domain.usecase.DeleteCharacter
 import com.kinderman.sdo.domain.usecase.SaveCharacter
 import com.kinderman.sdo.domain.usecase.SetHistorianLock
@@ -58,6 +59,7 @@ import kotlinx.coroutines.sync.withLock
 data class CharacterLoadState(
     val initialLoading: Boolean = false,
     val syncing: Boolean = false,
+    val cloudSyncing: Boolean = false,
 )
 
 internal enum class RemoteSyncTrigger { MANUAL, EDITING_IDLE, APP_FOREGROUND, APP_BACKGROUND, SHEET_CLOSED }
@@ -74,6 +76,7 @@ class AppViewModel(
     private val operationsRepository: OperationsRepository,
     private val connectivityMonitor: ConnectivityMonitor = AlwaysOnlineConnectivityMonitor,
     private val externalScope: CoroutineScope? = null,
+    private val cloudSyncPulseMs: Long = 800L,
 ) : ViewModel() {
     private val scope: CoroutineScope
         get() = externalScope ?: viewModelScope
@@ -96,6 +99,7 @@ class AppViewModel(
     private val autosaveJobs = mutableMapOf<String, Job>()
     private val pendingAutosaves = mutableMapOf<String, Character>()
     private var remoteSyncDebounceJob: Job? = null
+    private var cloudSyncPulseJob: Job? = null
 
     val session = currentSession.asStateFlow()
     val isOnline = connectivityMonitor.isOnline
@@ -199,8 +203,7 @@ class AppViewModel(
                 if (session == null || session.uid == DEMO_USER_ID || !online) emptyFlow()
                 else repository.observeRemoteChanges(session, ids).catch { /* Ignore listener errors */ }
             }
-            .debounce(400)
-            .onEach { startSync(initial = false) }
+            .onEach { event -> handleRemoteSyncEvent(event) }
             .launchIn(scope)
     }
 
@@ -234,6 +237,8 @@ class AppViewModel(
         pendingAutosaves.clear()
         remoteSyncDebounceJob?.cancel()
         remoteSyncDebounceJob = null
+        cloudSyncPulseJob?.cancel()
+        cloudSyncPulseJob = null
         syncJob?.cancel()
         syncJob = null
         syncRequested = false
@@ -538,7 +543,30 @@ class AppViewModel(
         }
     }
 
-    private fun startCharacterSync(characterId: String) {
+    private fun handleRemoteSyncEvent(event: RemoteSyncEvent) {
+        if (!event.fromCloud) return
+        val session = currentSession.value ?: return
+        if (session.uid == DEMO_USER_ID || !connectivityMonitor.isOnline.value) return
+        if (cloudSyncPulseMs > 0L) {
+            cloudSyncPulseJob?.cancel()
+            _loadState.value = _loadState.value.copy(cloudSyncing = true)
+            cloudSyncPulseJob = scope.launch {
+                delay(cloudSyncPulseMs)
+                if (syncJob?.isActive != true) {
+                    _loadState.value = _loadState.value.copy(cloudSyncing = false)
+                }
+            }
+        }
+        if (event.fullSync) {
+            startSync(initial = false, fromCloud = true)
+        } else {
+            event.characterIds.forEach { characterId ->
+                startCharacterSync(characterId, fromCloud = true)
+            }
+        }
+    }
+
+    private fun startCharacterSync(characterId: String, fromCloud: Boolean = false) {
         val session = currentSession.value ?: return
         if (session.uid == DEMO_USER_ID || characterId.isBlank()) return
         if (!connectivityMonitor.isOnline.value) {
@@ -550,14 +578,23 @@ class AppViewModel(
             return
         }
         scope.launch {
-            runCatching { repository.syncCharacter(session, characterId) }
-                .onSuccess { charConflicts ->
-                    _conflicts.value = _conflicts.value.filterNot { it.local.id == characterId } + charConflicts
+            if (fromCloud) {
+                _loadState.value = _loadState.value.copy(cloudSyncing = true)
+            }
+            try {
+                runCatching { repository.syncCharacter(session, characterId) }
+                    .onSuccess { charConflicts ->
+                        _conflicts.value = _conflicts.value.filterNot { it.local.id == characterId } + charConflicts
+                    }
+                    .onFailure { error ->
+                        if (error is CancellationException) throw error
+                        android.util.Log.e("SDO_SYNC", "syncCharacter($characterId) failed", error)
+                    }
+            } finally {
+                if (fromCloud && (cloudSyncPulseMs <= 0L || cloudSyncPulseJob?.isActive != true)) {
+                    _loadState.value = _loadState.value.copy(cloudSyncing = false)
                 }
-                .onFailure { error ->
-                    if (error is CancellationException) throw error
-                    android.util.Log.e("SDO_SYNC", "syncCharacter($characterId) failed", error)
-                }
+            }
         }
     }
 
@@ -580,7 +617,7 @@ class AppViewModel(
         return true
     }
 
-    private fun startSync(initial: Boolean) {
+    private fun startSync(initial: Boolean, fromCloud: Boolean = false) {
         val session = currentSession.value ?: return
         if (session.uid == DEMO_USER_ID) return
         if (!connectivityMonitor.isOnline.value) {
@@ -592,7 +629,11 @@ class AppViewModel(
             return
         }
         syncJob = scope.launch {
-            _loadState.value = CharacterLoadState(initialLoading = initial, syncing = true)
+            _loadState.value = _loadState.value.copy(
+                initialLoading = initial,
+                syncing = true,
+                cloudSyncing = _loadState.value.cloudSyncing || fromCloud,
+            )
             try {
                 val failures = mutableListOf<Pair<String, Throwable>>()
                 runCatching { campaignRepository.sync(session) }
@@ -646,7 +687,8 @@ class AppViewModel(
                 _message.value = failure
             } finally {
                 if (syncJob === currentCoroutineContext()[Job]) {
-                    _loadState.value = CharacterLoadState()
+                    val keepCloudSyncing = cloudSyncPulseJob?.isActive == true
+                    _loadState.value = CharacterLoadState(cloudSyncing = keepCloudSyncing)
                     syncJob = null
                     if (syncRequested) {
                         syncRequested = false

@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -13,6 +14,7 @@ import com.kinderman.sdo.data.local.CampaignDeliveryRecord
 import com.kinderman.sdo.data.local.CampaignLibraryRecord
 import com.kinderman.sdo.data.local.OperationsDao
 import com.kinderman.sdo.data.local.SessionOperationRecord
+import com.kinderman.sdo.data.local.firestoreCharacterPatch
 import com.kinderman.sdo.data.local.optimizedForFirestore
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
@@ -103,7 +105,16 @@ class SyncedOperationsRepository(
                 val revision = committed.fieldUpdatedAt.getValue("@revision")
                 val record = committed.copy(fieldUpdatedAt = committed.fieldUpdatedAt + (receiptKey to revision)).toRecord()
                 val operation = mutation.operation.copy(createdAt = record.updatedAt).toRecord().copy(dirty = false, lastSyncedAt = record.updatedAt)
-                transaction.set(reference, record.optimizedForFirestore(migrationManager))
+                val optimized = record.optimizedForFirestore(migrationManager)
+                val patch = firestoreCharacterPatch(
+                    before = raw,
+                    after = optimized,
+                    existingDocumentKeys = snapshot.data.orEmpty().keys,
+                    deleteValue = FieldValue.delete(),
+                )
+                if (patch.isNotEmpty()) {
+                    transaction.update(reference, patch)
+                }
                 if (operation.campaignId.isNotBlank()) {
                     transaction.set(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).document(operation.id), operation)
                 }

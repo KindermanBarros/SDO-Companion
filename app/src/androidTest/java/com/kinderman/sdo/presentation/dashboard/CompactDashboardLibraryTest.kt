@@ -156,4 +156,33 @@ class CompactDashboardLibraryTest {
         }
         compose.onNodeWithText("MESTRE").assertIsDisplayed()
         captureReviewScreenshot("cybergrunge-compact-navbar")
-    }}
+    }
+
+    @Test
+    fun painelSyncAnimationShowsOnlyForCloudSyncing() {
+        val cloudSyncingState = androidx.compose.runtime.mutableStateOf(false)
+        compose.setContent {
+            SdoTheme(SdoPreferences()) {
+                Box(Modifier.width(360.dp).height(800.dp)) {
+                    DashboardScreen(
+                        characters = emptyList(), campaigns = emptyList(), memberships = emptyList(),
+                        campaignInvites = emptyList(), campaignMembers = emptyList(), owners = emptyList(),
+                        session = admin, syncing = true, cloudSyncing = cloudSyncingState.value,
+                        compactCards = true, collapseCampaignCards = true,
+                        showArchivedCampaigns = false, invitePreview = null, snackbarHost = {},
+                        onAdd = {}, onAddToCampaign = { _, _ -> }, onLinkCharacter = { _, _ -> },
+                        onUnlinkCharacter = {}, onOpen = {}, onOwnerTransfer = { _, _ -> },
+                        onCreateCampaign = { _, _ -> }, onArchiveCampaign = { _, _ -> }, onDeleteCampaign = {},
+                        onLeaveCampaign = {}, onPreviewInvite = {}, onAcceptInvite = { _, _, _ -> },
+                        onDismissInvitePreview = {}, onSync = {}, onOpenSession = {}, onOpenHistorian = {},
+                        onOpenSettings = {}, deliveries = emptyList(), onRespondDelivery = { _, _ -> }, onLogout = {},
+                    )
+                }
+            }
+        }
+
+        compose.onNodeWithText("Atualizando alterações recebidas da nuvem").assertDoesNotExist()
+        compose.runOnUiThread { cloudSyncingState.value = true }
+        compose.onNodeWithText("Atualizando alterações recebidas da nuvem").assertIsDisplayed()
+    }
+}
