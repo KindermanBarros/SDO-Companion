@@ -76,3 +76,15 @@ Owner authorized implementation of the revised hybrid plan, migration of all cur
 - Complete migration requires per-sheet parity and no unresolved failures. Pilot rollout is not full migration completion. Never overwrite newer RTDB data from stale Firestore or Room copies.
 - Offline edits remain visibly pending until committed and may be rejected after access changes or competing resource use. Preserve text and recoverable intent; do not report network availability as acknowledgement.
 - Production rollout and old-writer removal require verified migration, a compatible client and rollback readiness. Actual verification and rollout state belong in Memory.
+
+### SYNC-PLAN-005 - Small-group concurrent sync and Painel feedback
+
+Owner request on 2026-11-16 (`BACKLOG-012`); ToDo. Target the current group of about 10 users on Firebase Spark. Improve concurrent administrator/player edits to different parts of the same character sheet while keeping Firebase reads, writes, transferred bytes, and operational complexity proportionate to that scale. The deployed serverless Firestore-authoritative plus RTDB-mirror path is the current baseline; the Cloud Functions design in SYNC-PLAN-004 is not available on the current Spark deployment.
+
+| ID | Requested outcome |
+|---|---|
+| SYNC-PLAN-005-A | Preserve both users' edits when an administrator and a character owner edit independent fields or independent properties of the same list element concurrently. Define and verify same-field conflict behavior, deletions, resource spending, retry/idempotency, and offline replays before rollout. |
+| SYNC-PLAN-005-B | Reduce unnecessary full-sheet transfers and mirror writes where measurable without sacrificing atomic merges, access rules, or recovery. Compare a minimal patch/update approach against the current full-document transaction and full-state RTDB mirror using realistic sheets and a 10-user workload; choose the simpler Spark-compatible approach that meets the cost and correctness targets. |
+| SYNC-PLAN-005-C | In the Painel screen, show the sync animation only when a committed change arrives from the cloud. Local edits, pending uploads, upload acknowledgements, and unchanged/repeated snapshots must not trigger it. Keep pending/error status available separately. |
+
+Acceptance evidence: emulator or multi-client tests for independent simultaneous edits, same-field collisions, deletes and retry behavior; measured read/write count and bytes for representative 10-user activity; a focused Painel UI test or runtime capture distinguishing remote arrival from local editing and acknowledgement. Exact budget thresholds and same-field winner policy remain product decisions for implementation planning. No implementation or delivery priority is implied by this record.
