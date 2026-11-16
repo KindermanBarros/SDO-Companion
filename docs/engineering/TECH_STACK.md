@@ -98,9 +98,9 @@ BOM entries identify the declared platform; child artifact versions are not indi
 | androidx.room:room-compiler | 2.8.5, catalog | app KSP |
 | com.google.firebase:firebase-bom | 34.19.0, catalog | app platform |
 | com.google.firebase:firebase-auth | Firebase BOM | app |
-| com.google.firebase:firebase-firestore | Firebase BOM | app |
-| com.google.firebase:firebase-database / firebase-functions | Existing Firebase BOM | Hybrid sheet reads and command transport |
-| androidx.work:work-runtime-ktx | 2.11.0 | Durable outbox scheduling |
+| com.google.firebase:firebase-firestore | Firebase BOM | app (single sheet/campaign/presence authority) |
+| com.google.firebase:firebase-database | Firebase BOM | Isolated RTDB battle grid ACL (sheet mirrors/Functions retired) |
+| androidx.work:work-runtime-ktx | 2.11.0 | Durable Spark v2 intent/outbox scheduling |
 | com.google.code.gson:gson | 2.13.2 | CharacterRecord wire mapping with preserved defaults and R8 rules |
 | org.jetbrains.kotlinx:kotlinx-coroutines-play-services | 1.11.0, catalog | app |
 | org.jetbrains.kotlinx:kotlinx-serialization-json | 1.11.0, catalog | app |
@@ -115,4 +115,4 @@ ComponentActivity/Compose lifecycle, SharedPreferences, Credential Manager, Andr
 ## Design tooling
 
 Owner-authorized global @pen.dev/cli 0.3.16, installed with npm on Node 26.13.0/npm 11.20.0; no application dependency. Authenticated headless editing/reopen/export pass. UI validation tooling: task-owned local SDK/AVD downloads were removed during workflow cleanup; installed Android tooling remains unchanged.
-Hybrid sync adds explicit Room migration (v32) for durable outbox and confirmed snapshots, Firebase RTDB `sdo-companion-default-rtdb` in `us-central1`, callable backend commands, and Firestore audit projections (`BACKLOG-011`). Implementation and validation status: [Memory](../MEMORY.md).
+Spark Firestore Protocol v2 uses Firestore client transactions, per-field/item/receipt subcollections, Firestore presence, local original media + <=64KiB thumbnail doc, Room v33 account-scoped intents/conflicts (MIGRATION_32_33), WorkManager sync, and isolated RTDB grid ACL (Cloud Functions and RTDB sheet mirrors retired). Status: [Memory](../MEMORY.md).

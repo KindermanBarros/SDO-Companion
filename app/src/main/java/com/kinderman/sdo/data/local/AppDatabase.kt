@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import java.security.MessageDigest
 
 @Database(
     entities = [
@@ -12,6 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         SheetRouteRecord::class,
         SheetOutboxRecord::class,
         SheetSequenceRecord::class,
+        AccountSheetRecord::class,
+        SheetIntentRecord::class,
+        SheetConflictRecord::class,
         OwnerRecord::class,
         CatalogEntryRecord::class,
         CampaignRecord::class,
@@ -22,12 +26,15 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 32,
+    version = 33,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun sheetSyncDao(): SheetSyncDao
+    abstract fun accountSheetDao(): AccountSheetDao
+    abstract fun sheetIntentDao(): SheetIntentDao
+    abstract fun sheetConflictDao(): SheetConflictDao
     abstract fun characterDao(): CharacterDao
     abstract fun ownerDao(): OwnerDao
     abstract fun catalogDao(): CatalogDao
@@ -35,6 +42,157 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun operationsDao(): OperationsDao
 
     companion object {
+        private fun tableExists(db: SupportSQLiteDatabase, tableName: String): Boolean =
+            db.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", arrayOf(tableName))
+                .use { cursor -> cursor.moveToFirst() }
+
+        val MIGRATION_32_33 = object : Migration(32, 33) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS account_sheets (
+                        accountId TEXT NOT NULL,
+                        sheetId TEXT NOT NULL,
+                        sheetRevision INTEGER NOT NULL,
+                        fieldRevisionsJson TEXT NOT NULL,
+                        confirmedJson TEXT NOT NULL,
+                        localPhotoUri TEXT NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        PRIMARY KEY(accountId, sheetId)
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS sheet_intents (
+                        operationId TEXT NOT NULL,
+                        accountId TEXT NOT NULL,
+                        sheetId TEXT NOT NULL,
+                        type TEXT NOT NULL,
+                        targetKey TEXT NOT NULL,
+                        dependsOnOperationId TEXT,
+                        baseRevision INTEGER NOT NULL,
+                        baseValueJson TEXT NOT NULL,
+                        desiredPayloadJson TEXT NOT NULL,
+                        payloadHash TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        error TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        PRIMARY KEY(operationId)
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_sheet_intents_accountId_sheetId_status ON sheet_intents (accountId, sheetId, status)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_sheet_intents_accountId_status ON sheet_intents (accountId, status)",
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS sheet_conflicts (
+                        id TEXT NOT NULL,
+                        accountId TEXT NOT NULL,
+                        sheetId TEXT NOT NULL,
+                        operationId TEXT NOT NULL,
+                        targetKey TEXT NOT NULL,
+                        label TEXT NOT NULL,
+                        baseRevision INTEGER NOT NULL,
+                        remoteRevision INTEGER NOT NULL,
+                        baseSummary TEXT NOT NULL,
+                        localSummary TEXT NOT NULL,
+                        remoteSummary TEXT NOT NULL,
+                        basePayloadJson TEXT NOT NULL,
+                        localPayloadJson TEXT NOT NULL,
+                        remotePayloadJson TEXT NOT NULL,
+                        resolutionStatus TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        PRIMARY KEY(id)
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_sheet_conflicts_accountId_sheetId_resolutionStatus ON sheet_conflicts (accountId, sheetId, resolutionStatus)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_sheet_conflicts_accountId_operationId ON sheet_conflicts (accountId, operationId)",
+                )
+
+                if (tableExists(db, "sheet_routes")) {
+                    db.execSQL(
+                        """
+                        INSERT OR IGNORE INTO account_sheets (
+                            accountId, sheetId, sheetRevision, fieldRevisionsJson, confirmedJson, localPhotoUri, updatedAt
+                        )
+                        SELECT accountId, sheetId, revision, '{}', confirmedJson, '', 0
+                        FROM sheet_routes
+                        """.trimIndent(),
+                    )
+                }
+
+                if (tableExists(db, "sheet_outbox")) {
+                    val digest = MessageDigest.getInstance("SHA-256")
+                    db.query(
+                        "SELECT operationId, accountId, sheetId, sequence, envelopeJson, optimisticJson, status, error FROM sheet_outbox",
+                    ).use { cursor ->
+                        while (cursor.moveToNext()) {
+                            val operationId = cursor.getString(0)
+                            val accountId = cursor.getString(1)
+                            val sheetId = cursor.getString(2)
+                            val sequence = cursor.getLong(3)
+                            val envelopeJson = cursor.getString(4)
+                            val optimisticJson = cursor.getString(5)
+                            val rawStatus = cursor.getString(6)
+                            val error = cursor.getString(7)
+
+                            val type = if (envelopeJson.contains("\"SESSION\"")) {
+                                "SESSION_ACTION"
+                            } else {
+                                "PATCH_FIELDS"
+                            }
+                            val mappedStatus = when (rawStatus) {
+                                "COMMITTED" -> "CONFIRMED"
+                                "REJECTED" -> "REJECTED"
+                                "SENDING" -> "SENDING"
+                                "DRAFT" -> "DRAFT"
+                                "CONFLICT" -> "CONFLICT"
+                                "ACCESS_DENIED" -> "ACCESS_DENIED"
+                                "PAUSED_DEPENDENCY" -> "PAUSED_DEPENDENCY"
+                                else -> "PENDING"
+                            }
+                            val desiredPayload = optimisticJson.ifBlank { envelopeJson }
+                            val hashInput = "$operationId|$sheetId|$type|$envelopeJson|$optimisticJson"
+                            val payloadHash = digest.digest(hashInput.toByteArray(Charsets.UTF_8))
+                                .joinToString("") { byte -> "%02x".format(byte) }
+
+                            db.execSQL(
+                                """
+                                INSERT OR IGNORE INTO sheet_intents (
+                                    operationId, accountId, sheetId, type, targetKey, dependsOnOperationId,
+                                    baseRevision, baseValueJson, desiredPayloadJson, payloadHash, status, error, createdAt, updatedAt
+                                ) VALUES (?, ?, ?, ?, 'sheet', NULL, 0, ?, ?, ?, ?, ?, ?, ?)
+                                """.trimIndent(),
+                                arrayOf<Any>(
+                                    operationId,
+                                    accountId,
+                                    sheetId,
+                                    type,
+                                    envelopeJson,
+                                    desiredPayload,
+                                    payloadHash,
+                                    mappedStatus,
+                                    error,
+                                    sequence,
+                                    sequence,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         val MIGRATION_31_32 = object : Migration(31, 32) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS sheet_routes (accountId TEXT NOT NULL, sheetId TEXT NOT NULL, status TEXT NOT NULL, accessEpoch INTEGER NOT NULL, revision INTEGER NOT NULL, confirmedJson TEXT NOT NULL, PRIMARY KEY(accountId, sheetId))")

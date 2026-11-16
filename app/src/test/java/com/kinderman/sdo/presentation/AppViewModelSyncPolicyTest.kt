@@ -10,12 +10,19 @@ import com.kinderman.sdo.domain.model.CampaignMember
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
+import com.kinderman.sdo.domain.model.ConflictResolutionStatus
+import com.kinderman.sdo.domain.model.OperationType
 import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperation
 import com.kinderman.sdo.domain.model.SessionOperationType
+import com.kinderman.sdo.domain.model.SheetConflictItem
+import com.kinderman.sdo.domain.model.SheetIntent
+import com.kinderman.sdo.domain.model.SheetIntentStatus
+import com.kinderman.sdo.domain.model.SheetSyncStatus
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.model.toSyncStatus
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
@@ -33,6 +40,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -232,6 +240,193 @@ class AppViewModelSyncPolicyTest {
         assertEquals(initialFullSyncs, characterRepo.syncCount)
     }
 
+    @Test
+    fun sparkConflictResolutionDelegatesChoiceAndSyncs() = runBlocking {
+        val conflict = SheetConflictItem(
+            id = "conflict-1",
+            accountId = session.uid,
+            sheetId = "char-1",
+            operationId = "op-1",
+            targetKey = "field:name",
+            label = "Nome",
+            baseRevision = 1L,
+            remoteRevision = 2L,
+            baseSummary = "Aria",
+            localSummary = "Aria L.",
+            remoteSummary = "Aria R.",
+            basePayloadJson = "\"Aria\"",
+            localPayloadJson = "\"Aria L.\"",
+            remotePayloadJson = "\"Aria R.\"",
+        )
+        characterRepo.accountConflicts[session.uid] = listOf(conflict)
+        characterRepo.emitStoreUpdate()
+        viewModel.setSession(session)
+
+        assertEquals(listOf(conflict), viewModel.sheetConflicts.first { it.isNotEmpty() })
+        val syncsBefore = characterRepo.syncCount
+
+        viewModel.resolveIntentConflict(conflictId = "conflict-1", useRemote = false, customValueJson = "\"Aria Custom\"")
+        delay(50)
+
+        assertEquals(listOf(Triple("conflict-1", false, "\"Aria Custom\"")), characterRepo.resolvedIntentConflicts)
+        assertTrue(viewModel.sheetConflicts.first { it.isEmpty() }.isEmpty())
+        assertTrue(characterRepo.syncCount > syncsBefore)
+        assertEquals("Conflito resolvido", viewModel.message.value)
+    }
+
+    @Test
+    fun accessDeniedDraftCanBeRetriedOrDiscarded() = runBlocking {
+        val deniedA = SheetIntent(
+            operationId = "op-denied-a",
+            accountId = session.uid,
+            sheetId = "char-1",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:name",
+            desiredPayloadJson = "\"Aria\"",
+            status = SheetIntentStatus.ACCESS_DENIED,
+            error = "Sem permissão",
+        )
+        val deniedB = deniedA.copy(operationId = "op-denied-b", targetKey = "field:occupation")
+        characterRepo.accountIntents[session.uid] = listOf(deniedA, deniedB)
+        characterRepo.emitStoreUpdate()
+        viewModel.setSession(session)
+
+        assertEquals(2, viewModel.sheetSyncStatus.first { it.accessDeniedCount == 2 }.accessDeniedCount)
+
+        viewModel.retryAccessDeniedDraft("op-denied-a")
+        delay(50)
+        assertEquals(listOf("op-denied-a"), characterRepo.retriedAccessDeniedIds)
+        val afterRetry = viewModel.sheetIntents.first { list ->
+            list.firstOrNull { it.operationId == "op-denied-a" }?.status == SheetIntentStatus.PENDING
+        }
+        assertEquals(SheetIntentStatus.PENDING, afterRetry.first { it.operationId == "op-denied-a" }.status)
+
+        viewModel.discardDraft("op-denied-b")
+        delay(50)
+        assertEquals(listOf("op-denied-b"), characterRepo.discardedDraftIds)
+        val afterDiscard = viewModel.sheetIntents.first { list -> list.none { it.operationId == "op-denied-b" } }
+        assertEquals(listOf("op-denied-a"), afterDiscard.map { it.operationId })
+    }
+
+    @Test
+    fun fieldPresenceIsStrictlyGatedOnSheetSurfaceAndClearedOnExitOrBackground() = runBlocking {
+        viewModel.setSession(session)
+
+        // Not on AppSurface.SHEET: activation must be ignored.
+        viewModel.setFieldPresence("char-1", "name", true)
+        delay(50)
+        assertTrue(characterRepo.presenceWrites.isEmpty())
+
+        // Entering AppSurface.SHEET enables presence writes for that sheet only.
+        viewModel.setSheetPresenceActive(active = true, characterId = "char-1")
+        viewModel.setFieldPresence("char-1", "name", true)
+        viewModel.setFieldPresence("char-other", "name", true)
+        delay(50)
+        assertEquals(
+            listOf(Triple("char-1", "name", true)),
+            characterRepo.presenceWrites,
+        )
+
+        // Leaving AppSurface.SHEET clears active presence.
+        viewModel.setSheetPresenceActive(active = false, characterId = null)
+        delay(50)
+        assertEquals(
+            listOf(
+                Triple("char-1", "name", true),
+                Triple("char-1", null, false),
+            ),
+            characterRepo.presenceWrites,
+        )
+
+        // Re-entering SHEET and backgrounding (not config change) clears active presence.
+        viewModel.onAppForegrounded()
+        viewModel.setSheetPresenceActive(active = true, characterId = "char-1")
+        viewModel.setFieldPresence("char-1", "life", true)
+        viewModel.onAppBackgrounded(changingConfiguration = true)
+        delay(50)
+        assertEquals(Triple("char-1", "life", true), characterRepo.presenceWrites.last())
+        viewModel.onAppBackgrounded(changingConfiguration = false)
+        delay(50)
+        assertEquals(Triple("char-1", null, false), characterRepo.presenceWrites.last())
+    }
+
+    @Test
+    fun accountSwitchAndClearSessionIsolateUiStateWithoutDiscardingDurableQueues() = runBlocking {
+        val sessionB = UserSession("user-2", "other@sdo.test", "Outro Jogador", UserRole.USER)
+        val intentA = SheetIntent(
+            operationId = "op-a",
+            accountId = session.uid,
+            sheetId = "char-a",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:name",
+            status = SheetIntentStatus.ACCESS_DENIED,
+        )
+        val conflictA = SheetConflictItem(
+            id = "conf-a",
+            accountId = session.uid,
+            sheetId = "char-a",
+            operationId = "op-a",
+            targetKey = "field:name",
+            label = "Nome",
+            baseRevision = 1L,
+            remoteRevision = 2L,
+            baseSummary = "Base",
+            localSummary = "Local",
+            remoteSummary = "Remote",
+            basePayloadJson = "\"Base\"",
+            localPayloadJson = "\"Local\"",
+            remotePayloadJson = "\"Remote\"",
+        )
+        val intentB = SheetIntent(
+            operationId = "op-b",
+            accountId = sessionB.uid,
+            sheetId = "char-b",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:level",
+            status = SheetIntentStatus.PENDING,
+        )
+        characterRepo.accountIntents[session.uid] = listOf(intentA)
+        characterRepo.accountConflicts[session.uid] = listOf(conflictA)
+        characterRepo.accountIntents[sessionB.uid] = listOf(intentB)
+        characterRepo.emitStoreUpdate()
+
+        viewModel.setSession(session)
+        assertEquals(listOf(intentA), viewModel.sheetIntents.first { it == listOf(intentA) })
+        assertEquals(listOf(conflictA), viewModel.sheetConflicts.first { it == listOf(conflictA) })
+
+        viewModel.clearSession()
+        assertTrue(viewModel.sheetIntents.first { it.isEmpty() }.isEmpty())
+        assertTrue(viewModel.sheetConflicts.first { it.isEmpty() }.isEmpty())
+        assertEquals(SheetSyncStatus(), viewModel.sheetSyncStatus.first { it == SheetSyncStatus() })
+        // Durable Room queues for account A remain intact in the repository.
+        assertEquals(listOf(intentA), characterRepo.accountIntents[session.uid])
+        assertEquals(listOf(conflictA), characterRepo.accountConflicts[session.uid])
+
+        // Switching to account B exposes only B's intents/conflicts.
+        viewModel.setSession(sessionB)
+        assertEquals(listOf(intentB), viewModel.sheetIntents.first { it == listOf(intentB) })
+        assertTrue(viewModel.sheetConflicts.first { it.isEmpty() }.isEmpty())
+
+        // Switching back to account A restores A's durable queue and conflicts.
+        viewModel.setSession(session)
+        assertEquals(listOf(intentA), viewModel.sheetIntents.first { it == listOf(intentA) })
+        assertEquals(listOf(conflictA), viewModel.sheetConflicts.first { it == listOf(conflictA) })
+    }
+
+    @Test
+    fun linkAndUnlinkCharacterDoNotTriggerRedundantRepositorySave() = runBlocking {
+        viewModel.setSession(session)
+        val character = Character(id = "char-1", ownerId = session.uid, name = "Aria")
+        val campaign = Campaign(id = "camp-1", name = "Mesa", ownerId = session.uid)
+
+        viewModel.linkCharacter(character, campaign)
+        viewModel.unlinkCharacter(character.copy(campaignId = campaign.id))
+        viewModel.acceptCampaignInvite("INV123", character, createNewCharacter = false)
+        delay(50)
+
+        assertEquals(0, characterRepo.saveCount)
+    }
+
     private class FakeConnectivityMonitor(initialOnline: Boolean) : ConnectivityMonitor {
         val onlineState = MutableStateFlow(initialOnline)
         override val isOnline = onlineState
@@ -242,6 +437,68 @@ class AppViewModelSyncPolicyTest {
         override fun observeOfflineEditableIds(session: UserSession): Flow<Set<String>> = offlineIds
         var throwOnPresence = false
         var presenceCalls = 0
+        val presenceWrites = mutableListOf<Triple<String, String?, Boolean>>()
+        val accountIntents = mutableMapOf<String, List<SheetIntent>>()
+        val accountConflicts = mutableMapOf<String, List<SheetConflictItem>>()
+        private val storeRevision = MutableStateFlow(0)
+        val resolvedIntentConflicts = mutableListOf<Triple<String, Boolean, String?>>()
+        val retriedAccessDeniedIds = mutableListOf<String>()
+        val discardedDraftIds = mutableListOf<String>()
+
+        fun emitStoreUpdate() {
+            storeRevision.value++
+        }
+
+        override fun observeSyncStatus(session: UserSession): Flow<SheetSyncStatus> =
+            storeRevision.map { (accountIntents[session.uid].orEmpty()).toSyncStatus() }
+
+        override fun observeIntents(session: UserSession): Flow<List<SheetIntent>> =
+            storeRevision.map { accountIntents[session.uid].orEmpty() }
+
+        override fun observeConflicts(session: UserSession): Flow<List<SheetConflictItem>> =
+            storeRevision.map {
+                accountConflicts[session.uid].orEmpty().filter { it.resolutionStatus == ConflictResolutionStatus.OPEN }
+            }
+
+        override suspend fun resolveIntentConflict(
+            session: UserSession,
+            conflictId: String,
+            useRemote: Boolean,
+            customValueJson: String?,
+        ) {
+            resolvedIntentConflicts += Triple(conflictId, useRemote, customValueJson)
+            accountConflicts[session.uid] = accountConflicts[session.uid].orEmpty().filterNot { it.id == conflictId }
+            emitStoreUpdate()
+        }
+
+        override suspend fun retryAccessDeniedDraft(session: UserSession, intentId: String) {
+            retriedAccessDeniedIds += intentId
+            accountIntents[session.uid] = accountIntents[session.uid].orEmpty().map { intent ->
+                if (intent.operationId == intentId) {
+                    intent.copy(status = SheetIntentStatus.PENDING, error = "")
+                } else {
+                    intent
+                }
+            }
+            emitStoreUpdate()
+        }
+
+        override suspend fun discardDraft(session: UserSession, intentId: String) {
+            discardedDraftIds += intentId
+            accountIntents[session.uid] = accountIntents[session.uid].orEmpty().filterNot { it.operationId == intentId }
+            accountConflicts[session.uid] = accountConflicts[session.uid].orEmpty().filterNot { it.operationId == intentId }
+            emitStoreUpdate()
+        }
+
+        override suspend fun setFieldPresence(
+            session: UserSession,
+            characterId: String,
+            fieldKey: String?,
+            active: Boolean,
+        ) {
+            presenceWrites += Triple(characterId, fieldKey, active)
+        }
+
         override fun observeFieldPresence(session: UserSession, characterId: String): Flow<Map<String, String>> =
             kotlinx.coroutines.flow.flow {
                 presenceCalls++

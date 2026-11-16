@@ -9,6 +9,8 @@ import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.CampaignInvitePreview
 import com.kinderman.sdo.domain.model.CampaignMember
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.SheetConflictItem
+import com.kinderman.sdo.domain.model.SheetIntent
 import com.kinderman.sdo.domain.model.SheetSyncStatus
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
@@ -100,6 +102,8 @@ class AppViewModel(
     private val pendingAutosaves = mutableMapOf<String, Character>()
     private var remoteSyncDebounceJob: Job? = null
     private var cloudSyncPulseJob: Job? = null
+    private var isSheetSurfaceActive = false
+    private var activePresenceCharacterId: String? = null
 
     val session = currentSession.asStateFlow()
     val isOnline = connectivityMonitor.isOnline
@@ -111,6 +115,12 @@ class AppViewModel(
     val sheetSyncStatus = currentSession.flatMapLatest { session ->
         session?.let(repository::observeSyncStatus) ?: flowOf(SheetSyncStatus())
     }.catch { emit(SheetSyncStatus()) }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), SheetSyncStatus())
+    val sheetIntents = currentSession.flatMapLatest { session ->
+        session?.let(repository::observeIntents) ?: flowOf(emptyList())
+    }.catch { emit(emptyList()) }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val sheetConflicts = currentSession.flatMapLatest { session ->
+        session?.let(repository::observeConflicts) ?: flowOf(emptyList())
+    }.catch { emit(emptyList()) }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val offlineEditableIds = currentSession.flatMapLatest { session ->
         session?.let(repository::observeOfflineEditableIds) ?: flowOf(emptySet())
     }.catch { emit(emptySet()) }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
@@ -124,11 +134,44 @@ class AppViewModel(
             }.catch { emit(emptyMap()) }
         }
 
+    fun setSheetPresenceActive(active: Boolean, characterId: String? = null) {
+        val nextId = if (active) characterId?.takeIf(String::isNotBlank) else null
+        val previousId = activePresenceCharacterId
+        if (previousId != null && (!active || previousId != nextId)) {
+            clearFieldPresenceInternal(previousId)
+        }
+        isSheetSurfaceActive = active
+        activePresenceCharacterId = nextId
+    }
+
     fun setFieldPresence(characterId: String, fieldKey: String?, active: Boolean) {
+        if (characterId.isBlank()) return
+        if (active && (!isSheetSurfaceActive || (activePresenceCharacterId != null && activePresenceCharacterId != characterId))) {
+            return
+        }
         val session = currentSession.value ?: return
+        if (active) {
+            activePresenceCharacterId = characterId
+        } else if (activePresenceCharacterId == characterId && fieldKey == null) {
+            activePresenceCharacterId = null
+        }
         scope.launch {
             try {
                 repository.setFieldPresence(session, characterId, fieldKey, active)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Presence is advisory; a disconnected editor still retains its durable edits.
+            }
+        }
+    }
+
+    private fun clearFieldPresenceInternal(characterId: String) {
+        val session = currentSession.value ?: return
+        if (characterId.isBlank()) return
+        scope.launch {
+            try {
+                repository.setFieldPresence(session, characterId, null, false)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
@@ -209,13 +252,23 @@ class AppViewModel(
 
     fun setSession(session: UserSession) {
         if (currentSession.value == session) return
+        autosaveJobs.values.forEach(Job::cancel)
+        autosaveJobs.clear()
+        pendingAutosaves.clear()
+        remoteSyncDebounceJob?.cancel()
+        remoteSyncDebounceJob = null
+        cloudSyncPulseJob?.cancel()
+        cloudSyncPulseJob = null
         syncJob?.cancel()
         syncJob = null
         syncRequested = false
+        isSheetSurfaceActive = false
+        activePresenceCharacterId = null
         _conflicts.value = emptyList()
         _invitePreview.value = null
         lastSyncFailure = null
         _syncFailure.value = null
+        _saveErrors.value = emptyMap()
         currentSession.value = session
         if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_FOREGROUND)) startSync(initial = true)
     }
@@ -242,12 +295,15 @@ class AppViewModel(
         syncJob?.cancel()
         syncJob = null
         syncRequested = false
+        isSheetSurfaceActive = false
+        activePresenceCharacterId = null
         currentSession.value = null
         _message.value = null
         _conflicts.value = emptyList()
         _invitePreview.value = null
         lastSyncFailure = null
         _syncFailure.value = null
+        _saveErrors.value = emptyMap()
         _loadState.value = CharacterLoadState()
     }
 
@@ -354,8 +410,7 @@ class AppViewModel(
                     else -> null
                 }
                 if (selectedCharacter != null) {
-                    val linked = campaignRepository.linkCharacter(session, selectedCharacter, campaign)
-                    repository.save(session, linked)
+                    campaignRepository.linkCharacter(session, selectedCharacter, campaign)
                 }
             }.onSuccess {
                 _invitePreview.value = null
@@ -370,13 +425,11 @@ class AppViewModel(
     fun dismissInvitePreview() { _invitePreview.value = null }
 
     fun linkCharacter(character: Character, campaign: Campaign) = runAction("Ficha vinculada à campanha") { session ->
-        val linked = campaignRepository.linkCharacter(session, character, campaign)
-        repository.save(session, linked)
+        campaignRepository.linkCharacter(session, character, campaign)
     }
 
     fun unlinkCharacter(character: Character) = runAction("Ficha removida da campanha") { session ->
-        val unlinked = campaignRepository.unlinkCharacter(session, character)
-        repository.save(session, unlinked)
+        campaignRepository.unlinkCharacter(session, character)
     }
 
     fun setPlayerLocked(character: Character, locked: Boolean) = runCharacterAction(
@@ -424,6 +477,10 @@ class AppViewModel(
 
     fun onAppBackgrounded(changingConfiguration: Boolean = false) {
         if (!appVisibility.stopped(changingConfiguration)) return
+        activePresenceCharacterId?.let { characterId ->
+            clearFieldPresenceInternal(characterId)
+            activePresenceCharacterId = null
+        }
         scope.launch {
             flushAllPendingAutosaves()
             if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_BACKGROUND)) startSync(initial = false)
@@ -498,6 +555,57 @@ class AppViewModel(
         remoteSyncDebounceJob = scope.launch {
             delay(1_200)
             startCharacterSync(characterId)
+        }
+    }
+
+    fun resolveIntentConflict(
+        conflictId: String,
+        useRemote: Boolean,
+        customValueJson: String? = null,
+    ) {
+        val session = currentSession.value ?: return
+        scope.launch {
+            runCatching {
+                repository.resolveIntentConflict(
+                    session = session,
+                    conflictId = conflictId,
+                    useRemote = useRemote,
+                    customValueJson = customValueJson,
+                )
+            }.onSuccess {
+                _message.value = "Conflito resolvido"
+                if (automaticSync) startSync(initial = false)
+            }.onFailure { error ->
+                if (error is CancellationException) throw error
+                _message.value = userMessage(error, "Falha ao resolver conflito")
+            }
+        }
+    }
+
+    fun retryAccessDeniedDraft(intentId: String) {
+        val session = currentSession.value ?: return
+        scope.launch {
+            runCatching { repository.retryAccessDeniedDraft(session, intentId) }
+                .onSuccess {
+                    _message.value = "Reenvio do rascunho agendado"
+                    if (automaticSync) startSync(initial = false)
+                }
+                .onFailure { error ->
+                    if (error is CancellationException) throw error
+                    _message.value = userMessage(error, "Falha ao reenviar rascunho")
+                }
+        }
+    }
+
+    fun discardDraft(intentId: String) {
+        val session = currentSession.value ?: return
+        scope.launch {
+            runCatching { repository.discardDraft(session, intentId) }
+                .onSuccess { _message.value = "Rascunho descartado" }
+                .onFailure { error ->
+                    if (error is CancellationException) throw error
+                    _message.value = userMessage(error, "Falha ao descartar rascunho")
+                }
         }
     }
 

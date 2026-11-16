@@ -53,11 +53,15 @@ data class CampaignInvite(
     val expiresAt: Long? = null,
     val revokedAt: Long? = null,
     val generation: Int = 1,
+    val recipientUid: String = "",
+    val state: String = "PENDING",
+    val consumedBy: String? = null,
+    val consumedAt: Long? = null,
     val dirty: Boolean = true,
     val lastSyncedAt: Long = 0,
 ) {
     fun isUsable(now: Long = System.currentTimeMillis()): Boolean =
-        revokedAt == null && (expiresAt == null || expiresAt > now)
+        revokedAt == null && state == "PENDING" && consumedBy == null && (expiresAt == null || expiresAt > now)
 }
 
 data class CampaignInvitePreview(

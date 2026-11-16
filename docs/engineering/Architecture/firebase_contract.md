@@ -20,26 +20,31 @@ Source: app/src/main/java/com/kinderman/sdo/data/repository/FirestoreCollections
 | CAMPAIGN_DELIVERIES | campaignDeliveries |
 | CAMPAIGN_JOURNAL | campaignJournal |
 
-Character sync exchanges CharacterRecord documents; local dirty/deleted state and CharacterSyncConflict are implemented in SyncedCharacterRepository and domain models. Membership and ownership constrain visible character queries. This is not evidence of real-time simultaneous editing.
+Character sync uses the unified 100% Spark Firestore Protocol v2 (`protocolVersion = 2`, `schemaVersion = 2`). Firestore is the sole authoritative store for sheets, campaigns, presence, and avatar thumbnails (`FirebaseFirestore.runTransaction`); Cloud Functions (`firebase/functions/`), RTDB sheet mirrors (`sheetAggregates`, `userSheets`), RTDB sheet presence, `sheetRoutes`, `sheetMigration`, and Cloud Storage are retired.
 
 ## Authoritative field and security contracts
 
-- DTO/entity fields: CharacterRecord.kt, CampaignRecords.kt, OperationRecords.kt and OwnerRecord.kt under app/src/main/java/com/kinderman/sdo/data/local/.
-- Normalization and RPG contracts: existing docs/contracts/ documents.
-- Repository operations: app/src/main/java/com/kinderman/sdo/data/repository/.
-- Firestore security: firebase/firestore.rules.
+- DTO/entity fields and local outbox: `CharacterRecord.kt`, `CampaignRecords.kt`, `OperationRecords.kt`, `OwnerRecord.kt`, and `SheetSyncRecord.kt` (Room v33 account-scoped `account_sheets`, `sheet_intents`, `sheet_conflicts`) under `app/src/main/java/com/kinderman/sdo/data/local/`.
+- Normalization and RPG contracts: existing `docs/contracts/` documents.
+- Repository and sync operations: `app/src/main/java/com/kinderman/sdo/data/repository/` and `SparkWireCodec.kt`.
+- Security Rules: `firebase/firestore.rules` (Firestore) and `firebase/database.rules.json` (isolated RTDB grid).
 - Deployment procedure: [Firebase deployment](../../firebase-deploy.md).
-- Planned connectivity changes: [Synchronization requirements](../../product/requirements/synchronization.md).
+- Synchronization requirements: [Synchronization policy](../../product/requirements/synchronization.md#sync-plan-006---spark-firestore-protocol-v2).
 
-No Bluetooth UUIDs, camera protocol or custom HTTP endpoint contract exists in the inspected application.
+No Bluetooth UUIDs, camera protocol, Cloud Storage bucket, or custom HTTP endpoint contract exists in the application.
 
-Sheet sync adds an optional fieldUpdatedAt map of conflict-group IDs to client-derived revision timestamps; absent metadata uses legacy document-time fallback. Local Room schema 30 persists it. Editor baselines are in-memory only and never serialized. [Synchronization policy](../../product/requirements/synchronization.md#sync-plan-003---latest-field-realtime-sheet-convergence) owns current guarantees and deferred work.
+## Spark Firestore Protocol v2 (`characters/{charId}`)
 
+- **Root (`characters/{charId}`)**: allowlisted metadata (`id`, `ownerId`, `campaignId`, `authorizedCampaignId`, `deleted`, `schemaVersion`, `canonicalSchemaVersion`, `itemSchemaVersion`, `protocolVersion`, `lockType`, `isLocked`, `lockedBy`, `lockedAt`, `revision`, `lastOperationId`, `updatedBy`, `updatedAt == request.time`, `appliedDeliveryIds`).
+- **Per-field (`characters/{charId}/fields/{fieldKey}`)**: typed allowlisted keys (`key`, `value`, `revision`, `lastOperationId`, `updatedBy`, `updatedAt == request.time`) with scalar, resource-map (`life`, `sanity`, `arcane`, `energy`, `destiny`, `exhaustion`, `corruption`), list (`<= 500`), and map (`<= 100`) bounds.
+- **Items & properties (`characters/{charId}/items/{itemId}` and `items/{itemId}/fields/{fieldKey}`)**: typed item prefixes (`inv_`, `istate_`, `abil_`, `pow_`, `mys_`, `cond_`, `lcond_`, `note_`, `attr_`), logical tombstones (`deleted: bool` preventing resurrection by common writes), and independent property/`skill_*` subdocuments checked against `deleted == false` via `getAfter`.
+- **Immutable receipts (`characters/{charId}/operations/{opId}`)**: create-only, authenticated actor, committed outcome, server timestamp, fixed operation formats and `targets` (`1..7`, at most five when item fields are involved). Targets include expected/next revision and relevant base/desired values. Mutual `getAfter` checks and executable budget tests enforce `<=10` accesses/rule and `<=20`/transaction. Client `MIGRATE_V2` is denied; administrative migration bypasses client Rules.
+- **Presence (`characters/{charId}/presence/{uid}_{connectionId}`)**: sheet readers only; own-`uid` write/delete; `updatedAt == request.time`, `expiresAt <= request.time + 120s`; no `onDisconnect` (expired docs treated as absent).
+- **Avatar thumbnail (`characters/{charId}/media/avatar`)**: optional thumbnail (`<= 65536` bytes, `<= 256x256`, sheet auth); original photos stay local (`localPhotoUri`).
 
-Invite acceptance confirms `campaignMembers/{campaignId}::{uid}` on the server before caching success. GM sheet linking uses a Firestore transaction for both the character and its owner's PLAYER membership; target-membership authorization uses post-write state. Repeated joins preserve active memberships; LEFT can rejoin with a valid invite, while REMOVED requires GM enrollment. Existing character revision/intent merging remains authoritative. Roll out the matching rules with the client.
+Unverifiable mechanical-effect/dose automation is rejected before queueing; manual revision-compared adjustments remain available. Resource decrements preserve nonnegative balances; automatic increases require an explicit stored ceiling, with corruption capped at 100. Derived maxima are not inferred by Rules.
 
-## Hybrid sheet synchronization (`BACKLOG-011` / `SYNC-PLAN-004`)
+## Campaigns & isolated RTDB grid
 
-- Firestore adds `sheetRoutes/{characterId}` (`FIRESTORE_ACTIVE | MIGRATING | RTDB_ACTIVE`, `accessEpoch`) and `sheetMigration/{characterId}` operational manifests. Legacy `characters/{characterId}` client writes are fenced by `firestore.rules` once a route leaves `FIRESTORE_ACTIVE`.
-- Firebase Realtime Database (`sdo-companion-default-rtdb`, rules in `firebase/database.rules.json`) stores migrated sheet aggregates under `sheetAggregates/{sheetId}/{control,state,sync,receipts,events}`, discovery indexes under `userSheets/{uid}/{sheetId}`, and connection-scoped field presence under `presence/{sheetId}/{uid}/{connectionId}`.
-- Clients never write `sheetAggregates` directly; `HybridSheetSync` queues sequenced commands in Room (`sheet_routes`, `sheet_outbox`, `sheet_sequences`, Room v32) and submits them to the callable function `submitSheetCommand` (`firebase/functions/src/index.js`), while `projectSheetAudit` projects committed RTDB events into `campaignAudit`.
+- `campaigns/{campaignId}/members/{uid}` (`role == "PLAYER"`, `state: ACTIVE|LEFT|REMOVED`, `joinedByInviteId`) and `invites/{inviteId}` (`PENDING|CONSUMED|REVOKED`): invite acceptance atomically marks `CONSUMED` and activates `PLAYER` membership via `getAfter` (GM role is `campaigns/{id}.ownerId`, never self-assigned). GM `linkCharacter` preserves `ownerId` and activates owner `PLAYER` membership atomically; unlink sets `campaignId = ""` (owner allowed even when `ARCHIVED`; archived campaigns block normal sheet edits).
+- **RTDB (`firebase/database.rules.json`)**: default deny; explicitly denies `sheetAggregates`, `userSheets`, and `presence`. Retains only isolated `grid/{campaignId}/{gridId}` with RTDB-only `acl/{uid}`, never consulting Firestore or authorizing sheets.

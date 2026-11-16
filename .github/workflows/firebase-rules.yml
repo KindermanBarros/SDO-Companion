@@ -35,7 +35,7 @@ env:
 
 jobs:
   validate:
-    name: Validate Firebase rules and sheet backend
+    name: Validate Firebase rules and migration
     runs-on: ubuntu-latest
     steps:
       - name: Checkout selected version
@@ -59,14 +59,11 @@ jobs:
       - name: Install Firebase test dependencies
         run: npm install --prefix firebase --no-audit --no-fund
 
-      - name: Install sheet backend dependencies
-        run: npm ci --prefix firebase/functions --no-audit --no-fund
-
       - name: Test Firebase rules in emulator
         run: npm --prefix firebase run test:rules
 
-      - name: Test sheet command and migration contracts
-        run: npm --prefix firebase/functions test
+      - name: Test Spark migration contracts
+        run: node --test firebase/tests/migration.test.mjs firebase/tests/rollback-media.test.mjs
 
       - name: Archive validated Firebase configuration
         uses: actions/upload-artifact@v4
@@ -81,7 +78,8 @@ jobs:
 
   deploy:
     name: Deploy Firestore production
-    if: github.event_name != 'pull_request'
+    # The breaking protocol cutover requires the documented backup and writer fence.
+    if: github.event_name == 'workflow_dispatch'
     needs: validate
     runs-on: ubuntu-latest
     environment: firebase-production

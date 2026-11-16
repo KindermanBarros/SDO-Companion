@@ -65,7 +65,12 @@ data class CampaignInviteRecord(
     val generation: Int = 1,
     @get:Exclude @field:Exclude val dirty: Boolean = false,
     @get:Exclude @field:Exclude val lastSyncedAt: Long = 0,
-)
+) {
+    @androidx.room.Ignore @get:Exclude @field:Exclude var recipientUid: String = ""
+    @androidx.room.Ignore @get:Exclude @field:Exclude var state: String = "PENDING"
+    @androidx.room.Ignore @get:Exclude @field:Exclude var consumedBy: String? = null
+    @androidx.room.Ignore @get:Exclude @field:Exclude var consumedAt: Long? = null
+}
 
 fun CampaignRecord.toDomain() = Campaign(
     id = id,
@@ -132,6 +137,10 @@ fun CampaignInviteRecord.toDomain() = CampaignInvite(
     expiresAt = expiresAt,
     revokedAt = revokedAt,
     generation = generation,
+    recipientUid = recipientUid,
+    state = state,
+    consumedBy = consumedBy,
+    consumedAt = consumedAt,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
 )
@@ -149,4 +158,9 @@ fun CampaignInvite.toRecord() = CampaignInviteRecord(
     generation = generation,
     dirty = dirty,
     lastSyncedAt = lastSyncedAt,
-)
+).apply {
+    recipientUid = this@toRecord.recipientUid
+    state = this@toRecord.state
+    consumedBy = this@toRecord.consumedBy
+    consumedAt = this@toRecord.consumedAt
+}

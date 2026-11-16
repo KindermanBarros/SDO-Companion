@@ -640,3 +640,21 @@ private fun resolveProtectionAdjustments(
     )
     return bases.mapValues { (name, base) -> (storedProtections[name] ?: base) - base }
 }
+
+/** Normalizes root lock and campaign invariants before Spark v2 wire encoding. */
+fun CharacterRecord.normalizedForSparkV2(): CharacterRecord {
+    val resolvedLockType = if (lockType == "NONE" && isLocked) {
+        CharacterLock.HISTORIAN.name
+    } else if (lockType in setOf("NONE", "PLAYER", "HISTORIAN")) {
+        lockType
+    } else {
+        CharacterLock.NONE.name
+    }
+    return copy(
+        campaignId = normalizeCampaignId(campaignId),
+        lockType = resolvedLockType,
+        isLocked = resolvedLockType != CharacterLock.NONE.name,
+        lockedBy = if (resolvedLockType == CharacterLock.NONE.name) "" else lockedBy,
+        lockedAt = if (resolvedLockType == CharacterLock.NONE.name) null else lockedAt,
+    )
+}

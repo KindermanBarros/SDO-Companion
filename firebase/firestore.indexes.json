@@ -17,30 +17,6 @@
       ]
     },
     {
-      "collectionGroup": "campaignMembers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "state", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "campaignMembers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "campaignId", "order": "ASCENDING" },
-        { "fieldPath": "state", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "campaignInvites",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "campaignId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "campaignAudit",
       "queryScope": "COLLECTION",
       "fields": [
@@ -73,5 +49,32 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "invites",
+      "fieldPath": "code",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "members",
+      "fieldPath": "userId",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "media",
+      "fieldPath": "bytesBase64",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "media",
+      "fieldPath": "dataUri",
+      "indexes": []
+    }
+  ]
 }

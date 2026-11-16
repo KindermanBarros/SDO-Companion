@@ -1,31 +1,21 @@
 {
-    "firestore":  {
-                      "rules":  "firebase/firestore.rules",
-                      "indexes":  "firebase/firestore.indexes.json"
-                  },
-    "emulators":  {
-                      "firestore":  {
-                                        "port":  8080
-                                    },
-                      "ui":  {
-                                 "enabled":  false
-                             },
-                      "singleProjectMode":  true,
-                      "database":  {
-                                       "port":  9000
-                                   },
-                      "functions":  {
-                                        "port":  5001
-                                    }
-                  },
-    "database":  {
-                     "rules":  "firebase/database.rules.json"
-                 },
-    "functions":  [
-                      {
-                          "source":  "firebase/functions",
-                          "codebase":  "sheets",
-                          "runtime":  "nodejs22"
-                      }
-                  ]
+  "firestore": {
+    "rules": "firebase/firestore.rules",
+    "indexes": "firebase/firestore.indexes.json"
+  },
+  "database": {
+    "rules": "firebase/database.rules.json"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    },
+    "database": {
+      "port": 9000
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
 }

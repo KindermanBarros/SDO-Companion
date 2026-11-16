@@ -6,7 +6,7 @@ Status: delivered changes accepted by the owner; unimplemented planned changes r
 
 ## User goal
 
-Enable simultaneous real-time editing and prevent sync issues by requiring an online connection for every mutation.
+Preserve durable offline sheet edits and converge participating sessions through online Firestore transactions. Campaign administration remains online-only.
 
 ## Requirements
 
@@ -15,6 +15,8 @@ The existing app has local persistence, sync, and conflict handling per onboardi
 ## Planned changes
 
 ### SYNC-PLAN-001 — Simultaneous editing and online-only policy
+
+Historical accepted policy; the sheet-editing restriction is superseded by SYNC-PLAN-006.
 
 Direct owner request: add real-time simultaneous editing; historically reserve conflict resolution for edits from different accounts (superseded by SYNC-PLAN-003 automatic latest-field policy); require online connection to edit, with connection/failure states and read-only offline mode without any edits.
 
@@ -43,48 +45,37 @@ Selected by owner on 2026-11-14 (`BACKLOG-007`; implemented and owner-accepted a
 
 ### SYNC-PLAN-003 - Latest-field realtime sheet convergence
 
-Owner requested automatic preference for the latest field changes and permitted deferring remaining work. Status: InDevReview; final debug build passed; tests skipped at the owner's request.
-- Keep Firestore listeners and transactions; switching storage alone does not fix merge semantics.
-- Add fieldUpdatedAt timestamps to sheet records; local Room schema 30 migrates from 29 with an empty map default. This is additive compatibility with a local migration, not an application-domain schema reset.
-- Stamp only edited conflict groups and merge independent changes. Equal revisions prefer the committed remote value; account identity and field count no longer trigger manual conflict prompts.
-- Rebase delayed editor changes against their in-memory baseline. A response to an older upload cannot clear a newer pending change or revive a local deletion.
-- BACKLOG-009 extends the initial coarse groups to stable per-element/property keys and tombstones, including canonical/legacy projections; grow-only delivery receipts are preserved.
-- Background publishing retains the automatic-sync setting; explicit session commands commit remotely. BACKLOG-009 logical revisions, rather than client wall clocks, order upgraded writes. Full authenticated cross-device acceptance remains unverified.
+InDevReview (historical baseline superseded by Spark Firestore Protocol v2). Introduced `fieldUpdatedAt` (Room v30), per-element/property conflict keys, tombstones, and logical revisions for Firestore transactions without trusting client clocks.
 
 #### Remaining collaboration backlog
 
-BACKLOG-009 status: InDevReview (build-only validation requested by owner).
-- Per-item/property patches cover inventory/itemStates, canonical and legacy conditions, abilities/powers/mysticAbilities, notes, attributes and nested skills. Stable ID tombstones prevent delayed updates from reviving deleted elements; unchanged remote fields/elements remain intact.
-- Existing fieldUpdatedAt stores local intent, committed property revisions, tombstones, a logical sheet sequence and operation receipts; Room remains at version 30 with no new columns.
-- Firestore transactions assign the next logical revision, validate the latest sheet and active campaign, apply arithmetic resource deltas, and atomically commit sheet/audit. Reusing an operation key does not repeat its mutation.
-- Upload acknowledgements preserve edits made while a response was in flight. Overflow checks protect monotonic counters; display timestamps are not treated as trusted global UTC.
-- Publish the updated Firestore rules before the client: upgraded sheets reject stale/legacy revision writes, while permission rules remain enforced. Old unmarked pending edits require explicit migration review; normal upgraded edits merge automatically.
-- No Realtime Database migration or backend deployment is performed. Test suites were skipped at owner request; authenticated multi-device and deployed-rule acceptance remain unverified. Backend outage/uncertain-write errors are surfaced, not treated as successful actions.
-
+BACKLOG-009 (InDevReview; superseded into Spark Protocol v2): per-item/property patches, stable ID tombstones, logical sequence revisions, and atomic arithmetic resource deltas with idempotent operation receipts.
 
 ## References
 
-- Direct owner request on 2026-11-12 for simultaneous editing, cross-account-only conflicts, and mandatory online editing.
-- `docs/current/onboarding-summary.md`: onboarding observations on Room, Firebase, and existing sync.
-- [Campaigns & play modes](campaigns.md#planned-changes).
-- [Character photos](character-sheets.md#planned-changes).
+- Direct owner request (2026-11-12, 2026-11-15, 2026-11-16) and `docs/current/onboarding-summary.md`.
+- [Campaigns & play modes](campaigns.md#planned-changes) and [Character photos](character-sheets.md#planned-changes).
 
 ### SYNC-PLAN-004 - Hybrid Firebase refactor
-Owner authorized implementation of the revised hybrid plan, migration of all current sheets, and a pull request on 2026-11-15. BACKLOG-011 is InDevReview. This supersedes the online-only sheet-editing requirement for sheets on the new protocol; campaign administration remains online.
-- Room owns durable local intent and optimistic state; RTDB owns migrated sheets and live presence; trusted backend commands validate and commit changes with idempotent receipts. Firestore retains campaign workflows and audit projections.
-- Preserve every current sheet across accounts, including inactive accounts, standalone sheets, archived campaigns and deleted records. Inventory, fence, migrate, verify and reconcile all server records; recover device-only drafts separately when devices reconnect.
-- Complete migration requires per-sheet parity and no unresolved failures. Pilot rollout is not full migration completion. Never overwrite newer RTDB data from stale Firestore or Room copies.
-- Offline edits remain visibly pending until committed and may be rejected after access changes or competing resource use. Preserve text and recoverable intent; do not report network availability as acknowledgement.
-- Production rollout and old-writer removal require verified migration, a compatible client and rollback readiness. Actual verification and rollout state belong in Memory.
+
+Superseded on 2026-11-16 by Spark Firestore Protocol v2 (`SYNC-PLAN-006`). Cloud Functions (`submitSheetCommand`, `projectSheetAudit`), RTDB sheet mirrors (`sheetAggregates`, `userSheets`), RTDB sheet presence, `sheetRoutes`, and `sheetMigration` are retired.
 
 ### SYNC-PLAN-005 - Small-group concurrent sync and Painel feedback
 
-Owner request on 2026-11-16 (`BACKLOG-012`); InDevReview. Target the current group of about 10 users on Firebase Spark. Improve concurrent administrator/player edits to different parts of the same character sheet while keeping Firebase reads, writes, transferred bytes, and operational complexity proportionate to that scale. The deployed serverless Firestore-authoritative plus RTDB-mirror path is the current baseline; the Cloud Functions design in SYNC-PLAN-004 is not available on the current Spark deployment.
+Owner request on 2026-11-16 (`BACKLOG-012`); InDevReview. Target ~10 users on Firebase Spark: concurrent independent field/item edits, reduced write payloads, and cloud-only Painel sync animation (`cloudSyncing`) separate from local pending/error banners.
 
-| ID | Requested outcome |
+### SYNC-PLAN-006 - Spark Firestore Protocol v2
+
+Owner request on 2026-11-16: unify synchronization on 100% Firebase Spark without Functions, Blaze, Cloud Storage, or RTDB sheet mirrors.
+
+| Area | Spark v2 policy |
 |---|---|
-| SYNC-PLAN-005-A | Preserve both users' edits when an administrator and a character owner edit independent fields or independent properties of the same list element concurrently. Define and verify same-field conflict behavior, deletions, resource spending, retry/idempotency, and offline replays before rollout. |
-| SYNC-PLAN-005-B | Reduce unnecessary full-sheet transfers and mirror writes where measurable without sacrificing atomic merges, access rules, or recovery. Compare a minimal patch/update approach against the current full-document transaction and full-state RTDB mirror using realistic sheets and a 10-user workload; choose the simpler Spark-compatible approach that meets the cost and correctness targets. |
-| SYNC-PLAN-005-C | In the Painel screen, show the sync animation only when a committed change arrives from the cloud. Local edits, pending uploads, upload acknowledgements, and unchanged/repeated snapshots must not trigger it. Keep pending/error status available separately. |
+| Authority & transactions | Firestore is the single authority; Android runs `FirebaseFirestore.runTransaction` against `characters/{id}`, `fields/{fieldKey}`, `items/{itemId}`, `items/{itemId}/fields/{fieldKey}`, and immutable `operations/{opId}` receipts mutually validated via `getAfter` in Security Rules (`<=10` accesses/rule, `<=20`/tx). |
+| Room v33 outbox | Account-scoped `account_sheets`, `sheet_intents`, and `sheet_conflicts` (`MIGRATION_32_33`) track `DRAFT`, `PENDING`, `SENDING`, `CONFIRMED`, `CONFLICT`, `REJECTED`, `ACCESS_DENIED`, and `PAUSED_DEPENDENCY` states across restarts/logouts; WorkManager drains online. |
+| Merge, deltas & conflicts | Independent fields and item properties merge automatically; same-field collisions surface base/local/remote conflict resolution (`baseRevision = remoteRevision`); tombstones prevent resurrection; dependent intents pause on conflict/rejection/access denial while independent edits proceed; resource deltas enforce bounds in Rules without clock-skew winners. |
+| Presence, media & grid | Presence uses Firestore `characters/{id}/presence/{uid}_{connId}` (`expiresAt <= request.time + 120s`, no `onDisconnect`); original photos stay local (`localPhotoUri`) with optional `<= 64 KiB` thumbnail doc (`media/avatar`); RTDB keeps only isolated `grid/{campaignId}/{gridId}` with RTDB-only `acl/{uid}`. |
+| Migration & rollback | Local administrative migration (`firebase/migration/`) validates round-trip parity with backup/comparison; no runtime Functions dependency. |
 
-Acceptance evidence: emulator or multi-client tests for independent simultaneous edits, same-field collisions, deletes and retry behavior; measured read/write count and bytes for representative 10-user activity; a focused Painel UI test or runtime capture distinguishing remote arrival from local editing and acknowledgement. Exact budget thresholds and same-field winner policy remain product decisions for implementation planning. No implementation or delivery priority is implied by this record.
+Automated actions require Rules-expressible invariants. Unsupported mechanical-effect consumption, dose/AshCost activation, and positive resource changes without a stored ceiling require explicit manual adjustment; Kotlin calculation alone is not a security guarantee. Corruption is bounded to 100. Deployment and data cutover are coordinated manually using the [operator procedure](../../firebase-deploy.md).
+
+Conflict resolution offers local, online, and hand-edited values. The manual editor starts with the local value, preserves scalar/resource types and validates input; complex structured payloads remain editable through the sheet. Applying a merge creates a new intent using the recorded remote revision; further remote changes can produce another conflict.
