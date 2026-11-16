@@ -3,48 +3,36 @@
     ".read": false,
     ".write": false,
     "sheetAggregates": {
-      "$sheetId": {
-        "state": {
-          ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
-          ".write": "auth != null && (root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('write').val() === true || newData.parent().child('control/permissions').child(auth.uid).child('write').val() === true)"
-        },
-        "sync": {
-          ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
-          ".write": "auth != null && (root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('write').val() === true || newData.parent().child('control/permissions').child(auth.uid).child('write').val() === true)"
-        },
-        "control": {
-          ".read": "auth != null && data.child('permissions').child(auth.uid).child('read').val() === true",
-          ".write": "auth != null && ((!data.exists() && newData.child('permissions').child(auth.uid).child('write').val() === true) || data.child('permissions').child(auth.uid).child('write').val() === true)"
-        },
-        "events": {
-          ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true"
-        },
-        "receipts": {
-          "$operationId": {
-            ".read": "auth != null && data.child('actorUid').val() === auth.uid"
-          }
-        }
-      }
+      ".read": false,
+      ".write": false
     },
     "userSheets": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        "$sheetId": {
-          ".write": "auth != null && (auth.uid === $uid || root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('write').val() === true)"
-        }
-      }
+      ".read": false,
+      ".write": false
     },
     "presence": {
-      "$sheetId": {
-        ".read": "auth != null && root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true",
-        "$uid": {
-          "$connectionId": {
-            ".write": "auth != null && auth.uid === $uid && (!newData.exists() || root.child('sheetAggregates').child($sheetId).child('control/permissions').child(auth.uid).child('read').val() === true)",
-            ".validate": "newData.hasChildren(['fieldKey', 'timestamp'])",
-            "fieldKey": { ".validate": "newData.isString() && newData.val().length <= 200" },
-            "label": { ".validate": "newData.isString() && newData.val().length <= 100" },
-            "timestamp": { ".validate": "newData.isNumber() && newData.val() <= now + 1000 && newData.val() >= now - 60000" },
-            "$other": { ".validate": false }
+      ".read": false,
+      ".write": false
+    },
+    "grid": {
+      "$campaignId": {
+        "$gridId": {
+          ".read": "auth != null && (data.child('acl').child(auth.uid).child('read').val() === true || data.child('acl').child(auth.uid).child('manage').val() === true)",
+          ".write": "auth != null && !data.exists() && newData.child('acl').child(auth.uid).child('manage').val() === true && newData.child('acl').child(auth.uid).child('read').val() === true",
+          ".validate": "newData.hasChild('acl')",
+          "acl": {
+            ".read": "auth != null && (data.child(auth.uid).child('read').val() === true || data.child(auth.uid).child('manage').val() === true)",
+            ".write": "auth != null && data.parent().child('acl').child(auth.uid).child('manage').val() === true",
+            "$uid": {
+              ".validate": "newData.hasChildren(['read'])",
+              "read": { ".validate": "newData.isBoolean()" },
+              "write": { ".validate": "newData.isBoolean()" },
+              "manage": { ".validate": "newData.isBoolean()" },
+              "$other": { ".validate": false }
+            }
+          },
+          "$section": {
+            ".write": "auth != null && $section !== 'acl' && (data.parent().child('acl').child(auth.uid).child('write').val() === true || data.parent().child('acl').child(auth.uid).child('manage').val() === true)"
           }
         }
       }

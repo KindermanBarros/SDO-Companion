@@ -1,14 +1,16 @@
 package com.kinderman.sdo.presentation
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayCircle
@@ -22,6 +24,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,18 +33,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.stringResource
-import com.kinderman.sdo.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.MainActivity
+import com.kinderman.sdo.R
 import com.kinderman.sdo.SdoApplication
+import com.kinderman.sdo.domain.model.ConflictResolutionStatus
+import com.kinderman.sdo.domain.model.SheetIntentStatus
+import com.kinderman.sdo.domain.model.SheetSyncStatus
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
@@ -51,17 +56,20 @@ import com.kinderman.sdo.presentation.journal.JournalViewModel
 import com.kinderman.sdo.presentation.login.LoginScreen
 import com.kinderman.sdo.presentation.session.SessionModeScreen
 import com.kinderman.sdo.presentation.settings.SettingsScreen
+import com.kinderman.sdo.presentation.sync.AccessDeniedDraftDialog
 import com.kinderman.sdo.presentation.sync.CharacterConflictDialog
 import com.kinderman.sdo.ui.CyberLoadingMode
 import com.kinderman.sdo.ui.CyberLoadingScreen
 import com.kinderman.sdo.ui.LocalSdoUseNavigationRail
 import com.kinderman.sdo.ui.SdoContentDensity
 import com.kinderman.sdo.ui.SdoContentFrame
+import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.SdoNavigationBar
 import com.kinderman.sdo.ui.SdoNavigationItem
 import com.kinderman.sdo.ui.SdoNavigationRail
 import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoTextButton
+import kotlinx.coroutines.delay
 
 private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, JOURNAL, SETTINGS }
 
@@ -96,6 +104,8 @@ fun SdoApp(
     val offlineReadOnly by appViewModel.isOfflineReadOnly.collectAsStateWithLifecycle()
     val syncFailure by appViewModel.syncFailure.collectAsStateWithLifecycle()
     val sheetSyncStatus by appViewModel.sheetSyncStatus.collectAsStateWithLifecycle()
+    val sheetIntents by appViewModel.sheetIntents.collectAsStateWithLifecycle()
+    val sheetConflicts by appViewModel.sheetConflicts.collectAsStateWithLifecycle()
     val offlineEditableIds by appViewModel.offlineEditableIds.collectAsStateWithLifecycle()
     val conflicts by appViewModel.conflicts.collectAsStateWithLifecycle()
     val invitePreview by appViewModel.invitePreview.collectAsStateWithLifecycle()
@@ -109,6 +119,42 @@ fun SdoApp(
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedJournalCampaignId by rememberSaveable { mutableStateOf<String?>(null) }
     var surface by rememberSaveable { mutableStateOf(AppSurface.DASHBOARD) }
+    var reviewingAccessDenied by rememberSaveable { mutableStateOf(false) }
+    var lastSeenConfirmedCount by rememberSaveable(appSession?.uid) { mutableStateOf<Int?>(null) }
+    var showConfirmedBanner by rememberSaveable(appSession?.uid) { mutableStateOf(false) }
+
+    val openSheetConflicts = remember(sheetConflicts) {
+        sheetConflicts.filter { it.resolutionStatus == ConflictResolutionStatus.OPEN }
+    }
+    val accessDeniedIntents = remember(sheetIntents) {
+        sheetIntents.filter { it.status == SheetIntentStatus.ACCESS_DENIED }
+    }
+
+    LaunchedEffect(accessDeniedIntents) {
+        if (accessDeniedIntents.isEmpty()) reviewingAccessDenied = false
+    }
+
+    LaunchedEffect(
+        sheetSyncStatus.confirmedCount,
+        sheetSyncStatus.totalQueuedCount,
+        offlineReadOnly,
+        syncFailure,
+    ) {
+        val previous = lastSeenConfirmedCount
+        lastSeenConfirmedCount = sheetSyncStatus.confirmedCount
+        if (previous != null &&
+            sheetSyncStatus.confirmedCount > previous &&
+            sheetSyncStatus.totalQueuedCount == 0 &&
+            !offlineReadOnly &&
+            syncFailure == null
+        ) {
+            showConfirmedBanner = true
+            delay(3_500L)
+            showConfirmedBanner = false
+        } else if (sheetSyncStatus.totalQueuedCount > 0 || offlineReadOnly || syncFailure != null) {
+            showConfirmedBanner = false
+        }
+    }
 
     LaunchedEffect(surface, appSession?.uid) {
         if (surface == AppSurface.HISTORIAN && appSession != null) {
@@ -160,9 +206,24 @@ fun SdoApp(
             else -> appViewModel.clearSession()
         }
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_START) { appViewModel.onAppForegrounded() }
+    LaunchedEffect(surface, selectedId, appSession?.uid) {
+        appViewModel.setSheetPresenceActive(
+            active = surface == AppSurface.SHEET && appSession != null,
+            characterId = selectedId,
+        )
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        appViewModel.onAppForegrounded()
+        appViewModel.setSheetPresenceActive(
+            active = surface == AppSurface.SHEET && appSession != null,
+            characterId = selectedId,
+        )
+    }
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
-        selectedId?.let { appViewModel.setFieldPresence(it, null, false) }
+        if (surface == AppSurface.SHEET) {
+            selectedId?.let { appViewModel.setFieldPresence(it, null, false) }
+        }
+        appViewModel.setSheetPresenceActive(false)
     }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         appViewModel.onAppBackgrounded(changingConfiguration = activity.isChangingConfigurations)
@@ -192,7 +253,14 @@ fun SdoApp(
 
         else -> {
             val selectedCharacter = characters.firstOrNull { it.id == selectedId }
-            val activeSheetId = selectedId?.takeIf { surface == AppSurface.SHEET && it in offlineEditableIds }.orEmpty()
+            val activeSheetId = selectedId?.takeIf { surface == AppSurface.SHEET && appSession != null }.orEmpty()
+            DisposableEffect(activeSheetId, appSession?.uid) {
+                onDispose {
+                    if (activeSheetId.isNotBlank()) {
+                        appViewModel.setFieldPresence(activeSheetId, null, false)
+                    }
+                }
+            }
             val presenceFlow = remember(activeSheetId, appSession?.uid) {
                 appViewModel.observeFieldPresence(activeSheetId)
             }
@@ -274,7 +342,11 @@ fun SdoApp(
                     character = selectedCharacter,
                     saveError = saveErrors[selectedCharacter?.id],
                     fieldPresence = fieldPresence,
-                    onFieldFocus = { field, focused -> selectedId?.let { appViewModel.setFieldPresence(it, field, focused) } },
+                    onFieldFocus = { field, focused ->
+                        if (surface == AppSurface.SHEET || !focused) {
+                            selectedId?.let { appViewModel.setFieldPresence(it, field, focused) }
+                        }
+                    },
                     session = appSession,
                     catalog = catalog,
                     readOnly = archived || sheetReadOnlyOffline,
@@ -400,13 +472,29 @@ fun SdoApp(
             }
                 }
                 }
-                if (offlineReadOnly || syncFailure != null || sheetSyncStatus.pendingCount > 0 || sheetSyncStatus.rejectedCount > 0) {
+                val showSyncBanner = offlineReadOnly ||
+                    syncFailure != null ||
+                    sheetSyncStatus.totalQueuedCount > 0 ||
+                    sheetSyncStatus.isSyncing ||
+                    showConfirmedBanner
+                if (showSyncBanner) {
+                    val firstDenied = accessDeniedIntents.firstOrNull()
                     SyncStatusBanner(
                         offlineReadOnly = offlineReadOnly,
                         syncFailure = syncFailure,
                         status = sheetSyncStatus,
                         offlineSheetsAvailable = offlineEditableIds.isNotEmpty(),
+                        hasAccessDeniedDraft = firstDenied != null,
+                        hasOpenConflict = openSheetConflicts.isNotEmpty(),
                         onRetry = appViewModel::sync,
+                        onReviewAccessDenied = { reviewingAccessDenied = true },
+                        onRetryAccessDenied = {
+                            firstDenied?.let { appViewModel.retryAccessDeniedDraft(it.operationId) }
+                        },
+                        onDiscardAccessDenied = {
+                            firstDenied?.let { appViewModel.discardDraft(it.operationId) }
+                        },
+                        onDismissConfirmed = { showConfirmedBanner = false },
                     )
                 }
                 if (!wide && surface != AppSurface.SHEET) SdoNavigationBar(buildList {
@@ -420,23 +508,59 @@ fun SdoApp(
         }
     }
 
-    conflicts.firstOrNull()?.let { conflict ->
-        CharacterConflictDialog(
-            conflict = conflict,
-            onResolve = { remoteFieldIds -> appViewModel.resolveConflict(conflict, remoteFieldIds) },
+    val activeSheetConflict = openSheetConflicts.firstOrNull()
+    val activeLegacyConflict = conflicts.firstOrNull()
+    val activeDeniedIntent = accessDeniedIntents.firstOrNull()
+    when {
+        activeSheetConflict != null -> CharacterConflictDialog(
+            conflict = activeSheetConflict,
+            characterName = characters.firstOrNull { it.id == activeSheetConflict.sheetId }?.name.orEmpty(),
+            onResolve = { useRemote, customValueJson ->
+                appViewModel.resolveIntentConflict(activeSheetConflict.id, useRemote, customValueJson)
+            },
+            onDiscard = { appViewModel.discardDraft(activeSheetConflict.operationId) },
+        )
+        activeLegacyConflict != null -> CharacterConflictDialog(
+            conflict = activeLegacyConflict,
+            onResolve = { remoteFieldIds -> appViewModel.resolveConflict(activeLegacyConflict, remoteFieldIds) },
+        )
+        reviewingAccessDenied && activeDeniedIntent != null -> AccessDeniedDraftDialog(
+            intent = activeDeniedIntent,
+            characterName = characters.firstOrNull { it.id == activeDeniedIntent.sheetId }?.name.orEmpty(),
+            onRetry = {
+                appViewModel.retryAccessDeniedDraft(activeDeniedIntent.operationId)
+                reviewingAccessDenied = false
+            },
+            onDiscard = {
+                appViewModel.discardDraft(activeDeniedIntent.operationId)
+                reviewingAccessDenied = false
+            },
+            onDismiss = { reviewingAccessDenied = false },
         )
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SyncStatusBanner(
     offlineReadOnly: Boolean,
     syncFailure: String?,
-    status: com.kinderman.sdo.domain.model.SheetSyncStatus,
+    status: SheetSyncStatus,
     offlineSheetsAvailable: Boolean,
+    hasAccessDeniedDraft: Boolean,
+    hasOpenConflict: Boolean,
     onRetry: () -> Unit,
+    onReviewAccessDenied: () -> Unit,
+    onRetryAccessDenied: () -> Unit,
+    onDiscardAccessDenied: () -> Unit,
+    onDismissConfirmed: () -> Unit,
 ) {
-    val hasError = status.rejectedCount > 0 || syncFailure != null
+    val hasError = status.hasActionRequired || syncFailure != null
+    val isConfirmedOnly = !hasError &&
+        !offlineReadOnly &&
+        status.totalQueuedCount == 0 &&
+        !status.isSyncing &&
+        status.confirmedCount > 0
     val containerColor = if (!hasError) {
         MaterialTheme.colorScheme.surfaceVariant
     } else {
@@ -448,37 +572,108 @@ private fun SyncStatusBanner(
         MaterialTheme.colorScheme.onErrorContainer
     }
     val bannerText = when {
-        status.rejectedCount > 0 -> stringResource(R.string.sheet_sync_rejected, status.rejectedCount, status.lastError.orEmpty())
+        status.conflictCount > 0 -> stringResource(R.string.sheet_sync_conflict, status.conflictCount)
+        status.accessDeniedCount > 0 -> stringResource(
+            R.string.sheet_sync_access_denied,
+            status.accessDeniedCount,
+            status.lastError.orEmpty(),
+        ).trim()
+        status.rejectedCount > 0 -> stringResource(
+            R.string.sheet_sync_rejected,
+            status.rejectedCount,
+            status.lastError.orEmpty(),
+        ).trim()
         offlineReadOnly && offlineSheetsAvailable -> stringResource(R.string.sheet_sync_offline_editable)
         offlineReadOnly -> stringResource(R.string.sheet_sync_offline_unavailable)
-        status.isSyncing -> stringResource(R.string.sheet_sync_sending, status.pendingCount)
+        status.pausedCount > 0 -> stringResource(R.string.sheet_sync_paused, status.pausedCount)
+        status.sendingCount > 0 || status.isSyncing -> stringResource(
+            R.string.sheet_sync_sending,
+            maxOf(status.sendingCount, status.pendingCount).coerceAtLeast(1),
+        )
         status.pendingCount > 0 -> stringResource(R.string.sheet_sync_pending, status.pendingCount)
-        else -> syncFailure.orEmpty()
+        status.draftCount > 0 -> stringResource(R.string.sheet_sync_draft, status.draftCount)
+        syncFailure != null -> syncFailure
+        status.confirmedCount > 0 -> stringResource(R.string.sheet_sync_confirmed, status.confirmedCount)
+        else -> ""
     }
+    val stateSummaryItems = buildList {
+        if (status.draftCount > 0) add(stringResource(R.string.sheet_sync_summary_draft, status.draftCount))
+        if (status.pendingCount > 0) add(stringResource(R.string.sheet_sync_summary_pending, status.pendingCount))
+        if (status.sendingCount > 0) add(stringResource(R.string.sheet_sync_summary_sending, status.sendingCount))
+        if (status.confirmedCount > 0) add(stringResource(R.string.sheet_sync_summary_confirmed, status.confirmedCount))
+        if (status.conflictCount > 0) add(stringResource(R.string.sheet_sync_summary_conflict, status.conflictCount))
+        if (status.rejectedCount > 0) add(stringResource(R.string.sheet_sync_summary_rejected, status.rejectedCount))
+        if (status.accessDeniedCount > 0) add(stringResource(R.string.sheet_sync_summary_access_denied, status.accessDeniedCount))
+        if (status.pausedCount > 0) add(stringResource(R.string.sheet_sync_summary_paused, status.pausedCount))
+    }
+
     Surface(
         color = containerColor,
         contentColor = contentColor,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Icon(
-                imageVector = if (offlineReadOnly) Icons.Default.CloudOff else Icons.Default.SyncProblem,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
-            Text(
-                text = bannerText,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.weight(1f),
-            )
-            SdoTextButton(onClick = onRetry) {
-                Text(if (offlineReadOnly) "Reconectar" else "Tentar")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    imageVector = when {
+                        offlineReadOnly -> Icons.Default.CloudOff
+                        isConfirmedOnly -> Icons.Default.CheckCircle
+                        else -> Icons.Default.SyncProblem
+                    },
+                    contentDescription = null,
+                    tint = if (isConfirmedOnly) MaterialTheme.colorScheme.primary else contentColor,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = bannerText,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            if (stateSummaryItems.size > 1) {
+                SdoMetadataText(
+                    text = stateSummaryItems.joinToString(" · "),
+                    color = contentColor,
+                )
+            }
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                if (status.accessDeniedCount > 0 && hasAccessDeniedDraft) {
+                    SdoTextButton(onClick = onReviewAccessDenied) {
+                        Text(stringResource(R.string.sheet_sync_action_review))
+                    }
+                    SdoTextButton(onClick = onRetryAccessDenied) {
+                        Text(stringResource(R.string.sheet_sync_action_retry_draft))
+                    }
+                    SdoTextButton(onClick = onDiscardAccessDenied) {
+                        Text(stringResource(R.string.sheet_sync_action_discard_draft))
+                    }
+                } else if (isConfirmedOnly) {
+                    SdoTextButton(onClick = onDismissConfirmed) {
+                        Text(stringResource(R.string.sheet_sync_action_dismiss))
+                    }
+                } else if (!hasOpenConflict) {
+                    SdoTextButton(onClick = onRetry) {
+                        Text(
+                            stringResource(
+                                if (offlineReadOnly) R.string.sheet_sync_action_reconnect
+                                else R.string.sheet_sync_action_retry,
+                            ),
+                        )
+                    }
+                }
             }
         }
     }

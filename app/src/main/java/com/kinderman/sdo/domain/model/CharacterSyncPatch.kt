@@ -678,3 +678,42 @@ fun resolveConcurrentEditKeys(
         localTime > remoteTime
     }
 }
+
+/**
+ * Splits targets into bounded batches matching Spark's Rules access budget
+ * (at most 5 targets when any ITEM_FIELD is present, otherwise at most 7).
+ */
+fun chunkSparkTargets(
+    targets: List<SparkTargetSpec>,
+    maxTargets: Int = MAX_SPARK_TARGETS_PER_OPERATION,
+): List<List<SparkTargetSpec>> {
+    require(maxTargets in 1..MAX_SPARK_TARGETS_PER_OPERATION) {
+        "Spark protocol allows 1..$MAX_SPARK_TARGETS_PER_OPERATION targets per operation."
+    }
+    if (targets.isEmpty()) return emptyList()
+    val result = mutableListOf<List<SparkTargetSpec>>()
+    var current = mutableListOf<SparkTargetSpec>()
+    for (target in targets) {
+        val candidate = current + target
+        if (candidate.size > maxTargets || !isWithinSparkTransactionBudget(candidate)) {
+            if (current.isNotEmpty()) {
+                result += current.toList()
+                current = mutableListOf()
+            }
+        }
+        current += target
+    }
+    if (current.isNotEmpty()) result += current.toList()
+    return result
+}
+
+/**
+ * Transitions a recoverable [SheetIntentStatus.ACCESS_DENIED] or [SheetIntentStatus.DRAFT] intent
+ * back to [SheetIntentStatus.PENDING] without silently altering its original [SheetIntent.baseRevision].
+ */
+fun SheetIntent.retryAsPending(now: Long = updatedAt): SheetIntent {
+    require(status == SheetIntentStatus.ACCESS_DENIED || status == SheetIntentStatus.DRAFT) {
+        "Somente rascunhos ou intenções sem acesso podem ser reenviados diretamente."
+    }
+    return copy(status = SheetIntentStatus.PENDING, error = "", updatedAt = now)
+}

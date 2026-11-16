@@ -11,183 +11,323 @@ service cloud.firestore {
         && request.auth.token.get('email', '') == 'kindbarros@gmail.com';
     }
 
-    function memberPath(campaignId, uid) {
-      return /databases/$(database)/documents/campaignMembers/$(campaignId + '::' + uid);
+    function isSafeId(val) {
+      return val is string && val.matches('^[A-Za-z0-9_.:=-]{1,128}$');
+    }
+
+    function isInt32(val) {
+      return val is int && val >= 0 && val <= 2147483647;
+    }
+
+    function isSignedInt32(val) {
+      return val is int && val >= -2147483647 && val <= 2147483647;
     }
 
     function campaignPath(campaignId) {
       return /databases/$(database)/documents/campaigns/$(campaignId);
     }
 
-    function invitePath(inviteId) {
-      return /databases/$(database)/documents/campaignInvites/$(inviteId);
+    function memberPath(campaignId, uid) {
+      return /databases/$(database)/documents/campaigns/$(campaignId)/members/$(uid);
     }
 
-    function hasCampaign(campaignId) {
-      return campaignId != '' && campaignId != 'default' && exists(campaignPath(campaignId));
+    function invitePath(campaignId, inviteId) {
+      return /databases/$(database)/documents/campaigns/$(campaignId)/invites/$(inviteId);
     }
 
-    function campaignIsActive(campaignId) {
-      return hasCampaign(campaignId)
-        && get(campaignPath(campaignId)).data.state == 'ACTIVE';
+    function characterPath(charId) {
+      return /databases/$(database)/documents/characters/$(charId);
     }
 
-    function isCampaignOwner(campaignId) {
-      return signedIn()
-        && hasCampaign(campaignId)
-        && get(campaignPath(campaignId)).data.ownerId == request.auth.uid;
+    function itemPath(charId, itemId) {
+      return /databases/$(database)/documents/characters/$(charId)/items/$(itemId);
     }
 
-    function isCampaignResponsible(campaignId) {
-      return isAdministrator() || isCampaignOwner(campaignId);
+    function opPath(charId, opId) {
+      return /databases/$(database)/documents/characters/$(charId)/operations/$(opId);
     }
 
-    function isActiveMemberFor(campaignId, uid) {
-      return campaignId != ''
-        && campaignId != 'default'
-        && exists(memberPath(campaignId, uid))
-        && get(memberPath(campaignId, uid)).data.state == 'ACTIVE';
+    function deliveryPath(deliveryId) {
+      return /databases/$(database)/documents/campaignDeliveries/$(deliveryId);
     }
 
-    function isActiveMemberAfter(campaignId, uid) {
-      return campaignId != ''
-        && campaignId != 'default'
-        && getAfter(memberPath(campaignId, uid)).data.state == 'ACTIVE';
-    }
-
-    function validMembershipInvite(data) {
-      let code = data.get('joinedByInviteId', '');
-      return code != ''
-        && exists(invitePath(code))
-        && get(invitePath(code)).data.campaignId == data.campaignId
-        && get(invitePath(code)).data.get('revokedAt', null) == null
-        && (
-          get(invitePath(code)).data.get('expiresAt', null) == null
-          || get(invitePath(code)).data.expiresAt > request.time.toMillis()
-        );
-    }
-
-    function isActiveMember(campaignId) {
-      return signedIn() && isActiveMemberFor(campaignId, request.auth.uid);
-    }
-
-    function isCampaignHistorian(campaignId) {
-      // "Mestre" is a campaign relationship, never a global/member role.
-      return isAdministrator() || isCampaignOwner(campaignId);
-    }
-
-    function canReadCampaign(campaignId) {
-      return signedIn() && (isAdministrator() || isCampaignOwner(campaignId) || isActiveMember(campaignId));
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
     }
 
     function normalizedCampaignId(data) {
       return data.get('campaignId', '') == 'default' ? '' : data.get('campaignId', '');
     }
 
-    function noCampaign(data) {
-      return normalizedCampaignId(data) == '';
+    function campaignIsActive(campaignId) {
+      let camp = get(campaignPath(campaignId));
+      return campaignId != ''
+        && campaignId != 'default'
+        && camp != null
+        && camp.data.state == 'ACTIVE';
     }
 
-    function ownsExistingCharacter() {
-      return signedIn() && resource.data.ownerId == request.auth.uid;
+    function isCampaignOwner(campaignId) {
+      let camp = get(campaignPath(campaignId));
+      return signedIn()
+        && campaignId != ''
+        && campaignId != 'default'
+        && camp != null
+        && camp.data.ownerId == request.auth.uid;
     }
 
-    function existingLockType() {
-      return resource.data.get(
-        'lockType',
-        resource.data.get('isLocked', resource.data.get('locked', false)) == true
-          ? 'HISTORIAN'
-          : 'NONE'
-      );
+    function isCampaignResponsible(campaignId) {
+      return isAdministrator() || isCampaignOwner(campaignId);
     }
 
-    function requestedIsLocked() {
-      return request.resource.data.get(
-        'isLocked',
-        request.resource.data.get('locked', false)
-      );
+    function isActiveMember(campaignId) {
+      let mem = get(memberPath(campaignId, request.auth.uid));
+      return signedIn()
+        && campaignId != ''
+        && campaignId != 'default'
+        && mem != null
+        && mem.data.state == 'ACTIVE';
     }
 
-    function keepsLockState() {
-      return request.resource.data.lockType == existingLockType()
-        && requestedIsLocked() == (existingLockType() != 'NONE')
-        && request.resource.data.lockedBy == resource.data.lockedBy
-        && request.resource.data.get('lockedAt', null) == resource.data.get('lockedAt', null);
+    function isActiveMemberAfter(campaignId, uid) {
+      let mem = getAfter(memberPath(campaignId, uid));
+      return campaignId != ''
+        && campaignId != 'default'
+        && mem != null
+        && mem.data.state == 'ACTIVE'
+        && mem.data.role == 'PLAYER';
     }
 
-    function validPlayerLockTransition() {
-      return keepsLockState() || (
-        existingLockType() == 'NONE'
-        && request.resource.data.lockType == 'PLAYER'
-        && requestedIsLocked() == true
-        && request.resource.data.lockedBy == request.auth.uid
-        && request.resource.data.get('lockedAt', null) != null
+    function canReadCampaign(campaignId) {
+      let camp = get(campaignPath(campaignId));
+      return signedIn()
+        && campaignId != ''
+        && campaignId != 'default'
+        && (
+          isAdministrator()
+          || (
+            camp != null
+            && camp.data.state != 'DELETED'
+            && (camp.data.ownerId == request.auth.uid || isActiveMember(campaignId))
+          )
+        );
+    }
+
+    // Strict Spark v2 sheet ACL: owner OR current active linked campaign GM only.
+    function canReadCharacterData(charData) {
+      let cid = normalizedCampaignId(charData);
+      let camp = cid != '' ? get(campaignPath(cid)) : null;
+      return charData.ownerId == request.auth.uid
+        || (cid != '' && camp != null && camp.data.state == 'ACTIVE' && camp.data.ownerId == request.auth.uid);
+    }
+
+    function canReadCharacterById(charId) {
+      let charDoc = get(characterPath(charId));
+      return charDoc != null && canReadCharacterData(charDoc.data);
+    }
+
+    function canWriteCharacterMedia(charId) {
+      let charDoc = get(characterPath(charId));
+      let cid = charDoc != null ? normalizedCampaignId(charDoc.data) : '';
+      let camp = cid != '' ? get(campaignPath(cid)) : null;
+      return charDoc != null
+        && charDoc.data.deleted == false
+        && (cid == '' || (camp != null && camp.data.state == 'ACTIVE'))
+        && (
+          (charDoc.data.ownerId == request.auth.uid && charDoc.data.get('lockType', 'NONE') != 'HISTORIAN')
+          || (cid != '' && camp != null && camp.data.ownerId == request.auth.uid)
+        );
+    }
+
+    function targetDocPath(charId, t) {
+      return t.kind == 'SHEET'
+        ? characterPath(charId)
+        : (t.kind == 'FIELD'
+          ? /databases/$(database)/documents/characters/$(charId)/fields/$(t.key)
+          : (t.kind == 'ITEM'
+            ? itemPath(charId, t.itemId)
+            : /databases/$(database)/documents/characters/$(charId)/items/$(t.itemId)/fields/$(t.key)));
+    }
+
+    function isTargetMatch(t, kind, itemId, key) {
+      return t.kind == kind && t.itemId == itemId && t.key == key;
+    }
+
+    function findTarget(targets, kind, itemId, key) {
+      return targets.size() > 0 && isTargetMatch(targets[0], kind, itemId, key) ? targets[0]
+        : (targets.size() > 1 && isTargetMatch(targets[1], kind, itemId, key) ? targets[1]
+        : (targets.size() > 2 && isTargetMatch(targets[2], kind, itemId, key) ? targets[2]
+        : (targets.size() > 3 && isTargetMatch(targets[3], kind, itemId, key) ? targets[3]
+        : (targets.size() > 4 && isTargetMatch(targets[4], kind, itemId, key) ? targets[4]
+        : (targets.size() > 5 && isTargetMatch(targets[5], kind, itemId, key) ? targets[5]
+        : (targets.size() > 6 && isTargetMatch(targets[6], kind, itemId, key) ? targets[6] : null))))));
+    }
+
+    function validOpHeader(opDoc, opId) {
+      return opDoc != null
+        && opDoc.data.id == opId
+        && opDoc.data.actorUid == request.auth.uid
+        && opDoc.data.outcome == 'COMMITTED'
+        && opDoc.data.schemaVersion == 2
+        && opDoc.data.createdAt == request.time;
+    }
+
+    function validCharacterRootShape(data, charId) {
+      return data.size() == 18
+        && data.keys().hasAll([
+          'id', 'ownerId', 'campaignId', 'authorizedCampaignId', 'deleted',
+          'schemaVersion', 'canonicalSchemaVersion', 'itemSchemaVersion', 'protocolVersion',
+          'lockType', 'isLocked', 'lockedBy', 'lockedAt',
+          'revision', 'lastOperationId', 'updatedBy', 'updatedAt', 'appliedDeliveryIds'
+        ])
+        && data.id == charId
+        && isSafeId(data.ownerId)
+        && data.campaignId is string
+        && data.campaignId != 'default'
+        && data.campaignId.size() <= 128
+        && data.authorizedCampaignId is string
+        && data.authorizedCampaignId != 'default'
+        && data.authorizedCampaignId.size() <= 128
+        && data.deleted is bool
+        && data.schemaVersion == 2
+        && isInt32(data.canonicalSchemaVersion)
+        && isInt32(data.itemSchemaVersion)
+        && data.protocolVersion == 2
+        && data.lockType in ['NONE', 'PLAYER', 'HISTORIAN']
+        && data.isLocked is bool
+        && data.isLocked == (data.lockType != 'NONE')
+        && data.lockedBy is string
+        && (data.lockType == 'NONE' ? (data.lockedBy == '' && data.lockedAt == null) : (isSafeId(data.lockedBy) && data.lockedAt is timestamp))
+        && data.revision is int
+        && data.revision >= 1
+        && isSafeId(data.lastOperationId)
+        && data.updatedBy == request.auth.uid
+        && data.updatedAt == request.time
+        && data.appliedDeliveryIds is list
+        && data.appliedDeliveryIds.size() <= 500;
+    }
+
+    function keepsRootLock(before, after) {
+      return after.lockType == before.get('lockType', 'NONE')
+        && after.isLocked == before.get('isLocked', false)
+        && after.lockedBy == before.get('lockedBy', '')
+        && after.lockedAt == before.get('lockedAt', null);
+    }
+
+    function validFieldValue(fieldKey, val) {
+      return (
+        fieldKey in [
+          'name', 'race', 'subRace', 'raceAttribute', 'occupation', 'height', 'age', 'sex', 'size',
+          'avatarPreset', 'pathName', 'pathMotto', 'story', 'agilityLimit', 'creationStatus',
+          'itemCreationDraft', 'migrationReviewPayload', 'canonicalBodyPayload',
+          'activeModifiersPayload', 'scopedItemCatalogPayload', 'canonicalProgressionPayload'
+        ] && val is string && val.size() <= 250000
       ) || (
-        existingLockType() == 'PLAYER'
-        && request.resource.data.lockType == 'NONE'
-        && requestedIsLocked() == false
-        && request.resource.data.lockedBy == ''
-        && request.resource.data.get('lockedAt', null) == null
-      );
-    }
-
-    function validCampaignHistorianLockTransition(campaignId) {
-      return keepsLockState() || (
-        isCampaignHistorian(campaignId)
-        && request.resource.data.lockType == 'HISTORIAN'
-        && requestedIsLocked() == true
-        && request.resource.data.lockedBy == request.auth.uid
-        && request.resource.data.get('lockedAt', null) != null
+        fieldKey in ['level', 'creationStep'] && val is int && val >= 1 && val <= 20
       ) || (
-        isCampaignHistorian(campaignId)
-        && request.resource.data.lockType == 'NONE'
-        && requestedIsLocked() == false
-        && request.resource.data.lockedBy == ''
-        && request.resource.data.get('lockedAt', null) == null
-      );
-    }
-
-    function validAdministratorLockTransition() {
-      return keepsLockState() || (
-        request.resource.data.lockType == 'HISTORIAN'
-        && requestedIsLocked() == true
-        && request.resource.data.lockedBy == request.auth.uid
-        && request.resource.data.get('lockedAt', null) != null
+        fieldKey == 'creationRulesVersion' && val is int && val >= 1 && val <= 2147483647
       ) || (
-        request.resource.data.lockType == 'NONE'
-        && requestedIsLocked() == false
-        && request.resource.data.lockedBy == ''
-        && request.resource.data.get('lockedAt', null) == null
+        fieldKey == 'creationCompletedAt' && (val == null || (val is int && val >= 0))
+      ) || (
+        fieldKey in [
+          'money', 'containerCapacity',
+          'progressionLifeBonus', 'progressionSanityBonus', 'progressionArcaneBonus', 'progressionEnergyBonus'
+        ] && isInt32(val)
+      ) || (
+        fieldKey in ['life', 'sanity', 'arcane', 'energy', 'destiny', 'exhaustion', 'corruption']
+        && val is map
+        && val.keys().hasOnly(['current', 'maximum', 'adjustment'])
+        && val.keys().hasAll(['current', 'maximum', 'adjustment'])
+        && isInt32(val.current)
+        && isInt32(val.maximum)
+        && isSignedInt32(val.adjustment)
+      ) || (
+        fieldKey in [
+          'positiveTraits', 'negativeTraits', 'pathKeywords', 'pathPillars',
+          'learnedKnowledges', 'arcaneKnowledges', 'battleTechniques', 'progressionHistory'
+        ] && val is list && val.size() <= 500
+      ) || (
+        fieldKey == 'protectionAdjustments' && val is map && val.size() <= 100
       );
     }
 
-    function validCharacterCampaignTarget() {
-      let nextCampaign = normalizedCampaignId(request.resource.data);
-      return nextCampaign == '' || (
-        campaignIsActive(nextCampaign)
-        && (isAdministrator() || isCampaignOwner(nextCampaign) || isActiveMemberAfter(nextCampaign, request.auth.uid))
+    function validFieldDelta(fieldKey, prevVal, nextVal, delta) {
+      return isSignedInt32(delta) && (
+        (
+          fieldKey == 'money'
+          && prevVal is int
+          && nextVal == prevVal + delta
+          && isInt32(nextVal)
+        ) || (
+          fieldKey in ['life', 'sanity', 'arcane', 'energy', 'destiny', 'exhaustion', 'corruption']
+          && prevVal is map
+          && nextVal.current == prevVal.current + delta
+          && isInt32(nextVal.current)
+          // Legacy derived-only ceilings may be zero. Spending remains safe;
+          // automatic increases require a usable ceiling stored on the server.
+          && (fieldKey != 'corruption' || nextVal.current <= 100)
+          && (delta <= 0 || (prevVal.maximum > 0 && nextVal.current <= prevVal.maximum))
+          && nextVal.maximum == prevVal.maximum
+          && nextVal.adjustment == prevVal.adjustment
+        )
       );
     }
 
-    function validCharacterCreator() {
-      let nextCampaign = normalizedCampaignId(request.resource.data);
-      return isAdministrator() || request.resource.data.ownerId == request.auth.uid || (
-        nextCampaign != ''
-        && campaignIsActive(nextCampaign)
-        && isCampaignOwner(nextCampaign)
-        && isActiveMemberAfter(nextCampaign, request.resource.data.ownerId)
-      );
+    function expectedItemKind(itemId) {
+      return itemId.matches('^inv_.*') ? 'INVENTORY'
+        : (itemId.matches('^istate_.*') ? 'ITEM_STATE'
+        : (itemId.matches('^abil_.*') ? 'ABILITY'
+        : (itemId.matches('^pow_.*') ? 'POWER'
+        : (itemId.matches('^mys_.*') ? 'MYSTIC'
+        : (itemId.matches('^cond_.*') ? 'CONDITION'
+        : (itemId.matches('^lcond_.*') ? 'LEGACY_CONDITION'
+        : (itemId.matches('^note_.*') ? 'NOTE'
+        : (itemId in ['attr_FOR', 'attr_AGI', 'attr_VIG', 'attr_INT', 'attr_PER', 'attr_POD'] ? 'ATTRIBUTE' : ''))))))));
     }
 
-    function campaignCharacterWritable() {
-      let existingCampaign = normalizedCampaignId(resource.data);
-      return existingCampaign != ''
-        && campaignIsActive(existingCampaign)
-        && isCampaignHistorian(existingCampaign);
+    function validItemFieldValue(itemId, fieldKey, val) {
+      return itemId.size() >= 6 && (
+        itemId[0:4] == 'inv_'
+          ? (
+            (fieldKey in ['name', 'state', 'itemCondition', 'region', 'effect', 'quality', 'category', 'linkedAshId', 'ashPurity'] && val is string && val.size() <= 2000)
+            || (fieldKey in ['quantity', 'durabilityCurrent', 'durabilityMax', 'backpackCapacity', 'pg', 'pl'] && isInt32(val))
+            || (fieldKey == 'agilityLimit' && (val == null || isInt32(val)))
+            || (fieldKey == 'load' && val is number && val >= 0 && val <= 2147483647)
+            || (fieldKey in ['enhancements', 'mechanicalEffects'] && val is list && val.size() <= 100)
+            || (fieldKey == 'meta' && val is map && val.size() <= 50)
+          )
+          : (itemId[0:5] == 'attr_'
+            ? (
+              (fieldKey == 'name' && val is string && val.size() <= 64)
+              || (fieldKey == 'acronym' && val is string && val.size() <= 16)
+              || (fieldKey in ['value', 'modifier'] && isSignedInt32(val))
+              || (fieldKey.matches('^skill_[A-Za-z0-9_.-]{1,64}_name$') && val is string && val.size() <= 64)
+              || (fieldKey.matches('^skill_[A-Za-z0-9_.-]{1,64}_(value|modifier)$') && isSignedInt32(val))
+            )
+            : (itemId[0:7] == 'istate_'
+              ? (
+                (fieldKey in ['definition', 'consumable', 'ammo', 'reload', 'container'] && (val == null || (val is map && val.size() <= 50)))
+                || (fieldKey in ['scope', 'material'] && ((val is string && val.size() <= 200) || (val is map && val.size() <= 50)))
+                || (fieldKey == 'installations' && val is list && val.size() <= 50)
+                || (fieldKey == 'stack' && (isInt32(val) || (val is map && val.size() <= 20)))
+                || (fieldKey == 'runtime' && (isInt32(val) || (val is map && val.size() <= 50)))
+              )
+              : (itemId[0:5] == 'note_'
+                ? ((fieldKey == 'title' && val is string && val.size() <= 200) || (fieldKey == 'text' && val is string && val.size() <= 20000))
+                : ((itemId[0:5] == 'cond_' || itemId[0:6] == 'lcond_')
+                  ? ((fieldKey in ['name', 'duration', 'summary', 'origin', 'payload'] && val is string && val.size() <= 20000) || (fieldKey == 'intensity' && isInt32(val)))
+                  : ((itemId[0:5] == 'abil_' || itemId[0:4] == 'pow_' || itemId[0:4] == 'mys_')
+                    && (
+                      (fieldKey in ['name', 'cost', 'costType', 'action', 'range', 'duration', 'effect', 'linkedItemId'] && val is string && val.size() <= 2000)
+                      || (fieldKey == 'costValue' && isInt32(val))
+                      || (fieldKey in ['active', 'favorite', 'available'] && val is bool)
+                      || (fieldKey == 'modifiers' && val is list && val.size() <= 100)
+                      || (fieldKey == 'meta' && val is map && val.size() <= 50)
+                    ))))))
+      );
     }
 
     match /campaigns/{campaignId} {
-      // Using resource.data.ownerId makes ownerId-filtered list queries provable by rules.
       allow read: if signedIn() && (
         isAdministrator()
         || resource.data.ownerId == request.auth.uid
@@ -195,6 +335,7 @@ service cloud.firestore {
       );
 
       allow create: if signedIn()
+        && request.resource.data.get('id', campaignId) == campaignId
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.state == 'ACTIVE'
         && request.resource.data.get('archivedAt', null) == null;
@@ -205,121 +346,213 @@ service cloud.firestore {
         && request.resource.data.state in ['ACTIVE', 'ARCHIVED', 'DELETED']
         && (
           resource.data.state == 'ACTIVE'
-          || (
-            resource.data.state == 'ARCHIVED'
-            && request.resource.data.state in ['ACTIVE', 'DELETED']
-            && request.resource.data.ownerId == resource.data.ownerId
-          )
+          || (resource.data.state == 'ARCHIVED' && request.resource.data.state in ['ACTIVE', 'DELETED'])
         );
 
       allow delete: if false;
-    }
 
-    match /campaignMembers/{membershipId} {
-      // Transactions must be able to distinguish first membership from an update.
-      allow get: if signedIn()
-        && !exists(/databases/$(database)/documents/campaignMembers/$(membershipId));
+      match /members/{uid} {
+        function validMemberShape(data) {
+          return data.keys().hasOnly([
+              'campaignId', 'userId', 'role', 'state', 'characterIds', 'joinedAt', 'updatedAt', 'joinedByInviteId'
+            ])
+            && data.keys().hasAll([
+              'campaignId', 'userId', 'role', 'state', 'characterIds', 'joinedAt', 'updatedAt', 'joinedByInviteId'
+            ])
+            && data.campaignId == campaignId
+            && data.userId == uid
+            && data.role == 'PLAYER'
+            && data.characterIds is list
+            && data.characterIds.size() <= 100
+            && data.joinedByInviteId is string;
+        }
 
-      allow read: if signedIn() && (
-        resource.data.userId == request.auth.uid
-        || canReadCampaign(resource.data.campaignId)
-      );
+        function validInviteConsumption(inviteId) {
+          let invBefore = get(invitePath(campaignId, inviteId));
+          let invAfter = getAfter(invitePath(campaignId, inviteId));
+          return inviteId != ''
+            && invBefore != null
+            && invBefore.data.campaignId == campaignId
+            && invBefore.data.state == 'PENDING'
+            && invBefore.data.get('revokedAt', null) == null
+            && (invBefore.data.get('recipientUid', '') == '' || invBefore.data.recipientUid == request.auth.uid)
+            && (invBefore.data.get('expiresAt', null) == null || invBefore.data.expiresAt > request.time.toMillis())
+            && invAfter != null
+            && invAfter.data.state == 'CONSUMED'
+            && invAfter.data.consumedBy == request.auth.uid
+            && invAfter.data.consumedAt == request.time;
+        }
 
-      allow create: if signedIn()
-        && membershipId == request.resource.data.campaignId + '::' + request.resource.data.userId
-        && request.resource.data.role == 'PLAYER'
-        && request.resource.data.state == 'ACTIVE'
-        && campaignIsActive(request.resource.data.campaignId)
-        && (
-          isCampaignResponsible(request.resource.data.campaignId)
-          || (
-            request.resource.data.userId == request.auth.uid
-            && validMembershipInvite(request.resource.data)
-          )
+        allow get: if signedIn() && (
+          (!exists(memberPath(campaignId, uid)) && (uid == request.auth.uid || isCampaignResponsible(campaignId)))
+          || uid == request.auth.uid
+          || canReadCampaign(campaignId)
         );
 
-      allow update: if signedIn()
-        && membershipId == request.resource.data.campaignId + '::' + request.resource.data.userId
-        && request.resource.data.campaignId == resource.data.campaignId
-        && request.resource.data.userId == resource.data.userId
-        && request.resource.data.role == 'PLAYER'
-        && (
-          (
-            isCampaignResponsible(resource.data.campaignId)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-              'role', 'state', 'updatedAt', 'characterIds'
-            ])
-          )
-          || (
-            campaignIsActive(resource.data.campaignId)
-            && resource.data.userId == request.auth.uid
-            && resource.data.state == 'LEFT'
-            && request.resource.data.state == 'ACTIVE'
-            && request.resource.data.joinedAt == resource.data.joinedAt
-            && request.resource.data.characterIds == resource.data.characterIds
-            && validMembershipInvite(request.resource.data)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-              'state', 'updatedAt', 'joinedByInviteId'
-            ])
-          )
-          || (
-            campaignIsActive(resource.data.campaignId)
-            && resource.data.userId == request.auth.uid
-            && request.resource.data.role == resource.data.role
-            && request.resource.data.joinedAt == resource.data.joinedAt
-            && request.resource.data.joinedByInviteId == resource.data.joinedByInviteId
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-              'state', 'updatedAt', 'characterIds'
-            ])
-            && (
-              (
-                request.resource.data.state == resource.data.state
-                && request.resource.data.state == 'ACTIVE'
-              )
-              || (
-                request.resource.data.state == 'LEFT'
-                && request.resource.data.characterIds.size() == 0
+        allow list: if signedIn() && canReadCampaign(campaignId);
+
+        allow create: if signedIn()
+          && validMemberShape(request.resource.data)
+          && request.resource.data.state == 'ACTIVE'
+          && campaignIsActive(campaignId)
+          && (
+            isCampaignResponsible(campaignId)
+            || (uid == request.auth.uid && validInviteConsumption(request.resource.data.joinedByInviteId))
+          );
+
+        allow update: if signedIn()
+          && validMemberShape(request.resource.data)
+          && request.resource.data.state in ['ACTIVE', 'LEFT', 'REMOVED']
+          && (
+            (
+              isCampaignResponsible(campaignId)
+              && request.resource.data.joinedAt == resource.data.joinedAt
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state', 'updatedAt', 'characterIds'])
+            )
+            || (
+              campaignIsActive(campaignId)
+              && uid == request.auth.uid
+              && resource.data.state == 'LEFT'
+              && request.resource.data.state == 'ACTIVE'
+              && request.resource.data.joinedAt == resource.data.joinedAt
+              && request.resource.data.characterIds == resource.data.characterIds
+              && validInviteConsumption(request.resource.data.joinedByInviteId)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state', 'updatedAt', 'joinedByInviteId'])
+            )
+            || (
+              campaignIsActive(campaignId)
+              && uid == request.auth.uid
+              && resource.data.state == 'ACTIVE'
+              && request.resource.data.joinedAt == resource.data.joinedAt
+              && request.resource.data.joinedByInviteId == resource.data.joinedByInviteId
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state', 'updatedAt', 'characterIds'])
+              && (
+                request.resource.data.state == 'ACTIVE'
+                || (request.resource.data.state == 'LEFT' && request.resource.data.characterIds.size() == 0)
               )
             )
-          )
+          );
+
+        allow delete: if signedIn() && isCampaignResponsible(campaignId);
+      }
+
+      match /invites/{inviteId} {
+        function validInviteShape(data) {
+          return data.keys().hasOnly([
+              'id', 'campaignId', 'code', 'campaignName', 'campaignDescription',
+              'createdBy', 'recipientUid', 'expiresAt', 'state',
+              'consumedBy', 'consumedAt', 'revokedAt', 'createdAt'
+            ])
+            && data.keys().hasAll([
+              'id', 'campaignId', 'code', 'campaignName', 'campaignDescription',
+              'createdBy', 'recipientUid', 'expiresAt', 'state',
+              'consumedBy', 'consumedAt', 'revokedAt', 'createdAt'
+            ])
+            && data.id == inviteId
+            && data.campaignId == campaignId
+            && data.code is string
+            && data.code.size() >= 6
+            && data.code.size() <= 32
+            && data.campaignName is string
+            && data.campaignDescription is string
+            && isSafeId(data.createdBy)
+            && data.recipientUid is string
+            && (data.expiresAt == null || data.expiresAt is int);
+        }
+
+        function isUsablePendingInvite(data) {
+          return data.state == 'PENDING'
+            && data.get('revokedAt', null) == null
+            && (data.get('recipientUid', '') == '' || data.recipientUid == request.auth.uid)
+            && (data.get('expiresAt', null) == null || data.expiresAt > request.time.toMillis())
+            && campaignIsActive(campaignId);
+        }
+
+        allow get: if signedIn() && (
+          isCampaignResponsible(campaignId)
+          || isUsablePendingInvite(resource.data)
         );
 
-      allow delete: if signedIn() && isCampaignResponsible(resource.data.campaignId);
+        allow list: if signedIn() && canReadCampaign(campaignId);
+
+        allow create: if signedIn()
+          && validInviteShape(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.state == 'PENDING'
+          && request.resource.data.consumedBy == ''
+          && request.resource.data.consumedAt == null
+          && request.resource.data.revokedAt == null
+          && (request.resource.data.expiresAt == null || request.resource.data.expiresAt > request.time.toMillis())
+          && campaignIsActive(campaignId)
+          && isCampaignResponsible(campaignId);
+
+        allow update: if signedIn()
+          && validInviteShape(request.resource.data)
+          && resource.data.state == 'PENDING'
+          && request.resource.data.code == resource.data.code
+          && request.resource.data.campaignName == resource.data.campaignName
+          && request.resource.data.campaignDescription == resource.data.campaignDescription
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.recipientUid == resource.data.recipientUid
+          && request.resource.data.expiresAt == resource.data.expiresAt
+          && request.resource.data.createdAt == resource.data.createdAt
+          && (
+            (
+              isCampaignResponsible(campaignId)
+              && request.resource.data.state == 'REVOKED'
+              && request.resource.data.revokedAt != null
+              && request.resource.data.consumedBy == ''
+              && request.resource.data.consumedAt == null
+            )
+            || (
+              isUsablePendingInvite(resource.data)
+              && request.resource.data.state == 'CONSUMED'
+              && request.resource.data.consumedBy == request.auth.uid
+              && request.resource.data.consumedAt == request.time
+              && request.resource.data.revokedAt == null
+              && getAfter(memberPath(campaignId, request.auth.uid)) != null
+              && getAfter(memberPath(campaignId, request.auth.uid)).data.state == 'ACTIVE'
+              && getAfter(memberPath(campaignId, request.auth.uid)).data.role == 'PLAYER'
+              && getAfter(memberPath(campaignId, request.auth.uid)).data.joinedByInviteId == inviteId
+            )
+          );
+
+        allow delete: if signedIn() && isCampaignResponsible(campaignId);
+      }
     }
 
-    match /campaignInvites/{inviteId} {
-      allow get: if signedIn() && (
-        isCampaignResponsible(resource.data.campaignId)
-        || (
-          resource.data.get('revokedAt', null) == null
-          && (
-            resource.data.get('expiresAt', null) == null
-            || resource.data.expiresAt > request.time.toMillis()
-          )
-          && campaignIsActive(resource.data.campaignId)
-        )
+    match /{path=**}/members/{uid} {
+      allow read: if signedIn() && (
+        isAdministrator()
+        || resource.data.userId == request.auth.uid
+        || canReadCampaign(resource.data.campaignId)
       );
+    }
 
-      allow list: if signedIn() && canReadCampaign(resource.data.campaignId);
-
-      allow create: if signedIn()
-        && request.resource.data.createdBy == request.auth.uid
-        && request.resource.data.code == inviteId
-        && request.resource.data.campaignId != ''
-        && campaignIsActive(request.resource.data.campaignId)
-        && isCampaignResponsible(request.resource.data.campaignId)
-        && request.resource.data.get('revokedAt', null) == null;
-
-      // One reusable code is created with the campaign and remains immutable.
-      allow update: if false;
-
-      allow delete: if signedIn() && isCampaignResponsible(resource.data.campaignId);
+    match /{path=**}/invites/{inviteId} {
+      allow get: if signedIn() && (
+        isAdministrator()
+        || (
+          resource.data.get('state', '') == 'PENDING'
+          && resource.data.get('revokedAt', null) == null
+          && (resource.data.get('recipientUid', '') == '' || resource.data.get('recipientUid', '') == request.auth.uid)
+          && (resource.data.get('expiresAt', null) == null || resource.data.get('expiresAt', 0) > request.time.toMillis())
+          && campaignIsActive(resource.data.get('campaignId', ''))
+        )
+        || isCampaignOwner(resource.data.get('campaignId', ''))
+        || isActiveMember(resource.data.get('campaignId', ''))
+      );
+      allow list: if signedIn() && (
+        isAdministrator()
+        || (resource.data.code is string && resource.data.code.size() >= 6 && resource.data.code.size() <= 32)
+        || canReadCampaign(resource.data.campaignId)
+      );
     }
 
     match /campaignAudit/{operationId} {
       allow read: if signedIn() && (
         (resource.data.campaignId == '' && resource.data.actorId == request.auth.uid)
-        || canReadCampaign(resource.data.campaignId)
+        || (resource.data.campaignId != '' && canReadCampaign(resource.data.campaignId))
       );
       allow create: if signedIn()
         && request.resource.data.actorId == request.auth.uid
@@ -336,26 +569,26 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
         && campaignIsActive(request.resource.data.campaignId)
-        && isCampaignHistorian(request.resource.data.campaignId);
+        && isCampaignResponsible(request.resource.data.campaignId);
       allow update: if signedIn()
         && request.resource.data.campaignId == resource.data.campaignId
         && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.createdAt == resource.data.createdAt
         && campaignIsActive(resource.data.campaignId)
-        && isCampaignHistorian(resource.data.campaignId);
+        && isCampaignResponsible(resource.data.campaignId);
       allow delete: if false;
     }
 
     match /campaignDeliveries/{deliveryId} {
       allow read: if signedIn() && (
         resource.data.recipientId == request.auth.uid
-        || isCampaignHistorian(resource.data.campaignId)
+        || isCampaignResponsible(resource.data.campaignId)
       );
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.state == 'PENDING'
         && campaignIsActive(request.resource.data.campaignId)
-        && isCampaignHistorian(request.resource.data.campaignId);
+        && isCampaignResponsible(request.resource.data.campaignId);
       allow update: if signedIn()
         && request.resource.data.campaignId == resource.data.campaignId
         && request.resource.data.libraryEntryId == resource.data.libraryEntryId
@@ -371,147 +604,16 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt
         && resource.data.state == 'PENDING'
         && request.resource.data.state in ['ACCEPTED', 'DECLINED']
+        && resource.data.recipientId == request.auth.uid
         && (
           request.resource.data.state == 'DECLINED'
-          || getAfter(/databases/$(database)/documents/characters/$(resource.data.recipientCharacterId)).data.get('appliedDeliveryIds', []).hasAny([deliveryId])
-        )
-        && resource.data.recipientId == request.auth.uid;
+          || (
+            campaignIsActive(resource.data.campaignId)
+            && getAfter(characterPath(resource.data.recipientCharacterId)) != null
+            && getAfter(characterPath(resource.data.recipientCharacterId)).data.get('appliedDeliveryIds', []).hasAny([deliveryId])
+          )
+        );
       allow delete: if false;
-    }
-
-    match /sheetRoutes/{characterId} {
-      allow get: if signedIn()
-        && !exists(/databases/$(database)/documents/sheetRoutes/$(characterId));
-      allow read: if signedIn() && (
-        isAdministrator()
-        || resource.data.get('ownerId', '') == request.auth.uid
-        || (
-          normalizedCampaignId(resource.data) != ''
-          && canReadCampaign(normalizedCampaignId(resource.data))
-        )
-        || (
-          exists(/databases/$(database)/documents/characters/$(characterId))
-          && (
-            get(/databases/$(database)/documents/characters/$(characterId)).data.ownerId == request.auth.uid
-            || (
-              normalizedCampaignId(get(/databases/$(database)/documents/characters/$(characterId)).data) != ''
-              && canReadCampaign(normalizedCampaignId(get(/databases/$(database)/documents/characters/$(characterId)).data))
-            )
-          )
-        )
-      );
-      allow write: if false;
-    }
-
-    match /characters/{characterId} {
-      function validCollaborationRevision() {
-        let before = resource.data.get('fieldUpdatedAt', {});
-        let after = request.resource.data.get('fieldUpdatedAt', {});
-        return (
-          before.get('@protocol', 0) == 0 && after.get('@protocol', 0) == 0
-        ) || (
-          after.get('@protocol', 0) == 1
-          && after.get('@revision', 0) == before.get('@revision', 0) + 1
-        ) || (
-          before == after && onlyUnlinkChanges()
-        );
-      }
-
-      // A transaction may check a missing UUID before an authorized create.
-      allow get: if signedIn()
-        && !exists(/databases/$(database)/documents/characters/$(characterId));
-
-      // Legacy projections dropped from optimized character documents (SYNC-PLAN-002-B).
-      function legacyCharacterKeys() {
-        return ['dirty', 'notes', 'protections', 'bodyRegions', 'organs', 'conditions'].toSet();
-      }
-
-      // An unlink may change only campaignId/updatedAt/lastEditedBy, and may only REMOVE
-      // legacy projections (never add or alter them).
-      function onlyUnlinkChanges() {
-        let affected = request.resource.data.diff(resource.data).affectedKeys();
-        return affected.difference(legacyCharacterKeys()).hasOnly(['campaignId', 'updatedAt', 'lastEditedBy'])
-          && request.resource.data.keys().toSet().intersection(affected.intersection(legacyCharacterKeys())).size() == 0;
-      }
-
-      allow read: if signedIn() && (
-        isAdministrator()
-        || resource.data.ownerId == request.auth.uid
-        || (
-          normalizedCampaignId(resource.data) != ''
-          && canReadCampaign(normalizedCampaignId(resource.data))
-        )
-      );
-
-      allow create: if signedIn()
-        && validCharacterCreator()
-        && validCharacterCampaignTarget()
-        && request.resource.data.lockType == 'NONE'
-        && requestedIsLocked() == false
-        && request.resource.data.lockedBy == ''
-        && request.resource.data.get('lockedAt', null) == null
-        && request.resource.data.deleted == false;
-
-      allow update: if signedIn()
-        && validCollaborationRevision()
-        && (
-          (
-            normalizedCampaignId(resource.data) != ''
-            && isCampaignResponsible(normalizedCampaignId(resource.data))
-            && getAfter(campaignPath(normalizedCampaignId(resource.data))).data.state == 'DELETED'
-            && normalizedCampaignId(request.resource.data) == ''
-            && onlyUnlinkChanges()
-          )
-          || (
-            normalizedCampaignId(resource.data) != ''
-            && isCampaignOwner(normalizedCampaignId(resource.data))
-            && normalizedCampaignId(request.resource.data) == ''
-            && request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && onlyUnlinkChanges()
-          )
-          || (
-            isAdministrator()
-            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && (
-              request.resource.data.ownerId == resource.data.ownerId
-              || exists(/databases/$(database)/documents/users/$(request.resource.data.ownerId))
-            )
-            && validAdministratorLockTransition()
-          )
-          ||
-          (
-            ownsExistingCharacter()
-            && request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.deleted == resource.data.get('deleted', false)
-            && validPlayerLockTransition()
-            && validCharacterCampaignTarget()
-          )
-          || (
-            campaignCharacterWritable()
-            && request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && normalizedCampaignId(request.resource.data) == normalizedCampaignId(resource.data)
-            && validCampaignHistorianLockTransition(normalizedCampaignId(resource.data))
-          )
-          || (
-            normalizedCampaignId(resource.data) == ''
-            && normalizedCampaignId(request.resource.data) != ''
-            && isCampaignOwner(normalizedCampaignId(request.resource.data))
-            && campaignIsActive(normalizedCampaignId(request.resource.data))
-            && request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.get('deleted', false) == resource.data.get('deleted', false)
-            && isActiveMemberAfter(normalizedCampaignId(request.resource.data), resource.data.ownerId)
-            && keepsLockState()
-          )
-
-        );
-
-      allow delete: if signedIn() && (
-        isAdministrator()
-        ||
-        ownsExistingCharacter()
-      );
     }
 
     match /campaignJournal/{entryId} {
@@ -530,8 +632,7 @@ service cloud.firestore {
       }
 
       allow read: if signedIn()
-        && canReadCampaign(resource.data.campaignId)
-        && get(campaignPath(resource.data.campaignId)).data.state != 'DELETED';
+        && canReadCampaign(resource.data.campaignId);
 
       allow create: if signedIn()
         && validJournalFields(request.resource.data)
@@ -580,6 +681,757 @@ service cloud.firestore {
       );
 
       allow delete: if isAdministrator();
+    }
+
+    match /characters/{charId} {
+      allow get: if signedIn() && (
+        !exists(characterPath(charId))
+        || canReadCharacterData(resource.data)
+        || (
+          resource.data.get('authorizedCampaignId', '') != ''
+          && campaignIsActive(resource.data.authorizedCampaignId)
+          && isCampaignOwner(resource.data.authorizedCampaignId)
+        )
+      );
+
+      allow list: if signedIn() && canReadCharacterData(resource.data);
+
+      function canCreateCharacter(after, opDoc) {
+        let cid = after.campaignId;
+        let camp = cid != '' ? get(campaignPath(cid)) : null;
+        return after.deleted == false
+          && after.revision == 1
+          && after.lockType == 'NONE'
+          && after.authorizedCampaignId == ''
+          && opDoc.data.type == 'CREATE_SHEET'
+          && after.appliedDeliveryIds.size() == 0
+          && (
+            (
+              after.ownerId == request.auth.uid
+              && (cid == '' || (camp != null && camp.data.state == 'ACTIVE' && (camp.data.ownerId == request.auth.uid || isActiveMemberAfter(cid, request.auth.uid))))
+            )
+            || (
+              cid != ''
+              && camp != null
+              && camp.data.state == 'ACTIVE'
+              && camp.data.ownerId == request.auth.uid
+              && isActiveMemberAfter(cid, after.ownerId)
+            )
+          );
+      }
+
+      function validLockOp(before, after, cid, isOwner) {
+        let camp = cid != '' ? get(campaignPath(cid)) : null;
+        let activeCamp = cid == '' || (camp != null && camp.data.state == 'ACTIVE');
+        let isGm = cid != '' && camp != null && camp.data.ownerId == request.auth.uid;
+        return !before.get('deleted', false)
+          && after.deleted == false
+          && after.ownerId == before.ownerId
+          && after.campaignId == cid
+          && after.authorizedCampaignId == before.get('authorizedCampaignId', '')
+          && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
+          && activeCamp
+          && (
+            (isGm && after.lockType in ['NONE', 'HISTORIAN'] && (after.lockType == 'NONE' || after.lockedBy == request.auth.uid))
+            || (isOwner && before.get('lockType', 'NONE') != 'HISTORIAN' && after.lockType in ['NONE', 'PLAYER'] && (after.lockType == 'NONE' || after.lockedBy == request.auth.uid))
+          );
+      }
+
+      function validLinkOp(before, after, prevCid, isOwner) {
+        let nextCid = after.campaignId;
+        let authCid = after.authorizedCampaignId;
+        let targetCid = nextCid != '' ? nextCid : authCid;
+        let camp = targetCid != '' ? get(campaignPath(targetCid)) : null;
+        return !before.get('deleted', false)
+          && after.deleted == false
+          && after.ownerId == before.ownerId
+          && keepsRootLock(before, after)
+          && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
+          && camp != null
+          && camp.data.state == 'ACTIVE'
+          && (
+            // Owner authorizes a GM link without linking yet (authorizedCampaignId = cid)
+            (
+              isOwner
+              && prevCid == ''
+              && nextCid == ''
+              && authCid != ''
+            )
+            // Owner links own sheet directly
+            || (
+              isOwner
+              && prevCid == ''
+              && nextCid != ''
+              && authCid == ''
+              && (camp.data.ownerId == request.auth.uid || isActiveMemberAfter(nextCid, before.ownerId))
+            )
+            // GM links a pre-authorized sheet (or repairs an already-linked orphan sheet), clearing authorizedCampaignId
+            || (
+              camp.data.ownerId == request.auth.uid
+              && nextCid != ''
+              && authCid == ''
+              && (prevCid == nextCid || (prevCid == '' && before.get('authorizedCampaignId', '') == nextCid))
+              && isActiveMemberAfter(nextCid, before.ownerId)
+            )
+          );
+      }
+
+      function validUnlinkOp(before, after, prevCid, isOwner) {
+        let camp = prevCid != '' ? get(campaignPath(prevCid)) : null;
+        return prevCid != ''
+          && after.campaignId == ''
+          && after.authorizedCampaignId == ''
+          && after.ownerId == before.ownerId
+          && after.deleted == before.get('deleted', false)
+          && keepsRootLock(before, after)
+          && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
+          && (
+            isOwner
+            || (
+              camp != null
+              && camp.data.ownerId == request.auth.uid
+              && (camp.data.state == 'ACTIVE' || getAfter(campaignPath(prevCid)).data.state == 'DELETED')
+            )
+          );
+      }
+
+      function validDeliveryOp(before, after, opDoc, cid, isOwner) {
+        let prevApplied = before.get('appliedDeliveryIds', []);
+        let deliveryId = opDoc.data.preconditions.get('deliveryId', '');
+        let delivAfter = isSafeId(deliveryId) ? getAfter(deliveryPath(deliveryId)) : null;
+        return before.get('protocolVersion', 0) == 2
+          && !before.get('deleted', false)
+          && before.get('lockType', 'NONE') != 'HISTORIAN'
+          && after.deleted == false
+          && after.ownerId == before.ownerId
+          && cid != ''
+          && after.campaignId == cid
+          && after.authorizedCampaignId == before.get('authorizedCampaignId', '')
+          && keepsRootLock(before, after)
+          && isOwner
+          && after.appliedDeliveryIds.size() == prevApplied.size() + 1
+          && after.appliedDeliveryIds.hasAll(prevApplied)
+          && after.appliedDeliveryIds.hasAny([deliveryId])
+          && delivAfter != null
+          && delivAfter.data.state == 'ACCEPTED'
+          && delivAfter.data.campaignId == cid
+          && delivAfter.data.recipientCharacterId == charId
+          && delivAfter.data.recipientId == request.auth.uid;
+      }
+
+      function validTransferOp(before, after, cid, isOwner) {
+        let camp = cid != '' ? get(campaignPath(cid)) : null;
+        return !before.get('deleted', false)
+          && after.deleted == false
+          && after.ownerId != before.ownerId
+          && after.campaignId == cid
+          && after.authorizedCampaignId == ''
+          && keepsRootLock(before, after)
+          && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
+          && isOwner
+          && exists(userPath(after.ownerId))
+          && (
+            cid == ''
+            || (
+              camp != null
+              && camp.data.state == 'ACTIVE'
+              && (camp.data.ownerId == after.ownerId || isActiveMemberAfter(cid, after.ownerId))
+            )
+          );
+      }
+
+      function allowCharacterCreate() {
+        let opDoc = getAfter(opPath(charId, request.resource.data.lastOperationId));
+        let t = validOpHeader(opDoc, request.resource.data.lastOperationId)
+          ? findTarget(opDoc.data.targets, 'SHEET', '', '')
+          : null;
+        return t != null
+          && t.op == 'CREATE'
+          && t.expectedRevision == 0
+          && t.nextRevision == 1
+          && canCreateCharacter(request.resource.data, opDoc);
+      }
+
+      function allowCharacterUpdate() {
+        let before = resource.data;
+        let after = request.resource.data;
+        let prevRev = before.get('revision', 0);
+        let prevCid = normalizedCampaignId(before);
+        let opDoc = getAfter(opPath(charId, after.lastOperationId));
+        let t = validOpHeader(opDoc, after.lastOperationId)
+          ? findTarget(opDoc.data.targets, 'SHEET', '', '')
+          : null;
+        let opType = t != null ? opDoc.data.type : '';
+        let isOwner = before.ownerId == request.auth.uid;
+        return t != null
+          && before.get('protocolVersion', 0) == 2
+          && after.revision == prevRev + 1
+          && t.expectedRevision == prevRev
+          && t.nextRevision == after.revision
+          && (opType == 'SET_LOCK'
+            ? (t.op == 'LOCK' && validLockOp(before, after, prevCid, isOwner))
+            : (opType == 'LINK_CAMPAIGN'
+              ? (t.op == 'LINK' && validLinkOp(before, after, prevCid, isOwner))
+              : (opType == 'UNLINK_CAMPAIGN'
+                ? (t.op == 'UNLINK' && validUnlinkOp(before, after, prevCid, isOwner))
+                : (opType == 'DELETE_SHEET'
+                  ? (t.op == 'TOMBSTONE' && !before.get('deleted', false) && after.deleted == true && after.ownerId == before.ownerId && after.campaignId == prevCid && after.authorizedCampaignId == '' && keepsRootLock(before, after) && after.appliedDeliveryIds == before.get('appliedDeliveryIds', []) && isOwner)
+                  : (opType == 'RESTORE_SHEET'
+                    ? (t.op == 'RESTORE' && before.get('deleted', false) == true && after.deleted == false && after.ownerId == before.ownerId && after.campaignId == prevCid && after.authorizedCampaignId == before.get('authorizedCampaignId', '') && keepsRootLock(before, after) && after.appliedDeliveryIds == before.get('appliedDeliveryIds', []) && (prevCid == '' || campaignIsActive(prevCid)) && isOwner)
+                    : (opType == 'TRANSFER_OWNERSHIP'
+                      ? (t.op == 'TRANSFER' && validTransferOp(before, after, prevCid, isOwner))
+                      : (opType == 'ACCEPT_DELIVERY' && t.op == 'DELIVERY' && validDeliveryOp(before, after, opDoc, prevCid, isOwner))))))));
+      }
+
+      allow create: if signedIn()
+        && validCharacterRootShape(request.resource.data, charId)
+        && allowCharacterCreate();
+
+      allow update: if signedIn()
+        && validCharacterRootShape(request.resource.data, charId)
+        && allowCharacterUpdate();
+
+      allow delete: if false;
+
+      match /fields/{fieldKey} {
+        allow read: if signedIn() && canReadCharacterById(charId);
+
+        function validFieldShape(data) {
+          return data.size() == 6
+            && data.keys().hasAll(['key', 'value', 'revision', 'lastOperationId', 'updatedBy', 'updatedAt'])
+            && data.key == fieldKey
+            && validFieldValue(fieldKey, data.value)
+            && data.revision is int
+            && data.revision >= 1
+            && isSafeId(data.lastOperationId)
+            && data.updatedBy == request.auth.uid
+            && data.updatedAt == request.time;
+        }
+
+        // Delegates sheet/campaign auth, deleted, and lock checks to operations/{lastOperationId} (1 access).
+        function validFieldOp(expectedRev, nextRev, isCreate) {
+          let opDoc = getAfter(opPath(charId, request.resource.data.lastOperationId));
+          let t = validOpHeader(opDoc, request.resource.data.lastOperationId)
+            ? findTarget(opDoc.data.targets, 'FIELD', '', fieldKey)
+            : null;
+          return t != null
+            && opDoc.data.type in ['CREATE_SHEET', 'PATCH_FIELDS', 'ADJUST_RESOURCE', 'ITEM_CONSUME', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
+            && t.expectedRevision == expectedRev
+            && t.nextRevision == nextRev
+            && (isCreate || !('baseValue' in t) || resource.data.value == t.baseValue)
+            && (
+              (t.op in ['CREATE', 'SET'] && 'desiredValue' in t && request.resource.data.value == t.desiredValue)
+              || (
+                !isCreate
+                && t.op == 'DELTA'
+                && validFieldDelta(fieldKey, resource.data.value, request.resource.data.value, t.get('delta', null))
+                && (!('desiredValue' in t) || request.resource.data.value == t.desiredValue)
+              )
+            );
+        }
+
+        allow create: if signedIn()
+          && validFieldShape(request.resource.data)
+          && request.resource.data.revision == 1
+          && validFieldOp(0, 1, true);
+
+        allow update: if signedIn()
+          && validFieldShape(request.resource.data)
+          && request.resource.data.revision == resource.data.revision + 1
+          && validFieldOp(resource.data.revision, request.resource.data.revision, false);
+
+        allow delete: if false;
+      }
+
+      match /items/{itemId} {
+        allow read: if signedIn() && canReadCharacterById(charId);
+
+        function validItemShape(data) {
+          let kind = expectedItemKind(itemId);
+          return itemId.matches('^(inv|istate|abil|pow|mys|cond|lcond|note|attr)_[A-Za-z0-9_.:=-]{1,128}$')
+            && kind != ''
+            && data.size() == 7
+            && data.keys().hasAll(['id', 'kind', 'deleted', 'revision', 'lastOperationId', 'updatedBy', 'updatedAt'])
+            && data.id == itemId
+            && data.kind == kind
+            && data.deleted is bool
+            && data.revision is int
+            && data.revision >= 1
+            && isSafeId(data.lastOperationId)
+            && data.updatedBy == request.auth.uid
+            && data.updatedAt == request.time;
+        }
+
+        function allowItemCreate() {
+          let opDoc = getAfter(opPath(charId, request.resource.data.lastOperationId));
+          let t = validOpHeader(opDoc, request.resource.data.lastOperationId)
+            ? findTarget(opDoc.data.targets, 'ITEM', itemId, '')
+            : null;
+          return t != null
+            && opDoc.data.type in ['CREATE_SHEET', 'UPSERT_ITEM', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
+            && t.op in ['CREATE', 'SET']
+            && t.expectedRevision == 0
+            && t.nextRevision == 1;
+        }
+
+        function allowItemUpdate() {
+          let opDoc = getAfter(opPath(charId, request.resource.data.lastOperationId));
+          let t = validOpHeader(opDoc, request.resource.data.lastOperationId)
+            ? findTarget(opDoc.data.targets, 'ITEM', itemId, '')
+            : null;
+          return t != null
+            && t.expectedRevision == resource.data.revision
+            && t.nextRevision == request.resource.data.revision
+            && (
+              (
+                resource.data.deleted == true
+                && request.resource.data.deleted == false
+                && opDoc.data.type == 'RESTORE_ITEM'
+                && t.op == 'RESTORE'
+              )
+              || (
+                resource.data.deleted == false
+                && request.resource.data.deleted == true
+                && opDoc.data.type in ['DELETE_ITEM', 'SESSION_ACTION']
+                && t.op == 'TOMBSTONE'
+              )
+              || (
+                resource.data.deleted == false
+                && request.resource.data.deleted == false
+                && opDoc.data.type in ['UPSERT_ITEM', 'ITEM_CONSUME', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
+                && t.op == 'SET'
+              )
+            );
+        }
+
+        allow create: if signedIn()
+          && validItemShape(request.resource.data)
+          && request.resource.data.deleted == false
+          && request.resource.data.revision == 1
+          && allowItemCreate();
+
+        allow update: if signedIn()
+          && validItemShape(request.resource.data)
+          && request.resource.data.kind == resource.data.kind
+          && request.resource.data.revision == resource.data.revision + 1
+          && allowItemUpdate();
+
+        allow delete: if false;
+
+        match /fields/{fieldKey} {
+          allow read: if signedIn() && canReadCharacterById(charId);
+
+          function validItemFieldShape(data) {
+            return data.size() == 6
+              && data.keys().hasAll(['key', 'value', 'revision', 'lastOperationId', 'updatedBy', 'updatedAt'])
+              && data.key == fieldKey
+              && validItemFieldValue(itemId, fieldKey, data.value)
+              && data.revision is int
+              && data.revision >= 1
+              && isSafeId(data.lastOperationId)
+              && data.updatedBy == request.auth.uid
+              && data.updatedAt == request.time;
+          }
+
+          function itemNotDeletedAfter() {
+            let itemDoc = getAfter(itemPath(charId, itemId));
+            return itemDoc != null && itemDoc.data.deleted == false;
+          }
+
+          function isStrictlyDecreasingMapField(prev, next, k) {
+            return prev is map && next is map
+              && k in prev && k in next
+              && prev[k] is int && next[k] is int
+              && next[k] >= 0 && next[k] < prev[k];
+          }
+
+          function isStrictConsumeDecrease(t, prevVal, nextVal) {
+            return (
+              itemId.matches('^inv_.*')
+              && fieldKey == 'quantity'
+              && t.op == 'DELTA'
+              && isSignedInt32(t.get('delta', null))
+              && t.delta < 0
+              && prevVal is int
+              && nextVal == prevVal + t.delta
+              && isInt32(nextVal)
+            ) || (
+              itemId.matches('^istate_.*')
+              && fieldKey in ['runtime', 'consumable', 'stack', 'ammo']
+              && (
+                (
+                  t.op == 'DELTA'
+                  && fieldKey in ['runtime', 'stack']
+                  && isSignedInt32(t.get('delta', null))
+                  && t.delta < 0
+                  && prevVal is int
+                  && nextVal == prevVal + t.delta
+                  && isInt32(nextVal)
+                ) || (
+                  t.op == 'SET'
+                  && 'desiredValue' in t
+                  && nextVal == t.desiredValue
+                  && (
+                    isStrictlyDecreasingMapField(prevVal, nextVal, 'doses')
+                    || isStrictlyDecreasingMapField(prevVal, nextVal, 'charges')
+                    || isStrictlyDecreasingMapField(prevVal, nextVal, 'quantity')
+                    || isStrictlyDecreasingMapField(prevVal, nextVal, 'loaded')
+                  )
+                )
+              )
+            );
+          }
+
+          function validConsumeItemField(opDoc, t, isCreate) {
+            let t0 = opDoc.data.targets[0];
+            return t0.kind != 'ITEM_FIELD'
+              || t0.itemId != itemId
+              || t0.key != fieldKey
+              || (!isCreate && isStrictConsumeDecrease(t, resource.data.value, request.resource.data.value));
+          }
+
+          // Delegates sheet/campaign auth to operations/{lastOperationId} (1 access + 1 item getAfter = 2 accesses).
+          function validItemFieldOp(expectedRev, nextRev, isCreate) {
+            let opDoc = getAfter(opPath(charId, request.resource.data.lastOperationId));
+            let t = validOpHeader(opDoc, request.resource.data.lastOperationId)
+              ? findTarget(opDoc.data.targets, 'ITEM_FIELD', itemId, fieldKey)
+              : null;
+            return t != null
+              && opDoc.data.type in ['CREATE_SHEET', 'PATCH_FIELDS', 'UPSERT_ITEM', 'RESTORE_ITEM', 'ITEM_CONSUME', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
+              && (opDoc.data.type != 'ITEM_CONSUME' || validConsumeItemField(opDoc, t, isCreate))
+              && t.expectedRevision == expectedRev
+              && t.nextRevision == nextRev
+              && (isCreate || !('baseValue' in t) || resource.data.value == t.baseValue)
+              && (
+                (t.op in ['CREATE', 'SET', 'RESTORE'] && 'desiredValue' in t && request.resource.data.value == t.desiredValue)
+                || (
+                  !isCreate
+                  && t.op == 'DELTA'
+                  && (
+                    (itemId.matches('^inv_.*') && fieldKey == 'quantity')
+                    || (itemId.matches('^istate_.*') && fieldKey in ['runtime', 'stack'] && resource.data.value is int)
+                  )
+                  && isSignedInt32(t.get('delta', null))
+                  && request.resource.data.value == resource.data.value + t.delta
+                  && isInt32(request.resource.data.value)
+                  && (!('desiredValue' in t) || request.resource.data.value == t.desiredValue)
+                )
+              );
+          }
+
+          allow create: if signedIn()
+            && validItemFieldShape(request.resource.data)
+            && request.resource.data.revision == 1
+            && itemNotDeletedAfter()
+            && validItemFieldOp(0, 1, true);
+
+          allow update: if signedIn()
+            && validItemFieldShape(request.resource.data)
+            && request.resource.data.revision == resource.data.revision + 1
+            && itemNotDeletedAfter()
+            && validItemFieldOp(resource.data.revision, request.resource.data.revision, false);
+
+          allow delete: if false;
+        }
+      }
+
+      match /operations/{opId} {
+        allow get: if signedIn() && (
+          !exists(characterPath(charId))
+          || canReadCharacterById(charId)
+        );
+        allow list: if signedIn() && canReadCharacterById(charId);
+
+        function validTargetEntry(t, opId, allowItemField) {
+          let docAfter = getAfter(targetDocPath(charId, t)).data;
+          return t is map
+            && t.kind in (allowItemField ? ['SHEET', 'FIELD', 'ITEM', 'ITEM_FIELD'] : ['SHEET', 'FIELD', 'ITEM'])
+            && t.nextRevision == t.expectedRevision + 1
+            && docAfter.lastOperationId == opId
+            && docAfter.updatedBy == request.auth.uid
+            && docAfter.updatedAt == request.time
+            && docAfter.revision == t.nextRevision;
+        }
+
+        function validTargets(opId, targets) {
+          let n = targets is list ? targets.size() : 0;
+          let allowIf = n <= 5;
+          return n >= 1 && n <= 7
+            && validTargetEntry(targets[0], opId, allowIf)
+            && (n < 2 || validTargetEntry(targets[1], opId, allowIf))
+            && (n < 3 || validTargetEntry(targets[2], opId, allowIf))
+            && (n < 4 || validTargetEntry(targets[3], opId, allowIf))
+            && (n < 5 || validTargetEntry(targets[4], opId, allowIf))
+            && (n < 6 || validTargetEntry(targets[5], opId, false))
+            && (n < 7 || validTargetEntry(targets[6], opId, false));
+        }
+
+        function validDeliveryTarget(t, deliveryId, bonus) {
+          return (t.kind == 'FIELD' && t.key == 'learnedKnowledges' && bonus != 0 && t.op in ['CREATE', 'SET'])
+            || (t.kind in ['ITEM', 'ITEM_FIELD'] && t.op in ['CREATE', 'SET'] && t.itemId.split('_delivery:')[1] == deliveryId);
+        }
+
+        function validAcceptDeliveryOp(opData, s, cid, camp, isOwner) {
+          let deliveryId = opData.preconditions.get('deliveryId', '');
+          let deliv = isSafeId(deliveryId) ? getAfter(deliveryPath(deliveryId)).data : null;
+          let targets = opData.targets;
+          let n = targets.size();
+          let bonus = deliv.get('knowledgeBonus', 0);
+          return s.get('protocolVersion', 0) == 2
+            && !s.get('deleted', false)
+            && cid != ''
+            && camp != null
+            && camp.state == 'ACTIVE'
+            && isOwner
+            && s.get('lockType', 'NONE') != 'HISTORIAN'
+            && deliv.state == 'ACCEPTED'
+            && deliv.campaignId == cid
+            && deliv.recipientCharacterId == charId
+            && deliv.recipientId == request.auth.uid
+            && targets[0].kind == 'SHEET'
+            && targets[0].op == 'DELIVERY'
+            && (n < 2 || validDeliveryTarget(targets[1], deliveryId, bonus))
+            && (n < 3 || validDeliveryTarget(targets[2], deliveryId, bonus))
+            && (n < 4 || validDeliveryTarget(targets[3], deliveryId, bonus))
+            && (n < 5 || validDeliveryTarget(targets[4], deliveryId, bonus))
+            && n <= 5;
+        }
+        function validConsumeSecondaryTarget(t, primaryItemId) {
+          return t is map && (
+            (t.kind == 'FIELD' && t.key in ['life', 'sanity', 'arcane', 'energy', 'destiny', 'exhaustion', 'corruption', 'money'] && t.op == 'DELTA' && isSignedInt32(t.get('delta', null)) && t.delta != 0)
+            || (t.kind == 'ITEM' && t.itemId.matches('^(cond|lcond)_.*') && t.op in ['CREATE', 'SET', 'TOMBSTONE'])
+            || (t.kind == 'ITEM_FIELD' && t.itemId.matches('^(cond|lcond)_.*') && t.op in ['CREATE', 'SET'])
+            || (t.kind == 'ITEM' && t.itemId == primaryItemId && t.op == 'SET')
+            || (t.kind == 'ITEM_FIELD' && t.itemId.matches('^istate_.*') && t.key in ['runtime', 'consumable', 'stack', 'ammo'])
+          );
+        }
+
+        function validItemConsumeOp(opData, isActiveGm) {
+          let targets = opData.targets;
+          let n = targets is list ? targets.size() : 0;
+          let t0 = n >= 1 ? targets[0] : null;
+          let validT0 = t0 is map
+            && t0.kind == 'ITEM_FIELD'
+            && t0.itemId is string
+            && t0.key is string
+            && (
+              (t0.itemId.matches('^inv_.*') && t0.key == 'quantity' && t0.op == 'DELTA' && isSignedInt32(t0.get('delta', null)) && t0.delta < 0)
+              || (
+                t0.itemId.matches('^istate_.*')
+                && t0.key in ['runtime', 'consumable', 'stack', 'ammo']
+                && (
+                  (t0.op == 'DELTA' && t0.key in ['runtime', 'stack'] && isSignedInt32(t0.get('delta', null)) && t0.delta < 0)
+                  || t0.op == 'SET'
+                )
+              )
+            );
+          let mechDoc = validT0 ? get(/databases/$(database)/documents/characters/$(charId)/items/$(t0.itemId)/fields/mechanicalEffects) : null;
+          let hasMech = mechDoc != null && mechDoc.data.value is list && mechDoc.data.value.size() > 0;
+          return validT0
+            // Mechanical formulas are not certified by client-declared targets.
+            // Resolve these through a separate explicit GM adjustment.
+            && !hasMech
+            && (
+              isActiveGm
+              || (
+                (n < 2 || validConsumeSecondaryTarget(targets[1], t0.itemId))
+                && (n < 3 || validConsumeSecondaryTarget(targets[2], t0.itemId))
+                && (n < 4 || validConsumeSecondaryTarget(targets[3], t0.itemId))
+                && (n < 5 || validConsumeSecondaryTarget(targets[4], t0.itemId))
+                && (n < 6 || validConsumeSecondaryTarget(targets[5], t0.itemId))
+                && (n < 7 || validConsumeSecondaryTarget(targets[6], t0.itemId))
+              )
+            );
+        }
+
+        function expectedCostField(costTypeVal, preconditions) {
+          return costTypeVal in ['LIFE', 'PV'] ? 'life'
+            : (costTypeVal in ['SANITY', 'PS'] ? 'sanity'
+            : (costTypeVal in ['ARCANE', 'PM', 'SpellCost', 'RuneCost'] ? 'arcane'
+            : (costTypeVal in ['ENERGY', 'PE'] ? 'energy'
+            : (costTypeVal in ['DESTINY', 'PD'] ? 'destiny'
+            : (preconditions.get('costResource', '') in ['life', 'sanity', 'arcane', 'energy', 'destiny']
+              ? preconditions.get('costResource', '')
+              : '')))));
+        }
+
+        function hasExactResourceCostDelta(targets, costField, costVal) {
+          let t = costField != '' ? findTarget(targets, 'FIELD', '', costField) : null;
+          return t != null && t.op == 'DELTA' && t.get('delta', null) == -costVal;
+        }
+
+        function validSimpleSessionTarget(t, actionType) {
+          return t is map && (
+            (actionType == 'NOTE' && (
+              (t.kind == 'ITEM' && t.itemId.matches('^note_.*') && t.op in ['CREATE', 'SET', 'TOMBSTONE'])
+              || (t.kind == 'ITEM_FIELD' && t.itemId.matches('^note_.*') && t.op in ['CREATE', 'SET'])
+            ))
+            || (actionType == 'CONDITION_ADD' && (
+              (t.kind == 'ITEM' && t.itemId.matches('^(cond|lcond)_.*') && t.op in ['CREATE', 'SET'])
+              || (t.kind == 'ITEM_FIELD' && t.itemId.matches('^(cond|lcond)_.*') && t.op in ['CREATE', 'SET'])
+            ))
+            || (actionType == 'CONDITION_REMOVE' && t.kind == 'ITEM' && t.itemId.matches('^(cond|lcond)_.*') && t.op == 'TOMBSTONE')
+            || (actionType == 'RESOURCE' && t.kind == 'FIELD' && t.key in ['life', 'sanity', 'arcane', 'energy', 'destiny', 'exhaustion', 'corruption', 'money'] && t.op == 'DELTA')
+          );
+        }
+
+        function validAbilitySessionTarget(t, abilityItemId, costType) {
+          return t is map && (
+            (t.kind == 'FIELD' && t.key in ['life', 'sanity', 'arcane', 'energy', 'destiny', 'exhaustion', 'corruption'] && t.op == 'DELTA')
+            || (t.kind == 'ITEM_FIELD' && t.itemId == abilityItemId && t.key in ['active', 'available'] && t.op == 'SET')
+            || (t.kind == 'ITEM' && t.itemId.matches('^(cond|lcond)_.*') && t.op in ['CREATE', 'SET', 'TOMBSTONE'])
+            || (t.kind == 'ITEM_FIELD' && t.itemId.matches('^(cond|lcond)_.*') && t.op in ['CREATE', 'SET'])
+          );
+        }
+
+        function validAbilityUseAction(opData) {
+          let targets = opData.targets;
+          let n = targets is list ? targets.size() : 0;
+          let abilityItemId = opData.preconditions.get('abilityItemId', '');
+          let validId = abilityItemId is string && abilityItemId.matches('^(abil|pow|mys)_[A-Za-z0-9_.:=-]{1,128}$');
+          let abilDoc = validId ? get(itemPath(charId, abilityItemId)) : null;
+          let costValDoc = validId ? get(/databases/$(database)/documents/characters/$(charId)/items/$(abilityItemId)/fields/costValue) : null;
+          let costVal = (costValDoc != null && costValDoc.data.value is int) ? costValDoc.data.value : 0;
+          let costTypeDoc = (validId && costVal > 0) ? get(/databases/$(database)/documents/characters/$(charId)/items/$(abilityItemId)/fields/costType) : null;
+          let costType = (costTypeDoc != null && costTypeDoc.data.value is string) ? costTypeDoc.data.value : '';
+          let costOk = costVal <= 0
+            ? true
+            : (
+              costType in ['DOSE', 'AshCost']
+                ? false
+                : hasExactResourceCostDelta(targets, expectedCostField(costType, opData.preconditions), costVal)
+            );
+          return n >= 1 && n <= 5
+            && validId
+            && abilDoc != null
+            && abilDoc.data.deleted == false
+            && costOk
+            && validAbilitySessionTarget(targets[0], abilityItemId, costType)
+            && (n < 2 || validAbilitySessionTarget(targets[1], abilityItemId, costType))
+            && (n < 3 || validAbilitySessionTarget(targets[2], abilityItemId, costType))
+            && (n < 4 || validAbilitySessionTarget(targets[3], abilityItemId, costType))
+            && (n < 5 || validAbilitySessionTarget(targets[4], abilityItemId, costType));
+        }
+
+        function validSessionActionOp(opData, isActiveGm) {
+          let targets = opData.targets;
+          let n = targets is list ? targets.size() : 0;
+          let actionType = opData.preconditions.get('actionType', '');
+          return actionType == 'ABILITY_USE'
+            ? validAbilityUseAction(opData)
+            : (isActiveGm || (
+              n >= 1
+              && actionType in ['NOTE', 'CONDITION_ADD', 'CONDITION_REMOVE', 'RESOURCE']
+              && validSimpleSessionTarget(targets[0], actionType)
+              && (n < 2 || validSimpleSessionTarget(targets[1], actionType))
+              && (n < 3 || validSimpleSessionTarget(targets[2], actionType))
+              && (n < 4 || validSimpleSessionTarget(targets[3], actionType))
+              && (n < 5 || validSimpleSessionTarget(targets[4], actionType))
+              && (n < 6 || validSimpleSessionTarget(targets[5], actionType))
+              && (n < 7 || validSimpleSessionTarget(targets[6], actionType))
+            ));
+        }
+
+        function canActorCreateOp(opData) {
+          let isCreate = opData.type == 'CREATE_SHEET' && !exists(characterPath(charId));
+          let s = isCreate ? getAfter(characterPath(charId)).data : get(characterPath(charId)).data;
+          let cid = s.get('campaignId', '') == 'default' ? '' : s.get('campaignId', '');
+          let campCid = cid != '' ? cid : (opData.type == 'LINK_CAMPAIGN' ? s.get('authorizedCampaignId', '') : '');
+          let camp = campCid != '' ? get(campaignPath(campCid)).data : null;
+          let isOwner = s.ownerId == request.auth.uid;
+          let isActiveGm = camp != null && camp.ownerId == request.auth.uid && camp.state == 'ACTIVE';
+          return isCreate
+            ? (s.lastOperationId == opData.id && (isOwner || isActiveGm))
+            : (
+              opData.type in ['SET_LOCK', 'DELETE_SHEET', 'RESTORE_SHEET', 'TRANSFER_OWNERSHIP', 'LINK_CAMPAIGN', 'UNLINK_CAMPAIGN']
+                ? (
+                  s.get('protocolVersion', 0) == 2
+                  && opData.targets.size() == 1
+                  && opData.targets[0].kind == 'SHEET'
+                  && (isOwner || (cid != '' && camp != null && camp.ownerId == request.auth.uid) || (opData.type == 'LINK_CAMPAIGN' && isActiveGm))
+                )
+                : (opData.type == 'ACCEPT_DELIVERY'
+                  ? validAcceptDeliveryOp(opData, s, cid, camp, isOwner)
+                  : (s.get('protocolVersion', 0) == 2 && !s.get('deleted', false)
+                    && (cid == '' || (camp != null && camp.state == 'ACTIVE'))
+                    && ((isOwner && s.get('lockType', 'NONE') != 'HISTORIAN') || (cid != '' && isActiveGm))
+                    && (opData.type != 'ITEM_CONSUME' || validItemConsumeOp(opData, isActiveGm))
+                    && (opData.type != 'SESSION_ACTION' || validSessionActionOp(opData, isActiveGm))))
+            );
+        }
+        function validOpShape(d) {
+          return d.size() == 8
+            && d.keys().hasAll(['id', 'actorUid', 'type', 'outcome', 'schemaVersion', 'createdAt', 'targets', 'preconditions'])
+            && d.id == opId
+            && d.actorUid == request.auth.uid
+            && d.type in [
+              'CREATE_SHEET', 'PATCH_FIELDS', 'UPSERT_ITEM', 'DELETE_ITEM', 'RESTORE_ITEM',
+              'ADJUST_RESOURCE', 'ITEM_CONSUME', 'SESSION_ACTION', 'SET_LOCK',
+              'DELETE_SHEET', 'RESTORE_SHEET', 'TRANSFER_OWNERSHIP',
+              'LINK_CAMPAIGN', 'UNLINK_CAMPAIGN', 'ACCEPT_DELIVERY'
+            ]
+            && d.outcome == 'COMMITTED'
+            && d.schemaVersion == 2
+            && d.createdAt == request.time
+            && d.preconditions is map
+            && d.preconditions.get('payloadHash', '') is string
+            && d.preconditions.get('payloadHash', '').size() > 0
+            && d.preconditions.get('payloadHash', '').size() <= 128;
+        }
+
+        allow create: if signedIn()
+          && isSafeId(opId)
+          && validOpShape(request.resource.data)
+          && canActorCreateOp(request.resource.data)
+          && validTargets(opId, request.resource.data.targets);
+        allow update, delete: if false;
+      }
+
+      match /presence/{presenceId} {
+        allow read: if signedIn() && canReadCharacterById(charId);
+
+        allow create, update: if signedIn()
+          && presenceId.size() <= 192
+          && presenceId.matches('^' + request.auth.uid + '_.+')
+          && canReadCharacterById(charId)
+          && request.resource.data.keys().hasOnly(['uid', 'connectionId', 'fieldKey', 'label', 'updatedAt', 'expiresAt'])
+          && request.resource.data.keys().hasAll(['uid', 'connectionId', 'fieldKey', 'label', 'updatedAt', 'expiresAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.connectionId is string
+          && request.resource.data.connectionId.size() > 0
+          && request.resource.data.connectionId.size() <= 64
+          && presenceId == request.auth.uid + '_' + request.resource.data.connectionId
+          && request.resource.data.fieldKey is string
+          && request.resource.data.fieldKey.size() <= 200
+          && request.resource.data.label is string
+          && request.resource.data.label.size() <= 100
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(120, 's');
+
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+
+      match /media/{mediaId} {
+        allow read: if signedIn() && mediaId == 'avatar' && canReadCharacterById(charId);
+
+        allow create, update: if signedIn()
+          && mediaId == 'avatar'
+          && canWriteCharacterMedia(charId)
+          && request.resource.data.keys().hasOnly(['bytesBase64', 'dataUri', 'mimeType', 'width', 'height', 'updatedAt', 'updatedBy'])
+          && request.resource.data.keys().hasAll(['mimeType', 'width', 'height', 'updatedAt', 'updatedBy'])
+          && (('bytesBase64' in request.resource.data) != ('dataUri' in request.resource.data))
+          && (!('bytesBase64' in request.resource.data) || (request.resource.data.bytesBase64 is string && request.resource.data.bytesBase64.size() > 0 && request.resource.data.bytesBase64.toUtf8().size() <= 65536))
+          && (!('dataUri' in request.resource.data) || (request.resource.data.dataUri is string && request.resource.data.dataUri.size() > 0 && request.resource.data.dataUri.toUtf8().size() <= 65536))
+          && request.resource.data.mimeType in ['image/webp', 'image/jpeg', 'image/png']
+          && request.resource.data.width is int && request.resource.data.width > 0 && request.resource.data.width <= 256
+          && request.resource.data.height is int && request.resource.data.height > 0 && request.resource.data.height <= 256
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.updatedBy == request.auth.uid;
+
+        allow delete: if signedIn() && mediaId == 'avatar' && canWriteCharacterMedia(charId);
+      }
     }
   }
 }

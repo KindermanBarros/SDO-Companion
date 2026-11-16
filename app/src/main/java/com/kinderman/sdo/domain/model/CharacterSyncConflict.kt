@@ -282,3 +282,42 @@ private fun lockSummary(value: LockSnapshot) = when (value.type) {
     CharacterLock.PLAYER -> "Bloqueada pelo jogador"
     CharacterLock.HISTORIAN -> "Bloqueada pelo historiador"
 }
+
+fun SheetConflictItem.toCharacterConflictField(): CharacterConflictField = CharacterConflictField(
+    id = targetKey,
+    label = label,
+    localSummary = localSummary,
+    remoteSummary = remoteSummary,
+)
+
+fun CharacterSyncConflict.toSparkConflictItems(
+    accountId: String,
+    operationId: String,
+    baseRevision: Long,
+    remoteRevision: Long,
+    createdAt: Long = 0L,
+): List<SheetConflictItem> = fields.map { field ->
+    val targetKey = if (field.id == "lock" || field.id == "ownerId" || field.id == "campaignId") {
+        "sheet:${field.id}"
+    } else {
+        "field:${field.id}"
+    }
+    SheetConflictItem(
+        id = "$operationId::$targetKey",
+        accountId = accountId,
+        sheetId = remote.id.ifBlank { local.id },
+        operationId = operationId,
+        targetKey = targetKey,
+        label = field.label,
+        baseRevision = baseRevision,
+        remoteRevision = remoteRevision,
+        baseSummary = "",
+        localSummary = field.localSummary,
+        remoteSummary = field.remoteSummary,
+        basePayloadJson = "",
+        localPayloadJson = field.localSummary,
+        remotePayloadJson = field.remoteSummary,
+        resolutionStatus = ConflictResolutionStatus.OPEN,
+        createdAt = createdAt,
+    )
+}

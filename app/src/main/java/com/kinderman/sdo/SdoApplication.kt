@@ -11,17 +11,18 @@ import com.kinderman.sdo.data.repository.FirestoreCampaignJournalRepository
 import com.kinderman.sdo.data.repository.LocalCatalogRepository
 import com.kinderman.sdo.data.repository.SyncedCampaignRepository
 import com.kinderman.sdo.data.repository.SyncedCharacterRepository
-import com.kinderman.sdo.data.repository.SyncedOwnerRepository
 import com.kinderman.sdo.data.repository.SyncedOperationsRepository
+import com.kinderman.sdo.data.repository.SyncedOwnerRepository
 import com.kinderman.sdo.data.sync.AndroidConnectivityMonitor
+import com.kinderman.sdo.data.sync.SparkFirestoreSyncEngine
 import com.kinderman.sdo.domain.repository.AuthRepository
 import com.kinderman.sdo.domain.repository.CampaignJournalRepository
 import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.ConnectivityMonitor
-import com.kinderman.sdo.domain.repository.OwnerRepository
 import com.kinderman.sdo.domain.repository.OperationsRepository
+import com.kinderman.sdo.domain.repository.OwnerRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,7 +31,7 @@ import kotlinx.coroutines.launch
 class SdoApplication : Application() {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    lateinit var hybridSheetSync: com.kinderman.sdo.data.sync.HybridSheetSync
+    lateinit var sparkSyncEngine: SparkFirestoreSyncEngine
     lateinit var characterRepository: CharacterRepository
     lateinit var authRepository: AuthRepository
     lateinit var ownerRepository: OwnerRepository
@@ -77,20 +78,32 @@ class SdoApplication : Application() {
                 AppDatabase.MIGRATION_29_30,
                 AppDatabase.MIGRATION_30_31,
                 AppDatabase.MIGRATION_31_32,
+                AppDatabase.MIGRATION_32_33,
             )
             .build()
-        val realtimeDatabase = runCatching {
-            com.google.firebase.database.FirebaseDatabase.getInstance("https://sdo-companion-default-rtdb.firebaseio.com")
-                .also { instance -> runCatching { instance.setPersistenceEnabled(true) } }
-        }.getOrNull()
-        hybridSheetSync = com.kinderman.sdo.data.sync.HybridSheetSync(this, db, applicationScope, realtimeDatabase)
+        sparkSyncEngine = SparkFirestoreSyncEngine(this, db, applicationScope)
         val characterMigrationManager = CharacterMigrationManager()
-        characterRepository = SyncedCharacterRepository(db.characterDao(), db.ownerDao(), db.campaignDao(), characterMigrationManager, hybridSheetSync)
+        characterRepository = SyncedCharacterRepository(
+            dao = db.characterDao(),
+            ownerDao = db.ownerDao(),
+            campaignDao = db.campaignDao(),
+            migrationManager = characterMigrationManager,
+            syncEngine = sparkSyncEngine,
+        )
         ownerRepository = SyncedOwnerRepository(db.ownerDao())
         catalogRepository = LocalCatalogRepository(db.catalogDao())
-        campaignRepository = SyncedCampaignRepository(db.campaignDao(), db.characterDao())
+        campaignRepository = SyncedCampaignRepository(
+            dao = db.campaignDao(),
+            characterDao = db.characterDao(),
+            syncEngine = sparkSyncEngine,
+        )
         campaignJournalRepository = FirestoreCampaignJournalRepository()
-        operationsRepository = SyncedOperationsRepository(db.operationsDao(), db.campaignDao(), characterMigrationManager, hybridSheetSync)
+        operationsRepository = SyncedOperationsRepository(
+            dao = db.operationsDao(),
+            campaignDao = db.campaignDao(),
+            migrationManager = characterMigrationManager,
+            syncEngine = sparkSyncEngine,
+        )
         authRepository = FirebaseAuthRepository()
         connectivityMonitor = AndroidConnectivityMonitor(this)
         applicationScope.launch {

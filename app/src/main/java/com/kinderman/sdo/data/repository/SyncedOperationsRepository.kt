@@ -1,45 +1,38 @@
 package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
-import com.kinderman.sdo.data.local.CharacterRecord
 import com.kinderman.sdo.data.local.CampaignAlertSettingsRecord
 import com.kinderman.sdo.data.local.CampaignDao
-import com.kinderman.sdo.data.local.CampaignPayloadCodec
 import com.kinderman.sdo.data.local.CampaignDeliveryRecord
 import com.kinderman.sdo.data.local.CampaignLibraryRecord
+import com.kinderman.sdo.data.local.CampaignPayloadCodec
+import com.kinderman.sdo.data.local.CharacterMigrationManager
 import com.kinderman.sdo.data.local.OperationsDao
 import com.kinderman.sdo.data.local.SessionOperationRecord
-import com.kinderman.sdo.data.local.firestoreCharacterPatch
-import com.kinderman.sdo.data.local.optimizedForFirestore
 import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.data.local.toRecord
-import com.kinderman.sdo.data.local.CharacterMigrationManager
+import com.kinderman.sdo.data.sync.SparkFirestoreSyncEngine
 import com.kinderman.sdo.domain.model.CampaignAlertSettings
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignDelivery
 import com.kinderman.sdo.domain.model.CampaignDeliveryState
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.normalizeCampaignId
-import com.kinderman.sdo.domain.model.applyCharacterEditKeys
-import com.kinderman.sdo.domain.model.characterEditKeys
-import com.kinderman.sdo.domain.model.commitCharacterEditKeys
-import com.kinderman.sdo.domain.model.pendingCharacterEditKeys
 import com.kinderman.sdo.domain.model.ConditionEffect
 import com.kinderman.sdo.domain.model.InventoryItem
 import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.SessionOperation
+import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.UserSession
-import com.kinderman.sdo.domain.model.applySessionCommand
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -47,7 +40,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 
 private const val AUDIT_SYNC_LIMIT = 200L
@@ -56,7 +48,7 @@ class SyncedOperationsRepository(
     private val dao: OperationsDao,
     private val campaignDao: CampaignDao,
     private val migrationManager: CharacterMigrationManager = CharacterMigrationManager(),
-    private val hybrid: com.kinderman.sdo.data.sync.HybridSheetSync? = null,
+    private val syncEngine: SparkFirestoreSyncEngine? = null,
 ) : OperationsRepository {
     override fun observeAudit(campaignIds: Set<String>): Flow<List<SessionOperation>> =
         dao.observeAudit(campaignIds.ifEmpty { setOf("") }).map { it.map(SessionOperationRecord::toDomain) }
@@ -75,64 +67,8 @@ class SyncedOperationsRepository(
             .distinctUntilChanged().flowOn(Dispatchers.Default)
 
     override suspend fun apply(session: UserSession, character: Character, command: SessionCommand): Boolean {
-        if (hybrid?.isRtdb(session.uid, character.id) == true) return hybrid.session(session, character, command)
-        require(command.idempotencyKey.isNotBlank()) { "A ação precisa de uma chave de operação." }
-        val localRecord = dao.character(character.id) ?: character.toRecord()
-        val local = localRecord.toDomain()
-        val store = Firebase.firestore
-        val reference = store.collection(FirestoreCollections.CHARACTERS).document(character.id)
-        val receiptKey = "@operation/${command.idempotencyKey}"
-        val result = try {
-            store.runTransaction { transaction ->
-                val snapshot = transaction.get(reference)
-                val raw = snapshot.toObject(CharacterRecord::class.java)?.copy(id = character.id)
-                    ?: error("Sincronize a ficha antes de executar ações da sessão.")
-                val remote = migrationManager.migrate(raw, markDirty = false).toDomain()
-                check(!remote.deleted) { "Esta ficha foi excluída." }
-                if (receiptKey in remote.fieldUpdatedAt) {
-                    return@runTransaction remote.toRecord() to null
-                }
-                val campaignId = normalizeCampaignId(remote.campaignId)
-                if (campaignId.isNotBlank()) {
-                    val campaign = transaction.get(store.collection(FirestoreCollections.CAMPAIGNS).document(campaignId))
-                    check(campaign.getString("state") == "ACTIVE") { "A campanha não está ativa para ações da sessão." }
-                }
-                val pending = pendingCharacterEditKeys(local, remote)
-                val base = applyCharacterEditKeys(remote, local, pending)
-                val mutation = base.applySessionCommand(command, session.uid)
-                val keys = pending + characterEditKeys(base, mutation.character)
-                val committed = commitCharacterEditKeys(remote, mutation.character.copy(lastEditedBy = session.uid), keys)
-                val revision = committed.fieldUpdatedAt.getValue("@revision")
-                val record = committed.copy(fieldUpdatedAt = committed.fieldUpdatedAt + (receiptKey to revision)).toRecord()
-                val operation = mutation.operation.copy(createdAt = record.updatedAt).toRecord().copy(dirty = false, lastSyncedAt = record.updatedAt)
-                val optimized = record.optimizedForFirestore(migrationManager)
-                val patch = firestoreCharacterPatch(
-                    before = raw,
-                    after = optimized,
-                    existingDocumentKeys = snapshot.data.orEmpty().keys,
-                    deleteValue = FieldValue.delete(),
-                )
-                if (patch.isNotEmpty()) {
-                    transaction.update(reference, patch)
-                }
-                if (operation.campaignId.isNotBlank()) {
-                    transaction.set(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).document(operation.id), operation)
-                }
-                record to operation
-            }.await()
-        } catch (error: FirebaseFirestoreException) {
-            if (error.code == FirebaseFirestoreException.Code.UNAVAILABLE) {
-                val mutation = local.applySessionCommand(command, session.uid)
-                val now = System.currentTimeMillis()
-                val updated = mutation.character.copy(lastEditedBy = session.uid, updatedAt = now, dirty = true).toRecord()
-                val opRecord = mutation.operation.copy(createdAt = now).toRecord().copy(dirty = true)
-                return dao.applyOnce(opRecord, updated)
-            }
-            throw error
-        }
-        dao.acceptCommittedOperation(result.first, result.second, if (result.second != null) localRecord else null)
-        hybrid?.mirrorCharacter(result.first.copy(dirty = false))
-        return result.second != null
+        val engine = requireNotNull(syncEngine) { "SparkFirestoreSyncEngine indisponível." }
+        return engine.applySessionCommand(session, character, command)
     }
 
     override suspend fun saveLibrary(session: UserSession, entry: CampaignLibraryEntry) {
@@ -142,12 +78,24 @@ class SyncedOperationsRepository(
             "A campanha de um modelo salvo não pode ser alterada. Duplique o modelo para transferi-lo."
         }
         val now = System.currentTimeMillis()
-        dao.upsertLibrary(entry.copy(createdBy = entry.createdBy.ifBlank { session.uid }, updatedAt = now, dirty = true).toRecord())
+        dao.upsertLibrary(
+            entry.copy(createdBy = entry.createdBy.ifBlank { session.uid }, updatedAt = now, dirty = true).toRecord(),
+        )
     }
 
     override suspend fun duplicateLibrary(session: UserSession, entry: CampaignLibraryEntry) {
         requireActiveCampaign(entry.campaignId)
-        saveLibrary(session, entry.copy(id = UUID.randomUUID().toString(), name = "${entry.name} — cópia", version = 1, createdBy = session.uid, createdAt = System.currentTimeMillis(), archived = false))
+        saveLibrary(
+            session,
+            entry.copy(
+                id = UUID.randomUUID().toString(),
+                name = "${entry.name} — cópia",
+                version = 1,
+                createdBy = session.uid,
+                createdAt = System.currentTimeMillis(),
+                archived = false,
+            ),
+        )
     }
 
     override suspend fun archiveLibrary(session: UserSession, entry: CampaignLibraryEntry, archived: Boolean) =
@@ -195,15 +143,20 @@ class SyncedOperationsRepository(
             updatedAt = now,
             dirty = true,
         )
-        if (!accept) return dao.upsertDelivery(responded.toRecord())
-        val record = dao.character(delivery.recipientCharacterId)?.let { migrationManager.migrate(it, markDirty = true) }
+        if (!accept) {
+            dao.upsertDelivery(responded.toRecord())
+            return
+        }
+        val record = dao.character(delivery.recipientCharacterId)?.let { migrationManager.migrate(it, markDirty = false) }
             ?: error("Ficha destinatária não encontrada.")
-        val character = applyDelivery(record.toDomain(), delivery).copy(
+        val baseCharacter = record.toDomain()
+        val appliedCharacter = applyDelivery(baseCharacter, delivery).copy(
             updatedAt = now,
             lastEditedBy = session.uid,
-            dirty = true,
+            dirty = false,
         )
-        dao.acceptDeliveryOnce(responded.toRecord(), character.toRecord())
+        requireNotNull(syncEngine).enqueueDeliveryAcceptance(session, baseCharacter, delivery.id, appliedCharacter)
+        dao.upsertDelivery(responded.toRecord())
     }
 
     override suspend fun saveAlertSettings(settings: CampaignAlertSettings) = dao.upsertAlertSettings(settings.toRecord())
@@ -217,10 +170,8 @@ class SyncedOperationsRepository(
         val operations = store.collection(FirestoreCollections.CAMPAIGN_AUDIT)
         val library = store.collection(FirestoreCollections.CAMPAIGN_LIBRARY)
         val deliveries = store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES)
+
         dao.dirtyOperations().filter { it.actorId == session.uid }.forEach { local ->
-            // Audit entries are immutable. Reading a missing document first cannot be authorized
-            // by rules that inspect resource.data, so create directly and treat an existing
-            // idempotency key as an already completed retry.
             val reference = operations.document(local.id)
             try {
                 reference.set(local.copy(dirty = false)).await()
@@ -234,23 +185,36 @@ class SyncedOperationsRepository(
             }
             dao.markOperationSynced(local.id, local.createdAt)
         }
+
         dao.dirtyLibrary().filter { it.campaignId in writableCampaignIds }.forEach { original ->
             val reference = library.document(original.id)
             val remote = reference.get().await().toObject(CampaignLibraryRecord::class.java)
             val local = if (remote != null && remote.campaignId != original.campaignId) {
                 original.copy(campaignId = remote.campaignId).also { dao.upsertLibrary(it) }
-            } else original
+            } else {
+                original
+            }
             reference.set(local.copy(dirty = false), SetOptions.merge()).await()
             dao.markLibrarySynced(local.id, local.updatedAt)
         }
+
+        // Accepted deliveries are committed atomically inside SparkFirestoreSyncEngine (ACCEPT_DELIVERY).
+        // Drain pending Spark intents before checking delivery state so accepted deliveries settle cleanly.
+        syncEngine?.drain(session.uid)
         dao.dirtyDeliveries().filter { it.createdBy == session.uid || it.recipientId == session.uid }.forEach { local ->
             if (local.state == CampaignDeliveryState.ACCEPTED.name && local.recipientId == session.uid) {
-                syncAcceptedDelivery(store, local)
+                val remoteState = runCatching {
+                    deliveries.document(local.id).get().await().getString("state")
+                }.getOrNull()
+                if (remoteState == CampaignDeliveryState.ACCEPTED.name) {
+                    dao.markDeliverySynced(local.id, local.updatedAt)
+                }
             } else {
                 deliveries.document(local.id).set(local.copy(dirty = false), SetOptions.merge()).await()
                 dao.markDeliverySynced(local.id, local.updatedAt)
             }
         }
+
         val readableSnapshots = coroutineScope {
             readableCampaignIds.map { campaignId ->
                 async {
@@ -273,8 +237,7 @@ class SyncedOperationsRepository(
             remoteAudit.forEach { dao.upsertOperation(it.copy(dirty = false, lastSyncedAt = it.createdAt)) }
             remoteLibrary.forEach { dao.upsertLibrary(it.copy(dirty = false, lastSyncedAt = it.updatedAt)) }
         }
-        // A player may read only deliveries addressed to them. Querying a campaign's full
-        // delivery queue would expose other players' records and is therefore Historian-only.
+
         val remoteDeliveries = coroutineScope {
             val campaignJobs = writableCampaignIds.map { campaignId ->
                 async {
@@ -298,46 +261,30 @@ class SyncedOperationsRepository(
         val campaign = campaignDao.campaign(campaignId) ?: error("Campanha não encontrada.")
         require(campaign.state == "ACTIVE") { "Campanhas arquivadas são somente leitura." }
     }
-
-    private suspend fun syncAcceptedDelivery(store: com.google.firebase.firestore.FirebaseFirestore, local: CampaignDeliveryRecord) {
-        val deliveryReference = store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).document(local.id)
-        val characterReference = store.collection(FirestoreCollections.CHARACTERS).document(local.recipientCharacterId)
-        val uploaded = dao.character(local.recipientCharacterId)
-        val result = store.runTransaction { transaction ->
-            val remoteDelivery = transaction.get(deliveryReference).toObject(CampaignDeliveryRecord::class.java)
-                ?: error("Entrega remota não encontrada.")
-            require(remoteDelivery.recipientId == local.recipientId) { "Destinatário remoto divergente." }
-            require(remoteDelivery.state != CampaignDeliveryState.DECLINED.name) { "Esta entrega já foi recusada em outro aparelho." }
-            val remoteRecord = transaction.get(characterReference).toObject(com.kinderman.sdo.data.local.CharacterRecord::class.java)
-                ?: error("Ficha destinatária remota não encontrada.")
-            val remoteCharacter = migrationManager.migrate(remoteRecord, markDirty = false).toDomain()
-            val pending = uploaded?.toDomain()?.let { pendingCharacterEditKeys(it, remoteCharacter) }.orEmpty()
-            val base = if (uploaded != null) applyCharacterEditKeys(remoteCharacter, uploaded.toDomain(), pending) else remoteCharacter
-            val applied = if (local.id in base.appliedDeliveryIds) base else applyDelivery(base, local.toDomain())
-            val keys = pending + characterEditKeys(base, applied)
-            val committed = if (keys.isEmpty() && local.id in remoteCharacter.appliedDeliveryIds) remoteCharacter else
-                commitCharacterEditKeys(remoteCharacter, applied.copy(lastEditedBy = local.recipientId), keys)
-            if (committed != remoteCharacter) transaction.set(characterReference, committed.toRecord().optimizedForFirestore(migrationManager))
-            if (remoteDelivery.state == CampaignDeliveryState.PENDING.name) {
-                transaction.set(deliveryReference, local.copy(dirty = false), SetOptions.merge())
-            }
-            committed
-        }.await()
-        dao.acceptCommittedOperation(result.copy(dirty = false, lastSyncedAt = result.updatedAt).toRecord(), null, uploaded)
-        dao.upsertDelivery(local.copy(dirty = false, lastSyncedAt = local.updatedAt))
-    }
 }
 
 internal fun applyDelivery(character: Character, delivery: CampaignDelivery): Character {
     if (delivery.id in character.appliedDeliveryIds) return character
     val decoded = CampaignPayloadCodec.decode(delivery.snapshotKind, delivery.snapshotPayload)
     var changed = when (delivery.snapshotKind) {
-        CampaignContentKind.ITEM -> character.copy(inventory = character.inventory + ((decoded?.item
-            ?: InventoryItem(name = delivery.snapshotName, effect = delivery.snapshotSummary)).copy(id = "delivery:${delivery.id}")))
-        CampaignContentKind.POWER -> character.copy(powers = character.powers + ((decoded?.power
-            ?: Power(name = delivery.snapshotName, effect = delivery.snapshotSummary)).copy(id = "delivery:${delivery.id}")))
-        CampaignContentKind.CONDITION -> character.copy(conditions = character.conditions + ((decoded?.condition
-            ?: ConditionEffect(name = delivery.snapshotName, summary = delivery.snapshotSummary, origin = "Campanha")).copy(id = "delivery:${delivery.id}")))
+        CampaignContentKind.ITEM -> character.copy(
+            inventory = character.inventory + (
+                (decoded?.item ?: InventoryItem(name = delivery.snapshotName, effect = delivery.snapshotSummary))
+                    .copy(id = "delivery:${delivery.id}")
+                ),
+        )
+        CampaignContentKind.POWER -> character.copy(
+            powers = character.powers + (
+                (decoded?.power ?: Power(name = delivery.snapshotName, effect = delivery.snapshotSummary))
+                    .copy(id = "delivery:${delivery.id}")
+                ),
+        )
+        CampaignContentKind.CONDITION -> character.copy(
+            conditions = character.conditions + (
+                (decoded?.condition ?: ConditionEffect(name = delivery.snapshotName, summary = delivery.snapshotSummary, origin = "Campanha"))
+                    .copy(id = "delivery:${delivery.id}")
+                ),
+        )
         CampaignContentKind.NOTE, CampaignContentKind.REWARD, CampaignContentKind.TEMPLATE -> character.copy(
             personalNotes = character.personalNotes + PersonalNote(
                 id = "delivery:${delivery.id}",
@@ -347,7 +294,9 @@ internal fun applyDelivery(character: Character, delivery: CampaignDelivery): Ch
         )
     }
     if (delivery.knowledgeBonus != 0) {
-        val index = changed.learnedKnowledges.indexOfFirst { it.id == delivery.knowledgeMapping || it.name.equals(delivery.knowledgeMapping, true) }
+        val index = changed.learnedKnowledges.indexOfFirst {
+            it.id == delivery.knowledgeMapping || it.name.equals(delivery.knowledgeMapping, true)
+        }
         require(index >= 0) { "O Conhecimento Adquirido mapeado não existe mais." }
         val learned = changed.learnedKnowledges.toMutableList()
         learned[index] = learned[index].copy(adjustment = learned[index].adjustment + delivery.knowledgeBonus)

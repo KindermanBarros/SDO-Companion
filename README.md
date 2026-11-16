@@ -15,6 +15,7 @@ Android companion for creating and managing SDO RPG character sheets, using camp
 - Compact dashboard/library filters, expandable session abilities and catalog-derived race guidance were accepted by the owner on 2026-11-13. Owner review repairs restore angular cards/selectors, readable Cybergrunge headers and library controls, and remove Session/Master from panel quick access; automated lifecycle/IME and pixel-verification limitations remain documented.
 - Journal and online-only editing deliveries were accepted by the owner; character photos and battle grid remain backlog work: see [Product overview](docs/product/product.md).
 - Session quick actions now include resources, confirmed dose consumption, condition addition and equipment state changes; field-level sheet convergence is in review. Final runtime acceptance remains pending; tests were skipped at the owner's request.
+- Spark sheet synchronization is in review: durable account-scoped offline drafts, explicit conflicts, and online Firestore transactions. Supported automatic actions are validated by Security Rules; unsupported item effects/dose formulas require manual adjustment. Portrait presets and optional thumbnails avoid Cloud Storage billing. See the [cutover procedure](docs/firebase-deploy.md) before releasing this breaking protocol.
 
 ## Build
 

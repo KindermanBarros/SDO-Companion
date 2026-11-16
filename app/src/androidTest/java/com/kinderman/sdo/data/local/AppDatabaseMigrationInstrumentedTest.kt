@@ -243,8 +243,118 @@ class AppDatabaseMigrationInstrumentedTest {
         migrated.close()
     }
 
+    @Test fun migration32To33CreatesSparkTablesAndPreservesOutboxAndRoutes() {
+        val name = "migration-32-33.db".also(databases::add)
+        openSqlite(name, 32, onCreate = { db ->
+            AppDatabase.MIGRATION_31_32.migrate(db)
+            db.execSQL(
+                "INSERT INTO sheet_routes (accountId, sheetId, status, accessEpoch, revision, confirmedJson) " +
+                    "VALUES ('acc-1', 'sheet-1', 'FIRESTORE_ACTIVE', 2, 7, '{\"id\":\"sheet-1\"}')",
+            )
+            db.execSQL(
+                "INSERT INTO sheet_outbox (operationId, accountId, sheetId, deviceId, sequence, envelopeJson, optimisticJson, status, error) " +
+                    "VALUES ('op-pending', 'acc-1', 'sheet-1', 'dev-1', 10, '{\"command\":{\"type\":\"PATCH\"}}', '{\"name\":\"Ayla\"}', 'PENDING', '')",
+            )
+            db.execSQL(
+                "INSERT INTO sheet_outbox (operationId, accountId, sheetId, deviceId, sequence, envelopeJson, optimisticJson, status, error) " +
+                    "VALUES ('op-session', 'acc-1', 'sheet-1', 'dev-1', 11, '{\"command\":{\"type\":\"SESSION\"}}', '', 'REJECTED', 'Quota')",
+            )
+            db.execSQL(
+                "INSERT INTO sheet_outbox (operationId, accountId, sheetId, deviceId, sequence, envelopeJson, optimisticJson, status, error) " +
+                    "VALUES ('op-done', 'acc-2', 'sheet-2', 'dev-2', 12, '{\"command\":{\"type\":\"PATCH\"}}', '{\"name\":\"B\"}', 'COMMITTED', '')",
+            )
+        }).close()
+
+        val migrated = openSqlite(name, 33, onUpgrade = { db, oldVersion, newVersion ->
+            assertEquals(32, oldVersion)
+            assertEquals(33, newVersion)
+            AppDatabase.MIGRATION_32_33.migrate(db)
+        })
+        AppDatabase.MIGRATION_32_33.migrate(migrated.writableDatabase)
+
+        listOf("account_sheets", "sheet_intents", "sheet_conflicts").forEach { table ->
+            migrated.writableDatabase.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+            }
+        }
+        migrated.writableDatabase.query(
+            "SELECT sheetRevision, confirmedJson FROM account_sheets WHERE accountId = 'acc-1' AND sheetId = 'sheet-1'",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(7L, cursor.getLong(0))
+            assertEquals("{\"id\":\"sheet-1\"}", cursor.getString(1))
+        }
+        migrated.writableDatabase.query(
+            "SELECT operationId, type, status, baseValueJson, desiredPayloadJson, payloadHash, error FROM sheet_intents ORDER BY createdAt ASC",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("op-pending", cursor.getString(0))
+            assertEquals("PATCH_FIELDS", cursor.getString(1))
+            assertEquals("PENDING", cursor.getString(2))
+            assertEquals("{\"command\":{\"type\":\"PATCH\"}}", cursor.getString(3))
+            assertEquals("{\"name\":\"Ayla\"}", cursor.getString(4))
+            assertEquals(64, cursor.getString(5).length)
+
+            assertTrue(cursor.moveToNext())
+            assertEquals("op-session", cursor.getString(0))
+            assertEquals("SESSION_ACTION", cursor.getString(1))
+            assertEquals("REJECTED", cursor.getString(2))
+            assertEquals("{\"command\":{\"type\":\"SESSION\"}}", cursor.getString(3))
+            assertEquals("{\"command\":{\"type\":\"SESSION\"}}", cursor.getString(4))
+            assertEquals(64, cursor.getString(5).length)
+            assertEquals("Quota", cursor.getString(6))
+
+            assertTrue(cursor.moveToNext())
+            assertEquals("op-done", cursor.getString(0))
+            assertEquals("CONFIRMED", cursor.getString(2))
+            assertEquals(64, cursor.getString(5).length)
+        }
+        migrated.close()
+    }
+
+    @Test fun sparkDaosEnforceStrictAccountIsolation() = runBlocking {
+        val name = "spark-account-isolation.db".also(databases::add)
+        val database = openRoom(name)
+        database.accountSheetDao().upsert(AccountSheetRecord(accountId = "acc-1", sheetId = "shared", sheetRevision = 3L))
+        database.accountSheetDao().upsert(AccountSheetRecord(accountId = "acc-2", sheetId = "shared", sheetRevision = 9L))
+        database.sheetIntentDao().upsert(
+            SheetIntentRecord(
+                operationId = "op-1",
+                accountId = "acc-1",
+                sheetId = "shared",
+                type = "PATCH_FIELDS",
+                targetKey = "field:name",
+                status = "PENDING",
+            ),
+        )
+        database.sheetConflictDao().upsert(
+            SheetConflictRecord(
+                id = "conf-1",
+                accountId = "acc-1",
+                sheetId = "shared",
+                operationId = "op-1",
+                targetKey = "field:name",
+                label = "Nome",
+            ),
+        )
+
+        assertEquals(1, database.accountSheetDao().observeAll("acc-1").first().size)
+        assertEquals(3L, database.accountSheetDao().get("acc-1", "shared")?.sheetRevision)
+        assertEquals(9L, database.accountSheetDao().get("acc-2", "shared")?.sheetRevision)
+        assertEquals(1, database.sheetIntentDao().listForSheet("acc-1", "shared").size)
+        assertEquals(0, database.sheetIntentDao().listForSheet("acc-2", "shared").size)
+        assertEquals(1, database.sheetConflictDao().observeOpen("acc-1").first().size)
+        assertEquals(0, database.sheetConflictDao().observeOpen("acc-2").first().size)
+        database.close()
+    }
+
     private fun openRoom(name: String) = Room.databaseBuilder(context, AppDatabase::class.java, name)
-        .addMigrations(AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_30_31, AppDatabase.MIGRATION_31_32)
+        .addMigrations(
+            AppDatabase.MIGRATION_21_22,
+            AppDatabase.MIGRATION_30_31,
+            AppDatabase.MIGRATION_31_32,
+            AppDatabase.MIGRATION_32_33,
+        )
         .build()
 
     private fun openSqlite(
