@@ -471,6 +471,100 @@ fun CharacterRecord.optimizedForFirestore(
     return migrated.copy(dirty = false, lastSyncedAt = 0)
 }
 
+/**
+ * Build a minimal top-level Firestore update map containing only fields that changed
+ * between [before] and [after] (plus optional deletions of stripped legacy projections).
+ */
+fun firestoreCharacterPatch(
+    before: CharacterRecord,
+    after: CharacterRecord,
+    existingDocumentKeys: Set<String> = emptySet(),
+    deleteValue: Any? = null,
+): Map<String, Any?> = buildMap {
+    fun <T> diff(key: String, oldVal: T, newVal: T) {
+        if (oldVal != newVal) put(key, newVal)
+    }
+    diff("ownerId", before.ownerId, after.ownerId)
+    diff("campaignId", before.campaignId, after.campaignId)
+    diff("name", before.name, after.name)
+    diff("race", before.race, after.race)
+    diff("subRace", before.subRace, after.subRace)
+    diff("raceAttribute", before.raceAttribute, after.raceAttribute)
+    diff("occupation", before.occupation, after.occupation)
+    diff("age", before.age, after.age)
+    diff("level", before.level, after.level)
+    diff("creationStatus", before.creationStatus, after.creationStatus)
+    diff("creationStep", before.creationStep, after.creationStep)
+    diff("creationCompletedAt", before.creationCompletedAt, after.creationCompletedAt)
+    diff("creationRulesVersion", before.creationRulesVersion, after.creationRulesVersion)
+    diff("itemSchemaVersion", before.itemSchemaVersion, after.itemSchemaVersion)
+    diff("canonicalSchemaVersion", before.canonicalSchemaVersion, after.canonicalSchemaVersion)
+    diff("migrationReviewPayload", before.migrationReviewPayload, after.migrationReviewPayload)
+    diff("canonicalAbilitiesPayload", before.canonicalAbilitiesPayload, after.canonicalAbilitiesPayload)
+    diff("canonicalBodyPayload", before.canonicalBodyPayload, after.canonicalBodyPayload)
+    diff("canonicalConditionsPayload", before.canonicalConditionsPayload, after.canonicalConditionsPayload)
+    diff("activeModifiersPayload", before.activeModifiersPayload, after.activeModifiersPayload)
+    diff("canonicalItemsPayload", before.canonicalItemsPayload, after.canonicalItemsPayload)
+    diff("scopedItemCatalogPayload", before.scopedItemCatalogPayload, after.scopedItemCatalogPayload)
+    diff("canonicalProgressionPayload", before.canonicalProgressionPayload, after.canonicalProgressionPayload)
+    diff("progressionLifeBonus", before.progressionLifeBonus, after.progressionLifeBonus)
+    diff("progressionSanityBonus", before.progressionSanityBonus, after.progressionSanityBonus)
+    diff("progressionArcaneBonus", before.progressionArcaneBonus, after.progressionArcaneBonus)
+    diff("progressionEnergyBonus", before.progressionEnergyBonus, after.progressionEnergyBonus)
+    diff("progressionHistory", before.progressionHistory, after.progressionHistory)
+    diff("money", before.money, after.money)
+    diff("life", before.life, after.life)
+    diff("sanity", before.sanity, after.sanity)
+    diff("arcane", before.arcane, after.arcane)
+    diff("energy", before.energy, after.energy)
+    diff("destiny", before.destiny, after.destiny)
+    diff("exhaustion", before.exhaustion, after.exhaustion)
+    diff("corruption", before.corruption, after.corruption)
+    diff("attributes", before.attributes, after.attributes)
+    diff("protectionAdjustments", before.protectionAdjustments, after.protectionAdjustments)
+    diff("positiveTraits", before.positiveTraits, after.positiveTraits)
+    diff("negativeTraits", before.negativeTraits, after.negativeTraits)
+    diff("pathName", before.pathName, after.pathName)
+    diff("pathMotto", before.pathMotto, after.pathMotto)
+    diff("powers", before.powers, after.powers)
+    diff("inventory", before.inventory, after.inventory)
+    diff("itemCreationDraft", before.itemCreationDraft, after.itemCreationDraft)
+    diff("story", before.story, after.story)
+    diff("personalNotes", before.personalNotes, after.personalNotes)
+    diff("updatedAt", before.updatedAt, after.updatedAt)
+    diff("lastEditedBy", before.lastEditedBy, after.lastEditedBy)
+    diff("fieldUpdatedAt", before.fieldUpdatedAt, after.fieldUpdatedAt)
+    diff("height", before.height, after.height)
+    diff("sex", before.sex, after.sex)
+    diff("size", before.size, after.size)
+    diff("photoUri", before.photoUri, after.photoUri)
+    diff("learnedKnowledges", before.learnedKnowledges, after.learnedKnowledges)
+    diff("arcaneKnowledges", before.arcaneKnowledges, after.arcaneKnowledges)
+    diff("battleTechniques", before.battleTechniques, after.battleTechniques)
+    diff("pathKeywords", before.pathKeywords, after.pathKeywords)
+    diff("pathPillars", before.pathPillars, after.pathPillars)
+    diff("containerCapacity", before.containerCapacity, after.containerCapacity)
+    diff("agilityLimit", before.agilityLimit, after.agilityLimit)
+    diff("mysticAbilities", before.mysticAbilities, after.mysticAbilities)
+    diff("isLocked", before.isLocked, after.isLocked)
+    diff("lockType", before.lockType, after.lockType)
+    diff("lockedBy", before.lockedBy, after.lockedBy)
+    diff("lockedAt", before.lockedAt, after.lockedAt)
+    diff("deleted", before.deleted, after.deleted)
+    diff("appliedDeliveryIds", before.appliedDeliveryIds, after.appliedDeliveryIds)
+
+    fun diffLegacy(key: String, isEmpty: Boolean, oldVal: Any?, newVal: Any?) {
+        if (isEmpty && key in existingDocumentKeys && deleteValue != null) put(key, deleteValue)
+        else if (oldVal != newVal) put(key, newVal)
+    }
+    diffLegacy("protections", after.protections.isEmpty(), before.protections, after.protections)
+    diffLegacy("notes", after.notes.isBlank(), before.notes, after.notes)
+    diffLegacy("bodyRegions", after.bodyRegions.isEmpty(), before.bodyRegions, after.bodyRegions)
+    diffLegacy("organs", after.organs.isEmpty(), before.organs, after.organs)
+    diffLegacy("conditions", after.conditions.isEmpty(), before.conditions, after.conditions)
+    if ("dirty" in existingDocumentKeys && deleteValue != null) put("dirty", deleteValue)
+}
+
 private fun Character.itemsForPersistence(): Pair<List<com.kinderman.sdo.domain.model.ItemState>, List<com.kinderman.sdo.domain.model.ScopedItemDefinition>> {
     val definitions = customItemCatalog.associateBy { it.reference }.toMutableMap()
     val states = inventory.map { item ->

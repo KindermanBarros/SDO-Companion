@@ -5,6 +5,7 @@ import java.util.Base64
 private const val PENDING_PREFIX = "@pending/"
 private const val DELETED_PREFIX = "@deleted/"
 private const val SERVER_REVISION = "@revision"
+private const val BASE_REVISION = "@baseRevision"
 private const val PROTOCOL_VERSION = "@protocol"
 
 private fun elementKey(id: String): String = Base64.getUrlEncoder().withoutPadding().encodeToString(id.toByteArray(Charsets.UTF_8))
@@ -14,7 +15,9 @@ fun Character.serverSyncRevision(): Long = fieldUpdatedAt[SERVER_REVISION] ?: 0L
 fun needsLegacySyncReview(local: Character, remote: Character): Boolean = local.dirty &&
     local.pendingSyncKeys().isEmpty() && local.fieldUpdatedAt[PROTOCOL_VERSION] != 1L &&
     remote.fieldUpdatedAt[PROTOCOL_VERSION] == 1L && characterConflictFields(local, remote).isNotEmpty()
-fun Character.withoutPendingSyncKeys(): Character = copy(fieldUpdatedAt = fieldUpdatedAt.filterKeys { !it.startsWith(PENDING_PREFIX) })
+fun Character.withoutPendingSyncKeys(): Character = copy(
+    fieldUpdatedAt = fieldUpdatedAt.filterKeys { !it.startsWith(PENDING_PREFIX) && it != BASE_REVISION },
+)
 
 private fun <T> elementChanges(group: String, before: List<T>, after: List<T>, id: (T) -> String, fields: (T, T) -> Set<String>): Set<String> {
     if (before == after) return emptySet()
@@ -120,8 +123,17 @@ fun commitCharacterEditKeys(remote: Character, local: Character, keys: Set<Strin
     }
     val now = System.currentTimeMillis()
     check(remote.updatedAt < Long.MAX_VALUE) { "O horário registrado na ficha é inválido." }
-    return merged.copy(fieldUpdatedAt = metadata, updatedAt = maxOf(now, remote.updatedAt + 1), dirty = false,
-        lastEditedBy = local.lastEditedBy, lastSyncedAt = maxOf(now, remote.updatedAt + 1))
+    val committedAt = maxOf(now, remote.updatedAt + 1)
+    keys.forEach { path ->
+        val group = when (val g = path.substringBefore('/')) {
+            "powers", "mysticAbilities" -> "abilities"
+            "conditions" -> "conditionInstances"
+            else -> g
+        }
+        metadata[group] = maxOf(committedAt, metadata[group] ?: 0L)
+    }
+    return merged.copy(fieldUpdatedAt = metadata, updatedAt = committedAt, dirty = false,
+        lastEditedBy = local.lastEditedBy, lastSyncedAt = committedAt)
 }
 
 private fun Character.containsSyncElement(path: String): Boolean {
@@ -150,15 +162,18 @@ private fun Character.containsSyncElement(path: String): Boolean {
 fun preservePendingCharacterEdits(remote: Character, current: Character): Character {
     val pending = current.pendingSyncKeys()
     if (pending.isEmpty()) return remote
+    val baseRevision = current.fieldUpdatedAt[BASE_REVISION] ?: current.serverSyncRevision()
     return applyCharacterEditKeys(remote, current, pending).copy(
-        fieldUpdatedAt = remote.fieldUpdatedAt + current.fieldUpdatedAt.filterKeys { it.startsWith(PENDING_PREFIX) },
+        fieldUpdatedAt = remote.fieldUpdatedAt +
+            current.fieldUpdatedAt.filterKeys { it.startsWith(PENDING_PREFIX) } +
+            (BASE_REVISION to baseRevision),
         updatedAt = maxOf(remote.updatedAt, current.updatedAt), lastSyncedAt = remote.updatedAt,
         lastEditedBy = current.lastEditedBy, dirty = true,
     )
 }
 
-fun Character.withPendingEditKeys(keys: Set<String>): Character = copy(
-    fieldUpdatedAt = fieldUpdatedAt + keys.associate { PENDING_PREFIX + it to 1L },
+fun Character.withPendingEditKeys(keys: Set<String>, at: Long = 1L): Character = copy(
+    fieldUpdatedAt = fieldUpdatedAt + keys.associate { PENDING_PREFIX + it to maxOf(1L, at) },
 )
 
 /** Acknowledging an older upload must remove only the intent that it actually included. */
@@ -577,3 +592,89 @@ private fun patchSkill(target: SkillValue, source: SkillValue, fields: Set<Strin
     value = if ("value" in fields) source.value else target.value,
     modifier = if ("modifier" in fields) source.modifier else target.modifier,
 )
+
+/**
+ * Resolve pending edit keys against a committed remote sheet.
+ * Independent fields and independent properties of the same list element are always preserved.
+ * Same-field collisions use latest-timestamp LWW with ties favoring the committed remote value,
+ * and remote element deletions (tombstones) are never resurrected by stale property edits.
+ */
+fun resolveConcurrentEditKeys(
+    local: Character,
+    remote: Character,
+    keys: Set<String>,
+): Set<String> {
+    if (keys.isEmpty()) return emptySet()
+    val baseRevision = local.fieldUpdatedAt[BASE_REVISION] ?: local.serverSyncRevision()
+    val remoteRevision = remote.serverSyncRevision()
+    val hasNewerRemoteRevision = remoteRevision > baseRevision
+    val hasConcurrentLegacyEdit = !hasNewerRemoteRevision &&
+        remote.updatedAt > local.lastSyncedAt &&
+        remote.lastEditedBy.isNotBlank() &&
+        remote.lastEditedBy != local.lastEditedBy
+
+    if (!hasNewerRemoteRevision && !hasConcurrentLegacyEdit) return keys
+
+    if (remote.fieldUpdatedAt[PROTOCOL_VERSION] != 1L || !hasNewerRemoteRevision) {
+        val conflict = CharacterSyncConflict(local, remote, remote.updatedAt)
+        val remoteWins = automaticRemoteFieldIds(conflict)
+        return keys.filterNotTo(mutableSetOf()) { key ->
+            val group = key.substringBefore('/')
+            group in remoteWins ||
+                (group in setOf("powers", "mysticAbilities") && "abilities" in remoteWins) ||
+                (group == "conditions" && "conditionInstances" in remoteWins)
+        }
+    }
+
+    fun groupFor(key: String): String = when (val group = key.substringBefore('/')) {
+        "powers", "mysticAbilities" -> "abilities"
+        "conditions" -> "conditionInstances"
+        else -> group
+    }
+
+    fun ancestorPaths(key: String): List<String> = buildList {
+        var idx = key.indexOf('/')
+        while (idx >= 0) {
+            add(key.substring(0, idx))
+            idx = key.indexOf('/', idx + 1)
+        }
+    }
+
+    fun isDeletedByRemote(key: String): Boolean {
+        if ((remote.fieldUpdatedAt["$DELETED_PREFIX$key"] ?: 0L) > baseRevision) return true
+        return ancestorPaths(key).any { (remote.fieldUpdatedAt["$DELETED_PREFIX$it"] ?: 0L) > baseRevision }
+    }
+
+    fun isTouchedByRemote(key: String): Boolean {
+        if ((remote.fieldUpdatedAt["@server/$key"] ?: 0L) > baseRevision) return true
+        if ((remote.fieldUpdatedAt["$DELETED_PREFIX$key"] ?: 0L) > baseRevision) return true
+        if (ancestorPaths(key).any {
+                (remote.fieldUpdatedAt["@server/$it"] ?: 0L) > baseRevision ||
+                    (remote.fieldUpdatedAt["$DELETED_PREFIX$it"] ?: 0L) > baseRevision
+            }
+        ) return true
+        val childServerPrefix = "@server/$key/"
+        val childDeletedPrefix = "$DELETED_PREFIX$key/"
+        return remote.fieldUpdatedAt.any { (metaKey, rev) ->
+            rev > baseRevision && (metaKey.startsWith(childServerPrefix) || metaKey.startsWith(childDeletedPrefix))
+        }
+    }
+
+    fun fieldTime(character: Character, group: String, fallback: Long): Long {
+        val lookup = if (group == "inventory" || group == "itemStates") listOf("inventory", "itemStates") else listOf(group)
+        val hasGroupTimestamps = character.fieldUpdatedAt.keys.any { !it.startsWith("@") }
+        return lookup.maxOf { id ->
+            character.fieldUpdatedAt[id] ?: if (!hasGroupTimestamps) fallback else 0L
+        }
+    }
+
+    return keys.filterTo(mutableSetOf()) { key ->
+        if (!isTouchedByRemote(key)) return@filterTo true
+        if (isDeletedByRemote(key) && '/' in key) return@filterTo false
+        val group = groupFor(key)
+        val localPendingAt = local.fieldUpdatedAt["$PENDING_PREFIX$key"]?.takeIf { it > 1L }
+        val localTime = localPendingAt ?: fieldTime(local, group, local.updatedAt)
+        val remoteTime = fieldTime(remote, group, remote.updatedAt)
+        localTime > remoteTime
+    }
+}

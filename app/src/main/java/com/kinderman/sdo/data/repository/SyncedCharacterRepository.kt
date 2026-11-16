@@ -1,6 +1,8 @@
 package com.kinderman.sdo.data.repository
 
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -10,6 +12,7 @@ import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterRecord
 import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.OwnerDao
+import com.kinderman.sdo.data.local.firestoreCharacterPatch
 import com.kinderman.sdo.data.local.hasRedundantLegacyProjections
 import com.kinderman.sdo.data.local.optimizedForFirestore
 import com.kinderman.sdo.data.local.toDomain
@@ -17,6 +20,7 @@ import com.kinderman.sdo.data.local.toRecord
 import com.kinderman.sdo.data.local.CharacterMigrationManager
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.needsLegacySyncReview
+import com.kinderman.sdo.domain.model.resolveConcurrentEditKeys
 import com.kinderman.sdo.domain.model.withPendingEditKeys
 import com.kinderman.sdo.domain.model.commitCharacterEditKeys
 import com.kinderman.sdo.domain.model.pendingCharacterEditKeys
@@ -25,17 +29,16 @@ import com.kinderman.sdo.domain.model.CURRENT_CHARACTER_SCHEMA_VERSION
 import com.kinderman.sdo.domain.model.DomainError
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
-import com.kinderman.sdo.domain.model.MAX_AUTOMATIC_CONFLICT_FIELDS
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.CampaignMemberState
 import com.kinderman.sdo.domain.model.CampaignRole
-import com.kinderman.sdo.domain.model.automaticRemoteFieldIds
 import com.kinderman.sdo.domain.model.characterConflictFields
 import com.kinderman.sdo.domain.model.mergeCharacterConflict
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.CharacterRepository
+import com.kinderman.sdo.domain.repository.RemoteSyncEvent
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -66,6 +69,7 @@ class SyncedCharacterRepository(
     private val hybrid: com.kinderman.sdo.data.sync.HybridSheetSync? = null,
 ) : CharacterRepository {
     private val syncMutex = Mutex()
+    private val selfCommittedVersions = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, Long>>()
     override fun observeSyncStatus(session: UserSession): Flow<com.kinderman.sdo.domain.model.SheetSyncStatus> {
         val baseFlow = hybrid?.status(session) ?: kotlinx.coroutines.flow.flowOf(com.kinderman.sdo.domain.model.SheetSyncStatus())
         val localFlow = (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
@@ -106,31 +110,82 @@ class SyncedCharacterRepository(
         }
     }.distinctUntilChanged().flowOn(Dispatchers.Default)
 
-    override fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<Unit> = callbackFlow {
+    override fun observeRemoteChanges(session: UserSession, campaignIds: Set<String>): Flow<RemoteSyncEvent> = callbackFlow {
         val store = Firebase.firestore
         val registrations = mutableListOf<ListenerRegistration>()
-        val realtimeJob = hybrid?.let { engine -> launch { engine.observe(session).collect { trySend(Unit) } } }
+        val realtimeJob = hybrid?.let { engine ->
+            launch {
+                engine.observe(session).collect { sheetId ->
+                    trySend(RemoteSyncEvent(fromCloud = true, characterIds = setOf(sheetId), fullSync = false))
+                }
+            }
+        }
 
-        fun listen(query: Query) {
+        fun listenCharacters(query: Query) {
             val initialized = AtomicBoolean(false)
             registrations += query.addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
+                if (snapshot.metadata.hasPendingWrites() || snapshot.metadata.isFromCache) {
+                    initialized.compareAndSet(false, true)
+                    return@addSnapshotListener
+                }
                 if (!initialized.compareAndSet(false, true)) {
-                    if (!snapshot.metadata.hasPendingWrites()) {
-                        trySend(Unit)
+                    val changes = snapshot.documentChanges
+                    if (changes.isEmpty()) return@addSnapshotListener
+                    launch {
+                        val cloudIds = mutableSetOf<String>()
+                        for (change in changes) {
+                            val doc = change.document
+                            val docId = doc.id
+                            if (change.type == DocumentChange.Type.REMOVED) {
+                                val local = dao.get(docId)
+                                if (local != null && !local.deleted) cloudIds += docId
+                                continue
+                            }
+                            val remoteUpdatedAt = doc.getLong("updatedAt") ?: 0L
+                            val remoteFieldMeta = doc.get("fieldUpdatedAt") as? Map<*, *>
+                            val remoteRev = (remoteFieldMeta?.get("@revision") as? Number)?.toLong() ?: 0L
+                            if (selfCommittedVersions[docId] == (remoteUpdatedAt to remoteRev)) continue
+                            val local = dao.get(docId)
+                            if (local == null) {
+                                if (doc.getBoolean("deleted") != true) cloudIds += docId
+                            } else if (!local.dirty) {
+                                val localRev = local.fieldUpdatedAt["@revision"] ?: 0L
+                                if (remoteRev > localRev || (remoteRev == localRev && remoteUpdatedAt > local.updatedAt)) {
+                                    cloudIds += docId
+                                }
+                            }
+                        }
+                        if (cloudIds.isNotEmpty()) {
+                            trySend(RemoteSyncEvent(fromCloud = true, characterIds = cloudIds, fullSync = false))
+                        }
                     }
                 }
             }
         }
 
+        fun listenCollection(query: Query) {
+            val initialized = AtomicBoolean(false)
+            registrations += query.addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+                if (snapshot.metadata.hasPendingWrites() || snapshot.metadata.isFromCache) {
+                    initialized.compareAndSet(false, true)
+                    return@addSnapshotListener
+                }
+                if (!initialized.compareAndSet(false, true) && snapshot.documentChanges.isNotEmpty()) {
+                    trySend(RemoteSyncEvent(fromCloud = true, fullSync = true))
+                }
+            }
+        }
+
         val characters = store.collection(FirestoreCollections.CHARACTERS)
-        listen(if (session.isAdmin) characters else characters.whereEqualTo("ownerId", session.uid))
-        listen(store.collection(FirestoreCollections.CAMPAIGN_MEMBERS).whereEqualTo("userId", session.uid))
-        listen(store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).whereEqualTo("recipientId", session.uid))
+        listenCharacters(if (session.isAdmin) characters else characters.whereEqualTo("ownerId", session.uid))
+        listenCollection(store.collection(FirestoreCollections.CAMPAIGN_MEMBERS).whereEqualTo("userId", session.uid))
+        listenCollection(store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).whereEqualTo("recipientId", session.uid))
         campaignIds.filter(String::isNotBlank).distinct().forEach { campaignId ->
-            listen(characters.whereEqualTo("campaignId", campaignId))
-            listen(store.collection(FirestoreCollections.CAMPAIGN_LIBRARY).whereEqualTo("campaignId", campaignId))
-            listen(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).whereEqualTo("campaignId", campaignId))
+            listenCharacters(characters.whereEqualTo("campaignId", campaignId))
+            listenCollection(store.collection(FirestoreCollections.CAMPAIGN_LIBRARY).whereEqualTo("campaignId", campaignId))
+            listenCollection(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).whereEqualTo("campaignId", campaignId))
         }
 
         awaitClose { realtimeJob?.cancel(); registrations.forEach(ListenerRegistration::remove) }
@@ -462,31 +517,22 @@ class SyncedCharacterRepository(
                     if (keys.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
                         return@runTransaction CharacterSyncWrite.Accepted(remote)
                     }
-                    val effectiveKeys = if (
-                        remoteCharacter.updatedAt > localCharacter.lastSyncedAt &&
-                        remoteCharacter.lastEditedBy.isNotBlank() &&
-                        remoteCharacter.lastEditedBy != session.uid
-                    ) {
-                        val conflict = CharacterSyncConflict(localCharacter, remoteCharacter, remoteCharacter.updatedAt)
-                        if (conflict.fields.size > MAX_AUTOMATIC_CONFLICT_FIELDS) {
-                            return@runTransaction CharacterSyncWrite.LegacyReview(conflict)
-                        }
-                        val remoteWins = automaticRemoteFieldIds(conflict, session.uid)
-                        keys.filterNotTo(mutableSetOf()) { key ->
-                            val group = key.substringBefore('/')
-                            group in remoteWins ||
-                                (group in setOf("powers", "mysticAbilities") && "abilities" in remoteWins) ||
-                                (group == "conditions" && "conditionInstances" in remoteWins)
-                        }
-                    } else {
-                        keys
-                    }
+                    val effectiveKeys = resolveConcurrentEditKeys(localCharacter, remoteCharacter, keys)
                     if (effectiveKeys.isEmpty() && !rawRemote.hasRedundantLegacyProjections()) {
                         return@runTransaction CharacterSyncWrite.Accepted(remote)
                     }
                     val merged = commitCharacterEditKeys(remoteCharacter, localCharacter, effectiveKeys)
                     val mergedRecord = merged.toRecord()
-                    transaction.set(reference, mergedRecord.optimizedForFirestore(migrationManager))
+                    val optimized = mergedRecord.optimizedForFirestore(migrationManager)
+                    val patch = firestoreCharacterPatch(
+                        before = rawRemote,
+                        after = optimized,
+                        existingDocumentKeys = snapshot.data.orEmpty().keys,
+                        deleteValue = FieldValue.delete(),
+                    )
+                    if (patch.isNotEmpty()) {
+                        transaction.update(reference, patch)
+                    }
                     return@runTransaction CharacterSyncWrite.Accepted(mergedRecord)
                 }
                 check(record.lastSyncedAt == 0L) { "The remote sheet was deleted; stale edits cannot recreate it." }
@@ -516,6 +562,7 @@ class SyncedCharacterRepository(
 
         return when (result) {
             is CharacterSyncWrite.Accepted -> {
+                selfCommittedVersions[record.id] = result.record.updatedAt to (result.record.fieldUpdatedAt["@revision"] ?: 0L)
                 dao.acceptSnapshot(result.record, record.updatedAt, record)
                 val resultCid = normalizeCampaignId(result.record.campaignId)
                 val resultCampaignOwner = if (resultCid.isBlank()) null else campaignDao.campaign(resultCid)?.ownerId

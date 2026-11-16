@@ -79,7 +79,7 @@ Owner authorized implementation of the revised hybrid plan, migration of all cur
 
 ### SYNC-PLAN-005 - Small-group concurrent sync and Painel feedback
 
-Owner request on 2026-11-16 (`BACKLOG-012`); ToDo. Target the current group of about 10 users on Firebase Spark. Improve concurrent administrator/player edits to different parts of the same character sheet while keeping Firebase reads, writes, transferred bytes, and operational complexity proportionate to that scale. The deployed serverless Firestore-authoritative plus RTDB-mirror path is the current baseline; the Cloud Functions design in SYNC-PLAN-004 is not available on the current Spark deployment.
+Owner request on 2026-11-16 (`BACKLOG-012`); InDevReview. Target the current group of about 10 users on Firebase Spark. Improve concurrent administrator/player edits to different parts of the same character sheet while keeping Firebase reads, writes, transferred bytes, and operational complexity proportionate to that scale. The deployed serverless Firestore-authoritative plus RTDB-mirror path is the current baseline; the Cloud Functions design in SYNC-PLAN-004 is not available on the current Spark deployment.
 
 | ID | Requested outcome |
 |---|---|

@@ -226,6 +226,7 @@ fun SdoApp(
                     owners = owners,
                     session = appSession,
                     syncing = characterLoadState.syncing,
+                    cloudSyncing = characterLoadState.cloudSyncing,
                     compactCards = preferences.compactCards,
                     collapseCampaignCards = preferences.collapseLongSections,
                     showArchivedCampaigns = preferences.showArchivedCampaigns,
