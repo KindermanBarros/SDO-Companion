@@ -139,6 +139,8 @@ Limitations: Production cutover (`migrate.mjs --execute`) and Functions/rules de
 
 Updated 2026-11-16 16:11 America/La_Paz; BACKLOG-013 / SYNC-PLAN-006, branch `lab/spark-firestore-sync`. Owner authorized the attached Spark-only plan, orchestration with agy, implementation and a PR. Owner liked the UI and requested hand-edited conflict merging on 2026-11-16; this approves the visual direction, not completion of the whole synchronization delivery.
 
+Handoff: [PR #149](https://github.com/KindermanBarros/SDO-Companion/pull/149), source commit `d352fbe`. GitHub reports mergeable; initial CI checks are running. All selected local checks passed, with the coverage and runtime/cutover limitations below.
+
 Implementation:
 - Firestore is the only sheet authority. Client transactions write typed field/item documents and immutable mutually validated receipts; Rules enforce actor/access, revision, tombstone and bounded operation invariants. Functions runtime/dependencies and RTDB sheet/presence writers are removed; isolated grid Rules remain.
 - Room v33 preserves legacy queues and adds account-scoped confirmed sheets, durable intents and conflicts. WorkManager, open-sheet receipt listeners, paginated discovery and lazy hydration replace the hybrid path. Fixed account-switch races, transient dependency execution, receipt revision binding, lost acknowledgements, stale delta projection and multi-target conflict resolution. Atomic deliveries exceeding the Rules budget are rejected before local mutation.
