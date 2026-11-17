@@ -1310,4 +1310,41 @@ class SparkFirestoreSyncEngineTest {
         engine.save(user, char.copy(photoUri = tinyThumb, editingBase = char))
         assertEquals(tinyThumb, remote.mediaAvatars["sheet-1"]?.get("dataUri"))
     }
+
+    @Test
+    fun syncPullsFullNewSheetAndUpdatesAlreadyCachedSheetsWhenRemoteHeadAdvances() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        val initial = Character(
+            id = "sheet-cloud-1",
+            ownerId = "player-1",
+            name = "Arannis",
+            level = 2,
+            life = ResourceValue(current = 18, maximum = 20),
+            canonicalSchemaVersion = CURRENT_CHARACTER_SCHEMA_VERSION,
+            dirty = false,
+        )
+        remote.seedFromCharacter(initial.toRecord(), sheetRev = 1L)
+
+        // First sync on a fresh device must hydrate the full sheet (not just summary fields).
+        engine.sync(user)
+        val firstLocal = store.getCharacter("sheet-cloud-1")?.toDomain()
+        assertEquals("Arannis", firstLocal?.name)
+        assertEquals(18, firstLocal?.life?.current)
+
+        // Remote sheet advances (e.g. edited from another device): field revision + receipt time move.
+        val remoteUpdated = initial.copy(
+            name = "Arannis II",
+            level = 4,
+            life = ResourceValue(current = 12, maximum = 24),
+        )
+        remote.seedFromCharacter(remoteUpdated.toRecord(), sheetRev = 2L)
+        engine.sync(user)
+
+        val refreshed = store.getCharacter("sheet-cloud-1")?.toDomain()
+        assertEquals("Arannis II", refreshed?.name)
+        assertEquals(4, refreshed?.level)
+        assertEquals(12, refreshed?.life?.current)
+        assertEquals(2L, store.getAccountSheet("player-1", "sheet-cloud-1")?.sheetRevision)
+    }
 }

@@ -311,10 +311,6 @@ class SyncedCampaignRepository(
             .document(session.uid)
 
         val (membership, consumedInvite) = store.runTransaction { transaction ->
-            val campaignSnap = transaction.get(campaignRef)
-            check(campaignSnap.exists() && campaignSnap.getString("state") == CampaignState.ACTIVE.name) {
-                "Esta campanha não está ativa."
-            }
             val inviteSnap = transaction.get(inviteRef)
             val invite = snapshotToInvite(inviteSnap)
             check(

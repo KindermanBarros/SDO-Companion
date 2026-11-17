@@ -104,7 +104,9 @@ class FirestoreCampaignJournalRepository : CampaignJournalRepository {
         }
         val db = Firebase.firestore
         val campaignRef = db.collection(FirestoreCollections.CAMPAIGNS).document(campaign.id)
-        val memberRef = db.collection(FirestoreCollections.CAMPAIGN_MEMBERS).document("${campaign.id}::${session.uid}")
+        val memberRef = campaignRef
+            .collection(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
+            .document(session.uid)
         val entryRef = db.collection(FirestoreCollections.CAMPAIGN_JOURNAL).document(draft.entryId)
         val actorName = session.displayName.trim().ifBlank { session.email.substringBefore('@').ifBlank { "Participante" } }
 
@@ -243,7 +245,9 @@ class FirestoreCampaignJournalRepository : CampaignJournalRepository {
         }
         val db = Firebase.firestore
         val campaignRef = db.collection(FirestoreCollections.CAMPAIGNS).document(campaign.id)
-        val memberRef = db.collection(FirestoreCollections.CAMPAIGN_MEMBERS).document("${campaign.id}::${session.uid}")
+        val memberRef = campaignRef
+            .collection(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
+            .document(session.uid)
         val entryRef = db.collection(FirestoreCollections.CAMPAIGN_JOURNAL).document(entry.id)
         val actorName = session.displayName.trim().ifBlank { session.email.substringBefore('@').ifBlank { "Participante" } }
 
