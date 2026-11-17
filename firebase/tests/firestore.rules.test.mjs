@@ -1223,3 +1223,31 @@ test('campaign GM lock transitions work through SET_LOCK receipts', async () => 
   );
   await assertSucceeds(unlockBatch.commit());
 });
+
+test('new sheet transactions read only root and receipt before atomic root/field creation', async () => {
+  const db = env.authenticatedContext(ids.player).firestore();
+  const sheetId = 'transaction-created-sheet';
+  const opId = 'transaction-create-op';
+  const rootRef = doc(db, 'characters', sheetId);
+  const fieldRef = doc(db, 'characters', sheetId, 'fields', 'name');
+  const opRef = doc(db, 'characters', sheetId, 'operations', opId);
+  await assertFails(runTransaction(db, async (tx) => {
+    await tx.get(rootRef);
+    await tx.get(fieldRef);
+  }));
+  await assertSucceeds(runTransaction(db, async (tx) => {
+    await tx.get(opRef);
+    await tx.get(rootRef);
+    tx.set(rootRef, makeRoot({ id: sheetId, ownerId: ids.player, campaignId: '',
+      lastOperationId: opId, updatedBy: ids.player, updatedAt: serverTimestamp() }));
+    tx.set(fieldRef, makeField('name', 'Nova ficha', {
+      lastOperationId: opId, updatedBy: ids.player, updatedAt: serverTimestamp(),
+    }));
+    tx.set(opRef, makeOp(opId, ids.player, 'CREATE_SHEET', [
+      { kind: 'SHEET', itemId: '', key: '', op: 'CREATE', expectedRevision: 0, nextRevision: 1 },
+      { kind: 'FIELD', itemId: '', key: 'name', op: 'CREATE', expectedRevision: 0,
+        nextRevision: 1, desiredValue: 'Nova ficha' },
+    ]));
+  }));
+  await assertSucceeds(getDoc(fieldRef));
+});

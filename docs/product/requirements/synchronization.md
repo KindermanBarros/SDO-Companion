@@ -81,3 +81,5 @@ Automated actions require Rules-expressible invariants. Unsupported mechanical-e
 Conflict resolution offers local, online, and hand-edited values. The manual editor starts with the local value, preserves scalar/resource types and validates input; complex structured payloads remain editable through the sheet. Applying a merge creates a new intent using the recorded remote revision; further remote changes can produce another conflict.
 
 Discovery must hydrate complete confirmed sheets, including portrait media, for new or incomplete local snapshots. Complete unchanged snapshots reuse their cached data after root/latest-receipt checks; a changed receipt triggers full refresh. Receipt times accept both migrated epoch milliseconds and Firestore timestamps.
+
+Creating a sheet reads only its root/receipt until the root exists. An explicit deletion of an unpublished sheet cancels its local queue only after remote absence is verified; unknown/denied access preserves the draft. Sync recovers already queued orphan deletions, leaves empty accounts empty and continues future discovery. Confirmed cloud sheets retain the normal tombstone flow.

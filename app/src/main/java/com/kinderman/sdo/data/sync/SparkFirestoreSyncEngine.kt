@@ -1258,6 +1258,8 @@ class SparkFirestoreSyncEngine(
         check(CharacterAccessPolicy.canDelete(session, character, isCampaignHistorian(session, character))) {
             "Esta ficha não pode ser removida."
         }
+        if (drainMutex.withLock { cancelUnpublishedSheet(accountId, character.id) }) return
+        if (!isAccountCurrent(accountId)) return
         val now = clock.nowMillis()
         localStore.withTransaction {
             val snapshot = ensureAccountSheetSnapshotLocked(accountId, character, now)
@@ -1290,6 +1292,47 @@ class SparkFirestoreSyncEngine(
             reprojectSheetLocked(accountId, character.id)
         }
         if (accountId != DEMO_ACCOUNT_ID) schedule(accountId)
+    }
+
+    // Called with drainMutex held so an in-flight creation settles before checking remote absence.
+    private suspend fun cancelUnpublishedSheet(accountId: String, sheetId: String): Boolean {
+        val snapshot = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot() ?: return false
+        if (snapshot.sheetRevision != 0L) return false
+        val intents = localStore.listIntentsForSheet(accountId, sheetId)
+        if (intents.any { it.status == SheetIntentStatus.CONFIRMED.name }) return false
+        val absent = accountId == DEMO_ACCOUNT_ID || try {
+            remoteGateway.runTransaction(sheetId) { it.getRoot(sheetId) == null }
+        } catch (_: SparkPermissionDeniedException) {
+            return false
+        } catch (_: SparkTransientNetworkException) {
+            return false
+        }
+        if (!absent || !isAccountCurrent(accountId)) return false
+        return localStore.withTransaction {
+            val current = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot()
+                ?: return@withTransaction true
+            val currentIntents = localStore.listIntentsForSheet(accountId, sheetId)
+            if (!isAccountCurrent(accountId) || current.sheetRevision != 0L ||
+                currentIntents.any { it.status == SheetIntentStatus.CONFIRMED.name }
+            ) return@withTransaction false
+            currentIntents.forEach { record ->
+                record.toDomain().effectiveTargets().forEach { target ->
+                    localStore.deleteConflict(accountId, "${record.operationId}::${target.canonicalTargetKey()}")
+                }
+                localStore.deleteIntent(accountId, record.operationId)
+            }
+            val character = current.confirmedCharacter
+            localStore.getMember(character.campaignId, character.ownerId)?.let { member ->
+                localStore.upsertMember(member.copy(characterIds = member.characterIds - sheetId))
+            }
+            localStore.listLegacyOutbox(accountId).filter { it.sheetId == sheetId }.forEach {
+                localStore.markLegacyOutboxStatus(it.operationId, "MIGRATED_V33")
+            }
+            localStore.removeLegacyRoute(accountId, sheetId)
+            localStore.deleteAccountSheet(accountId, sheetId)
+            if (activeAccountId == accountId) localStore.purgeCharacter(sheetId)
+            true
+        }
     }
 
     /**
@@ -1685,6 +1728,15 @@ class SparkFirestoreSyncEngine(
         var allTransientSucceeded = true
         try {
             reconcileLegacyData(uid)
+            localStore.listAccountSheets(uid).filter { it.sheetRevision == 0L }.forEach { sheet ->
+                val intents = localStore.listIntentsForSheet(uid, sheet.sheetId)
+                if (intents.any {
+                        it.type == OperationType.DELETE_SHEET.name && it.status != SheetIntentStatus.CONFIRMED.name
+                    }
+                ) {
+                    cancelUnpublishedSheet(uid, sheet.sheetId)
+                }
+            }
             val pending = localStore.listActiveIntents(uid).map(SheetIntentRecord::toDomain)
             val blockedOps = mutableSetOf<String>()
             // Seed blocked ops from existing CONFLICT/REJECTED/ACCESS_DENIED intents.
@@ -1974,7 +2026,13 @@ class SparkFirestoreSyncEngine(
             val remoteItems = mutableMapOf<String, Map<String, Any?>?>()
             val remoteItemFields = mutableMapOf<Pair<String, String>, Map<String, Any?>?>()
 
-            effectiveTargets.forEach { target ->
+            // A new root has no readable children yet; Rules deny those pre-creation reads.
+            val readableTargets = if (remoteRoot == null && intent.type == OperationType.CREATE_SHEET) {
+                emptyList()
+            } else {
+                effectiveTargets
+            }
+            readableTargets.forEach { target ->
                 when (target.kind) {
                     TargetKind.SHEET -> Unit
                     TargetKind.FIELD -> remoteFields[target.key] = ctx.getField(intent.sheetId, target.key)

@@ -234,6 +234,7 @@ class SparkFirestoreSyncEngineTest {
         var permissionDeniedForSheet: String? = null
         var permissionDeniedMessage: String = "PERMISSION_DENIED"
         var transientFailureCount = 0
+        var rejectReadsBeforeRootExists = false
         var documentFetchCount = 0
         var latestOperationAtMs = 0L
 
@@ -278,7 +279,12 @@ class SparkFirestoreSyncEngineTest {
 
             val ctx = object : SparkTransactionContext {
                 override fun getRoot(sheetId: String) = stagedRoots[sheetId]
-                override fun getField(sheetId: String, fieldKey: String) = stagedFields[sheetId to fieldKey]
+                override fun getField(sheetId: String, fieldKey: String): Map<String, Any?>? {
+                    if (rejectReadsBeforeRootExists && stagedRoots[sheetId] == null) {
+                        throw SparkPermissionDeniedException("Child read before sheet creation")
+                    }
+                    return stagedFields[sheetId to fieldKey]
+                }
                 override fun getItem(sheetId: String, itemId: String) = stagedItems[sheetId to itemId]
                 override fun getItemField(sheetId: String, itemId: String, fieldKey: String) =
                     stagedItemFields[Triple(sheetId, itemId, fieldKey)]
@@ -446,6 +452,135 @@ class SparkFirestoreSyncEngineTest {
         dependsOnOperationId = dependency, baseRevision = revision,
     )
 
+    @Test
+    fun deletingDemoSheetDoesNotRequireCloudAccess() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val demo = session("demo-player")
+        val created = engine.create(demo, demo.uid, "")
+        remote.transientFailureCount = 100
+        engine.delete(demo, created)
+        assertEquals(100, remote.transientFailureCount)
+        assertNull(store.getCharacter(created.id))
+        assertTrue(store.listIntentsForSheet(demo.uid, created.id).isEmpty())
+    }
+
+    @Test
+    fun deletingConfirmedSheetStillWritesRemoteTombstone() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        val character = baseSheet()
+        remote.seedFromCharacter(character.toRecord())
+        engine.sync(user)
+        engine.delete(user, character)
+        engine.drain(user.uid)
+        assertEquals(true, remote.roots[character.id]?.get("deleted"))
+        assertTrue(store.getAccountSheet(user.uid, character.id)!!.sheetRevision > 0)
+    }
+    @Test
+    fun unpublishedDeletePreservesDraftWhenRemoteAbsenceCannotBeConfirmed() = runBlocking {
+        for (failure in listOf("existing", "offline", "denied")) {
+            val (engine, store, remote) = newHarness()
+            val user = session("player-1")
+            remote.transientFailureCount = 1
+            val created = engine.create(user, user.uid, "")
+            val create = store.listIntentsForSheet(user.uid, created.id)
+                .first { it.type == OperationType.CREATE_SHEET.name }
+            store.upsertIntent(create.copy(status = SheetIntentStatus.ACCESS_DENIED.name))
+            when (failure) {
+                "existing" -> remote.seedFromCharacter(created.toRecord())
+                "offline" -> remote.transientFailureCount = 100
+                "denied" -> remote.permissionDeniedForSheet = created.id
+            }
+            engine.delete(user, created)
+            assertNotNull(store.getAccountSheet(user.uid, created.id))
+            assertNotNull(store.getIntent(user.uid, create.operationId))
+            if (failure == "existing") assertFalse(remote.roots[created.id]?.get("deleted") == true)
+        }
+    }
+    @Test
+    fun syncingAccountWithoutSheetsDoesNotCreateAnEmptySheet() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        repeat(3) { engine.sync(user) }
+        assertTrue(store.characters.isEmpty())
+        assertTrue(store.accountSheets.isEmpty())
+        assertTrue(store.intents.isEmpty())
+        assertTrue(remote.roots.isEmpty())
+        remote.seedFromCharacter(baseSheet().toRecord())
+        engine.sync(user)
+        assertEquals("Ayla", store.getCharacter("sheet-1")?.name)
+    }
+
+    @Test
+    fun missingRemoteSheetWithOrphanDeleteDoesNotBecomeAnEmptyPermanentDraft() = runBlocking {
+        val (engine, store, _) = newHarness()
+        val user = session("player-1")
+        val ghost = baseSheet().copy(name = "")
+        store.upsertAccountSheet(AccountSheetRecord(accountId = user.uid, sheetId = ghost.id,
+            sheetRevision = 0, fieldRevisionsJson = "{}",
+            confirmedJson = com.google.gson.Gson().toJson(ghost.toRecord()), updatedAt = 1))
+        store.upsertIntent(SheetIntent(operationId = "orphan-delete", accountId = user.uid,
+            sheetId = ghost.id, type = OperationType.DELETE_SHEET, targetKey = "sheet",
+            targets = listOf(SparkTargetSpec(kind = TargetKind.SHEET, op = TargetOp.TOMBSTONE,
+                expectedRevision = 1, nextRevision = 2, valueJson = "{\"deleted\":true}")),
+            dependsOnOperationId = "discarded-create", status = SheetIntentStatus.PAUSED_DEPENDENCY,
+        ).toRecord())
+        repeat(2) { engine.sync(user) }
+        assertNull(store.getCharacter(ghost.id))
+        assertNull(store.getAccountSheet(user.uid, ghost.id))
+        assertTrue(store.listIntentsForSheet(user.uid, ghost.id).isEmpty())
+    }
+    @Test
+    fun newSheetCreationDoesNotReadChildrenBeforeRootExists() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        remote.rejectReadsBeforeRootExists = true
+        val created = engine.create(session("player-1"), "player-1", "")
+        engine.drain("player-1")
+        assertNotNull(remote.roots[created.id])
+        assertTrue(store.listIntentsForSheet("player-1", created.id)
+            .all { it.status == SheetIntentStatus.CONFIRMED.name })
+    }
+
+    @Test
+    fun deletingDeniedUnpublishedSheetCancelsItsQueue() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        remote.transientFailureCount = 1
+        val user = session("player-1")
+        val created = engine.create(user, user.uid, "")
+        val create = store.listIntentsForSheet(user.uid, created.id)
+            .first { it.type == OperationType.CREATE_SHEET.name }
+        store.upsertIntent(create.copy(status = SheetIntentStatus.ACCESS_DENIED.name))
+        engine.delete(user, created)
+        engine.drain(user.uid)
+        assertTrue(store.listIntentsForSheet(user.uid, created.id).isEmpty())
+        assertNull(store.getAccountSheet(user.uid, created.id))
+        assertNull(store.getCharacter(created.id))
+        assertNull(remote.roots[created.id])
+    }
+
+    @Test
+    fun syncCancelsPreviouslyQueuedDeleteAfterDeniedCreationAndDownloadsOtherSheets() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        remote.transientFailureCount = 1
+        val created = engine.create(user, user.uid, "")
+        val create = store.listIntentsForSheet(user.uid, created.id)
+            .first { it.type == OperationType.CREATE_SHEET.name }
+        store.upsertIntent(create.copy(status = SheetIntentStatus.ACCESS_DENIED.name))
+        store.upsertIntent(SheetIntent(
+            operationId = "queued-delete", accountId = user.uid, sheetId = created.id,
+            type = OperationType.DELETE_SHEET, targetKey = "sheet",
+            targets = listOf(SparkTargetSpec(kind = TargetKind.SHEET, op = TargetOp.TOMBSTONE,
+                expectedRevision = 1, nextRevision = 2, valueJson = "{\"deleted\":true}")),
+            dependsOnOperationId = create.operationId, status = SheetIntentStatus.PAUSED_DEPENDENCY,
+        ).toRecord())
+        remote.seedFromCharacter(baseSheet().toRecord())
+        engine.sync(user)
+        assertTrue(store.listIntentsForSheet(user.uid, created.id).isEmpty())
+        assertNull(store.getAccountSheet(user.uid, created.id))
+        assertNull(store.getCharacter(created.id))
+        assertEquals("Ayla", store.getCharacter("sheet-1")?.name)
+    }
     @Test
     fun globalSyncHydratesCachedSummaryIncludingPhotoAndResources() = runBlocking {
         val (engine, store, remote) = newHarness()
