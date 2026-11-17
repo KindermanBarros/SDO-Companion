@@ -7,7 +7,7 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ## v0.54.1 synchronization permission recovery
 
-$12026-11-17 00:45 America/La_Paz. Owner reported synchronization permission errors after release and explicitly authorized correction/cutover. Scope: operational alignment of production Firestore data, Rules/indexes and isolated RTDB Rules with the already released Spark v2 client; no APK or app source change.
+Status: InDevReview; updated 2026-11-17 00:45 America/La_Paz. Owner reported synchronization permission errors after release and explicitly authorized correction/cutover. Scope: operational alignment of production Firestore data, Rules/indexes and isolated RTDB Rules with the already released Spark v2 client; no APK or app source change.
 
 Cause: read-only production inspection found legacy Rules published 2026-11-15, no Spark field/item/receipt permissions, and 10/10 sheets without protocolVersion=2. Client release 44011041314 succeeded before the documented manual cutover. Production rules deployment was disabled on push/release, so successful CI did not establish backend readiness.
 Plan and safeguards: compile final/fence Rules, verify migration and permission tests, retain private Rules/Firestore/RTDB backups outside the checkout, activate a temporary deny-all maintenance fence, renew and checksum-verify the backup, migrate each sheet with pre/post-activation parity checks, convert campaign membership/invites, publish final Rules, then verify deployed source and data. No RTDB remnants are deleted. Preserve the original worktree's in-progress cherry-pick using an isolated worktree.
