@@ -38,6 +38,9 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | BACKLOG-013 | 100% Spark Firestore Protocol v2 (single Firestore authority, client transactions, per-field/item/receipt Rules, Firestore presence, local original media + <=64KiB thumbnail, Room v33 account-scoped intents, isolated RTDB grid ACL) | [Synchronization — SYNC-PLAN-006](requirements/synchronization.md#sync-plan-006---spark-firestore-protocol-v2) | Done; owner closed delivered scope 2026-11-16; recorded limitations preserved |
 | BACKLOG-014 | Sync animation using rotating arrows on the sync icon (`Icons.Default.Sync`) in Dashboard and sync banner | [UI / Dashboard](../design/design_system.md) | ToDo; not implemented |
 | BACKLOG-015 | Attractive non-editable Path ("Caminho") visual using styled colors and typography when collapsed/read-only | [Character sheets](requirements/character-sheets.md) | ToDo; not implemented |
+| BACKLOG-016 | Visual upgrade for Powers (`Poderes`) and Mystic (`Magias / Runas / Cinzas`) character sheet tabs | [Character sheets](requirements/character-sheets.md) | ToDo; not implemented |
+| BACKLOG-017 | Session Mode visual upgrade and ability favoriting support in Session Mode | [Campaigns — Session Mode](requirements/campaigns.md) | ToDo; not implemented |
+| BACKLOG-018 | Historian/GM Mode (`Modo Mestre`) interaction adjustments (prevent action buttons from only opening a single modal) | [Campaigns — Historian Mode](requirements/campaigns.md) | ToDo; not implemented |
 
 Owner closure 2026-11-16 23:32 America/La_Paz: ongoing delivered tasks are closed by explicit request. BACKLOG-005 remains ToDo; BACKLOG-011 remains superseded. Unimplemented scope, coverage improvement, authenticated multi-device verification and production cutover remain pending; closure does not claim those checks or operations occurred. See [Memory](../MEMORY.md). Earlier dated dispositions below are historical.
 
