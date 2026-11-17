@@ -377,21 +377,16 @@ private fun PathReadOnlyShowcase(character: Character) {
                     "PALAVRAS-CHAVE",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    keywords.forEach { keyword ->
-                        SdoInsetCard(
-                            modifier = Modifier.weight(1f),
-                            contentPadding = 8.dp,
-                        ) {
-                            Text(
-                                text = keyword,
-                                color = MaterialTheme.colorScheme.tertiary,
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        }
+                com.kinderman.sdo.ui.SdoResponsiveGrid(keywords, minItemWidth = 140.dp) { keyword, modifier ->
+                    SdoInsetCard(
+                        modifier = modifier,
+                        contentPadding = 10.dp,
+                    ) {
+                        Text(
+                            text = keyword,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                     }
                 }
             }
