@@ -5,6 +5,16 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## v0.54.1 synchronization permission recovery
+
+$12026-11-17 00:45 America/La_Paz. Owner reported synchronization permission errors after release and explicitly authorized correction/cutover. Scope: operational alignment of production Firestore data, Rules/indexes and isolated RTDB Rules with the already released Spark v2 client; no APK or app source change.
+
+Cause: read-only production inspection found legacy Rules published 2026-11-15, no Spark field/item/receipt permissions, and 10/10 sheets without protocolVersion=2. Client release 44011041314 succeeded before the documented manual cutover. Production rules deployment was disabled on push/release, so successful CI did not establish backend readiness.
+Plan and safeguards: compile final/fence Rules, verify migration and permission tests, retain private Rules/Firestore/RTDB backups outside the checkout, activate a temporary deny-all maintenance fence, renew and checksum-verify the backup, migrate each sheet with pre/post-activation parity checks, convert campaign membership/invites, publish final Rules, then verify deployed source and data. No RTDB remnants are deleted. Preserve the original worktree's in-progress cherry-pick using an isolated worktree.
+Checks: migration/rollback 17/17 PASS; Firestore/RTDB/adversarial Rules 58/58 PASS after selecting installed Android Studio Java (initial default PATH lacked Java). Final Rules compiled in Firebase; indexes and isolated RTDB Rules deployed successfully. Three extra production indexes were retained. All 10 sheets completed pre/post-activation parity and independent manifest/subcollection verification; IDs and ownership were preserved. Converted and compared all 12 campaign memberships and six invites. Final live Firestore Rules exactly match reviewed source (SHA-256 0a03bd246943931902f72118ddf2f5015c0a64852eacfd75e11becc4dfb3b1f5), active ruleset 73181475-0659-4ba3-b3fb-3cd7ee531e3d; maintenance ended 2026-11-17 00:45 America/La_Paz.
+Access regression on migrated production snapshots in the emulator: legacy Rules reproduced denied owner field reads (RED); reviewed Rules allowed all 10 owner reads and a receipt-backed field write while denying 10 outsider reads (GREEN). No test writes touched production. The installed-account/device retry remains owner verification; existing ACCESS_DENIED drafts must use TENTAR NOVAMENTE. No APK update, logout or local-data reset is required. Product/app source is unchanged; this operational repair is InDevReview, not new developer acceptance.
+Backups: C:/Users/kindb/SDO-Backups/spark-permission-20261117, including checksum-verified sheets, original Rules, RTDB archive and fresh legacy collections captured under the maintenance fence; private payloads never belong in Git.
+
 ## Current disposition - owner closure and release request
 
 Updated 2026-11-16 23:32 America/La_Paz. Owner explicitly requested a direct main commit closing ongoing deliveries, preserving the unimplemented backlog, and generating a release.
