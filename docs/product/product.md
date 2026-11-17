@@ -39,8 +39,8 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | BACKLOG-014 | Sync animation using rotating arrows on the sync icon (`Icons.Default.Sync`) in Dashboard and sync banner | [UI / Dashboard](../design/design_system.md) | ToDo; not implemented |
 | BACKLOG-015 | Attractive non-editable Path ("Caminho") visual using styled colors and typography when collapsed/read-only | [Character sheets](requirements/character-sheets.md) | InDevReview |
 | BACKLOG-016 | Visual upgrade for Powers (`Poderes`) and Mystic (`Magias / Runas / Cinzas`) character sheet tabs | [Character sheets](requirements/character-sheets.md) | InDevReview |
-| BACKLOG-017 | Session Mode visual upgrade and ability favoriting support in Session Mode | [Campaigns — Session Mode](requirements/campaigns.md) | ToDo; not implemented |
-| BACKLOG-018 | Historian/GM Mode (`Modo Mestre`) interaction adjustments (prevent action buttons from only opening a single modal) | [Campaigns — Historian Mode](requirements/campaigns.md) | ToDo; not implemented |
+| BACKLOG-017 | Session Mode visual upgrade and ability favoriting support in Session Mode | [Campaigns — Session Mode](requirements/campaigns.md) | InDevReview |
+| BACKLOG-018 | Historian/GM Mode (`Modo Mestre`) interaction adjustments (prevent action buttons from only opening a single modal) | [Campaigns — Historian Mode](requirements/campaigns.md) | InDevReview |
 | BACKLOG-019 | Remove campaign spoilers (e.g., silos and current-plot references) from the local database/catalogs, validated against `projetos/solidao-dos-oprimidos` lore repository | [Product overview](product.md) | ToDo; not implemented |
 | BACKLOG-020 | Add lore-grounded powers, mystic abilities, special knowledges, paths, and items from the world's past (`projetos/solidao-dos-oprimidos`) without spoiling current campaign events | [Product overview](product.md) | ToDo; not implemented |
 | BACKLOG-021 | Styled non-editable preview for Personal Notes (`Registros Pessoais`) when collapsed/read-only, matching the `BACKLOG-015` Path visual upgrade | [Character sheets](requirements/character-sheets.md) | InDevReview |

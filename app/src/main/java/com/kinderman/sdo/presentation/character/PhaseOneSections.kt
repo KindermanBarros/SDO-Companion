@@ -354,8 +354,8 @@ private fun PathReadOnlyShowcase(character: Character) {
     val keywords = character.pathKeywords.map { it.trim() }.filter { it.isNotEmpty() }
     val pillars = character.pathPillars.map { it.trim() }.filter { it.isNotEmpty() }
 
-    SdoInsetCard(contentPadding = 14.dp) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    SdoInsetCard(contentPadding = 16.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SdoMetadataText(
                 "CAMINHO DO PERSONAGEM",
                 color = MaterialTheme.colorScheme.secondary,

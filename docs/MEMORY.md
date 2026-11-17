@@ -5,6 +5,15 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## Block 2 — Game Modes (BACKLOG-017, BACKLOG-018) & Path spacing polish
+
+Status: InDevReview; updated 2026-11-17 18:52 America/La_Paz on `feature/game-modes-and-quick-create`.
+Scope:
+- `BACKLOG-017` (`SessionModeScreen.kt`): added `SdoIconButton` favorite toggle (`Icons.Default.Star` / `StarBorder`, `session_ability_favorite`) on `SessionAbilityCard` with `onToggleAbilityFavorite` callback and upgraded card padding/accent hierarchy.
+- `BACKLOG-018` (`HistorianDashboardScreen.kt`): quick preset buttons pass their specific `QuickActionKind` into `QuickActionsDialog` (`initialAction = preset`).
+- Path spacing polish (`PhaseOneSections.kt`): increased `PathReadOnlyShowcase` `contentPadding` to `16.dp` and vertical spacing to `12.dp` for Standard mode readability.
+Validation: `:app:testDebugUnitTest :app:assembleDebug` PASS.
+
 ## Block 1 — Character sheet visual upgrades (BACKLOG-015, BACKLOG-016, BACKLOG-021)
 
 Status: InDevReview; updated 2026-11-17 17:21 America/La_Paz on `feature/sheet-visual-upgrades`.
