@@ -7,6 +7,9 @@
     "rules": "firebase/database.rules.json"
   },
   "emulators": {
+    "auth": {
+      "port": 9099
+    },
     "firestore": {
       "port": 8080
     },

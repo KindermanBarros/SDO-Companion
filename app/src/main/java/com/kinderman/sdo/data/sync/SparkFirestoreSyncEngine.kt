@@ -1737,7 +1737,9 @@ class SparkFirestoreSyncEngine(
                     cancelUnpublishedSheet(uid, sheet.sheetId)
                 }
             }
-            val pending = localStore.listActiveIntents(uid).map(SheetIntentRecord::toDomain)
+            val pending = orderIntentsTopologically(
+                localStore.listActiveIntents(uid).map(SheetIntentRecord::toDomain),
+            )
             val blockedOps = mutableSetOf<String>()
             // Seed blocked ops from existing CONFLICT/REJECTED/ACCESS_DENIED intents.
             for (sheetId in pending.map(SheetIntent::sheetId).distinct()) {
@@ -1867,6 +1869,19 @@ class SparkFirestoreSyncEngine(
                             )
                             rebindDependentsLocked(intent, outcome.resolvedTargets)
                             reprojectSheetLocked(uid, intent.sheetId)
+                        }
+                        if (intent.type == OperationType.CREATE_SHEET) {
+                            localStore.getAccountSheet(uid, intent.sheetId)?.let { createdSnap ->
+                                if (createdSnap.localPhotoUri.isNotBlank()) {
+                                    val docs = SparkWireCodec.toSparkDocuments(
+                                        record = createdSnap.toSnapshot().confirmedCharacter.toRecord()
+                                            .copy(photoUri = createdSnap.localPhotoUri),
+                                        updatedBy = uid,
+                                        updatedAt = outcome.serverTimestamp,
+                                    )
+                                    docs.mediaAvatar?.let { uploadAvatarIfChanged(intent.sheetId, it) }
+                                }
+                            }
                         }
                     }
                     is DrainTxOutcome.AlreadyCommitted -> {
@@ -2930,6 +2945,20 @@ class SparkFirestoreSyncEngine(
         }
     }
 
+    private fun orderIntentsTopologically(intents: List<SheetIntent>): List<SheetIntent> {
+        if (intents.size <= 1) return intents
+        val byId = intents.associateBy { it.operationId }
+        val visited = HashSet<String>(intents.size)
+        val ordered = ArrayList<SheetIntent>(intents.size)
+        fun visit(intent: SheetIntent) {
+            if (!visited.add(intent.operationId)) return
+            intent.dependsOnOperationId?.let { depId -> byId[depId]?.let(::visit) }
+            ordered += intent
+        }
+        intents.forEach(::visit)
+        return ordered
+    }
+
     private fun projectReplay(
         snapshot: AccountSheetSnapshot,
         intents: List<SheetIntent>,
@@ -3850,17 +3879,68 @@ private fun applyExtendedTargetProjection(
                 },
             )
         }
-        if (target.itemId.startsWith("abil_") && target.key == "meta") {
+        if (target.itemId.startsWith("abil_")) {
             val id = decodeWireElementId("abil", target.itemId)
-            val meta = (plain as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value }?.toMutableMap()
-                ?: return character
-            meta["id"] = id
             val existing = character.abilities.firstOrNull { it.id == id }
-            if (existing != null) return character
-            val decoded = runCatching {
-                sharedJson.decodeFromString(Ability.serializer(), sharedPlainGson.toJson(meta))
-            }.getOrNull() ?: return character
-            return character.copy(abilities = character.abilities + decoded)
+                ?: Ability(
+                    id = id,
+                    name = id.ifBlank { "Habilidade" },
+                    kind = com.kinderman.sdo.domain.model.AbilityKind.POWER,
+                    cost = com.kinderman.sdo.domain.model.AbilityCost.PowerCost(0),
+                )
+            val updated = when (target.key) {
+                "name" -> plain?.toString()?.takeIf { it.isNotBlank() }?.let { existing.copy(name = it) } ?: existing
+                "effect" -> existing.copy(effect = plain?.toString().orEmpty())
+                "favorite" -> existing.copy(favorite = plain as? Boolean ?: existing.favorite)
+                "available" -> existing.copy(available = plain as? Boolean ?: existing.available)
+                "cost" -> runCatching {
+                    sharedJson.decodeFromString(
+                        com.kinderman.sdo.domain.model.AbilityCost.serializer(),
+                        sharedPlainGson.toJson(plain),
+                    )
+                }.getOrNull()?.let { existing.copy(cost = it) } ?: existing
+                "action" -> runCatching {
+                    sharedJson.decodeFromString(
+                        com.kinderman.sdo.domain.model.Execution.serializer(),
+                        sharedPlainGson.toJson(plain),
+                    )
+                }.getOrNull()?.let { existing.copy(execution = it) } ?: existing
+                "range" -> runCatching {
+                    sharedJson.decodeFromString(
+                        com.kinderman.sdo.domain.model.RangeSpec.serializer(),
+                        sharedPlainGson.toJson(plain),
+                    )
+                }.getOrNull()?.let { existing.copy(range = it) } ?: existing
+                "duration" -> if (plain == null) {
+                    existing.copy(duration = null)
+                } else {
+                    runCatching {
+                        sharedJson.decodeFromString(
+                            com.kinderman.sdo.domain.model.Duration.serializer(),
+                            sharedPlainGson.toJson(plain),
+                        )
+                    }.getOrNull()?.let { existing.copy(duration = it) } ?: existing
+                }
+                "meta" -> {
+                    val meta = (plain as? Map<*, *>)?.entries
+                        ?.associate { it.key.toString() to it.value }
+                        ?.toMutableMap()
+                        ?: return character
+                    val kindVal = runCatching {
+                        com.kinderman.sdo.domain.model.AbilityKind.valueOf(meta["kind"]?.toString().orEmpty())
+                    }.getOrDefault(existing.kind)
+                    existing.copy(kind = kindVal)
+                }
+                else -> existing
+            }
+            val exists = character.abilities.any { it.id == id }
+            return character.copy(
+                abilities = if (exists) {
+                    character.abilities.map { if (it.id == id) updated else it }
+                } else {
+                    character.abilities + updated
+                },
+            )
         }
     }
     return character

@@ -1251,3 +1251,124 @@ test('new sheet transactions read only root and receipt before atomic root/field
   }));
   await assertSucceeds(getDoc(fieldRef));
 });
+
+test('validItemFieldValue accepts SparkWireCodec shapes for inv_, abil_, cond_, and lcond_', async () => {
+  await seed();
+  const db = env.authenticatedContext(ids.player).firestore();
+
+  const invBatch = writeBatch(db);
+  invBatch.set(doc(db, 'characters', ids.character, 'items', 'inv_sword1'), {
+    id: 'inv_sword1',
+    kind: 'INVENTORY',
+    deleted: false,
+    revision: 1,
+    lastOperationId: 'op-item-shapes-1',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  invBatch.set(doc(db, 'characters', ids.character, 'items', 'inv_sword1', 'fields', 'enhancements'), {
+    key: 'enhancements',
+    value: { installedEnhancements: [], enhancementSlots: 1, enhancementChargesCurrent: 0, enhancementChargesMax: 0 },
+    revision: 1,
+    lastOperationId: 'op-item-shapes-1',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  invBatch.set(
+    doc(db, 'characters', ids.character, 'operations', 'op-item-shapes-1'),
+    makeOp('op-item-shapes-1', ids.player, 'UPSERT_ITEM', [
+      { kind: 'ITEM', itemId: 'inv_sword1', key: '', op: 'CREATE', expectedRevision: 0, nextRevision: 1 },
+      {
+        kind: 'ITEM_FIELD',
+        itemId: 'inv_sword1',
+        key: 'enhancements',
+        op: 'CREATE',
+        expectedRevision: 0,
+        nextRevision: 1,
+        desiredValue: { installedEnhancements: [], enhancementSlots: 1, enhancementChargesCurrent: 0, enhancementChargesMax: 0 },
+      },
+    ]),
+  );
+  await assertSucceeds(invBatch.commit());
+
+  const abilBatch = writeBatch(db);
+  abilBatch.set(doc(db, 'characters', ids.character, 'items', 'abil_slash1'), {
+    id: 'abil_slash1',
+    kind: 'ABILITY',
+    deleted: false,
+    revision: 1,
+    lastOperationId: 'op-item-shapes-2',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  abilBatch.set(doc(db, 'characters', ids.character, 'items', 'abil_slash1', 'fields', 'cost'), {
+    key: 'cost',
+    value: { type: 'Energy', amount: 2 },
+    revision: 1,
+    lastOperationId: 'op-item-shapes-2',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  abilBatch.set(doc(db, 'characters', ids.character, 'items', 'abil_slash1', 'fields', 'duration'), {
+    key: 'duration',
+    value: null,
+    revision: 1,
+    lastOperationId: 'op-item-shapes-2',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  abilBatch.set(doc(db, 'characters', ids.character, 'items', 'abil_slash1', 'fields', 'modifiers'), {
+    key: 'modifiers',
+    value: { kind: 'DAMAGE', dice: '1d6' },
+    revision: 1,
+    lastOperationId: 'op-item-shapes-2',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  abilBatch.set(
+    doc(db, 'characters', ids.character, 'operations', 'op-item-shapes-2'),
+    makeOp('op-item-shapes-2', ids.player, 'UPSERT_ITEM', [
+      { kind: 'ITEM', itemId: 'abil_slash1', key: '', op: 'CREATE', expectedRevision: 0, nextRevision: 1 },
+      { kind: 'ITEM_FIELD', itemId: 'abil_slash1', key: 'cost', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: { type: 'Energy', amount: 2 } },
+      { kind: 'ITEM_FIELD', itemId: 'abil_slash1', key: 'duration', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: null },
+      { kind: 'ITEM_FIELD', itemId: 'abil_slash1', key: 'modifiers', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: { kind: 'DAMAGE', dice: '1d6' } },
+    ]),
+  );
+  await assertSucceeds(abilBatch.commit());
+
+  const condBatch = writeBatch(db);
+  condBatch.set(doc(db, 'characters', ids.character, 'items', 'lcond_bleed1'), {
+    id: 'lcond_bleed1',
+    kind: 'LEGACY_CONDITION',
+    deleted: false,
+    revision: 1,
+    lastOperationId: 'op-item-shapes-3',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  condBatch.set(doc(db, 'characters', ids.character, 'items', 'lcond_bleed1', 'fields', 'intensity'), {
+    key: 'intensity',
+    value: 'Leve',
+    revision: 1,
+    lastOperationId: 'op-item-shapes-3',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  condBatch.set(doc(db, 'characters', ids.character, 'items', 'lcond_bleed1', 'fields', 'payload'), {
+    key: 'payload',
+    value: { id: 'bleed1' },
+    revision: 1,
+    lastOperationId: 'op-item-shapes-3',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  condBatch.set(
+    doc(db, 'characters', ids.character, 'operations', 'op-item-shapes-3'),
+    makeOp('op-item-shapes-3', ids.player, 'UPSERT_ITEM', [
+      { kind: 'ITEM', itemId: 'lcond_bleed1', key: '', op: 'CREATE', expectedRevision: 0, nextRevision: 1 },
+      { kind: 'ITEM_FIELD', itemId: 'lcond_bleed1', key: 'intensity', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: 'Leve' },
+      { kind: 'ITEM_FIELD', itemId: 'lcond_bleed1', key: 'payload', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: { id: 'bleed1' } },
+    ]),
+  );
+  await assertSucceeds(condBatch.commit());
+});

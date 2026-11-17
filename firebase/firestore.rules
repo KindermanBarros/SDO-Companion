@@ -282,7 +282,7 @@ service cloud.firestore {
         : (itemId.matches('^cond_.*') ? 'CONDITION'
         : (itemId.matches('^lcond_.*') ? 'LEGACY_CONDITION'
         : (itemId.matches('^note_.*') ? 'NOTE'
-        : (itemId in ['attr_FOR', 'attr_AGI', 'attr_VIG', 'attr_INT', 'attr_PER', 'attr_POD'] ? 'ATTRIBUTE' : ''))))))));
+        : (itemId in ['attr_FOR', 'attr_AGI', 'attr_VIG', 'attr_INT', 'attr_PER', 'attr_POD', 'attr_CAR'] ? 'ATTRIBUTE' : ''))))))));
     }
 
     function validItemFieldValue(itemId, fieldKey, val) {
@@ -293,7 +293,8 @@ service cloud.firestore {
             || (fieldKey in ['quantity', 'durabilityCurrent', 'durabilityMax', 'backpackCapacity', 'pg', 'pl'] && isInt32(val))
             || (fieldKey == 'agilityLimit' && (val == null || isInt32(val)))
             || (fieldKey == 'load' && val is number && val >= 0 && val <= 2147483647)
-            || (fieldKey in ['enhancements', 'mechanicalEffects'] && val is list && val.size() <= 100)
+            || (fieldKey == 'enhancements' && val is map && val.size() <= 50)
+            || (fieldKey == 'mechanicalEffects' && val is list && val.size() <= 100)
             || (fieldKey == 'meta' && val is map && val.size() <= 50)
           )
           : (itemId[0:5] == 'attr_'
@@ -307,7 +308,7 @@ service cloud.firestore {
             : (itemId[0:7] == 'istate_'
               ? (
                 (fieldKey in ['definition', 'consumable', 'ammo', 'reload', 'container'] && (val == null || (val is map && val.size() <= 50)))
-                || (fieldKey in ['scope', 'material'] && ((val is string && val.size() <= 200) || (val is map && val.size() <= 50)))
+                || (fieldKey in ['scope', 'material'] && (val == null || (val is string && val.size() <= 200) || (val is map && val.size() <= 50)))
                 || (fieldKey == 'installations' && val is list && val.size() <= 50)
                 || (fieldKey == 'stack' && (isInt32(val) || (val is map && val.size() <= 20)))
                 || (fieldKey == 'runtime' && (isInt32(val) || (val is map && val.size() <= 50)))
@@ -315,13 +316,20 @@ service cloud.firestore {
               : (itemId[0:5] == 'note_'
                 ? ((fieldKey == 'title' && val is string && val.size() <= 200) || (fieldKey == 'text' && val is string && val.size() <= 20000))
                 : ((itemId[0:5] == 'cond_' || itemId[0:6] == 'lcond_')
-                  ? ((fieldKey in ['name', 'duration', 'summary', 'origin', 'payload'] && val is string && val.size() <= 20000) || (fieldKey == 'intensity' && isInt32(val)))
+                  ? (
+                    (fieldKey in ['name', 'summary'] && val is string && val.size() <= 20000)
+                    || (fieldKey in ['duration', 'origin'] && (val == null || (val is string && val.size() <= 20000) || (val is map && val.size() <= 50)))
+                    || (fieldKey == 'payload' && ((val is string && val.size() <= 20000) || (val is map && val.size() <= 50)))
+                    || (fieldKey == 'intensity' && (isInt32(val) || (itemId[0:6] == 'lcond_' && val is string && val.size() <= 200)))
+                  )
                   : ((itemId[0:5] == 'abil_' || itemId[0:4] == 'pow_' || itemId[0:4] == 'mys_')
                     && (
-                      (fieldKey in ['name', 'cost', 'costType', 'action', 'range', 'duration', 'effect', 'linkedItemId'] && val is string && val.size() <= 2000)
+                      (fieldKey in ['name', 'costType', 'effect', 'linkedItemId'] && val is string && val.size() <= 2000)
+                      || (fieldKey in ['cost', 'action', 'range'] && ((val is string && val.size() <= 2000) || (val is map && val.size() <= 50)))
+                      || (fieldKey == 'duration' && (val == null || (val is string && val.size() <= 2000) || (val is map && val.size() <= 50)))
                       || (fieldKey == 'costValue' && isInt32(val))
                       || (fieldKey in ['active', 'favorite', 'available'] && val is bool)
-                      || (fieldKey == 'modifiers' && val is list && val.size() <= 100)
+                      || (fieldKey == 'modifiers' && (val == null || (val is list && val.size() <= 100) || (val is map && val.size() <= 50)))
                       || (fieldKey == 'meta' && val is map && val.size() <= 50)
                     ))))))
       );
@@ -631,7 +639,9 @@ service cloud.firestore {
           && data.deleted is bool;
       }
 
-      allow read: if signedIn()
+      allow get: if signedIn()
+        && (resource == null || canReadCampaign(resource.data.campaignId));
+      allow list: if signedIn()
         && canReadCampaign(resource.data.campaignId);
 
       allow create: if signedIn()
@@ -915,7 +925,7 @@ service cloud.firestore {
             ? findTarget(opDoc.data.targets, 'FIELD', '', fieldKey)
             : null;
           return t != null
-            && opDoc.data.type in ['CREATE_SHEET', 'PATCH_FIELDS', 'ADJUST_RESOURCE', 'ITEM_CONSUME', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
+            && opDoc.data.type in ['CREATE_SHEET', 'PATCH_FIELDS', 'UPSERT_ITEM', 'ADJUST_RESOURCE', 'ITEM_CONSUME', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
             && t.expectedRevision == expectedRev
             && t.nextRevision == nextRev
             && (isCreate || !('baseValue' in t) || resource.data.value == t.baseValue)
