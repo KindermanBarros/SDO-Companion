@@ -5,6 +5,12 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## v0.54.4 admin empty-account ItemQuality decode fix
+
+Status: InDevReview; updated 2026-11-17 16:28 America/La_Paz. After deploying production Rules and installing v0.54.4, the owner reported the admin account (`kindbarros@gmail.com`) appeared empty.
+Diagnosis: the admin account owns 0 personal sheets and 1 `ACTIVE` campaign (`87bfe102-4bf3-4164-934f-1b197e3f07d1`, `Solidão dos Oprimidos`) with 4 player sheets. Decoding those 4 production sheets through `SparkWireCodec.fromSparkDocuments` threw `NullPointerException: Parameter specified as non-null is null: method InventoryItem.copy, parameter quality` on all 4 sheets, which `SparkFirestoreSyncEngine.sync` swallowed inside `runCatching`. Migrated `inv_*` items store `quality` as Portuguese `@PropertyName` labels (e.g. `"Comum"`), whereas `plainGson` only deserialized enum names (`"COMMON"`).
+Fix: registered `itemQualityDeserializer` on `SparkWireCodec.plainGson` to accept both `ItemQuality` enum names and Portuguese labels (falling back to `ItemQuality.COMMON`), and added a regression test in `SparkWireCodecTest`. Verified all 4 exported production sheets decode cleanly and `:app:testDebugUnitTest :app:assembleDebug` PASS. No Firebase Rules or Room schema change.
+
 ## Rejected new-sheet creation followed by local deletion
 
 Status: InDevReview; updated 2026-11-17 02:52 America/La_Paz. Owner reported admin permission errors, missing initial downloads and an ACCESS_DENIED draft in v0.54.2, then clarified that the draft was an empty sheet they created and deleted. Read-only production checks confirmed the verified administrator identity, one active owned campaign and four GM-readable sheets. Eight discovery/admin queries passed against production metadata in the emulator; no global ACL expansion is authorized.
