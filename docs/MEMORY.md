@@ -5,6 +5,15 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## Block 1 — Character sheet visual upgrades (BACKLOG-015, BACKLOG-016, BACKLOG-021)
+
+Status: InDevReview; updated 2026-11-17 17:21 America/La_Paz on `feature/sheet-visual-upgrades`.
+Scope:
+- `BACKLOG-015` (`PhaseOneSections.kt`): added `PathReadOnlyShowcase` using semantic `MaterialTheme.colorScheme`/`typography` and `SdoInsetCard`/`SdoMetadataText`, with `EDITAR`/`VISUALIZAR` toggle when editable and read-only showcase when disabled.
+- `BACKLOG-021` (`CharacterNotesSection.kt`): aligned `PersonalNoteCard` with `BACKLOG-015` by showing a styled non-editable preview (title + body) when collapsed or read-only, with `EDITAR`/`VISUALIZAR` toggle when editable.
+- `BACKLOG-016` (`AbilitySection.kt`): upgraded `AbilityEditor` collapsed header to display `ability.kind.label.uppercase()` metadata above `ability.name` (`SdoCardTitle`, `titleMedium`, `primary`) across Powers and Mystic tabs.
+Validation: `:app:assembleDebug :app:testDebugUnitTest` PASS. No Room schema, Firebase Rules, or dependency changes.
+
 ## v0.54.4 admin empty-account ItemQuality decode fix
 
 Status: InDevReview; updated 2026-11-17 16:28 America/La_Paz. After deploying production Rules and installing v0.54.4, the owner reported the admin account (`kindbarros@gmail.com`) appeared empty.

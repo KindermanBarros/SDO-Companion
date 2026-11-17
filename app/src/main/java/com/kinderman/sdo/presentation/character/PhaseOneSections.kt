@@ -20,9 +20,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.domain.catalog.canAddCatalogEntry
 import com.kinderman.sdo.domain.catalog.previewPathChange
 import com.kinderman.sdo.domain.catalog.toSpecialKnowledge
@@ -279,22 +281,39 @@ internal fun PhaseOnePathSection(
 ) {
     var selecting by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<CatalogEntry?>(null) }
+    var editing by rememberSaveable(character.id) { mutableStateOf(character.pathName.isBlank()) }
+    val showEditor = enabled && editing
     TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("07", "Caminho")
-        HudTextField("Nome do Caminho", character.pathName, enabled = enabled) { onChange(character.copy(pathName = it)) }
-        AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
-        HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
-        Text("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-        character.pathKeywords.forEachIndexed { index, keyword ->
-            HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) {
-                onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it)))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SectionHeader("07", "Caminho")
+            if (enabled) {
+                SdoTextButton(onClick = { editing = !editing }) {
+                    Text(if (showEditor) "VISUALIZAR" else "EDITAR")
+                }
             }
         }
-        Text("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-        character.pathPillars.forEachIndexed { index, pillar ->
-            HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) {
-                onChange(character.copy(pathPillars = character.pathPillars.replace(index, it)))
+        if (showEditor) {
+            HudTextField("Nome do Caminho", character.pathName, enabled = enabled) { onChange(character.copy(pathName = it)) }
+            AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
+            HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
+            Text("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+            character.pathKeywords.forEachIndexed { index, keyword ->
+                HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) {
+                    onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it)))
+                }
             }
+            Text("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
+            character.pathPillars.forEachIndexed { index, pillar ->
+                HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) {
+                    onChange(character.copy(pathPillars = character.pathPillars.replace(index, it)))
+                }
+            }
+        } else {
+            PathReadOnlyShowcase(character)
         }
     }
     if (selecting) {
@@ -325,6 +344,84 @@ internal fun PhaseOnePathSection(
             },
             dismissButton = { SdoTextButton(onClick = { pending = null }) { Text("CANCELAR") } },
         )
+    }
+}
+
+@Composable
+private fun PathReadOnlyShowcase(character: Character) {
+    val pathName = character.pathName.trim()
+    val motto = character.pathMotto.trim()
+    val keywords = character.pathKeywords.map { it.trim() }.filter { it.isNotEmpty() }
+    val pillars = character.pathPillars.map { it.trim() }.filter { it.isNotEmpty() }
+
+    SdoInsetCard(contentPadding = 14.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SdoMetadataText(
+                "CAMINHO DO PERSONAGEM",
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Text(
+                text = pathName.ifBlank { "Caminho não definido" },
+                color = if (pathName.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            if (motto.isNotBlank()) {
+                Text(
+                    text = "“$motto”",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            if (keywords.isNotEmpty()) {
+                SdoMetadataText(
+                    "PALAVRAS-CHAVE",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    keywords.forEach { keyword ->
+                        SdoInsetCard(
+                            modifier = Modifier.weight(1f),
+                            contentPadding = 8.dp,
+                        ) {
+                            Text(
+                                text = keyword,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        }
+                    }
+                }
+            }
+            if (pillars.isNotEmpty()) {
+                SdoMetadataText(
+                    "PILARES",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    pillars.forEachIndexed { index, pillar ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                text = "${(index + 1).toString().padStart(2, '0')}.",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                            Text(
+                                text = pillar,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -108,12 +108,20 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SdoCardTitle(
-                if (ability.kind == AbilityKind.POWER) ability.name else ability.kind.label.uppercase(),
+            Column(
                 modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.primary,
-                style = if (ability.kind == AbilityKind.POWER) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
-            )
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                SdoMetadataText(
+                    text = ability.kind.label.uppercase(),
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+                SdoCardTitle(
+                    text = ability.name.ifBlank { "Habilidade sem nome" },
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
             Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (expanded) "Recolher ${ability.name}" else "Expandir ${ability.name}")
             RemoveButton(enabled && !isRacial, if (isRacial) "Poder racial não pode ser removido" else "Remover habilidade") {
                 onChange(character.withRemovedCanonicalAbility(ability.id))
