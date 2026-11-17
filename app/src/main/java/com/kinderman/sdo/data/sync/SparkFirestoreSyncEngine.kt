@@ -997,6 +997,7 @@ class SparkFirestoreSyncEngine(
             existingRevisions = emptyMap(),
             sheetRevision = 0L,
             updatedAt = now,
+            skipDefaultFieldsOnCreate = true,
         )
         val intents = batchesToIntents(
             batches = batches,

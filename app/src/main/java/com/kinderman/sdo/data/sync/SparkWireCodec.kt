@@ -758,6 +758,7 @@ object SparkWireCodec {
         sheetRevision: Long = 0L,
         updatedAt: Long = after.updatedAt,
         authorizedCampaignId: String = "",
+        skipDefaultFieldsOnCreate: Boolean = false,
     ): List<SparkOperationBatch> {
         val afterDocs = toSparkDocuments(
             record = after,
@@ -797,10 +798,32 @@ object SparkWireCodec {
             )
         }
 
+        val defaultDocs = if (beforeDocs == null && skipDefaultFieldsOnCreate) {
+            toSparkDocuments(
+                record = CharacterRecord(
+                    id = after.id,
+                    ownerId = after.ownerId,
+                    campaignId = after.campaignId,
+                    canonicalSchemaVersion = after.canonicalSchemaVersion,
+                    updatedAt = updatedAt,
+                    lastEditedBy = actorUid,
+                ),
+                revision = 1L,
+                fieldRevisions = emptyMap(),
+                lastOperationId = operationIdPrefix,
+                updatedBy = actorUid,
+                updatedAt = updatedAt,
+                authorizedCampaignId = authorizedCampaignId,
+            )
+        } else {
+            null
+        }
+
         afterDocs.fields.forEach { (fieldKey, doc) ->
             val oldValue = beforeDocs?.fields?.get(fieldKey)?.get("value")
             val newValue = doc["value"]
-            if (beforeDocs == null || oldValue != newValue) {
+            val matchesDefaultOnCreate = defaultDocs != null && defaultDocs.fields[fieldKey]?.get("value") == newValue
+            if (!matchesDefaultOnCreate && (beforeDocs == null || oldValue != newValue)) {
                 val expectedRev = if (beforeDocs == null) {
                     0L
                 } else {
