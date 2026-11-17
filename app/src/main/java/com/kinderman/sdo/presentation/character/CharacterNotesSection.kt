@@ -12,18 +12,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.PersonalNote
 import com.kinderman.sdo.domain.model.nextPersonalNoteTitle
-import com.kinderman.sdo.ui.Acid
-import com.kinderman.sdo.ui.HudTextField
-import com.kinderman.sdo.ui.Ice
-import com.kinderman.sdo.ui.Muted
-import com.kinderman.sdo.ui.Panel
+import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoTextButton
 import com.kinderman.sdo.ui.SectionHeader
-import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
@@ -80,6 +81,10 @@ private fun PersonalNoteCard(
     onRemove: () -> Unit,
     onValue: (PersonalNote) -> Unit,
 ) {
+    var editing by rememberSaveable(note.id) {
+        mutableStateOf(note.title.isBlank() && note.text.isBlank())
+    }
+    val showEditor = enabled && editing
     SdoCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -95,20 +100,40 @@ private fun PersonalNoteCard(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(Modifier.fillMaxWidth()) {
-                Text(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SdoMetadataText(
                     "REGISTRO ${(index + 1).toString().padStart(2, '0')}",
                     modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary,
                 )
+                if (enabled) {
+                    SdoTextButton(onClick = { editing = !editing }) {
+                        Text(if (showEditor) "VISUALIZAR" else "EDITAR")
+                    }
+                }
                 RemoveButton(enabled, "Remover registro", onRemove)
             }
-            CollaborativeSheetField("personalNotes/${note.id}/title", "Título", note.title, enabled = enabled) {
-                onValue(note.copy(title = it))
-            }
-            CollaborativeSheetField("personalNotes/${note.id}/text", "Anotação", note.text, multiline = true, enabled = enabled) {
-                onValue(note.copy(text = it))
+            if (showEditor) {
+                CollaborativeSheetField("personalNotes/${note.id}/title", "Título", note.title, enabled = enabled) {
+                    onValue(note.copy(title = it))
+                }
+                CollaborativeSheetField("personalNotes/${note.id}/text", "Anotação", note.text, multiline = true, enabled = enabled) {
+                    onValue(note.copy(text = it))
+                }
+            } else {
+                Text(
+                    text = note.title.trim().ifBlank { "Registro sem título" },
+                    color = if (note.title.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = note.text.trim().ifBlank { "Nenhuma anotação registrada." },
+                    color = if (note.text.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
     }
