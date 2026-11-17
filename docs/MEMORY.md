@@ -5,6 +5,13 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## v0.54.1 migrated sheet hydration and missing portraits
+
+Status: InDevReview; updated 2026-11-17 01:05 America/La_Paz. Owner reported missing portraits and empty sheets on 2026-11-17. Five of five embedded legacy portraits are present and byte-identical in production media/avatar documents; the report is a client hydration defect, not evidence that the portrait bytes were lost.
+Diagnosis: full hydration fetchSheetHead uses DocumentSnapshot.getTimestamp before a numeric fallback, but migration receipts store epoch-millisecond integers. Nine of 10 sheets had only numeric receipts; the typed getter throws before reaching the fallback. Global discovery also seeds a partial summary without media and never refreshes existing account snapshots, leaving incomplete default-valued sheets cached.
+Immediate recovery: saved original activation receipts outside Git, then atomically normalized only their createdAt field to a Firestore timestamp with the same instant and an updateTime precondition. All 10 latest receipt timestamps verified; no sheet value, image, ownership or newer receipt changed.
+Patch: normalize the raw Firestore receipt value before reading its time; hydrate new/incomplete/changed discovered sheets in full, retaining cheap root/receipt checks for complete unchanged snapshots. Removed the partial-summary gateway to prevent default values from being persisted as complete sheets. Regression reproduced the missing-photo failure before the fix, then verified photo/occupation/money/life recovery, unchanged-cache reuse and refresh after a newer receipt. Engine/codec tests: 23/23 PASS; debug build PASS. Android lint PASS (offline; completed in 8m21s). Structural harness gate and scoped diff PASS. Signed release CI follows publication; its result is reported at handoff. Installed-account recovery remains owner verification; no two-device runtime pass is claimed. No new dependency, UI, Room schema or Firebase Rules change.
+
 ## v0.54.1 synchronization permission recovery
 
 Status: InDevReview; updated 2026-11-17 00:45 America/La_Paz. Owner reported synchronization permission errors after release and explicitly authorized correction/cutover. Scope: operational alignment of production Firestore data, Rules/indexes and isolated RTDB Rules with the already released Spark v2 client; no APK or app source change.

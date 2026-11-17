@@ -234,6 +234,8 @@ class SparkFirestoreSyncEngineTest {
         var permissionDeniedForSheet: String? = null
         var permissionDeniedMessage: String = "PERMISSION_DENIED"
         var transientFailureCount = 0
+        var documentFetchCount = 0
+        var latestOperationAtMs = 0L
 
         fun seedFromCharacter(
             record: CharacterRecord,
@@ -337,6 +339,7 @@ class SparkFirestoreSyncEngineTest {
         }
 
         override suspend fun fetchSheetDocuments(sheetId: String): SparkSheetDocuments? {
+            documentFetchCount++
             val root = roots[sheetId] ?: return null
             val sheetFields = fields.filterKeys { it.first == sheetId }.mapKeys { it.key.second }
             val sheetItems = items.filterKeys { it.first == sheetId }.entries.associate { (k, doc) ->
@@ -354,7 +357,7 @@ class SparkFirestoreSyncEngineTest {
         }
 
         override suspend fun fetchSheetHead(sheetId: String): SparkSheetHead? = roots[sheetId]?.let {
-            SparkSheetHead((it["revision"] as Number).toLong(), it["deleted"] == true, 0L)
+            SparkSheetHead((it["revision"] as Number).toLong(), it["deleted"] == true, latestOperationAtMs)
         }
 
         override fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent> = flowOf()
@@ -443,6 +446,38 @@ class SparkFirestoreSyncEngineTest {
         dependsOnOperationId = dependency, baseRevision = revision,
     )
 
+    @Test
+    fun globalSyncHydratesCachedSummaryIncludingPhotoAndResources() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val photo = "data:image/jpeg;base64,dGVzdA=="
+        val complete = baseSheet().copy(photoUri = photo, occupation = "Sentinela")
+        remote.seedFromCharacter(complete.toRecord())
+        val summary = complete.copy(photoUri = "", occupation = "", money = 0, life = ResourceValue(0, 0))
+        store.upsertAccountSheet(AccountSheetRecord(
+            accountId = "player-1", sheetId = complete.id, sheetRevision = 1,
+            fieldRevisionsJson = "{}", confirmedJson = com.google.gson.Gson().toJson(summary.toRecord()),
+            updatedAt = 1,
+        ))
+        engine.activateAccount("player-1")
+
+        engine.sync(session("player-1"))
+
+        val hydrated = store.getCharacter(complete.id)!!.toDomain()
+        assertEquals(photo, hydrated.photoUri)
+        assertEquals("Sentinela", hydrated.occupation)
+        assertEquals(100, hydrated.money)
+        assertEquals(100, hydrated.life.current)
+        assertEquals(1, remote.documentFetchCount)
+
+        engine.sync(session("player-1"))
+        assertEquals(1, remote.documentFetchCount)
+
+        remote.seedFromCharacter(complete.copy(money = 125).toRecord())
+        remote.latestOperationAtMs = 20_000L
+        engine.sync(session("player-1"))
+        assertEquals(2, remote.documentFetchCount)
+        assertEquals(125, store.getCharacter(complete.id)!!.toDomain().money)
+    }
     @Test
     fun unsupportedConsumptionNeverEntersQueue() = runBlocking {
         val (engine, store, remote) = newHarness()

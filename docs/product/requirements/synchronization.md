@@ -79,3 +79,5 @@ Owner request on 2026-11-16: unify synchronization on 100% Firebase Spark withou
 Automated actions require Rules-expressible invariants. Unsupported mechanical-effect consumption, dose/AshCost activation, and positive resource changes without a stored ceiling require explicit manual adjustment; Kotlin calculation alone is not a security guarantee. Corruption is bounded to 100. Deployment and data cutover are coordinated manually using the [operator procedure](../../firebase-deploy.md).
 
 Conflict resolution offers local, online, and hand-edited values. The manual editor starts with the local value, preserves scalar/resource types and validates input; complex structured payloads remain editable through the sheet. Applying a merge creates a new intent using the recorded remote revision; further remote changes can produce another conflict.
+
+Discovery must hydrate complete confirmed sheets, including portrait media, for new or incomplete local snapshots. Complete unchanged snapshots reuse their cached data after root/latest-receipt checks; a changed receipt triggers full refresh. Receipt times accept both migrated epoch milliseconds and Firestore timestamps.

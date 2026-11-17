@@ -184,7 +184,6 @@ private const val LAST_OPERATION_MARKER = "@lastOperationAt"
 interface SparkRemoteGateway {
     suspend fun <T> runTransaction(sheetId: String, block: (SparkTransactionContext) -> T): T
     suspend fun fetchSheetDocuments(sheetId: String): SparkSheetDocuments?
-    suspend fun fetchSheetSummary(sheetId: String): SparkSheetDocuments? = fetchSheetDocuments(sheetId)
 
     /** Root document + latest receipt only (two small reads) so unchanged sheets are never re-downloaded. */
     suspend fun fetchSheetHead(sheetId: String): SparkSheetHead?
@@ -409,19 +408,6 @@ class FirestoreSparkRemoteGateway(
                 else -> throw error
             }
         }
-    }
-
-    override suspend fun fetchSheetSummary(sheetId: String): SparkSheetDocuments? {
-        val ref = firestoreProvider().collection(FirestoreCollections.CHARACTERS).document(sheetId)
-        val root = ref.get().await()
-        if (!root.exists()) return null
-        val fields = coroutineScope {
-            listOf("name", "race", "level", "avatarPreset").map { key -> async {
-                val doc = ref.collection(FirestoreCollections.CHARACTER_FIELDS).document(key).get().await()
-                key to doc.data?.let(::normalizeFirestoreMap)
-            } }.awaitAll().mapNotNull { (key, value) -> value?.let { key to it } }.toMap()
-        }
-        return SparkSheetDocuments(root = normalizeFirestoreMap(root.data.orEmpty()), fields = fields, items = emptyMap())
     }
 
     override suspend fun fetchSheetDocuments(sheetId: String): SparkSheetDocuments? {
@@ -722,7 +708,7 @@ class FirestoreSparkRemoteGateway(
             .await()
             .documents
             .firstOrNull()
-        val latestMs = latest?.getTimestamp("createdAt")?.toDate()?.time ?: latest?.getLong("createdAt") ?: 0L
+        val latestMs = asLong(normalizeFirestoreValue(latest?.get("createdAt"))) ?: 0L
         return SparkSheetHead(
             rootRevision = root.getLong("revision") ?: 0L,
             deleted = root.getBoolean("deleted") == true,
@@ -2356,7 +2342,7 @@ class SparkFirestoreSyncEngine(
         // head (root revision / latest receipt) moved; unchanged sheets cost two small reads.
         coroutineScope {
             accessibleIds.map { sheetId ->
-                async { runCatching { refreshSheetSummary(uid, sheetId) } }
+                async { runCatching { refreshDiscoveredSheet(uid, sheetId) } }
             }.awaitAll()
         }
 
@@ -2387,23 +2373,18 @@ class SparkFirestoreSyncEngine(
         return emptyList()
     }
 
-    private suspend fun refreshSheetSummary(accountId: String, sheetId: String) {
-        if (localStore.getAccountSheet(accountId, sheetId) != null) return
-        val docs = remoteGateway.fetchSheetSummary(sheetId) ?: return
-        if (!isAccountCurrent(accountId)) return
-        val character = SparkWireCodec.fromSparkDocuments(docs).toDomain()
-        localStore.withTransaction {
-            localStore.upsertAccountSheet(AccountSheetSnapshot(
-                accountId = accountId,
-                sheetId = sheetId,
-                sheetRevision = asLong(docs.root["revision"]) ?: 1L,
-                fieldRevisions = docs.fields.mapKeys { "field:" + it.key }
-                    .mapValues { asLong(it.value["revision"]) ?: 0L },
-                confirmedCharacter = character,
-                updatedAt = clock.nowMillis(),
-            ).toRecord())
-            reprojectSheetLocked(accountId, sheetId)
+    private suspend fun refreshDiscoveredSheet(accountId: String, sheetId: String) {
+        val existing = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot()
+        if (existing != null && LAST_OPERATION_MARKER in existing.fieldRevisions) {
+            val head = remoteGateway.fetchSheetHead(sheetId)
+            if (head != null && existing.sheetRevision == head.rootRevision &&
+                existing.sheetDeleted == head.deleted &&
+                existing.fieldRevisions[LAST_OPERATION_MARKER] == head.latestOperationAtMs
+            ) {
+                return
+            }
         }
+        refreshSheetFromRemote(accountId, sheetId)
     }
 
     /**
