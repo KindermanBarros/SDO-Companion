@@ -5,7 +5,20 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
-## Active / In-Review Tasks
+## Current disposition - owner closure and release request
+
+Updated 2026-11-16 23:32 America/La_Paz. Owner explicitly requested a direct main commit closing ongoing deliveries, preserving the unimplemented backlog, and generating a release.
+
+- Done by explicit owner closure: delivered scope of BACKLOG-002/003/004/008/009/010/012/013 and campaign membership repair. Earlier hybrid sync/crash work is closed as superseded by Spark Firestore v2; BACKLOG-011 remains Superseded.
+- BACKLOG-005 remains ToDo. Unsupported automation, coverage improvement, authenticated multi-device verification and production cutover remain pending as previously recorded; no unimplemented capability is marked delivered. Historical validation limitations remain unchanged.
+- PR #149 merged as `1770f01591eb9c5b3c34d85bd2784b03c2758758`. Release run [43979484589](https://github.com/KindermanBarros/SDO-Companion/actions/runs/43979484589) built and verified a signed APK but skipped publication: no recognized semantic commit since v0.54.0.
+- This documentation-only `fix:` commit supplies the patch-release signal. Documentation paths do not trigger Android CI, so publication uses the existing manual workflow on main after push. No app, workflow, Firebase configuration or production data changes are included.
+- Validation: documentation diff, Memory links, backlog preservation and line limit, structural harness gate, mandatory cleanup and commit hook. Android build validation is delegated to signed release CI. Release result is reported at handoff.
+- The original workspace has an in-progress cherry-pick; an isolated detached worktree based on origin/main preserves that operation. No PR or branch is created for this commit.
+
+## Historical delivery records
+
+Earlier InDevReview/ToDo wording below records the state at that date; the current disposition above governs owner-closed deliveries.
 
 ### BACKLOG-012 / SYNC-PLAN-005 — Cost-effective concurrent sheet sync & cloud-only Painel animation — InDevReview
 
