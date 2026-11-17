@@ -1,6 +1,7 @@
 package com.kinderman.sdo.data.sync
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -85,7 +86,15 @@ object SparkWireCodec {
     const val MAX_AVATAR_DIMENSION_PX = 256
 
     private val gson = GsonBuilder().serializeNulls().create()
-    private val plainGson = GsonBuilder().create()
+    private val itemQualityDeserializer = JsonDeserializer { json, _, _ ->
+        val raw = json?.takeIf { it.isJsonPrimitive }?.asString?.trim().orEmpty()
+        ItemQuality.entries.firstOrNull {
+            it.name.equals(raw, ignoreCase = true) || it.label.equals(raw, ignoreCase = true)
+        } ?: ItemQuality.COMMON
+    }
+    private val plainGson = GsonBuilder()
+        .registerTypeAdapter(ItemQuality::class.java, itemQualityDeserializer)
+        .create()
     private val converters = CharacterConverters()
     private val canonicalJson = kotlinx.serialization.json.Json {
         ignoreUnknownKeys = true

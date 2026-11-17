@@ -12,6 +12,7 @@ import com.kinderman.sdo.domain.model.ContainerState
 import com.kinderman.sdo.domain.model.InstallationId
 import com.kinderman.sdo.domain.model.ItemCatalogId
 import com.kinderman.sdo.domain.model.ItemInstanceId
+import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemState
 import com.kinderman.sdo.data.local.CharacterRecord
 import com.kinderman.sdo.data.local.normalizedForSparkV2
@@ -277,5 +278,37 @@ class SparkWireCodecTest {
         val docs = SparkWireCodec.toSparkDocuments(before)
         assertEquals("", docs.root["campaignId"])
         assertEquals("", docs.root["authorizedCampaignId"])
+    }
+
+    @Test
+    fun inventoryItemQualityDecodesPortuguesePropertyNamesAndEnumNames() {
+        val cases = listOf(
+            "Mundana" to ItemQuality.MUNDANE,
+            "Comum" to ItemQuality.COMMON,
+            "Aprimorada" to ItemQuality.IMPROVED,
+            "Icônica" to ItemQuality.ICONIC,
+            "Obra-Prima" to ItemQuality.MASTERPIECE,
+            "Artefato" to ItemQuality.ARTIFACT,
+            "Anciã" to ItemQuality.ANCIENT,
+            "IMPROVED" to ItemQuality.IMPROVED,
+            "unknown" to ItemQuality.COMMON,
+        )
+        cases.forEachIndexed { idx, (rawQuality, expectedQuality) ->
+            val itemId = "item-$idx"
+            val wireItemId = "inv_$itemId"
+            val base = Character(
+                id = "sheet-quality",
+                ownerId = "owner-1",
+                inventory = listOf(InventoryItem(id = itemId, name = "Item $idx")),
+            ).toRecord().normalizedForSparkV2()
+            val docs = SparkWireCodec.toSparkDocuments(base)
+            val bundle = docs.items.getValue(wireItemId)
+            val updatedFields = bundle.fields.toMutableMap()
+            updatedFields["quality"] = mapOf("key" to "quality", "value" to rawQuality, "revision" to 1L)
+            val patchedDocs = docs.copy(items = docs.items + (wireItemId to bundle.copy(fields = updatedFields)))
+
+            val decoded = SparkWireCodec.fromSparkDocuments(patchedDocs)
+            assertEquals("Failed for quality=$rawQuality", expectedQuality, decoded.inventory.single().quality)
+        }
     }
 }
