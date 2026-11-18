@@ -458,6 +458,10 @@ class AppViewModel(
     fun delete(character: Character) {
         autosaveJobs.remove(character.id)?.cancel()
         pendingAutosaves.remove(character.id)
+        remoteSyncDebounceJob?.cancel()
+        remoteSyncDebounceJob = null
+        _conflicts.value = _conflicts.value.filterNot { it.local.id == character.id }
+        _saveErrors.value = _saveErrors.value - character.id
         runCharacterAction("Personagem removido") { session ->
             deleteCharacter(session, character)
             character.id

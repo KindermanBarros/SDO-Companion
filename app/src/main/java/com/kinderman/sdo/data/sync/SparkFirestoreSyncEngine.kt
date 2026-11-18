@@ -1288,6 +1288,18 @@ class SparkFirestoreSyncEngine(
         val now = clock.nowMillis()
         localStore.withTransaction {
             val snapshot = ensureAccountSheetSnapshotLocked(accountId, character, now)
+            val existingRecords = localStore.listIntentsForSheet(accountId, character.id)
+            // Deleting a sheet supersedes any pending/conflicted/paused edits on it: remove them and
+            // their open conflict records so they never trigger a conflict dialog after deletion.
+            existingRecords
+                .filter { it.status != SheetIntentStatus.CONFIRMED.name && it.type != OperationType.CREATE_SHEET.name }
+                .forEach { record ->
+                    record.toDomain().effectiveTargets().forEach { t ->
+                        localStore.deleteConflict(accountId, "${record.operationId}::${t.canonicalTargetKey()}")
+                    }
+                    localStore.deleteConflict(accountId, "${record.operationId}::${record.targetKey}")
+                    localStore.deleteIntent(accountId, record.operationId)
+                }
             val existing = localStore.listIntentsForSheet(accountId, character.id).map(SheetIntentRecord::toDomain)
             val working = computeWorkingRevisionsAndHeads(snapshot, existing)
             val target = SparkTargetSpec(
@@ -2121,6 +2133,9 @@ class SparkFirestoreSyncEngine(
 
             for (target in effectiveTargets) {
                 if (isSheetDeleted && target.op != TargetOp.RESTORE) {
+                    if (intent.type == OperationType.DELETE_SHEET) {
+                        return@runTransaction DrainTxOutcome.Committed(emptyList())
+                    }
                     return@runTransaction DrainTxOutcome.Tombstoned(
                         reason = "A ficha foi excluída remotamente.",
                         isSheet = true,
@@ -2130,7 +2145,7 @@ class SparkFirestoreSyncEngine(
                 when (target.kind) {
                     TargetKind.SHEET -> {
                         val remoteRev = asLong(remoteRoot?.get("revision")) ?: 0L
-                        if (target.op != TargetOp.CREATE && target.expectedRevision != remoteRev) {
+                        if (target.op != TargetOp.CREATE && target.op != TargetOp.TOMBSTONE && target.expectedRevision != remoteRev) {
                             return@runTransaction DrainTxOutcome.RevisionConflict(
                                 conflicts = listOf(
                                     buildConflict(
