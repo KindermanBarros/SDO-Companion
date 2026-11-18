@@ -1095,6 +1095,62 @@ Ao usar Fio Coagulado, escolha uma das opções:
                 ),
             ),
         ),
+        PathPreset(
+            catalogId = """path.cronista_alvorecer""".trimIndent(),
+            motto = """O que os homens esqueceram continua escrito na sombra das pedras.""".trimIndent(),
+            keywords = listOf("""Vigília""".trimIndent(), """Crônica""".trimIndent(), """Antes-Véu""".trimIndent()),
+            pillars = listOf(
+                """Vozes Sem Dono — Toda ruína anterior à Fratura guarda nomes que ninguém mais ousa pronunciar.""".trimIndent(),
+                """Limiar das Eras — O tempo anterior à contagem atual não morreu; apenas dorme sob camadas de poeira e sonho.""".trimIndent(),
+                """Registro Silencioso — Preservar sinais antigos antes que a ferrugem ou o esquecimento os apague de vez.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Leitura das Eras""".trimIndent(),
+                    effect = """Recebe +2 em testes de Linguística ou História ligados a inscrições, relíquias ou vestígios anteriores à Fratura.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Eco de Essalhen""".trimIndent(),
+                    effect = """Uma vez por cena, ao contemplar um símbolo antigo ou fragmento esquecido, receba +2 no próximo teste de interpretação arcana ou social relacionado a esse vestígio.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Conhecimento / Mistério",
+                ),
+            ),
+        ),
+        PathPreset(
+            catalogId = """path.forjador_bronze_runico""".trimIndent(),
+            motto = """O bronze antigo lembra a forma do que já foi vivo.""".trimIndent(),
+            keywords = listOf("""Bronze""".trimIndent(), """Selo""".trimIndent(), """Persistência""".trimIndent()),
+            pillars = listOf(
+                """Ligas do Alvorecer — As oficinas anteriores ao silêncio uniam metal e sopro como se fossem uma só matéria.""".trimIndent(),
+                """Carne e Latão — Toda prótese ou peça antiga carrega o peso de quem recusou permanecer incompleto.""".trimIndent(),
+                """Têmpera Oculta — A marca certa na superfície do metal mantém sua promessa mesmo séculos depois do artífice.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Engaste da Primeira Era""".trimIndent(),
+                    effect = """Recebe +2 em testes para reparar, adaptar ou compreender próteses de bronze, mecanismos antigos ou gravuras rúnicas gastas.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Têmpera do Sol Esquecido""".trimIndent(),
+                    effect = """Uma vez por cena, ao selar temporariamente uma arma, armadura ou prótese, conceda +2 de Durabilidade ou Proteção à peça até o fim da cena.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    duration = "1 cena",
+                    durationType = com.kinderman.sdo.domain.model.AbilityDuration.SCENE,
+                    limit = "Uma vez por cena",
+                    category = "Ofício / Relíquia",
+                ),
+            ),
+        ),
     )
 
     fun find(catalogId: String): PathPreset? = entries.firstOrNull { it.catalogId == catalogId }

@@ -5,6 +5,14 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## Block 3 — Lore curation & mystic/cryptic pre-Era catalogs (BACKLOG-019, BACKLOG-020)
+
+Status: InDevReview; updated 2026-11-17 20:58 America/La_Paz on `feature/game-modes-and-quick-create` (same PR #153, split into two commits).
+Scope:
+- `BACKLOG-019` (`catalogs/knowledge.json`, `catalogs/materials.json`, `BuiltInCatalog.kt`, `PathPresets.kt`, regenerated Kotlin): removed Silos/campaign-PC/NPC references (`Robert`, `Carlo`, `Fabrizio`, `Xantia`, `Valar`, `Eloah`, `Serabatte`, `Krux`, `Óleo`, `Saphire`, `Damien`, `Estienne`, `Bismarck`) and replaced pre-Era ancestral material names with mystic/cryptic wording while preserving all IDs and mechanics.
+- `BACKLOG-020` (`BuiltInCatalog.kt`, `PathPresets.kt`, `catalogs/powers.json`, `catalogs/magic.json`, `catalogs/runes.json`, `catalogs/ashes.json`, `catalogs/knowledge.json`, `catalogs/items.json`, `tools/generate_catalog.py`, `BuiltInCatalogTest.kt`): added 2 pre-Era paths (`Intérprete do Antes-Véu`, `Artífice do Sol Esquecido`), 2 powers (`Sussurro de Essalhen`, `Presságio do Tempo Sem Contagem`), 1 magic (`Véu das Memórias Submersas`), 1 rune (`Glifo Darno do Limiar`), 3 ash purities (`Cinza de Sol Extinto`), 3 knowledges (`Crônicas do Antes-Véu`, `Epigrafia Darno`, `Postura dos Sete Ecos`), and 2 items (`Astrolábio de Céu Morto`, `Ampulheta de Areia Sem Sombra`) grounded in public world history (`Linha do Tempo.md`, `Nulvara.md`, `Deidades.md`) with mystic/cryptic tone.
+Validation: `generate_catalog.py --check`, `generate_gem_catalog.py --check`, `generate_item_catalog.py --check`, `:app:testDebugUnitTest :app:assembleDebug`.
+
 ## Block 2 — Game Modes (BACKLOG-017, BACKLOG-018) & Path spacing polish
 
 Status: InDevReview; updated 2026-11-17 18:52 America/La_Paz on `feature/game-modes-and-quick-create`.

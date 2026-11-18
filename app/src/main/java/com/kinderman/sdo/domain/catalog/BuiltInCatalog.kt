@@ -32,6 +32,8 @@ object BuiltInCatalog {
         guardia_segredos|Guardiã dos Segredos|Sons do Orgulho|Sigilo, memória e proteção.
         dispariedade|Caminho da Dispariedade|Sons do Orgulho|Contraste, ruptura e identidade.
         sangue_carmesim|Caminho do Sangue Carmesim|Sons do Orgulho|Sangue, sacrifício e legado.
+        cronista_alvorecer|Intérprete do Antes-Véu|Ecos do Passado|Sussurros de eras sepultadas, sinais sem mestre e memórias que a pedra recusou apagar.
+        forjador_bronze_runico|Artífice do Sol Esquecido|Ecos do Passado|Ligas de um alvorecer perdido, membros de bronze que respiram e selos gravados antes do grande silêncio.
     """)
 
     val entries: List<CatalogEntry> = paths + GeneratedCatalogEntries.entries.filter {

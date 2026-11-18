@@ -4556,6 +4556,96 @@
       "deactivationCondition": "Ao final da cena.",
       "sourceDocument": "150 Exemplos de Cinzas",
       "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
+    },
+    {
+      "id": "ash.cinza_do_alvorecer.bruta",
+      "type": "ASH",
+      "name": "Cinza de Sol Extinto",
+      "source": "Luz",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Cone curto diante do usuário",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Clarão pálido de um astro que não figura nos mapas; ofusca criaturas próximas por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Cinza de Sol Extinto",
+        "Luz",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.cinza_do_alvorecer.refinada",
+      "type": "ASH",
+      "name": "Cinza de Sol Extinto",
+      "source": "Luz",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Ilumina inscrições apagadas e revela contornos ocultos por 1 turno, aplicando 1d6 de dano de luz a seres sombrios.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Cinza de Sol Extinto",
+        "Luz",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.cinza_do_alvorecer.pura",
+      "type": "ASH",
+      "name": "Cinza de Sol Extinto",
+      "source": "Luz",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Desfaz neblinas ilusórias, acende vestígios do Antes-Véu e causa 2d6 de dano de luz a entidades sombrias na área.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Cinza de Sol Extinto",
+        "Luz",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
     }
   ]
 }

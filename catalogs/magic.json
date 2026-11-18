@@ -1570,6 +1570,37 @@
       "deactivationCondition": "Após resolver o efeito.",
       "sourceDocument": "50 Exemplos de Magias",
       "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
+    },
+    {
+      "id": "magic.veu_memorias_submersas",
+      "type": "MAGIC",
+      "name": "Véu das Memórias Submersas",
+      "source": "Conhecimento",
+      "knowledge": "Ilusão",
+      "level": 2,
+      "costType": "Arcano",
+      "costValue": 3,
+      "execution": "Ação",
+      "range": "Pessoal",
+      "targetArea": "3 m",
+      "duration": "Cena",
+      "resistance": "Nenhuma",
+      "effect": "Convoca uma bruma prateada que silencia passos e esconde traços recentes como se pertencessem a um sonho já esquecido; +2 em Furtividade na cena.",
+      "prerequisites": [
+        "Ilusão nível 2"
+      ],
+      "keywords": [
+        "Véu das Memórias Submersas",
+        "Ilusão",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md"
     }
   ]
 }

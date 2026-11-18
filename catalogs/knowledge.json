@@ -3442,6 +3442,72 @@
         "Postura"
       ],
       "repeatable": false
+    },
+    {
+      "id": "knowledge.acquired_knowledge.cronologia_das_eras",
+      "type": "ACQUIRED_KNOWLEDGE",
+      "name": "Crônicas do Antes-Véu",
+      "category": "Ciência histórica",
+      "description": "Decifra fragmentos de calendários esquecidos anteriores à contagem atual, onde nomes de reinos já se confundem com mitos.",
+      "attribute": "INT",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "INT mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize INT como Atributo principal em testes especializados de Crônicas do Antes-Véu. Nível inicial 1; não pode ultrapassar o Atributo principal. Decifra fragmentos de calendários esquecidos anteriores à contagem atual, onde nomes de reinos já se confundem com mitos. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Crônicas do Antes-Véu",
+        "Ciência histórica"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.arcane_knowledge.epigrafia_darno",
+      "type": "ARCANE_KNOWLEDGE",
+      "name": "Epigrafia Darno",
+      "category": "Disciplina Arcana",
+      "description": "Lê sinais gravados num alfabeto rúnico pré-planar cujo significado muda conforme quem o pronuncia.",
+      "attribute": "INT",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "INT mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize INT como Atributo principal em testes especializados de Epigrafia Darno. Nível inicial 1; não pode ultrapassar o Atributo principal. Lê sinais gravados num alfabeto rúnico pré-planar cujo significado muda conforme quem o pronuncia. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Epigrafia Darno",
+        "Disciplina Arcana"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.battle_technique.guarda_de_durnkhaz",
+      "type": "BATTLE_TECHNIQUE",
+      "name": "Postura dos Sete Ecos",
+      "category": "Postura",
+      "description": "Forma marcial trazida das montanhas antigas, passada em silêncio entre sentinelas que nunca abandonam o posto.",
+      "attribute": "VIG",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "VIG mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize VIG como Atributo principal em testes especializados de Postura dos Sete Ecos. Nível inicial 1; não pode ultrapassar o Atributo principal. Forma marcial trazida das montanhas antigas, passada em silêncio entre sentinelas que nunca abandonam o posto. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md",
+      "keywords": [
+        "Postura dos Sete Ecos",
+        "Postura"
+      ],
+      "repeatable": false
     }
   ]
 }

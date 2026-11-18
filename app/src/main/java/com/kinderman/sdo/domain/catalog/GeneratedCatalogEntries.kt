@@ -14,7 +14,7 @@ import com.kinderman.sdo.domain.model.AshSource
 import com.kinderman.sdo.domain.model.AshPurity
 
 internal object GeneratedCatalogEntries {
-    val entries: List<CatalogEntry> by lazy { part0() + part1() + part2() + part3() + part4() + part5() + part6() + part7() + part8() + part9() + part10() + part11() + part12() + part13() + part14() + part15() + part16() + part17() + part18() + part19() + part20() + part21() + part22() + part23() + part24() }
+    val entries: List<CatalogEntry> by lazy { part0() + part1() + part2() + part3() + part4() + part5() + part6() + part7() + part8() + part9() + part10() + part11() + part12() + part13() + part14() + part15() + part16() + part17() + part18() + part19() + part20() + part21() + part22() + part23() + part24() + part25() }
     private fun part0(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "power.canal_economico",
@@ -4327,6 +4327,92 @@ internal object GeneratedCatalogEntries {
     )
     private fun part5(): List<CatalogEntry> = listOf(
         CatalogEntry(
+            id = "power.eco_da_fala_primeira",
+            kind = CatalogKind.POWER,
+            name = "Sussurro de Essalhen",
+            group = "Ecos do Antes-Véu",
+            summary = "Uma vez por cena, pronuncie sílabas da fala primeira para receber +2 em testes mentais ou de decifração.",
+            cost = "1 PE",
+            action = "1 ação",
+            range = "Curto",
+            duration = "Instantânea",
+            source = "Ecos do Antes-Véu",
+            version = 4,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Linguística 1 ou vínculo com vestígios antigos"),
+            mechanicalEffect = "Uma vez por cena, receba +2 para interpretar inscrições sem mestre ou sustentar resistência mental diante de memórias antigas.",
+            ruleReference = "03 - Mundo/Linha do Tempo.md",
+            keywords = listOf("Sussurro de Essalhen", "Ecos do Antes-Véu"),
+            repeatable = false,
+            limit = "Uma vez por cena",
+            activationCondition = "Pronuncie um fragmento da fala primeira durante uma ação.",
+            enhancements = "Receba +4 em vez de +2 diante de vestígios anteriores à Fratura.",
+            deactivationCondition = "Após resolver o teste.",
+            abilitySource = AbilitySource.KNOWLEDGE,
+            sourceKnowledge = "Linguística",
+            sourceLevel = 0,
+            abilityCostType = AbilityCostType.ENERGY,
+            abilityCostValue = 1,
+            abilityExecution = AbilityExecution.ACTION,
+            executionValue = 0,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.SHORT,
+            targetArea = "Usuário ou inscrição próxima",
+            abilityDuration = AbilityDuration.INSTANT,
+            durationValue = 1,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.MENTAL,
+        ),
+        CatalogEntry(
+            id = "power.vigilia_da_arvore_da_bruma",
+            kind = CatalogKind.POWER,
+            name = "Presságio do Tempo Sem Contagem",
+            group = "Ecos do Antes-Véu",
+            summary = "Recebe +2 em Sentidos para pressentir anomalias oníricas, névoas antigas ou marcas deixadas antes da Fratura.",
+            cost = "Sem custo",
+            action = "Passiva",
+            range = "Pessoal",
+            duration = "Instantânea",
+            source = "Ecos do Antes-Véu",
+            version = 4,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Histórico ligado a sonhos, neblina ou crônicas antigas"),
+            mechanicalEffect = "Recebe +2 em Sentidos para pressentir alterações oníricas, ecos de sonhos perdidos ou selos anteriores à Fratura.",
+            ruleReference = "03 - Mundo/Linha do Tempo.md",
+            keywords = listOf("Presságio do Tempo Sem Contagem", "Ecos do Antes-Véu"),
+            repeatable = false,
+            limit = "Sem limite adicional",
+            activationCondition = "Sempre ativo ao observar sinais anômalos ou oníricos.",
+            enhancements = "Sem aprimoramento catalogado.",
+            deactivationCondition = "Não aplicável",
+            abilitySource = AbilitySource.HISTORY,
+            sourceKnowledge = "",
+            sourceLevel = 0,
+            abilityCostType = AbilityCostType.ENERGY,
+            abilityCostValue = 0,
+            abilityExecution = AbilityExecution.PASSIVE,
+            executionValue = 0,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.PERSONAL,
+            targetArea = "Usuário",
+            abilityDuration = AbilityDuration.INSTANT,
+            durationValue = 1,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.NONE,
+        ),
+        CatalogEntry(
             id = "magic.faisca_condutora",
             kind = CatalogKind.MAGIC,
             name = "Faísca Condutora",
@@ -5154,6 +5240,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "",
         ),
+    )
+    private fun part6(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "magic.leitura_vestigio",
             kind = CatalogKind.MAGIC,
@@ -5246,8 +5334,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "",
         ),
-    )
-    private fun part6(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "magic.sopro_vetorial",
             kind = CatalogKind.MAGIC,
@@ -6076,6 +6162,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "",
         ),
+    )
+    private fun part7(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "magic.desvio_magnetico",
             kind = CatalogKind.MAGIC,
@@ -6168,8 +6256,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "",
         ),
-    )
-    private fun part7(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "magic.olhos_adaptados",
             kind = CatalogKind.MAGIC,
@@ -6631,6 +6717,52 @@ internal object GeneratedCatalogEntries {
             runePackage = "",
         ),
         CatalogEntry(
+            id = "magic.veu_memorias_submersas",
+            kind = CatalogKind.MAGIC,
+            name = "Véu das Memórias Submersas",
+            group = "Ilusão 2",
+            summary = "Convoca uma bruma prateada que silencia passos e esconde traços recentes como se pertencessem a um sonho já esquecido; +2 em Furtividade na cena.",
+            cost = "Arcano — 3",
+            action = "Ação",
+            range = "Pessoal",
+            duration = "Cena",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Ilusão nível 2"),
+            mechanicalEffect = "Convoca uma bruma prateada que silencia passos e esconde traços recentes como se pertencessem a um sonho já esquecido; +2 em Furtividade na cena.",
+            ruleReference = "03 - Mundo/Nulvara.md",
+            keywords = listOf("Véu das Memórias Submersas", "Ilusão", "Nível 2", "Magia"),
+            repeatable = false,
+            limit = "Sem limite adicional.",
+            activationCondition = "Executar como ação e gastar 3 ponto(s) de Arcano.",
+            enhancements = "Nenhum aprimoramento catalogado.",
+            deactivationCondition = "Ao final da cena.",
+            abilitySource = AbilitySource.KNOWLEDGE,
+            sourceKnowledge = "Ilusão",
+            sourceLevel = 2,
+            abilityCostType = AbilityCostType.ARCANE,
+            abilityCostValue = 3,
+            abilityExecution = AbilityExecution.ACTION,
+            executionValue = 0,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.PERSONAL,
+            targetArea = "3 m",
+            abilityDuration = AbilityDuration.SCENE,
+            durationValue = 0,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.NONE,
+            catalogAshSource = null,
+            catalogAshPurity = null,
+            runePackage = "",
+        ),
+        CatalogEntry(
             id = "ash.brasa_rubra.bruta",
             kind = CatalogKind.ASH,
             name = "Brasa Rubra",
@@ -6952,6 +7084,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.RAW,
             runePackage = "",
         ),
+    )
+    private fun part8(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.sol_engarrafado.refinada",
             kind = CatalogKind.ASH,
@@ -7090,8 +7224,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.RAW,
             runePackage = "",
         ),
-    )
-    private fun part8(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.estopim_cinzento.refinada",
             kind = CatalogKind.ASH,
@@ -7874,6 +8006,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.PURE,
             runePackage = "",
         ),
+    )
+    private fun part9(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.passo_sem_pegadas.bruta",
             kind = CatalogKind.ASH,
@@ -8012,8 +8146,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.PURE,
             runePackage = "",
         ),
-    )
-    private fun part9(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.po_restaurador.bruta",
             kind = CatalogKind.ASH,
@@ -8796,6 +8928,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.REFINED,
             runePackage = "",
         ),
+    )
+    private fun part10(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.veu_translucido.pura",
             kind = CatalogKind.ASH,
@@ -8934,8 +9068,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.REFINED,
             runePackage = "",
         ),
-    )
-    private fun part10(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.eco_emprestado.pura",
             kind = CatalogKind.ASH,
@@ -9718,6 +9850,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.RAW,
             runePackage = "",
         ),
+    )
+    private fun part11(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.veneno_da_sombra.refinada",
             kind = CatalogKind.ASH,
@@ -9856,8 +9990,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.RAW,
             runePackage = "",
         ),
-    )
-    private fun part11(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.passagem_muda.refinada",
             kind = CatalogKind.ASH,
@@ -10640,6 +10772,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.PURE,
             runePackage = "",
         ),
+    )
+    private fun part12(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.passo_de_nevoa.bruta",
             kind = CatalogKind.ASH,
@@ -10778,8 +10912,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.PURE,
             runePackage = "",
         ),
-    )
-    private fun part12(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.ferrugem_faminta.bruta",
             kind = CatalogKind.ASH,
@@ -11562,6 +11694,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.REFINED,
             runePackage = "",
         ),
+    )
+    private fun part13(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.areia_ascendente.pura",
             kind = CatalogKind.ASH,
@@ -11700,8 +11834,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.REFINED,
             runePackage = "",
         ),
-    )
-    private fun part13(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.pulmao_de_tempestade.pura",
             kind = CatalogKind.ASH,
@@ -12484,6 +12616,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.RAW,
             runePackage = "",
         ),
+    )
+    private fun part14(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.pele_de_cascalho.refinada",
             kind = CatalogKind.ASH,
@@ -12622,8 +12756,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.RAW,
             runePackage = "",
         ),
-    )
-    private fun part14(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.cristal_de_eco.refinada",
             kind = CatalogKind.ASH,
@@ -13406,6 +13538,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.PURE,
             runePackage = "",
         ),
+    )
+    private fun part15(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "ash.circuito_fantasma.bruta",
             kind = CatalogKind.ASH,
@@ -13544,8 +13678,144 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = AshPurity.PURE,
             runePackage = "",
         ),
-    )
-    private fun part15(): List<CatalogEntry> = listOf(
+        CatalogEntry(
+            id = "ash.cinza_do_alvorecer.bruta",
+            kind = CatalogKind.ASH,
+            name = "Cinza de Sol Extinto",
+            group = "Luz / Bruta",
+            summary = "Clarão pálido de um astro que não figura nos mapas; ofusca criaturas próximas por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+            cost = "Dose — 1",
+            action = "Ação",
+            range = "Curto",
+            duration = "Instantânea",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Dose de Cinza Bruta"),
+            mechanicalEffect = "Clarão pálido de um astro que não figura nos mapas; ofusca criaturas próximas por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+            ruleReference = "03 - Mundo/Linha do Tempo.md",
+            keywords = listOf("Cinza de Sol Extinto", "Luz", "Bruta", "Cinza"),
+            repeatable = false,
+            limit = "Sem limite adicional.",
+            activationCondition = "Consumir 1 dose(s) como ação.",
+            enhancements = "Nenhum aprimoramento catalogado.",
+            deactivationCondition = "Após resolver o efeito.",
+            abilitySource = null,
+            sourceKnowledge = "",
+            sourceLevel = null,
+            abilityCostType = AbilityCostType.DOSE,
+            abilityCostValue = 1,
+            abilityExecution = AbilityExecution.ACTION,
+            executionValue = 0,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.SHORT,
+            targetArea = "Cone curto diante do usuário",
+            abilityDuration = AbilityDuration.INSTANT,
+            durationValue = 0,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.ARCANE,
+            catalogAshSource = AshSource.LIGHT,
+            catalogAshPurity = AshPurity.RAW,
+            runePackage = "",
+        ),
+        CatalogEntry(
+            id = "ash.cinza_do_alvorecer.refinada",
+            kind = CatalogKind.ASH,
+            name = "Cinza de Sol Extinto",
+            group = "Luz / Refinada",
+            summary = "Ilumina inscrições apagadas e revela contornos ocultos por 1 turno, aplicando 1d6 de dano de luz a seres sombrios.",
+            cost = "Dose — 1",
+            action = "Ação",
+            range = "Curto",
+            duration = "Instantânea",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Dose de Cinza Refinada"),
+            mechanicalEffect = "Ilumina inscrições apagadas e revela contornos ocultos por 1 turno, aplicando 1d6 de dano de luz a seres sombrios.",
+            ruleReference = "03 - Mundo/Linha do Tempo.md",
+            keywords = listOf("Cinza de Sol Extinto", "Luz", "Refinada", "Cinza"),
+            repeatable = false,
+            limit = "Sem limite adicional.",
+            activationCondition = "Consumir 1 dose(s) como ação.",
+            enhancements = "Nenhum aprimoramento catalogado.",
+            deactivationCondition = "Após resolver o efeito.",
+            abilitySource = null,
+            sourceKnowledge = "",
+            sourceLevel = null,
+            abilityCostType = AbilityCostType.DOSE,
+            abilityCostValue = 1,
+            abilityExecution = AbilityExecution.ACTION,
+            executionValue = 0,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.SHORT,
+            targetArea = "Esfera de 4 m",
+            abilityDuration = AbilityDuration.INSTANT,
+            durationValue = 0,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.ARCANE,
+            catalogAshSource = AshSource.LIGHT,
+            catalogAshPurity = AshPurity.REFINED,
+            runePackage = "",
+        ),
+        CatalogEntry(
+            id = "ash.cinza_do_alvorecer.pura",
+            kind = CatalogKind.ASH,
+            name = "Cinza de Sol Extinto",
+            group = "Luz / Pura",
+            summary = "Desfaz neblinas ilusórias, acende vestígios do Antes-Véu e causa 2d6 de dano de luz a entidades sombrias na área.",
+            cost = "Dose — 1",
+            action = "Ação",
+            range = "Curto",
+            duration = "Instantânea",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Dose de Cinza Pura"),
+            mechanicalEffect = "Desfaz neblinas ilusórias, acende vestígios do Antes-Véu e causa 2d6 de dano de luz a entidades sombrias na área.",
+            ruleReference = "03 - Mundo/Linha do Tempo.md",
+            keywords = listOf("Cinza de Sol Extinto", "Luz", "Pura", "Cinza"),
+            repeatable = false,
+            limit = "Sem limite adicional.",
+            activationCondition = "Consumir 1 dose(s) como ação.",
+            enhancements = "Nenhum aprimoramento catalogado.",
+            deactivationCondition = "Após resolver o efeito.",
+            abilitySource = null,
+            sourceKnowledge = "",
+            sourceLevel = null,
+            abilityCostType = AbilityCostType.DOSE,
+            abilityCostValue = 1,
+            abilityExecution = AbilityExecution.ACTION,
+            executionValue = 0,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.SHORT,
+            targetArea = "Esfera de 6 m",
+            abilityDuration = AbilityDuration.INSTANT,
+            durationValue = 0,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.ARCANE,
+            catalogAshSource = AshSource.LIGHT,
+            catalogAshPurity = AshPurity.PURE,
+            runePackage = "",
+        ),
         CatalogEntry(
             id = "rune.aquecimento",
             kind = CatalogKind.RUNE,
@@ -14190,6 +14460,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "Runas Intermediárias",
         ),
+    )
+    private fun part16(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "rune.camara_invernal",
             kind = CatalogKind.RUNE,
@@ -14466,8 +14738,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "Runas Avançadas",
         ),
-    )
-    private fun part16(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "rune.passos_silenciosos",
             kind = CatalogKind.RUNE,
@@ -15112,6 +15382,8 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "",
         ),
+    )
+    private fun part17(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "rune.arsenal_vinculado",
             kind = CatalogKind.RUNE,
@@ -15388,8 +15660,6 @@ internal object GeneratedCatalogEntries {
             catalogAshPurity = null,
             runePackage = "",
         ),
-    )
-    private fun part17(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "rune.ancora_onirica",
             kind = CatalogKind.RUNE,
@@ -15851,6 +16121,52 @@ internal object GeneratedCatalogEntries {
             runePackage = "",
         ),
         CatalogEntry(
+            id = "rune.selo_darno_de_ancoragem",
+            kind = CatalogKind.RUNE,
+            name = "Glifo Darno do Limiar",
+            group = "Nível 2",
+            summary = "Traço antigo de um alfabeto que antecede as estradas atuais; concede +2 em Proteção Arcana contra efeitos que tentem deslocar ou romper o corpo.",
+            cost = "Arcano — 3",
+            action = "Tempo — 10 Minutos",
+            range = "Pessoal",
+            duration = "Cena",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "",
+            initialValue = null,
+            prerequisites = listOf("Rúnico nível 2"),
+            mechanicalEffect = "Traço antigo de um alfabeto que antecede as estradas atuais; concede +2 em Proteção Arcana contra efeitos que tentem deslocar ou romper o corpo.",
+            ruleReference = "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+            keywords = listOf("Glifo Darno do Limiar", "Rúnico", "Nível 2", "Runa"),
+            repeatable = false,
+            limit = "Sem limite adicional.",
+            activationCondition = "Preparar por 10 minutos e gastar 3 ponto(s) de Arcano.",
+            enhancements = "Nenhum aprimoramento catalogado.",
+            deactivationCondition = "Ao final da cena.",
+            abilitySource = AbilitySource.KNOWLEDGE,
+            sourceKnowledge = "Rúnico",
+            sourceLevel = 2,
+            abilityCostType = AbilityCostType.ARCANE,
+            abilityCostValue = 3,
+            abilityExecution = AbilityExecution.TIME,
+            executionValue = 10,
+            executionUnit = AbilityTimeUnit.MINUTES,
+            abilityRange = AbilityRange.PERSONAL,
+            targetArea = "Armadura ou escudo; toque",
+            abilityDuration = AbilityDuration.SCENE,
+            durationValue = 0,
+            durationUnit = AbilityTimeUnit.HOURS,
+            abilityResistance = AbilityResistance.ARCANE,
+            catalogAshSource = null,
+            catalogAshPurity = null,
+            runePackage = "",
+        ),
+        CatalogEntry(
             id = "knowledge.acquired.engenhocaria",
             kind = CatalogKind.ACQUIRED_KNOWLEDGE,
             name = "Engenhocaria",
@@ -15937,6 +16253,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part18(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.acquired.degustacao",
             kind = CatalogKind.ACQUIRED_KNOWLEDGE,
@@ -16140,8 +16458,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part18(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.technique.laminas_gemeas",
             kind = CatalogKind.BATTLE_TECHNIQUE,
@@ -16519,6 +16835,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part19(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.acquired_knowledge.geologia",
             kind = CatalogKind.ACQUIRED_KNOWLEDGE,
@@ -16722,8 +17040,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part19(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.acquired_knowledge.engenharia_kaltoch",
             kind = CatalogKind.ACQUIRED_KNOWLEDGE,
@@ -17101,6 +17417,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part20(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.acquired_knowledge.marcenaria",
             kind = CatalogKind.ACQUIRED_KNOWLEDGE,
@@ -17304,8 +17622,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part20(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.acquired_knowledge.oratoria",
             kind = CatalogKind.ACQUIRED_KNOWLEDGE,
@@ -17683,6 +17999,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part21(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.arcane_knowledge.litomancia",
             kind = CatalogKind.ARCANE_KNOWLEDGE,
@@ -17886,8 +18204,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part21(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.arcane_knowledge.criomancia",
             kind = CatalogKind.ARCANE_KNOWLEDGE,
@@ -18265,6 +18581,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part22(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.arcane_knowledge.metamancia",
             kind = CatalogKind.ARCANE_KNOWLEDGE,
@@ -18468,8 +18786,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part22(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.arcane_knowledge.sintaxe_runica",
             kind = CatalogKind.ARCANE_KNOWLEDGE,
@@ -18847,6 +19163,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part23(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.battle_technique.contra_ataque",
             kind = CatalogKind.BATTLE_TECHNIQUE,
@@ -19050,8 +19368,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part23(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.battle_technique.arco_marevon",
             kind = CatalogKind.BATTLE_TECHNIQUE,
@@ -19429,6 +19745,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part24(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.battle_technique.investida",
             kind = CatalogKind.BATTLE_TECHNIQUE,
@@ -19632,8 +19950,6 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
-    )
-    private fun part24(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.battle_technique.provocacao",
             kind = CatalogKind.BATTLE_TECHNIQUE,
@@ -20011,6 +20327,8 @@ internal object GeneratedCatalogEntries {
             enhancements = "",
             deactivationCondition = "",
         ),
+    )
+    private fun part25(): List<CatalogEntry> = listOf(
         CatalogEntry(
             id = "knowledge.battle_technique.resistencia_dor",
             kind = CatalogKind.BATTLE_TECHNIQUE,
@@ -20208,6 +20526,93 @@ internal object GeneratedCatalogEntries {
             mechanicalEffect = "Utilize VIG como Atributo principal em testes especializados de Último Bastião. Nível inicial 1; não pode ultrapassar o Atributo principal. Sustenta passagem estreita quando recuar destruiria o grupo. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
             ruleReference = "03 - Regras/Combate.md",
             keywords = listOf("Último Bastião", "Postura"),
+            repeatable = false,
+            limit = "",
+            activationCondition = "",
+            enhancements = "",
+            deactivationCondition = "",
+        ),
+        CatalogEntry(
+            id = "knowledge.acquired_knowledge.cronologia_das_eras",
+            kind = CatalogKind.ACQUIRED_KNOWLEDGE,
+            name = "Crônicas do Antes-Véu",
+            group = "Ciência histórica",
+            summary = "Decifra fragmentos de calendários esquecidos anteriores à contagem atual, onde nomes de reinos já se confundem com mitos.",
+            cost = "",
+            action = "",
+            range = "",
+            duration = "",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "INT",
+            initialValue = 1,
+            prerequisites = listOf("INT mínimo 1", "Conceito, treinamento ou fonte narrativa compatível"),
+            mechanicalEffect = "Utilize INT como Atributo principal em testes especializados de Crônicas do Antes-Véu. Nível inicial 1; não pode ultrapassar o Atributo principal. Decifra fragmentos de calendários esquecidos anteriores à contagem atual, onde nomes de reinos já se confundem com mitos. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+            ruleReference = "03 - Mundo/Linha do Tempo.md",
+            keywords = listOf("Crônicas do Antes-Véu", "Ciência histórica"),
+            repeatable = false,
+            limit = "",
+            activationCondition = "",
+            enhancements = "",
+            deactivationCondition = "",
+        ),
+        CatalogEntry(
+            id = "knowledge.arcane_knowledge.epigrafia_darno",
+            kind = CatalogKind.ARCANE_KNOWLEDGE,
+            name = "Epigrafia Darno",
+            group = "Disciplina Arcana",
+            summary = "Lê sinais gravados num alfabeto rúnico pré-planar cujo significado muda conforme quem o pronuncia.",
+            cost = "",
+            action = "",
+            range = "",
+            duration = "",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "INT",
+            initialValue = 1,
+            prerequisites = listOf("INT mínimo 1", "Conceito, treinamento ou fonte narrativa compatível"),
+            mechanicalEffect = "Utilize INT como Atributo principal em testes especializados de Epigrafia Darno. Nível inicial 1; não pode ultrapassar o Atributo principal. Lê sinais gravados num alfabeto rúnico pré-planar cujo significado muda conforme quem o pronuncia. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+            ruleReference = "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+            keywords = listOf("Epigrafia Darno", "Disciplina Arcana"),
+            repeatable = false,
+            limit = "",
+            activationCondition = "",
+            enhancements = "",
+            deactivationCondition = "",
+        ),
+        CatalogEntry(
+            id = "knowledge.battle_technique.guarda_de_durnkhaz",
+            kind = CatalogKind.BATTLE_TECHNIQUE,
+            name = "Postura dos Sete Ecos",
+            group = "Postura",
+            summary = "Forma marcial trazida das montanhas antigas, passada em silêncio entre sentinelas que nunca abandonam o posto.",
+            cost = "",
+            action = "",
+            range = "",
+            duration = "",
+            source = "Ecos do Antes-Véu",
+            version = 5,
+            creationCost = "",
+            price = 0,
+            load = 0,
+            durability = "",
+            region = "",
+            relatedAttribute = "VIG",
+            initialValue = 1,
+            prerequisites = listOf("VIG mínimo 1", "Conceito, treinamento ou fonte narrativa compatível"),
+            mechanicalEffect = "Utilize VIG como Atributo principal em testes especializados de Postura dos Sete Ecos. Nível inicial 1; não pode ultrapassar o Atributo principal. Forma marcial trazida das montanhas antigas, passada em silêncio entre sentinelas que nunca abandonam o posto. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+            ruleReference = "03 - Mundo/Nulvara.md",
+            keywords = listOf("Postura dos Sete Ecos", "Postura"),
             repeatable = false,
             limit = "",
             activationCondition = "",

@@ -1679,6 +1679,39 @@
       "deactivationCondition": "Após 1 turno(s).",
       "sourceDocument": "50 Exemplos de Runas",
       "ruleReference": "03 - Regras/Magia/50 Exemplos de Runas.md"
+    },
+    {
+      "id": "rune.selo_darno_de_ancoragem",
+      "type": "RUNE",
+      "name": "Glifo Darno do Limiar",
+      "source": "Conhecimento",
+      "knowledge": "Rúnico",
+      "level": 2,
+      "costType": "Arcano",
+      "costValue": 3,
+      "execution": "Tempo",
+      "executionValue": 10,
+      "executionUnit": "Minutos",
+      "range": "Pessoal",
+      "targetArea": "Armadura ou escudo; toque",
+      "duration": "Cena",
+      "resistance": "Arcana",
+      "effect": "Traço antigo de um alfabeto que antecede as estradas atuais; concede +2 em Proteção Arcana contra efeitos que tentem deslocar ou romper o corpo.",
+      "prerequisites": [
+        "Rúnico nível 2"
+      ],
+      "keywords": [
+        "Glifo Darno do Limiar",
+        "Rúnico",
+        "Nível 2",
+        "Runa"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Preparar por 10 minutos e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md"
     }
   ]
 }
