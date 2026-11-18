@@ -15,7 +15,7 @@ object BuiltInCatalog {
 
     private val paths = rows(CatalogKind.PATH, "Catálogos canônicos de Caminhos", """
         engrenagens|Caminho das Engrenagens|Solidão dos Oprimidos|Reparar, criação e perseverança.
-        personagem|Caminho do Personagem|Solidão dos Oprimidos|Caminho pessoal de Robert Julian Dobber.
+        personagem|Caminho do Personagem|Solidão dos Oprimidos|Interpretação, narrativa e protagonismo dramático.
         necrocamminus|Necrocamminus|Solidão dos Oprimidos|Morte, travessia e transformação.
         herdeiro_ruinas|Herdeiro das Ruínas|Solidão dos Oprimidos|Relíquias, legado e exploração.
         la_befana|Caminho da La Befana|Solidão dos Oprimidos|Culinária, cuidado e tradição.

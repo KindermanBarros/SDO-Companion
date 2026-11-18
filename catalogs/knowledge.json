@@ -274,7 +274,7 @@
       "type": "ACQUIRED_KNOWLEDGE",
       "name": "Arqueologia",
       "category": "Ciência histórica",
-      "description": "Escava ruínas dos Silos e distingue camadas anteriores à Tragédia Planar.",
+      "description": "Escava vestígios sepultados sob Nulvara e lê, nas camadas de pedra e silêncio, cicatrizes anteriores à Tragédia Planar.",
       "attribute": "INT",
       "initialLevel": 1,
       "maxLevel": 5,
@@ -283,7 +283,7 @@
         "INT mínimo 1",
         "Conceito, treinamento ou fonte narrativa compatível"
       ],
-      "effect": "Utilize INT como Atributo principal em testes especializados de Arqueologia. Nível inicial 1; não pode ultrapassar o Atributo principal. Escava ruínas dos Silos e distingue camadas anteriores à Tragédia Planar. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "effect": "Utilize INT como Atributo principal em testes especializados de Arqueologia. Nível inicial 1; não pode ultrapassar o Atributo principal. Escava vestígios sepultados sob Nulvara e lê, nas camadas de pedra e silêncio, cicatrizes anteriores à Tragédia Planar. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Catálogo canônico de Conhecimentos de Nulvara",
       "ruleReference": "03 - Regras/Criação de Personagem/Criação de Personagem.md",
       "keywords": [
@@ -573,7 +573,7 @@
       "type": "ACQUIRED_KNOWLEDGE",
       "name": "História de Nulvara",
       "category": "Humanidades",
-      "description": "Relaciona impérios, migrações e cicatrizes deixadas pela Tragédia Planar.",
+      "description": "Relaciona impérios desfeitos, migrações sem retorno e os sussurros deixados pela Tragédia Planar.",
       "attribute": "INT",
       "initialLevel": 1,
       "maxLevel": 5,
@@ -582,7 +582,7 @@
         "INT mínimo 1",
         "Conceito, treinamento ou fonte narrativa compatível"
       ],
-      "effect": "Utilize INT como Atributo principal em testes especializados de História de Nulvara. Nível inicial 1; não pode ultrapassar o Atributo principal. Relaciona impérios, migrações e cicatrizes deixadas pela Tragédia Planar. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "effect": "Utilize INT como Atributo principal em testes especializados de História de Nulvara. Nível inicial 1; não pode ultrapassar o Atributo principal. Relaciona impérios desfeitos, migrações sem retorno e os sussurros deixados pela Tragédia Planar. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Catálogo canônico de Conhecimentos de Nulvara",
       "ruleReference": "03 - Regras/Criação de Personagem/Criação de Personagem.md",
       "keywords": [

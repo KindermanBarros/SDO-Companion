@@ -98,9 +98,9 @@ Observação: a segunda parte foi preservada como está na ficha; “falha nessa
             motto = """A morte não fala, ela sussurra.""".trimIndent(),
             keywords = listOf("""Silêncio""".trimIndent(), """Morte""".trimIndent(), """Empatia""".trimIndent()),
             pillars = listOf(
-                """Descanso — Descrição ainda não preenchida.""".trimIndent(),
-                """Compaixão — Descrição ainda não preenchida.""".trimIndent(),
-                """Ritos — Descrição ainda não preenchida.""".trimIndent(),
+                """Descanso — Guiar os mortos para que encontrem paz além do véu.""".trimIndent(),
+                """Compaixão — Ouvir o que os vivos ignoram e tratar a passagem com respeito.""".trimIndent(),
+                """Ritos — Preservar os rituais ancestrais de travessia e despedida.""".trimIndent(),
             ),
             powers = listOf(
                 PathPower(
@@ -116,7 +116,7 @@ Observação: a segunda parte foi preservada como está na ficha; “falha nessa
                     name = """Instrumentos do Ofício""".trimIndent(),
                     effect = """Você inicia com uma arma de truque que se torna um instrumento de sua escolha.
 
-Na ficha, o equipamento relacionado registrado é Tripidante, com 1d10 de dano e forma Pá — Instrumento.""".trimIndent(),
+Exemplos comuns incluem pá ritual, lanterna de guia ou cajado funerário.""".trimIndent(),
                 ),
             ),
         ),
@@ -126,7 +126,7 @@ Na ficha, o equipamento relacionado registrado é Tripidante, com 1d10 de dano e
             keywords = listOf("""História""".trimIndent(), """Memória""".trimIndent(), """Legado""".trimIndent()),
             pillars = listOf(
                 """As Pedras Lembram — As ruínas preservam a memória dos impérios que o tempo tentou apagar. Cada pedra, símbolo e vestígio guarda uma história esperando para ser redescoberta.""".trimIndent(),
-                """Ecos do Passado — Toda relíquia carrega o legado de quem a criou. Valar acredita que esses vestígios devem ser compreendidos e preservados, nunca tratados como simples espólios.""".trimIndent(),
+                """Ecos do Passado — Toda relíquia carrega o legado de quem a criou. O herdeiro acredita que esses vestígios devem ser compreendidos e preservados, nunca tratados como simples espólios.""".trimIndent(),
                 """Conhecimento é Poder — O maior tesouro não é o ouro, mas o conhecimento. Cada descoberta fortalece a compreensão do passado e revela caminhos para o futuro.""".trimIndent(),
             ),
             powers = listOf(
@@ -156,26 +156,26 @@ O poder não pode ser usado no mesmo objeto ou local mais de uma vez por dia."""
             pillars = listOf(
                 """Vingança — "A melhor vingança é a indiferença."
 
-Carlo passou grande parte da vida sendo definido por aqueles que o aprisionaram,
+O praticante passou grande parte da vida sendo definido por aqueles que o aprisionaram,
 transformaram e exploraram.
 
 Sua vingança não é necessariamente destruir todos que lhe fizeram mal, mas
 construir uma vida que eles não conseguiram tirar dele.
 
-Viver bem, tornar-se alguém e carregar Fabrizio consigo é uma forma de negar
+Viver bem, tornar-se alguém e carregar a memória de um ente querido consigo é uma forma de negar
 aos seus opressores a vitória final.""".trimIndent(),
-                """Cozinhar — "Cozinhar é relembrar. Enquanto eu cozinhar, Fabrizio não morre em minha memória."
+                """Cozinhar — "Cozinhar é relembrar. Enquanto eu cozinhar, quem amo não morre em minha memória."
 
-A culinária começou com Fabrizio, tornou-se uma ferramenta de sobrevivência
+A culinária começou com um ente querido, tornou-se uma ferramenta de sobrevivência
 e vingança nas minas e finalmente se transformou em propósito através dos
-ensinamentos de Xantia.
+ensinamentos de antigos mestres.
 
-Carlo aprende o mundo através da comida.
+O cozinheiro aprende o mundo através da comida.
 
 Novos ingredientes, técnicas e receitas são também novas histórias.""".trimIndent(),
-                """Felicidade — "Se existe alguma para mim nesse mundo, vou procurar em todo lugar — e, quando encontrá-la, vou dividi-la como uma bela Carbonara."
+                """Felicidade — "Se existe alguma para mim nesse mundo, vou procurar em todo lugar — e, quando encontrá-la, vou dividi-la como uma boa refeição."
 
-Carlo passou grande parte da vida apenas sobrevivendo.
+O praticante passou grande parte da vida apenas sobrevivendo.
 
 Agora procura experiências, pessoas, sabores e lugares capazes de mostrar que
 existir pode significar mais do que simplesmente continuar respirando.
@@ -187,7 +187,7 @@ Ele quer aprender a compartilhá-la.""".trimIndent(),
             powers = listOf(
                 PathPower(
                     name = """Ingrediente Secreto""".trimIndent(),
-                    effect = """Carlo aprendeu que ingredientes carregam propriedades que vão além de sabor e
+                    effect = """Você aprendeu que ingredientes carregam propriedades que vão além de sabor e
 valor nutricional.
 
 Características marcantes de animais, monstros, plantas, fungos e outros
@@ -196,13 +196,13 @@ corretamente.
 
 Analisar Ingrediente
 
-Ao encontrar um ingrediente incomum, Carlo pode examiná-lo utilizando:
+Ao encontrar um ingrediente incomum, você pode examiná-lo utilizando:
 
 INT + Degustação
 
 O Mestre define a dificuldade conforme a raridade e complexidade do ingrediente.
 
-Em caso de sucesso, Carlo identifica uma Propriedade Culinária coerente com
+Em caso de sucesso, você identifica uma Propriedade Culinária coerente com
 a natureza do ingrediente.
 
 Exemplos:
@@ -220,7 +220,7 @@ A propriedade precisa existir ou ser claramente representada pelo ingrediente.
 
 Extrair Propriedade
 
-Ao preparar uma refeição utilizando um ingrediente analisado, Carlo pode realizar um teste de:
+Ao preparar uma refeição utilizando um ingrediente analisado, você pode realizar um teste de:
 
 INT + Culinária
 
@@ -232,7 +232,7 @@ Até o final da próxima cena relevante, ela recebe:
 
 Exemplo:
 
-Carlo prepara carne de uma criatura conhecida por sua visão excepcional.
+O cozinheiro prepara carne de uma criatura conhecida por sua visão excepcional.
 
 A propriedade identificada é Percepção.
 
@@ -244,8 +244,7 @@ Limites
 • apenas 1 Propriedade Culinária pode ser extraída por prato;
 • uma criatura só pode possuir 1 efeito de Ingrediente Secreto ativo;
 • o poder não copia literalmente Poderes Raciais, magias ou habilidades completas;
-• ele traduz uma característica do ingrediente em um benefício culinário limitado.
-•""".trimIndent(),
+• ele traduz uma característica do ingrediente em um benefício culinário limitado.""".trimIndent(),
                     cost = "2 PE",
                     costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
                     costValue = 2,
@@ -255,14 +254,14 @@ Limites
                 ),
                 PathPower(
                     name = """Prato Favorito""".trimIndent(),
-                    effect = """Xantia ensinou Carlo que conhecer ingredientes não é suficiente.
+                    effect = """Antigos mestres ensinaram que conhecer ingredientes não é suficiente.
 
 Uma refeição pode carregar lembranças, conforto e significado.
 
-Carlo precisa conhecer o prato favorito da pessoa e possuir ingredientes
+Você precisa conhecer o prato favorito da pessoa e possuir ingredientes
 razoavelmente adequados para prepará-lo.
 
-Durante um descanso ou período seguro, Carlo pode preparar esse prato.
+Durante um descanso ou período seguro, você pode preparar esse prato.
 
 A criatura que consumir a refeição:
 
@@ -276,9 +275,9 @@ Uma criatura só pode receber os benefícios de Prato Favorito uma vez por dia.
 
 Descobrindo um Prato Favorito
 
-Carlo não pode simplesmente declarar qual é o prato favorito de outra pessoa.
+Você não pode simplesmente declarar qual é o prato favorito de outra pessoa.
 
-Ele precisa descobrir isso através de:
+Você precisa descobrir isso através de:
 
 • conversa;
 • convivência;
@@ -289,15 +288,15 @@ Ele precisa descobrir isso através de:
 
 Isso transforma conhecer os outros em parte do próprio Caminho.
 
-A Carbonara de Fabrizio
+Receita de Memória
 
-A Carbonara possui significado especial para Carlo.
+Uma receita especial possui significado único para o praticante.
 
-Quando Carlo prepara Carbonara para si mesmo, ela conta automaticamente como
+Quando você prepara sua Receita de Memória para si mesmo, ela conta automaticamente como
 seu Prato Favorito.
 
-Quando a prepara para alguém que conheça a história de Fabrizio e compartilhe
-a refeição com Carlo, ela também pode ser tratada como Prato Favorito daquela
+Quando a prepara para alguém que conheça a história por trás dela e compartilhe
+a refeição com você, ela também pode ser tratada como Prato Favorito daquela
 pessoa caso exista uma ligação emocional construída em jogo.""".trimIndent(),
                     cost = "2 PE",
                     costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
@@ -371,7 +370,7 @@ O poder pode ser usado duas vezes por cena, mas nunca duas vezes no mesmo teste.
             keywords = listOf("""Justiça""".trimIndent(), """Remissão""".trimIndent(), """Punição""".trimIndent()),
             pillars = listOf(
                 """Justiça — A força deve ser usada para impedir que inocentes sejam abandonados diante da violência.""".trimIndent(),
-                """Remissão — Bismarck busca compensar os próprios pecados através de proteção, disciplina e serviço.""".trimIndent(),
+                """Remissão — O justiceiro busca compensar os próprios pecados através de proteção, disciplina e serviço.""".trimIndent(),
                 """Punição — Quem insiste em oprimir os fracos deve enfrentar consequências.""".trimIndent(),
             ),
             powers = listOf(
@@ -433,7 +432,7 @@ A duração passa até o final do seu próximo turno.""".trimIndent(),
             motto = """Da mais densa escuridão, surgirá a mais brilhante luz.""".trimIndent(),
             keywords = listOf("""Laços""".trimIndent(), """Reparação""".trimIndent(), """Salvação""".trimIndent()),
             pillars = listOf(
-                """Devo Criar Laços — Robert decidiu deixar de existir isoladamente e construir relações verdadeiras com aqueles ao seu redor.""".trimIndent(),
+                """Devo Criar Laços — O penitente decidiu deixar de existir isoladamente e construir relações verdadeiras com aqueles ao seu redor.""".trimIndent(),
                 """Vou me Redimir — Depois de ter ferido pessoas por egoísmo e violência, busca compensar o dano que causou.""".trimIndent(),
                 """Irei Salvar — Habilidades antes usadas para caçar e matar agora devem servir para preservar vidas.""".trimIndent(),
             ),
@@ -472,7 +471,7 @@ Quando obtiver sucesso usando o bônus de +4, pode também determinar uma inform
             pillars = listOf(
                 """Sabor da Vida — Conhecimento torna a existência mais interessante. Passado e presente ajudam a compreender aquilo que ainda está por vir.""".trimIndent(),
                 """Admiração Infantil — Aquilo que parece simples ainda pode esconder algo novo, estranho ou divertido quando observado sem preconceitos.""".trimIndent(),
-                """Exploração — A ficha não apresenta um terceiro Pilar formalmente nomeado, mas suas situações de favorecimento enfatizam desmontar tecnologia, explorar ambientes e compreender conceitos desconhecidos.""".trimIndent(),
+                """Exploração — Desmontar tecnologia, explorar ambientes e compreender conceitos desconhecidos movem cada descoberta.""".trimIndent(),
             ),
             powers = listOf(
                 PathPower(
@@ -485,7 +484,7 @@ Quando obtiver sucesso usando o bônus de +4, pode também determinar uma inform
 • desmontar;
 • interpretar;
 
-algo que Eloah nunca tenha encontrado antes, receba:
+algo que você nunca tenha encontrado antes, receba:
 
 +5 no teste.""".trimIndent(),
                     cost = "1 PE",
@@ -497,11 +496,11 @@ algo que Eloah nunca tenha encontrado antes, receba:
                     category = "Conhecimento / Investigação",
                     enhancements = """Mais Uma Pergunta
 
-Em caso de sucesso, Eloah também pode descobrir uma informação secundária verdadeira diretamente relacionada ao objeto estudado.""".trimIndent(),
+Em caso de sucesso, você também pode descobrir uma informação secundária verdadeira diretamente relacionada ao objeto estudado.""".trimIndent(),
                 ),
                 PathPower(
                     name = """Desmontar Para Aprender""".trimIndent(),
-                    effect = """Durante um período seguro, Eloah pode desmontar ou analisar profundamente um objeto, dispositivo, artefato ou mecanismo acessível.
+                    effect = """Durante um período seguro, você pode desmontar ou analisar profundamente um objeto, dispositivo, artefato ou mecanismo acessível.
 
 Faça um teste apropriado.
 
@@ -525,7 +524,7 @@ Uma vez por sessão, um bônus obtido por esse poder é:
             pillars = listOf(
                 """Propenso a Riscos — O risco não é apenas ameaça; é a possibilidade de encontrar algo que não existiria sem apostar.""".trimIndent(),
                 """Comportamento — Vitória e derrota fazem parte do mesmo jogo. Nenhuma das duas deve dominar completamente suas decisões.""".trimIndent(),
-                """Analítico — Serabatte não joga cegamente. Probabilidade, leitura do adversário e intuição são partes da aposta.""".trimIndent(),
+                """Analítico — O apostador não joga cegamente. Probabilidade, leitura do adversário e intuição são partes da aposta.""".trimIndent(),
             ),
             powers = listOf(
                 PathPower(
@@ -637,7 +636,7 @@ Recebe um aumento de dano igual a sua brutalidade.""".trimIndent(),
             motto = """Entre todos aqueles que vivi e conheci, eu apenas serei o único que permanecerá de pé no final.""".trimIndent(),
             keywords = listOf("""Arrogância""".trimIndent(), """Assimilação""".trimIndent(), """Autopreservação""".trimIndent()),
             pillars = listOf(
-                """Arrogante — Krux associa respeito a autonomia, força e capacidade de permanecer de pé diante dos outros.""".trimIndent(),
+                """Arrogante — O competidor associa respeito a autonomia, força e capacidade de permanecer de pé diante dos outros.""".trimIndent(),
                 """Comportamento — Confiança precisa ser demonstrada. Fraqueza exposta pode custar influência e controle.""".trimIndent(),
                 """Assimilar — Toda oportunidade de aprimorar corpo, equipamento ou posição pode ser aproveitada, independentemente de quão agradável seja o processo.""".trimIndent(),
             ),
@@ -696,7 +695,7 @@ Uma vez por sessão, quando seria reduzido a 0 Vida, pode gastar 1 Destino para 
             motto = """O lixo de uns é o tesouro de outros.""".trimIndent(),
             keywords = listOf("""Inventar""".trimIndent(), """Construir""".trimIndent(), """Melhorar""".trimIndent()),
             pillars = listOf(
-                """Mente Criativa — Onde outras pessoas enxergam lixo, Óleo enxerga peças, mecanismos e novas possibilidades.""".trimIndent(),
+                """Mente Criativa — Onde outras pessoas enxergam lixo, o artífice enxerga peças, mecanismos e novas possibilidades.""".trimIndent(),
                 """Dedicação ao Projeto — Um projeto promissor não deve ser abandonado apenas porque a primeira tentativa falhou.""".trimIndent(),
                 """Ainda Não, Posso Melhorar — Erros são dados. Cada falha informa como a próxima versão pode funcionar melhor.""".trimIndent(),
             ),
@@ -745,7 +744,7 @@ Ela não reproduz componentes:
 • mágicos;
 • divinos;
 • de tecnologia ancestral excepcional;
-• cujo funcionamento dependa de material que Óleo não possua.""".trimIndent(),
+• cujo funcionamento dependa de material que você não possua.""".trimIndent(),
                     cost = "2 PE",
                     costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
                     costValue = 2,
@@ -885,7 +884,7 @@ O bônus pode ser aplicado aos dois primeiros testes sociais realizados contra o
             pillars = listOf(
                 """Guardiã das Relíquias — Relíquias dracônicas e outros artefatos de valor inestimável devem ser preservados e protegidos de quem possa destruí-los ou utilizá-los de maneira irresponsável.""".trimIndent(),
                 """Voz dos Ancestrais — Desvendar os segredos das civilizações antigas permite recuperar tradições, acontecimentos e conhecimentos que o tempo tentou apagar.""".trimIndent(),
-                """Sabedoria Oculta — Conhecimento é mais valioso quando compreendido. Saphire busca interpretar o passado para tomar decisões melhores no presente.""".trimIndent(),
+                """Sabedoria Oculta — Conhecimento é mais valioso quando compreendido. A guardiã busca interpretar o passado para tomar decisões melhores no presente.""".trimIndent(),
             ),
             powers = listOf(
                 PathPower(
@@ -951,7 +950,7 @@ Ao usar Visão das Cinzas, você pode fazer uma pergunta objetiva sobre o fragme
             pillars = listOf(
                 """Justo? Justo — Geralmente tento fazer o que é correto perante a sociedade, mas, se precisar quebrar alguns ovos para alcançar meus objetivos, não hesitarei.
 
-Damien tenta fazer aquilo que considera correto, mas não trata moralidade como uma regra absoluta.""".trimIndent(),
+O praticante tenta fazer aquilo que considera correto, mas não trata moralidade como uma regra absoluta.""".trimIndent(),
                 """Volume Máximo — A música é minha válvula de escape para as incertezas que me assombram. Um legado que não me deixa virar um monstro por completo.
 
 Sua música é expressão, memória e controle emocional.""".trimIndent(),
@@ -1032,7 +1031,7 @@ para rerrolar. O segundo resultado deve ser mantido.""".trimIndent(),
             pillars = listOf(
                 """Cuidar — Cuide daqueles que são abençoados pelo sangue.
 
-O sangue representa vida e vínculo. Preservar a vida é parte central da prática de Estienne.""".trimIndent(),
+O sangue representa vida e vínculo. Preservar a vida é parte central desta prática.""".trimIndent(),
                 """Nutrir — Nutra o corpo e evite enfraquecer a carne.
 
 Curar não significa apenas fechar ferimentos, mas preservar a capacidade do corpo de continuar vivendo.""".trimIndent(),
@@ -1047,13 +1046,13 @@ O próprio corpo é um recurso, mas sacrificá-lo só possui sentido quando prot
 
 1d6 HP
 
-Esse dano ignora Redução de Dano e não pode reduzir Estienne abaixo de 1 HP.
+Esse dano ignora Redução de Dano e não pode reduzir você abaixo de 1 HP.
 
 Escolha outra criatura a até 3 metros.
 
 Ela recupera:
 
-o dobro do HP perdido por Estienne.
+o dobro do HP perdido por você.
 
 Este poder:
 
