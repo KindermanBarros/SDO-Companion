@@ -177,6 +177,8 @@ object SparkWireCodec {
         putField("activeModifiersPayload", normalized.activeModifiersPayload)
         putField("scopedItemCatalogPayload", normalized.scopedItemCatalogPayload)
         putField("canonicalProgressionPayload", normalized.canonicalProgressionPayload)
+        putField("transports", converters.transportsToString(normalized.transports))
+        putField("familiars", converters.familiarsToString(normalized.familiars))
 
         // Ints
         putField("level", normalized.level.coerceIn(1, 20))
@@ -717,6 +719,8 @@ object SparkWireCodec {
             inventory = inventory,
             itemCreationDraft = converters.stringToItemCreationDraft(str("itemCreationDraft")),
             story = str("story"),
+            transports = converters.stringToTransports(str("transports")),
+            familiars = converters.stringToFamiliars(str("familiars")),
             personalNotes = notes,
             updatedAt = updatedAt,
             lastEditedBy = root["updatedBy"] as? String ?: "",

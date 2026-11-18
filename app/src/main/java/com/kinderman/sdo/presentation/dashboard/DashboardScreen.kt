@@ -1145,25 +1145,28 @@ private fun CharacterAccessCard(
     onOpen: () -> Unit,
     onOwnerClick: () -> Unit,
 ) {
+    val cardAccent = when {
+        character.isLocked -> MaterialTheme.colorScheme.error
+        character.dirty -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.secondary
+    }
     SdoCard(
         onClick = onOpen,
         modifier = Modifier.fillMaxWidth(),
         shape = CutCornerShape(topEnd = 24.dp, bottomStart = 12.dp),
-        border = BorderStroke(
-            1.dp,
-            when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.outlineVariant },
-        ),
+        border = BorderStroke(1.dp, cardAccent.copy(alpha = 0.72f)),
+        accent = cardAccent,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = .96f),
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
         Column(
-            Modifier.padding(if (compact) 10.dp else 15.dp),
-            verticalArrangement = Arrangement.spacedBy(if (compact) 5.dp else 9.dp),
+            Modifier.padding(if (compact) 10.dp else 14.dp),
+            verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 9.dp),
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                TelemetryTag("ID.${character.id.take(6)}")
+                TelemetryTag("NV.${character.level}", MaterialTheme.colorScheme.secondary)
                 TelemetryTag(
                     when {
                         character.lockType == CharacterLock.HISTORIAN -> "LOCK.H"
@@ -1171,26 +1174,34 @@ private fun CharacterAccessCard(
                         character.dirty -> "LOCAL_DELTA"
                         else -> "SYNC_OK"
                     },
-                    when { character.isLocked -> MaterialTheme.colorScheme.error; character.dirty -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.secondary },
+                    cardAccent,
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 com.kinderman.sdo.ui.SdoCharacterAvatar(
                     photoUri = character.photoUri,
                     name = character.name,
-                    size = if (compact) 44.dp else 54.dp,
+                    size = if (compact) 44.dp else 52.dp,
+                    accent = cardAccent,
                 )
-                Spacer(Modifier.size(if (compact) 9.dp else 13.dp))
-                Column(Modifier.weight(1f)) {
-                    SdoCardTitle(character.name.uppercase(), color = MaterialTheme.colorScheme.onSurface, style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)
-                    Text(
-                        listOf(character.race, character.occupation, "LV.${character.level}").filter(String::isNotBlank).joinToString(" // "),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelSmall,
+                Spacer(Modifier.size(if (compact) 9.dp else 12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 6.dp)) {
+                    SdoCardTitle(
+                        character.name.uppercase(),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
                     )
                     Text(
-                        campaignName?.let { "CAMPANHA // ${it.uppercase()}" } ?: "SEM CAMPANHA",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        listOf(character.race, character.occupation)
+                            .filter(String::isNotBlank)
+                            .joinToString(" · ")
+                            .ifBlank { "Sem raça ou ocupação" },
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Text(
+                        campaignName?.uppercase() ?: "Sem campanha",
+                        color = if (campaignName != null) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall,
                     )
                     if (master) {
@@ -1200,38 +1211,25 @@ private fun CharacterAccessCard(
                             ?: "SEM PERFIL"
                         SdoOutlinedButton(
                             onClick = onOwnerClick,
-                            modifier = Modifier
-                                .wrapContentWidth(Alignment.Start)
-                                .widthIn(max = if (compact) 176.dp else 224.dp)
-                                .heightIn(min = 48.dp),
+                            modifier = Modifier.wrapContentWidth(Alignment.Start),
                             shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                            contentPadding = PaddingValues(
-                                horizontal = if (compact) 8.dp else 10.dp,
-                                vertical = 4.dp,
-                            ),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.72f)),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                         ) {
-                            Column(horizontalAlignment = Alignment.Start) {
-                                Text(
-                                    "OWNER",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                                AdaptiveActionLabel(ownerFirstName.uppercase())
-                                if (!compact) {
-                                    Text(
-                                        "UID.${character.ownerId.take(8)}",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                }
-                            }
+                            Text(
+                                text = "DONO: ${ownerFirstName.uppercase()}",
+                                color = MaterialTheme.colorScheme.tertiary,
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                            )
                         }
                     }
                 }
+                Spacer(Modifier.size(if (compact) 6.dp else 10.dp))
                 Icon(
                     when { character.isLocked -> Icons.Default.Lock; master -> Icons.Default.AdminPanelSettings; else -> Icons.Default.ChevronRight },
                     null,
-                    tint = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    tint = cardAccent,
                 )
             }
             if (!compact) Barcode(character.id)

@@ -33,6 +33,8 @@ import com.kinderman.sdo.domain.model.MysticAbility
 import com.kinderman.sdo.domain.model.OrganStatus
 import com.kinderman.sdo.domain.model.OrganSlot
 import com.kinderman.sdo.domain.model.PersonalNote
+import com.kinderman.sdo.domain.model.CharacterFamiliar
+import com.kinderman.sdo.domain.model.CharacterTransport
 import com.kinderman.sdo.domain.model.Power
 import com.kinderman.sdo.domain.model.ProgressionRecord
 import com.kinderman.sdo.domain.model.ProgressionReward
@@ -588,6 +590,22 @@ class CharacterConverters {
 
     @TypeConverter fun conditionsToString(value: List<ConditionEffect>) = value.joinToString(ROW) { listOf(it.id, it.name, it.intensity, it.duration, it.origin, it.summary).row() }
     @TypeConverter fun stringToConditions(value: String) = if (value.isEmpty()) emptyList() else value.split(ROW).map { it.parts().let { p -> ConditionEffect(p[0], p.getOrElse(1) { "" }, p.getOrElse(2) { "" }, p.getOrElse(3) { "" }, p.getOrElse(4) { "" }, p.getOrElse(5) { "" }) } }
+
+    @TypeConverter fun transportsToString(value: List<CharacterTransport>): String =
+        if (value.isEmpty()) "" else canonicalJson.encodeToString(ListSerializer(CharacterTransport.serializer()), value)
+
+    @TypeConverter fun stringToTransports(value: String): List<CharacterTransport> =
+        value.takeIf(String::isNotBlank)
+            ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(CharacterTransport.serializer()), it) }.getOrDefault(emptyList()) }
+            .orEmpty()
+
+    @TypeConverter fun familiarsToString(value: List<CharacterFamiliar>): String =
+        if (value.isEmpty()) "" else canonicalJson.encodeToString(ListSerializer(CharacterFamiliar.serializer()), value)
+
+    @TypeConverter fun stringToFamiliars(value: String): List<CharacterFamiliar> =
+        value.takeIf(String::isNotBlank)
+            ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(CharacterFamiliar.serializer()), it) }.getOrDefault(emptyList()) }
+            .orEmpty()
 
     @TypeConverter fun personalNotesToString(value: List<PersonalNote>) =
         value.joinToString(ROW) { listOf(it.id, it.title, it.text).row() }

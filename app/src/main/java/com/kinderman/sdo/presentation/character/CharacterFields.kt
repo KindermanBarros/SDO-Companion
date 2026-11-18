@@ -14,6 +14,8 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Visibility
 import com.kinderman.sdo.ui.SdoButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -111,16 +113,14 @@ internal fun CompactEditToggleButton(
     modifier: Modifier = Modifier,
 ) {
     if (!enabled) return
-    SdoOutlinedButton(
+    SdoIconButton(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 36.dp),
-        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+        modifier = modifier,
     ) {
-        Text(
-            text = if (editing) "VISUALIZAR" else "EDITAR",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-            maxLines = 1,
+        Icon(
+            imageVector = if (editing) Icons.Default.Visibility else Icons.Default.Edit,
+            contentDescription = if (editing) "Visualizar" else "Editar",
+            tint = MaterialTheme.colorScheme.primary,
         )
     }
 }

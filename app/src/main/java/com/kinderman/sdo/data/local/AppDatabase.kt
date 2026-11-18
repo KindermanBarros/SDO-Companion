@@ -26,7 +26,7 @@ import java.security.MessageDigest
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
     ],
-    version = 33,
+    version = 35,
     exportSchema = false,
 )
 @TypeConverters(CharacterConverters::class)
@@ -45,6 +45,18 @@ abstract class AppDatabase : RoomDatabase() {
         private fun tableExists(db: SupportSQLiteDatabase, tableName: String): Boolean =
             db.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", arrayOf(tableName))
                 .use { cursor -> cursor.moveToFirst() }
+
+        val MIGRATION_34_35 = object : Migration(34, 35) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE characters ADD COLUMN familiars TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_33_34 = object : Migration(33, 34) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE characters ADD COLUMN transports TEXT NOT NULL DEFAULT ''")
+            }
+        }
 
         val MIGRATION_32_33 = object : Migration(32, 33) {
             override fun migrate(db: SupportSQLiteDatabase) {

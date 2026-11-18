@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.DeleteForever
@@ -63,6 +64,7 @@ import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.AcidCyan
 import com.kinderman.sdo.ui.Barcode
 import com.kinderman.sdo.ui.ComplianceMark
+import com.kinderman.sdo.ui.CyberGrungeHeroFont
 import com.kinderman.sdo.ui.HudBackground
 import com.kinderman.sdo.ui.Ice
 import com.kinderman.sdo.ui.Muted
@@ -127,9 +129,9 @@ fun CharacterSheetScreen(
         if (!readOnly) {
             val before = current
             val removedItems = before.inventory.filter { previous -> changed.inventory.none { it.id == previous.id } }
-            val draft = changed.copy(updatedAt = maxOf(System.currentTimeMillis(), before.updatedAt + 1), dirty = true)
-            current = draft
-            onAutosave(draft)
+            val draftState = changed.copy(updatedAt = maxOf(System.currentTimeMillis(), before.updatedAt + 1), dirty = true)
+            draft.recordEdit(before, draftState)
+            onAutosave(draftState)
             if (removedItems.isNotEmpty()) scope.launch {
                 val result = undoSnackbar.showSnackbar(
                     message = if (removedItems.size == 1) "${removedItems.single().name.ifBlank { "Item" }} removido" else "Itens removidos",
@@ -139,7 +141,7 @@ fun CharacterSheetScreen(
                 )
                 if (result == SnackbarResult.ActionPerformed) {
                     val latest = current
-                    val restored = if (latest.updatedAt == draft.updatedAt) {
+                    val restored = if (latest.updatedAt == draftState.updatedAt) {
                         before
                     } else {
                         latest.copy(inventory = (latest.inventory + removedItems).distinctBy { it.id })
@@ -226,6 +228,16 @@ fun CharacterSheetScreen(
                             }
                             if (onOpenJournal != null) SdoIconButton(onOpenJournal) {
                                 Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
+                            }
+                            if (editable) SdoIconButton(
+                                onClick = { draft.undo()?.let(onAutosave) },
+                                enabled = draft.undoCount.value > 0,
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Undo,
+                                    "Desfazer (${draft.undoCount.value})",
+                                    tint = if (draft.undoCount.value > 0) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline,
+                                )
                             }
                             if (editable) SdoIconButton({ onSave(current) }) {
                                 Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary)
@@ -383,11 +395,10 @@ internal fun SheetHero(
     editable: Boolean = false,
     onOpenPhotoPicker: () -> Unit = {},
 ) {
-    SdoScreenMasthead(
-        eyebrow = "CHARACTER//ARCHIVE",
-        title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
-        metadata = "NÍVEL ${character.level} // ${if (character.dirty) "ALTERAÇÕES LOCAIS" else "ARQUIVO ESTÁVEL"}",
-    )
+    val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
+    val heroNameStyle = MaterialTheme.typography.headlineLarge.let {
+        if (cybergrunge) it.copy(fontFamily = CyberGrungeHeroFont) else it
+    }
     TechPanel(accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
@@ -416,13 +427,11 @@ internal fun SheetHero(
                     accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 )
             }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    character.name.uppercase(),
+                    character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = TechInterfaceFont,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = heroNameStyle,
                 )
                 Text(
                     listOf(character.race, character.occupation).filter(String::isNotBlank).joinToString(" // ")

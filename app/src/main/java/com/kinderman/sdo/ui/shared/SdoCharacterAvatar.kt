@@ -163,6 +163,21 @@ fun SdoCharacterAvatar(
                 )
             }
         }
+        if (cybergrunge) {
+            val secondary = MaterialTheme.colorScheme.secondary
+            val scanInk = MaterialTheme.colorScheme.onSurface
+            Canvas(Modifier.fillMaxSize()) {
+                val step = 4.dp.toPx()
+                var y = step / 2f
+                while (y < this.size.height) {
+                    drawLine(scanInk.copy(alpha = 0.08f), Offset(0f, y), Offset(this.size.width, y), 1f)
+                    y += step
+                }
+                drawRect(accent.copy(alpha = 0.26f), Offset(0f, this.size.height * 0.22f), androidx.compose.ui.geometry.Size(this.size.width * 0.55f, 2.dp.toPx()))
+                drawRect(secondary.copy(alpha = 0.24f), Offset(this.size.width * 0.4f, this.size.height * 0.68f), androidx.compose.ui.geometry.Size(this.size.width * 0.6f, 2.dp.toPx()))
+                drawRect(accent.copy(alpha = 0.18f), Offset(this.size.width * 0.14f, this.size.height * 0.84f), androidx.compose.ui.geometry.Size(this.size.width * 0.3f, 3.dp.toPx()))
+            }
+        }
     }
 }
 

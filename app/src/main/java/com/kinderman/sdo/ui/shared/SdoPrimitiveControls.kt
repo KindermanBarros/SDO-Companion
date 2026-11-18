@@ -106,10 +106,11 @@ fun SdoCard(
         contentColor = MaterialTheme.colorScheme.onSurface,
     ),
     border: BorderStroke? = null,
+    accent: androidx.compose.ui.graphics.Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        CyberGrungePanel(modifier, MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content, shape, border)
+        CyberGrungePanel(modifier, accent ?: MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content, shape, border)
     } else Card(
         modifier = modifier, shape = shape, colors = colors,
         border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), content = content,
@@ -127,12 +128,13 @@ fun SdoCard(
         contentColor = MaterialTheme.colorScheme.onSurface,
     ),
     border: BorderStroke? = null,
+    accent: androidx.compose.ui.graphics.Color? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
         androidx.compose.foundation.layout.Box(
             modifier.clickable(enabled = enabled, onClick = onClick),
-        ) { CyberGrungePanel(Modifier, MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content, shape, border) }
+        ) { CyberGrungePanel(Modifier, accent ?: MaterialTheme.colorScheme.primary, LocalSdoPreferences.current.compactCards, content, shape, border) }
     } else Card(
         onClick = onClick, modifier = modifier, enabled = enabled, shape = shape, colors = colors,
         border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), content = content,

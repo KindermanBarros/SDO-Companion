@@ -23,7 +23,7 @@ class CyberGrungeComponentsInstrumentedTest {
             }
         }
 
-        compose.onNodeWithText("INPUT//NOME").assertExists()
+        compose.onNodeWithText("NOME").assertExists()
         compose.onNodeWithText("SINAL VAZIO", substring = true).assertDoesNotExist()
         compose.onNodeWithTag("cybergrunge-empty-signal", useUnmergedTree = true).assertExists()
     }

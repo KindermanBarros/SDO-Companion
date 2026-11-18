@@ -154,6 +154,10 @@ data class CharacterRecord(
     val itemCreationDraft: ItemCreationDraft? = null,
     val story: String = "",
     val notes: String = "",
+    @ColumnInfo(defaultValue = "''")
+    val transports: List<com.kinderman.sdo.domain.model.CharacterTransport> = emptyList(),
+    @ColumnInfo(defaultValue = "''")
+    val familiars: List<com.kinderman.sdo.domain.model.CharacterFamiliar> = emptyList(),
     val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
     val lastEditedBy: String = "",
@@ -308,6 +312,8 @@ fun CharacterRecord.toDomain(): Character {
     conditions = decodedConditions?.map { it.toLegacyEffect() } ?: conditions,
     story = story,
     notes = notes,
+    transports = transports,
+    familiars = familiars,
     personalNotes = personalNotes.ifEmpty {
         notes.takeIf(String::isNotBlank)?.let { legacyText ->
             listOf(PersonalNote(id = "legacy-$id", title = "Registro Pessoal 1", text = legacyText))
@@ -403,6 +409,8 @@ fun Character.toRecord(): CharacterRecord {
     itemCreationDraft = itemCreationDraft,
     story = story,
     notes = "",
+    transports = transports,
+    familiars = familiars,
     personalNotes = personalNotes,
     updatedAt = updatedAt,
     lastEditedBy = lastEditedBy,
@@ -530,6 +538,8 @@ fun firestoreCharacterPatch(
     diff("inventory", before.inventory, after.inventory)
     diff("itemCreationDraft", before.itemCreationDraft, after.itemCreationDraft)
     diff("story", before.story, after.story)
+    diff("transports", before.transports, after.transports)
+    diff("familiars", before.familiars, after.familiars)
     diff("personalNotes", before.personalNotes, after.personalNotes)
     diff("updatedAt", before.updatedAt, after.updatedAt)
     diff("lastEditedBy", before.lastEditedBy, after.lastEditedBy)

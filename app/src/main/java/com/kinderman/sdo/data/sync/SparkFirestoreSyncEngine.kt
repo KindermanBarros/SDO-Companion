@@ -187,7 +187,11 @@ interface SparkRemoteGateway {
 
     /** Root document + latest receipt only (two small reads) so unchanged sheets are never re-downloaded. */
     suspend fun fetchSheetHead(sheetId: String): SparkSheetHead?
-    suspend fun fetchAccessibleSheetIds(uid: String, ownedActiveCampaignIds: Set<String>): Set<String>
+    suspend fun fetchAccessibleSheetIds(
+        uid: String,
+        ownedActiveCampaignIds: Set<String>,
+        isAdmin: Boolean = false,
+    ): Set<String>
     suspend fun writeMediaAvatar(sheetId: String, mediaDoc: Map<String, Any?>)
     suspend fun deleteMediaAvatar(sheetId: String)
     suspend fun writePresence(sheetId: String, presenceId: String, data: Map<String, Any?>)
@@ -195,7 +199,11 @@ interface SparkRemoteGateway {
     fun observePresence(sheetId: String, ownPresenceId: String, ownUid: String): Flow<Map<String, String>>
 
     /** Bounded root-level listeners only (own sheets + owned active campaigns); never per-sheet. */
-    fun observeRemoteChanges(uid: String, ownedActiveCampaignIds: Set<String>): Flow<RemoteSyncEvent>
+    fun observeRemoteChanges(
+        uid: String,
+        ownedActiveCampaignIds: Set<String>,
+        isAdmin: Boolean = false,
+    ): Flow<RemoteSyncEvent>
 
     /** Receipt listener for exactly one OPEN sheet. */
     fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent>
@@ -487,10 +495,17 @@ class FirestoreSparkRemoteGateway(
         return ids
     }
 
-    override suspend fun fetchAccessibleSheetIds(uid: String, ownedActiveCampaignIds: Set<String>): Set<String> {
+    override suspend fun fetchAccessibleSheetIds(
+        uid: String,
+        ownedActiveCampaignIds: Set<String>,
+        isAdmin: Boolean,
+    ): Set<String> {
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) return emptySet()
         val store = firestoreProvider()
         val characters = store.collection(FirestoreCollections.CHARACTERS)
+        if (isAdmin) {
+            return runCatching { pagedSheetIds(characters) }.getOrDefault(emptySet())
+        }
         val campaigns = store.collection(FirestoreCollections.CAMPAIGNS)
         val remoteOwnedCampaignIds = runCatching {
             campaigns.whereEqualTo("ownerId", uid).get().await().documents
@@ -615,6 +630,7 @@ class FirestoreSparkRemoteGateway(
     override fun observeRemoteChanges(
         uid: String,
         ownedActiveCampaignIds: Set<String>,
+        isAdmin: Boolean,
     ): Flow<RemoteSyncEvent> = callbackFlow {
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) {
             awaitClose {}
@@ -666,10 +682,16 @@ class FirestoreSparkRemoteGateway(
         }
 
         val characters = store.collection(FirestoreCollections.CHARACTERS)
-        // Strict Spark v2 ACL: listen ONLY to own sheets + active campaigns owned as GM.
-        listenCharactersQuery(characters.whereEqualTo("ownerId", uid))
+        if (isAdmin) {
+            listenCharactersQuery(characters)
+        } else {
+            // Strict Spark v2 ACL: listen ONLY to own sheets + active campaigns owned as GM.
+            listenCharactersQuery(characters.whereEqualTo("ownerId", uid))
+            ownedActiveCampaignIds.filter(String::isNotBlank).distinct().forEach { campaignId ->
+                listenCharactersQuery(characters.whereEqualTo("campaignId", campaignId))
+            }
+        }
         ownedActiveCampaignIds.filter(String::isNotBlank).distinct().forEach { campaignId ->
-            listenCharactersQuery(characters.whereEqualTo("campaignId", campaignId))
             listenCollection(store.collection(FirestoreCollections.CAMPAIGN_LIBRARY).whereEqualTo("campaignId", campaignId))
             listenCollection(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).whereEqualTo("campaignId", campaignId))
         }
@@ -2410,7 +2432,7 @@ class SparkFirestoreSyncEngine(
         drain(uid)
 
         val ownedCampaignIds = localStore.listOwnedActiveCampaignIds(uid)
-        val accessibleIds = remoteGateway.fetchAccessibleSheetIds(uid, ownedCampaignIds)
+        val accessibleIds = remoteGateway.fetchAccessibleSheetIds(uid, ownedCampaignIds, session.isAdmin)
 
         // Bounded cloud reads: a sheet is only re-downloaded in full when it is new locally or its
         // head (root revision / latest receipt) moved; unchanged sheets cost two small reads.
@@ -2553,7 +2575,7 @@ class SparkFirestoreSyncEngine(
             val ownedCampaignIds = localStore.listOwnedActiveCampaignIds(session.uid)
                 .filter { campaignIds.isEmpty() || it in campaignIds }
                 .toSet()
-            remoteGateway.observeRemoteChanges(session.uid, ownedCampaignIds).collect { emit(it) }
+            remoteGateway.observeRemoteChanges(session.uid, ownedCampaignIds, session.isAdmin).collect { emit(it) }
         }
     }
 

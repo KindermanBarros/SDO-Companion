@@ -179,7 +179,7 @@ internal fun CyberGrungeField(
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .72f),
     )
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-        Text("INPUT//$label", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         androidx.compose.foundation.text.BasicTextField(
             value = value, onValueChange = onValue, enabled = enabled, singleLine = !multiline,
             keyboardOptions = keyboardOptions, interactionSource = interaction,

@@ -2,6 +2,7 @@ package com.kinderman.sdo.domain.model
 
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
 enum class UserRole { USER, ADMIN, PLAYER, MASTER }
@@ -347,6 +348,55 @@ data class CalculatedValue(
     val total: Int get() = base + adjustment + modifiers.sumOf { it.value }
 }
 
+@Serializable
+enum class TransportCategory(val label: String) {
+    MOUNT("Montaria"),
+    FLYING_MOUNT("Montaria Voadora"),
+    VEHICLE("Veículo / Carroça"),
+    WATERCRAFT("Embarcação"),
+    OTHER("Outro"),
+}
+
+@Serializable
+data class CharacterTransport(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+    val category: TransportCategory = TransportCategory.MOUNT,
+    val size: String = "Grande",
+    val movement: String = "",
+    val loadCapacity: Int = 0,
+    val hp: Int = 0,
+    val maxHp: Int = 0,
+    val generalProtection: Int = 0,
+    val localProtection: Int = 0,
+    val attack: String = "",
+    val notes: String = "",
+)
+
+@Serializable
+enum class FamiliarRarity(val label: String) {
+    COMMON("Comum"),
+    EXOTIC("Exótico"),
+    CUSTOM("Personalizado"),
+}
+
+@Serializable
+data class CharacterFamiliar(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+    val species: String = "",
+    val rarity: FamiliarRarity = FamiliarRarity.CUSTOM,
+    val size: String = "Pequeno",
+    val movement: String = "",
+    val hp: Int = 6,
+    val maxHp: Int = 6,
+    val generalProtection: Int = 11,
+    val senses: String = "",
+    val specialTrait: String = "",
+    val attack: String = "",
+    val notes: String = "",
+)
+
 data class Character(
     val id: String = UUID.randomUUID().toString(),
     val ownerId: String = "",
@@ -415,6 +465,8 @@ data class Character(
     val conditions: List<ConditionEffect> = emptyList(),
     val story: String = "",
     val notes: String = "",
+    val transports: List<CharacterTransport> = emptyList(),
+    val familiars: List<CharacterFamiliar> = emptyList(),
     val personalNotes: List<PersonalNote> = emptyList(),
     val lockType: CharacterLock = CharacterLock.NONE,
     val lockedBy: String = "",
