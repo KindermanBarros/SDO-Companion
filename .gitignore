@@ -3,6 +3,7 @@ build/
 **/build/
 local.properties
 app/google-services.json
+app/src/*/google-services.json
 *.jks
 *.keystore
 /.idea/
