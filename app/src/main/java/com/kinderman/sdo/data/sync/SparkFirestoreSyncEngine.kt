@@ -2134,7 +2134,7 @@ class SparkFirestoreSyncEngine(
             for (target in effectiveTargets) {
                 if (isSheetDeleted && target.op != TargetOp.RESTORE) {
                     if (intent.type == OperationType.DELETE_SHEET) {
-                        return@runTransaction DrainTxOutcome.Committed(emptyList())
+                        return@runTransaction DrainTxOutcome.Committed(emptyList(), nowMs)
                     }
                     return@runTransaction DrainTxOutcome.Tombstoned(
                         reason = "A ficha foi excluída remotamente.",
