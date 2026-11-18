@@ -22,6 +22,16 @@ Scope:
 
 ---
 
+## Firestore speed optimizations (sparse save-create, head reuse, index exemptions)
+
+Status: InDevReview; updated 2026-11-18 18:56 America/La_Paz on `perf/firestore-fast-sync-and-indexes`.
+Scope:
+- `SparkFirestoreSyncEngine.kt`: enabled `skipDefaultFieldsOnCreate = true` in `saveCharacter` so any sheet created via `save` without a prior snapshot also omits default fields/items, and reused `prefetchedHead` across `refreshDiscoveredSheet` -> `refreshSheetFromRemote` -> `fetchRemoteSnapshot` to eliminate duplicate `fetchSheetHead` reads.
+- `firebase/firestore.indexes.json`: added `fieldOverrides` exemptions (`indexes: []`) for unqueried `fields.value` and `fields.updatedAt` to reduce Firestore write index fanout.
+Validation: `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug`, `validate-harness.ps1`.
+
+---
+
 ## Final UI polish, DRY sheet headers, photo modal & verified admin Rules edit access
 
 Status: InDevReview; updated 2026-11-18 01:32 America/La_Paz on `fix/ui-polish-and-admin-edit`.
