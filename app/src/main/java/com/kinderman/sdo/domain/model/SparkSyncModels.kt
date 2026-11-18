@@ -459,7 +459,7 @@ fun applyPendingIntentsOnConfirmed(
                     stepRevisions[targetKey] = currentRev + 1L
                 }
                 TargetOp.TOMBSTONE -> {
-                    if (currentRev != target.expectedRevision) {
+                    if (target.kind != TargetKind.SHEET && currentRev != target.expectedRevision) {
                         failureStatus = SheetIntentStatus.CONFLICT
                         failureMessage = "Revisão divergente ao excluir $targetKey."
                         stepConflicts += buildConflictItem(
@@ -475,7 +475,7 @@ fun applyPendingIntentsOnConfirmed(
                     }
                     if (target.kind == TargetKind.SHEET) {
                         stepSheetDeleted = true
-                        stepSheetRev = target.nextRevision
+                        stepSheetRev = maxOf(stepSheetRev + 1L, target.nextRevision)
                         stepCharacter = stepCharacter.copy(deleted = true)
                     } else if (target.kind == TargetKind.ITEM) {
                         stepTombstones += target.itemId
