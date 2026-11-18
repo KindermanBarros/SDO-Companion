@@ -28,8 +28,29 @@ kover {
     }
 }
 
-if (file("google-services.json").exists() || rootProject.file("google-services.json").exists()) {
+if (
+    file("google-services.json").exists() ||
+    file("src/dev/google-services.json").exists() ||
+    file("src/prod/google-services.json").exists() ||
+    rootProject.file("google-services.json").exists()
+) {
     pluginManager.apply("com.google.gms.google-services")
+}
+
+afterEvaluate {
+    tasks.configureEach {
+        if (name.contains("Dev") && name.endsWith("GoogleServices") && !file("src/dev/google-services.json").exists()) {
+            enabled = false
+        }
+        if (
+            name.contains("Prod") &&
+            name.endsWith("GoogleServices") &&
+            !file("src/prod/google-services.json").exists() &&
+            !file("google-services.json").exists()
+        ) {
+            enabled = false
+        }
+    }
 }
 
 android {
@@ -71,7 +92,7 @@ android {
         versionName = providers.gradleProperty("releaseVersion").orNull ?: "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    buildFeatures { compose = true; buildConfig = true }
+    buildFeatures { compose = true; buildConfig = true; resValues = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_25
         targetCompatibility = JavaVersion.VERSION_25
@@ -108,6 +129,31 @@ android {
                 enable = true
             }
             signingConfig = signingConfigs.findByName("release")
+        }
+    }
+
+    val devTestEmail = (propertyOrEnv("SDO_DEV_TEST_EMAIL") ?: "").replace("\"", "\\\"")
+    val devTestPassword = (propertyOrEnv("SDO_DEV_TEST_PASSWORD") ?: "").replace("\"", "\\\"")
+
+    flavorDimensions += "env"
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "SDO Companion (Dev)")
+            buildConfigField("String", "ENVIRONMENT", "\"dev\"")
+            buildConfigField("boolean", "IS_DEV_ENV", "true")
+            buildConfigField("String", "DEV_TEST_EMAIL", "\"$devTestEmail\"")
+            buildConfigField("String", "DEV_TEST_PASSWORD", "\"$devTestPassword\"")
+        }
+        create("prod") {
+            dimension = "env"
+            resValue("string", "app_name", "SDO Companion")
+            buildConfigField("String", "ENVIRONMENT", "\"prod\"")
+            buildConfigField("boolean", "IS_DEV_ENV", "false")
+            buildConfigField("String", "DEV_TEST_EMAIL", "\"\"")
+            buildConfigField("String", "DEV_TEST_PASSWORD", "\"\"")
         }
     }
 }

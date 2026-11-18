@@ -46,7 +46,7 @@ jobs:
       # Pull requests never receive signing/Firebase secrets and do not produce an APK.
       # Packaging is restricted to the trusted main-branch release job below.
       - name: Run debug checks
-        run: gradle lintDebug testDebugUnitTest assembleDebugAndroidTest --build-cache --stacktrace
+        run: gradle lintProdDebug testProdDebugUnitTest testDevDebugUnitTest assembleProdDebugAndroidTest assembleDevDebugAndroidTest --build-cache --stacktrace
 
       - name: Enforce presentation design-system boundary
         shell: bash
@@ -129,6 +129,8 @@ jobs:
 
       - name: Restore protected build files
         uses: ./.github/actions/restore-android-secrets
+        with:
+          env: prod
 
       - name: Build and verify signed release APK
         id: package
@@ -142,14 +144,14 @@ jobs:
               "-PreleaseCode=${{ steps.version.outputs.version_code }}"
             )
           fi
-          gradle assembleRelease --build-cache --stacktrace "${version_args[@]}"
+          gradle assembleProdRelease --build-cache --stacktrace "${version_args[@]}"
           mkdir -p release
           if [[ "${{ steps.version.outputs.should_release }}" == "true" ]]; then
             apk_name="sdo-companion-v${{ steps.version.outputs.version }}.apk"
           else
             apk_name="sdo-companion-release.apk"
           fi
-          cp app/build/outputs/apk/release/app-release.apk "release/$apk_name"
+          cp app/build/outputs/apk/prod/release/app-prod-release.apk "release/$apk_name"
           echo "apk_path=release/$apk_name" >> "$GITHUB_OUTPUT"
 
       - name: Verify release APK certificate
@@ -175,5 +177,5 @@ jobs:
       - name: Remove protected build files
         if: always()
         run: |
-          rm -f app/google-services.json
+          rm -f app/google-services.json app/src/prod/google-services.json app/src/dev/google-services.json
           rm -f "$SDO_KEYSTORE_FILE"

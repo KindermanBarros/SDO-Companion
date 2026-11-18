@@ -1,0 +1,57 @@
+name: Authenticated Dev Firebase Tests
+
+on:
+  push:
+    branches: [develop]
+    paths: ['app/**', 'firebase/**', '.github/workflows/dev-authenticated-tests.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-auth-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  authenticated-dev-tests:
+    name: Run authenticated Firebase tests on dev
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICES_JSON_DEV: ${{ secrets.GOOGLE_SERVICES_JSON_DEV }}
+      SDO_DEV_TEST_EMAIL: ${{ secrets.SDO_DEV_TEST_EMAIL }}
+      SDO_DEV_TEST_PASSWORD: ${{ secrets.SDO_DEV_TEST_PASSWORD }}
+      SDO_KEYSTORE_BASE64: ${{ secrets.SDO_KEYSTORE_BASE64 }}
+      SDO_KEYSTORE_PASSWORD: ${{ secrets.SDO_KEYSTORE_PASSWORD }}
+      SDO_KEY_ALIAS: ${{ secrets.SDO_KEY_ALIAS }}
+      SDO_KEY_PASSWORD: ${{ secrets.SDO_KEY_PASSWORD }}
+      SDO_KEYSTORE_FILE: ${{ github.workspace }}/app/sdo-companion-release.jks
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Restore protected dev build files
+        uses: ./.github/actions/restore-android-secrets
+        with:
+          env: dev
+      - name: Run unit tests and build dev test APKs
+        run: ./gradlew :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleDevDebugAndroidTest --build-cache --stacktrace
+      - name: Run authenticated dev instrumented test on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          script: ./gradlew :app:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.kinderman.sdo.data.sync.AuthenticatedDevFirebaseInstrumentedTest --stacktrace
+      - name: Remove protected build files
+        if: always()
+        run: |
+          rm -f app/google-services.json app/src/dev/google-services.json app/src/prod/google-services.json
+          rm -f "$SDO_KEYSTORE_FILE"

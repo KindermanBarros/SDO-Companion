@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "sdo-companion"
+    "default": "sdo-companion",
+    "prod": "sdo-companion",
+    "dev": "sdo-companion-dev"
   }
 }

@@ -3,6 +3,8 @@
 This single file (`docs/MEMORY.md`) centralizes all task history, active states (`InProgress` / `InDevReview`), completed deliveries (`Done`), and persistent project decisions for SDO Companion.
 **Strict rule**: Never create separate history or task-state files under `.docs/HistoryRecords/`, `.docs/OngoingTasks/`, or `.docs/CompletedTasks/`. All history updates and task summaries belong exclusively here.
 
+- Dev/Prod environment & authenticated dev tests (`app/build.gradle.kts`, `AndroidManifest.xml`, `.firebaserc`, `AuthenticatedDevFirebaseInstrumentedTest.kt`, `.github/actions/restore-android-secrets/action.yml`, `.github/workflows/sdo-companion-android.yml`, `.github/workflows/fix-debug-build.yml`, `.github/workflows/dev-authenticated-tests.yml`): added `dev` (`com.kinderman.sdo.dev`, `"SDO Companion (Dev)"`) and `prod` (`com.kinderman.sdo`, `"SDO Companion"`) product flavors, `.firebaserc` `dev`/`prod` project targets, flavor-scoped `restore-android-secrets`, `prod`-only releases on `main`, `dev` test APKs on `develop`, and real authenticated Firebase instrumented tests (`AuthenticatedDevFirebaseInstrumentedTest`) in `src/androidTestDev`.
+
 ---
 
 ## Edit/view icon toggles, Dashboard card polish, Falhas alignment & unrestricted admin access
