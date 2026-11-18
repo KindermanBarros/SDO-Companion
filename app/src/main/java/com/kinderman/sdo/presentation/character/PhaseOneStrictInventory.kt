@@ -240,11 +240,52 @@ internal fun PhaseOneStrictInventorySection(
                 ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
                     onChange(character.withItemInventoryState(item.id, value))
                 }
-                Text(
-                    item.effect.ifBlank { "Sem descrição registrada." },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                var editingItem by rememberSaveable(item.id) { mutableStateOf(false) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SdoMetadataText("DETALHES DO ITEM", color = MaterialTheme.colorScheme.secondary, modifier = Modifier.weight(1f))
+                    CompactEditToggleButton(
+                        editing = enabled && editingItem,
+                        enabled = enabled,
+                        onClick = { editingItem = !editingItem },
+                    )
+                }
+                if (enabled && editingItem) {
+                    HudTextField("Nome", item.name, enabled = enabled) { value ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(name = value))))
+                    }
+                    HudTextField("Categoria", item.category, enabled = enabled) { value ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(category = value))))
+                    }
+                    TwoFields(
+                        { IntegerField("Quantidade", item.quantity, enabled, it) { qty ->
+                            onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = qty.coerceAtLeast(0)))))
+                        } },
+                        { IntegerField("Carga", item.load, enabled, it) { load ->
+                            onChange(character.copy(inventory = character.inventory.replace(index, item.copy(load = load.coerceAtLeast(0)))))
+                        } },
+                    )
+                    TwoFields(
+                        { IntegerField("Durabilidade atual", item.durabilityCurrent, enabled, it) { cur ->
+                            onChange(character.copy(inventory = character.inventory.replace(index, item.copy(durabilityCurrent = cur.coerceAtLeast(0)))))
+                        } },
+                        { IntegerField("Durabilidade máxima", item.durabilityMax, enabled, it) { max ->
+                            onChange(character.copy(inventory = character.inventory.replace(index, item.copy(durabilityMax = max.coerceAtLeast(0)))))
+                        } },
+                    )
+                    HudTextField("Descrição", item.effect, multiline = true, enabled = enabled) { value ->
+                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
+                    }
+                } else {
+                    Text(
+                        item.effect.ifBlank { "Sem descrição registrada." },
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
             }
         }
