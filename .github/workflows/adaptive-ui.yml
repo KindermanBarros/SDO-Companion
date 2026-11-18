@@ -38,7 +38,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Verify adaptive policy tests
-        run: ./gradlew :app:testDebugUnitTest --tests com.kinderman.sdo.ui.AdaptiveLayoutPolicyTest --stacktrace
+        run: ./gradlew :app:testDevDebugUnitTest --tests com.kinderman.sdo.ui.AdaptiveLayoutPolicyTest --stacktrace
       - name: Run adaptive component tests and capture layouts
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -57,6 +57,6 @@ jobs:
           name: adaptive-ui-results
           path: |
             app/build/reports/adaptive-ui/
-            app/build/test-results/testDebugUnitTest/
+            app/build/test-results/testDevDebugUnitTest/
           if-no-files-found: error
           retention-days: 14
