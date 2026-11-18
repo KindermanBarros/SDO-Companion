@@ -76,6 +76,37 @@ jobs:
             firebase/database.rules.json
           retention-days: 90
 
+  deploy-dev:
+    name: Deploy Firestore dev for PR
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CREDENTIALS_JSON_DEV: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SDO_COMPANION_DEV }}
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: firebase/package.json
+      - name: Authenticate with Google Cloud (dev)
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: sdo-companion-dev
+          credentials_json: ${{ env.GOOGLE_CREDENTIALS_JSON_DEV }}
+      - name: Install Firebase CLI
+        run: npm install --prefix firebase --no-audit --no-fund
+      - name: Deploy rules and indexes to dev
+        run: |
+          firebase/node_modules/.bin/firebase deploy \
+            --config firebase.json \
+            --project sdo-companion-dev \
+            --only firestore:rules,firestore:indexes \
+            --non-interactive
+
   deploy:
     name: Deploy Firestore production
     # The breaking protocol cutover requires the documented backup and writer fence.
