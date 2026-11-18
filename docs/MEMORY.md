@@ -7,17 +7,17 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ## Premium validation, Conditions & History upgrade, small-screen/Cybergrunge reflow & theme compatibility
 
-Status: InDevReview; updated 2026-11-17 23:02 America/La_Paz on `feature/game-modes-and-quick-create`.
+Status: Done; owner approved 2026-11-18 00:36 America/La_Paz on `feature/game-modes-and-quick-create`.
 Scope:
 - Conditions (`13`) & History (`15`) upgrade (`CharacterAdvancedSections.kt`): added empty state for Conditions, read-only styled showcase cards with `EDITAR`/`VISUALIZAR` toggles, `SdoResponsiveGrid` metadata badges for condition duration/intensity, `StoryReadOnlyShowcase` with identity summary, and `SdoResponsiveGrid` + `AdaptiveActionLabel` in `AbilityAvailabilityEditor`.
-- Small-screen & Cybergrunge reflow (`CharacterFields.kt`, `SdoTheme.kt`, `SessionModeScreen.kt`, `CharacterConflictDialog.kt`): raised `TwoFields` stacking threshold to `460.dp * fontScale` in Cybergrunge, replaced clipped `maxLines = 1` labels in `HudTextField` with `AdaptiveSingleLineText`, migrated `session_body` regions from fixed `chunked(2)` rows to `SdoResponsiveGrid(..., minItemWidth = 148.dp)` with `SdoCardTitle`, and applied `AdaptiveActionLabel` to conflict dialog batch actions.
+- Small-screen & Cybergrunge reflow (`CharacterFields.kt`, `SdoTheme.kt`, `SessionModeScreen.kt`, `CharacterConflictDialog.kt`): raised `TwoFields` stacking threshold to `460.dp * fontScale` in Cybergrunge, replaced clipped `maxLines = 1` labels in `HudTextField` with `AdaptiveSingleLineText`, migrated `session_body` regions from fixed `chunked(2)` rows to `SdoResponsiveGrid(..., minItemWidth = 148.dp)` with `SdoCardTitle`, applied `AdaptiveActionLabel` to conflict dialog batch actions, highlighted the selected boolean choice (`Sim`/`Não`), and allowed signed input (`KeyboardType.Text`) on the `RESOURCE` `Ajuste` field in manual conflict merge.
 - Theme compatibility & Cybergrunge themes (`SdoPreferences.kt`, `SdoTheme.kt`, `CybergrungeComponents.kt`, `CybergrungeNavigation.kt`, `CybergrungeEffects.kt`, `CybergrungeSignalLayer.kt`, `CatalogPickerDialog.kt`, `CharacterSheetScreen.kt`, `PhaseOneStrictInventory.kt`, `LoginScreen.kt`, `docs/design/cybergrunge.md`): enabled `allowsThemeSelection = true` in `SdoVisualMode.CYBERGRUNGE`, added `SdoThemeVariant.CYBERGRUNGE_SIGNAL` to preserve the signature red/cyan/black palette alongside all theme variants, resolved `preferences.theme` in `SdoTheme` for both visual modes, and replaced hardcoded `CyberGrungeTokens` / `Acid` / `Ice` / `Signal` colors with semantic `MaterialTheme.colorScheme` tokens.
 - Validation tests (`AppViewModelSyncPolicyTest.kt`, `SparkWireCodecTest.kt`, `SdoVisualModeTest.kt`, `firebase/tests/spark.adversarial.test.mjs`): added tests verifying toast-free local saves, `syncing` flag toggling, fast creation batches (`skipDefaultFieldsOnCreate` reduced to 12 write targets), lossless round-trip compatibility for sheets with conditions, story, notes, and new pre-Era catalog entries, theme selection across `SdoVisualMode.CYBERGRUNGE`, and Firestore emulator rules integrity for fast-create, editing omitted fields, and tombstone deletion across owner, verified admin, unverified admin, and unauthorized users.
 Validation: catalog `--check` scripts, `validate-harness.ps1`, `:app:testDebugUnitTest`, `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`, `:app:lintDebug`, `npm --prefix firebase run test:rules` (`61/61` PASS).
 
 ## BACKLOG-014 — Rotating sync icon & global sync indicator without toasts
 
-Status: InDevReview; updated 2026-11-17 22:22 America/La_Paz on `feature/game-modes-and-quick-create`.
+Status: Done; owner approved 2026-11-18 00:36 America/La_Paz on `feature/game-modes-and-quick-create`.
 Scope:
 - `SdoLoading.kt`: added `SdoRotatingSyncIcon` (continuous 360° rotation on `Icons.Default.Sync` while syncing) and `SdoGlobalSyncStatusPill` (compact status symbol visible across all app screens showing `SINCRONIZANDO`, `ATUALIZADO`, `OFFLINE`, `PENDENTE`, or `EM DIA`, clickable to trigger sync).
 - `AppViewModel.kt`: removed `"Ficha salva localmente"` snackbar/toast notice from `persistLocally` and updated `startCharacterSync` to toggle `syncing` while preserving `cloudSyncing` behavior.
@@ -26,7 +26,7 @@ Validation: `:app:testDebugUnitTest :app:assembleDebug`.
 
 ## Block 3 — Lore curation & mystic/cryptic pre-Era catalogs (BACKLOG-019, BACKLOG-020)
 
-Status: InDevReview; updated 2026-11-17 20:58 America/La_Paz on `feature/game-modes-and-quick-create` (same PR #153, split into two commits).
+Status: Done; owner approved 2026-11-18 00:36 America/La_Paz on `feature/game-modes-and-quick-create` (same PR #153, split into two commits).
 Scope:
 - `BACKLOG-019` (`catalogs/knowledge.json`, `catalogs/materials.json`, regenerated Kotlin): removed Silos/campaign-plot references and replaced pre-Era ancestral material names with mystic/cryptic wording while preserving all IDs, mechanics, and the 18 original player-tribute paths in `BuiltInCatalog.kt`/`PathPresets.kt`.
 - `BACKLOG-020` (`BuiltInCatalog.kt`, `PathPresets.kt`, `catalogs/powers.json`, `catalogs/magic.json`, `catalogs/runes.json`, `catalogs/ashes.json`, `catalogs/knowledge.json`, `catalogs/items.json`, `tools/generate_catalog.py`, `BuiltInCatalogTest.kt`): added 7 pre-Era paths, 7 powers, 6 spells, 6 runes, 6 ash groups (18 purities), 11 knowledges (including `Essalhen`, `Magia dos Primeiros`, `Sabedoria Primordial`, `Cartografia do Véu`, `Relíquias da Era Muda`, `Liturgia dos Sete Nomes`, `Tecelagem do Espelho Onírico`, `Passo da Areia Sem Fim`), and 2 items grounded in public world history (`Linha do Tempo.md`, `Essalhen.md`, `Nulvara.md`, `Deidades.md`) with mystic/cryptic tone.
@@ -34,7 +34,7 @@ Validation: `generate_catalog.py --check`, `generate_gem_catalog.py --check`, `g
 
 ## Block 2 — Game Modes (BACKLOG-017, BACKLOG-018) & Path spacing polish
 
-Status: InDevReview; updated 2026-11-17 18:52 America/La_Paz on `feature/game-modes-and-quick-create`.
+Status: Done; owner approved 2026-11-18 00:36 America/La_Paz on `feature/game-modes-and-quick-create`.
 Scope:
 - `BACKLOG-017` (`SessionModeScreen.kt`): added `SdoIconButton` favorite toggle (`Icons.Default.Star` / `StarBorder`, `session_ability_favorite`) on `SessionAbilityCard` with `onToggleAbilityFavorite` callback and upgraded card padding/accent hierarchy.
 - `BACKLOG-018` (`HistorianDashboardScreen.kt`): quick preset buttons pass their specific `QuickActionKind` into `QuickActionsDialog` (`initialAction = preset`).
@@ -43,7 +43,7 @@ Validation: `:app:testDebugUnitTest :app:assembleDebug` PASS.
 
 ## Block 1 — Character sheet visual upgrades (BACKLOG-015, BACKLOG-016, BACKLOG-021)
 
-Status: InDevReview; updated 2026-11-17 17:21 America/La_Paz on `feature/sheet-visual-upgrades`.
+Status: Done; owner approved 2026-11-18 00:36 America/La_Paz on `feature/sheet-visual-upgrades`.
 Scope:
 - `BACKLOG-015` (`PhaseOneSections.kt`): added `PathReadOnlyShowcase` using semantic `MaterialTheme.colorScheme`/`typography` and `SdoInsetCard`/`SdoMetadataText`, with `EDITAR`/`VISUALIZAR` toggle when editable and read-only showcase when disabled.
 - `BACKLOG-021` (`CharacterNotesSection.kt`): aligned `PersonalNoteCard` with `BACKLOG-015` by showing a styled non-editable preview (title + body) when collapsed or read-only, with `EDITAR`/`VISUALIZAR` toggle when editable.
@@ -52,7 +52,7 @@ Validation: `:app:assembleDebug :app:testDebugUnitTest` PASS. No Room schema, Fi
 
 ## v0.54.4 admin empty-account ItemQuality decode fix
 
-Status: InDevReview; updated 2026-11-17 16:28 America/La_Paz. After deploying production Rules and installing v0.54.4, the owner reported the admin account (`kindbarros@gmail.com`) appeared empty.
+Status: Done; owner approved 2026-11-18 00:36 America/La_Paz. After deploying production Rules and installing v0.54.4, the owner reported the admin account (`kindbarros@gmail.com`) appeared empty.
 Diagnosis: the admin account owns 0 personal sheets and 1 `ACTIVE` campaign (`87bfe102-4bf3-4164-934f-1b197e3f07d1`, `Solidão dos Oprimidos`) with 4 player sheets. Decoding those 4 production sheets through `SparkWireCodec.fromSparkDocuments` threw `NullPointerException: Parameter specified as non-null is null: method InventoryItem.copy, parameter quality` on all 4 sheets, which `SparkFirestoreSyncEngine.sync` swallowed inside `runCatching`. Migrated `inv_*` items store `quality` as Portuguese `@PropertyName` labels (e.g. `"Comum"`), whereas `plainGson` only deserialized enum names (`"COMMON"`).
 Fix: registered `itemQualityDeserializer` on `SparkWireCodec.plainGson` to accept both `ItemQuality` enum names and Portuguese labels (falling back to `ItemQuality.COMMON`), and added a regression test in `SparkWireCodecTest`. Verified all 4 exported production sheets decode cleanly and `:app:testDebugUnitTest :app:assembleDebug` PASS. No Firebase Rules or Room schema change.
 
