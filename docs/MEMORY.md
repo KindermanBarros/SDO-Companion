@@ -5,6 +5,15 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## BACKLOG-014 — Rotating sync icon & global sync indicator without toasts
+
+Status: InDevReview; updated 2026-11-17 22:22 America/La_Paz on `feature/game-modes-and-quick-create`.
+Scope:
+- `SdoLoading.kt`: added `SdoRotatingSyncIcon` (continuous 360° rotation on `Icons.Default.Sync` while syncing) and `SdoGlobalSyncStatusPill` (compact status symbol visible across all app screens showing `SINCRONIZANDO`, `ATUALIZADO`, `OFFLINE`, `PENDENTE`, or `EM DIA`, clickable to trigger sync).
+- `AppViewModel.kt`: removed `"Ficha salva localmente"` snackbar/toast notice from `persistLocally` and updated `startCharacterSync` to toggle `syncing` while preserving `cloudSyncing` behavior.
+- `CharacterSheetScreen.kt`, `DashboardScreen.kt`, `SdoApp.kt`: replaced save Toast in `SheetHero`, replaced static sync icon in Dashboard and `SyncStatusBanner` with `SdoRotatingSyncIcon`, removed popup confirmed banner toast, added persistent `SdoGlobalSyncStatusPill` across all screens, and wired `onToggleAbilityFavorite` for `SessionModeScreen`.
+Validation: `:app:testDebugUnitTest :app:assembleDebug`.
+
 ## Block 3 — Lore curation & mystic/cryptic pre-Era catalogs (BACKLOG-019, BACKLOG-020)
 
 Status: InDevReview; updated 2026-11-17 20:58 America/La_Paz on `feature/game-modes-and-quick-create` (same PR #153, split into two commits).

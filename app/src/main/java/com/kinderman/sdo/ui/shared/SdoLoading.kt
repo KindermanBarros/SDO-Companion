@@ -7,15 +7,24 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.progressSemantics
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,7 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -137,5 +148,79 @@ fun CyberLoadingIndicator(
             end = Offset(scannerX, size.height),
             strokeWidth = 2.dp.toPx(),
         )
+    }
+}
+
+@Composable
+fun SdoRotatingSyncIcon(
+    syncing: Boolean,
+    contentDescription: String?,
+    tint: Color = MaterialTheme.colorScheme.primary,
+    modifier: Modifier = Modifier,
+) {
+    val transition = rememberInfiniteTransition(label = "sdo-sync-rotation")
+    val angle by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "sdo-sync-angle",
+    )
+    Icon(
+        imageVector = Icons.Default.Sync,
+        contentDescription = contentDescription,
+        tint = tint,
+        modifier = modifier.graphicsLayer { rotationZ = if (syncing) angle else 0f },
+    )
+}
+
+@Composable
+fun SdoGlobalSyncStatusPill(
+    syncing: Boolean,
+    justUpdated: Boolean,
+    offline: Boolean,
+    hasError: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val tint = when {
+        hasError -> MaterialTheme.colorScheme.error
+        offline -> MaterialTheme.colorScheme.onSurfaceVariant
+        syncing || justUpdated -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.secondary
+    }
+    val label = when {
+        syncing -> "SINCRONIZANDO"
+        justUpdated -> "ATUALIZADO"
+        offline -> "OFFLINE"
+        hasError -> "PENDENTE"
+        else -> "EM DIA"
+    }
+    Surface(
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+        contentColor = tint,
+        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 8.dp),
+        border = BorderStroke(1.dp, tint.copy(alpha = 0.55f)),
+        modifier = modifier.sdoClickable(onClick = onClick),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SdoRotatingSyncIcon(
+                syncing = syncing,
+                contentDescription = "Estado da sincronização: $label",
+                tint = tint,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                text = label,
+                color = tint,
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
     }
 }

@@ -356,7 +356,6 @@ private fun MissingCharacterState(
 
 @Composable
 internal fun SheetHero(character: Character, session: UserSession, saveError: String? = null) {
-    val context = androidx.compose.ui.platform.LocalContext.current
     SdoScreenMasthead(
         eyebrow = "CHARACTER//ARCHIVE",
         title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
@@ -403,17 +402,13 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
             }
         }
         Barcode("${character.id}-${character.name}")
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             ComplianceMark()
-            SdoIconButton(onClick = {
-                android.widget.Toast.makeText(context,
-                    saveError ?: if (character.dirty) "Alterações salvas no aparelho; sincronização pendente"
-                    else "Alterações salvas",
-                    android.widget.Toast.LENGTH_SHORT).show()
-            }) {
-                Icon(if (saveError == null) Icons.Default.CloudDone else Icons.Default.ErrorOutline,
-                    saveError ?: "Estado de salvamento", tint = if (saveError == null) Acid else Signal)
-            }
+            com.kinderman.sdo.ui.SdoRotatingSyncIcon(
+                syncing = character.dirty && saveError == null,
+                contentDescription = saveError ?: if (character.dirty) "Sincronizando alterações" else "Ficha sincronizada",
+                tint = if (saveError == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            )
         }
     }
 }
