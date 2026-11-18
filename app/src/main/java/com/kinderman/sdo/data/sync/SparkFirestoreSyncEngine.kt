@@ -1283,6 +1283,11 @@ class SparkFirestoreSyncEngine(
         check(CharacterAccessPolicy.canDelete(session, character, isCampaignHistorian(session, character))) {
             "Esta ficha não pode ser removida."
         }
+        // Optimistically hide the character in the local UI projection immediately (<5ms) before
+        // acquiring drainMutex or probing Firestore in cancelUnpublishedSheet.
+        if (activeAccountId == accountId && isAccountCurrent(accountId)) {
+            localStore.upsertCharacter(character.copy(deleted = true, dirty = false).toRecord())
+        }
         if (drainMutex.withLock { cancelUnpublishedSheet(accountId, character.id) }) return
         if (!isAccountCurrent(accountId)) return
         val now = clock.nowMillis()
