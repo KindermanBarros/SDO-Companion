@@ -64,7 +64,7 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
     }
     Column(
         modifier.fillMaxHeight().width(136.dp)
-            .background(CyberGrungeTokens.Void)
+            .background(MaterialTheme.colorScheme.background)
             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .7f))
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical))
             .verticalScroll(rememberScrollState())
@@ -81,7 +81,7 @@ fun SdoNavigationRail(items: List<SdoNavigationItem>, modifier: Modifier = Modif
                 Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .border(1.dp, accent, CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
                     .clip(CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
-                    .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .45f) else CyberGrungeTokens.Panel)
+                    .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .45f) else MaterialTheme.colorScheme.surface)
                     .selectable(selected = item.selected, role = Role.Tab, onClick = item.onClick)
                     .padding(horizontal = 9.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
@@ -109,7 +109,7 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
         return
     }
     Row(
-        modifier.fillMaxWidth().background(CyberGrungeTokens.Void)
+        modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)
             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .7f))
             .navigationBarsPadding()
             .selectableGroup()
@@ -121,7 +121,7 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
             val accent = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             Column(
                 Modifier.weight(1f).heightIn(min = 48.dp).border(1.dp, accent, shape).clip(shape)
-                    .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else CyberGrungeTokens.Panel)
+                    .background(if (item.selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .5f) else MaterialTheme.colorScheme.surface)
                     .selectable(selected = item.selected, role = Role.Tab, onClick = item.onClick)
                     .padding(horizontal = 4.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,

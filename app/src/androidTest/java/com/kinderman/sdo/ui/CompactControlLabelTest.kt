@@ -70,8 +70,8 @@ class CompactControlLabelTest(private val mode: SdoVisualMode, private val theme
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}-{1}")
-        fun modes(): List<Array<Any>> = SdoThemeVariant.entries.map {
-            arrayOf<Any>(SdoVisualMode.STANDARD, it)
-        } + listOf(arrayOf<Any>(SdoVisualMode.CYBERGRUNGE, SdoThemeVariant.CYAN_INDUSTRIAL))
+        fun modes(): List<Array<Any>> = SdoVisualMode.entries.flatMap { mode ->
+            SdoThemeVariant.entries.map { arrayOf<Any>(mode, it) }
+        }
     }
 }

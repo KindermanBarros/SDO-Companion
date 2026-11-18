@@ -70,11 +70,11 @@ fun CharacterConflictDialog(
                     SdoTextButton(
                         onClick = { remoteFieldIds = emptySet() },
                         modifier = Modifier.weight(1f),
-                    ) { Text(stringResource(R.string.conflict_dialog_all_local)) }
+                    ) { com.kinderman.sdo.ui.AdaptiveActionLabel(stringResource(R.string.conflict_dialog_all_local)) }
                     SdoTextButton(
                         onClick = { remoteFieldIds = conflict.fields.mapTo(mutableSetOf()) { it.id } },
                         modifier = Modifier.weight(1f),
-                    ) { Text(stringResource(R.string.conflict_dialog_all_online)) }
+                    ) { com.kinderman.sdo.ui.AdaptiveActionLabel(stringResource(R.string.conflict_dialog_all_online)) }
                 }
                 Column(
                     modifier = Modifier
@@ -205,9 +205,18 @@ fun CharacterConflictDialog(
                     if (editor.kind == ManualConflictValue.Kind.BOOLEAN) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf(true, false).forEach { choice ->
+                                val isSelected = values.firstOrNull() == choice.toString()
                                 SdoOutlinedButton(
                                     onClick = { values = listOf(choice.toString()) },
                                     modifier = Modifier.weight(1f).testTag("conflict_manual_" + choice),
+                                    border = BorderStroke(
+                                        if (isSelected) 2.dp else 1.dp,
+                                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                    ),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    ),
                                 ) { Text(stringResource(if (choice) R.string.conflict_dialog_manual_yes
                                     else R.string.conflict_dialog_manual_no)) }
                             }
@@ -224,9 +233,10 @@ fun CharacterConflictDialog(
                                 onValueChange = { next -> values = values.toMutableList().apply { set(index, next) } },
                                 modifier = Modifier.fillMaxWidth().testTag("conflict_manual_value_" + index),
                                 multiline = editor.kind == ManualConflictValue.Kind.TEXT,
-                                keyboardOptions = KeyboardOptions(keyboardType = when (editor.kind) {
-                                    ManualConflictValue.Kind.INTEGER, ManualConflictValue.Kind.RESOURCE -> KeyboardType.Number
-                                    ManualConflictValue.Kind.DECIMAL -> KeyboardType.Decimal
+                                keyboardOptions = KeyboardOptions(keyboardType = when {
+                                    editor.kind == ManualConflictValue.Kind.RESOURCE && index == 2 -> KeyboardType.Text
+                                    editor.kind == ManualConflictValue.Kind.INTEGER || editor.kind == ManualConflictValue.Kind.RESOURCE -> KeyboardType.Number
+                                    editor.kind == ManualConflictValue.Kind.DECIMAL -> KeyboardType.Decimal
                                     else -> KeyboardType.Text
                                 }),
                             )

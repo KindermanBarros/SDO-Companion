@@ -484,7 +484,7 @@ private fun AshBuilderDialog(
                                 }.padding(10.dp),
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
-                                Text(name, color = Ice, style = MaterialTheme.typography.titleSmall)
+                                Text(name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
                                 Text(
                                     "${variants.firstOrNull()?.catalogAshSource?.label ?: "Fonte desconhecida"} // ${variants.size} PUREZAS",
                                     color = MaterialTheme.colorScheme.primary,
@@ -511,7 +511,7 @@ private fun AshBuilderDialog(
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Text(entryPurity.label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleSmall)
-                                    if (isSelected) Text("SELECIONADA", color = Signal, style = MaterialTheme.typography.labelSmall)
+                                    if (isSelected) Text("SELECIONADA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                                 Text(

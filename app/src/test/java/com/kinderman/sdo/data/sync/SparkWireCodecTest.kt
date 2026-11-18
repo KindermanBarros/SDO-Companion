@@ -2,6 +2,7 @@ package com.kinderman.sdo.data.sync
 
 import com.kinderman.sdo.data.local.CharacterConverters
 import com.kinderman.sdo.data.local.toRecord
+import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.AmmoState
 import com.kinderman.sdo.domain.model.AmmoTypeId
@@ -310,5 +311,85 @@ class SparkWireCodecTest {
             val decoded = SparkWireCodec.fromSparkDocuments(patchedDocs)
             assertEquals("Failed for quality=$rawQuality", expectedQuality, decoded.inventory.single().quality)
         }
+    }
+
+    @Test
+    fun existingSheetWithConditionsStoryNotesAndNewPreEraCatalogEntriesRoundTripsLosslessly() {
+        val original = Character(
+            id = "sheet-pre-era",
+            ownerId = "owner-1",
+            name = "Chronista",
+            pathName = "Intérprete do Antes-Véu",
+            story = "História gravada antes da Fratura.",
+            personalNotes = listOf(com.kinderman.sdo.domain.model.PersonalNote(id = "note-1", title = "Sinal", text = "Essalhen")),
+            learnedKnowledges = listOf(
+                com.kinderman.sdo.domain.model.SpecialKnowledge(
+                    id = "k-essalhen",
+                    catalogEntryId = "knowledge.acquired_knowledge.essalhen",
+                    name = "Essalhen",
+                    attribute = "INT",
+                    value = 2,
+                ),
+            ),
+            arcaneKnowledges = listOf(
+                com.kinderman.sdo.domain.model.SpecialKnowledge(
+                    id = "k-primeiros",
+                    catalogEntryId = "knowledge.arcane_knowledge.magia_dos_primeiros",
+                    name = "Magia dos Primeiros",
+                    attribute = "POD",
+                    value = 2,
+                ),
+            ),
+            conditionInstances = listOf(
+                com.kinderman.sdo.domain.model.ConditionInstance(
+                    payload = com.kinderman.sdo.domain.model.ConditionPayload(
+                        kind = com.kinderman.sdo.domain.model.ConditionKind.Abalado,
+                        intensity = 2,
+                        duration = com.kinderman.sdo.domain.model.Duration(
+                            com.kinderman.sdo.domain.model.DurationKind.Turns,
+                            turns = 3,
+                        ),
+                    ),
+                    source = com.kinderman.sdo.domain.model.Source.narrative(
+                        com.kinderman.sdo.domain.model.NarrativeSourceId("manual-condition"),
+                    ),
+                ),
+            ),
+            inventory = listOf(
+                InventoryItem(
+                    id = "item-astrolabio",
+                    catalogEntryId = "item.astrolabio_de_lo",
+                    name = "Astrolábio de Céu Morto",
+                    quantity = 1,
+                ),
+            ),
+        ).toRecord().normalizedForSparkV2()
+
+        val docs = SparkWireCodec.toSparkDocuments(original)
+        val decoded = SparkWireCodec.fromSparkDocuments(docs)
+        val batches = SparkWireCodec.buildOperationBatches(
+            before = null,
+            after = Character(id = "sheet-new", ownerId = "owner-1").toRecord(),
+            operationIdPrefix = "op-fast-create",
+            actorUid = "owner-1",
+            skipDefaultFieldsOnCreate = true,
+        )
+
+        assertEquals(original.pathName, decoded.pathName)
+        assertEquals(original.story, decoded.story)
+        assertEquals(original.personalNotes.single().title, decoded.personalNotes.single().title)
+        assertEquals(original.learnedKnowledges.single().catalogEntryId, decoded.learnedKnowledges.single().catalogEntryId)
+        assertEquals(original.arcaneKnowledges.single().catalogEntryId, decoded.arcaneKnowledges.single().catalogEntryId)
+        assertEquals(original.toDomain().conditionInstances.single().intensity, decoded.toDomain().conditionInstances.single().intensity)
+        assertEquals(original.inventory.single().name, decoded.inventory.single().name)
+        val fullBatches = SparkWireCodec.buildOperationBatches(
+            before = null,
+            after = Character(id = "sheet-new", ownerId = "owner-1").toRecord(),
+            operationIdPrefix = "op-full-create",
+            actorUid = "owner-1",
+        )
+        val fastTargets = batches.sumOf { it.targets.size }
+        val fullTargets = fullBatches.sumOf { it.targets.size }
+        assertTrue("fast=$fastTargets full=$fullTargets", fastTargets in 1..16 && fastTargets < fullTargets / 5)
     }
 }

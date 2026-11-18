@@ -109,7 +109,8 @@ internal fun TwoFields(
 ) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val fontScale = LocalDensity.current.fontScale * LocalSdoPreferences.current.fontScale.multiplier
-        if (maxWidth < 360.dp * fontScale) {
+        val cybergrunge = LocalSdoPreferences.current.visualMode == com.kinderman.sdo.ui.SdoVisualMode.CYBERGRUNGE
+        if (maxWidth < (if (cybergrunge) 460.dp else 360.dp) * fontScale) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 first(Modifier.fillMaxWidth())
                 second(Modifier.fillMaxWidth())

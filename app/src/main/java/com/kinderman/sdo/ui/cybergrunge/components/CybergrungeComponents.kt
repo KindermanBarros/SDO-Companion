@@ -122,7 +122,7 @@ internal fun CyberGrungeAction(
 ) {
     val signal = when (style) {
         SdoActionStyle.PRIMARY -> MaterialTheme.colorScheme.primary
-        SdoActionStyle.SECONDARY -> CyberGrungeTokens.TerminalGreen
+        SdoActionStyle.SECONDARY -> MaterialTheme.colorScheme.secondary
         SdoActionStyle.DESTRUCTIVE -> MaterialTheme.colorScheme.error
     }
     val shape = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)
@@ -172,11 +172,11 @@ internal fun CyberGrungeField(
     val interaction = remember { MutableInteractionSource() }
     val colors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = CyberGrungeTokens.TerminalGreen.copy(alpha = .72f),
-        focusedContainerColor = CyberGrungeTokens.Panel,
-        unfocusedContainerColor = CyberGrungeTokens.Panel,
+        unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = .72f),
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
         focusedLabelColor = MaterialTheme.colorScheme.primary,
-        unfocusedLabelColor = CyberGrungeTokens.Paper.copy(alpha = .72f),
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .72f),
     )
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
         Text("INPUT//$label", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)

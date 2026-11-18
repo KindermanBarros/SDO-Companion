@@ -517,7 +517,6 @@ class AppViewModel(
         try {
             localSaveMutex.withLock { saveCharacter(session, character) }
             _saveErrors.value = _saveErrors.value - character.id
-            if (notify) _message.value = "Ficha salva localmente"
             if (automaticSync) scheduleRemoteSync(character.id)
         } catch (cancelled: CancellationException) {
             // Superseding an autosave is normal while the player is editing.
@@ -686,9 +685,10 @@ class AppViewModel(
             return
         }
         scope.launch {
-            if (fromCloud) {
-                _loadState.value = _loadState.value.copy(cloudSyncing = true)
-            }
+            _loadState.value = _loadState.value.copy(
+                syncing = true,
+                cloudSyncing = _loadState.value.cloudSyncing || fromCloud,
+            )
             try {
                 runCatching { repository.syncCharacter(session, characterId) }
                     .onSuccess { charConflicts ->
@@ -699,9 +699,11 @@ class AppViewModel(
                         android.util.Log.e("SDO_SYNC", "syncCharacter($characterId) failed", error)
                     }
             } finally {
-                if (fromCloud && (cloudSyncPulseMs <= 0L || cloudSyncPulseJob?.isActive != true)) {
-                    _loadState.value = _loadState.value.copy(cloudSyncing = false)
-                }
+                val keepCloudSyncing = fromCloud && (cloudSyncPulseMs > 0L && cloudSyncPulseJob?.isActive == true)
+                _loadState.value = _loadState.value.copy(
+                    syncing = false,
+                    cloudSyncing = if (fromCloud && !keepCloudSyncing) false else _loadState.value.cloudSyncing,
+                )
             }
         }
     }

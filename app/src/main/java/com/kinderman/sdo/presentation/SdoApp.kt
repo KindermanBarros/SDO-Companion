@@ -47,6 +47,7 @@ import com.kinderman.sdo.SdoApplication
 import com.kinderman.sdo.domain.model.ConflictResolutionStatus
 import com.kinderman.sdo.domain.model.SheetIntentStatus
 import com.kinderman.sdo.domain.model.SheetSyncStatus
+import com.kinderman.sdo.domain.model.allCanonicalAbilitiesSafely
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.presentation.character.CharacterSheetScreen
 import com.kinderman.sdo.presentation.dashboard.DashboardScreen
@@ -134,25 +135,26 @@ fun SdoApp(
         if (accessDeniedIntents.isEmpty()) reviewingAccessDenied = false
     }
 
-    LaunchedEffect(
-        sheetSyncStatus.confirmedCount,
-        sheetSyncStatus.totalQueuedCount,
-        offlineReadOnly,
-        syncFailure,
-    ) {
+    val isSyncingNow = characterLoadState.syncing ||
+        characterLoadState.cloudSyncing ||
+        sheetSyncStatus.isSyncing ||
+        sheetSyncStatus.sendingCount > 0 ||
+        sheetSyncStatus.pendingCount > 0
+    var justUpdated by rememberSaveable(appSession?.uid) { mutableStateOf(false) }
+    var wasSyncing by remember { mutableStateOf(false) }
+    LaunchedEffect(isSyncingNow, sheetSyncStatus.confirmedCount, offlineReadOnly, syncFailure) {
         val previous = lastSeenConfirmedCount
         lastSeenConfirmedCount = sheetSyncStatus.confirmedCount
-        if (previous != null &&
-            sheetSyncStatus.confirmedCount > previous &&
-            sheetSyncStatus.totalQueuedCount == 0 &&
-            !offlineReadOnly &&
-            syncFailure == null
-        ) {
-            showConfirmedBanner = true
-            delay(3_500L)
-            showConfirmedBanner = false
-        } else if (sheetSyncStatus.totalQueuedCount > 0 || offlineReadOnly || syncFailure != null) {
-            showConfirmedBanner = false
+        val confirmedIncreased = previous != null && sheetSyncStatus.confirmedCount > previous
+        val finishedSync = wasSyncing && !isSyncingNow
+        wasSyncing = isSyncingNow
+        showConfirmedBanner = false
+        if ((finishedSync || confirmedIncreased) && !isSyncingNow && !offlineReadOnly && syncFailure == null) {
+            justUpdated = true
+            delay(2_000L)
+            justUpdated = false
+        } else if (isSyncingNow || offlineReadOnly || syncFailure != null) {
+            justUpdated = false
         }
     }
 
@@ -282,6 +284,20 @@ fun SdoApp(
                     add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
                 })
                 Column(Modifier.weight(1f).fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    com.kinderman.sdo.ui.SdoGlobalSyncStatusPill(
+                        syncing = isSyncingNow,
+                        justUpdated = justUpdated,
+                        offline = offlineReadOnly,
+                        hasError = sheetSyncStatus.hasActionRequired || syncFailure != null,
+                        onClick = appViewModel::sync,
+                    )
+                }
                 SdoContentFrame(Modifier.weight(1f)) {
             screenState.SaveableStateProvider("${appSession?.uid}:${surface.name}") {
             when (surface) {
@@ -404,6 +420,15 @@ fun SdoApp(
                     },
                     onCommand = appViewModel::applySessionCommand,
                     onInventoryStateChange = appViewModel::changeItemState,
+                    onToggleAbilityFavorite = { targetCharacter, abilityId ->
+                        appViewModel.autosave(
+                            targetCharacter.copy(
+                                abilities = targetCharacter.allCanonicalAbilitiesSafely().map { ability ->
+                                    if (ability.id == abilityId) ability.copy(favorite = !ability.favorite) else ability
+                                },
+                            ),
+                        )
+                    },
                     onBack = { goBack() },
                 )
 
@@ -474,9 +499,8 @@ fun SdoApp(
                 }
                 val showSyncBanner = offlineReadOnly ||
                     syncFailure != null ||
-                    sheetSyncStatus.totalQueuedCount > 0 ||
-                    sheetSyncStatus.isSyncing ||
-                    showConfirmedBanner
+                    sheetSyncStatus.hasActionRequired ||
+                    sheetSyncStatus.isSyncing
                 if (showSyncBanner) {
                     val firstDenied = accessDeniedIntents.firstOrNull()
                     SyncStatusBanner(
@@ -623,16 +647,25 @@ private fun SyncStatusBanner(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
-                    imageVector = when {
-                        offlineReadOnly -> Icons.Default.CloudOff
-                        isConfirmedOnly -> Icons.Default.CheckCircle
-                        else -> Icons.Default.SyncProblem
-                    },
-                    contentDescription = null,
-                    tint = if (isConfirmedOnly) MaterialTheme.colorScheme.primary else contentColor,
-                    modifier = Modifier.size(18.dp),
-                )
+                if (!offlineReadOnly && (status.isSyncing || status.sendingCount > 0 || status.pendingCount > 0)) {
+                    com.kinderman.sdo.ui.SdoRotatingSyncIcon(
+                        syncing = true,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp),
+                    )
+                } else {
+                    Icon(
+                        imageVector = when {
+                            offlineReadOnly -> Icons.Default.CloudOff
+                            isConfirmedOnly -> Icons.Default.CheckCircle
+                            else -> Icons.Default.SyncProblem
+                        },
+                        contentDescription = null,
+                        tint = if (isConfirmedOnly) MaterialTheme.colorScheme.primary else contentColor,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
                 Text(
                     text = bannerText,
                     style = MaterialTheme.typography.labelMedium,

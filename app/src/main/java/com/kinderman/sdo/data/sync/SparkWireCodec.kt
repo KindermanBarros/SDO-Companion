@@ -798,31 +798,28 @@ object SparkWireCodec {
             )
         }
 
-        val defaultDocs = if (beforeDocs == null && skipDefaultFieldsOnCreate) {
-            toSparkDocuments(
-                record = CharacterRecord(
-                    id = after.id,
-                    ownerId = after.ownerId,
-                    campaignId = after.campaignId,
-                    canonicalSchemaVersion = after.canonicalSchemaVersion,
-                    updatedAt = updatedAt,
-                    lastEditedBy = actorUid,
-                ),
-                revision = 1L,
-                fieldRevisions = emptyMap(),
-                lastOperationId = operationIdPrefix,
-                updatedBy = actorUid,
-                updatedAt = updatedAt,
-                authorizedCampaignId = authorizedCampaignId,
-            )
-        } else {
-            null
+        // Fast creation: omit every field/item whose absence decodes to the identical sheet.
+        // Readers rebuild those values from their defaults, so the transaction stays tiny.
+        val redundantFields = mutableSetOf<String>()
+        val redundantItemIds = mutableSetOf<String>()
+        if (beforeDocs == null && skipDefaultFieldsOnCreate) {
+            val full = fromSparkDocuments(afterDocs)
+            afterDocs.fields.keys.forEach { key ->
+                if (fromSparkDocuments(afterDocs.copy(fields = afterDocs.fields - key)) == full) redundantFields += key
+            }
+            val trimmed = afterDocs.copy(fields = afterDocs.fields - redundantFields)
+            val attributeIds = afterDocs.items.filter { (id, bundle) ->
+                bundle.document["kind"] == "ATTRIBUTE" || id.startsWith("attr_")
+            }.keys
+            if (attributeIds.isNotEmpty() && fromSparkDocuments(trimmed.copy(items = trimmed.items - attributeIds)) == full) {
+                redundantItemIds += attributeIds
+            }
         }
 
         afterDocs.fields.forEach { (fieldKey, doc) ->
             val oldValue = beforeDocs?.fields?.get(fieldKey)?.get("value")
             val newValue = doc["value"]
-            val matchesDefaultOnCreate = defaultDocs != null && defaultDocs.fields[fieldKey]?.get("value") == newValue
+            val matchesDefaultOnCreate = fieldKey in redundantFields
             if (!matchesDefaultOnCreate && (beforeDocs == null || oldValue != newValue)) {
                 val expectedRev = if (beforeDocs == null) {
                     0L
@@ -846,6 +843,7 @@ object SparkWireCodec {
         }
 
         afterDocs.items.forEach { (itemId, bundle) ->
+            if (itemId in redundantItemIds) return@forEach
             val oldBundle = beforeDocs?.items?.get(itemId)
             val itemExpectedRev = if (oldBundle == null) 0L else (existingRevisions["item:$itemId"] ?: 0L)
             if (oldBundle == null) {

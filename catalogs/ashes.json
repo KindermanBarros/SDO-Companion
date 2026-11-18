@@ -4556,6 +4556,546 @@
       "deactivationCondition": "Ao final da cena.",
       "sourceDocument": "150 Exemplos de Cinzas",
       "ruleReference": "03 - Regras/Magia/50 Exemplos de Cinzas.md"
+    },
+    {
+      "id": "ash.cinza_do_alvorecer.bruta",
+      "type": "ASH",
+      "name": "Cinza de Sol Extinto",
+      "source": "Luz",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Cone curto diante do usuário",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Clarão pálido de um astro que não figura nos mapas; ofusca criaturas próximas por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Cinza de Sol Extinto",
+        "Luz",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.cinza_do_alvorecer.refinada",
+      "type": "ASH",
+      "name": "Cinza de Sol Extinto",
+      "source": "Luz",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Ilumina inscrições apagadas e revela contornos ocultos por 1 turno, aplicando 1d6 de dano de luz a seres sombrios.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Cinza de Sol Extinto",
+        "Luz",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.cinza_do_alvorecer.pura",
+      "type": "ASH",
+      "name": "Cinza de Sol Extinto",
+      "source": "Luz",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Desfaz neblinas ilusórias, acende vestígios do Antes-Véu e causa 2d6 de dano de luz a entidades sombrias na área.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Cinza de Sol Extinto",
+        "Luz",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.poeira_de_harutael.bruta",
+      "type": "ASH",
+      "name": "Poeira da Primeira Forja",
+      "source": "Tecnologia",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Um mecanismo ou arma a até 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Centelha de latão e sonho que desperta um mecanismo próximo por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Poeira da Primeira Forja",
+        "Tecnologia",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.poeira_de_harutael.refinada",
+      "type": "ASH",
+      "name": "Poeira da Primeira Forja",
+      "source": "Tecnologia",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Um mecanismo ou arma a até 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Restaura 2 de Durabilidade temporária em um objeto metálico ou trava uma engrenagem hostil por 1 turno.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Poeira da Primeira Forja",
+        "Tecnologia",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.poeira_de_harutael.pura",
+      "type": "ASH",
+      "name": "Poeira da Primeira Forja",
+      "source": "Tecnologia",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Pulsa a memória de forjas anteriores ao silêncio; reativa um construto ou artefato e concede +2 em Engenharia ou Ofício na cena.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Poeira da Primeira Forja",
+        "Tecnologia",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.bruma_de_namaris.bruta",
+      "type": "ASH",
+      "name": "Sal da Bruma Sem Mapa",
+      "source": "Ilusão",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "3 m ao redor",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Erguem-se fiapos de névoa antiga que embaralham distâncias por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Sal da Bruma Sem Mapa",
+        "Ilusão",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md"
+    },
+    {
+      "id": "ash.bruma_de_namaris.refinada",
+      "type": "ASH",
+      "name": "Sal da Bruma Sem Mapa",
+      "source": "Ilusão",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Cobre os contornos do usuário e aliados próximos com neblina silenciosa; +2 em Furtividade por 2 turnos.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Sal da Bruma Sem Mapa",
+        "Ilusão",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 2 turno(s).",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md"
+    },
+    {
+      "id": "ash.bruma_de_namaris.pura",
+      "type": "ASH",
+      "name": "Sal da Bruma Sem Mapa",
+      "source": "Ilusão",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Apaga rastros recentes e apruma o véu ao redor do grupo, concedendo obscurecimento e +2 em Esquiva contra ataques à distância por 2 turnos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Sal da Bruma Sem Mapa",
+        "Ilusão",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 2 turno(s).",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md"
+    },
+    {
+      "id": "ash.fuligem_do_silencio.bruta",
+      "type": "ASH",
+      "name": "Fuligem da Era Muda",
+      "source": "Trevas",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "1 alvo a até 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Pó negro que abafa faíscas arcanas menores por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Fuligem da Era Muda",
+        "Trevas",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.fuligem_do_silencio.refinada",
+      "type": "ASH",
+      "name": "Fuligem da Era Muda",
+      "source": "Trevas",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 3 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Suprime ecos mágicos e impõe −2 na próxima conjuração realizada na área por 1 turno.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Fuligem da Era Muda",
+        "Trevas",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 1 turno(s).",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.fuligem_do_silencio.pura",
+      "type": "ASH",
+      "name": "Fuligem da Era Muda",
+      "source": "Trevas",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 5 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Recria o silêncio anterior à redescoberta do onírico: reduz pela metade o efeito de uma magia sustentada ou concede +3 em Proteção Arcana por 2 turnos.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Fuligem da Era Muda",
+        "Trevas",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 2 turno(s).",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.areia_de_vaelivash.bruta",
+      "type": "ASH",
+      "name": "Areia do Espelho Onírico",
+      "source": "Onírico",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "1 alvo a até 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Grãos que brilham como água parada; o alvo sofre 1d4 de dano mental e vê um reflexo impossível. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Areia do Espelho Onírico",
+        "Onírico",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.areia_de_vaelivash.refinada",
+      "type": "ASH",
+      "name": "Areia do Espelho Onírico",
+      "source": "Onírico",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "1 alvo a até 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Causa 1d6 de dano onírico e revela a intenção imediata de uma ilusão ou disfarce próximo.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Areia do Espelho Onírico",
+        "Onírico",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.areia_de_vaelivash.pura",
+      "type": "ASH",
+      "name": "Areia do Espelho Onírico",
+      "source": "Onírico",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Reflete o sonho de quem a toca: causa 2d6 de dano onírico a inimigos na área e concede +2 no próximo teste de POD do usuário.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Areia do Espelho Onírico",
+        "Onírico",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "ash.residuo_de_ilyra.bruta",
+      "type": "ASH",
+      "name": "Cinza do Último Sono",
+      "source": "Morte",
+      "purity": "Bruta",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "1 criatura a até 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Sopra quietude fúnebre que causa 1d6 de dano necrótico ou acalma um morto inquieto por 1 turno. Após o uso, aplique o risco de Cinza Bruta.",
+      "prerequisites": [
+        "Dose de Cinza Bruta"
+      ],
+      "keywords": [
+        "Cinza do Último Sono",
+        "Morte",
+        "Bruta",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md"
+    },
+    {
+      "id": "ash.residuo_de_ilyra.refinada",
+      "type": "ASH",
+      "name": "Cinza do Último Sono",
+      "source": "Morte",
+      "purity": "Refinada",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "1 criatura a até 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Causa 2d6 de dano necrótico em mortos-vivos ou estabiliza um aliado moribundo sem toque direto.",
+      "prerequisites": [
+        "Dose de Cinza Refinada"
+      ],
+      "keywords": [
+        "Cinza do Último Sono",
+        "Morte",
+        "Refinada",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md"
+    },
+    {
+      "id": "ash.residuo_de_ilyra.pura",
+      "type": "ASH",
+      "name": "Cinza do Último Sono",
+      "source": "Morte",
+      "purity": "Pura",
+      "costType": "Dose",
+      "costValue": 1,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "Esfera de 4 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Guia ecos perdidos de volta ao repouso: causa 3d6 de dano contra mortos-vivos na área e impede reanimação no local até o fim da cena.",
+      "prerequisites": [
+        "Dose de Cinza Pura"
+      ],
+      "keywords": [
+        "Cinza do Último Sono",
+        "Morte",
+        "Pura",
+        "Cinza"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Consumir 1 dose(s) como ação.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md"
     }
   ]
 }

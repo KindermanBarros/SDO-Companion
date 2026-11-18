@@ -215,7 +215,7 @@ class ItemCreationRulesTest {
             BundledItemCatalog.armorMaterials.size + BundledItemCatalog.weaponBases.size +
             BundledItemCatalog.armorBases.size + BundledItemCatalog.catalogItems.size
 
-        assertEquals(161, itemDefinitionCount)
+        assertEquals(163, itemDefinitionCount)
         assertEquals(35, BundledItemCatalog.modifications.size)
         assertEquals(30, BundledItemCatalog.gems.size)
         assertEquals(30, BundledItemCatalog.technologies.size)

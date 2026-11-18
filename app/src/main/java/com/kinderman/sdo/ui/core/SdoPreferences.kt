@@ -8,7 +8,7 @@ enum class SdoVisualMode(
     val allowsThemeSelection: Boolean,
 ) {
     STANDARD("Interface padrão", "HUD técnico atual com o tema de cores selecionado.", true),
-    CYBERGRUNGE("Interface Cybergrunge", "Terminal experimental com falhas de sinal, glitches e componentes próprios.", false),
+    CYBERGRUNGE("Interface Cybergrunge", "Terminal experimental com falhas de sinal, glitches e componentes próprios.", true),
 }
 
 enum class SdoThemeVariant(
@@ -24,6 +24,7 @@ enum class SdoThemeVariant(
     APERTURE_WHITE("Aperture White", "Branco clínico e azul de portal, com sinalização laranja."),
     BLACK_LODGE_DREAM("Blue Rose Velvet", "Azul elétrico, violeta profundo e vermelho aveludado."),
     OLDEST_HOUSE_SIGNAL("Threshold Red", "Concreto abissal, ciano institucional e vermelho intenso."),
+    CYBERGRUNGE_SIGNAL("Sinal Corrompido", "Vermelho sinal, ciano frio e preto abissal original do Cybergrunge."),
     HIGH_CONTRAST("Alto Contraste", "Superfícies mais escuras e sinais mais claros."),
     SYSTEM("Tema do Sistema", "Segue a preferência de contraste claro/escuro do aparelho."),
 }

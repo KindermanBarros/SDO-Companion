@@ -1570,6 +1570,200 @@
       "deactivationCondition": "Após resolver o efeito.",
       "sourceDocument": "50 Exemplos de Magias",
       "ruleReference": "03 - Regras/Magia/50 Exemplos de Magias.md"
+    },
+    {
+      "id": "magic.veu_memorias_submersas",
+      "type": "MAGIC",
+      "name": "Véu das Memórias Submersas",
+      "source": "Conhecimento",
+      "knowledge": "Ilusão",
+      "level": 2,
+      "costType": "Arcano",
+      "costValue": 3,
+      "execution": "Ação",
+      "range": "Pessoal",
+      "targetArea": "3 m",
+      "duration": "Cena",
+      "resistance": "Nenhuma",
+      "effect": "Convoca uma bruma prateada que silencia passos e esconde traços recentes como se pertencessem a um sonho já esquecido; +2 em Furtividade na cena.",
+      "prerequisites": [
+        "Ilusão nível 2",
+        "Crônicas do Antes-Véu nível 1 ou contato com relíquia submersa do passado"
+      ],
+      "keywords": [
+        "Véu das Memórias Submersas",
+        "Ilusão",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md"
+    },
+    {
+      "id": "magic.cantico_de_senevessa",
+      "type": "MAGIC",
+      "name": "Bússola do Primeiro Caminho",
+      "source": "Conhecimento",
+      "knowledge": "Espaciomancia",
+      "level": 1,
+      "costType": "Arcano",
+      "costValue": 2,
+      "execution": "Ação",
+      "range": "Pessoal",
+      "targetArea": "pessoal",
+      "duration": "Cena",
+      "resistance": "Nenhuma",
+      "effect": "Alinha o passo ao fio invisível das antigas travessias; +2 em Orientação e impede perder a direção em névoas durante a cena.",
+      "prerequisites": [
+        "Espaciomancia nível 1",
+        "Cartografia do Véu nível 1 ou Essalhen nível 1"
+      ],
+      "keywords": [
+        "Bússola do Primeiro Caminho",
+        "Espaciomancia",
+        "Nível 1",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 2 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "magic.lamento_dos_vaenvati",
+      "type": "MAGIC",
+      "name": "Murmúrio dos Sem-Rosto",
+      "source": "Conhecimento",
+      "knowledge": "Umbramancia",
+      "level": 2,
+      "costType": "Arcano",
+      "costValue": 3,
+      "execution": "Ação",
+      "range": "Curto",
+      "targetArea": "1 alvo a até 6 m",
+      "duration": "Turnos",
+      "durationValue": 2,
+      "resistance": "Mental",
+      "effect": "Ecos fraturados de exilados fora do tempo sussurram ao alvo; causa 1d6 de dano mental e aplica −1 em testes de Concentração por 2 turnos.",
+      "prerequisites": [
+        "Umbramancia nível 2",
+        "Sabedoria Primordial nível 1 ou contato com ecos dos Sem-Rosto"
+      ],
+      "keywords": [
+        "Murmúrio dos Sem-Rosto",
+        "Umbramancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 2 turno(s).",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "magic.bigorna_de_sonho",
+      "type": "MAGIC",
+      "name": "Forja do Ar Invisível",
+      "source": "Conhecimento",
+      "knowledge": "Magia dos Primeiros",
+      "level": 2,
+      "costType": "Arcano",
+      "costValue": 3,
+      "execution": "Ação",
+      "range": "Pessoal",
+      "targetArea": "Equipamento empunhado",
+      "duration": "Cena",
+      "resistance": "Nenhuma",
+      "effect": "Condensa matéria onírica sobre uma ferramenta ou arma; restaura 1 de Durabilidade temporária e concede +1 em ataques ou ofício na cena.",
+      "prerequisites": [
+        "Magia dos Primeiros nível 2",
+        "Treinamento em ofício de forja ou modelagem onírica"
+      ],
+      "keywords": [
+        "Forja do Ar Invisível",
+        "Magia dos Primeiros",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Ao final da cena.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "magic.atraso_de_tevaril",
+      "type": "MAGIC",
+      "name": "Fratura do Instante",
+      "source": "Conhecimento",
+      "knowledge": "Cronomancia",
+      "level": 3,
+      "costType": "Arcano",
+      "costValue": 4,
+      "execution": "Reação",
+      "range": "Curto",
+      "targetArea": "1 criatura a até 6 m",
+      "duration": "Instantânea",
+      "resistance": "Arcana",
+      "effect": "Retarda o instante exato de um golpe inimigo como se um fio do relógio saltasse; o alvo sofre Desvantagem na ação desencadeadora.",
+      "prerequisites": [
+        "Cronomancia nível 3",
+        "Sabedoria Primordial nível 1 ou Liturgia dos Sete Nomes nível 1"
+      ],
+      "keywords": [
+        "Fratura do Instante",
+        "Cronomancia",
+        "Nível 3",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como reação e gastar 4 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após resolver o efeito.",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "magic.chama_de_haengar",
+      "type": "MAGIC",
+      "name": "Lume do Rei Adormecido",
+      "source": "Conhecimento",
+      "knowledge": "Luminomancia",
+      "level": 2,
+      "costType": "Arcano",
+      "costValue": 3,
+      "execution": "Ação",
+      "range": "Médio",
+      "targetArea": "Esfera de 3 m",
+      "duration": "Turnos",
+      "durationValue": 2,
+      "resistance": "Arcana",
+      "effect": "Luz dourada e fria que recorda a primeira alvorada; dissipa sombras mágicas menores e causa 1d6 de dano luminoso na área.",
+      "prerequisites": [
+        "Luminomancia nível 2",
+        "Crônicas do Antes-Véu nível 1 ou relíquia da Era do Alvorecer"
+      ],
+      "keywords": [
+        "Lume do Rei Adormecido",
+        "Luminomancia",
+        "Nível 2",
+        "Magia"
+      ],
+      "limit": "Sem limite adicional.",
+      "activationCondition": "Executar como ação e gastar 3 ponto(s) de Arcano.",
+      "enhancements": "Nenhum aprimoramento catalogado.",
+      "deactivationCondition": "Após 2 turno(s).",
+      "sourceDocument": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
     }
   ]
 }

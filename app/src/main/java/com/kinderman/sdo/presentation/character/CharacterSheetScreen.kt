@@ -18,8 +18,11 @@ import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
@@ -195,7 +198,7 @@ fun CharacterSheetScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     minimumSize = 9.sp,
                                 )
-                                AdaptiveSingleLineText(
+                                Text(
                                     text = when {
                                         readOnly -> "Campanha arquivada · somente leitura"
                                         session.isAdmin -> "Acesso administrativo"
@@ -206,40 +209,88 @@ fun CharacterSheetScreen(
                                     },
                                     color = if (readOnly || current.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                                     style = MaterialTheme.typography.labelSmall,
-                                    minimumSize = 7.sp,
                                 )
                             }
                         },
                         navigationIcon = { SdoIconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                         actions = {
+                            var overflowExpanded by remember { mutableStateOf(false) }
+                            val hasAdminReset = session.isAdmin && !readOnly && !current.isInCreation
+                            val hasHistorianLock = !readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)
+                            val hasOverflow = hasAdminReset || hasHistorianLock || canChangePlayerLock || canDelete
+
                             SdoIconButton({ onOpenSession(current.id) }) {
                                 Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
                             }
                             if (onOpenJournal != null) SdoIconButton(onOpenJournal) {
                                 Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
                             }
-                            if (session.isAdmin && !readOnly && !current.isInCreation) SdoIconButton({ confirmHeritageReset = true }) {
-                                Icon(Icons.Default.Refresh, "Reabrir escolha secreta de 30 PH", tint = MaterialTheme.colorScheme.secondary)
+                            if (editable) SdoIconButton({ onSave(current) }) {
+                                Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary)
                             }
-                            if (!readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)) SdoIconButton({
-                                onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
-                            }) {
-                                Icon(
-                                    if (current.lockType == CharacterLock.HISTORIAN) Icons.Default.LockOpen else Icons.Default.Lock,
-                                    if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador",
-                                    tint = if (current.lockType == CharacterLock.HISTORIAN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                                )
-                            } else if (canChangePlayerLock) SdoIconButton({
-                                onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
-                            }) {
-                                Icon(
-                                    if (current.lockType == CharacterLock.PLAYER) Icons.Default.LockOpen else Icons.Default.Lock,
-                                    if (current.lockType == CharacterLock.PLAYER) "Remover meu bloqueio" else "Impedir que eu apague esta ficha",
-                                    tint = if (current.lockType == CharacterLock.PLAYER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                                )
+                            if (hasOverflow) {
+                                Box {
+                                    SdoIconButton({ overflowExpanded = true }) {
+                                        Icon(Icons.Default.MoreVert, "Mais opções", tint = MaterialTheme.colorScheme.onSurface)
+                                    }
+                                    DropdownMenu(
+                                        expanded = overflowExpanded,
+                                        onDismissRequest = { overflowExpanded = false },
+                                    ) {
+                                        if (hasAdminReset) {
+                                            DropdownMenuItem(
+                                                text = { Text("Reabrir escolha secreta de 30 PH") },
+                                                leadingIcon = { Icon(Icons.Default.Refresh, null, tint = MaterialTheme.colorScheme.secondary) },
+                                                onClick = {
+                                                    overflowExpanded = false
+                                                    confirmHeritageReset = true
+                                                },
+                                            )
+                                        }
+                                        if (hasHistorianLock) {
+                                            DropdownMenuItem(
+                                                text = { Text(if (current.lockType == CharacterLock.HISTORIAN) "Remover bloqueio do historiador" else "Aplicar bloqueio do historiador") },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        if (current.lockType == CharacterLock.HISTORIAN) Icons.Default.LockOpen else Icons.Default.Lock,
+                                                        null,
+                                                        tint = if (current.lockType == CharacterLock.HISTORIAN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                                    )
+                                                },
+                                                onClick = {
+                                                    overflowExpanded = false
+                                                    onHistorianLock(current, current.lockType != CharacterLock.HISTORIAN)
+                                                },
+                                            )
+                                        } else if (canChangePlayerLock) {
+                                            DropdownMenuItem(
+                                                text = { Text(if (current.lockType == CharacterLock.PLAYER) "Remover meu bloqueio" else "Impedir que eu apague esta ficha") },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        if (current.lockType == CharacterLock.PLAYER) Icons.Default.LockOpen else Icons.Default.Lock,
+                                                        null,
+                                                        tint = if (current.lockType == CharacterLock.PLAYER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                                    )
+                                                },
+                                                onClick = {
+                                                    overflowExpanded = false
+                                                    onPlayerLock(current, current.lockType != CharacterLock.PLAYER)
+                                                },
+                                            )
+                                        }
+                                        if (canDelete) {
+                                            DropdownMenuItem(
+                                                text = { Text("Remover personagem", color = MaterialTheme.colorScheme.error) },
+                                                leadingIcon = { Icon(Icons.Default.DeleteForever, null, tint = MaterialTheme.colorScheme.error) },
+                                                onClick = {
+                                                    overflowExpanded = false
+                                                    confirmDelete = true
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
                             }
-                            if (canDelete) SdoIconButton({ confirmDelete = true }) { Icon(Icons.Default.DeleteForever, "Remover personagem", tint = MaterialTheme.colorScheme.error) }
-                            if (editable) SdoIconButton({ onSave(current) }) { Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary) }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.background,
@@ -305,13 +356,12 @@ private fun MissingCharacterState(
 
 @Composable
 internal fun SheetHero(character: Character, session: UserSession, saveError: String? = null) {
-    val context = androidx.compose.ui.platform.LocalContext.current
     SdoScreenMasthead(
         eyebrow = "CHARACTER//ARCHIVE",
         title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
         metadata = "NÍVEL ${character.level} // ${if (character.dirty) "ALTERAÇÕES LOCAIS" else "ARQUIVO ESTÁVEL"}",
     )
-    TechPanel(accent = if (character.isLocked) Signal else Acid) {
+    TechPanel(accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
             TelemetryTag(
@@ -333,7 +383,7 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
                 photoUri = character.photoUri,
                 name = character.name,
                 size = 64.dp,
-                accent = if (character.isLocked) Signal else Acid,
+                accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
@@ -352,17 +402,13 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
             }
         }
         Barcode("${character.id}-${character.name}")
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             ComplianceMark()
-            SdoIconButton(onClick = {
-                android.widget.Toast.makeText(context,
-                    saveError ?: if (character.dirty) "Alterações salvas no aparelho; sincronização pendente"
-                    else "Alterações salvas",
-                    android.widget.Toast.LENGTH_SHORT).show()
-            }) {
-                Icon(if (saveError == null) Icons.Default.CloudDone else Icons.Default.ErrorOutline,
-                    saveError ?: "Estado de salvamento", tint = if (saveError == null) Acid else Signal)
-            }
+            com.kinderman.sdo.ui.SdoRotatingSyncIcon(
+                syncing = character.dirty && saveError == null,
+                contentDescription = saveError ?: if (character.dirty) "Sincronizando alterações" else "Ficha sincronizada",
+                tint = if (saveError == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            )
         }
     }
 }

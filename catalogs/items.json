@@ -1768,6 +1768,40 @@
       "kind": "CATALOG_ITEM",
       "source": "Criação de Personagem",
       "ruleReference": "03 - Regras/Criação de Personagem/Criação de Personagem.md#10-pontos-de-herança"
+    },
+    {
+      "id": "item.astrolabio_de_lo",
+      "name": "Astrolábio de Céu Morto",
+      "group": "Relíquia do Antes-Véu",
+      "creationCost": 2,
+      "price": 80,
+      "load": 1,
+      "durability": 0,
+      "region": "",
+      "effect": "Anéis de bronze oxidado que apontam para constelações ausentes do céu atual; concede +1 em Orientação ou Investigação de ruínas antigas.",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "kind": "CATALOG_ITEM",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
+    },
+    {
+      "id": "item.ampulheta_de_areia_onirica",
+      "name": "Ampulheta de Areia Sem Sombra",
+      "group": "Relíquia do Antes-Véu",
+      "creationCost": 3,
+      "price": 120,
+      "load": 1,
+      "durability": 0,
+      "region": "",
+      "effect": "Seus grãos pálidos correm para cima diante de vestígios anteriores à Fratura; concede +1 em testes de Sentidos ou Arcano para pressentir anomalias.",
+      "pg": 0,
+      "pl": 0,
+      "agilityLimit": null,
+      "kind": "CATALOG_ITEM",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md"
     }
   ]
 }

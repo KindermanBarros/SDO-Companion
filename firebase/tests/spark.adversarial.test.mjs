@@ -2113,3 +2113,145 @@ test('legacy zero ceilings permit spending, reject automated increases, and pres
   const gmDb = env.authenticatedContext(ids.gm).firestore();
   await assertSucceeds(change(gmDb, ids.gm, 'op-explicit-adjust', 'SESSION_ACTION', 'SET', { current: 14, maximum: 0, adjustment: 0 }, null, 2));
 });
+
+test('fast-create, edit, and delete integrity with owner, verified admin, unverified admin, and unauthorized users', async () => {
+  await seedBase();
+  const ownerDb = env.authenticatedContext(ids.owner, { email: 'player1@example.com', email_verified: true }).firestore();
+  const adminDb = env.authenticatedContext('admin-uid', { email: 'kindbarros@gmail.com', email_verified: true }).firestore();
+  const unverifiedAdminDb = env.authenticatedContext('admin-unverified', { email: 'kindbarros@gmail.com', email_verified: false }).firestore();
+  const outsiderDb = env.authenticatedContext(ids.outsider, { email: 'outsider@example.com', email_verified: true }).firestore();
+
+  // 1. Owner fast-creates a personal sheet with minimal non-default fields only (no attr_* items, no default fields).
+  const fastId = 'char-fast-owner';
+  const fastBatch = writeBatch(ownerDb);
+  fastBatch.set(doc(ownerDb, 'characters', fastId), makeRoot({
+    id: fastId,
+    ownerId: ids.owner,
+    lastOperationId: 'op-fast-1',
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  }));
+  fastBatch.set(doc(ownerDb, 'characters', fastId, 'fields', 'creationStatus'), makeField('creationStatus', 'DRAFT', {
+    lastOperationId: 'op-fast-1',
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  }));
+  fastBatch.set(doc(ownerDb, 'characters', fastId, 'operations', 'op-fast-1'), makeOp('op-fast-1', ids.owner, 'CREATE_SHEET', [
+    { kind: 'SHEET', itemId: '', key: '', op: 'CREATE', expectedRevision: 0, nextRevision: 1 },
+    { kind: 'FIELD', itemId: '', key: 'creationStatus', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: 'DRAFT' },
+  ]));
+  await assertSucceeds(fastBatch.commit());
+
+  // 2. Owner edits a previously omitted field (rev 0 -> 1 CREATE) and updates creationStatus (rev 1 -> 2 SET).
+  const editBatch = writeBatch(ownerDb);
+  editBatch.set(doc(ownerDb, 'characters', fastId, 'fields', 'name'), makeField('name', 'Kael Fast', {
+    revision: 1,
+    lastOperationId: 'op-fast-edit',
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  }));
+  editBatch.update(doc(ownerDb, 'characters', fastId, 'fields', 'creationStatus'), {
+    value: 'COMPLETED',
+    revision: 2,
+    lastOperationId: 'op-fast-edit',
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  });
+  editBatch.set(doc(ownerDb, 'characters', fastId, 'operations', 'op-fast-edit'), makeOp('op-fast-edit', ids.owner, 'PATCH_FIELDS', [
+    { kind: 'FIELD', itemId: '', key: 'name', op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: 'Kael Fast' },
+    { kind: 'FIELD', itemId: '', key: 'creationStatus', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 'COMPLETED' },
+  ]));
+  await assertSucceeds(editBatch.commit());
+
+  // 3. Strict sheet ACL (no global admin bypass): owner can read own personal sheet and verified admin can read campaign metadata,
+  //    but verified admin (non-owner, non-GM), unverified admin, and outsider cannot read someone else's personal sheet.
+  const ownerRead = await assertSucceeds(getDoc(doc(ownerDb, 'characters', fastId)));
+  assert.equal(ownerRead.data().ownerId, ids.owner);
+  await assertSucceeds(getDoc(doc(adminDb, 'campaigns', ids.campaign)));
+  await assertFails(getDoc(doc(adminDb, 'characters', fastId)));
+  await assertFails(getDoc(doc(unverifiedAdminDb, 'characters', fastId)));
+  await assertFails(getDoc(doc(outsiderDb, 'characters', fastId)));
+
+  // 4. Verified admin (non-owner, non-GM) and outsider cannot edit or delete someone else's personal sheet.
+  const adminEditOther = writeBatch(adminDb);
+  adminEditOther.update(doc(adminDb, 'characters', fastId, 'fields', 'name'), {
+    value: 'Admin Override',
+    revision: 2,
+    lastOperationId: 'op-admin-edit-other',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  adminEditOther.set(doc(adminDb, 'characters', fastId, 'operations', 'op-admin-edit-other'), makeOp('op-admin-edit-other', 'admin-uid', 'PATCH_FIELDS', [
+    { kind: 'FIELD', itemId: '', key: 'name', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 'Admin Override' },
+  ]));
+  await assertFails(adminEditOther.commit());
+
+  const outsiderDel = writeBatch(outsiderDb);
+  outsiderDel.update(doc(outsiderDb, 'characters', fastId), {
+    deleted: true,
+    revision: 2,
+    lastOperationId: 'op-outsider-del',
+    updatedBy: ids.outsider,
+    updatedAt: serverTimestamp(),
+  });
+  outsiderDel.set(doc(outsiderDb, 'characters', fastId, 'operations', 'op-outsider-del'), makeOp('op-outsider-del', ids.outsider, 'DELETE_SHEET', [
+    { kind: 'SHEET', itemId: '', key: '', op: 'TOMBSTONE', expectedRevision: 1, nextRevision: 2 },
+  ]));
+  await assertFails(outsiderDel.commit());
+  await assertFails(deleteDoc(doc(ownerDb, 'characters', fastId)));
+
+  // 5. Verified admin as own sheet owner / GM can fast-create, edit, and tombstone-delete own sheet.
+  const adminSheetId = 'char-fast-admin';
+  const adminCreate = writeBatch(adminDb);
+  adminCreate.set(doc(adminDb, 'characters', adminSheetId), makeRoot({
+    id: adminSheetId,
+    ownerId: 'admin-uid',
+    lastOperationId: 'op-admin-create',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  }));
+  adminCreate.set(doc(adminDb, 'characters', adminSheetId, 'operations', 'op-admin-create'), makeOp('op-admin-create', 'admin-uid', 'CREATE_SHEET', [
+    { kind: 'SHEET', itemId: '', key: '', op: 'CREATE', expectedRevision: 0, nextRevision: 1 },
+  ]));
+  await assertSucceeds(adminCreate.commit());
+
+  const adminDeleteOwn = writeBatch(adminDb);
+  adminDeleteOwn.update(doc(adminDb, 'characters', adminSheetId), {
+    deleted: true,
+    revision: 2,
+    lastOperationId: 'op-admin-del',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  adminDeleteOwn.set(doc(adminDb, 'characters', adminSheetId, 'operations', 'op-admin-del'), makeOp('op-admin-del', 'admin-uid', 'DELETE_SHEET', [
+    { kind: 'SHEET', itemId: '', key: '', op: 'TOMBSTONE', expectedRevision: 1, nextRevision: 2 },
+  ]));
+  await assertSucceeds(adminDeleteOwn.commit());
+
+  // 6. Owner logically deletes own fast-created sheet; subsequent edits are rejected.
+  const ownerDel = writeBatch(ownerDb);
+  ownerDel.update(doc(ownerDb, 'characters', fastId), {
+    deleted: true,
+    revision: 2,
+    lastOperationId: 'op-owner-del',
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  });
+  ownerDel.set(doc(ownerDb, 'characters', fastId, 'operations', 'op-owner-del'), makeOp('op-owner-del', ids.owner, 'DELETE_SHEET', [
+    { kind: 'SHEET', itemId: '', key: '', op: 'TOMBSTONE', expectedRevision: 1, nextRevision: 2 },
+  ]));
+  await assertSucceeds(ownerDel.commit());
+
+  const editAfterDelete = writeBatch(ownerDb);
+  editAfterDelete.update(doc(ownerDb, 'characters', fastId, 'fields', 'name'), {
+    value: 'Resurrect',
+    revision: 2,
+    lastOperationId: 'op-edit-deleted',
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  });
+  editAfterDelete.set(doc(ownerDb, 'characters', fastId, 'operations', 'op-edit-deleted'), makeOp('op-edit-deleted', ids.owner, 'PATCH_FIELDS', [
+    { kind: 'FIELD', itemId: '', key: 'name', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 'Resurrect' },
+  ]));
+  await assertFails(editAfterDelete.commit());
+});

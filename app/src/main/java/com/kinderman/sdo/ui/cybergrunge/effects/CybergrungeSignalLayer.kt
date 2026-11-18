@@ -2,6 +2,7 @@ package com.kinderman.sdo.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
@@ -22,8 +23,8 @@ internal fun CyberGrungeShaderLayer(
     intensity: CyberGrungeIntensity = LocalCyberGrungeIntensity.current,
 ) {
     val phase = .37f
-    val red = CyberGrungeTokens.SignalRed
-    val cyan = CyberGrungeTokens.TerminalGreen
+    val red = MaterialTheme.colorScheme.primary
+    val cyan = MaterialTheme.colorScheme.secondary
     Canvas(modifier.fillMaxSize()) {
         val amount = intensity.shaderAmount
         drawRect(red.copy(alpha = .018f * amount), Offset(0f, phase * size.height), Size(size.width, 2.dp.toPx()))

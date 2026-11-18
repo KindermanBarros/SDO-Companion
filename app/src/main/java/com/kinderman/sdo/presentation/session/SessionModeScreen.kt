@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
@@ -128,6 +130,7 @@ fun SessionModeScreen(
     canOpenJournal: (Character) -> Boolean = { false },
     onOpenJournal: (Character) -> Unit = {},
     onInventoryStateChange: (Character, String, InventoryState) -> Unit,
+    onToggleAbilityFavorite: (Character, String) -> Unit = { _, _ -> },
 ) {
     BackHandler(onBack = onBack)
     val character = characters.firstOrNull { it.id == selectedId }
@@ -157,7 +160,7 @@ fun SessionModeScreen(
                 CharacterSelector(characters, Modifier.padding(padding), onSelect)
             } else {
                 key(character.id) {
-                    SessionContent(character, compact, readOnly, Modifier.padding(padding), onCommand, onInventoryStateChange)
+                    SessionContent(character, compact, readOnly, Modifier.padding(padding), onCommand, onInventoryStateChange, onToggleAbilityFavorite)
                 }
             }
         }
@@ -230,6 +233,7 @@ private fun SessionContent(
     modifier: Modifier,
     onCommand: (Character, SessionCommand) -> Unit,
     onInventoryStateChange: (Character, String, InventoryState) -> Unit,
+    onToggleAbilityFavorite: (Character, String) -> Unit = { _, _ -> },
 ) {
     var damageDialog by rememberSaveable(character.id) { mutableStateOf(false) }
     var healingDialog by rememberSaveable(character.id) { mutableStateOf(false) }
@@ -457,7 +461,13 @@ private fun SessionContent(
                 }
             }
             items(filteredEntries, key = { "${character.id}:${it.key}" }) { entry ->
-                SessionAbilityCard(entry, compact, !readOnly) { pendingAbilityId = entry.ability.id }
+                SessionAbilityCard(
+                    entry = entry,
+                    compact = compact,
+                    editable = !readOnly,
+                    onToggleFavorite = { onToggleAbilityFavorite(character, entry.ability.id) },
+                    onUse = { pendingAbilityId = entry.ability.id },
+                )
             }
             item(key = "session_protections") {
                 TechPanel {
@@ -473,19 +483,14 @@ private fun SessionContent(
             item(key = "session_body") {
                 TechPanel(accent = MaterialTheme.colorScheme.error) {
                     SectionHeader("04", stringResource(R.string.session_body))
-                    character.canonicalBodyState().regions.chunked(2).forEach { pair ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            pair.forEach { region ->
-                                SdoInsetCard(
-                                    modifier = Modifier.weight(1f), contentPadding = if (compact) 6.dp else 9.dp,
-                                    verticalSpacing = 2.dp,
-                                ) {
-                                    Text(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-                                    SessionBodyStatus(region.state.label.uppercase(), region.failures)
-                                    Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                            if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                    com.kinderman.sdo.ui.SdoResponsiveGrid(character.canonicalBodyState().regions, minItemWidth = 148.dp) { region, modifier ->
+                        SdoInsetCard(
+                            modifier = modifier, contentPadding = if (compact) 6.dp else 9.dp,
+                            verticalSpacing = 2.dp,
+                        ) {
+                            SdoCardTitle(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+                            SessionBodyStatus(region.state.label.uppercase(), region.failures)
+                            Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -562,23 +567,44 @@ private fun SessionContent(
 }
 
 @Composable
-private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, editable: Boolean, onUse: () -> Unit) {
+private fun SessionAbilityCard(
+    entry: SessionAbilityEntry,
+    compact: Boolean,
+    editable: Boolean,
+    onToggleFavorite: () -> Unit,
+    onUse: () -> Unit,
+) {
     var expanded by rememberSaveable(entry.ability.id) { mutableStateOf(false) }
-    val accent = if (entry.ability.available) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+    val accent = when {
+        entry.ability.favorite -> MaterialTheme.colorScheme.tertiary
+        entry.ability.available -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.outlineVariant
+    }
     val expandedLabel = stringResource(if (expanded) R.string.session_collapse_ability else R.string.session_expand_ability)
     val unavailableLabel = stringResource(R.string.session_unavailable)
     val largeText = LocalDensity.current.fontScale * LocalSdoPreferences.current.fontScale.multiplier > 1.15f
     SdoInsetCard(
         modifier = Modifier.fillMaxWidth(),
-        accent = if (entry.ability.available) MaterialTheme.colorScheme.outlineVariant else accent,
-        contentPadding = if (compact) 6.dp else 8.dp,
-        verticalSpacing = 4.dp,
+        accent = accent,
+        contentPadding = if (compact) 8.dp else 12.dp,
+        verticalSpacing = 6.dp,
     ) {
         Row(
             Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            SdoIconButton(
+                onClick = onToggleFavorite,
+                enabled = editable,
+                modifier = Modifier.testTag("session_ability_favorite"),
+            ) {
+                Icon(
+                    imageVector = if (entry.ability.favorite) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = if (entry.ability.favorite) "Desfavoritar ${entry.ability.name}" else "Favoritar ${entry.ability.name}",
+                    tint = if (entry.ability.favorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Row(
                 Modifier.weight(1f).heightIn(min = 48.dp)
                     .testTag("session_ability_expand")
@@ -588,7 +614,7 @@ private fun SessionAbilityCard(entry: SessionAbilityEntry, compact: Boolean, edi
             ) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        (if (entry.ability.favorite) "★ " else "") + entry.ability.name,
+                        entry.ability.name,
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.titleSmall,
                     )

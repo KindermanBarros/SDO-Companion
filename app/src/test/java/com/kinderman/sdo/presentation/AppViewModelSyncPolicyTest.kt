@@ -241,6 +241,33 @@ class AppViewModelSyncPolicyTest {
     }
 
     @Test
+    fun characterSyncTogglesSyncingFlagAndSaveDoesNotEmitToastMessage() = runBlocking {
+        val observedSyncing = mutableListOf<Boolean>()
+        val vm = AppViewModel(
+            repository = characterRepo,
+            ownerRepository = FakeOwnerRepository(),
+            catalogRepository = FakeCatalogRepository(),
+            campaignRepository = campaignRepo,
+            operationsRepository = operationsRepo,
+            connectivityMonitor = connectivity,
+            externalScope = testScope,
+            cloudSyncPulseMs = 0L,
+        )
+        vm.setSession(session)
+        characterRepo.onSyncCharacter = { _ ->
+            observedSyncing += vm.loadState.value.syncing
+        }
+
+        vm.save(Character(id = "char-toast-free", ownerId = session.uid, name = "Vespera"))
+        delay(2_500)
+
+        assertEquals(null, vm.message.value)
+        assertEquals(listOf(true), observedSyncing)
+        assertFalse(vm.loadState.value.syncing)
+        assertFalse(vm.loadState.value.cloudSyncing)
+    }
+
+    @Test
     fun sparkConflictResolutionDelegatesChoiceAndSyncs() = runBlocking {
         val conflict = SheetConflictItem(
             id = "conflict-1",

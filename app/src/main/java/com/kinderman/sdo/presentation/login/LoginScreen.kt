@@ -76,7 +76,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     enabled = !state.loading,
                     shape = CutCornerShape(topEnd = 15.dp, bottomStart = 15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = MaterialTheme.colorScheme.onPrimary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
                 ) {
                     if (state.loading) CircularProgressIndicator(Modifier.size(22.dp), color = MaterialTheme.colorScheme.onSurface, strokeWidth = 2.dp)
                     else {

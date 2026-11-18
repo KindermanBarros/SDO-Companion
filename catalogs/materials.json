@@ -325,7 +325,7 @@
     },
     {
       "id": "microtubos_carbono",
-      "name": "Microtubos de Carbono",
+      "name": "Fios de Obsidiana Oca",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -350,7 +350,7 @@
     },
     {
       "id": "nanorobos_reparo",
-      "name": "Nanorobôs de Reparo",
+      "name": "Poeira Viva do Antes-Véu",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -374,7 +374,7 @@
     },
     {
       "id": "luz_solida",
-      "name": "Luz Sólida",
+      "name": "Alvorada Petrificada",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -400,7 +400,7 @@
     },
     {
       "id": "metal_memoria_kaltoch",
-      "name": "Metal de Memória Kaltoch",
+      "name": "Prata que Lembra",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -425,7 +425,7 @@
     },
     {
       "id": "vidro_arcano_autoestruturante",
-      "name": "Vidro Arcano Autoestruturante",
+      "name": "Cristal de Cicatriz Onírica",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -451,7 +451,7 @@
     },
     {
       "id": "materia_fase",
-      "name": "Matéria de Fase",
+      "name": "Véu Entremeado",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -476,7 +476,7 @@
     },
     {
       "id": "circuito_luminoso_ancestral",
-      "name": "Circuito Luminoso Ancestral",
+      "name": "Veios do Sol Esquecido",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -502,7 +502,7 @@
     },
     {
       "id": "enxame_estrutural",
-      "name": "Enxame Estrutural",
+      "name": "Colmeia de Ferro Sussurrante",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -527,7 +527,7 @@
     },
     {
       "id": "fibra_ventre",
-      "name": "Fibra de Ventre",
+      "name": "Seda de Crisálida Silente",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -553,7 +553,7 @@
     },
     {
       "id": "campo_inercia_condensado",
-      "name": "Campo de Inércia Condensado",
+      "name": "Âmbar de Tempo Estagnado",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -626,7 +626,7 @@
     },
     {
       "id": "aerogel_kaltoch",
-      "name": "Aerogel Kaltoch",
+      "name": "Bruma Solidificada",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -652,7 +652,7 @@
     },
     {
       "id": "ceramica_plasma",
-      "name": "Cerâmica de Plasma",
+      "name": "Porcelana de Estrela Morta",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -678,7 +678,7 @@
     },
     {
       "id": "filamento_gravitacional",
-      "name": "Filamento Gravitacional",
+      "name": "Corda de Peso Invertido",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
@@ -704,7 +704,7 @@
     },
     {
       "id": "cristal_dados_vivos",
-      "name": "Cristal de Dados Vivos",
+      "name": "Quartzo de Vozes Presas",
       "tier": "ANCESTRAL",
       "origins": [
         "KALTOCH",
