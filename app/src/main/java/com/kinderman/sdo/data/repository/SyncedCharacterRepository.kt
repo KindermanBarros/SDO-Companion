@@ -93,7 +93,7 @@ class SyncedCharacterRepository(
     override fun observe(session: UserSession): Flow<List<Character>> = flow {
         syncEngine?.ensureAccountProjected(session.uid)
         emitAll(
-            dao.observe(session.uid)
+            (if (session.isAdmin) dao.observeAll() else dao.observe(session.uid))
                 .map { records ->
                     records.map { record ->
                         val migrated = migrationManager.migrate(record, markDirty = false)

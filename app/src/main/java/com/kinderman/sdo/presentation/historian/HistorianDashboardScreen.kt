@@ -210,7 +210,7 @@ fun HistorianDashboardScreen(
     var libraryCategory by rememberSaveable { mutableStateOf(LibraryCategory.ALL) }
     var libraryChoice by rememberSaveable { mutableStateOf<String?>(null) }
     var showArchivedLibrary by rememberSaveable { mutableStateOf(false) }
-    var actionTarget by remember { mutableStateOf<Pair<Character, QuickActionKind?>?>(null) }
+    var actionTarget by remember { mutableStateOf<Pair<String, QuickActionKind?>?>(null) }
     var editingLibrary by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var delivering by remember { mutableStateOf<CampaignLibraryEntry?>(null) }
     var choosingCampaign by remember { mutableStateOf(false) }
@@ -230,7 +230,7 @@ fun HistorianDashboardScreen(
         if (selectedCampaignId !in historianCampaignIds) selectedCampaignId = visibleCampaigns.firstOrNull()?.id.orEmpty()
     }
     val selectedCampaign = visibleCampaigns.firstOrNull { it.id == selectedCampaignId }
-    val selectedCharacters = characters.filter { selectedCampaignId.isNotBlank() && normalizeCampaignId(it.campaignId) == selectedCampaignId }
+    val selectedCharacters = characters.filter { !it.deleted && selectedCampaignId.isNotBlank() && normalizeCampaignId(it.campaignId) == selectedCampaignId }
     val availableAuditTypes = remember(audit, selectedCampaignId) {
         audit.asSequence()
             .filter { it.campaignId == selectedCampaignId }
@@ -315,11 +315,11 @@ fun HistorianDashboardScreen(
                         selectedCampaign?.let { campaign ->
                             val campaignCharacters = selectedCharacters
                             val campaignSettings = alertSettings.firstOrNull { it.campaignId == campaign.id } ?: CampaignAlertSettings(campaign.id)
-                            val telemetryByCharacter = campaignCharacters.associateWith {
-                                evaluateOperationalTelemetry(it, campaignSettings)
+                            val telemetryByCharacterId = campaignCharacters.associate { character ->
+                                character.id to evaluateOperationalTelemetry(character, campaignSettings)
                             }
                             val filteredCharacters = campaignCharacters.filter { character ->
-                                val telemetry = telemetryByCharacter.getValue(character)
+                                val telemetry = telemetryByCharacterId.getValue(character.id)
                                 val matchesSearch = operationSearch.isBlank() || listOf(
                                     character.name,
                                     character.race,
@@ -333,10 +333,10 @@ fun HistorianDashboardScreen(
                                 }
                                 matchesSearch && matchesFilter
                             }
-                            val alertCount = telemetryByCharacter.values.count { it.alerts.isNotEmpty() }
-                            val criticalCount = telemetryByCharacter.values.count { it.isCritical }
-                            val conditionedCount = telemetryByCharacter.values.count { it.conditionCount > 0 }
-                            val failureCount = telemetryByCharacter.values.sumOf { it.failureCount }
+                            val alertCount = telemetryByCharacterId.values.count { it.alerts.isNotEmpty() }
+                            val criticalCount = telemetryByCharacterId.values.count { it.isCritical }
+                            val conditionedCount = telemetryByCharacterId.values.count { it.conditionCount > 0 }
+                            val failureCount = telemetryByCharacterId.values.sumOf { it.failureCount }
                             val dirtyCount = campaignCharacters.count { it.dirty }
 
                             item("campaign:${campaign.id}") {
@@ -400,12 +400,12 @@ fun HistorianDashboardScreen(
                             items(filteredCharacters, key = { "operative:${campaign.id}:${it.id}" }) { character ->
                                 OperationalCharacterCard(
                                     character = character,
-                                    telemetry = telemetryByCharacter.getValue(character),
+                                    telemetry = telemetryByCharacterId.getValue(character.id),
                                     writable = canOperate(character),
                                     onOpenSession = onOpenSession,
                                     onOpenSheet = onOpenSheet,
                                     onQuickAction = { preset ->
-                                        if (canOperate(character)) actionTarget = character to preset
+                                        if (canOperate(character)) actionTarget = character.id to preset
                                     },
                                     onRemoveCondition = { condition ->
                                         if (canOperate(character)) {
@@ -534,7 +534,8 @@ fun HistorianDashboardScreen(
                                     TelemetryTag(operation.type.name)
                                     TelemetryTag(if (operation.dirty) "LOCAL_DELTA" else "SYNC_OK")
                                 }
-                                val characterName = characters.firstOrNull { it.id == operation.characterId }?.name ?: operation.characterId.take(10)
+                                val characterName = characters.firstOrNull { !it.deleted && it.id == operation.characterId }?.name
+                                    ?: "${operation.characterId.take(10)} (excluída)"
                                 Text("$characterName // ${operation.target.ifBlank { operation.type.name }}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
                                 Text("${operation.previousValue.ifBlank { "—" }} → ${operation.newValue.ifBlank { "—" }}", color = MaterialTheme.colorScheme.onSurface)
                                 Text("${formatAuditTime(operation.createdAt)} // ATOR ${operation.actorId.take(10)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
@@ -570,18 +571,23 @@ fun HistorianDashboardScreen(
             },
         )
     }
-    actionTarget?.let { (character, preset) ->
-        QuickActionsDialog(
-            character = character,
-            campaignCharacters = selectedCharacters.filter(::canOperate),
-            initialAction = preset,
-            writable = canOperate(character),
-            onDismiss = { actionTarget = null },
-            onApply = { commands ->
-                commands.forEach { (target, command) -> if (canOperate(target)) onApplyCommand(target, command) }
-                actionTarget = null
-            },
-        )
+    actionTarget?.let { (characterId, preset) ->
+        val character = selectedCharacters.firstOrNull { it.id == characterId }
+        if (character == null) {
+            actionTarget = null
+        } else {
+            QuickActionsDialog(
+                character = character,
+                campaignCharacters = selectedCharacters.filter(::canOperate),
+                initialAction = preset,
+                writable = canOperate(character),
+                onDismiss = { actionTarget = null },
+                onApply = { commands ->
+                    commands.forEach { (target, command) -> if (canOperate(target)) onApplyCommand(target, command) }
+                    actionTarget = null
+                },
+            )
+        }
     }
     editingLibrary?.takeIf { libraryWritable }?.let { entry -> LibraryEditorDialog(entry, visibleCampaigns.filterNot { it.isArchived }, { editingLibrary = null }) { onSaveLibrary(it); editingLibrary = null } }
     delivering?.takeIf { libraryWritable }?.let { entry -> DeliveryDialog(entry, characters.filter { normalizeCampaignId(it.campaignId) == entry.campaignId }, { delivering = null }) { selected, mappings -> onDeliverLibrary(entry, selected, mappings); delivering = null } }
