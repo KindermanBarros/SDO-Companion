@@ -395,9 +395,21 @@ fun SdoApp(
                     onAutosave = appViewModel::autosave,
                     onPlayerLock = appViewModel::setPlayerLocked,
                     onHistorianLock = appViewModel::setHistorianLocked,
-                    onDelete = {
-                        appViewModel.delete(it)
+                    onDelete = { deletedChar ->
+                        val deletedId = deletedChar.id
+                        appViewModel.delete(deletedChar)
+                        backStack = ArrayList(
+                            backStack.map { entry ->
+                                val parts = entry.split('|')
+                                if (parts.getOrNull(1) == deletedId) {
+                                    "${parts.getOrNull(0).orEmpty()}||${parts.getOrNull(2).orEmpty()}"
+                                } else {
+                                    entry
+                                }
+                            },
+                        )
                         goBack()
+                        if (selectedId == deletedId) selectedId = null
                     },
                 )
 
@@ -524,9 +536,10 @@ fun SdoApp(
         }
     }
 
-    val activeSheetConflict = openSheetConflicts.firstOrNull()
-    val activeLegacyConflict = conflicts.firstOrNull()
-    val activeDeniedIntent = accessDeniedIntents.firstOrNull()
+    val activeSheetIds = remember(characters) { characters.asSequence().filterNot { it.deleted }.map { it.id }.toSet() }
+    val activeSheetConflict = openSheetConflicts.firstOrNull { it.sheetId in activeSheetIds }
+    val activeLegacyConflict = conflicts.firstOrNull { it.local.id in activeSheetIds }
+    val activeDeniedIntent = accessDeniedIntents.firstOrNull { it.sheetId in activeSheetIds }
     when {
         activeSheetConflict != null -> CharacterConflictDialog(
             conflict = activeSheetConflict,
