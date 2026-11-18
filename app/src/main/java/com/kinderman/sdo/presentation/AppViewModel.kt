@@ -38,6 +38,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -746,11 +748,22 @@ class AppViewModel(
             )
             try {
                 val failures = mutableListOf<Pair<String, Throwable>>()
-                runCatching { campaignRepository.sync(session) }
-                    .onFailure {
+                coroutineScope {
+                    val campaignJob = async {
+                        runCatching { campaignRepository.sync(session) }
+                    }
+                    val ownerJob = async {
+                        runCatching { ownerRepository.sync(session) }
+                    }
+                    campaignJob.await().onFailure {
                         android.util.Log.e("SDO_SYNC", "campaignRepository.sync failed", it)
                         failures += "campanhas" to it
                     }
+                    ownerJob.await().onFailure {
+                        android.util.Log.e("SDO_SYNC", "ownerRepository.sync failed", it)
+                        failures += "administração" to it
+                    }
+                }
                 // Delivery acceptance claims and applies remote content atomically before the
                 // general character sync can upload an offline draft of the same sheet.
                 runCatching {
@@ -771,11 +784,6 @@ class AppViewModel(
                     .onFailure {
                         android.util.Log.e("SDO_SYNC", "characterRepository.sync failed", it)
                         failures += "fichas pessoais" to it
-                    }
-                runCatching { ownerRepository.sync(session) }
-                    .onFailure {
-                        android.util.Log.e("SDO_SYNC", "ownerRepository.sync failed", it)
-                        failures += "administração" to it
                     }
                 if (failures.isEmpty()) {
                     lastSyncFailure = null

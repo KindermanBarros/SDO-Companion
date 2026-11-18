@@ -750,10 +750,18 @@ class SyncedCampaignRepository(
             dao.markCampaignSynced(local.id, local.updatedAt)
         }
 
-        val membershipSnapshot = store.collectionGroup(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
-            .whereEqualTo("userId", session.uid)
-            .get()
-            .await()
+        val (membershipSnapshot, ownedCampaignSnapshot) = coroutineScope {
+            val membershipsJob = async {
+                store.collectionGroup(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
+                    .whereEqualTo("userId", session.uid)
+                    .get()
+                    .await()
+            }
+            val ownedJob = async {
+                campaigns.whereEqualTo("ownerId", session.uid).get().await()
+            }
+            membershipsJob.await() to ownedJob.await()
+        }
         val remoteMemberships = membershipSnapshot.documents.mapNotNull { document ->
             document.toObject(CampaignMemberRecord::class.java)
         }
@@ -770,7 +778,7 @@ class SyncedCampaignRepository(
         val campaignIds = remoteMemberships
             .filter { it.state == CampaignMemberState.ACTIVE.name }
             .mapTo(mutableSetOf()) { it.campaignId }
-        val visibleCampaignDocuments = campaigns.whereEqualTo("ownerId", session.uid).get().await().documents
+        val visibleCampaignDocuments = ownedCampaignSnapshot.documents
         val alreadyFetchedIds = hashSetOf<String>()
         visibleCampaignDocuments.mapNotNull { document ->
             document.toObject(CampaignRecord::class.java)?.copy(id = document.id)
@@ -809,8 +817,8 @@ class SyncedCampaignRepository(
             }
             .mapTo(mutableSetOf()) { it.id }
 
-        val readableMembersByCampaign = coroutineScope {
-            readableIds.map { campaignId ->
+        val (readableMembersByCampaign, remoteInvites) = coroutineScope {
+            val membersJob = readableIds.map { campaignId ->
                 async {
                     campaignId to runCatching {
                         campaigns.document(campaignId)
@@ -821,21 +829,8 @@ class SyncedCampaignRepository(
                             .mapNotNull { it.toObject(CampaignMemberRecord::class.java) }
                     }.getOrDefault(emptyList())
                 }
-            }.awaitAll()
-        }
-        readableMembersByCampaign.forEach { (_, remoteMembers) ->
-            remoteMembers.forEach { remote ->
-                val normalized = if (remote.role != CampaignRole.PLAYER.name) {
-                    remote.copy(role = CampaignRole.PLAYER.name)
-                } else {
-                    remote
-                }
-                dao.upsertMember(normalized.copy(dirty = false, lastSyncedAt = normalized.updatedAt))
             }
-        }
-
-        val remoteInvites = coroutineScope {
-            (campaignIds - deletedIds).map { campaignId ->
+            val invitesJob = (campaignIds - deletedIds).map { campaignId ->
                 async {
                     runCatching {
                         campaigns.document(campaignId)
@@ -846,7 +841,18 @@ class SyncedCampaignRepository(
                             .mapNotNull(::snapshotToInvite)
                     }.getOrDefault(emptyList())
                 }
-            }.awaitAll().flatten()
+            }
+            membersJob.awaitAll() to invitesJob.awaitAll().flatten()
+        }
+        readableMembersByCampaign.forEach { (_, remoteMembers) ->
+            remoteMembers.forEach { remote ->
+                val normalized = if (remote.role != CampaignRole.PLAYER.name) {
+                    remote.copy(role = CampaignRole.PLAYER.name)
+                } else {
+                    remote
+                }
+                dao.upsertMember(normalized.copy(dirty = false, lastSyncedAt = normalized.updatedAt))
+            }
         }
         remoteInvites.forEach { dao.upsertInvite(it.copy(dirty = false, lastSyncedAt = it.createdAt).toRecord()) }
     }
