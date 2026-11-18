@@ -1,4 +1,4 @@
-name: Authenticated debug APK
+name: Authenticated dev debug APK
 
 on:
   push:
@@ -13,10 +13,10 @@ concurrency:
 
 jobs:
   build-authenticated-debug:
-    name: Build authenticated debug APK
+    name: Build authenticated dev debug APK
     runs-on: ubuntu-latest
     env:
-      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      GOOGLE_SERVICES_JSON_DEV: ${{ secrets.GOOGLE_SERVICES_JSON_DEV }}
       SDO_KEYSTORE_BASE64: ${{ secrets.SDO_KEYSTORE_BASE64 }}
       SDO_KEYSTORE_PASSWORD: ${{ secrets.SDO_KEYSTORE_PASSWORD }}
       SDO_KEY_ALIAS: ${{ secrets.SDO_KEY_ALIAS }}
@@ -32,25 +32,27 @@ jobs:
           java-version: '25'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Restore protected build files
+      - name: Restore protected dev build files
         uses: ./.github/actions/restore-android-secrets
-      - name: Build authenticated debug APK
-        run: ./gradlew :app:assembleDebug --build-cache --stacktrace
-      - name: Verify debug APK certificate
+        with:
+          env: dev
+      - name: Build authenticated dev debug APK
+        run: ./gradlew :app:assembleDevDebug --build-cache --stacktrace
+      - name: Verify dev debug APK certificate
         uses: ./.github/actions/verify-android-signature
         with:
-          apk: app/build/outputs/apk/debug/app-debug.apk
-      - name: Upload authenticated debug APK
+          apk: app/build/outputs/apk/dev/debug/app-dev-debug.apk
+      - name: Upload authenticated dev debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: sdo-companion-authenticated-debug-${{ github.sha }}
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: sdo-companion-dev-debug-${{ github.sha }}
+          path: app/build/outputs/apk/dev/debug/app-dev-debug.apk
           if-no-files-found: error
           retention-days: 14
       - name: Record authenticated build
-        run: echo 'Authenticated debug APK generated with the registered Firebase configuration and certificate.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Authenticated dev debug APK generated with dev Firebase configuration (com.kinderman.sdo.dev).' >> "$GITHUB_STEP_SUMMARY"
       - name: Remove protected build files
         if: always()
         run: |
-          rm -f app/google-services.json
+          rm -f app/google-services.json app/src/dev/google-services.json app/src/prod/google-services.json
           rm -f "$SDO_KEYSTORE_FILE"
