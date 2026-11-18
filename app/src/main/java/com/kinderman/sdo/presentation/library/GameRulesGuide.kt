@@ -6,9 +6,16 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 internal data class PlayerHandbookDocument(
-    val version: Int = 1,
+    val version: Int = 2,
     val source: String = "",
     val sections: List<GameRuleTopic> = emptyList(),
+)
+
+@Serializable
+internal data class RuleBlock(
+    val heading: String = "",
+    val paragraphs: List<String> = emptyList(),
+    val bullets: List<String> = emptyList(),
 )
 
 @Serializable
@@ -18,8 +25,10 @@ internal data class GameRuleTopic(
     val chapter: String,
     val category: String,
     val title: String,
-    val paragraphs: List<String> = emptyList(),
-    val bullets: List<String> = emptyList(),
+    val summary: String = "",
+    val formulas: List<String> = emptyList(),
+    val blocks: List<RuleBlock> = emptyList(),
+    val scales: List<String> = emptyList(),
     val examples: List<String> = emptyList(),
 )
 

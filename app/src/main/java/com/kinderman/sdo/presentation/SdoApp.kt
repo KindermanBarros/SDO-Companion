@@ -512,30 +512,6 @@ fun SdoApp(
             }
                 }
                 }
-                val showSyncBanner = offlineReadOnly ||
-                    syncFailure != null ||
-                    sheetSyncStatus.hasActionRequired ||
-                    sheetSyncStatus.isSyncing
-                if (showSyncBanner && surface == AppSurface.SHEET) {
-                    val firstDenied = accessDeniedIntents.firstOrNull()
-                    SyncStatusBanner(
-                        offlineReadOnly = offlineReadOnly,
-                        syncFailure = syncFailure,
-                        status = sheetSyncStatus,
-                        offlineSheetsAvailable = offlineEditableIds.isNotEmpty(),
-                        hasAccessDeniedDraft = firstDenied != null,
-                        hasOpenConflict = openSheetConflicts.isNotEmpty(),
-                        onRetry = appViewModel::sync,
-                        onReviewAccessDenied = { reviewingAccessDenied = true },
-                        onRetryAccessDenied = {
-                            firstDenied?.let { appViewModel.retryAccessDeniedDraft(it.operationId) }
-                        },
-                        onDiscardAccessDenied = {
-                            firstDenied?.let { appViewModel.discardDraft(it.operationId) }
-                        },
-                        onDismissConfirmed = { showConfirmedBanner = false },
-                    )
-                }
                 if (!wide && surface != AppSurface.SHEET) SdoNavigationBar(buildList {
                     add(SdoNavigationItem("Painel", surface == AppSurface.DASHBOARD, Icons.Default.Home) { navigate(AppSurface.DASHBOARD, null) })
                     add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
