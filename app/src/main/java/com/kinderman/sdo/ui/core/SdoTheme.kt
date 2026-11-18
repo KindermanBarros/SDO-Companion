@@ -411,7 +411,7 @@ fun SdoTheme(
     preferences: SdoPreferences = SdoPreferences(),
     content: @Composable () -> Unit,
 ) {
-    val baseColors = if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) cybergrungeColors else when (preferences.theme) {
+    val baseColors = when (preferences.theme) {
         SdoThemeVariant.CYAN_INDUSTRIAL -> hudColors
         SdoThemeVariant.GREEN_TERMINAL -> terminalColors
         SdoThemeVariant.CRIMSON_ARCANE -> crimsonColors
@@ -421,8 +421,13 @@ fun SdoTheme(
         SdoThemeVariant.APERTURE_WHITE -> apertureWhiteColors
         SdoThemeVariant.BLACK_LODGE_DREAM -> blackLodgeDreamColors
         SdoThemeVariant.OLDEST_HOUSE_SIGNAL -> oldestHouseSignalColors
+        SdoThemeVariant.CYBERGRUNGE_SIGNAL -> cybergrungeColors
         SdoThemeVariant.HIGH_CONTRAST -> highContrastColors
-        SdoThemeVariant.SYSTEM -> if (isSystemInDarkTheme()) hudColors else systemLightColors
+        SdoThemeVariant.SYSTEM -> if (isSystemInDarkTheme()) {
+            if (preferences.visualMode == SdoVisualMode.CYBERGRUNGE) cybergrungeColors else hudColors
+        } else {
+            systemLightColors
+        }
     }
     val colors = baseColors.copy(
         surfaceContainerHigh = baseColors.surface,
@@ -808,7 +813,14 @@ fun HudTextField(
                 singleLine = !multiline,
                 visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
                 interactionSource = interaction,
-                label = { Text(label, maxLines = 1, style = MaterialTheme.typography.bodySmall) },
+                label = {
+                    AdaptiveSingleLineText(
+                        text = label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        minimumSize = 8.sp,
+                    )
+                },
                 placeholder = placeholder?.let { hint ->
                     {
                         Text(

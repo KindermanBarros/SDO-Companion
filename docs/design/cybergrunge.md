@@ -5,7 +5,7 @@ Mode-specific companion to the [design system](design_system.md). Preserve the a
 ## Mode boundary
 
 Standard remains the stable default. In Settings, Cybergrunge follows Standard and has a yellow EXPERIMENTAL badge only at the interface selector, not on mastheads or panels.
-Hide theme selection while Cybergrunge is active; restoring Standard restores the stored theme.
+Keep theme selection available while Cybergrunge is active so any SdoThemeVariant palette applies to Cybergrunge surfaces, typography, and effects.
 The visual mode changes presentation, not data, permissions, RPG rules or navigation semantics.
 The previous implementation plan described foundation work incorporated in PR #128; it is historical delivery guidance, not an outstanding ten-stage mandate. See [Memory](../MEMORY.md).
 

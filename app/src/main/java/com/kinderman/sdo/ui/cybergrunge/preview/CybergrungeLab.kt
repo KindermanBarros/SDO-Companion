@@ -30,7 +30,7 @@ fun CyberGrungeLab(modifier: Modifier = Modifier) {
             }
             SdoActionButton("Desabilitada", {}, Modifier.fillMaxWidth(), enabled = false)
         }
-        TechPanel(accent = CyberGrungeTokens.TerminalGreen) {
+        TechPanel(accent = MaterialTheme.colorScheme.secondary) {
             SectionHeader("02", "Campos")
             SdoField("CAMPO VAZIO", field, { field = it })
             SdoField("CAMPO BLOQUEADO", "DADO PRESERVADO", {}, enabled = false)

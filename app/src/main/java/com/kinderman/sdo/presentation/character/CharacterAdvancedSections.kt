@@ -545,6 +545,15 @@ internal fun ConditionSection(character: Character, enabled: Boolean, onChange: 
     }
     TechPanel(accent = MaterialTheme.colorScheme.error) {
         SectionHeader("13", "Condições")
+        if (instances.isEmpty()) {
+            SdoInsetCard(contentPadding = 14.dp) {
+                Text(
+                    "Nenhuma condição ativa no momento.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
         instances.forEachIndexed { index, condition ->
             ConditionEditor(index, condition, descriptions[condition.instanceId.value].orEmpty(), enabled,
                 onRemove = { updateInstances(instances.filterIndexed { itemIndex, _ -> itemIndex != index }) },
@@ -570,43 +579,87 @@ internal fun ConditionSection(character: Character, enabled: Boolean, onChange: 
 @Composable
 private fun ConditionEditor(index: Int, condition: ConditionInstance, description: String, enabled: Boolean, onRemove: () -> Unit, onValue: (ConditionInstance, String) -> Unit) {
     var draftDescription by remember(condition.instanceId.value) { mutableStateOf(description) }
+    var editing by rememberSaveable(condition.instanceId.value) { mutableStateOf(false) }
+    val showEditor = enabled && editing
     LaunchedEffect(description) {
         if (description != draftDescription) draftDescription = description
     }
     SdoInsetCard(contentPadding = 12.dp) {
-        Row(Modifier.fillMaxWidth()) {
-            Text("CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            com.kinderman.sdo.ui.SdoMetadataText(
+                "CONDIÇÃO ${(index + 1).toString().padStart(2, '0')}",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.weight(1f),
+            )
+            if (enabled) {
+                SdoTextButton(onClick = { editing = !editing }) {
+                    Text(if (showEditor) "VISUALIZAR" else "EDITAR")
+                }
+            }
             RemoveButton(enabled, "Remover condição", onRemove)
         }
-        ChoiceField("Condição", condition.kind, ConditionKind.entries, enabled, display = { it.label }) {
-            onValue(condition.copy(payload = condition.payload.copy(kind = it)), description)
-        }
-        val selectedDuration = condition.duration?.kind ?: DurationKind.Instant
-        TwoFields(
-            { IntegerField("Intensidade", condition.intensity ?: 0, enabled, it) { value -> onValue(condition.copy(payload = condition.payload.copy(intensity = value.takeIf { it > 0 })), description) } },
-            { ChoiceField("Duração", selectedDuration, DurationKind.entries, enabled, it, display = { value -> value.label }) { value ->
-                val duration = when (value) {
-                    DurationKind.Instant, DurationKind.Scene, DurationKind.Session -> Duration(value)
-                    DurationKind.Turns -> Duration(value, turns = condition.duration?.turns ?: 1)
-                    DurationKind.Timed -> Duration(value, timed = condition.duration?.timed ?: TimedDuration(1, DurationTimeUnit.Hours))
+        if (showEditor) {
+            ChoiceField("Condição", condition.kind, ConditionKind.entries, enabled, display = { it.label }) {
+                onValue(condition.copy(payload = condition.payload.copy(kind = it)), description)
+            }
+            val selectedDuration = condition.duration?.kind ?: DurationKind.Instant
+            TwoFields(
+                { IntegerField("Intensidade", condition.intensity ?: 0, enabled, it) { value -> onValue(condition.copy(payload = condition.payload.copy(intensity = value.takeIf { it > 0 })), description) } },
+                { ChoiceField("Duração", selectedDuration, DurationKind.entries, enabled, it, display = { value -> value.label }) { value ->
+                    val duration = when (value) {
+                        DurationKind.Instant, DurationKind.Scene, DurationKind.Session -> Duration(value)
+                        DurationKind.Turns -> Duration(value, turns = condition.duration?.turns ?: 1)
+                        DurationKind.Timed -> Duration(value, timed = condition.duration?.timed ?: TimedDuration(1, DurationTimeUnit.Hours))
+                    }
+                    onValue(condition.copy(payload = condition.payload.copy(duration = duration)), description)
+                } },
+            )
+            if (selectedDuration == DurationKind.Turns) IntegerField("Quantidade de turnos", condition.duration?.turns ?: 1, enabled) { value ->
+                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Turns, turns = value.coerceAtLeast(1)))), description)
+            }
+            if (selectedDuration == DurationKind.Timed) TwoFields(
+                { IntegerField("Tempo", condition.duration?.timed?.amount ?: 1, enabled, it) { value ->
+                    onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), description)
+                } },
+                { ChoiceField("Unidade", condition.duration?.timed?.unit ?: DurationTimeUnit.Hours, DurationTimeUnit.entries, enabled, it, display = { unit -> unit.label }) { unit ->
+                    onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), description)
+                } },
+            )
+            HudTextField("Descrição", draftDescription, multiline = true, enabled = enabled) {
+                draftDescription = it
+                onValue(condition, it)
+            }
+        } else {
+            com.kinderman.sdo.ui.SdoCardTitle(
+                text = condition.kind.label,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            val durationText = when (val d = condition.duration?.kind ?: DurationKind.Instant) {
+                DurationKind.Turns -> "${condition.duration?.turns ?: 1} turno(s)"
+                DurationKind.Timed -> "${condition.duration?.timed?.amount ?: 1} ${condition.duration?.timed?.unit?.label ?: ""}".trim()
+                else -> d.label
+            }
+            val metaItems = buildList {
+                add("DURAÇÃO // $durationText")
+                val intensity = condition.intensity ?: 0
+                if (intensity > 0) add("INTENSIDADE // $intensity")
+            }
+            com.kinderman.sdo.ui.SdoResponsiveGrid(metaItems, minItemWidth = 132.dp) { item, modifier ->
+                SdoInsetCard(modifier = modifier, contentPadding = 8.dp) {
+                    com.kinderman.sdo.ui.SdoMetadataText(item, color = MaterialTheme.colorScheme.secondary)
                 }
-                onValue(condition.copy(payload = condition.payload.copy(duration = duration)), description)
-            } },
-        )
-        if (selectedDuration == DurationKind.Turns) IntegerField("Quantidade de turnos", condition.duration?.turns ?: 1, enabled) { value ->
-            onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Turns, turns = value.coerceAtLeast(1)))), description)
-        }
-        if (selectedDuration == DurationKind.Timed) TwoFields(
-            { IntegerField("Tempo", condition.duration?.timed?.amount ?: 1, enabled, it) { value ->
-                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), description)
-            } },
-            { ChoiceField("Unidade", condition.duration?.timed?.unit ?: DurationTimeUnit.Hours, DurationTimeUnit.entries, enabled, it, display = { unit -> unit.label }) { unit ->
-                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), description)
-            } },
-        )
-        HudTextField("Descrição", draftDescription, multiline = true, enabled = enabled) {
-            draftDescription = it
-            onValue(condition, it)
+            }
+            if (draftDescription.isNotBlank()) {
+                Text(
+                    text = draftDescription.trim(),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }
@@ -618,16 +671,65 @@ internal fun AbilityAvailabilityEditor(
     enabled: Boolean,
     onChange: (Boolean, Boolean) -> Unit,
 ) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        SdoTextButton({ onChange(!favorite, available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (favorite) "★ FAVORITO" else "☆ FAVORITO") }
-        SdoTextButton({ onChange(favorite, !available) }, enabled = enabled, modifier = Modifier.weight(1f)) { Text(if (available) "DISPONÍVEL" else "INDISPONÍVEL") }
+    com.kinderman.sdo.ui.SdoResponsiveGrid(listOf("FAVORITE", "AVAILABLE"), minItemWidth = 140.dp) { kind, modifier ->
+        when (kind) {
+            "FAVORITE" -> SdoTextButton({ onChange(!favorite, available) }, enabled = enabled, modifier = modifier) {
+                com.kinderman.sdo.ui.AdaptiveActionLabel(if (favorite) "★ FAVORITO" else "☆ FAVORITO")
+            }
+            else -> SdoTextButton({ onChange(favorite, !available) }, enabled = enabled, modifier = modifier) {
+                com.kinderman.sdo.ui.AdaptiveActionLabel(if (available) "DISPONÍVEL" else "INDISPONÍVEL")
+            }
+        }
     }
 }
 
 @Composable
 internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    var editing by rememberSaveable(character.id) { mutableStateOf(character.story.isBlank()) }
+    val showEditor = enabled && editing
     TechPanel {
-        SectionHeader("15", "História")
-        CollaborativeSheetField("story", "História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SectionHeader("15", "História")
+            if (enabled) {
+                SdoTextButton(onClick = { editing = !editing }) {
+                    Text(if (showEditor) "VISUALIZAR" else "EDITAR")
+                }
+            }
+        }
+        if (showEditor) {
+            CollaborativeSheetField("story", "História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
+        } else {
+            StoryReadOnlyShowcase(character)
+        }
+    }
+}
+
+@Composable
+private fun StoryReadOnlyShowcase(character: Character) {
+    val identitySummary = listOf(character.name, character.race, character.occupation)
+        .filter(String::isNotBlank)
+        .joinToString(" · ")
+        .ifBlank { "Personagem sem identificação" }
+    SdoInsetCard(contentPadding = 16.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            com.kinderman.sdo.ui.SdoMetadataText(
+                "ARQUIVO BIOGRÁFICO // CRÔNICA DO PERSONAGEM",
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Text(
+                text = identitySummary,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = character.story.trim().ifBlank { "Nenhum registro biográfico inscrito ainda." },
+                color = if (character.story.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }

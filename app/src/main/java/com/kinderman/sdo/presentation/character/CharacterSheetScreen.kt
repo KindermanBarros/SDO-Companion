@@ -361,7 +361,7 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
         title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
         metadata = "NÍVEL ${character.level} // ${if (character.dirty) "ALTERAÇÕES LOCAIS" else "ARQUIVO ESTÁVEL"}",
     )
-    TechPanel(accent = if (character.isLocked) Signal else Acid) {
+    TechPanel(accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TelemetryTag(if (session.isAdmin) "OVERRIDE.ADMIN" else "ACCOUNT")
             TelemetryTag(
@@ -383,7 +383,7 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
                 photoUri = character.photoUri,
                 name = character.name,
                 size = 64.dp,
-                accent = if (character.isLocked) Signal else Acid,
+                accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(

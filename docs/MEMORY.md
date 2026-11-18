@@ -5,6 +5,16 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## Premium validation, Conditions & History upgrade, small-screen/Cybergrunge reflow & theme compatibility
+
+Status: InDevReview; updated 2026-11-17 23:02 America/La_Paz on `feature/game-modes-and-quick-create`.
+Scope:
+- Conditions (`13`) & History (`15`) upgrade (`CharacterAdvancedSections.kt`): added empty state for Conditions, read-only styled showcase cards with `EDITAR`/`VISUALIZAR` toggles, `SdoResponsiveGrid` metadata badges for condition duration/intensity, `StoryReadOnlyShowcase` with identity summary, and `SdoResponsiveGrid` + `AdaptiveActionLabel` in `AbilityAvailabilityEditor`.
+- Small-screen & Cybergrunge reflow (`CharacterFields.kt`, `SdoTheme.kt`, `SessionModeScreen.kt`, `CharacterConflictDialog.kt`): raised `TwoFields` stacking threshold to `460.dp * fontScale` in Cybergrunge, replaced clipped `maxLines = 1` labels in `HudTextField` with `AdaptiveSingleLineText`, migrated `session_body` regions from fixed `chunked(2)` rows to `SdoResponsiveGrid(..., minItemWidth = 148.dp)` with `SdoCardTitle`, and applied `AdaptiveActionLabel` to conflict dialog batch actions.
+- Theme compatibility & Cybergrunge themes (`SdoPreferences.kt`, `SdoTheme.kt`, `CybergrungeComponents.kt`, `CybergrungeNavigation.kt`, `CybergrungeEffects.kt`, `CybergrungeSignalLayer.kt`, `CatalogPickerDialog.kt`, `CharacterSheetScreen.kt`, `PhaseOneStrictInventory.kt`, `LoginScreen.kt`, `docs/design/cybergrunge.md`): enabled `allowsThemeSelection = true` in `SdoVisualMode.CYBERGRUNGE`, added `SdoThemeVariant.CYBERGRUNGE_SIGNAL` to preserve the signature red/cyan/black palette alongside all theme variants, resolved `preferences.theme` in `SdoTheme` for both visual modes, and replaced hardcoded `CyberGrungeTokens` / `Acid` / `Ice` / `Signal` colors with semantic `MaterialTheme.colorScheme` tokens.
+- Validation tests (`AppViewModelSyncPolicyTest.kt`, `SparkWireCodecTest.kt`, `SdoVisualModeTest.kt`): added tests verifying toast-free local saves, `syncing` flag toggling, fast creation batches (`skipDefaultFieldsOnCreate`), lossless round-trip compatibility for sheets with conditions, story, notes, and new pre-Era catalog entries, and theme selection across `SdoVisualMode.CYBERGRUNGE`.
+Validation: catalog `--check` scripts, `validate-harness.ps1`, `:app:testDebugUnitTest`, `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`, `:app:lintDebug`.
+
 ## BACKLOG-014 — Rotating sync icon & global sync indicator without toasts
 
 Status: InDevReview; updated 2026-11-17 22:22 America/La_Paz on `feature/game-modes-and-quick-create`.

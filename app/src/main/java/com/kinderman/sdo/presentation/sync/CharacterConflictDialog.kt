@@ -70,11 +70,11 @@ fun CharacterConflictDialog(
                     SdoTextButton(
                         onClick = { remoteFieldIds = emptySet() },
                         modifier = Modifier.weight(1f),
-                    ) { Text(stringResource(R.string.conflict_dialog_all_local)) }
+                    ) { com.kinderman.sdo.ui.AdaptiveActionLabel(stringResource(R.string.conflict_dialog_all_local)) }
                     SdoTextButton(
                         onClick = { remoteFieldIds = conflict.fields.mapTo(mutableSetOf()) { it.id } },
                         modifier = Modifier.weight(1f),
-                    ) { Text(stringResource(R.string.conflict_dialog_all_online)) }
+                    ) { com.kinderman.sdo.ui.AdaptiveActionLabel(stringResource(R.string.conflict_dialog_all_online)) }
                 }
                 Column(
                     modifier = Modifier

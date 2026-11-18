@@ -483,19 +483,14 @@ private fun SessionContent(
             item(key = "session_body") {
                 TechPanel(accent = MaterialTheme.colorScheme.error) {
                     SectionHeader("04", stringResource(R.string.session_body))
-                    character.canonicalBodyState().regions.chunked(2).forEach { pair ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            pair.forEach { region ->
-                                SdoInsetCard(
-                                    modifier = Modifier.weight(1f), contentPadding = if (compact) 6.dp else 9.dp,
-                                    verticalSpacing = 2.dp,
-                                ) {
-                                    Text(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-                                    SessionBodyStatus(region.state.label.uppercase(), region.failures)
-                                    Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                            if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                    com.kinderman.sdo.ui.SdoResponsiveGrid(character.canonicalBodyState().regions, minItemWidth = 148.dp) { region, modifier ->
+                        SdoInsetCard(
+                            modifier = modifier, contentPadding = if (compact) 6.dp else 9.dp,
+                            verticalSpacing = 2.dp,
+                        ) {
+                            SdoCardTitle(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+                            SessionBodyStatus(region.state.label.uppercase(), region.failures)
+                            Text("PL ${character.localProtection(region)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

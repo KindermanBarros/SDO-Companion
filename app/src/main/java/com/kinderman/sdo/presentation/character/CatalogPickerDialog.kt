@@ -111,7 +111,7 @@ internal fun CatalogPickerDialog(
                                 verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(entry.name, color = Ice, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                                    Text(entry.name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                                     val groupAlreadyAdded = if (groupAshVariants && entry.kind == CatalogKind.ASH) {
                                         entries.any { variant ->
                                             variant.kind == CatalogKind.ASH &&
@@ -119,7 +119,7 @@ internal fun CatalogPickerDialog(
                                                 variant.id in alreadyAddedCatalogIds
                                         }
                                     } else alreadyAdded
-                                    if (groupAlreadyAdded) Text("ADICIONADO", color = Signal, style = MaterialTheme.typography.labelSmall)
+                                    if (groupAlreadyAdded) Text("ADICIONADO", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Text(
                                     buildList {
@@ -213,7 +213,7 @@ private fun CatalogDetails(
                                 color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.titleSmall,
                         )
-                            if (selected) Text("SELECIONADA", color = Signal, style = MaterialTheme.typography.labelSmall)
+                            if (selected) Text("SELECIONADA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         }
                         Text(variant.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         purity?.let {
