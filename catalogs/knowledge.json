@@ -3453,8 +3453,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "INT mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "INT mínimo 2",
+        "História de Nulvara nível 2 ou Arqueologia nível 2",
+        "Contato com registros ou vestígios anteriores à Fratura"
       ],
       "effect": "Utilize INT como Atributo principal em testes especializados de Crônicas do Antes-Véu. Nível inicial 1; não pode ultrapassar o Atributo principal. Decifra fragmentos de calendários esquecidos anteriores à contagem atual, onde nomes de reinos já se confundem com mitos. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3475,8 +3476,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "INT mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "INT mínimo 2",
+        "Rúnico nível 2 ou Linguística nível 2",
+        "Estudo de inscrição ou relíquia em alfabeto pré-planar"
       ],
       "effect": "Utilize INT como Atributo principal em testes especializados de Epigrafia Darno. Nível inicial 1; não pode ultrapassar o Atributo principal. Lê sinais gravados num alfabeto rúnico pré-planar cujo significado muda conforme quem o pronuncia. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3497,8 +3499,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "VIG mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "VIG mínimo 2",
+        "Treinamento em guarda pesada ou muralha de escudos",
+        "Iniciação em tradição marcial ancestral das montanhas"
       ],
       "effect": "Utilize VIG como Atributo principal em testes especializados de Postura dos Sete Ecos. Nível inicial 1; não pode ultrapassar o Atributo principal. Forma marcial trazida das montanhas antigas, passada em silêncio entre sentinelas que nunca abandonam o posto. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3519,8 +3522,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "INT mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "INT mínimo 2",
+        "Linguística nível 2 ou Sabedoria Primordial nível 1",
+        "Contato direto com inscrições dos Haenessa ou ecos do Plano Onírico"
       ],
       "effect": "Utilize INT como Atributo principal em testes especializados de Essalhen. Nível inicial 1; não pode ultrapassar o Atributo principal. Reconhece e pronuncia sílabas sibilantes da fala primeira, idioma sussurrado no Plano Onírico antes da contagem mortal. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3542,8 +3546,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "POD mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "POD mínimo 2",
+        "Engenhocaria, Metalurgia ou Rúnico nível 2",
+        "Descoberta de tratado ou forja ancestral anterior à Era Muda"
       ],
       "effect": "Utilize POD como Atributo principal em testes especializados de Magia dos Primeiros. Nível inicial 1; não pode ultrapassar o Atributo principal. Permite forjar utilizando magia como base, moldando energia onírica como matéria em ritos de criação ancestral. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3560,13 +3565,14 @@
       "type": "ACQUIRED_KNOWLEDGE",
       "name": "Sabedoria Primordial",
       "category": "História Mítica",
-      "description": "Preserva fragmentos enigmáticos da história dos Tempos Longínquos, quando tudo era energia, os Sete Primordiais teceram Löe e a primeira coroa partiu-se em sete.",
+      "description": "Preserva fragmentos enigmáticos da história dos Tempos Longínquos, quando tudo era energia e os Sete Primordiais teceram os primeiros caminhos de Löe.",
       "attribute": "INT",
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "INT mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "INT mínimo 2",
+        "Crônicas do Antes-Véu nível 1 ou História de Nulvara nível 2",
+        "Acesso a fragmentos míticos dos Tempos Longínquos"
       ],
       "effect": "Utilize INT como Atributo principal em testes especializados de Sabedoria Primordial. Nível inicial 1; não pode ultrapassar o Atributo principal. Preserva fragmentos enigmáticos da história dos Tempos Longínquos, antes da contagem das eras mortais. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3588,8 +3594,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "INT mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "INT mínimo 2",
+        "Cartografia ou Navegação nível 2",
+        "Sobreviver a uma anomalia espacial ou estudar mapas pré-Fratura"
       ],
       "effect": "Utilize INT como Atributo principal em testes especializados de Cartografia do Véu. Nível inicial 1; não pode ultrapassar o Atributo principal. Lê mapas fragmentados onde rios e cordilheiras seguem a geometria de mundos que colidiram antes da era atual. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3610,8 +3617,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "INT mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "INT mínimo 2",
+        "Engenhocaria ou Mecânica nível 2",
+        "Desmontar ou restaurar um mecanismo autônomo da Era do Silêncio"
       ],
       "effect": "Utilize INT como Atributo principal em testes especializados de Relíquias da Era Muda. Nível inicial 1; não pode ultrapassar o Atributo principal. Reconhece mecanismos cegos construídos nos milênios em que a humanidade antiga caminhou sem magia. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3625,21 +3633,22 @@
     {
       "id": "knowledge.arcane_knowledge.ressonancia_da_coroa_partida",
       "type": "ARCANE_KNOWLEDGE",
-      "name": "Liturgia da Coroa Partida",
+      "name": "Liturgia dos Sete Nomes",
       "category": "Misticismo Ancestral",
-      "description": "Interpreta os sete cânticos incompletos que ecoam desde a queda dos primeiros deuses nas Guerras Sessenev.",
+      "description": "Interpreta os sete cânticos incompletos que ecoam desde o silêncio dos Primordiais nos Tempos Longínquos.",
       "attribute": "POD",
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "POD mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "POD mínimo 2",
+        "Sabedoria Primordial nível 1 ou Essalhen nível 1",
+        "Conhecer pelo menos um cântico ou fragmento litúrgico dos Primordiais"
       ],
-      "effect": "Utilize POD como Atributo principal em testes especializados de Liturgia da Coroa Partida. Nível inicial 1; não pode ultrapassar o Atributo principal. Interpreta os sete cânticos incompletos que ecoam desde a queda dos primeiros deuses nas Guerras Sessenev. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "effect": "Utilize POD como Atributo principal em testes especializados de Liturgia dos Sete Nomes. Nível inicial 1; não pode ultrapassar o Atributo principal. Interpreta os sete cânticos incompletos que ecoam desde o silêncio dos Primordiais nos Tempos Longínquos. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
       "ruleReference": "03 - Mundo/Linha do Tempo.md",
       "keywords": [
-        "Liturgia da Coroa Partida",
+        "Liturgia dos Sete Nomes",
         "Misticismo Ancestral"
       ],
       "repeatable": false
@@ -3654,8 +3663,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "POD mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "POD mínimo 2",
+        "Planos e Fenômenos Sobrenaturais nível 2",
+        "Experiência direta com o Plano Onírico ou relíquia da Primeira Casa"
       ],
       "effect": "Utilize POD como Atributo principal em testes especializados de Tecelagem do Espelho Onírico. Nível inicial 1; não pode ultrapassar o Atributo principal. Estuda os fios prateados onde o sonho sustenta a matéria, segundo os vestígios deixados na Primeira Casa. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",
@@ -3676,8 +3686,9 @@
       "initialLevel": 1,
       "maxLevel": 5,
       "prerequisites": [
-        "AGI mínimo 1",
-        "Conceito, treinamento ou fonte narrativa compatível"
+        "AGI mínimo 2",
+        "Furtividade ou Acrobacia em combate",
+        "Treinamento em deslocamento silencioso ou travessia onírica"
       ],
       "effect": "Utilize AGI como Atributo principal em testes especializados de Passo da Areia Sem Fim. Nível inicial 1; não pode ultrapassar o Atributo principal. Desloca o peso como quem caminha sobre dunas que pertencem a outro plano, sem deixar rastro audível. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
       "source": "Ecos do Antes-Véu",

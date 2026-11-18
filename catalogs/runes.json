@@ -1698,7 +1698,8 @@
       "resistance": "Arcana",
       "effect": "Traço antigo de um alfabeto que antecede as estradas atuais; concede +2 em Proteção Arcana contra efeitos que tentem deslocar ou romper o corpo.",
       "prerequisites": [
-        "Rúnico nível 2"
+        "Rúnico nível 2",
+        "Epigrafia Darno nível 1"
       ],
       "keywords": [
         "Glifo Darno do Limiar",
@@ -1731,7 +1732,8 @@
       "resistance": "Nenhuma",
       "effect": "Sinal antigo de união da matéria; a peça ignora a primeira perda de Durabilidade sofrida na cena.",
       "prerequisites": [
-        "Rúnico nível 1"
+        "Rúnico nível 1",
+        "Relíquias da Era Muda nível 1 ou ofício de forja"
       ],
       "keywords": [
         "Marca do Último Prego",
@@ -1765,7 +1767,8 @@
       "resistance": "Nenhuma",
       "effect": "Inscrição pré-planar que curva um batimento do instante; concede +2 em Iniciativa e Esquiva por 2 turnos.",
       "prerequisites": [
-        "Epigrafia Darno nível 3"
+        "Epigrafia Darno nível 3",
+        "Sabedoria Primordial nível 1"
       ],
       "keywords": [
         "Espiral do Tempo Visto",
@@ -1798,7 +1801,8 @@
       "resistance": "Mental",
       "effect": "Grava um interdito anterior aos reinos mortais; quem atacar o portador sofre −2 no primeiro teste hostil na cena.",
       "prerequisites": [
-        "Epigrafia Darno nível 2"
+        "Epigrafia Darno nível 2",
+        "Tecelagem do Espelho Onírico nível 1 ou Essalhen nível 1"
       ],
       "keywords": [
         "Selo da Primeira Casa",
@@ -1831,7 +1835,8 @@
       "resistance": "Geral",
       "effect": "Desperta a fome antiga que dorme no metal esquecido; o próximo acerto causa +1d4 de dano e reduz em 1 a Durabilidade da proteção atingida.",
       "prerequisites": [
-        "Rúnico nível 2"
+        "Rúnico nível 2",
+        "Estudo de lâminas ou relíquias oxidadas de eras passadas"
       ],
       "keywords": [
         "Sigilo da Ferrugem Órfã",
@@ -1864,7 +1869,8 @@
       "resistance": "Arcana",
       "effect": "Funde um nome primordial na têmpera do item; ataques com a arma contam como mágicos e recebem +1 de dano arcano na cena.",
       "prerequisites": [
-        "Magia dos Primeiros nível 3"
+        "Magia dos Primeiros nível 3",
+        "Essalhen nível 1"
       ],
       "keywords": [
         "Sílaba Gravada de Essalhen",

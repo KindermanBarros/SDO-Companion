@@ -4824,7 +4824,8 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
-        "Linguística 1 ou vínculo com vestígios antigos"
+        "Linguística nível 1",
+        "Essalhen nível 1 ou estudo de inscrições da fala primeira"
       ],
       "mechanicalEffect": "Uma vez por cena, receba +2 para interpretar inscrições sem mestre ou sustentar resistência mental diante de memórias antigas.",
       "ruleReference": "03 - Mundo/Linha do Tempo.md",
@@ -4872,7 +4873,8 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
-        "Histórico ligado a sonhos, neblina ou crônicas antigas"
+        "Sabedoria Primordial nível 1",
+        "Histórico ligado a sonhos e névoas antigas"
       ],
       "mechanicalEffect": "Recebe +2 em Sentidos para pressentir alterações oníricas, ecos de sonhos perdidos ou selos anteriores à Fratura.",
       "ruleReference": "03 - Mundo/Linha do Tempo.md",
@@ -4920,7 +4922,8 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
-        "Magia dos Primeiros 1"
+        "Magia dos Primeiros nível 1",
+        "Ofício de forja, ourivesaria ou engenhocaria"
       ],
       "mechanicalEffect": "Uma vez por cena, receba +2 em testes de forja ou criação e molde uma ferramenta simples de matéria onírica por 1 cena.",
       "ruleReference": "03 - Mundo/Linha do Tempo.md",
@@ -4968,7 +4971,8 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
-        "Histórico ligado a visões ou vestígios antigos"
+        "Crônicas do Antes-Véu nível 1 ou Arqueologia nível 2",
+        "Exposição prévia a vestígios anteriores à Fratura"
       ],
       "mechanicalEffect": "Perceba se uma inscrição, ruína ou aura próxima antecede a contagem atual e receba +2 no próximo teste de investigação sobre ela.",
       "ruleReference": "03 - Mundo/Linha do Tempo.md",
@@ -5016,6 +5020,7 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
+        "Relíquias da Era Muda nível 1",
         "Histórico ligado à sobrevivência sem magia"
       ],
       "mechanicalEffect": "Recebe +2 em testes de resistência contra efeitos de desorientação onírica ou anomalias arcanas ambientes.",
@@ -5064,7 +5069,8 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
-        "Essalhen 1"
+        "Essalhen nível 1",
+        "Liturgia dos Sete Nomes nível 1 ou Sabedoria Primordial nível 1"
       ],
       "mechanicalEffect": "Uma criatura a até 6 m realiza teste mental; em falha, sofre −2 em sua próxima ação hostil ou social.",
       "ruleReference": "03 - Mundo/Plano Onírico/Essalhen.md",
@@ -5112,7 +5118,7 @@
       "relatedAttribute": "",
       "initialValue": null,
       "prerequisites": [
-        "Histórico ligado a travessias ou limiares"
+        "Cartografia do Véu nível 1 ou Passo da Areia Sem Fim nível 1"
       ],
       "mechanicalEffect": "Ao ser alvo de ataque ou área, use sua Reação para deslocar-se 2 m sem provocar ataques de oportunidade e receber +1 na Esquiva contra esse golpe.",
       "ruleReference": "03 - Mundo/Linha do Tempo.md",

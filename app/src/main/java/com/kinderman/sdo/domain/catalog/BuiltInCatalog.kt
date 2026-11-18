@@ -37,7 +37,7 @@ object BuiltInCatalog {
         tecelao_do_primeiro_sonho|Tecelão do Primeiro Sonho|Ecos do Passado|Forja onírica, matéria moldada pelo espírito e formas anteriores ao ferro.
         andante_das_portas_partidas|Andante das Portas Partidas|Ecos do Passado|Fronteiras esquecidas, atalhos no véu e passagens onde dois mundos se tocaram.
         vigia_da_era_muda|Vigia da Era Muda|Ecos do Passado|Disciplina sem magia, engenho austero e resistência contra os delírios do véu.
-        portador_da_coroa_estilhacada|Portador da Coroa Estilhaçada|Ecos do Passado|Ambição antiga, fragmentos de autoridade primordial e o preço de tocar o divino.
+        testemunha_do_espelho|Testemunha do Espelho Velado|Ecos do Passado|Reflexos do Plano Onírico, vigilância silenciosa e o peso de enxergar o que o mundo esqueceu.
         cantor_de_essalhen|Cantor de Essalhen|Ecos do Passado|A fala primeira, nomes verdadeiros das coisas e ecos que acalmam ou despertam o mundo.
     """)
 

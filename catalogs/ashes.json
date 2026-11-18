@@ -4650,7 +4650,7 @@
     {
       "id": "ash.poeira_de_harutael.bruta",
       "type": "ASH",
-      "name": "Poeira da Coroa Partida",
+      "name": "Poeira da Primeira Forja",
       "source": "Tecnologia",
       "purity": "Bruta",
       "costType": "Dose",
@@ -4665,7 +4665,7 @@
         "Dose de Cinza Bruta"
       ],
       "keywords": [
-        "Poeira da Coroa Partida",
+        "Poeira da Primeira Forja",
         "Tecnologia",
         "Bruta",
         "Cinza"
@@ -4680,7 +4680,7 @@
     {
       "id": "ash.poeira_de_harutael.refinada",
       "type": "ASH",
-      "name": "Poeira da Coroa Partida",
+      "name": "Poeira da Primeira Forja",
       "source": "Tecnologia",
       "purity": "Refinada",
       "costType": "Dose",
@@ -4695,7 +4695,7 @@
         "Dose de Cinza Refinada"
       ],
       "keywords": [
-        "Poeira da Coroa Partida",
+        "Poeira da Primeira Forja",
         "Tecnologia",
         "Refinada",
         "Cinza"
@@ -4710,7 +4710,7 @@
     {
       "id": "ash.poeira_de_harutael.pura",
       "type": "ASH",
-      "name": "Poeira da Coroa Partida",
+      "name": "Poeira da Primeira Forja",
       "source": "Tecnologia",
       "purity": "Pura",
       "costType": "Dose",
@@ -4725,7 +4725,7 @@
         "Dose de Cinza Pura"
       ],
       "keywords": [
-        "Poeira da Coroa Partida",
+        "Poeira da Primeira Forja",
         "Tecnologia",
         "Pura",
         "Cinza"
