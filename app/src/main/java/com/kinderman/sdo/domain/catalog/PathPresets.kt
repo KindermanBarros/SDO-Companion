@@ -692,6 +692,147 @@ O alvo ainda pode escolher agir contra outra criatura; o poder não remove sua a
                 ),
             ),
         ),
+        PathPreset(
+            catalogId = """path.tecelao_do_primeiro_sonho""".trimIndent(),
+            motto = """Antes do ferro, o sopro já dava forma à matéria.""".trimIndent(),
+            keywords = listOf("""Forja""".trimIndent(), """Sonho""".trimIndent(), """Matéria""".trimIndent()),
+            pillars = listOf(
+                """Bigorna Invisível — Toda forma física guarda um reflexo adormecido no Plano Onírico que pode ser despertado pelo ofício.""".trimIndent(),
+                """Matéria Viva — Os primeiros artífices não dobravam o metal pela força, mas pelo diálogo com sua essência.""".trimIndent(),
+                """Criação Sem Dono — O que é moldado a partir do sonho não deve servir à tirania, mas à permanência do mundo.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Sopro da Bigorna""".trimIndent(),
+                    effect = """Recebe +2 em testes de Magia dos Primeiros ou ofício arcano ao moldar ferramentas, ligas raras ou peças encantadas.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Forma Emprestada""".trimIndent(),
+                    effect = """Uma vez por cena, condense energia onírica em um instrumento ou arma simples temporária por 1 cena, contando como mágica para superar resistências.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    duration = "1 cena",
+                    durationType = com.kinderman.sdo.domain.model.AbilityDuration.SCENE,
+                    limit = "Uma vez por cena",
+                    category = "Forja / Sobrenatural",
+                ),
+            ),
+        ),
+        PathPreset(
+            catalogId = """path.andante_das_portas_partidas""".trimIndent(),
+            motto = """Onde o mapa termina, ainda há um limiar entre dois mundos.""".trimIndent(),
+            keywords = listOf("""Limiar""".trimIndent(), """Fresta""".trimIndent(), """Travessia""".trimIndent()),
+            pillars = listOf(
+                """Cicatrizes do Véu — Sete décimos das portas se partiram na Fratura, mas suas dobras ainda respiram em lugares esquecidos.""".trimIndent(),
+                """Passo Sem Rastro — Quem caminha pelas fronteiras entre planos aprende a não pertencer inteiramente a nenhum lugar.""".trimIndent(),
+                """Retorno Prometido — Cada desvio pelo véu exige uma âncora para que o viajante lembre para onde voltar.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Sentido de Limiar""".trimIndent(),
+                    effect = """Recebe +2 em Sentidos ou Cartografia do Véu para perceber distorções espaciais, passagens ocultas ou resíduos de antigas travessias.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Atalho de Sombra""".trimIndent(),
+                    effect = """Uma vez por cena, ao mover-se ou reagir, atravesse uma fresta breve de até 3 metros ignorando terreno difícil comum entre os dois pontos.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    limit = "Uma vez por cena",
+                    category = "Movimento / Mistério",
+                ),
+            ),
+        ),
+        PathPreset(
+            catalogId = """path.vigia_da_era_muda""".trimIndent(),
+            motto = """Quando a magia dormiu por dez mil anos, foi o braço mortal que manteve a vigília.""".trimIndent(),
+            keywords = listOf("""Silêncio""".trimIndent(), """Disciplina""".trimIndent(), """Austeridade""".trimIndent()),
+            pillars = listOf(
+                """Memória do Silêncio — Os milênios sem magia provaram que vontade e técnica sobrevivem mesmo quando o céu emudece.""".trimIndent(),
+                """Mente Ancorada — Onde encantamentos tentam dobrar o juízo, a sobriedade da vigília ergue uma muralha interior.""".trimIndent(),
+                """Ferramenta Fiel — Um mecanismo simples bem mantido falha menos que promessas de deuses distantes.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Juízo Sobrio""".trimIndent(),
+                    effect = """Recebe +2 em testes de resistência contra ilusões, encantamentos ou interferências mentais.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Quebra de Feitiço Fria""".trimIndent(),
+                    effect = """Uma vez por cena, ao ser atingido por efeito sobrenatural ou área arcana, receba +4 na Proteção Arcana contra esse único efeito.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "Reação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.REACTION,
+                    limit = "Uma vez por cena",
+                    category = "Defesa / Disciplina",
+                ),
+            ),
+        ),
+        PathPreset(
+            catalogId = """path.portador_da_coroa_estilhacada""".trimIndent(),
+            motto = """Todo fragmento partido ainda se lembra do peso da coroa inteira.""".trimIndent(),
+            keywords = listOf("""Coroa""".trimIndent(), """Eco""".trimIndent(), """Soberania""".trimIndent()),
+            pillars = listOf(
+                """Herança de Harutael — A ambição que ousou desafiar os Primordiais deixou estilhaços espalhados pela história dos povos.""".trimIndent(),
+                """Peso do Desejo — O poder sem medida corrói quem o empunha antes de derrubar seus inimigos.""".trimIndent(),
+                """Voz de Comando — Diante de ecos antigos, quem conhece o nome da queda sustenta o olhar sem recuar.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Presença da Primeira Queda""".trimIndent(),
+                    effect = """Recebe +2 em testes de intimidação ou liderança ao impor autoridade sobre adversários abalados ou hesitantes.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Estilhaço de Autoridade""".trimIndent(),
+                    effect = """Uma vez por cena, escolha um inimigo a até 6 metros: ele realiza teste mental ou sofre −2 no próximo ataque contra você ou seus aliados.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "6 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.SHORT,
+                    limit = "Uma vez por cena",
+                    category = "Controle / Presença",
+                ),
+            ),
+        ),
+        PathPreset(
+            catalogId = """path.cantor_de_essalhen""".trimIndent(),
+            motto = """Vael es thur essa — o sonho é a primeira porta, e o canto a sua chave.""".trimIndent(),
+            keywords = listOf("""Canto""".trimIndent(), """Essalhen""".trimIndent(), """Sopro""".trimIndent()),
+            pillars = listOf(
+                """Fala Primeira — As vogais de Essalhen antecedem as fronteiras atuais e ainda ressoam na memória profunda das coisas.""".trimIndent(),
+                """Harmonia dos Sonhos — O canto dos primeiros povos não comandava o mundo pela força, mas o convidava a lembrar sua forma.""".trimIndent(),
+                """Nome Verdadeiro — Pronunciar um nome em silêncio e verdade desperta respeito até no que foi esquecido.""".trimIndent(),
+            ),
+            powers = listOf(
+                PathPower(
+                    name = """Cadência Sibilante""".trimIndent(),
+                    effect = """Recebe +2 em testes de Essalhen ou persuasão quando emprega versos, saudações rituais ou fragmentos da fala primeira.""".trimIndent(),
+                ),
+                PathPower(
+                    name = """Hino do Primeiro Plano""".trimIndent(),
+                    effect = """Uma vez por cena, entoe um verso antigo para até 2 aliados a até 6 metros: cada um recebe +2 no próximo teste de resistência mental ou concentração.""".trimIndent(),
+                    cost = "2 PE",
+                    costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+                    costValue = 2,
+                    action = "1 ação",
+                    executionType = com.kinderman.sdo.domain.model.AbilityExecution.ACTION,
+                    range = "6 metros",
+                    rangeType = com.kinderman.sdo.domain.model.AbilityRange.SHORT,
+                    limit = "Uma vez por cena",
+                    category = "Suporte / Mistério",
+                ),
+            ),
+        ),
     )
 
     fun find(catalogId: String): PathPreset? = entries.firstOrNull { it.catalogId == catalogId }

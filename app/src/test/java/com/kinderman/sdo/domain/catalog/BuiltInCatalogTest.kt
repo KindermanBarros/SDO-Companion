@@ -11,17 +11,17 @@ import org.junit.Test
 
 class BuiltInCatalogTest {
     @Test fun containsAllPublishedExamplesAndPaths() {
-        assertEquals(153, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER })
+        assertEquals(159, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes Mágicos" })
         assertEquals(50, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == "50 Exemplos de Poderes de Profissão e Conhecimento" })
-        assertEquals(51, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == CombatPowerCatalog.SOURCE })
+        assertEquals(52, BuiltInCatalog.entries.count { it.kind == CatalogKind.POWER && it.source == CombatPowerCatalog.SOURCE })
         assertTrue(BuiltInCatalog.entries.any { it.kind == CatalogKind.POWER && it.name.startsWith("Jian //") })
         assertTrue(BuiltInCatalog.entries.any { it.kind == CatalogKind.POWER && it.name.startsWith("Dao //") })
         assertTrue(BuiltInCatalog.entries.any { it.kind == CatalogKind.POWER && "Ataque mágico" in it.keywords })
-        assertEquals(51, BuiltInCatalog.entries.count { it.kind == CatalogKind.MAGIC })
-        assertEquals(153, BuiltInCatalog.entries.count { it.kind == CatalogKind.ASH })
-        assertEquals(51, BuiltInCatalog.entries.count { it.kind == CatalogKind.RUNE })
-        assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.PATH } >= 20)
+        assertEquals(56, BuiltInCatalog.entries.count { it.kind == CatalogKind.MAGIC })
+        assertEquals(168, BuiltInCatalog.entries.count { it.kind == CatalogKind.ASH })
+        assertEquals(56, BuiltInCatalog.entries.count { it.kind == CatalogKind.RUNE })
+        assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.PATH } >= 25)
         assertTrue(BuiltInCatalog.entries.count { it.kind == CatalogKind.ITEM } >= 62)
     }
 
@@ -46,9 +46,9 @@ class BuiltInCatalogTest {
     }
 
     @Test fun knowledgeCatalogHasFiftyEntriesOfEachType() {
-        assertEquals(51, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ACQUIRED_KNOWLEDGE })
-        assertEquals(51, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ARCANE_KNOWLEDGE })
-        assertEquals(51, KnowledgeCatalog.entries.count { it.kind == CatalogKind.BATTLE_TECHNIQUE })
+        assertEquals(55, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ACQUIRED_KNOWLEDGE })
+        assertEquals(54, KnowledgeCatalog.entries.count { it.kind == CatalogKind.ARCANE_KNOWLEDGE })
+        assertEquals(52, KnowledgeCatalog.entries.count { it.kind == CatalogKind.BATTLE_TECHNIQUE })
         assertTrue(KnowledgeCatalog.entries.none { it.name.startsWith("Estudo de ", ignoreCase = true) })
         assertTrue(KnowledgeCatalog.entries.all { it.initialValue == 1 })
         assertTrue(KnowledgeCatalog.entries.any { it.name == "Natureza" && it.kind == CatalogKind.ARCANE_KNOWLEDGE })
@@ -208,6 +208,9 @@ class BuiltInCatalogTest {
         assertTrue("rune.selo_darno_de_ancoragem" in ids)
         assertTrue("ash.cinza_do_alvorecer.pura" in ids)
         assertTrue("knowledge.arcane_knowledge.epigrafia_darno" in ids)
+        assertTrue("knowledge.acquired_knowledge.essalhen" in ids)
+        assertTrue("knowledge.arcane_knowledge.magia_dos_primeiros" in ids)
+        assertTrue("knowledge.acquired_knowledge.sabedoria_primordial" in ids)
         assertTrue("item.astrolabio_de_lo" in ids)
         assertTrue("item.ampulheta_de_areia_onirica" in ids)
     }

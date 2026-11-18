@@ -3508,6 +3508,185 @@
         "Postura"
       ],
       "repeatable": false
+    },
+    {
+      "id": "knowledge.acquired_knowledge.essalhen",
+      "type": "ACQUIRED_KNOWLEDGE",
+      "name": "Essalhen",
+      "category": "Idioma Ancestral",
+      "description": "Reconhece e pronuncia sílabas sibilantes da fala primeira, idioma sussurrado no Plano Onírico antes da contagem mortal.",
+      "attribute": "INT",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "INT mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize INT como Atributo principal em testes especializados de Essalhen. Nível inicial 1; não pode ultrapassar o Atributo principal. Reconhece e pronuncia sílabas sibilantes da fala primeira, idioma sussurrado no Plano Onírico antes da contagem mortal. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Plano Onírico/Essalhen.md",
+      "keywords": [
+        "Essalhen",
+        "Idioma Ancestral",
+        "Fala Primeira"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.arcane_knowledge.magia_dos_primeiros",
+      "type": "ARCANE_KNOWLEDGE",
+      "name": "Magia dos Primeiros",
+      "category": "Ofício Arcano Primordial",
+      "description": "Domina a arte velada dos primeiros povos de condensar fluxos oníricos na bigorna, permitindo forjar utilizando a própria magia como matéria-base.",
+      "attribute": "POD",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "POD mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize POD como Atributo principal em testes especializados de Magia dos Primeiros. Nível inicial 1; não pode ultrapassar o Atributo principal. Permite forjar utilizando magia como base, moldando energia onírica como matéria em ritos de criação ancestral. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Magia dos Primeiros",
+        "Ofício Arcano Primordial",
+        "Forja"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.acquired_knowledge.sabedoria_primordial",
+      "type": "ACQUIRED_KNOWLEDGE",
+      "name": "Sabedoria Primordial",
+      "category": "História Mítica",
+      "description": "Preserva fragmentos enigmáticos da história dos Tempos Longínquos, quando tudo era energia, os Sete Primordiais teceram Löe e a primeira coroa partiu-se em sete.",
+      "attribute": "INT",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "INT mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize INT como Atributo principal em testes especializados de Sabedoria Primordial. Nível inicial 1; não pode ultrapassar o Atributo principal. Preserva fragmentos enigmáticos da história dos Tempos Longínquos, antes da contagem das eras mortais. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Sabedoria Primordial",
+        "História Mítica",
+        "Tempos Longínquos"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.acquired_knowledge.cartografia_do_veu",
+      "type": "ACQUIRED_KNOWLEDGE",
+      "name": "Cartografia do Véu",
+      "category": "Exploração Ancestral",
+      "description": "Lê mapas fragmentados onde rios e cordilheiras seguem a geometria de mundos que colidiram antes da era atual.",
+      "attribute": "INT",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "INT mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize INT como Atributo principal em testes especializados de Cartografia do Véu. Nível inicial 1; não pode ultrapassar o Atributo principal. Lê mapas fragmentados onde rios e cordilheiras seguem a geometria de mundos que colidiram antes da era atual. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Nulvara.md",
+      "keywords": [
+        "Cartografia do Véu",
+        "Exploração Ancestral"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.acquired_knowledge.reliquias_do_silencio",
+      "type": "ACQUIRED_KNOWLEDGE",
+      "name": "Relíquias da Era Muda",
+      "category": "Ofício Antigo",
+      "description": "Reconhece mecanismos cegos construídos nos milênios em que a humanidade antiga caminhou sem magia.",
+      "attribute": "INT",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "INT mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize INT como Atributo principal em testes especializados de Relíquias da Era Muda. Nível inicial 1; não pode ultrapassar o Atributo principal. Reconhece mecanismos cegos construídos nos milênios em que a humanidade antiga caminhou sem magia. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Relíquias da Era Muda",
+        "Ofício Antigo"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.arcane_knowledge.ressonancia_da_coroa_partida",
+      "type": "ARCANE_KNOWLEDGE",
+      "name": "Liturgia da Coroa Partida",
+      "category": "Misticismo Ancestral",
+      "description": "Interpreta os sete cânticos incompletos que ecoam desde a queda dos primeiros deuses nas Guerras Sessenev.",
+      "attribute": "POD",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "POD mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize POD como Atributo principal em testes especializados de Liturgia da Coroa Partida. Nível inicial 1; não pode ultrapassar o Atributo principal. Interpreta os sete cânticos incompletos que ecoam desde a queda dos primeiros deuses nas Guerras Sessenev. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Liturgia da Coroa Partida",
+        "Misticismo Ancestral"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.arcane_knowledge.tecelagem_de_vaelivash",
+      "type": "ARCANE_KNOWLEDGE",
+      "name": "Tecelagem do Espelho Onírico",
+      "category": "Disciplina Arcana",
+      "description": "Estuda os fios prateados onde o sonho sustenta a matéria, segundo os vestígios deixados na Primeira Casa.",
+      "attribute": "POD",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "POD mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize POD como Atributo principal em testes especializados de Tecelagem do Espelho Onírico. Nível inicial 1; não pode ultrapassar o Atributo principal. Estuda os fios prateados onde o sonho sustenta a matéria, segundo os vestígios deixados na Primeira Casa. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Tecelagem do Espelho Onírico",
+        "Disciplina Arcana"
+      ],
+      "repeatable": false
+    },
+    {
+      "id": "knowledge.battle_technique.passo_da_areia_dos_sonhos",
+      "type": "BATTLE_TECHNIQUE",
+      "name": "Passo da Areia Sem Fim",
+      "category": "Movimento",
+      "description": "Desloca o peso como quem caminha sobre dunas que pertencem a outro plano, sem deixar rastro audível.",
+      "attribute": "AGI",
+      "initialLevel": 1,
+      "maxLevel": 5,
+      "prerequisites": [
+        "AGI mínimo 1",
+        "Conceito, treinamento ou fonte narrativa compatível"
+      ],
+      "effect": "Utilize AGI como Atributo principal em testes especializados de Passo da Areia Sem Fim. Nível inicial 1; não pode ultrapassar o Atributo principal. Desloca o peso como quem caminha sobre dunas que pertencem a outro plano, sem deixar rastro audível. Não concede ações, dano, bônus ou efeitos sobrenaturais adicionais por si só.",
+      "source": "Ecos do Antes-Véu",
+      "ruleReference": "03 - Mundo/Linha do Tempo.md",
+      "keywords": [
+        "Passo da Areia Sem Fim",
+        "Movimento"
+      ],
+      "repeatable": false
     }
   ]
 }

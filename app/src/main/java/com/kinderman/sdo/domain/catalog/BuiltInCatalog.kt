@@ -34,6 +34,11 @@ object BuiltInCatalog {
         sangue_carmesim|Caminho do Sangue Carmesim|Sons do Orgulho|Sangue, sacrifício e legado.
         cronista_alvorecer|Intérprete do Antes-Véu|Ecos do Passado|Sussurros de eras sepultadas, sinais sem mestre e memórias que a pedra recusou apagar.
         forjador_bronze_runico|Artífice do Sol Esquecido|Ecos do Passado|Ligas de um alvorecer perdido, membros de bronze que respiram e selos gravados antes do grande silêncio.
+        tecelao_do_primeiro_sonho|Tecelão do Primeiro Sonho|Ecos do Passado|Forja onírica, matéria moldada pelo espírito e formas anteriores ao ferro.
+        andante_das_portas_partidas|Andante das Portas Partidas|Ecos do Passado|Fronteiras esquecidas, atalhos no véu e passagens onde dois mundos se tocaram.
+        vigia_da_era_muda|Vigia da Era Muda|Ecos do Passado|Disciplina sem magia, engenho austero e resistência contra os delírios do véu.
+        portador_da_coroa_estilhacada|Portador da Coroa Estilhaçada|Ecos do Passado|Ambição antiga, fragmentos de autoridade primordial e o preço de tocar o divino.
+        cantor_de_essalhen|Cantor de Essalhen|Ecos do Passado|A fala primeira, nomes verdadeiros das coisas e ecos que acalmam ou despertam o mundo.
     """)
 
     val entries: List<CatalogEntry> = paths + GeneratedCatalogEntries.entries.filter {

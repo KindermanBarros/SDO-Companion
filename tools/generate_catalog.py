@@ -41,8 +41,8 @@ ABILITY_OPTIONAL_FIELDS = {
     'executionValue': int, 'executionUnit': str, 'durationValue': int,
     'durationUnit': str,
 }
-COUNTS = {'POWER': 102, 'MAGIC': 51, 'ASH': 153, 'RUNE': 51,
-          'ACQUIRED_KNOWLEDGE': 51, 'ARCANE_KNOWLEDGE': 51, 'BATTLE_TECHNIQUE': 51}
+COUNTS = {'POWER': 107, 'MAGIC': 56, 'ASH': 168, 'RUNE': 56,
+          'ACQUIRED_KNOWLEDGE': 55, 'ARCANE_KNOWLEDGE': 54, 'BATTLE_TECHNIQUE': 52}
 
 SOURCE_VALUES = {'Conhecimento': 'KNOWLEDGE', 'Raça': 'RACE', 'Caminho': 'PATH',
                  'Item': 'ITEM', 'Histórico': 'HISTORY', 'Profissão': 'PROFESSION',
