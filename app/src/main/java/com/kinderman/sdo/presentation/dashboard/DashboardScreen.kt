@@ -244,13 +244,6 @@ fun DashboardScreen(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         TelemetryTag(if (admin) "ADMIN_ACCESS" else "ACCOUNT_ACCESS")
                         Row {
-                            SdoIconButton(onClick = onSync, enabled = !syncing) {
-                                com.kinderman.sdo.ui.SdoRotatingSyncIcon(
-                                    syncing = syncing || cloudSyncing,
-                                    contentDescription = "Sincronizar",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
                             SdoIconButton(onClick = onOpenSettings, modifier = Modifier.testTag("dashboard_quick_settings")) {
                                 Icon(
                                     Icons.Default.Settings,

@@ -244,10 +244,11 @@ fun LibraryScreen(
         handbookRules.filter { topic ->
             (ruleCategory == "Todas" || topic.category == ruleCategory) &&
                 (ruleQuery.isBlank() ||
-                    listOf(topic.title, topic.chapter, topic.part, topic.category)
-                        .plus(topic.paragraphs)
-                        .plus(topic.bullets)
+                    listOf(topic.title, topic.chapter, topic.part, topic.category, topic.summary)
+                        .plus(topic.formulas)
+                        .plus(topic.scales)
                         .plus(topic.examples)
+                        .plus(topic.blocks.flatMap { listOf(it.heading) + it.paragraphs + it.bullets })
                         .any { it.contains(ruleQuery, ignoreCase = true) })
         }
     }
@@ -541,35 +542,45 @@ private fun GameRuleCard(
             TelemetryTag(topic.chapter.uppercase(), MaterialTheme.colorScheme.secondary)
         }
         SdoCardTitle(topic.title, color = MaterialTheme.colorScheme.onSurface)
-        val preview = topic.paragraphs.firstOrNull { !it.startsWith("[") }
-            ?: topic.bullets.firstOrNull()
-            ?: topic.examples.firstOrNull()
-        if (!isExpanded && preview != null) {
+        val preview = topic.summary.ifBlank {
+            topic.formulas.firstOrNull() ?: topic.scales.firstOrNull().orEmpty()
+        }
+        if (!isExpanded && preview.isNotBlank()) {
             Text(
                 text = preview,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 2,
             )
-            SdoMetadataText("Toque para expandir (${topic.paragraphs.size + topic.bullets.size + topic.examples.size} blocos)", color = MaterialTheme.colorScheme.primary)
+            val detailCount = topic.blocks.sumOf { it.paragraphs.size + it.bullets.size } +
+                topic.formulas.size + topic.scales.size + topic.examples.size
+            SdoMetadataText("Toque para ler regra completa ($detailCount itens)", color = MaterialTheme.colorScheme.primary)
         } else {
-            topic.paragraphs.forEach { paragraph ->
-                if (paragraph.startsWith("[") && paragraph.endsWith("]")) {
-                    SdoMetadataText(
-                        paragraph.removeSurrounding("[", "]").uppercase(),
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                } else {
-                    Text(
-                        text = paragraph,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+            if (topic.formulas.isNotEmpty()) {
+                SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
+                    SdoMetadataText("FÓRMULA / REGRA-CHAVE", color = MaterialTheme.colorScheme.primary)
+                    topic.formulas.forEach { formula ->
+                        Text(
+                            text = formula,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
                 }
             }
-            if (topic.bullets.isNotEmpty()) {
+            topic.blocks.forEach { block ->
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    topic.bullets.forEach { bullet ->
+                    if (block.heading.isNotBlank()) {
+                        SdoMetadataText(block.heading.uppercase(), color = MaterialTheme.colorScheme.secondary)
+                    }
+                    block.paragraphs.forEach { paragraph ->
+                        Text(
+                            text = paragraph,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                    block.bullets.forEach { bullet ->
                         Text(
                             text = "• $bullet",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -578,8 +589,20 @@ private fun GameRuleCard(
                     }
                 }
             }
+            if (topic.scales.isNotEmpty()) {
+                SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
+                    SdoMetadataText("ESCALA / REFERÊNCIA", color = MaterialTheme.colorScheme.secondary)
+                    topic.scales.forEach { row ->
+                        Text(
+                            text = row,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
             if (topic.examples.isNotEmpty()) {
-                SdoInsetCard(contentPadding = 10.dp) {
+                SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
                     SdoMetadataText("EXEMPLO PRÁTICO", color = MaterialTheme.colorScheme.primary)
                     topic.examples.forEach { example ->
                         Text(

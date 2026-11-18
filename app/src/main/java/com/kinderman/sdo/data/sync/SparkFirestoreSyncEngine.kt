@@ -1738,7 +1738,7 @@ class SparkFirestoreSyncEngine(
         }
     }
 
-    suspend fun drain(accountIdOverride: String? = null): Boolean = drainMutex.withLock {
+    suspend fun drain(accountIdOverride: String? = null, targetSheetId: String? = null): Boolean = drainMutex.withLock {
         val uid = accountIdOverride ?: currentUidProvider() ?: return@withLock true
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) return@withLock true
         // Unconditional auth gate (also for scheduled/WorkManager drains with an explicit uid):
@@ -1750,18 +1750,28 @@ class SparkFirestoreSyncEngine(
         syncing.value = true
         var allTransientSucceeded = true
         try {
-            reconcileLegacyData(uid)
-            localStore.listAccountSheets(uid).filter { it.sheetRevision == 0L }.forEach { sheet ->
-                val intents = localStore.listIntentsForSheet(uid, sheet.sheetId)
-                if (intents.any {
-                        it.type == OperationType.DELETE_SHEET.name && it.status != SheetIntentStatus.CONFIRMED.name
+            if (targetSheetId == null) {
+                reconcileLegacyData(uid)
+            }
+            localStore.listAccountSheets(uid)
+                .filter { it.sheetRevision == 0L && (targetSheetId == null || it.sheetId == targetSheetId) }
+                .forEach { sheet ->
+                    val intents = localStore.listIntentsForSheet(uid, sheet.sheetId)
+                    if (intents.any {
+                            it.type == OperationType.DELETE_SHEET.name && it.status != SheetIntentStatus.CONFIRMED.name
+                        }
+                    ) {
+                        cancelUnpublishedSheet(uid, sheet.sheetId)
                     }
-                ) {
-                    cancelUnpublishedSheet(uid, sheet.sheetId)
                 }
+            val rawIntents = if (targetSheetId != null) {
+                localStore.listIntentsForSheet(uid, targetSheetId)
+                    .filter { it.status == SheetIntentStatus.PENDING.name || it.status == SheetIntentStatus.SENDING.name }
+            } else {
+                localStore.listActiveIntents(uid)
             }
             val pending = orderIntentsTopologically(
-                localStore.listActiveIntents(uid).map(SheetIntentRecord::toDomain),
+                rawIntents.map(SheetIntentRecord::toDomain),
             )
             val blockedOps = mutableSetOf<String>()
             // Seed blocked ops from existing CONFLICT/REJECTED/ACCESS_DENIED intents.
@@ -2464,8 +2474,8 @@ class SparkFirestoreSyncEngine(
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID || characterId.isBlank()) return emptyList()
         if (!isAccountCurrent(uid)) return emptyList()
         ensureAccountProjected(uid)
-        drain(uid)
-        refreshSheetFromRemote(uid, characterId)
+        drain(uid, targetSheetId = characterId)
+        refreshDiscoveredSheet(uid, characterId)
         return emptyList()
     }
 
