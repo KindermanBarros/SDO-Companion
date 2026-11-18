@@ -17,6 +17,7 @@ jobs:
   authenticated-dev-tests:
     name: Run authenticated Firebase tests on dev
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       GOOGLE_SERVICES_JSON_DEV: ${{ secrets.GOOGLE_SERVICES_JSON_DEV }}
       SDO_DEV_TEST_EMAIL: ${{ secrets.SDO_DEV_TEST_EMAIL }}
@@ -36,6 +37,11 @@ jobs:
           java-version: '25'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Restore protected dev build files
         uses: ./.github/actions/restore-android-secrets
         with:
@@ -45,10 +51,13 @@ jobs:
       - name: Run authenticated dev instrumented test on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 35
           target: google_apis
           arch: x86_64
           profile: Nexus 6
+          ram-size: 2048M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           script: ./gradlew :app:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.kinderman.sdo.data.sync.AuthenticatedDevFirebaseInstrumentedTest --stacktrace
       - name: Remove protected build files
         if: always()
