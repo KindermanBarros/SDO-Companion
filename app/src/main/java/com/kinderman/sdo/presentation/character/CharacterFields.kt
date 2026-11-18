@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -100,6 +101,56 @@ internal fun CharacterActionButton(
 @Composable
 internal fun RemoveButton(enabled: Boolean, description: String, onClick: () -> Unit) {
     SdoIconButton(onClick = onClick, enabled = enabled) { Icon(Icons.Default.Close, description, tint = MaterialTheme.colorScheme.error) }
+}
+
+@Composable
+internal fun CompactEditToggleButton(
+    editing: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (!enabled) return
+    SdoOutlinedButton(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 36.dp),
+        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+    ) {
+        Text(
+            text = if (editing) "VISUALIZAR" else "EDITAR",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+internal fun SectionShowcaseHeader(
+    index: String,
+    title: String,
+    subtitle: String,
+    editing: Boolean,
+    enabled: Boolean,
+    onToggle: () -> Unit,
+) {
+    val collapsedTitle = com.kinderman.sdo.ui.LocalCollapsibleSectionTitle.current
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (collapsedTitle == null) {
+            com.kinderman.sdo.ui.SectionHeader(index, title, Modifier.weight(1f))
+        } else {
+            SdoMetadataText(
+                text = subtitle,
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.secondary,
+            )
+        }
+        CompactEditToggleButton(editing = enabled && editing, enabled = enabled, onClick = onToggle)
+    }
 }
 
 @Composable

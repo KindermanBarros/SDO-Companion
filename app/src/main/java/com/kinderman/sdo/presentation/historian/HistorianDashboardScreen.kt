@@ -736,29 +736,12 @@ private fun OperationalCharacterCard(
                 )
             }
         }
-        val quickPresets = listOf(
-            "Dano" to QuickActionKind.DAMAGE,
-            "Cura" to QuickActionKind.HEAL,
-            "Recurso" to QuickActionKind.RESOURCE,
-            "+Condição" to QuickActionKind.CONDITION_ADD,
-            "-Condição" to QuickActionKind.CONDITION_REMOVE,
-            "Falha" to QuickActionKind.REGION,
-            "Dinheiro/Destino" to QuickActionKind.MONEY,
-            "Reiniciar Usos" to QuickActionKind.USAGE_RESET,
-        )
-        SdoResponsiveGrid(quickPresets, minItemWidth = 112.dp) { (presetLabel, kind), modifier ->
-            SdoActionButton(
-                label = presetLabel,
-                onClick = { if (writable) onQuickAction(kind) },
-                modifier = modifier,
-                enabled = writable && (kind != QuickActionKind.CONDITION_REMOVE || typedConditions.isNotEmpty()),
-            )
-        }
         SdoActionButton(
             label = stringResource(R.string.historian_quick_action),
             onClick = { onQuickAction(null) },
             modifier = Modifier.fillMaxWidth(),
             enabled = writable,
+            style = SdoActionStyle.PRIMARY,
         )
         if (expanded) {
             SdoDataModules(

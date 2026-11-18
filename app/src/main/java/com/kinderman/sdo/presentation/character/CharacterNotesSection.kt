@@ -109,11 +109,11 @@ private fun PersonalNoteCard(
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.secondary,
                 )
-                if (enabled) {
-                    SdoTextButton(onClick = { editing = !editing }) {
-                        Text(if (showEditor) "VISUALIZAR" else "EDITAR")
-                    }
-                }
+                CompactEditToggleButton(
+                    editing = showEditor,
+                    enabled = enabled,
+                    onClick = { editing = !editing },
+                )
                 RemoveButton(enabled, "Remover registro", onRemove)
             }
             if (showEditor) {

@@ -5,6 +5,18 @@ This single file (`docs/MEMORY.md`) centralizes all task history, active states 
 
 ---
 
+## Final UI polish, DRY sheet headers, photo modal & verified admin Rules edit access
+
+Status: InDevReview; updated 2026-11-18 01:32 America/La_Paz on `fix/ui-polish-and-admin-edit`.
+Scope:
+- Verified administrator Rules access (`firebase/firestore.rules`, `firebase/tests/firestore.rules.test.mjs`, `firebase/tests/spark.adversarial.test.mjs`): allowed verified `isAdministrator()` (`email_verified == true && email == 'kindbarros@gmail.com'`) to read/edit character sheets and item quantities (`inv_*` `quantity`) while short-circuiting after owner/GM checks to stay within the 1000-expression Rules budget and keeping unverified admin, peers, and outsiders blocked.
+- DRY sheet showcases & spacing (`CharacterFields.kt`, `PhaseOneSections.kt`, `CharacterAdvancedSections.kt`, `CharacterNotesSection.kt`, `CharacterCoreSections.kt`): extracted `CompactEditToggleButton` and `SectionShowcaseHeader` (handling `LocalCollapsibleSectionTitle` to eliminate the huge title/input gap in Path `07` and History `15` and shrinking oversized `VISUALIZAR`/`EDITAR` buttons on notes/conditions), added `TraitReadOnlyShowcase` + edit toggle for Traits `03`, and made inventory item `name`/`effect` read-only in `PhaseOneStrictInventory.kt`.
+- Single character photo & modal picker (`CharacterSheetScreen.kt`, `CharacterSheetPager.kt`, `CharacterCreationWizard.kt`, `CharacterCoreSections.kt`): removed the duplicate portrait picker from `IdentitySection` and moved `SdoCharacterPhotoPicker` into a modal `AlertDialog` opened from `SheetHero` or Identity.
+- App tabs & Cybergrunge spacing (`SdoApp.kt`, `HistorianDashboardScreen.kt`, `SessionModeScreen.kt`, `CybergrungeComponents.kt`): hid `SyncStatusBanner` on `Painel`, `Sessão`, `Mestre`, and `Ajustes` (covered by the top `SdoGlobalSyncStatusPill`), removed the 8 redundant `quickPresets` buttons in `OperationalCharacterCard`, increased internal padding/spacing in `SessionModeScreen`, and increased Cybergrunge panel/field spacing.
+Validation: `:app:testDebugUnitTest :app:assembleDebug :app:compileDebugAndroidTestKotlin :app:lintDebug` PASS; `npm --prefix firebase run test:rules` (`61/61` PASS); `validate-harness.ps1` (`111` docs PASS); emulator UI screenshots captured across `standard`, `cybergrunge` (`CYBERGRUNGE_SIGNAL`), and `cybergrunge_edgerunners` (`EDGERUNNERS`) on `Medium_Phone_API_37.0` (`entregaveis/`, untracked).
+
+---
+
 ## Premium validation, Conditions & History upgrade, small-screen/Cybergrunge reflow & theme compatibility
 
 Status: Done; owner approved 2026-11-18 00:36 America/La_Paz on `feature/game-modes-and-quick-create`.

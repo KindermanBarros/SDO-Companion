@@ -69,8 +69,8 @@ internal fun CyberGrungePanel(
         }
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
             Column(
-                modifier = Modifier.padding(start = if (compact) 13.dp else 18.dp, top = 13.dp, end = 13.dp, bottom = 13.dp),
-                verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+                modifier = Modifier.padding(start = if (compact) 14.dp else 18.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
             ) {
                 if (!compact) CyberGrungePanelChrome()
                 content()
@@ -178,7 +178,7 @@ internal fun CyberGrungeField(
         focusedLabelColor = MaterialTheme.colorScheme.primary,
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .72f),
     )
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Text("INPUT//$label", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         androidx.compose.foundation.text.BasicTextField(
             value = value, onValueChange = onValue, enabled = enabled, singleLine = !multiline,

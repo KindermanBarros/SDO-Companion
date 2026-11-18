@@ -1,6 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -107,6 +108,7 @@ fun CharacterSheetScreen(
     var current by draft.current
     var confirmDelete by rememberSaveable(character.id) { mutableStateOf(false) }
     var confirmHeritageReset by rememberSaveable(character.id) { mutableStateOf(false) }
+    var showPhotoPicker by rememberSaveable(character.id) { mutableStateOf(false) }
     val undoSnackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     LaunchedEffect(character) {
@@ -306,6 +308,7 @@ fun CharacterSheetScreen(
                     enabled = editable,
                     onChange = changeCharacter,
                     modifier = Modifier.padding(padding),
+                    onOpenPhotoPicker = { if (editable) showPhotoPicker = true },
                 ) else CharacterSheetPager(
                     character = current,
                     saveError = saveError,
@@ -313,10 +316,28 @@ fun CharacterSheetScreen(
                     catalog = catalog,
                     editable = editable,
                     onChange = changeCharacter,
+                    onOpenPhotoPicker = { if (editable) showPhotoPicker = true },
                     modifier = Modifier.padding(padding).fillMaxSize(),
                 )
             }
         }
+    }
+    if (showPhotoPicker && editable) {
+        AlertDialog(
+            onDismissRequest = { showPhotoPicker = false },
+            title = { Text("IMAGEM DO PERSONAGEM") },
+            text = {
+                com.kinderman.sdo.ui.SdoCharacterPhotoPicker(
+                    photoUri = current.photoUri,
+                    name = current.name,
+                    enabled = editable,
+                    onPhotoChange = { changeCharacter(current.copy(photoUri = it)) },
+                )
+            },
+            confirmButton = {
+                SdoTextButton(onClick = { showPhotoPicker = false }) { Text("CONCLUIR") }
+            },
+        )
     }
 }
 
@@ -355,7 +376,13 @@ private fun MissingCharacterState(
 }
 
 @Composable
-internal fun SheetHero(character: Character, session: UserSession, saveError: String? = null) {
+internal fun SheetHero(
+    character: Character,
+    session: UserSession,
+    saveError: String? = null,
+    editable: Boolean = false,
+    onOpenPhotoPicker: () -> Unit = {},
+) {
     SdoScreenMasthead(
         eyebrow = "CHARACTER//ARCHIVE",
         title = character.name.ifBlank { "FICHA SEM NOME" }.uppercase(),
@@ -379,12 +406,16 @@ internal fun SheetHero(character: Character, session: UserSession, saveError: St
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            com.kinderman.sdo.ui.SdoCharacterAvatar(
-                photoUri = character.photoUri,
-                name = character.name,
-                size = 64.dp,
-                accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-            )
+            Box(
+                modifier = if (editable) Modifier.clickable(onClick = onOpenPhotoPicker) else Modifier,
+            ) {
+                com.kinderman.sdo.ui.SdoCharacterAvatar(
+                    photoUri = character.photoUri,
+                    name = character.name,
+                    size = 64.dp,
+                    accent = if (character.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                )
+            }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     character.name.uppercase(),

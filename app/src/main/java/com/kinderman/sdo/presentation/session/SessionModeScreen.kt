@@ -312,12 +312,12 @@ private fun SessionContent(
             item(key = "session_actions") {
                 SdoInsetCard(
                     accent = if (character.dirty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
-                    contentPadding = 8.dp,
-                    verticalSpacing = 6.dp,
+                    contentPadding = 12.dp,
+                    verticalSpacing = 10.dp,
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         com.kinderman.sdo.ui.SdoCharacterAvatar(
@@ -325,7 +325,7 @@ private fun SessionContent(
                             name = character.name,
                             size = 44.dp,
                         )
-                        Column(Modifier.weight(1f)) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
                                 character.name.ifBlank { "Personagem sem nome" }.uppercase(),
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -485,8 +485,8 @@ private fun SessionContent(
                     SectionHeader("04", stringResource(R.string.session_body))
                     com.kinderman.sdo.ui.SdoResponsiveGrid(character.canonicalBodyState().regions, minItemWidth = 148.dp) { region, modifier ->
                         SdoInsetCard(
-                            modifier = modifier, contentPadding = if (compact) 6.dp else 9.dp,
-                            verticalSpacing = 2.dp,
+                            modifier = modifier, contentPadding = if (compact) 9.dp else 12.dp,
+                            verticalSpacing = 6.dp,
                         ) {
                             SdoCardTitle(region.name.uppercase(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
                             SessionBodyStatus(region.state.label.uppercase(), region.failures)
@@ -586,8 +586,8 @@ private fun SessionAbilityCard(
     SdoInsetCard(
         modifier = Modifier.fillMaxWidth(),
         accent = accent,
-        contentPadding = if (compact) 8.dp else 12.dp,
-        verticalSpacing = 6.dp,
+        contentPadding = if (compact) 11.dp else 14.dp,
+        verticalSpacing = 9.dp,
     ) {
         Row(
             Modifier.fillMaxWidth(),

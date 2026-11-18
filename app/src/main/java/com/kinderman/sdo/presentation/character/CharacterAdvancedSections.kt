@@ -594,11 +594,11 @@ private fun ConditionEditor(index: Int, condition: ConditionInstance, descriptio
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.weight(1f),
             )
-            if (enabled) {
-                SdoTextButton(onClick = { editing = !editing }) {
-                    Text(if (showEditor) "VISUALIZAR" else "EDITAR")
-                }
-            }
+            CompactEditToggleButton(
+                editing = showEditor,
+                enabled = enabled,
+                onClick = { editing = !editing },
+            )
             RemoveButton(enabled, "Remover condição", onRemove)
         }
         if (showEditor) {
@@ -688,18 +688,14 @@ internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: 
     var editing by rememberSaveable(character.id) { mutableStateOf(character.story.isBlank()) }
     val showEditor = enabled && editing
     TechPanel {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SectionHeader("15", "História")
-            if (enabled) {
-                SdoTextButton(onClick = { editing = !editing }) {
-                    Text(if (showEditor) "VISUALIZAR" else "EDITAR")
-                }
-            }
-        }
+        SectionShowcaseHeader(
+            index = "15",
+            title = "História",
+            subtitle = "ARQUIVO BIOGRÁFICO",
+            editing = editing,
+            enabled = enabled,
+            onToggle = { editing = !editing },
+        )
         if (showEditor) {
             CollaborativeSheetField("story", "História", character.story, multiline = true, enabled = enabled) { onChange(character.copy(story = it)) }
         } else {
@@ -714,12 +710,8 @@ private fun StoryReadOnlyShowcase(character: Character) {
         .filter(String::isNotBlank)
         .joinToString(" · ")
         .ifBlank { "Personagem sem identificação" }
-    SdoInsetCard(contentPadding = 16.dp) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            com.kinderman.sdo.ui.SdoMetadataText(
-                "ARQUIVO BIOGRÁFICO // CRÔNICA DO PERSONAGEM",
-                color = MaterialTheme.colorScheme.secondary,
-            )
+    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 8.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = identitySummary,
                 color = MaterialTheme.colorScheme.primary,

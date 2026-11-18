@@ -751,7 +751,7 @@ test('global profile role cannot grant administration', async () => {
   await assertFails(updateDoc(doc(selfDb, 'users', 'new-user'), { role: 'MASTER' }));
 });
 
-test('administrator requires verified identity for users/campaigns but CANNOT bypass character sheet ACL', async () => {
+test('administrator requires verified identity for users, campaigns, and character sheet read/write access', async () => {
   await seed();
   await env.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(context.firestore(), 'users', ids.player), { role: 'USER' });
@@ -768,24 +768,41 @@ test('administrator requires verified identity for users/campaigns but CANNOT by
   await assertFails(getDoc(doc(unverified, 'users', ids.player)));
   await assertSucceeds(getDocs(collection(verified, 'campaigns')));
 
-  // Strict Spark v2 ACL: NO global administrator bypass read/write on another user's sheet!
-  await assertFails(getDoc(doc(verified, 'characters', ids.character)));
-  await assertFails(getDocs(collection(verified, 'characters')));
-  const badAdminEdit = writeBatch(verified);
-  badAdminEdit.update(doc(verified, 'characters', ids.character, 'fields', 'name'), {
-    value: 'Bypass bloqueado',
+  // Verified administrator can read and edit character sheets; unverified lookalike is rejected.
+  await assertSucceeds(getDoc(doc(verified, 'characters', ids.character)));
+  await assertSucceeds(getDocs(collection(verified, 'characters')));
+  await assertFails(getDoc(doc(unverified, 'characters', ids.character)));
+  const adminEdit = writeBatch(verified);
+  adminEdit.update(doc(verified, 'characters', ids.character, 'fields', 'name'), {
+    value: 'Edição Admin',
     revision: 2,
-    lastOperationId: 'op-admin-bypass',
+    lastOperationId: 'op-admin-edit',
     updatedBy: 'admin',
     updatedAt: serverTimestamp(),
   });
-  badAdminEdit.set(
-    doc(verified, 'characters', ids.character, 'operations', 'op-admin-bypass'),
-    makeOp('op-admin-bypass', 'admin', 'PATCH_FIELDS', [
-      { kind: 'FIELD', itemId: '', key: 'name', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 'Bypass bloqueado' },
+  adminEdit.set(
+    doc(verified, 'characters', ids.character, 'operations', 'op-admin-edit'),
+    makeOp('op-admin-edit', 'admin', 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key: 'name', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 'Edição Admin' },
     ]),
   );
-  await assertFails(badAdminEdit.commit());
+  await assertSucceeds(adminEdit.commit());
+
+  const badUnverifiedEdit = writeBatch(unverified);
+  badUnverifiedEdit.update(doc(unverified, 'characters', ids.character, 'fields', 'name'), {
+    value: 'Bypass bloqueado',
+    revision: 3,
+    lastOperationId: 'op-admin-bypass',
+    updatedBy: 'lookalike',
+    updatedAt: serverTimestamp(),
+  });
+  badUnverifiedEdit.set(
+    doc(unverified, 'characters', ids.character, 'operations', 'op-admin-bypass'),
+    makeOp('op-admin-bypass', 'lookalike', 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key: 'name', op: 'SET', expectedRevision: 2, nextRevision: 3, desiredValue: 'Bypass bloqueado' },
+    ]),
+  );
+  await assertFails(badUnverifiedEdit.commit());
 });
 
 test('archived campaign is read-only for characters', async () => {
