@@ -4,8 +4,11 @@ import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -265,8 +268,12 @@ internal fun BodyRegionSection(
         ChoiceField("Estado", region.state, BodyIntegrity.entries, enabled, display = { it.label }) { state ->
             updateRegion(region.copy(state = state))
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ChoiceField("Falhas", region.failures.coerceIn(0, 4), (0..4).toList(), enabled, Modifier.weight(1f)) { value ->
+        Row(
+            Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            ChoiceField("Falhas", region.failures.coerceIn(0, 4), (0..4).toList(), enabled, Modifier.weight(1f).fillMaxHeight()) { value ->
                 val state = when {
                     value >= 4 -> BodyIntegrity.Destroyed
                     value > 0 -> BodyIntegrity.Damaged

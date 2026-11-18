@@ -133,11 +133,15 @@ service cloud.firestore {
       let camp = cid != '' ? get(campaignPath(cid)) : null;
       return charDoc != null
         && charDoc.data.deleted == false
-        && (cid == '' || (camp != null && camp.data.state == 'ACTIVE'))
         && (
           isAdministrator()
-          || (charDoc.data.ownerId == request.auth.uid && charDoc.data.get('lockType', 'NONE') != 'HISTORIAN')
-          || (cid != '' && camp != null && camp.data.ownerId == request.auth.uid)
+          || (
+            (cid == '' || (camp != null && camp.data.state == 'ACTIVE'))
+            && (
+              (charDoc.data.ownerId == request.auth.uid && charDoc.data.get('lockType', 'NONE') != 'HISTORIAN')
+              || (cid != '' && camp != null && camp.data.ownerId == request.auth.uid)
+            )
+          )
         );
     }
 
@@ -729,6 +733,7 @@ service cloud.firestore {
               && camp.data.ownerId == request.auth.uid
               && isActiveMemberAfter(cid, after.ownerId)
             )
+            || isAdministrator()
           );
       }
 
@@ -742,10 +747,15 @@ service cloud.firestore {
           && after.campaignId == cid
           && after.authorizedCampaignId == before.get('authorizedCampaignId', '')
           && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
-          && activeCamp
           && (
-            (isGm && after.lockType in ['NONE', 'HISTORIAN'] && (after.lockType == 'NONE' || after.lockedBy == request.auth.uid))
-            || (isOwner && before.get('lockType', 'NONE') != 'HISTORIAN' && after.lockType in ['NONE', 'PLAYER'] && (after.lockType == 'NONE' || after.lockedBy == request.auth.uid))
+            isAdministrator()
+            || (
+              activeCamp
+              && (
+                (isGm && after.lockType in ['NONE', 'HISTORIAN'] && (after.lockType == 'NONE' || after.lockedBy == request.auth.uid))
+                || (isOwner && before.get('lockType', 'NONE') != 'HISTORIAN' && after.lockType in ['NONE', 'PLAYER'] && (after.lockType == 'NONE' || after.lockedBy == request.auth.uid))
+              )
+            )
           );
       }
 
@@ -1361,15 +1371,20 @@ service cloud.firestore {
                   s.get('protocolVersion', 0) == 2
                   && opData.targets.size() == 1
                   && opData.targets[0].kind == 'SHEET'
-                  && (isOwner || (cid != '' && camp != null && camp.ownerId == request.auth.uid) || (opData.type == 'LINK_CAMPAIGN' && isActiveGm) || isAdministrator())
+                  && (isOwner || isAdministrator() || (cid != '' && camp != null && camp.ownerId == request.auth.uid) || (opData.type == 'LINK_CAMPAIGN' && isActiveGm))
                 )
                 : (opData.type == 'ACCEPT_DELIVERY'
                   ? validAcceptDeliveryOp(opData, s, cid, camp, isOwner)
                   : (s.get('protocolVersion', 0) == 2 && !s.get('deleted', false)
-                    && (cid == '' || (camp != null && camp.state == 'ACTIVE'))
-                    && ((isOwner && s.get('lockType', 'NONE') != 'HISTORIAN') || (cid != '' && isActiveGm) || isAdministrator())
-                    && (opData.type != 'ITEM_CONSUME' || validItemConsumeOp(opData, isActiveGm))
-                    && (opData.type != 'SESSION_ACTION' || validSessionActionOp(opData, isActiveGm))))
+                    && (
+                      (
+                        (cid == '' || (camp != null && camp.state == 'ACTIVE'))
+                        && ((isOwner && s.get('lockType', 'NONE') != 'HISTORIAN') || (cid != '' && isActiveGm))
+                        && (opData.type != 'ITEM_CONSUME' || validItemConsumeOp(opData, isActiveGm))
+                        && (opData.type != 'SESSION_ACTION' || validSessionActionOp(opData, isActiveGm))
+                      )
+                      || isAdministrator()
+                    )))
             );
         }
         function validOpShape(d) {

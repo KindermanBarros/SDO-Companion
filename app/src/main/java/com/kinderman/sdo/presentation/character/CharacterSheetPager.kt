@@ -61,8 +61,10 @@ internal enum class SheetPage(val code: String, val label: String) {
     INVENTORY("10", "INVENTÁRIO"),
     BODY("11—12", "CORPO"),
     RECORD("13", "ESTADO"),
-    NOTES("14", "ANOTAÇÕES"),
-    HISTORY("15", "HISTÓRIA"),
+    TRANSPORT("14", "TRANSPORTE"),
+    FAMILIARS("15", "FAMILIARES"),
+    NOTES("16", "ANOTAÇÕES"),
+    HISTORY("17", "HISTÓRIA"),
 }
 
 @Composable
@@ -78,18 +80,7 @@ internal fun CharacterSheetPager(
 ) {
     val pages = SheetPage.entries
     val pagerState = rememberPagerState(pageCount = { pages.size })
-    val pageScrollStates = listOf(
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-        rememberLazyListState(),
-    )
+    val pageScrollStates = pages.map { rememberLazyListState() }
     val scope = rememberCoroutineScope()
     var pageMenu by remember { mutableStateOf(false) }
 
@@ -295,10 +286,18 @@ private fun SheetPageContent(
                 item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições", "13") { ConditionSection(character, editable, onChange) } }
             }
 
-            SheetPage.NOTES -> item("notes") { com.kinderman.sdo.ui.CollapsibleSection("Registros pessoais", "14") { NotesSection(character, editable, onChange) } }
+            SheetPage.TRANSPORT -> item("transport") {
+                com.kinderman.sdo.ui.CollapsibleSection("Transporte", "14") { CharacterTransportSection(character, editable, onChange) }
+            }
+
+            SheetPage.FAMILIARS -> item("familiars") {
+                com.kinderman.sdo.ui.CollapsibleSection("Familiares", "15") { CharacterFamiliarSection(character, editable, onChange) }
+            }
+
+            SheetPage.NOTES -> item("notes") { com.kinderman.sdo.ui.CollapsibleSection("Registros pessoais", "16") { NotesSection(character, editable, onChange) } }
 
             SheetPage.HISTORY -> item("narrative") {
-                com.kinderman.sdo.ui.CollapsibleSection("História", "15") { NarrativeSection(character, editable, onChange) }
+                com.kinderman.sdo.ui.CollapsibleSection("História", "17") { NarrativeSection(character, editable, onChange) }
             }
         }
     }

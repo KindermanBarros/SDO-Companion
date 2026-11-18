@@ -5,7 +5,7 @@
     <string name="dashboard_quick_historian">Mestre</string>
     <string name="dashboard_quick_settings">Configurações</string>
     <string name="dashboard_search_label">Buscar ficha</string>
-    <string name="dashboard_search_hint">Nome, raça, ocupação, e-mail ou UID</string>
+    <string name="dashboard_search_hint">Nome, raça ou dono</string>
     <string name="dashboard_filters_label">Filtros</string>
     <string name="dashboard_filters_title">Filtrar fichas</string>
     <string name="dashboard_filters_owner">Proprietário</string>

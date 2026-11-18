@@ -1,0 +1,3718 @@
+{
+  "version": 1,
+  "source": "A Solidão dos Oprimidos — Livro do Jogador",
+  "sections": [
+    {
+      "id": "001-bem-vindo-bem-vindo",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Bem-vindo",
+      "category": "Criação & Base",
+      "title": "Bem-vindo",
+      "paragraphs": [
+        "Este livro ensina as regras necessárias para criar um personagem e jogar A Solidão dos Oprimidos. Ele foi organizado para ser lido do começo ao fim, mas cada capítulo também funciona como consulta durante a sessão."
+      ],
+      "bullets": [
+        "Vai criar um personagem? Leia as Partes I e II.",
+        "Quer entender uma rolagem? Consulte a Parte III.",
+        "Entrou em combate? Use a Parte IV e a referência rápida no fim dela.",
+        "Usa equipamentos, fabricação ou implantes? Consulte a Parte V.",
+        "Possui magia, runas ou cinzas? Leia a Parte VI.",
+        "Procura ideias prontas? Os catálogos estão nas Partes VII e VIII."
+      ],
+      "examples": []
+    },
+    {
+      "id": "002-bem-vindo-regra-fundamental",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Bem-vindo",
+      "category": "Criação & Base",
+      "title": "Regra fundamental",
+      "paragraphs": [
+        "Quando uma habilidade, raça, item, magia ou outro elemento apresentar uma exceção clara, essa exceção vale apenas para aquele elemento. Se uma situação não estiver prevista, o Historiador define como ela será resolvida."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "003-o-mundo-em-poucas-paginas-mundo",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "O mundo em poucas páginas",
+      "category": "Criação & Base",
+      "title": "Mundo",
+      "paragraphs": [
+        "[Visão geral]"
+      ],
+      "bullets": [
+        "Nulvara",
+        "Tragédia Planar",
+        "Plano Onírico"
+      ],
+      "examples": []
+    },
+    {
+      "id": "004-criacao-de-personagem-criacao-de-personagem",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "Criação de personagem",
+      "paragraphs": [
+        "Todo personagem começa no nível 1.",
+        "Siga as etapas na ordem apresentada."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "005-criacao-de-personagem-1-conceito",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "1. Conceito",
+      "paragraphs": [
+        "Defina:",
+        "A ocupação não concede bônus automáticos. Ela orienta Conhecimentos Adquiridos, equipamentos e poderes do Caminho."
+      ],
+      "bullets": [
+        "nome;",
+        "raça;",
+        "ocupação;",
+        "aparência;",
+        "objetivo;",
+        "uma ligação com o mundo;",
+        "um motivo para permanecer com o grupo."
+      ],
+      "examples": []
+    },
+    {
+      "id": "006-criacao-de-personagem-2-atributos",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "2. Atributos",
+      "paragraphs": [
+        "Os seis Atributos começam em 0.",
+        "Distribua 10 pontos entre os Atributos."
+      ],
+      "bullets": [
+        "Cada ponto aumenta um Atributo em 1.",
+        "Nenhum Atributo pode ultrapassar 5 durante a criação.",
+        "Aplique o bônus racial depois da distribuição.",
+        "Se o bônus racial elevar um Atributo acima de 5, transfira o excesso para outro Atributo."
+      ],
+      "examples": []
+    },
+    {
+      "id": "007-criacao-de-personagem-3-conhecimentos-basicos",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "3. Conhecimentos Básicos",
+      "paragraphs": [
+        "Conhecimentos Básicos existem para todos os personagens e começam em 0."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "008-criacao-de-personagem-4-conhecimentos-escolhidos",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "4. Conhecimentos Escolhidos",
+      "paragraphs": [
+        "Escolha um total de 5 entradas, distribuídas livremente entre:",
+        "As três categorias são independentes, mas compartilham a mesma reserva de cinco escolhas. Não existe quantidade mínima obrigatória por categoria e o total combinado não pode ultrapassar cinco.",
+        "Cada entrada escolhida começa no nível 0. Ela só passa a conceder domínio, bônus e recompensas depois de receber pelo menos 1 dos 15 Pontos de Conhecimento e alcançar o nível 1. Cada entrada define um Atributo principal com valor base permanente mínimo 1.",
+        "Exemplos de Conhecimentos Adquiridos incluem Arqueologia, Culinária, Ferraria, Medicina, Mecânica, Sobrevivência, Linguística e Atuação.",
+        "[Níveis de Conhecimento e Domínio]",
+        "Todo Conhecimento progride do nível 1 ao 5. O nível 0 representa somente que o personagem sabe que o Conhecimento existe e pode começar a aprendê-lo; ele não concede domínio, bônus nem recompensas.",
+        "O Historiador pode liberar narrativamente um Conhecimento Adquirido, Conhecimento Arcano ou Técnica de Combate no nível 0 quando o personagem tiver contato significativo com esse saber ou prática. A liberação não custa Ponto de Conhecimento e apenas habilita investimentos posteriores. Efeitos que dizem liberar seguem a mesma regra.",
+        "Liberar uma entrada não concede aumento por si só. Depois de liberada, ela pode receber investimentos da criação ou aumentos diretos de progressão.",
+        "Toda especialização precisa primeiro ser liberada por uma recompensa de domínio. Ao ser concedida pela primeira vez, ela entra na ficha no nível 1, evolui independentemente até o nível 5 e recebe suas próprias recompensas de domínio nos níveis 3 e 5, conforme sua categoria. Durante a criação, cada aumento custa 1 dos 15 Pontos de Conhecimento; depois da criação, ela pode receber o aumento direto concedido por nível ou por um efeito de +1. Uma especialização não pode ser criada nem aumentada antes de ser liberada. Isso vale para Conhecimentos especializados, Conhecimentos Arcanos especializados e Técnicas especializadas.",
+        "Ao ser liberada, cada especialização define livremente seu próprio Atributo principal. Ela não precisa herdar o Atributo da entrada que a concedeu, mas o Atributo escolhido deve possuir valor base permanente mínimo 1. Buffs, equipamentos e efeitos temporários ou condicionais não atendem a esse requisito. A exigência é validada somente ao liberar a entrada; reduções posteriores do Atributo não removem nem reduzem a especialização.",
+        "Conceder uma especialização como recompensa equivale a aplicar +1: se ela já estiver registrada, seu nível aumenta em 1, até o máximo 5. Se ela já estiver no nível 5, o aumento é perdido, sem compensação e sem permitir escolher outra recompensa. Um efeito que diga apenas liberar cria a entrada no nível 0; se ela já existir, não produz efeito adicional.",
+        "Quando uma especialização alcança o nível 3 ou 5 por qualquer forma de aumento — inclusive ao ser concedida novamente — sua recompensa de domínio é recebida imediatamente. Se essa recompensa fizer outra entrada alcançar um marco, a nova recompensa também é resolvida imediatamente, repetindo o processo até encerrar a sequência. Cada marco de nível 3 e 5 concede sua recompensa apenas uma vez por entrada.",
+        "Ao alcançar os níveis 3 e 5, a categoria determina as opções de recompensa de domínio:",
+        "Conhecimentos Básicos evoluem normalmente, mas não concedem recompensas nos níveis 3 e 5. Técnicas de Combate se enquadram mecanicamente como Poderes para suas recompensas e não concedem Magia ou Runa.",
+        "A escolha deve respeitar regras específicas da categoria. O Conhecimento Rúnico é um Conhecimento Arcano com progressão própria e substitui as opções comuns pela regra descrita em Runas."
+      ],
+      "bullets": [
+        "Conhecimentos Adquiridos, ligados a profissões, ofícios, estudos e experiências;",
+        "Conhecimentos Arcanos, incluindo Escolas Arcanas e Rúnico;",
+        "Técnicas de Combate."
+      ],
+      "examples": [
+        "As entradas abaixo são modelos, não uma lista fechada. Novas entradas podem ser criadas com aprovação do Historiador e seguindo as mesmas regras.",
+        "#### Conhecimentos Adquiridos",
+        "#### Conhecimentos Arcanos",
+        "#### Técnicas de Combate"
+      ]
+    },
+    {
+      "id": "009-criacao-de-personagem-5-pontos-de-conhecimento-d",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "5. Pontos de Conhecimento da Criação",
+      "paragraphs": [
+        "Pontos de Conhecimento existem somente durante a criação do personagem. Distribua 15 pontos entre:",
+        "Os 15 pontos devem ser gastos integralmente e deixam de existir ao finalizar a criação. Durante esta distribuição:",
+        "O Atributo principal de cada entrada escolhida deve possuir valor base permanente mínimo 1."
+      ],
+      "bullets": [
+        "Conhecimentos Básicos;",
+        "as 5 entradas escolhidas entre Conhecimentos Adquiridos, Conhecimentos Arcanos e Técnicas de Combate.",
+        "aumentar um Conhecimento em 1 custa 1 ponto;",
+        "não é permitido criar novas entradas das três categorias durante essa distribuição;",
+        "nenhum Conhecimento pode ultrapassar o nível 5;",
+        "as cinco entradas escolhidas começam no nível 0; cada aumento até o nível 1 consome 1 dos 15 pontos."
+      ],
+      "examples": []
+    },
+    {
+      "id": "010-criacao-de-personagem-6-raca",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "6. Raça",
+      "paragraphs": [
+        "Escolha uma raça em Raças.",
+        "Aplique:",
+        "Uma sub-raça mantém os valores e o bônus de Atributo da raça-base, mantém um Poder Racial e substitui o outro por um Poder de Sub-Raça."
+      ],
+      "bullets": [
+        "bônus de Atributo;",
+        "bônus de Vida, Sanidade, Arcano e Energia;",
+        "poderes raciais;",
+        "variante ou sub-raça, quando houver."
+      ],
+      "examples": []
+    },
+    {
+      "id": "011-criacao-de-personagem-7-recursos",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "7. Recursos",
+      "paragraphs": [
+        "Calcule os recursos máximos.",
+        "Um recurso nunca possui máximo inferior a 0."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "012-criacao-de-personagem-8-protecoes",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "8. Proteções",
+      "paragraphs": [
+        "Calcule as cinco Proteções.",
+        "A Proteção de Esquiva só é utilizada enquanto a ação Esquiva estiver ativa."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "013-criacao-de-personagem-9-caminho",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "9. Caminho",
+      "paragraphs": [
+        "O Caminho representa a identidade construída pelo personagem.",
+        "Crie:",
+        "[Pilares]",
+        "Cada Pilar deve declarar uma convicção, prática ou impulso que orienta as escolhas do personagem.",
+        "Pilares não concedem bônus diretamente.",
+        "[Poderes iniciais]",
+        "Cada Poder deve registrar:",
+        "Poderes usam Energia (PE), Vida (PV), Sanidade (PS) ou Pontos de Destino (PD). Um Poder passivo custa 0 PE; um Poder ativo custa no",
+        "mínimo 1 PE, 1 PV, 1 PS ou 1 PD. Arcano e Doses nunca pagam a ativação de um Poder. PD é permitido apenas para Poderes divinos ou que manipulem diretamente sorte, Destino, probabilidades ou porcentagens; ser elegível a PD não obriga o Poder a usá-lo. Limites, condições, riscos e perdas descritos no Efeito são consequências adicionais, não",
+        "custos alternativos.",
+        "[Fontes de Poder]",
+        "Poderes não pertencem exclusivamente ao Caminho ou à raça. Também podem ser concedidos por itens, aprendidos ao desenvolver Conhecimentos, nascer de um Histórico ou surgir como recompensa narrativa. Todo Poder registra sua Fonte e, quando aplicável, sua condição de perda. Poder concedido por item não é considerado aprendido e deixa de funcionar sem o item. Poder aprendido por Conhecimento permanece com o personagem. Consulte Regras Arcanas Expandidas e Catálogo de Poderes Mágicos."
+      ],
+      "bullets": [
+        "nome do Caminho;",
+        "lema;",
+        "3 palavras-chave;",
+        "3 Pilares;",
+        "2 Poderes iniciais;",
+        "origem narrativa de cada Poder.",
+        "nome;",
+        "efeito;",
+        "custo, quando houver;",
+        "ação necessária;",
+        "alcance;",
+        "duração;",
+        "limite de uso;",
+        "origem;",
+        "fonte;",
+        "pré-requisito e condição de perda, quando houver."
+      ],
+      "examples": []
+    },
+    {
+      "id": "014-criacao-de-personagem-10-pontos-de-heranca",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "10. Pontos de Herança",
+      "paragraphs": [
+        "Orçamento, restrições e custos de equipamento inicial são definidos somente em",
+        "Balanceamento de Criação e Equipamentos.",
+        "O personagem também começa com:"
+      ],
+      "bullets": [
+        "uma muda de roupas simples;",
+        "100 E$;",
+        "um objeto pessoal sem efeito mecânico."
+      ],
+      "examples": []
+    },
+    {
+      "id": "015-criacao-de-personagem-11-inventario",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "11. Inventário",
+      "paragraphs": [
+        "Calcule a capacidade e registre os estados dos itens conforme Inventário e Carga."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "016-criacao-de-personagem-12-tracos",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "12. Traços",
+      "paragraphs": [
+        "Escolha:",
+        "Um Traço descreve uma condição persistente, reputação, vínculo, vantagem ficcional ou complicação.",
+        "Traços não concedem modificadores numéricos permanentes. Quando alterarem um teste, concedem Vantagem ou Desvantagem conforme a situação."
+      ],
+      "bullets": [
+        "1 Traço Positivo;",
+        "1 Traço Negativo."
+      ],
+      "examples": []
+    },
+    {
+      "id": "017-criacao-de-personagem-13-finalizacao",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "13. Finalização",
+      "paragraphs": [
+        "Registre:",
+        "Todos os recursos começam em seu valor máximo.",
+        "Exaustão e Corrupção Divina começam em 0, salvo efeito de raça, origem ou campanha."
+      ],
+      "bullets": [
+        "Conhecimentos Aprendidos;",
+        "Conhecimentos Arcanos;",
+        "Técnicas de Batalha;",
+        "equipamentos por região corporal;",
+        "Proteção Local de cada região;",
+        "Limitação de Agilidade;",
+        "Magias, Runas e Cinzas;",
+        "histórico;",
+        "anotações iniciais."
+      ],
+      "examples": []
+    },
+    {
+      "id": "018-criacao-de-personagem-progressao",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "Progressão",
+      "paragraphs": [
+        "Ao alcançar um novo nível, aplique todos os benefícios correspondentes.",
+        "Registre separadamente os bônus permanentes recebidos por progressão. O máximo atual de cada recurso é sempre recalculado como:",
+        "fórmula-base com valores atuais + bônus de origem + bônus permanente de progressão + outros bônus",
+        "Aumentar um Atributo ou Conhecimento usado na fórmula altera o máximo sem apagar ganhos de níveis anteriores. Quando a remoção ou desativação de um bônus reduz o máximo abaixo do valor atual, o valor atual é imediatamente limitado ao novo máximo e o excedente é perdido.",
+        "[Todo nível]",
+        "O aumento é aplicado imediatamente e não gera, armazena nem consome Pontos de Conhecimento. Se nenhuma entrada disponível puder aumentar, o benefício daquele nível é perdido. O nível registrado não pode ultrapassar o valor base permanente do Atributo principal nem o máximo 5.",
+        "[Todo nível par]",
+        "Nenhum Atributo pode ultrapassar 10 por progressão comum.",
+        "[A cada 5 níveis]",
+        "Nos níveis 5, 10, 15 e 20:",
+        "A nova entrada de Conhecimento ou Técnica segue as mesmas regras das escolhas iniciais: define um Atributo principal com valor base permanente mínimo 1 e não consome Ponto de Conhecimento.",
+        "Um Marco de Caminho concede um novo Poder de Caminho. Não existe limite global e o Marco não aprimora Poder existente."
+      ],
+      "bullets": [
+        "aumente a Vida Máxima em 1 + Vitalidade;",
+        "aumente a Sanidade Máxima em 1;",
+        "aumente o Arcano Máximo ou a Energia Máxima em 1;",
+        "escolha uma entrada já disponível de Conhecimento Básico, Conhecimento Adquirido, Conhecimento Arcano ou Técnica de Combate e aumente seu nível em 1, até o máximo 5.",
+        "receba 1 Ponto de Atributo.",
+        "receba 1 Ponto de Atributo adicional;",
+        "aumente a Energia Máxima em 1;",
+        "escolha 1 nova entrada em nível 1 entre Conhecimento Adquirido, Conhecimento Arcano ou Técnica de Combate;",
+        "receba 1 Marco de Caminho."
+      ],
+      "examples": []
+    },
+    {
+      "id": "019-criacao-de-personagem-exemplo-de-personagem-de-n",
+      "part": "Parte I - Entendendo o jogo",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "Exemplo de Personagem de Nível 1",
+      "paragraphs": [
+        "[Conceito]",
+        "[Atributos]",
+        "[Conhecimentos Escolhidos]",
+        "[Distribuição dos 15 pontos]",
+        "[Bônus raciais]",
+        "[Recursos finais]",
+        "[Equipamentos iniciais]",
+        "[Proteções finais]",
+        "[Corpo e Carga]",
+        "[Caminho da Linha Perdida]"
+      ],
+      "bullets": [],
+      "examples": [
+        "Nome: Mira Venn",
+        "Raça: Humana",
+        "Ocupação: Cartógrafa de ruínas",
+        "Objetivo: encontrar uma passagem estável para o Plano Onírico",
+        "Exemplo:",
+        "Total distribuído: 10.",
+        "Exemplo:",
+        "Cartografia — Conhecimento Adquirido, INT 1;",
+        "Arqueologia — Conhecimento Adquirido, INT 1;",
+        "Sobrevivência — Conhecimento Adquirido, VIG 1;",
+        "Linguística — Conhecimento Adquirido, INT 1;",
+        "Rúnico — Conhecimento Arcano, POD 1.",
+        "Versatilidade Humana concede História — INT 1 como sexto Conhecimento Adquirido.",
+        "Exemplo:",
+        "Total gasto: 15.",
+        "Exemplo:",
+        "INT aumenta de 4 para 5;",
+        "Vida +1;",
+        "Sanidade +1;",
+        "Arcano +1;",
+        "Energia +1;",
+        "Versatilidade concede História 1;",
+        "Adaptação permite repetir um teste falho uma vez por cena, gastando 2 PE.",
+        "Exemplo:",
+        "Exemplo:",
+        "Exemplo:",
+        "Exemplo:",
+        "Torso: PL 2, Gibão de Couro.",
+        "Pernas 7 e 8: PL 2, Perneiras de Couro.",
+        "Pés 9 e 10: PL 2, Botas de Couro.",
+        "Carga Máxima: 2 + FOR 1 + Mochila de Viajante 10 = 13.",
+        "Limitação de Agilidade: sem LA.",
+        "Exemplo:",
+        "Lema: “Todo lugar deixa uma saída.”",
+        "Palavras-chave: Mapa, Ruína, Retorno",
+        "Pilares:",
+        "Nenhum caminho é inútil.",
+        "Registre antes que desapareça.",
+        "Sempre deixe uma rota de volta.",
+        "Ler o Terreno: uma vez por cena, gaste 1 PE para receber +4 em um teste de Cartografia, Movimento ou Sobrevivência relacionado ao terreno imediato.",
+        "Marca de Retorno: durante um descanso, escolha um local visitado. Até o próximo descanso, recebe Vantagem em testes para retornar até ele por uma rota já percorrida."
+      ]
+    },
+    {
+      "id": "020-criacao-de-personagem-criacao-de-personagem",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Criação de personagem",
+      "category": "Criação & Base",
+      "title": "Criação de personagem",
+      "paragraphs": [
+        "Esta parte detalha escolhas permanentes da ficha, capacidades raciais, inventário e progressão."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "021-racas-e-sub-racas-racas-regras-de-personagem",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Raças e sub-raças",
+      "category": "Criação & Base",
+      "title": "Raças — Regras de Personagem",
+      "paragraphs": [
+        "Documento agnóstico de cenário. Cada raça apresenta apenas valores, bônus de Atributo e Poderes Raciais.",
+        "[Estrutura Racial]",
+        "Cada raça concede:",
+        "Os valores raciais são aplicados aos valores normais do personagem.",
+        "#### Recursos usados pelos poderes"
+      ],
+      "bullets": [
+        "modificadores de HP, Sanidade, Arcano e Energia;",
+        "+1 em um Atributo definido pela raça;",
+        "2 Poderes Raciais.",
+        "PE — Energia: normalmente utilizado por capacidades físicas, biológicas e raciais.",
+        "PV — Vida, PE — Energia e PS — Sanidade podem pagar Poderes.",
+        "PD — Pontos de Destino só podem pagar Poderes divinos ou que alterem sorte, porcentagens ou probabilidades; esses Poderes também podem usar outros recursos permitidos.",
+        "PM — Arcano nunca paga a ativação de Poderes.",
+        "Poderes sem custo possuem uma condição ou limite explícito quando necessário."
+      ],
+      "examples": []
+    },
+    {
+      "id": "022-inventario-e-carga-carga-maxima",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Carga Máxima",
+      "paragraphs": [
+        "Carga Máxima = 2 + FOR + capacidade do Recipiente de Carga equipado",
+        "Somente um Recipiente de Carga vestido pode aumentar a Carga Máxima.",
+        "Recipientes guardados dentro de outros recipientes não concedem capacidade."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "023-inventario-e-carga-carga-dos-itens",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Carga dos Itens",
+      "paragraphs": [
+        "Até cinco objetos insignificantes relacionados contam como 1 Carga.",
+        "Munições do mesmo tipo contam como 1 Carga por conjunto.",
+        "Uma peça equipada continua contando para a Carga total.",
+        "Cinzas usam Carga por Pureza, calculada e arredondada por entrada: Bruta = ⌈doses/1⌉, Refinada = ⌈doses/2⌉ e Pura = ⌈doses/3⌉."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "024-inventario-e-carga-equipado",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Equipado",
+      "paragraphs": [
+        "Um item Equipado está vestido, acoplado ou afivelado ao corpo do personagem."
+      ],
+      "bullets": [
+        "Aplica-se a armaduras, vestimentas, acessórios, implantes e recipientes de carga.",
+        "Concede proteção geral (PG), proteção local (PL) e bônus passivos aplicáveis.",
+        "Vestir ou retirar uma peça de armadura ou acessório exige tempo plausível fora de combate (ou Ação Completa para peças rápidas se a situação permitir)."
+      ],
+      "examples": []
+    },
+    {
+      "id": "025-inventario-e-carga-empunhado",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Empunhado",
+      "paragraphs": [
+        "Um item Empunhado está ativamente empunhado nas mãos do personagem."
+      ],
+      "bullets": [
+        "Aplica-se a armas, escudos e catalisadores de combate.",
+        "Todo personagem possui 2 mãos disponíveis para empunhar itens simultaneamente.",
+        "Armas de uma mão e escudos consomem 1 mão.",
+        "Armas com a característica Pesada consomem 2 mãos (exceto quando forjadas em Ossos Comuns, cujo peso reduzido exige apenas 1 mão).",
+        "Escudos e armas só concedem seus bônus de Ataque, dano físico/mágico, proteção (PG/PL de escudo) e poderes de gema enquanto estiverem no estado Empunhado.",
+        "Trocar um item empunhado por outro item Equipado ou de Acesso Rápido custa 1 ação.",
+        "Soltar um item empunhado não custa ação; recolher um item do chão custa 1 ação."
+      ],
+      "examples": []
+    },
+    {
+      "id": "026-inventario-e-carga-acesso-rapido",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Acesso Rápido",
+      "paragraphs": [
+        "Todo personagem possui 2 espaços de Acesso Rápido.",
+        "Cada espaço comporta um item com Carga até 1:",
+        "Itens com Carga 2 ou superior não podem ser alocados em Acesso Rápido.",
+        "Retirar um item de Acesso Rápido custa 1 ação.",
+        "Um item Leve pode ser retirado como parte da ação usada para utilizá-lo, uma vez por turno."
+      ],
+      "bullets": [
+        "uma arma Leve;",
+        "um consumível ou poção;",
+        "uma ferramenta pequena;",
+        "um conjunto de munição;",
+        "outro item de Carga 1."
+      ],
+      "examples": []
+    },
+    {
+      "id": "027-inventario-e-carga-mochila",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Mochila",
+      "paragraphs": [
+        "O estado Mochila armazena itens carregados dentro do Recipiente de Carga ativo do personagem."
+      ],
+      "bullets": [
+        "Dependência de Recipiente: Para utilizar o estado Mochila, o personagem deve obrigatoriamente ter um Recipiente de Carga no estado Equipado. Sem um recipiente equipado, o personagem não dispõe de capacidade de mochila e quaisquer itens sobressalentes devem permanecer como Guardados.",
+        "Retirar itens dentro de uma mochila exige Ação Completa durante combate.",
+        "Fora de combate, retirar ou guardar um item exige apenas tempo plausível.",
+        "Organizar uma mochila durante combate exige Ação Completa."
+      ],
+      "examples": []
+    },
+    {
+      "id": "028-inventario-e-carga-guardado",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Guardado",
+      "paragraphs": [
+        "Itens no estado Guardado estão armazenados em bases, acampamentos, montarias ou veículos, ou foram temporariamente colocados fora de prontidão."
+      ],
+      "bullets": [
+        "Itens Guardados não contam para a Carga em uso do personagem.",
+        "Itens Quebrados: Ao atingir o estado Quebrado, qualquer item é compulsoriamente movido para Guardado, sendo desequipado de qualquer região corporal e tendo seus efeitos ou poderes imediatamente desativados até que seja reparado ou reciclado."
+      ],
+      "examples": []
+    },
+    {
+      "id": "029-inventario-e-carga-recipientes-de-carga",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Recipientes de Carga",
+      "paragraphs": [
+        "[Sacolão de Frutas]",
+        "Sempre que retirar um item durante combate, role 1d4.",
+        "Em resultado 1, retire outro item aleatório do Sacolão. A ação é consumida."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "030-inventario-e-carga-sobrecarga",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Sobrecarga",
+      "paragraphs": [
+        "Compare a Carga ativa carregada (itens nos estados [E], [W], [R] e [M], excluindo [G] Guardado) com a Carga Máxima (2 + FOR + capacidade do Recipiente).",
+        "[Sobrecarregado]",
+        "[Imóvel]"
+      ],
+      "bullets": [
+        "deslocamento reduzido em 5 m;",
+        "-2 na Proteção de Esquiva;",
+        "Desvantagem em testes de AGI: Movimento, AGI: Furtividade e FOR: Atletismo;",
+        "correr custa 1 PE adicional.",
+        "não pode usar ações de Movimento;",
+        "não pode usar Esquiva;",
+        "precisa abandonar Carga até ficar Sobrecarregado ou normal."
+      ],
+      "examples": []
+    },
+    {
+      "id": "031-inventario-e-carga-objetos-grandes",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Objetos Grandes",
+      "paragraphs": [
+        "Um objeto grande demais para um recipiente deve ser carregado nas mãos ou preso externamente.",
+        "Carregar um objeto que exija as duas mãos:"
+      ],
+      "bullets": [
+        "impede o uso de armas e escudos;",
+        "impede escalada sem equipamento;",
+        "concede Desvantagem em Reflexos."
+      ],
+      "examples": []
+    },
+    {
+      "id": "032-inventario-e-carga-carga-compartilhada",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Carga Compartilhada",
+      "paragraphs": [
+        "Duas criaturas podem carregar o mesmo objeto.",
+        "Divida a Carga igualmente, arredondando para cima para cada participante.",
+        "Se um participante soltar o objeto, o outro recebe toda a Carga imediatamente."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "033-inventario-e-carga-perda-de-inventario",
+      "part": "Parte II - Construindo seu personagem",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Perda de Inventário",
+      "paragraphs": [
+        "Quando um recipiente é destruído, aberto à força ou abandonado:"
+      ],
+      "bullets": [
+        "os itens permanecem na região;",
+        "itens frágeis podem perder Durabilidade;",
+        "substâncias sem proteção podem se romper;",
+        "a capacidade concedida pelo recipiente é removida imediatamente."
+      ],
+      "examples": []
+    },
+    {
+      "id": "034-inventario-e-carga-inventario-e-carga",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Inventário e carga",
+      "category": "Inventário & Carga",
+      "title": "Inventário e carga",
+      "paragraphs": [
+        "Aqui estão as regras usadas para decidir ações arriscadas, disputas, trabalho em grupo e resultados especiais."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "035-testes-e-dificuldades-testes-e-dificuldades",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Testes e dificuldades",
+      "paragraphs": [
+        "Role quando houver risco, oposição ou custo real para falhar."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "036-testes-e-dificuldades-teste-comum",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Teste Comum",
+      "paragraphs": [
+        "Escolha um Atributo e um Conhecimento.",
+        "1d20 + Atributo + Conhecimento aplicado + modificadores",
+        "O Conhecimento aplicado é limitado pelo Atributo usado no teste:",
+        "Conhecimento aplicado = min(nível do Conhecimento, valor base permanente do Atributo)",
+        "O valor base permanente inclui os pontos da criação e aumentos permanentes de progressão. Buffs, debuffs, equipamentos e outros modificadores temporários ou condicionais não alteram esse limite; quando aplicáveis, entram separadamente em modificadores.",
+        "O nível registrado do Conhecimento não pode ultrapassar esse limite. Exemplo: um personagem com INT base 3 pode elevar Estudo no máximo até o nível 3. Modificadores temporários são aplicados separadamente e não permitem aumentar o nível registrado.",
+        "Se o resultado for igual ou superior à Classe de Dificuldade, a ação é bem-sucedida.",
+        "Conhecimentos não se somam. Use apenas o Conhecimento mais apropriado.",
+        "Quando nenhum Conhecimento for adequado, role apenas o Atributo.",
+        "Bônus de fontes diferentes se acumulam.",
+        "Bônus com o mesmo nome ou concedidos pela mesma fonte não se acumulam; use o maior."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "037-testes-e-dificuldades-classes-de-dificuldade",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Classes de Dificuldade",
+      "paragraphs": [
+        "Se não houver risco ou pressão, não role. A ação acontece."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "038-testes-e-dificuldades-graus-de-resultado",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Graus de Resultado",
+      "paragraphs": [
+        "Compare o resultado final com a CD.",
+        "[Falha Desastrosa]",
+        "A ação falha e produz uma consequência imediata: dano, perda de posição, consumo de recurso, quebra, exposição ou agravamento do perigo.",
+        "[Falha Grave]",
+        "A ação falha e impõe custo, atraso ou complicação.",
+        "[Falha]",
+        "A ação não alcança o objetivo.",
+        "[Sucesso]",
+        "A ação alcança o objetivo sem benefício adicional.",
+        "[Sucesso Forte]",
+        "A ação alcança o objetivo e concede um benefício: menor tempo, maior duração, informação adicional ou redução de custo.",
+        "[Sucesso Excepcional]",
+        "A ação alcança o melhor resultado plausível e concede dois benefícios ou um efeito superior definido pela regra utilizada."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "039-testes-e-dificuldades-critico",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Crítico",
+      "paragraphs": [
+        "Um 20 natural é um Crítico."
+      ],
+      "bullets": [
+        "O teste sobe um Grau de Resultado.",
+        "Um Sucesso Excepcional recebe um benefício adicional.",
+        "Um Crítico não torna possível uma ação fisicamente impossível."
+      ],
+      "examples": []
+    },
+    {
+      "id": "040-testes-e-dificuldades-falha-critica",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Falha Crítica",
+      "paragraphs": [
+        "Um 1 natural é uma Falha Crítica."
+      ],
+      "bullets": [
+        "O teste desce um Grau de Resultado.",
+        "Uma Falha Desastrosa produz uma consequência adicional.",
+        "Equipamentos utilizados podem perder Durabilidade quando a situação permitir."
+      ],
+      "examples": []
+    },
+    {
+      "id": "041-testes-e-dificuldades-vantagem-e-desvantagem",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Vantagem e Desvantagem",
+      "paragraphs": [
+        "[Vantagem]",
+        "Some 5 na rolagem de seu teste",
+        "[Desvantagem]",
+        "Subtraia 5 na rolagem de seu teste",
+        "Vantagem e Desvantagem se anulam antes da rolagem."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "042-testes-e-dificuldades-ajuda",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Ajuda",
+      "paragraphs": [
+        "Uma criatura capaz de contribuir pode gastar uma ação para conceder +2 ao próximo teste de um aliado."
+      ],
+      "bullets": [
+        "O auxílio deve ser descrito antes da rolagem.",
+        "O bônus não acumula com outras ações de Ajuda.",
+        "Uma Falha Crítica pode atingir ou comprometer quem ajudou."
+      ],
+      "examples": []
+    },
+    {
+      "id": "043-testes-e-dificuldades-teste-resistido",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Teste Resistido",
+      "paragraphs": [
+        "Quando dois agentes buscam resultados incompatíveis, ambos rolam:",
+        "1d20 + Atributo + Conhecimento aplicado + modificadores",
+        "O maior total vence.",
+        "Em empate total, vence quem mantém o estado atual.",
+        "Os participantes podem utilizar combinações diferentes."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "044-testes-e-dificuldades-relance",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Relance",
+      "paragraphs": [
+        "Um Relance ocorre quando os participantes obtêm o mesmo valor natural no d20 durante um Teste Resistido."
+      ],
+      "bullets": [
+        "Compare os totais normalmente.",
+        "O maior total vence.",
+        "O efeito da vitória é reduzido à metade, arredondado para baixo.",
+        "Um efeito indivisível produz sucesso parcial.",
+        "Se os totais também forem iguais, o estado atual é mantido."
+      ],
+      "examples": []
+    },
+    {
+      "id": "045-testes-e-dificuldades-testes-prolongados",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Testes Prolongados",
+      "paragraphs": [
+        "Use um Teste Prolongado quando a tarefa exigir tempo, repetição ou progresso acumulado.",
+        "Defina:",
+        "O Progresso não pode ficar abaixo de 0."
+      ],
+      "bullets": [
+        "CD;",
+        "quantidade de Progressos necessários;",
+        "intervalo entre rolagens;",
+        "consequência de cada Falha."
+      ],
+      "examples": []
+    },
+    {
+      "id": "046-testes-e-dificuldades-testes-em-grupo",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Testes em Grupo",
+      "paragraphs": [
+        "Escolha um líder."
+      ],
+      "bullets": [
+        "O líder realiza o teste principal.",
+        "Até três aliados podem ajudar.",
+        "Cada aliado testa uma combinação apropriada contra a mesma CD.",
+        "Cada sucesso concede +1 ao líder.",
+        "Cada Falha Grave ou Desastrosa impõe -1 ao líder.",
+        "O bônus total não pode ultrapassar +3 nem ser inferior a -3."
+      ],
+      "examples": []
+    },
+    {
+      "id": "047-testes-e-dificuldades-testes-secretos",
+      "part": "Parte III - Testes e desafios",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Testes Secretos",
+      "paragraphs": [
+        "O Historiador pode ocultar a rolagem quando conhecer o resultado alteraria a decisão do personagem.",
+        "Testes secretos são usados para:"
+      ],
+      "bullets": [
+        "perceber emboscadas;",
+        "detectar mentiras;",
+        "reconhecer falsificações;",
+        "interpretar presságios;",
+        "avaliar informação incompleta."
+      ],
+      "examples": []
+    },
+    {
+      "id": "048-testes-e-dificuldades-testes-e-dificuldades",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Testes e dificuldades",
+      "category": "Testes",
+      "title": "Testes e dificuldades",
+      "paragraphs": [
+        "Leia esta parte para entender ações, movimento, ataques, dano, proteções, partes do corpo, morte, sanidade e condições."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "049-combate-combate",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Combate",
+      "paragraphs": [
+        "\"Em Nulvara, sobreviver não é questão de sorte. É questão de saber quando agir.\"",
+        "— Manual dos Aventureiros do Além"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "050-combate-recursos-de-combate",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Recursos de Combate",
+      "paragraphs": [
+        "Todo personagem possui cinco recursos principais que definem sua capacidade de sobreviver e agir em combate:",
+        "Além desses recursos, alguns personagens possuem marcadores secundários:"
+      ],
+      "bullets": [
+        "Exaustão: desgaste físico e mental acumulado.",
+        "Corrupção Divina: presença de energia divina deformando corpo, mente ou essência.",
+        "Dinheiro (E$): recurso econômico usado durante a campanha."
+      ],
+      "examples": []
+    },
+    {
+      "id": "051-combate-estrutura-do-turno",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Estrutura do Turno",
+      "paragraphs": [
+        "Cada personagem possui 2 ações por turno, combinadas livremente:",
+        "[Ação Completa]",
+        "Uma Ação Completa consome as duas ações normais do personagem naquele turno.",
+        "Habilidades que exigem uma Ação Completa não permitem o uso de outras ações normais no mesmo turno."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "052-combate-iniciativa",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Iniciativa",
+      "paragraphs": [
+        "Role no início de cada combate:",
+        "1d20 + AGI + Movimento",
+        "A ordem de turno segue do maior para o menor resultado.",
+        "Empates — desempate em ordem:"
+      ],
+      "bullets": [
+        "Maior Movimento",
+        "Maior AGI",
+        "Jogadores têm prioridade sobre criaturas"
+      ],
+      "examples": []
+    },
+    {
+      "id": "053-combate-movimento",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Movimento",
+      "paragraphs": [
+        "Uma ação de Movimento concede deslocamento conforme o terreno:"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "054-combate-atributos-e-conhecimentos-em-combate",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Atributos e Conhecimentos em Combate",
+      "paragraphs": [
+        "Use os Atributos e Conhecimentos definidos em Criação de Personagem e",
+        "Criação de Personagem. Formação do teste, limite do Conhecimento e",
+        "substituições são definidos somente em Testes e Dificuldades."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "055-combate-protecoes",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Proteções",
+      "paragraphs": [
+        "As Proteções representam formas diferentes de resistir a uma ameaça.",
+        "Cada ação ofensiva utiliza apenas uma Proteção, determinada pela natureza do efeito.",
+        "As cinco Proteções são propositalmente separadas e possuem fórmulas próprias.",
+        "[Proteção Geral]",
+        "10 + soma dos bônus de Proteção Geral de cada item equipado, uma única vez",
+        "Utilizada contra:",
+        "[Proteção de Esquiva]",
+        "Proteção Geral + AGI + Reflexos",
+        "Disponível apenas enquanto o personagem estiver usando a ação Esquiva.",
+        "Representa evitar completamente um ataque através de reação e deslocamento.",
+        "[Proteção de Postura]",
+        "10 + CAR + Lábia",
+        "Utilizada contra:",
+        "[Proteção Mental]",
+        "10 + INT + Sanidade",
+        "Utilizada contra:",
+        "[Proteção Arcana]",
+        "10 + POD + Arcano",
+        "Utilizada contra:",
+        "Proteções não são Testes Resistidos.",
+        "Uma Proteção é um valor estático. Testes Resistidos são utilizados quando dois agentes estão agindo ativamente um contra o outro."
+      ],
+      "bullets": [
+        "armas corpo a corpo;",
+        "arcos;",
+        "armas de fogo;",
+        "ataques naturais;",
+        "explosões físicas;",
+        "ataques que precisam atravessar proteção material.",
+        "intimidação;",
+        "coação;",
+        "presença sobrenatural;",
+        "manipulação social;",
+        "técnicas baseadas em Carisma.",
+        "medo;",
+        "ilusões;",
+        "controle mental;",
+        "sonhos invasivos;",
+        "ataques psíquicos.",
+        "Magia;",
+        "Runas;",
+        "Cinzas;",
+        "maldições;",
+        "poderes divinos;",
+        "interferências sobrenaturais."
+      ],
+      "examples": []
+    },
+    {
+      "id": "056-combate-testes-resistidos",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Testes Resistidos",
+      "paragraphs": [
+        "Use Testes e Dificuldades para procedimento, combinações e desempate."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "057-combate-relance",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Relance",
+      "paragraphs": [
+        "Um Relance ocorre quando os dois participantes obtêm o mesmo valor natural no d20 durante um Teste Resistido.",
+        "O Relance representa duas ações acontecendo quase simultaneamente.",
+        "[Resolução]",
+        "Quando o efeito possuir valor numérico:",
+        "Efeito final = metade do efeito normal, arredondado para baixo",
+        "Isso pode afetar:",
+        "Quando o efeito não puder ser dividido numericamente, ocorre um sucesso parcial.",
+        "O vencedor alcança o objetivo principal, mas o oponente preserva alguma vantagem ou concessão relevante.",
+        "[Relance com empate total]",
+        "Se os valores naturais forem iguais e os resultados totais também forem iguais, nenhum lado consegue impor completamente sua ação.",
+        "O estado atual é mantido."
+      ],
+      "bullets": [
+        "Compare os resultados totais normalmente.",
+        "Quem possuir o maior total ainda vence.",
+        "O efeito da vitória é reduzido.",
+        "dano;",
+        "deslocamento;",
+        "duração;",
+        "quantidade;",
+        "intensidade de um efeito."
+      ],
+      "examples": [
+        "Agarrar: o atacante vence o Relance; consegue segurar o alvo, mas não o imobiliza completamente.",
+        "Furtividade: o personagem permanece sem ser identificado, mas o observador percebe sua presença ou direção.",
+        "Disputa física: o vencedor causa metade do dano ou deslocamento.",
+        "Enganação: o alvo acredita parcialmente, mas exige prova ou condição."
+      ]
+    },
+    {
+      "id": "058-combate-ataques",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Ataques",
+      "paragraphs": [
+        "Todo ataque segue o mesmo procedimento:",
+        "1d20 + Atributo + Conhecimento aplicado",
+        "Se o resultado for igual ou superior à Proteção do alvo, o ataque acerta.",
+        "[Conhecimentos por Tipo de Ataque]"
+      ],
+      "bullets": [
+        "Escolha o alvo.",
+        "Determine qual Proteção será utilizada.",
+        "Role:"
+      ],
+      "examples": []
+    },
+    {
+      "id": "059-combate-dano",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Dano",
+      "paragraphs": [
+        "[Dano Físico]",
+        "Após acertar um ataque físico:",
+        "Dano Físico = Dado da arma + Atributo + Conhecimento aplicado + modificadores da arma + bônus da habilidade",
+        "O Atributo e o Conhecimento utilizados no ataque também entram no dano físico.",
+        "Se uma Técnica de Batalha substituir o Conhecimento Básico no ataque, ela também substitui esse Conhecimento no dano.",
+        "[Dano mágico e sobrenatural]",
+        "Magias, Runas, Cinzas e poderes sobrenaturais utilizam o dano descrito em suas próprias regras.",
+        "Eles só utilizam automaticamente a fórmula de Dano Físico quando o efeito declarar explicitamente que funciona como um ataque físico."
+      ],
+      "bullets": [],
+      "examples": [
+        "Um personagem utiliza uma espada de 1d6, possui FOR 3 e Luta 2:",
+        "1d6 + 3 + 2",
+        "Se rolar 4 no dado:",
+        "4 + 3 + 2 = 9 de dano bruto"
+      ]
+    },
+    {
+      "id": "060-combate-sistema-corporal",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Sistema Corporal",
+      "paragraphs": [
+        "Todo ataque físico que causa dano possui uma região atingida.",
+        "O Sistema Corporal utiliza as 10 regiões já presentes na silhueta da ficha.",
+        "[Localização]",
+        "Depois de acertar um ataque físico, role:",
+        "1d10",
+        "O resultado indica a região atingida na ficha.",
+        "O Historiador pode ignorar a rolagem quando a localização for óbvia pela ficção.",
+        "[Tabela humanoide]",
+        "Criaturas com anatomia diferente registram uma tabela própria em seu bloco.",
+        "[Ataque Direcionado]",
+        "Um personagem pode tentar atingir uma região específica.",
+        "Antes do ataque, declare a região:",
+        "−4 no teste de Ataque",
+        "Em caso de acerto, não é necessário rolar localização.",
+        "Para atingir especificamente um órgão interno:",
+        "−6 no teste de Ataque",
+        "O ataque precisa possuir um meio plausível de alcançar o órgão."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "061-combate-protecao-local",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Proteção Local",
+      "paragraphs": [
+        "A armadura pode possuir Proteção Local (PL) em regiões específicas do corpo.",
+        "Depois de determinar a localização:",
+        "Dano Final = Dano Físico − Proteção Local − outras reduções",
+        "A Proteção Local reduz dano.",
+        "A Proteção Geral reduz a chance de ser atingido.",
+        "São sistemas separados."
+      ],
+      "bullets": [],
+      "examples": [
+        "Um personagem com PL 3 no torso recebe um ataque que causaria 9 de dano:",
+        "9 − 3 = 6 de dano final"
+      ]
+    },
+    {
+      "id": "062-combate-limiar-de-trauma",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Limiar de Trauma",
+      "paragraphs": [
+        "O Limiar de Trauma determina quando um golpe causa consequências corporais além da perda de Vida.",
+        "Limiar de Trauma = maior valor entre 3 e Vida Máxima ÷ 4",
+        "Sempre arredonde para baixo.",
+        "[Falhas causadas por Trauma]",
+        "Depois de aplicar Proteção Local:",
+        "Um crítico que cause pelo menos 1 ponto de dano causa no mínimo 1 Falha.",
+        "Não some a Falha garantida pelo crítico às Falhas de Trauma. Utilize o maior resultado."
+      ],
+      "bullets": [
+        "dano menor que o Limiar: 0 Falhas;",
+        "dano igual ou maior que o Limiar: 1 Falha;",
+        "dano igual ou maior que o dobro do Limiar: 2 Falhas."
+      ],
+      "examples": []
+    },
+    {
+      "id": "063-combate-falhas-corporais",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Falhas Corporais",
+      "paragraphs": [
+        "Cada região possui uma trilha de Falhas:",
+        "Uma habilidade que permita a um membro resistir a +1 Falha faz com que aquela região só entre em Falha ao atingir 4 Falhas.",
+        "[Mutilação]",
+        "Uma região pode sofrer mutilação quando chega ao estado de Falha através de dano traumático.",
+        "A forma da mutilação depende do tipo de dano.",
+        "[Desmembramento]",
+        "Desmembramento ocorre apenas quando:",
+        "Exemplos:",
+        "Criaturas imunes a desmembramento ainda podem sofrer Falha no membro, mas ele permanece conectado ao corpo."
+      ],
+      "bullets": [
+        "um membro chega ao estado de Falha por um Crítico capaz de separar ou destruir o membro; ou",
+        "uma arma, habilidade ou efeito declara explicitamente que pode causar desmembramento.",
+        "corte pode amputar;",
+        "impacto pode esmagar;",
+        "perfuração pode inutilizar sem separar;",
+        "energia pode destruir ou carbonizar."
+      ],
+      "examples": []
+    },
+    {
+      "id": "064-combate-falhas-de-orgao",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Falhas de Órgão",
+      "paragraphs": [
+        "Órgãos internos só recebem Falhas quando:",
+        "Cada órgão possui a seguinte trilha:",
+        "Quando uma habilidade utiliza \"número de Falhas dos órgãos\", some todas as Falhas atualmente marcadas nos órgãos internos.",
+        "Órgãos saudáveis não precisam ser registrados previamente na ficha. Adicione um órgão quando ele sofrer dano, receber um Implante, abrigar um parasita ou possuir outra alteração relevante; remova o registro quando ele voltar ao estado normal e não houver alteração a acompanhar.",
+        "Quando um Implante funcional substitui um órgão inválido ou restaura integralmente sua função, as Falhas daquele órgão são apagadas e sua trilha retorna a 0. Se o Implante apenas auxiliar a função ou declarar recuperação parcial, aplique somente o efeito específico descrito pelo item."
+      ],
+      "bullets": [
+        "um Ataque Direcionado contra órgão acerta;",
+        "um Crítico atinge uma região compatível e o ataque pode alcançar estruturas internas;",
+        "uma habilidade ou efeito declara dano interno."
+      ],
+      "examples": []
+    },
+    {
+      "id": "065-combate-tratamento-corporal",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Tratamento Corporal",
+      "paragraphs": [
+        "Recuperar Vida não remove Falhas automaticamente.",
+        "[Estabilizar membro]",
+        "[Estabilizar órgão]",
+        "Conhecimentos apropriados podem incluir Medicina, Cirurgia, Reparo ou equivalentes coerentes com a criatura.",
+        "Sem conhecimento apropriado:",
+        "INT + Raciocínio, CD +5",
+        "Estabilização impede piora imediata, mas não remove Falhas.",
+        "Falhas corporais são recuperadas através de tratamento e tempo narrativo apropriado."
+      ],
+      "bullets": [
+        "custo: 1 ação;",
+        "teste: INT + Conhecimento apropriado;",
+        "CD: 12.",
+        "custo: 1 ação;",
+        "teste: INT + Conhecimento apropriado;",
+        "CD: 15."
+      ],
+      "examples": []
+    },
+    {
+      "id": "066-combate-critico",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Crítico",
+      "paragraphs": [
+        "Um ataque crítico ocorre com um 20 natural no d20.",
+        "Dano rolado normalmente + valor máximo de um dado principal da arma",
+        "O Atributo e o Conhecimento não são duplicados."
+      ],
+      "bullets": [],
+      "examples": [
+        "Machado de 1d12, FOR 3 e Brutalidade 2:",
+        "Dano normal:",
+        "1d12 + 3 + 2",
+        "No crítico:",
+        "1d12 + 3 + 2 + 12"
+      ]
+    },
+    {
+      "id": "067-combate-falha-critica",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Falha Crítica",
+      "paragraphs": [
+        "Um 1 natural representa Falha Crítica.",
+        "O Historiador escolhe uma consequência adequada à situação:",
+        "Falhas Críticas raramente causam morte instantânea."
+      ],
+      "bullets": [
+        "perder o equilíbrio e ficar Caído;",
+        "derrubar ou soltar a arma;",
+        "abrir a guarda;",
+        "atingir cobertura ou aliado próximo;",
+        "consumir recurso adicional;",
+        "perder posição;",
+        "causar uma complicação coerente."
+      ],
+      "examples": []
+    },
+    {
+      "id": "068-combate-esquiva",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Esquiva",
+      "paragraphs": [
+        "A ação Esquiva custa 1 ação.",
+        "Enquanto estiver esquivando:"
+      ],
+      "bullets": [
+        "utiliza a Proteção de Esquiva (PG + AGI + Reflexos) no lugar da Proteção Geral;",
+        "permanece nessa postura até o início do próximo turno;",
+        "qualquer ação ofensiva cancela imediatamente a Esquiva."
+      ],
+      "examples": []
+    },
+    {
+      "id": "069-combate-ajudar",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Ajudar",
+      "paragraphs": [
+        "Custa 1 ação.",
+        "Concede:",
+        "+2 no próximo teste de um aliado",
+        "Não acumula.",
+        "Múltiplos personagens ajudando o mesmo aliado ainda concedem apenas +2, salvo habilidade específica."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "070-combate-cobertura",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Cobertura",
+      "paragraphs": [
+        "O Historiador pode conceder bônus temporários à Proteção Geral conforme o ambiente:"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "071-combate-exaustao",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Exaustão",
+      "paragraphs": [
+        "Exaustão varia de:",
+        "0 a 10",
+        "Cada ponto de Exaustão causa:",
+        "−1 em todos os testes",
+        "Exemplos de ganho de Exaustão:",
+        "Ao atingir 10 de Exaustão, o personagem colapsa e não consegue agir normalmente até reduzir o valor.",
+        "[Recuperação]"
+      ],
+      "bullets": [
+        "esforço além do limite seguro: +1;",
+        "24 horas sem dormir: +2;",
+        "fome, sede ou ambiente extremo: +1 a +3;",
+        "habilidades específicas podem gerar Exaustão.",
+        "8 horas de sono seguro: −2 Exaustão;",
+        "um dia inteiro de descanso seguro, com alimento e água: −4 Exaustão."
+      ],
+      "examples": []
+    },
+    {
+      "id": "072-combate-corrupcao-divina",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Corrupção Divina",
+      "paragraphs": [
+        "Corrupção Divina varia de:",
+        "0% a 100%",
+        "Representa energia divina acumulada deformando corpo, mente ou essência.",
+        "Quando uma regra mandar receber Corrupção sem informar quantidade:",
+        "+5% de Corrupção",
+        "Descanso comum não remove Corrupção.",
+        "Purificação, tratamento especializado, pacto, intervenção divina ou resolução narrativa podem reduzi-la."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "073-combate-vida-e-morte",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Vida e Morte",
+      "paragraphs": [
+        "Ao chegar a 0 PV, o personagem fica Inconsciente.",
+        "No início de cada turno, ele rola 1d20 sem a mesa saber o resultado:",
+        "[Estabilizado]",
+        "Uma criatura estabilizada permanece Inconsciente em 0 PV e deixa de fazer rolagens de morte. Se receber dano, perde a estabilização e volta a rolar no início do turno. Ao alcançar pelo menos 1 PV, recupera a consciência, salvo outra condição.",
+        "Falha de órgão usa o mesmo estado, mas ainda exige tratamento do órgão.",
+        "Um aliado pode gastar 1 ação para averiguar o personagem com:",
+        "INT + Sanidade, CD 12",
+        "Isso revela sua condição.",
+        "Ao atingir:",
+        "− metade da Vida Máxima",
+        "o personagem morre imediatamente.",
+        "Uma Falha de Órgão também coloca o personagem nas Portas da Morte, mesmo que ainda possua Vida positiva."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "074-combate-destino",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Destino",
+      "paragraphs": [
+        "O Destino é um recurso narrativo com:",
+        "máximo de 5 pontos",
+        "Personagens começam normalmente com:",
+        "1 Destino",
+        "Recuperam normalmente 1 ponto entre sessões ou por marcos importantes da história.",
+        "Gaste 1 Destino para:",
+        "Um mesmo personagem só pode gastar 1 ponto de Destino no mesmo teste."
+      ],
+      "bullets": [
+        "transformar uma Falha Crítica própria em falha simples;",
+        "transformar um Crítico recebido em acerto simples;",
+        "rerrolar qualquer teste próprio e ficar com o melhor resultado;",
+        "estabilizar automaticamente um aliado adjacente;",
+        "adicionar +5 a um teste próprio;",
+        "reduzir em 5 um teste diretamente direcionado contra você."
+      ],
+      "examples": []
+    },
+    {
+      "id": "075-combate-dinheiro",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Dinheiro",
+      "paragraphs": [
+        "A unidade monetária padrão da campanha é:",
+        "E$",
+        "Dinheiro é utilizado durante a campanha para:",
+        "[Pontos de Herança]",
+        "Pontos de Herança não são dinheiro.",
+        "Eles representam exclusivamente o orçamento inicial de criação de personagem.",
+        "Não existe conversão automática entre Pontos de Herança e E$.",
+        "[Venda]",
+        "Como regra padrão, vender um item usado retorna:",
+        "50% do preço listado",
+        "Mercado, reputação, escassez e negociação podem alterar esse valor."
+      ],
+      "bullets": [
+        "compra de itens;",
+        "serviços;",
+        "hospedagem;",
+        "transporte;",
+        "subornos;",
+        "salários;",
+        "dívidas;",
+        "manutenção."
+      ],
+      "examples": []
+    },
+    {
+      "id": "076-combate-fontes-de-poder",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Fontes de Poder",
+      "paragraphs": [
+        "Poder é uma capacidade especial e pode vir de Caminho, raça, item, Conhecimento, Histórico ou recompensa narrativa. A fonte define aquisição, permanência, condição de perda e forma de aprimoramento. Poder concedido por item depende do objeto; Poder aprendido por Conhecimento permanece aprendido. Capacidades iguais não se acumulam apenas por terem fontes diferentes. Consulte Regras Arcanas Expandidas para a estrutura completa e Poderes Mágicos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "077-combate-caminhos-do-personagem",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Combate",
+      "category": "Combate",
+      "title": "Caminhos do Personagem",
+      "paragraphs": [
+        "O Caminho representa a identidade pessoal do personagem.",
+        "Ele funciona como uma mistura de:",
+        "Não é uma classe universal.",
+        "Cada Caminho é escrito individualmente para o personagem.",
+        "[Estrutura]",
+        "Todo Caminho possui:",
+        "Os Pilares não concedem bônus diretamente.",
+        "Eles servem como fundamento ficcional para definir quais poderes e evoluções fazem sentido para aquele personagem.",
+        "[Progressão]",
+        "O personagem recebe um Marco de Caminho nos níveis:",
+        "5, 10, 15 e 20",
+        "Cada Marco concede um novo Poder de Caminho. Um Caminho concede 2 Poderes por padrão, mas sua própria regra pode conceder mais. Não existe limite global de Poderes e Marcos não aprimoram Poderes existentes."
+      ],
+      "bullets": [
+        "passado;",
+        "profissão;",
+        "experiências;",
+        "crenças;",
+        "traumas;",
+        "objetivos;",
+        "estilo de agir.",
+        "Nome do Caminho",
+        "3 Pilares",
+        "1 Lema",
+        "2 Poderes iniciais",
+        "origem narrativa dos poderes"
+      ],
+      "examples": []
+    },
+    {
+      "id": "078-recuperacao-sanidade-e-condicoes-recuperacao-san",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Recuperação, sanidade e condições",
+      "paragraphs": [
+        "Regras de recuperação e condições complementares a Combate e Testes e Dificuldades."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "079-recuperacao-sanidade-e-condicoes-recuperacao",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Recuperação",
+      "paragraphs": [
+        "Recursos nunca ultrapassam seus valores máximos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "080-recuperacao-sanidade-e-condicoes-respirar",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Respirar",
+      "paragraphs": [
+        "Uma criatura pode Respirar uma vez por cena quando estiver fora de perigo imediato."
+      ],
+      "bullets": [
+        "duração: 10 minutos;",
+        "escolha Energia ou Arcano;",
+        "recupere 1d4 do recurso escolhido;",
+        "não recupera Vida, Sanidade ou Falhas Corporais."
+      ],
+      "examples": []
+    },
+    {
+      "id": "081-recuperacao-sanidade-e-condicoes-descanso-seguro",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Descanso Seguro",
+      "paragraphs": [
+        "Um Descanso Seguro exige 8 horas, abrigo, água e alimento.",
+        "Ao concluir:",
+        "Dormir em local inseguro exige um teste de VIG + Tolerância, CD 12.",
+        "Em Falha, recupere Energia e Arcano, mas não recupere Vida, Sanidade nem Exaustão."
+      ],
+      "bullets": [
+        "recupere toda a Energia;",
+        "recupere todo o Arcano;",
+        "recupere 1d4 + Regeneração de Vida;",
+        "recupere 1d4 + Sanidade de Sanidade;",
+        "reduza Exaustão em 2;",
+        "encerre condições cuja duração seja “até o próximo descanso”."
+      ],
+      "examples": []
+    },
+    {
+      "id": "082-recuperacao-sanidade-e-condicoes-recuperacao-pro",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Recuperação Prolongada",
+      "paragraphs": [
+        "Um dia inteiro de repouso seguro concede:"
+      ],
+      "bullets": [
+        "Energia e Arcano máximos;",
+        "2d4 + Regeneração de Vida;",
+        "2d4 + Sanidade de Sanidade;",
+        "-4 Exaustão;",
+        "um teste de tratamento para cada região estabilizada."
+      ],
+      "examples": []
+    },
+    {
+      "id": "083-recuperacao-sanidade-e-condicoes-falhas-corporai",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Falhas Corporais",
+      "paragraphs": [
+        "Recuperar Vida não remove Falhas.",
+        "Uma Falha só pode ser removida quando a região estiver estabilizada.",
+        "Sucesso Forte reduz o tempo pela metade.",
+        "Falha Grave aumenta o tempo em 1 dia e consome os materiais.",
+        "Falha Desastrosa causa 1 Falha adicional na região tratada."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "084-recuperacao-sanidade-e-condicoes-sanidade",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Sanidade",
+      "paragraphs": [
+        "Sanidade mede a capacidade de suportar medo, contradição, perda de identidade e contato onírico.",
+        "Dano de Sanidade reduz PS.",
+        "Sanidade nunca fica abaixo de 0."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "085-recuperacao-sanidade-e-condicoes-ruptura",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Ruptura",
+      "paragraphs": [
+        "Quando a Sanidade chega a 0:",
+        "Dano de Sanidade recebido enquanto estiver em 0 transforma cada ponto de dano em 1 ponto de Exaustão.",
+        "Depois da cena, a primeira recuperação de Sanidade eleva o recurso normalmente a partir de 0.",
+        "[Rupturas repetidas]",
+        "Cada nova Ruptura antes de um Descanso Seguro aumenta a duração do efeito em 1d6 horas.",
+        "Na terceira Ruptura antes de um Descanso Seguro, o efeito permanece até tratamento.",
+        "Tratamento exige:"
+      ],
+      "bullets": [
+        "interrompa a ação atual;",
+        "role 1d100 na Tabela de Efeitos de Insanidade;",
+        "aplique o efeito por 1d6 horas;",
+        "receba a condição Abalado;",
+        "não recupere Sanidade até sair da cena que provocou a Ruptura.",
+        "uma hora em segurança;",
+        "INT + Conhecimento apropriado contra CD 15;",
+        "ou intervenção mágica capaz de restaurar Sanidade."
+      ],
+      "examples": []
+    },
+    {
+      "id": "086-recuperacao-sanidade-e-condicoes-condicoes",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Recuperação, sanidade e condições",
+      "category": "Recuperação & Sanidade",
+      "title": "Condições",
+      "paragraphs": [
+        "Condições iguais não acumulam, salvo quando possuírem intensidade numérica. Use a maior intensidade.",
+        "[Abalado]",
+        "[Caído]",
+        "[Cego]",
+        "[Surpreendido]",
+        "[Imobilizado]",
+        "[Sangramento X]",
+        "No fim de cada turno, perca X PV.",
+        "Sangramento aumenta em 1 quando um efeito aplicar intensidade maior sobre uma criatura que já esteja Sangrando.",
+        "Estancar exige:",
+        "Sucesso reduz Sangramento em 1.",
+        "Sucesso Forte encerra Sangramento.",
+        "Um Kit de Sutura concede +4 ao teste.",
+        "Criaturas sem sangue são imunes.",
+        "[Queimando Dado]",
+        "No fim de cada turno, sofra o Dado indicado como dano de fogo.",
+        "Exemplos: Queimando 1d4, Queimando 1d6, Queimando 1d10.",
+        "Extinguir exige uma ação e uma das opções:",
+        "Entrar em água suficiente encerra a condição.",
+        "[Veneno Dado, CD]",
+        "Ao ser exposto, teste VIG + Tolerância contra a CD.",
+        "Em Falha:",
+        "Em Sucesso, encerre a condição.",
+        "Sucesso Forte impede o primeiro dano.",
+        "Antídoto apropriado concede Vantagem e +4 no próximo teste.",
+        "[Paralisia CD]",
+        "Ao ser afetado, teste VIG + Tolerância contra a CD.",
+        "Em Falha:",
+        "Em Sucesso, encerre Paralisia e Imobilizado causado por ela.",
+        "Construtos só são afetados por Paralisia elétrica, tecnológica ou explicitamente compatível.",
+        "[Asfixia]",
+        "Uma criatura pode prender a respiração por 1 + VIG turnos.",
+        "Depois disso, no fim de cada turno:",
+        "Ao atingir 10 de Exaustão, fica Inconsciente.",
+        "Respirar encerra a progressão, mas não remove Exaustão.",
+        "[Dor]",
+        "Dor possui intensidade de 1 a 3.",
+        "Cada ponto impõe -1 em testes físicos.",
+        "Dor termina quando:",
+        "Ignorar Dor não remove dano ou Falhas.",
+        "[Intoxicação]",
+        "Uma criatura Intoxicada recebe:",
+        "Intensidades adicionais aumentam a penalidade numérica em 1, até -3.",
+        "[Vício e Dependência]",
+        "Substâncias viciantes possuem uma porcentagem de Dependência.",
+        "Depois de usar a substância, role 1d100.",
+        "Se o resultado for igual ou inferior à porcentagem, receba 1 ponto de Dependência daquela substância.",
+        "Dependência varia de 0 a 5.",
+        "Usar a substância suspende Abstinência até o próximo período de 24 horas.",
+        "#### Reduzindo Dependência",
+        "A cada 7 dias completos sem uso, teste VIG + Tolerância, CD 10 + Dependência.",
+        "Em Sucesso, reduza Dependência em 1.",
+        "Tratamento especializado concede +4.",
+        "Falha Crítica aumenta Dependência em 1.",
+        "[Exaustão]",
+        "Exaustão varia de 0 a 10.",
+        "Cada ponto causa -1 em todos os testes.",
+        "Ao atingir 10:",
+        "[Inconsciente]",
+        "Uma criatura em 0 PV segue as regras de Portas da Morte de Combate."
+      ],
+      "bullets": [
+        "-2 em todos os Conhecimentos;",
+        "termina no fim da cena ou após efeito específico.",
+        "levantar custa 1 ação;",
+        "ataques corpo a corpo contra o alvo recebem +4;",
+        "ataques à distância contra o alvo recebem -4;",
+        "mover-se no chão custa o dobro do deslocamento.",
+        "-4 em ataques que dependam de visão;",
+        "falha automaticamente em percepção exclusivamente visual;",
+        "perde AGI + Reflexos da Proteção de Esquiva;",
+        "termina quando a causa for removida.",
+        "perde as ações do primeiro turno;",
+        "não pode usar Esquiva;",
+        "termina no fim do primeiro turno.",
+        "não pode usar ações de Movimento;",
+        "-2 na Proteção Geral;",
+        "pode tentar escapar com uma ação e o teste indicado pelo efeito.",
+        "1 ação;",
+        "INT + Medicina, Primeiros Socorros ou equivalente;",
+        "CD 10 + X.",
+        "AGI + Reflexos contra a CD do efeito;",
+        "água, areia ou abafamento adequado, encerrando automaticamente;",
+        "ajuda de uma criatura adjacente, concedendo +2.",
+        "sofra o Dado indicado;",
+        "permaneça Envenenado;",
+        "repita o teste no fim de cada turno.",
+        "fique Imobilizado;",
+        "possua apenas 1 ação por turno;",
+        "repita o teste no fim de cada turno.",
+        "receba 1 Exaustão;",
+        "teste VIG + Tolerância, CD 12 + número de turnos sem ar;",
+        "em Falha, perca 1d6 PV.",
+        "o efeito que a causou terminar;",
+        "tratamento apropriado for aplicado;",
+        "um analgésico suspender seus efeitos.",
+        "-1 em todos os testes;",
+        "Desvantagem em Raciocínio, Movimento e Reflexos;",
+        "duração indicada pela substância.",
+        "a criatura colapsa;",
+        "fica Inconsciente;",
+        "não pode agir até reduzir Exaustão.",
+        "não realiza ações;",
+        "falha automaticamente em testes físicos ativos;",
+        "ataques corpo a corpo contra ela acertam automaticamente;",
+        "desperta quando a causa permitir."
+      ],
+      "examples": []
+    },
+    {
+      "id": "087-efeitos-de-insanidade-tabela-de-efeitos-de-insan",
+      "part": "Parte IV - Combate, ferimentos e recuperação",
+      "chapter": "Efeitos de insanidade",
+      "category": "Recuperação & Sanidade",
+      "title": "Tabela de Efeitos de Insanidade",
+      "paragraphs": [
+        "Use quando ocorrer uma Ruptura de Sanidade conforme Recuperação, Sanidade e Condições.",
+        "[Procedimento]",
+        "Um efeito nunca obriga o jogador a interpretar conteúdo que ultrapasse os limites acordados pela mesa. Nesse caso, mantenha apenas a consequência mecânica ou escolha a entrada adjacente.",
+        "[Efeitos]",
+        "[Contenção]",
+        "Durante uma cena, um aliado adjacente pode gastar uma Ação Completa e testar:",
+        "CAR + Lábia ou INT + Medicina, CD 12",
+        "Sucesso encerra compulsões que forçam movimento ou ação, mas não remove o efeito persistente. Sucesso Forte também reduz Abalado para −1. Sucesso Excepcional encerra Abalado, mas a restrição de recuperação de Sanidade permanece.",
+        "Falha Grave ou Desastrosa impede nova tentativa daquele aliado na mesma cena.",
+        "[Recuperação]",
+        "O efeito persistente termina depois de 1d6 horas em segurança. Tratamento especializado por 1 hora permite INT + Medicina, Psicologia ou Conhecimento apropriado, CD 15:",
+        "Uma mesma Ruptura só pode receber uma tentativa de tratamento especializado."
+      ],
+      "bullets": [
+        "interrompa a ação atual;",
+        "role 1d100;",
+        "aplique o efeito imediato;",
+        "mantenha o efeito persistente por 1d6 horas;",
+        "aplique Abalado conforme a regra de Ruptura;",
+        "não recupere Sanidade até sair da cena que provocou a Ruptura.",
+        "Sucesso reduz a duração restante pela metade;",
+        "Sucesso Forte encerra o efeito persistente;",
+        "Sucesso Excepcional também recupera 1d4 Sanidade;",
+        "Falha Desastrosa prolonga o efeito por 1 hora."
+      ],
+      "examples": []
+    },
+    {
+      "id": "088-efeitos-de-insanidade-efeitos-de-insanidade",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Efeitos de insanidade",
+      "category": "Recuperação & Sanidade",
+      "title": "Efeitos de insanidade",
+      "paragraphs": [
+        "Esta parte explica como carregar, comprar, fabricar, modificar, danificar e reparar equipamentos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "089-regras-gerais-de-itens-registro-de-item",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Registro de Item",
+      "paragraphs": [
+        "Todo item mecânico possui:"
+      ],
+      "bullets": [
+        "nome;",
+        "categoria;",
+        "Custo da Criação;",
+        "preço em E$;",
+        "Carga;",
+        "material;",
+        "qualidade;",
+        "Durabilidade;",
+        "efeitos;",
+        "modificações;",
+        "espaços de Gema ou Tecnologia."
+      ],
+      "examples": []
+    },
+    {
+      "id": "090-regras-gerais-de-itens-material-predominante",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Material Predominante",
+      "paragraphs": [
+        "Cada item possui um único Material Predominante. Partes obrigatórias e opcionais descrevem sua estrutura, mas não recebem materiais mecânicos diferentes.",
+        "Materiais podem registrar uma Família guarda-chuva e uma liga específica. Regras gerais usam a Família; propriedades excepcionais usam o material específico.",
+        "O cálculo e os valores de custo pertencem a",
+        "Balanceamento de Criação e Equipamentos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "091-regras-gerais-de-itens-receitas-de-partes",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Receitas de partes",
+      "paragraphs": [
+        "As partes orientam a montagem e as modificações possíveis. Todas usam o mesmo Material Predominante para fins mecânicos.",
+        "Uma parte opcional não concede bônus sozinha. Para produzir efeito mecânico, ela deve corresponder a uma Modificação, Espaço, Qualidade ou Poder de Item pago e registrado.",
+        "O construtor apresenta as partes na ordem da receita, mas solicita o Material Predominante apenas uma vez por item."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "092-regras-gerais-de-itens-custo-da-criacao",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Custo da Criação",
+      "paragraphs": [
+        "Custo da Criação mede complexidade e valor inicial.",
+        "É utilizado para:",
+        "Itens e materiais marcados com # não aparecem na loja inicial nem no construtor por PH. Permanecem visíveis no glossário e no construtor livre, mantêm Custo da Criação # e recebem preço manual em E$ conforme orientação do Historiador."
+      ],
+      "bullets": [
+        "Pontos de Herança;",
+        "fabricação;",
+        "reparo;",
+        "análise;",
+        "comparação de raridade."
+      ],
+      "examples": []
+    },
+    {
+      "id": "093-regras-gerais-de-itens-protecao-geral-e-protecao",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Proteção Geral e Proteção Local",
+      "paragraphs": [
+        "[Proteção Geral — PG]",
+        "PG aumenta a dificuldade de um ataque atravessar o conjunto defensivo.",
+        "Proteção Geral = 10 + soma dos bônus de PG equipados",
+        "[Proteção Local — PL]",
+        "PL reduz o dano na região atingida.",
+        "Dano Final = Dano Bruto - PL da região - Reduções de Dano",
+        "PG e PL são calculadas separadamente."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "094-regras-gerais-de-itens-limitacao-de-agilidade-la",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Limitação de Agilidade — LA",
+      "paragraphs": [
+        "LA é o maior valor de AGI que pode ser aplicado enquanto o item estiver equipado.",
+        "Ela afeta:",
+        "Quando vários itens possuem LA, use o menor valor.",
+        "Um item sem LA não limita AGI."
+      ],
+      "bullets": [
+        "Proteção de Esquiva;",
+        "Reflexos;",
+        "Movimento;",
+        "Furtividade;",
+        "manobras corporais realizadas com AGI."
+      ],
+      "examples": []
+    },
+    {
+      "id": "095-regras-gerais-de-itens-durabilidade",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Durabilidade",
+      "paragraphs": [
+        "Durabilidade possui valor atual e máximo.",
+        "O máximo é determinado pelo material.",
+        "[Perda de Durabilidade]",
+        "Uma arma perde 1 Durabilidade quando:",
+        "Uma armadura ou acessório perde 1 Durabilidade quando:",
+        "Itens Delicados perdem 2 Durabilidade no lugar de 1.",
+        "[Sucata]",
+        "Ao atingir 0 Durabilidade, o item torna-se Sucata.",
+        "Enquanto for Sucata:",
+        "Se um item em estado de Sucata perder Durabilidade novamente, ele quebra.",
+        "[Quebrado]",
+        "Um item Quebrado:"
+      ],
+      "bullets": [
+        "obtém Falha Crítica em um ataque;",
+        "é usada para bloquear um Crítico;",
+        "sofre efeito corrosivo ou destrutivo;",
+        "uma regra determinar.",
+        "a região protegida recebe um Crítico que cause dano;",
+        "é usada para impedir desmembramento;",
+        "sofre efeito corrosivo ou destrutivo;",
+        "uma regra determinar.",
+        "dados de dano descem uma Categoria de Dado;",
+        "bônus de ataque são removidos;",
+        "PG e PL são reduzidas à metade, arredondadas para baixo;",
+        "modificações ficam inativas;",
+        "ataques realizados com a arma possuem Desvantagem.",
+        "não concede efeitos, proteções ou bônus mecânicos;",
+        "não pode ser Equipado ([E]) nem Empunhado ([W]);",
+        "é imediatamente transferido para o estado Guardado ([G]) e desvinculado de todas as regiões corporais;",
+        "quaisquer poderes de gemas ou habilidades ativas concedidas pelo item são imediatamente desativados e revogados da ficha;",
+        "não pode ser recuperado por reparos simples de Durabilidade;",
+        "Reciclagem: pode ser desmontado ou reciclado, sendo substituído por um item de Sucata recuperada (Carga 1, categoria Material), cujo valor de salvamento comercial equivale à metade do preço do item em Estribos (mínimo 1 E$) ou metade de seu Custo da Criação em unidades de sucata."
+      ],
+      "examples": []
+    },
+    {
+      "id": "096-regras-gerais-de-itens-passo-de-dado",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Passo de Dado",
+      "paragraphs": [
+        "Passo altera a quantidade de dados sem mudar o tipo.",
+        "1d4 → 2d4 → 3d4 → 4d4 → 5d4",
+        "Um dado não pode ultrapassar 5 Passos por esse método."
+      ],
+      "bullets": [],
+      "examples": [
+        "Exemplo:"
+      ]
+    },
+    {
+      "id": "097-regras-gerais-de-itens-categoria-de-dado",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Categoria de Dado",
+      "paragraphs": [
+        "Categoria altera o tipo de dado sem mudar a quantidade.",
+        "d4 → d6 → d8 → d10 → d12 → d20",
+        "Depois de d20, aumentos de Categoria concedem +2 ao resultado por aumento.",
+        "Abaixo de d4, o dado causa 1 ponto fixo."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "098-regras-gerais-de-itens-caracteristicas-gerais",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Características Gerais",
+      "paragraphs": [
+        "[Leve]",
+        "[Pesado]",
+        "[Delicado]",
+        "[Dilaceração]",
+        "Quando um Crítico causar ao menos 1 ponto de dano depois da PL:",
+        "A Falha adicional ocorre depois das Falhas por Trauma.",
+        "[Anti-Pessoal]",
+        "Contra uma região com PL 0 ou 1:",
+        "[Anti-Cavalaria]",
+        "Contra alvo montado, Enorme, em Investida ou que tenha se movido 10 m em linha reta no turno:",
+        "[Recarga]",
+        "Depois de atacar, a arma fica Descarregada.",
+        "Recarregar custa 1 ação e consome munição apropriada.",
+        "Armas Pesadas com Recarga exigem Ação Completa.",
+        "[Munição]",
+        "Cada arma registra sua capacidade.",
+        "[Sobrecarga X/6]",
+        "Depois de cada ataque com a arma, role 1d6.",
+        "Se o resultado for igual ou inferior a X:",
+        "Em Falha, a arma permanece Sobrecarregada.",
+        "Em Falha Grave, perde 1 Durabilidade.",
+        "[Sobrecarga Automática X]",
+        "A arma pode realizar X ataques antes de ficar Sobrecarregada automaticamente.",
+        "Liberar exige o mesmo procedimento de Sobrecarga.",
+        "[Paralisia CD]",
+        "Quando o ataque elétrico acerta e causa dano, o alvo testa VIG + Tolerância contra a CD.",
+        "Em Falha, recebe Paralisia conforme Recuperação, Sanidade e Condições.",
+        "[Bobina CD]",
+        "Depois de usar uma arma de Tesla, o sobrevivente testa:",
+        "INT + Tecnologia, Galvanomagia, Reparo ou Técnica apropriada contra a CD da Bobina",
+        "Em Falha Grave ou Falha Desastrosa:",
+        "Em Falha simples, a arma fica Sobrecarregada."
+      ],
+      "bullets": [
+        "Carga 1, salvo valor menor;",
+        "pode ser retirado de Acesso Rápido como parte da ação de uso, uma vez por turno;",
+        "pode ser ocultado com AGI + Furtividade.",
+        "exige duas mãos;",
+        "Carga mínima 3;",
+        "requer FOR 3 para uso sem penalidade;",
+        "com FOR inferior a 3, ataques possuem Desvantagem;",
+        "não pode ser usado durante Esquiva sem habilidade específica.",
+        "perde 2 Durabilidade quando perderia 1;",
+        "reparos possuem CD +2;",
+        "não pode ser reparado com ferramentas improvisadas.",
+        "cause 1 Falha Corporal adicional na região;",
+        "o ataque pode desmembrar uma região que entrar em Falha.",
+        "+2 de dano físico;",
+        "um Crítico causa Sangramento 1.",
+        "aumente a Categoria de Dado da arma em 1;",
+        "em Crítico, derrube o alvo ou a montaria.",
+        "Cada ataque consome 1 munição, salvo indicação contrária.",
+        "Recarregar transfere munição carregada para a arma até sua capacidade.",
+        "Um conjunto de munição ocupa 1 Carga.",
+        "Munição perdida, molhada ou danificada pode exigir teste antes do uso.",
+        "a arma fica Sobrecarregada;",
+        "não pode atacar;",
+        "deve ser liberada com 1 ação e INT + Reparo ou Técnica apropriada, CD 12.",
+        "a arma fica Sobrecarregada;",
+        "perde 1 Durabilidade;",
+        "o sobrevivente sofre 1d6 de dano elétrico."
+      ],
+      "examples": []
+    },
+    {
+      "id": "099-regras-gerais-de-itens-qualidade",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Qualidade",
+      "paragraphs": [
+        "Graus, efeitos e custos de Qualidade são definidos somente em",
+        "Balanceamento de Criação e Equipamentos. Preços usam Estribos e o procedimento",
+        "para elevar a Qualidade usa Fabricação e Reparo."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "100-regras-gerais-de-itens-espacos-de-aprimoramento",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Espaços de Aprimoramento",
+      "paragraphs": [
+        "Um item começa sem espaços, salvo indicação contrária. Uma única modificação de Encaixe pode conceder de 1 a 5 espaços adicionais, somados aos espaços naturais da base. Cada espaço recebe uma Gema, Tecnologia ou outro aprimoramento compatível."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "101-regras-gerais-de-itens-gemas-e-tecnologias",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Gemas e Tecnologias",
+      "paragraphs": [
+        "Gemas são cristais infundidos com energia onírica e possuem raridade Comum, Incomum, Rara ou Ancestral. Tecnologias são mecanismos Raros ou Ancestrais. Cada aprimoramento concede um único efeito principal.",
+        "Gemas usam Ourivesaria para instalação e remoção. Tecnologias usam Engenharia ou Ofício apropriado. A CD é 10 + Complexidade do item, de 0 a 4, + Instabilidade do aprimoramento, de 0 a 4. Falha perde tempo; Falha Grave danifica o aprimoramento; Falha Desastrosa danifica também o item. Ao chegar a 0 de Durabilidade, o aprimoramento é destruído e libera o espaço.",
+        "Aprimoramentos ativos usam uma Ação. Cargas e recarga seguem a própria peça. Para bônus no mesmo Atributo ou Conhecimento, use apenas a maior Gema e a maior Tecnologia; os dois resultados se somam. A mesma Tecnologia não pode ser instalada duas vezes no mesmo item.",
+        "Na criação, o jogador escolhe uma categoria e sorteia uma Gema não Ancestral. Tecnologias e Gemas Ancestrais ficam fora da criação."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "102-regras-gerais-de-itens-poder-de-item",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Regras gerais de itens",
+      "category": "Itens & Ofício",
+      "title": "Poder de Item",
+      "paragraphs": [
+        "Um Poder de Item deve registrar:",
+        "Um item não concede o Poder enquanto estiver em estado de Sucata ou Quebrado."
+      ],
+      "bullets": [
+        "ação;",
+        "custo;",
+        "alcance;",
+        "duração;",
+        "frequência;",
+        "fonte de energia;",
+        "efeito em caso de quebra."
+      ],
+      "examples": []
+    },
+    {
+      "id": "103-armas-armas",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Armas",
+      "paragraphs": [
+        "Use estas regras junto de Itens, Combate e Fabricação e Reparo."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "104-armas-distancia",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Distância",
+      "paragraphs": [
+        "1 quadrado = 2 metros"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "105-armas-ataque",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Ataque",
+      "paragraphs": [
+        "1d20 + Atributo + Conhecimento contra a Proteção do alvo"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "106-armas-dano-fisico",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Dano Físico",
+      "paragraphs": [
+        "Dado da Arma + Atributo + Conhecimento + modificadores",
+        "O mesmo Atributo e Conhecimento usados no Ataque entram no dano físico."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "107-armas-empunhadura-e-maos",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Empunhadura e Mãos",
+      "paragraphs": [
+        "Toda criatura humanoide possui 2 mãos disponíveis para empunhar itens simultaneamente."
+      ],
+      "bullets": [
+        "Armas de Uma Mão: Armas Curtas, Armas Médias e pistolas consomem 1 mão. Escudos também consomem 1 mão.",
+        "Armas de Duas Mãos (Pesadas): Exigem 2 mãos para serem empunhadas e empunham as duas mãos do personagem (impedindo o uso concomitante de escudos ou de uma segunda arma).",
+        "São armas oficials de duas mãos: Espada Bastarda, Guarda Dupla, Montante, Clava, Glaive, Arco Composto, Besta Pesada, Fuzil a Vapor, Estilhaçadora e Fuzil de Tesla.",
+        "Exceção de Material (Ossos Comuns): Quando uma arma pesada de duas mãos é forjada no material Ossos Comuns, sua estrutura porosa e leve reduz a exigência de empunhadura para 1 mão."
+      ],
+      "examples": []
+    },
+    {
+      "id": "108-armas-materiais-de-arma",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Materiais de Arma",
+      "paragraphs": [
+        "Custos, Durabilidade e efeitos dos materiais são definidos somente em",
+        "Balanceamento de Criação e Equipamentos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "109-armas-modificacoes",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Modificações",
+      "paragraphs": [
+        "[Acumuladora]",
+        "Quando a arma reduz uma criatura hostil a 0 PV, recebe 1 carga de Arcano, máximo 5.",
+        "Ao acertar, escolha quantas cargas gastar.",
+        "Cada carga causa +1d4 de dano Arcano.",
+        "No fim da cena:"
+      ],
+      "bullets": [
+        "se possuir cargas, reduza o total para 1;",
+        "se não possuir carga e for usada, perde 1 Durabilidade."
+      ],
+      "examples": []
+    },
+    {
+      "id": "110-armas-armas-grandes",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Armas Grandes",
+      "paragraphs": [
+        "[Ataque em Área]",
+        "Gaste Ação Completa e escolha até três alvos adjacentes ao alcance.",
+        "Realize um Ataque separado contra cada alvo.",
+        "Todos os ataques possuem -2.",
+        "[Bloqueio com Arma]",
+        "Uma vez por rodada, depois de receber ataque corpo a corpo:"
+      ],
+      "bullets": [
+        "reduza o dano em 2 + nível da Técnica exigida;",
+        "a arma perde 1 Durabilidade;",
+        "um Crítico faz a arma perder 2 Durabilidades."
+      ],
+      "examples": []
+    },
+    {
+      "id": "111-armas-armas-de-haste",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Armas de Haste",
+      "paragraphs": [
+        "Uma arma de alcance 2 quadrados pode atacar através de um aliado, mas não através de parede ou criatura hostil."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "112-armas-arcos-e-bestas",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Arcos e Bestas",
+      "paragraphs": [
+        "Ataques além do Alcance possuem Desvantagem e causam -2 dano por faixa adicional de Alcance.",
+        "Não é possível atacar além de três vezes o Alcance."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "113-armas-armas-de-vapor",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Armas de Vapor",
+      "paragraphs": [
+        "[Estilhaçadora]",
+        "Escolha um modo antes do ataque:",
+        "Depois do ataque, a arma fica Sobrecarregada."
+      ],
+      "bullets": [
+        "Alvo único: 2d10 de dano;",
+        "Cone 4: distribua 5d4 entre criaturas na área antes de rolar; cada criatura testa Proteção separadamente."
+      ],
+      "examples": []
+    },
+    {
+      "id": "114-armas-armas-de-tesla",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Armas de Tesla",
+      "paragraphs": [
+        "Armas de Tesla causam seu dano físico mais 1d6 elétrico.",
+        "[Dois alvos]",
+        "O Rifle de Assalto realiza um único Ataque e compara o resultado com a Proteção de ambos.",
+        "Role o dano uma vez."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "115-armas-capacidades-e-municao",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Capacidades e munição",
+      "paragraphs": [
+        "Cada arma registra sua própria capacidade e Recarga. Não presuma uma capacidade genérica."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "116-armas-armas-especiais",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armas",
+      "category": "Itens & Ofício",
+      "title": "Armas Especiais",
+      "paragraphs": [
+        "[Lança-Chamas]",
+        "Todas as criaturas na área testam AGI + Reflexos contra CD 12.",
+        "[Canhão de Ácido]",
+        "Todas as criaturas na área testam AGI + Reflexos contra CD 15.",
+        "Corrosão: no fim do turno, armadura da região perde 1 Durabilidade. Sem armadura, a criatura sofre 1d4 de dano. Uma ação e água ou neutralizante encerram o efeito.",
+        "[Besta de Repetição]",
+        "Gaste Ação Completa.",
+        "Realize até três Ataques contra um ou mais alvos no alcance.",
+        "Cada Ataque consome um virote e causa 1d6 + 1 mais modificadores.",
+        "[Lança-Granadas]",
+        "Escolha um quadrado no alcance e teste AGI + Pontaria contra CD 12."
+      ],
+      "bullets": [
+        "Sucesso: metade do dano e não fica Queimando.",
+        "Falha: dano completo e Queimando 1d4.",
+        "Sucesso: metade do dano.",
+        "Falha: dano completo e Corrosão.",
+        "Sucesso: granada cai no ponto escolhido.",
+        "Falha: desvia 1d4 quadrados em direção determinada por 1d8.",
+        "Falha Crítica: detona no lançador ou fica presa; role 1d2."
+      ],
+      "examples": []
+    },
+    {
+      "id": "117-armaduras-e-acessorios-armaduras-e-acessorios",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Armaduras e acessórios",
+      "paragraphs": [
+        "Use estas regras junto de Itens, Combate e Fabricação e Reparo."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "118-armaduras-e-acessorios-montagem-de-armadura",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Montagem de Armadura",
+      "paragraphs": [
+        "Uma peça é formada por:",
+        "Tipo + Material + Modificações + Qualidade",
+        "Calcule:",
+        "PG da peça = PG do Tipo + PG do Material + modificadores",
+        "PL da peça = PL do Tipo + PL do Material + modificadores",
+        "Custo da Criação = Custo do Tipo + Custo do Material + Modificações",
+        "A Durabilidade Máxima é definida pelo Material."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "119-armaduras-e-acessorios-materiais",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Materiais",
+      "paragraphs": [
+        "Custos, PG, PL, Durabilidade e características dos materiais são definidos somente em",
+        "Balanceamento de Criação e Equipamentos. A aplicação regional de RD",
+        "permanece em Combate."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "120-armaduras-e-acessorios-tipos-de-armadura",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Tipos de Armadura",
+      "paragraphs": [
+        "O bônus de escudo só existe enquanto ele estiver empunhado e capaz de interceptar o ataque."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "121-armaduras-e-acessorios-bloqueio-com-escudo",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Bloqueio com Escudo",
+      "paragraphs": [
+        "Uma vez por rodada, depois de ser atingido por ataque físico:",
+        "Bloqueio não pode reduzir dano abaixo de 0."
+      ],
+      "bullets": [
+        "reduza o dano em PL do escudo + 2;",
+        "o escudo perde 1 Durabilidade;",
+        "contra Crítico, o escudo perde 2 Durabilidades."
+      ],
+      "examples": []
+    },
+    {
+      "id": "122-armaduras-e-acessorios-modificacoes-de-armadura",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Modificações de Armadura",
+      "paragraphs": [
+        "Uma peça só pode possuir uma das modificações Nobre ou Chamativa."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "123-armaduras-e-acessorios-acessorios",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Acessórios",
+      "paragraphs": [
+        "Acessórios não concedem PG, salvo quando a descrição declarar.",
+        "Eles recebem PL do Tipo e do Material."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "124-armaduras-e-acessorios-enganchadora",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Enganchadora",
+      "paragraphs": [
+        "Usar exige 1 ação e AGI + Pontaria contra:",
+        "Ao acertar criatura:"
+      ],
+      "bullets": [
+        "Proteção Geral de criatura;",
+        "CD 10 para superfície ampla;",
+        "CD 15 para ponto pequeno ou instável.",
+        "cause 2 de dano físico;",
+        "o cabo permanece preso;",
+        "escapar exige ação e FOR + Atletismo contra CD 12."
+      ],
+      "examples": []
+    },
+    {
+      "id": "125-armaduras-e-acessorios-enganchadora-a-vapor",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Enganchadora a Vapor",
+      "paragraphs": [
+        "Depois de fixar:",
+        "Falha Crítica faz a Enganchadora perder 1 Durabilidade."
+      ],
+      "bullets": [
+        "gaste 1 ação para puxar criatura de tamanho igual ou menor por até 3 quadrados;",
+        "ou mova-se até o ponto de ancoragem;",
+        "alvo pode resistir com FOR + Atletismo contra FOR + Arremesso do usuário."
+      ],
+      "examples": []
+    },
+    {
+      "id": "126-armaduras-e-acessorios-armadura-completa",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Armadura Completa",
+      "paragraphs": [
+        "Some o PG de todas as peças validamente equipadas.",
+        "PL e RD são registradas separadamente por região. Cada região aceita apenas uma peça de armadura; armaduras não se sobrepõem.",
+        "[Slots de acessórios]",
+        "Acessórios podem coexistir com armadura quando forem fisicamente compatíveis. Eles competem apenas com outro acessório do mesmo slot.",
+        "Um acessório que conceda PG ou PL soma normalmente o valor descrito. Consulte Implantes e Exocorpos para slots próprios."
+      ],
+      "bullets": [
+        "a PL reduz dano somente na região protegida;",
+        "a RD do Material só se aplica naquela região;",
+        "duas armaduras que disputem a mesma região não podem permanecer equipadas ao mesmo tempo;",
+        "use a menor LA entre as peças equipadas;",
+        "some a Carga."
+      ],
+      "examples": []
+    },
+    {
+      "id": "127-armaduras-e-acessorios-vestir-e-remover",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Armaduras e acessórios",
+      "category": "Itens & Ofício",
+      "title": "Vestir e Remover",
+      "paragraphs": [
+        "Armadura vestida incorretamente concede PL, mas não concede PG."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "128-precos-e-economia-estribos-economia-e-precos",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Preços e economia",
+      "category": "Itens & Ofício",
+      "title": "Estribos — Economia e Preços",
+      "paragraphs": [
+        "A moeda padrão é o Estribo (E$).",
+        "Pontos de Herança medem poder inicial; Estribos medem preço de mercado. Não existe conversão monetária direta, mas o PH-base coloca o item numa faixa econômica.",
+        "Use Balanceamento de Criação e Equipamentos para custos de criação, componentes e orçamento inicial.",
+        "[Conteúdo `#`]",
+        "Item ou material #:",
+        "Não use a tabela de PH para inventar automaticamente o preço de conteúdo #.",
+        "[Materiais por unidade]",
+        "Até três unidades iguais ocupam Carga 1. Consulte Fabricação e Reparo.",
+        "[Munição]",
+        "Granadas mantêm o preço derivado do próprio PH e são compradas individualmente.",
+        "[Compra e venda]",
+        "Um item novo de loja usa o preço padrão ou outro valor de sua faixa.",
+        "Vender item usado retorna normalmente:",
+        "50% do preço atual",
+        "Ajustes:",
+        "[Serviços]",
+        "[Custo de vida]"
+      ],
+      "bullets": [
+        "não aparece na loja inicial nem no construtor por PH;",
+        "aparece no glossário e no construtor livre;",
+        "mantém Custo da Criação #;",
+        "recebe preço em E$ digitado pelo jogador conforme instrução do Historiador.",
+        "Durabilidade atual abaixo da metade: 25%;",
+        "Sucata: valor das unidades recuperáveis;",
+        "procura alta ou negociação favorável: até 75%;",
+        "item roubado, proibido ou sem mercado: valor definido pela ficção."
+      ],
+      "examples": []
+    },
+    {
+      "id": "129-fabricacao-e-reparo-fabricacao-e-reparo",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Fabricação e reparo",
+      "paragraphs": [
+        "Este documento complementa Itens, Armas e Armaduras e Acessórios."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "130-fabricacao-e-reparo-oficios",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Ofícios",
+      "paragraphs": [
+        "Fabricação e Reparo exigem um Conhecimento apropriado.",
+        "Exemplos:",
+        "Sem Conhecimento apropriado, use Raciocínio com Desvantagem e aumente a CD em 5."
+      ],
+      "bullets": [
+        "Ferraria;",
+        "Armeiro;",
+        "Costura;",
+        "Carpintaria;",
+        "Mecânica;",
+        "Reparo;",
+        "Engenharia;",
+        "Alquimia;",
+        "Culinária;",
+        "Tecnomagia;",
+        "Galvanomagia."
+      ],
+      "examples": []
+    },
+    {
+      "id": "131-fabricacao-e-reparo-unidade-de-material",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Unidade de Material",
+      "paragraphs": [
+        "Uma unidade de Material é um lote concreto suficiente para sustentar um intervalo de fabricação. Até três unidades iguais ocupam Carga 1.",
+        "O Material Predominante deve ser compatível com o projeto. Componentes tecnológicos, Cinzas e substâncias alquímicas usam a quantidade declarada pelo projeto e podem substituir uma unidade quando a receita disser."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "132-fabricacao-e-reparo-projeto",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Projeto",
+      "paragraphs": [
+        "Todo projeto registra:"
+      ],
+      "bullets": [
+        "item final;",
+        "Custo da Criação total;",
+        "Material Predominante;",
+        "ferramentas exigidas;",
+        "CD;",
+        "Progressos necessários;",
+        "intervalo de trabalho;",
+        "Defeitos."
+      ],
+      "examples": []
+    },
+    {
+      "id": "133-fabricacao-e-reparo-complexidade",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Complexidade",
+      "paragraphs": [
+        "Modificações, materiais especiais e aumento de qualidade somam seus Custos da Criação ao item-base antes de definir a Complexidade."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "134-fabricacao-e-reparo-analise",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Análise",
+      "paragraphs": [
+        "Antes de fabricar, modificar ou desmontar um item desconhecido, realize:",
+        "INT + Ofício apropriado contra a CD do projeto",
+        "Defeitos permanecem ocultos até a fabricação começar ou até nova Análise bem-sucedida."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "135-fabricacao-e-reparo-fabricar",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Fabricar",
+      "paragraphs": [
+        "Em cada intervalo:",
+        "O item é concluído quando alcança os Progressos necessários."
+      ],
+      "bullets": [
+        "consuma 1 unidade de Material;",
+        "teste INT + Ofício apropriado contra a CD;",
+        "aplique o resultado;",
+        "registre o Progresso."
+      ],
+      "examples": []
+    },
+    {
+      "id": "136-fabricacao-e-reparo-defeitos",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Defeitos",
+      "paragraphs": [
+        "Para cada Defeito restante ao concluir, role 1d6.",
+        "Um item não pode possuir Durabilidade Máxima inferior a 1 por Defeitos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "137-fabricacao-e-reparo-eureka",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Eureka",
+      "paragraphs": [
+        "Depois de uma Análise, o usuário de Eureka! pode remover Defeitos descobertos.",
+        "Para cada Defeito removido, consuma unidades de Sucata iguais ao Custo da Criação do item, mínimo 1.",
+        "Defeitos removidos dessa forma não alteram o Progresso."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "138-fabricacao-e-reparo-trabalho-em-equipe",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Trabalho em Equipe",
+      "paragraphs": [
+        "Um artesão lidera o projeto.",
+        "Até três assistentes podem ajudar por intervalo.",
+        "Cada assistente testa INT + Ofício contra CD 12.",
+        "O modificador total de assistência varia de -3 a +3."
+      ],
+      "bullets": [
+        "Sucesso: +1 no teste do líder.",
+        "Sucesso Forte: +2 no teste do líder.",
+        "Falha Grave: -1 no teste do líder.",
+        "Falha Desastrosa: -2 e consome 1 Material adicional."
+      ],
+      "examples": []
+    },
+    {
+      "id": "139-fabricacao-e-reparo-reparar-durabilidade",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Reparar Durabilidade",
+      "paragraphs": [
+        "Cada tentativa exige:",
+        "Teste:",
+        "INT + Reparo ou Ofício contra 10 + Durabilidade perdida",
+        "Durabilidade não ultrapassa o máximo."
+      ],
+      "bullets": [
+        "1 hora por ponto restaurado;",
+        "1 unidade de Material compatível por ponto;",
+        "ferramentas apropriadas."
+      ],
+      "examples": []
+    },
+    {
+      "id": "140-fabricacao-e-reparo-recuperar-sucata",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Recuperar Sucata",
+      "paragraphs": [
+        "Desmontar um item exige 1 hora e ferramentas.",
+        "Teste INT + Ofício contra CD 10 + Custo da Criação.",
+        "Itens # possuem rendimento definido pelo Historiador."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "141-fabricacao-e-reparo-modificar-item",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Modificar Item",
+      "paragraphs": [
+        "Adicionar ou remover uma modificação é um projeto com Custo igual ao da modificação."
+      ],
+      "bullets": [
+        "O item não pode ser usado durante o trabalho.",
+        "Falha Desastrosa remove 1 Durabilidade Máxima do item-base.",
+        "Uma modificação removida com Sucesso pode ser reutilizada.",
+        "Uma modificação removida em Falha é destruída."
+      ],
+      "examples": []
+    },
+    {
+      "id": "142-fabricacao-e-reparo-aumentar-qualidade",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Aumentar Qualidade",
+      "paragraphs": [
+        "Aumentar Qualidade exige:",
+        "Falha Desastrosa reduz a Qualidade em um grau e cria 1 Defeito."
+      ],
+      "bullets": [
+        "item no grau imediatamente anterior;",
+        "oficina adequada;",
+        "unidades de material iguais aos Progressos da faixa correspondente ao acréscimo de PH da nova Qualidade;",
+        "projeto com CD definida pela nova Qualidade."
+      ],
+      "examples": []
+    },
+    {
+      "id": "143-fabricacao-e-reparo-reparos-corporais-kaltoch",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Fabricação e reparo",
+      "category": "Itens & Ofício",
+      "title": "Reparos Corporais Kaltoch",
+      "paragraphs": [
+        "Reparo aplicado a um Kaltoch mecânico utiliza as regras de tratamento corporal.",
+        "Peças compatíveis substituem materiais médicos."
+      ],
+      "bullets": [
+        "Reparo de PV: INT + Reparo, CD 12; Ação Completa; recupera 1d4 PV; uma vez por cena.",
+        "Estabilizar região: INT + Reparo, CD 12.",
+        "Estabilizar núcleo ou órgão mecânico: INT + Reparo, CD 15.",
+        "Remover Falha: usa o tempo de Recuperação Prolongada."
+      ],
+      "examples": []
+    },
+    {
+      "id": "144-implantes-e-exocorpos-implantes-e-exocorpos",
+      "part": "Parte V - Equipamentos, fabricação e economia",
+      "chapter": "Implantes e exocorpos",
+      "category": "Itens & Ofício",
+      "title": "Implantes e Exocorpos",
+      "paragraphs": [
+        "Use com Itens, Armaduras e Acessórios, Fabricação e Reparo e Balanceamento de Criação e Equipamentos.",
+        "[Implantes]",
+        "Implantes são equipamentos instalados no corpo. Eles não contam como armadura e não ocupam slots de acessórios, mas utilizam slots de implante.",
+        "#### Limite e slots",
+        "Um personagem suporta:",
+        "Limite de Implantes = 2 + VIG, mínimo 2",
+        "Cada implante consome 1 ponto desse limite, salvo indicação diferente.",
+        "Um implante deve indicar o slot. Próteses raciais ou partes corporais especiais podem alterar a disponibilidade com autorização do Historiador.",
+        "#### Instalação",
+        "Instalar ou remover exige ferramentas médicas ou mecânicas adequadas, 8 horas e:",
+        "INT + Medicina, Cirurgia, Mecânica ou Reparo",
+        "Remoção usa a mesma CD e não destrói o implante em sucesso. Uma remoção durante combate não é possível sem regra específica.",
+        "#### Implantes comuns",
+        "O custo de Arma Embutida soma 6 PH ao custo completo da arma integrada. Se qualquer componente for #, o implante também será #.",
+        "#### Dano e manutenção",
+        "Um implante perde Durabilidade quando:",
+        "Em Durabilidade 0, fica inativo e conta como Sucata instalada. Remover Sucata instalada usa a CD original +2.",
+        "Reparar segue Fabricação e Reparo. Implantes Delicados não podem ser reparados com ferramenta improvisada.",
+        "[Exocorpos]",
+        "Exocorpos são estruturas externas. Um personagem utiliza apenas um Exocorpo por vez.",
+        "Eles possuem slot próprio, podem coexistir com armadura e acessórios e não contam no Limite de Implantes.",
+        "#### Núcleo de energia",
+        "Cada Exocorpo possui Cargas de Núcleo.",
+        "#### Modelos",
+        "Bônus de PG de Exocorpo soma normalmente por ser equipamento validamente equipado. O Exocorpo não concede PL, salvo modelo específico.",
+        "#### Vestir e remover",
+        "#### Dano",
+        "Depois de o usuário sofrer um Crítico físico, ele pode transferir ao Exocorpo uma Falha corporal que seria causada pelo ataque. O Exocorpo perde 2 Durabilidades. Isso só pode ocorrer uma vez por cena.",
+        "Em Durabilidade 0, o Exocorpo fica inativo, perde todos os bônus e aumenta a Carga carregada pelo usuário em +2 até ser removido."
+      ],
+      "bullets": [
+        "a região instalada sofre mutilação;",
+        "uma Falha Crítica de instalação, reparo ou uso mandar;",
+        "um efeito tecnológico atingir explicitamente o implante.",
+        "ativar o Exocorpo para uma cena consome 1 Carga;",
+        "efeitos que consomem carga indicam custo adicional;",
+        "recarregar exige fonte adequada e 1 hora;",
+        "sem Cargas, apenas estrutura e Carga passiva funcionam;",
+        "Falha Crítica usando função energizada reduz a Durabilidade em 1."
+      ],
+      "examples": []
+    },
+    {
+      "id": "145-como-usar-habilidades-especiais-regras-arcanas-e",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Como usar habilidades especiais",
+      "category": "Poderes & Arcano",
+      "title": "Regras Arcanas Expandidas",
+      "paragraphs": [
+        "Este documento completa os procedimentos de mesa de Magia, Cinzas e Runas. Em caso de conflito com uma descrição específica, a descrição específica prevalece.",
+        "[Informações que devem ser anotadas]",
+        "Magias, Runas, Cinzas e Poderes seguem formato das habilidades. O conjunto de informações e",
+        "o comportamento do aplicativo são definidos somente naquela fonte.",
+        "[Procedimento arcano comum]",
+        "#### Ações",
+        "#### Efeitos sem oposição",
+        "Não há teste para afetar um alvo voluntário ou produzir um efeito utilitário sem oposição. Sob",
+        "pressão, faça um Teste Comum com POD e o Conhecimento",
+        "apropriado. Uma regra específica pode declarar outra CD.",
+        "#### Ataques e áreas",
+        "Arcano é o Conhecimento Básico de teoria, análise e identificação; não substitui uma Escola em conjuração. Magias usam 1d20 + POD + Escola Arcana. Cinzas usam 1d20 + POD + Controle, podendo substituir Controle pela Escola correspondente. Runas usam o bônus de POD + Rúnico registrado por quem as inscreveu. A Proteção padrão é Arcana; descrições podem indicar Geral, Mental ou Postura.",
+        "Em área, role uma vez e compare o total à Proteção de cada alvo. Role dano ou cura uma vez e aplique o mesmo resultado aos afetados.",
+        "#### Escala padrão",
+        "O Conhecimento entra no ataque, não no dano. Dano mágico ignora Proteção Local e não causa Falhas corporais, salvo quando a descrição declarar trauma físico. Se funcionar como ataque físico, usa as regras de dano, localização e Proteção Local de Combate.",
+        "#### Críticos",
+        "Em 20 natural, adicione o máximo de um dado principal ao dano ou aumente cura/quantidade numérica em 50%. Efeitos não numéricos recebem melhoria apropriada de alcance, duração ou intensidade.",
+        "#### Recuperação de Arcano",
+        "[Magias]",
+        "Cada Escola Arcana é um Conhecimento Arcano ligado a POD, limitado por POD. Cada ponto nela concede uma Magia daquela Escola e daquele nível. A Magia registra nome, nível, custo, ação, alcance, duração, alvo/área, Proteção e efeito. O custo é pago antes do teste, mesmo em falha.",
+        "#### Concentração",
+        "Um personagem sustenta uma Magia por vez. Ao sofrer dano, testa 1d20 + POD + Controle contra CD 10 ou metade do dano, o que for maior. Falha encerra o efeito. Conjurar outro efeito sustentado encerra o anterior.",
+        "#### Falha e instabilidade",
+        "Instabilidade pode causar custo adicional igual à metade do custo, metade do próprio dano, deslocamento da área, alteração breve de forma/duração ou atração de Manifestos Oníricos.",
+        "[Escolas Arcanas]",
+        "As Escolas abaixo ampliam as oito tradições já registradas. Sobreposições representam métodos diferentes: Piromancia controla fogo diretamente; Arqueomancia reproduz padrões antigos que podem incluir fogo; Sangromancia usa sangue como vínculo e preço.",
+        "Novas Escolas exigem aprovação do Historiador e devem ter domínio e limite igualmente claros.",
+        "[Cinzas]",
+        "Uma dose é a unidade de coleta e uso de Cinzas. Cada ativação ou receita consome a quantidade indicada.",
+        "Pureza altera o Efeito sem fixar dados ou bônus universais. Cinzas Brutas exigem 1d6 após o uso: 1 inverte ou volta o efeito; 2 causa 1 Exaustão; 3 cria complicação da origem; 4–6 não complica. Brutas Oníricas também causam 1d4 de perda de Sanidade no resultado 1.",
+        "#### Coleta",
+        "Até dez minutos após a manifestação, gaste 10 minutos e teste INT + Arcano ou a Escola correspondente: CD 10 em ambiente fechado limpo, 12 contaminado, 15 aberto/com vento e 18 em campo caótico. Efeitos 1–2 rendem 1 dose Bruta; 3–4 rendem 2; 5+ rendem 3. Cada manifestação só pode ser coletada uma vez.",
+        "#### Refinamento",
+        "[Runas]",
+        "Inscrever exige Rúnico — POD. Quem não possui o Conhecimento pode ativar uma Runa pronta. Toda composição declara Sigilo, Forma, Direção, Intensidade, Gatilho e Limite.",
+        "Os tempos da tabela são referências, não limites obrigatórios. Cada Runa registra livremente seu tempo de inscrição como valor inteiro em Minutos, Horas ou Dias. O inscritor paga todo o Arcano antes do teste; se não puder pagar, a inscrição é bloqueada sem alterar recursos. O teste é 1d20 + POD + Rúnico. Sucesso cria a Runa. Falha não cria a Runa e todo o Arcano pago é perdido. Natural 1 cria defeito oculto, decidido e registrado pelo Historiador. Natural 20 permite escolher metade do tempo, reduzir em 1 o Arcano pago ou obter uma utilização adicional.",
+        "Por padrão, Runas 1 têm um uso; Runas 2 têm três; Runas 3 são permanentes, mas só ativam uma vez por cena. A ativação não custa Arcano e independe do inscritor.",
+        "Ataques usam 1d20 + POD + Rúnico do inscritor, registrados no item. Identificar exige INT + Rúnico contra a CD original. Desativar sem disparar exige POD + Rúnico contra CD original +2; natural 1 ativa a Runa.",
+        "[Poderes Mágicos]",
+        "Poder é uma capacidade especial. Caminho e raça são duas fontes possíveis, mas não as únicas. Um Poder Mágico altera como o personagem aprende, canaliza, prepara, suporta ou utiliza efeitos arcanos; ele não precisa pertencer a um Caminho e não é necessariamente uma Magia completa.",
+        "#### Fontes de Poder",
+        "A mesma capacidade não se acumula consigo própria quando recebida de fontes diferentes. O jogador escolhe qual versão utiliza. Um item pode conter uma Magia ou Runa e conceder acesso a ela sem que o portador a tenha aprendido; nesse caso, o item define custo, cargas, teste e perda do acesso.",
+        "#### Aquisição por Conhecimento",
+        "Ao alcançar um novo nível em um Conhecimento, o personagem recebe normalmente os benefícios descritos por aquele Conhecimento. Quando houver um Poder associado ao nível, aprendê-lo exige uma justificativa ficcional: treinamento, pesquisa, mestre, fórmula, experiência relevante ou descoberta durante a campanha. Aumentar o número sozinho não faz surgir conhecimento secreto sem uma fonte.",
+        "#### Aquisição geral",
+        "#### Estrutura",
+        "Todo Poder Mágico registra nome, fonte, origem, pré-requisito, efeito, custo, ação, alcance, duração, limite, condição de perda e aprimoramento. Como qualquer Poder, ele gasta PE, PV, PS ou PD e nunca PM: passivos custam 0 PE e ativos custam no mínimo 1 PE, 1 PV, 1 PS ou 1 PD. Bônus recorrentes ficam em +1/+2; bônus fortes em +4/+5 exigem custo ou limite; rerrolagens custam normalmente 1–2 PE ou possuem limite de uma vez por cena. PD é opcional e reservado a Poderes divinos ou que manipulem sorte, Destino, probabilidades ou porcentagens.",
+        "[Catálogos relacionados]"
+      ],
+      "bullets": [
+        "conjurar uma Magia: 1 ação;",
+        "usar uma dose de Cinzas: 1 ação de Utilizar Item;",
+        "ativar uma Runa: 1 ação;",
+        "efeitos de nível 4+, rituais ou efeitos excepcionalmente amplos podem exigir Ação Completa.",
+        "8 horas de descanso seguro recuperam todo o PM;",
+        "uma vez entre descansos completos, 1 hora de repouso permite POD + Recuperação, CD 12;",
+        "sucesso recupera 1 + Recuperação PM, até o máximo;",
+        "Falha Crítica não recupera PM e causa 1 Exaustão.",
+        "falha comum em nível 1–2: perde PM e o efeito falha;",
+        "falha comum em nível 3+: o Historiador pode aplicar instabilidade menor;",
+        "natural 1: instabilidade obrigatória;",
+        "natural 1 em nível 4+: também causa +5% de Corrupção, se essa camada estiver ativa.",
+        "3 Brutas da mesma origem + 2 horas + INT + Arcano, CD 12 = 1 Refinada;",
+        "3 Refinadas da mesma origem + 8 horas + INT + Arcano, CD 16 = 1 Pura;",
+        "falha perde uma dose; natural 1 perde todas e manifesta uma complicação da origem.",
+        "um Poder aprendido não aumenta o valor do Conhecimento;",
+        "não ignora o limite do Conhecimento pelo Atributo principal;",
+        "pode exigir nível mínimo, ferramenta, material ou outro pré-requisito;",
+        "um mesmo aumento de nível não concede dois Poderes, salvo regra específica;",
+        "perder temporariamente acesso a uma ferramenta não apaga um Poder aprendido, apenas pode impedir seu uso;",
+        "Poder concedido por item não é considerado aprendido e se perde com o item.",
+        "pode ocupar um dos 2 Poderes iniciais do Caminho, mas não precisa fazê-lo se vier de outra fonte;",
+        "pode ser adquirido ou aprimorado por Marco de Caminho quando sua fonte for o Caminho;",
+        "deve registrar fonte e origem narrativa, além de pré-requisito quando interagir com Escola, Runas ou Cinzas;",
+        "não concede gratuitamente pontos de Escola nem ignora o limite do Conhecimento pelo Atributo;",
+        "não pode copiar integralmente outra Magia, raça ou Poder sem dizer explicitamente que concede acesso àquela capacidade.",
+        "Catálogo de Magias",
+        "Catálogo de Cinzas",
+        "Catálogo de Runas",
+        "Catálogo de Poderes Mágicos"
+      ],
+      "examples": []
+    },
+    {
+      "id": "146-magia-magia",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Magia",
+      "paragraphs": [
+        "\"Runa é pergunta escrita. Cinzas é pergunta já respondida por outra pessoa. Magia é você e o Onírico chegando a um acordo — e depois de fechado, esse acordo tem nome, e vale toda vez que você o invocar.\"",
+        "— Vlad Kisto, Diplomata Sonaris",
+        "Magia, no sentido estrito do termo em Nulvara, é a canalização direta de Energia Onírica através do corpo e da mente do praticante — sem o intermediário de um símbolo fixado, como nas Runas, e sem o amortecimento de um resíduo já parcialmente estabilizado, como nas Cinzas. É a forma mais imediata e mais pessoal de manipulação onírica disponível a um mortal.",
+        "Não existe \"magia genérica\" solta em Nulvara. Todo efeito arcano que um personagem consegue produzir por canalização direta é uma Magia — nomeada, descrita e registrada na ficha, obtida através do estudo de uma Escola Arcana específica. Não há improviso puro no momento do combate: o improviso aconteceu antes, quando o conhecimento foi conquistado."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "147-magia-informacoes-de-uma-magia",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Informações de uma Magia",
+      "paragraphs": [
+        "Magias seguem o formato das habilidades. Campos, valores",
+        "permitidos, custos, alcance e resistência são definidos somente naquela fonte."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "148-magia-natureza-da-magia",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Natureza da Magia",
+      "paragraphs": [
+        "Magia não é um efeito pré-embalado que o praticante ativa sem pensar. É algo aprendido de verdade — uma pergunta que o conjurador fez à Energia Onírica durante seu treinamento numa Escola específica, e que a energia aprendeu a reconhecer como pertencente a ele.",
+        "Isso torna a Magia a mais pessoal das três tradições. Uma Runa pode ser copiada por qualquer inscritor que conheça a composição. Cinzas podem ser compradas, vendidas, roubadas. Uma Magia não — ela existe porque aquele personagem, especificamente, dedicou tempo de estudo a uma Escola Arcana específica, e a energia responde a ele de um jeito que não responderia a outro conjurador com a mesma Magia no papel."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "149-magia-escolas-arcanas",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Escolas Arcanas",
+      "paragraphs": [
+        "O Conhecimento Básico Arcano representa teoria, análise e identificação geral. Ele não é usado para conjurar Magias. Cada Escola Arcana é um Conhecimento Arcano, categoria independente dos Conhecimentos Adquiridos, com temática e comportamento próprios. Um personagem pode investir pontos em quantas Escolas quiser, cada uma progredindo de forma completamente independente das demais, seguindo a mesma lógica de qualquer outro Conhecimento descrito em Combate (pode chegar ao nível 5; em testes, sua contribuição é limitada por POD conforme Testes e Dificuldades)."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "150-magia-ganhando-magias",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Ganhando Magias",
+      "paragraphs": [
+        "A forma padrão de obter uma Magia é subir o nível de um Conhecimento Arcano. Cada ponto investido numa Escola concede exatamente 1 Magia nova daquela Escola. Subir Piromancia de 0 para 1 concede uma Magia de nível 1; subir de 1 para 2 concede uma segunda Magia, de nível 2 — sem substituir ou perder a anterior. O repertório cresce por acúmulo.",
+        "O Historiador fornece a Magia correspondente ao novo nível alcançado. O jogador pode negociar com o Historiador que tipo de efeito seria apropriado para aquele ponto do Conhecimento — a palavra final sobre o resultado exato (dano, condição, alcance, Custo em PM) é do Historiador, mas a conversa é colaborativa, não uma imposição unilateral nem uma escolha livre do jogador.",
+        "[Cada Magia obtida precisa registrar]",
+        "Uma vez registrados, esses três elementos ficam fixos. A Magia pode ser conjurada sempre que o jogador quiser, sem renegociar nada."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "151-magia-limite-de-poder-por-nivel",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Limite de Poder por Nível",
+      "paragraphs": [
+        "Como o acesso a Magias está atrelado ao nível do Conhecimento, o próprio sistema de progressão funciona como trava de equilíbrio — não é necessário negociar poder contra custo do zero a cada vez. Como referência geral de escala:"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "152-magia-listas-de-referencia-por-escola",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Listas de Referência por Escola",
+      "paragraphs": [
+        "As Magias abaixo são sugestões de conteúdo pronto — nomes, temas, custos e escopos esperados para cada nível de cada Escola. Os custos seguem a tabela de Limite de Poder acima.",
+        "[Electromancia]",
+        "[Litomancia]",
+        "[Natureza]",
+        "[Piromancia]",
+        "[Aqueomancia]",
+        "[Necromancia]",
+        "[Cura]",
+        "[Oniromancia]"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "153-magia-teste-de-conjuracao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Teste de Conjuração",
+      "paragraphs": [
+        "Conjurar uma Magia é um Ataque, seguindo a estrutura descrita em Combate. A entrada \"Magia ofensiva\" da tabela de Conhecimentos por Tipo de Ataque em Combate refere-se exatamente a isso — cada Escola Arcana funciona como um Conhecimento próprio dentro dessa categoria.",
+        "1d20 + POD + [Escola relevante] vs. a Proteção do alvo (geralmente Proteção Arcana, mas Magias de Oniromancia ou Cura sociais/mentais podem usar Proteção de Postura ou Proteção Mental, conforme definido na descrição da magia)",
+        "O Custo em Pontos Arcanos é fixo, definido no momento em que a Magia foi obtida, e não varia por CD do alvo ou dificuldade da situação. A única variável em jogo no momento do teste é a Proteção de quem está sendo afetado.",
+        "O custo é pago no momento da conjuração, tenha o efeito acertado ou não."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "154-magia-falha-e-instabilidade",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Falha e Instabilidade",
+      "paragraphs": [
+        "Uma Magia já aprendida é mais estável que canalização improvisada — o conjurador sabe exatamente o que está pedindo, e a energia já reconhece o pedido. Mas isso não elimina o risco: só o reduz proporcionalmente ao nível da Magia.",
+        "Falha simples (resultado abaixo da Proteção do alvo, sem ser natural 1): a magia não produz o efeito pretendido contra aquele alvo específico. O canal foi aberto, o Arcano foi gasto, mas o efeito não superou a resistência do outro lado — equivalente a um golpe que não penetra a guarda. Não há distorção nem consequência adicional para Magias de nível 1 e 2.",
+        "Falha crítica ou Magias de nível alto (3+): quanto maior o nível da Magia, maior a quantidade de energia sendo canalizada de uma vez — e maior o risco quando algo sai errado. Para essas Magias, e para qualquer Falha Crítica (natural 1), considere:"
+      ],
+      "bullets": [
+        "Retorno de energia — o conjurador sofre parte do próprio efeito, ou perde PM adicional",
+        "Distorção momentânea — o efeito se manifesta com alcance, forma ou intensidade diferentes do descrito, só naquele lançamento",
+        "Atração — a instabilidade do canal atrai atenção indesejada de Manifestos Oníricos próximos, caso a cena permita",
+        "Exposição — em Falhas Críticas de Magias de nível 4+, considere pequeno ganho de Corrupção conforme as regras de Corrupção Divina, se a campanha usa esse sistema para conjuradores mortais expostos a picos de densidade onírica"
+      ],
+      "examples": []
+    },
+    {
+      "id": "155-magia-magia-como-uma-das-tres-vias",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Magia como Uma das Três Vias",
+      "paragraphs": [
+        "As três tradições de manipulação onírica em Nulvara não competem — ocupam nichos diferentes de necessidade, e a maioria dos praticantes sérios domina mais de uma:"
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "156-magia-multiclasse-arcana",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Multiclasse Arcana",
+      "paragraphs": [
+        "Nada impede um personagem de investir em múltiplas Escolas ao longo da campanha — um conjurador com Piromancia 2 e Cura 1 é perfeitamente viável, e reflete a forma como praticantes reais de magia em Nulvara frequentemente combinam domínios conforme a necessidade. Cada Escola progride de forma independente até o nível 5. Em testes, sua contribuição é limitada pelo valor base permanente de POD."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "157-magia-riscos-de-longo-prazo",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Riscos de Longo Prazo",
+      "paragraphs": [
+        "Conjuradores que lançam Magia com frequência e intensidade desenvolvem, ao longo do tempo, uma familiaridade com a Energia Onírica que os torna mais eficientes — e mais vulneráveis. Sintomas relatados em conjuradores veteranos incluem sonhos que parecem mais nítidos que a vigília, dificuldade crescente de distinguir memória de sonho, e — em casos extremos e mal documentados — início do processo de perda de essência descrito no Plano Onírico, mesmo sem que o conjurador jamais tenha visitado o plano fisicamente.",
+        "Praticantes de Necromancia e Oniromancia relatam esses sintomas com frequência desproporcionalmente maior que outras Escolas — a primeira por lidar diretamente com o limiar entre vida e morte, a segunda por tocar o Plano Onírico de forma mais direta que qualquer outro domínio."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "158-magia-procedimentos-completos-de-mesa",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Magia",
+      "category": "Poderes & Arcano",
+      "title": "Procedimentos completos de mesa",
+      "paragraphs": [
+        "Dano, críticos, concentração, recuperação de PM, efeitos em área e as Escolas expandidas seguem Regras Arcanas Expandidas. Consulte também o Catálogo de Magias e o Catálogo de Poderes Mágicos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "159-cinzas-cinzas",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Cinzas",
+      "paragraphs": [
+        "\"Toda magia deixa uma cicatriz. Nós apenas aprendemos a usar as cicatrizes.\"",
+        "— Idhara, Crias da Neblina, Marevon",
+        "Quando uma magia é lançada, algo sobra. Não metaforicamente — fisicamente. A Energia Onírica que alimenta qualquer ato arcano não desaparece completamente ao se manifestar no mundo material: parte dela se dissolve no ar como partículas finas, quase invisíveis a olho nu, que se depositam em superfícies próximas ao ponto de conjuração. Esse resíduo é o que os povos de Nulvara chamam de Cinzas.",
+        "A palavra é imprecisa por necessidade. O que sobra de uma magia de fogo tem cor e temperatura distintas do que sobra de uma magia de cura, que por sua vez nada tem a ver com o resíduo de um encantamento mental. Cinzas é o termo coletivo para uma família inteira de substâncias que compartilham apenas a origem: são o que a magia deixa para trás."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "160-cinzas-informacoes-de-uma-cinza",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Informações de uma Cinza",
+      "paragraphs": [
+        "Cinzas seguem o formato das habilidades. Fonte, Pureza,",
+        "unicidade, Dose, Carga, vínculo com inventário e migração são definidos somente naquela fonte."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "161-cinzas-formacao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Formação",
+      "paragraphs": [
+        "Cinzas se formam como subproduto direto de qualquer ato arcano. Toda magia lançada gera uma quantidade proporcional de resíduo — magias maiores geram mais, magias menores geram menos, e alguns tipos de conjuração geram proporções diferentes de Cinzas em relação à energia consumida.",
+        "O resíduo se deposita em superfícies próximas ao ponto de conjuração nos segundos seguintes ao lançamento. Em ambientes fechados, acumula-se nas paredes, no chão e em qualquer objeto presente. Em ambientes abertos, dispersa-se mais rapidamente, tornando a coleta mais difícil mas não impossível.",
+        "Locais onde magia é praticada com frequência ao longo de gerações desenvolvem uma camada permanente de Cinzas sedimentadas que altera sutilmente a aparência e textura das superfícies. Os Jardins de Cinzas em Marevon são o exemplo mais visível desse fenômeno em Nulvara — a coloração acinzentada do solo e as cores incomuns das plantas que ali crescem são resultado direto de séculos de acúmulo."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "162-cinzas-classificacao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Classificação",
+      "paragraphs": [
+        "As Cinzas são classificadas por dois critérios independentes: origem e pureza.",
+        "[Origem]",
+        "A origem de uma Cinza é determinada pelo tipo de magia que a gerou. Cinzas de origens diferentes têm propriedades distintas e usos distintos — misturá-las sem conhecimento adequado produz resultados imprevisíveis.",
+        "As origens mais comuns e reconhecidas em Nulvara:",
+        "Cinzas de origem Onírico são as mais raras — geradas apenas por magias diretamente conectadas ao Plano Onírico. As Crias da Neblina são as únicas que as produzem com consistência, o que explica parte do seu valor no mercado clandestino.",
+        "[Pureza]",
+        "A pureza de uma Cinza registra seu grau de processamento e estabilidade. O Efeito de cada entrada",
+        "define livremente sua potência; não existe escala numérica universal por Pureza. Cinzas recém-coletadas são sempre brutas — precisam ser processadas para atingir níveis superiores de pureza.",
+        "Cinzas Brutas — coletadas diretamente do ponto de conjuração, sem processamento. Funcionam para usos simples mas são instáveis e propensas a efeitos colaterais. Qualquer mago básico pode usá-las, mas com risco.",
+        "Cinzas Refinadas — passaram por processo de filtragem e concentração. Mais estáveis e menos propensas a efeitos indesejados; qualquer diferença de potência precisa estar escrita no Efeito da entrada. São o padrão para uso prático em poções e magias diretas.",
+        "Cinzas Puras — processo completo de refinamento, eliminando impurezas de outras origens que inevitavelmente contaminam coletas brutas. Extremamente estáveis e concentradas. Difíceis de produzir em quantidade.",
+        "[Carga e custo na criação]",
+        "A Pureza altera eficiência de Carga e custo de aquisição, mas não estabelece sozinha uma escala universal de potência. O Efeito de cada Cinza continua sendo a autoridade sobre sua manifestação."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "163-cinzas-usos",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Usos",
+      "paragraphs": [
+        "[Uso Direto]",
+        "As Cinzas podem ser consumidas diretamente para produzir efeitos mágicos simples — ataques, proteções momentâneas, pequenas manipulações elementais. Qualquer pessoa com Cinzas suficientes pode fazê-lo sem treinamento arcano formal, o que torna o uso direto o ponto de entrada mais comum para magia não-especializada em Nulvara.",
+        "O processo é simples: as Cinzas são ativadas por contato com intenção consciente — não é magia técnica, é magia bruta. O resultado corresponde à origem das Cinzas usadas. Cinzas de fogo produzem chamas. Cinzas de cura produzem regeneração momentânea. O resultado mecânico depende do Efeito registrado para aquela entrada e da quantidade de doses consumida.",
+        "[Poções]",
+        "O uso mais difundido das Cinzas em Nulvara. Cinzas Refinadas misturadas a solventes específicos produzem poções com efeitos estáveis e dosados. É a forma mais segura de magia acessível ao público geral — o risco foi absorvido pelo processo de produção, e o consumidor recebe apenas o efeito final.",
+        "Poções produzidas com Cinzas Brutas existem no mercado clandestino a preços menores. Funcionam — mas com margens de erro que produtores sérios consideram inaceitáveis.",
+        "[Runas]",
+        "Runas são uma tradição arcana independente. Elas não usam nem consomem Cinzas em sua inscrição, ativação ou falha. Cinzas continuam sendo empregadas em seus próprios efeitos diretos, poções e demais receitas que as mencionem explicitamente.",
+        "[Uso de Cinzas Brutas]",
+        "Cinzas não processadas contêm impurezas de outras origens que interferem no efeito pretendido. O resultado pode ser amplificação indesejada, efeito errado, ou nenhum efeito acompanhado de dano ao usuário. Em casos extremos, Cinzas Brutas de origem Onírica usadas sem preparo adequado podem causar episódios de dissociação, visões involuntárias ou perda temporária de Sanidade.",
+        "[Uso Excessivo]",
+        "Cinzas são resíduos de Energia Onírica — e Energia Onírica em excesso afeta a psique. Usuários que consomem grandes quantidades de Cinzas num período curto relatam dificuldade em distinguir o que é real do que é percepção alterada. Em casos documentados pelas Crias da Neblina de Essolhen, uso crônico e excessivo resultou em conexão involuntária com o Plano Onírico durante o sono — não como acesso, mas como exposição não controlada."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "164-cinzas-comercio",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Comércio",
+      "paragraphs": [
+        "As Cinzas circulam em Nulvara por canais que não aparecem em nenhum registro oficial de comércio. Não são ilegais na maioria das regiões — mas seu comércio aberto é mal visto pelas instituições que preferem que magia permaneça dentro de estruturas controladas.",
+        "Em Marevon, frascos de Cinzas Refinadas de origens comuns são vendidos discretamente em Ponte Alta e com menos discrição em Serpente do Mar. A qualidade é variável e os vendedores raramente conhecem a origem exata do que vendem.",
+        "Cinzas Puras de qualquer origem são raras o suficiente para nunca aparecerem em mercados abertos. Circulam entre magos, pesquisadores e compradores com recursos suficientes para pagar pelo processo completo de refinamento — e pela discrição de quem o realizou.",
+        "Cinzas de Fonte Onírico são em categoria própria: tecnicamente não ilegais, praticamente impossíveis de obter fora de Essolhen ou de contato direto com Crias da Neblina dispostas a vendê-las, o que é raro. Existem compradores em Caldera que pagam quantias consideráveis por amostras verificadas — sem perguntar para que servem."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "165-cinzas-procedimentos-completos-de-mesa",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Cinzas",
+      "category": "Poderes & Arcano",
+      "title": "Procedimentos completos de mesa",
+      "paragraphs": [
+        "Dose, Efeito por entrada, uso direto, risco, coleta e refinamento seguem Regras Arcanas Expandidas. Consulte o Catálogo de Cinzas."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "166-runas-runas",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Runas",
+      "paragraphs": [
+        "\"Toda runa é uma pergunta feita à Energia Onírica. Algumas perguntas ela responde. Outras, ela devolve — e você não gosta do que recebe de volta.\"",
+        "— Inscritor anônimo de Nulvara, manual de aprendiz",
+        "As Runas são um sistema de escrita mágica originário de Nulvara. Diferente de outras tradições arcanas — como as Cinzas — as Runas não convocam nem canalizam a Energia Onírica diretamente através do corpo do praticante. Elas a aprisionam em símbolos, deixando que a própria estrutura do desenho determine o que a energia fará quando finalmente for liberada.",
+        "Isso torna as Runas mais lentas e mais previsíveis que outras formas de magia — e é exatamente por isso que sobrevivem como tradição. Onde a manipulação direta de Energia Onírica exige mente treinada e presença constante, uma runa bem inscrita continua funcionando muito depois que quem a desenhou já se foi."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "167-runas-informacoes-de-uma-runa",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Informações de uma Runa",
+      "paragraphs": [
+        "Runas seguem o formato das habilidades. A semântica especial de",
+        "Execução para inscrição é definida somente naquela fonte."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "168-runas-natureza-das-runas",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Natureza das Runas",
+      "paragraphs": [
+        "Runas são, fundamentalmente, um ato de tradução. O inscritor não cria o efeito mágico — ele descreve o efeito em uma linguagem que a Energia Onírica reconhece, e a energia, seguindo sua natureza instável e responsiva, preenche a descrição da forma mais literal possível.",
+        "Essa literalidade é a maior virtude e o maior perigo do sistema. Uma runa mal desenhada não simplesmente falha: ela produz exatamente o que foi escrito, com toda a ambiguidade e todo o erro de composição inclusos. Inscritores experientes tratam runas com o mesmo cuidado que um pacto mágico merece — porque, na prática, é isso que são.",
+        "[Runas e Crença]",
+        "Runas ocupam um espaço estranho entre magia e religião. Muitas comunidades em Nulvara tratam o ato de inscrever como algo quase litúrgico — não porque a Energia Onírica exija fé para responder, mas porque a disciplina necessária para inscrever bem se parece, na prática, com devoção. Inscritores tradicionalistas argumentam que essa disciplina é a magia; inscritores mais pragmáticos discordam, e a tensão entre as duas escolas é uma fonte constante de debate entre os Rúnicos."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "169-runas-requisitos-de-inscricao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Requisitos de Inscrição",
+      "paragraphs": [
+        "Runas não exigem nem consomem Cinzas. A inscrição requer uma superfície ou objeto compatível, ferramentas adequadas ao suporte, tempo e o custo de Arcano indicado. Ferramentas e suporte só são consumidos quando uma descrição específica declarar isso.",
+        "O inscritor paga todo o custo em Arcano antes do teste. Se não possuir Arcano suficiente, a inscrição é bloqueada antes de alterar qualquer recurso. O Arcano pago é perdido mesmo quando o teste falha. Depois de criada, a Runa pode ser ativada sem novo custo de Arcano e funciona independentemente do estado, localização ou existência do inscritor."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "170-runas-componentes-da-composicao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Componentes da Composição",
+      "paragraphs": [
+        "Toda runa funcional é composta de quatro elementos obrigatórios. A ausência ou ambiguidade de qualquer um deles compromete o resultado — às vezes de forma sutil, às vezes de forma catastrófica.",
+        "[Direção]",
+        "Determina para onde o efeito da runa se projeta a partir do ponto de inscrição.",
+        "Combinações de setas indicam direções compostas — técnica avançada, raramente ensinada a iniciantes. A margem de erro em más interpretações aumenta rapidamente com a complexidade direcional.",
+        "[Intensidade]",
+        "Determina a magnitude com que o efeito se manifesta.",
+        "[Forma]",
+        "Determina a natureza física ou estrutural do efeito — se ele se manifesta como área, linha, ponto único, etc.",
+        "Formas adicionais existem mas são ensinadas apenas em níveis avançados de inscrição — cada escola de Rúnicos em Nulvara guarda parte de seu compêndio de formas como conhecimento proprietário.",
+        "[Sigilo]",
+        "O componente mais complexo: define qual domínio ou elemento está sendo invocado. Sigilos são representações estilizadas do próprio fenômeno que representam, e cada escola de inscritores em Nulvara mantém seu próprio compêndio.",
+        "Sigilos \"traduzidos\" incorretamente entre tradições diferentes são uma causa comum de acidentes entre inscritores que aprenderam em regiões distintas. O Sigilo deve ser semanticamente compatível com Forma, Direção, Intensidade, Gatilho e Limite; contradições entre componentes tornam a inscrição inválida ou imprevisível."
+      ],
+      "bullets": [
+        "→ Direita",
+        "← Esquerda",
+        "↑ Cima",
+        "↓ Baixo",
+        "↑ Forte — intensidade plena, próxima da origem bruta do efeito",
+        "↓ Fraco — intensidade reduzida, efeito diluído ou controlado",
+        "Traços cruzados (/ \\) → Área",
+        "Espiral com ondulações ascendentes → Fogo"
+      ],
+      "examples": []
+    },
+    {
+      "id": "171-runas-niveis-de-inscricao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Níveis de Inscrição",
+      "paragraphs": [
+        "A complexidade de uma runa determina sua dificuldade e o custo em Arcano pago antes do teste de inscrição.",
+        "O custo em Arcano é pago integralmente pelo inscritor antes do teste de inscrição. A ativação posterior é gratuita."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "172-runas-progressao-do-conhecimento-runico",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Progressão do Conhecimento Rúnico",
+      "paragraphs": [
+        "Rúnico é o único Conhecimento com uma progressão mecanicamente diferente. Ele progride do nível 0 ao 5: nível 0 representa apenas conhecer a existência da tradição e habilita seu aprendizado; o domínio começa no nível 1.",
+        "Receber um pacote ensina todas as inscrições que pertencem a ele. Nos níveis 3 e 5, o pacote é automático e adicional à recompensa de domínio; não é possível escolher uma Runa avulsa ou uma Magia no lugar da recompensa. Conhecimentos Arcanos especializados adquiridos dessa forma começam no nível 1, evoluem independentemente até o nível 5 e recebem suas próprias recompensas de domínio nos níveis 3 e 5."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "173-runas-conteudo-dos-pacotes-runicos",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Conteúdo dos Pacotes Rúnicos",
+      "paragraphs": [
+        "Cada pacote ensina integralmente quatro inscrições oficials. Uma inscrição pertence a apenas um pacote.",
+        "Os pacotes são aprendizados automáticos do Conhecimento Rúnico e não consomem sua recompensa de domínio. Outras inscrições são obtidas por regras, poderes, descobertas e Conhecimentos Arcanos especializados que as concedam explicitamente."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "174-runas-os-runicos",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Os Rúnicos",
+      "paragraphs": [
+        "Praticantes especializados na arte de inscrever são conhecidos como Rúnicos. Diferente de outros usuários de Energia Onírica, Rúnicos não precisam de conexão constante com o plano para exercer sua magia — uma vez inscrita, a runa opera de forma independente. Isso os torna particularmente valorizados em contextos onde presença mágica constante não é viável: expedições longas, fortificações, itens de comércio.",
+        "O custo dessa independência é o tempo e o preparo. Onde um usuário de Cinzas pode reagir a uma ameaça imediata, um Rúnico depende de antecipação. Uma runa não inscrita com antecedência não existe quando é necessária — e inscrever sob pressão aumenta a chance de errar a composição simbólica."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "175-runas-riscos-da-inscricao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Riscos da Inscrição",
+      "paragraphs": [
+        "O risco de uma inscrição vem da tradução imperfeita da intenção para os símbolos, não do material usado. Uma Runa malformada pode guardar um erro até sua ativação e passar por várias mãos antes de ser identificada.",
+        "Falhas comuns não criam a Runa. Um natural 1 pode criar um defeito oculto, decidido e registrado pelo Historiador. O Arcano já pago nunca é devolvido por uma falha."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "176-runas-procedimentos-completos-de-mesa",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Runas",
+      "category": "Poderes & Arcano",
+      "title": "Procedimentos completos de mesa",
+      "paragraphs": [
+        "CD, tempo, custo de Arcano, gatilhos, limites, ativação e desativação seguem Regras Arcanas Expandidas. Consulte Catálogo de Runas."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "177-corrupcao-divina-corrupcao-divina",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Corrupção divina",
+      "category": "Poderes & Arcano",
+      "title": "Corrupção Divina",
+      "paragraphs": [
+        "A Corrupção Divina mede a quantidade de energia divina que deformou corpo, mente ou essência de uma criatura mortal.",
+        "Não é punição moral. É consequência de exposição a uma densidade de Energia Onírica que um corpo mortal não foi feito para sustentar.",
+        "[Escala oficial]",
+        "Quando uma regra mandar receber Corrupção sem informar quantidade:",
+        "+5% de Corrupção",
+        "Uma fonte específica pode declarar outro valor. Corrupção nunca ultrapassa 100%.",
+        "[Exposição]",
+        "Exposição significativa pode vir de:",
+        "Contato narrativo breve não causa Corrupção automaticamente. A fonte deve declarar o ganho ou o Historiador deve avisar o risco antes da exposição voluntária.",
+        "[Ruptura em 100%]",
+        "Ao alcançar 100%:",
+        "[Resistência]",
+        "[Redução]",
+        "Descanso, cura comum e passagem do tempo não reduzem Corrupção.",
+        "Formas válidas incluem:",
+        "Toda redução deve informar a quantidade. Se um efeito disser apenas “purifica Corrupção”, reduza 5%.",
+        "[Relações]",
+        "Consulte Combate para o resumo, Regras Arcanas Expandidas para Falhas Críticas arcanas e Recuperação, Sanidade e Condições para Exaustão e Sanidade."
+      ],
+      "bullets": [
+        "contato direto e prolongado com uma divindade;",
+        "uso de poder explicitamente divino;",
+        "locais de densidade divina;",
+        "Falha Crítica em Magia de nível 4+ quando essa camada estiver ativa;",
+        "item, pacto ou ritual que declare ganho.",
+        "encerre efeitos arcanos ou divinos sustentados;",
+        "o personagem perde a capacidade de canalização voluntária;",
+        "o Historiador apresenta a manifestação física, mental ou onírica da crise;",
+        "Corrupção permanece em 100% até uma forma válida de redução;",
+        "a transformação permanente do personagem só ocorre com acordo da mesa ou regra específica.",
+        "Deuses são imunes à Corrupção de fontes de categoria igual ou inferior.",
+        "Avatares recebem metade do ganho, arredondado para cima, salvo fonte de sua própria patrona que declare imunidade.",
+        "Mortais, Semideuses e Deuses Menores não possuem resistência inata sem regra específica.",
+        "ritual específico;",
+        "intervenção divina;",
+        "local de purificação;",
+        "pacto ou resolução narrativa;",
+        "habilidade que declare quantidade reduzida."
+      ],
+      "examples": []
+    },
+    {
+      "id": "178-energia-onirica-energia-onirica",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Energia onírica",
+      "category": "Poderes & Arcano",
+      "title": "Energia onírica",
+      "paragraphs": [
+        "\"Por que não guardamos Energia Onírica em cofres. Respondo a vocês que já tentaram, e o cofre sonha agora.\"",
+        "— Idhara, Crias da Neblina",
+        "A Energia Onírica é o fundamento de tudo que existe no Plano Onírico — e, por extensão, de toda magia praticada em Nulvara. Não é um recurso que se possui. É uma condição que se atravessa, se canaliza ou, nos piores casos, se torna.",
+        "Não foi fabricada para ser estável. Tratar sua instabilidade como um simples defeito de projeto é perigoso: ela reage a qualquer tentativa de ser usada como recurso inerte."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "179-energia-onirica-natureza",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Energia onírica",
+      "category": "Poderes & Arcano",
+      "title": "Natureza",
+      "paragraphs": [
+        "A Energia Onírica é pura, ilimitada e constitutivamente instável. Sua instabilidade não é ausência de ordem — é a forma como uma dimensão viva, constituída pelos sonhos de toda criatura que já existiu, existe ou existirá, se comporta quando entra em contato com intenção externa.",
+        "Ela responde. Isso é o que a distingue de qualquer outra fonte de poder conhecida em Nulvara: não é canalizada como se canaliza água por um cano. É negociada, ainda que a negociação aconteça em frações de segundo e sem palavras.",
+        "[Consumo em vez de Falha]",
+        "Manipular Energia Onírica sem preparo adequado não resulta em uma magia que simplesmente não funciona. Resulta em consumo: a energia absorve o manipulador — memórias, identidade, medos — e o que sobra raramente é reconhecível como a pessoa que entrou no processo.",
+        "Esse é o motivo pelo qual sistemas indiretos de manipulação, como as Runas, sobrevivem como tradição preferida entre praticantes cautelosos. Uma runa aprisiona a energia em símbolos antes de liberá-la — o inscritor nunca precisa tocar a energia bruta diretamente, apenas descrevê-la com precisão suficiente para que ela preencha a descrição sozinha."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "180-energia-onirica-energia-onirica-como-terreno",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Energia onírica",
+      "category": "Poderes & Arcano",
+      "title": "Energia Onírica como Terreno",
+      "paragraphs": [
+        "Concentrações de Energia Onírica funcionam, na prática de mesa, como terreno perigoso. Isso é especialmente verdadeiro dentro do Plano Onírico, onde a energia não está diluída pela distância que normalmente a separa do mundo material — mas bolsões dela também existem no plano material, geralmente como cicatrizes de eventos onde muita magia foi lançada, muita gente sonhou o mesmo pesadelo ao mesmo tempo, ou onde o próprio tecido entre os planos ficou fino demais.",
+        "Personagens que atravessam essas concentrações sem proteção adequada podem sofrer confusão, perda temporária de memórias, ou a manifestação dos próprios medos como criaturas hostis — geralmente Manifestos Oníricos formados ali mesmo, no instante do contato."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "181-energia-onirica-formas-de-manipulacao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Energia onírica",
+      "category": "Poderes & Arcano",
+      "title": "Formas de Manipulação",
+      "paragraphs": [
+        "Três tradições em Nulvara lidam com a Energia Onírica de formas fundamentalmente diferentes, e a diferença entre elas é, em essência, uma diferença de quanto contato direto o praticante aceita ter com a energia bruta.",
+        "[Canalização Direta]",
+        "A forma mais arriscada e mais imediata. O praticante toca a energia sem intermediários — presença mental constante, resposta instantânea e exposição total ao risco de consumo. As Crias da Neblina são o povo com relação mais natural a essa forma de manipulação, pois sua biologia mantém uma conexão onírica constante.",
+        "[Aprisionamento em Símbolos]",
+        "O sistema de Runas. O inscritor não canaliza a energia — descreve o efeito numa linguagem que ela reconhece, e a estrutura do símbolo determina o que será feito quando a energia for liberada. Mais lento, mais previsível, e sobrevive como tradição justamente por isso.",
+        "[Resíduo Coletado]",
+        "O sistema de Cinzas. Toda vez que magia é lançada, parte da Energia Onírica que a alimentou não se manifesta completamente — dissolve-se como resíduo que se deposita em superfícies próximas ao ponto de conjuração. Cinzas são, tecnicamente, Energia Onírica já gasta e parcialmente estabilizada — o que as torna mais seguras de manusear que a fonte bruta, mas nunca completamente inertes."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "182-energia-onirica-densidade-divina",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Energia onírica",
+      "category": "Poderes & Arcano",
+      "title": "Densidade Divina",
+      "paragraphs": [
+        "Em concentrações extremas, a Energia Onírica se torna o que estudiosos chamam de densidade divina. Nessa concentração, ela não é mais apenas perigosa para mortais: é estruturalmente incompatível com consciências que não aprenderam a suportá-la, causando o fenômeno conhecido como Corrupção Divina."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "183-energia-onirica-cadeia-onirica",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Energia onírica",
+      "category": "Poderes & Arcano",
+      "title": "Cadeia Onírica",
+      "paragraphs": [
+        "Sonho/consciência → Energia Onírica → manipulação mágica → Magias, Runas ou resíduos de Cinzas",
+        "Em densidade elevada:",
+        "Energia Onírica → Matéria Onírica / Manifestos / Corrupção Divina",
+        "Procedimentos de uso em mesa: Regras Arcanas Expandidas."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "184-materia-onirica-materia-onirica",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Matéria onírica",
+      "category": "Poderes & Arcano",
+      "title": "Matéria onírica",
+      "paragraphs": [
+        "\"Perguntei ao mercador o que ele estava vendendo. Ele disse que não sabia mais — a caixa tinha virado outra coisa três vezes desde que ele entrou no Plano.\"",
+        "— Relato de expedição, arquivo incompleto de Susselvam",
+        "A Matéria Onírica é a substância física do Plano Onírico — se \"física\" é a palavra correta para algo que muda de forma ao ser observado. Onde a Energia Onírica é o fundamento invisível de tudo que existe no plano, a Matéria Onírica é sua expressão tangível: o que se pisa, o que se toca, o que eventualmente se torna outra coisa sem aviso."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "185-materia-onirica-composicao",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Matéria onírica",
+      "category": "Poderes & Arcano",
+      "title": "Composição",
+      "paragraphs": [
+        "A Matéria Onírica é fluida e maleável, combinação de Energia Onírica pura e fragmentos de matéria comum que foram absorvidos pelo plano ao longo de eras. Não é uma substância única — é um processo contínuo de incorporação, onde tudo que cruza a fronteira entre o material e o onírico com tempo suficiente de exposição eventualmente se dissolve nela.",
+        "Isso inclui objetos. Inclui, em casos extremos e bem documentados, pessoas."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "186-materia-onirica-comportamento-adaptativo",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Matéria onírica",
+      "category": "Poderes & Arcano",
+      "title": "Comportamento Adaptativo",
+      "paragraphs": [
+        "A característica definidora da Matéria Onírica é sua fidelidade à psique de quem está por perto. Ela se molda segundo medos, desejos e pensamentos — não como metáfora poética, mas como mecanismo funcional do plano. A maioria dos visitantes acha essa fidelidade perturbadora precisamente porque ela não filtra nem interpreta: reflete.",
+        "O mesmo local pode ser um jardim sereno sob uma mente em paz e um labirinto de pesadelos sob uma mente em colapso — e a transição entre os dois estados pode levar segundos. Não há aviso prévio confiável, porque o próprio conceito de aviso prévio pressupõe uma ordem que a Matéria Onírica não está obrigada a seguir.",
+        "[Densidade e Visões Autônomas]",
+        "Em regiões onde a Matéria Onírica se concentra além do normal, ela pode gerar projeções que não pertencem a nenhum sonhador específico — visões autônomas formadas pelo acúmulo de sonhos antigos que se dissolveram no plano ao longo de eras. O Deserto dos Sonhos Perdidos é o exemplo mais conhecido desse fenômeno em densidade extrema, onde tempestades inteiras se formam a partir dessa matéria concentrada."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "187-materia-onirica-visual-e-textura",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Matéria onírica",
+      "category": "Poderes & Arcano",
+      "title": "Visual e Textura",
+      "paragraphs": [
+        "Cores sem nome em nenhuma língua conhecida. Formas que contradizem a geometria sem parecerem erradas — apenas impossíveis. A Matéria Onírica não obedece continuidade: rios de luz líquida fluem para cima, montanhas flutuam em silêncio absoluto, e o chão sob os pés de um visitante pode não ser, tecnicamente, chão.",
+        "Tempestades de Matéria Onírica condensada — feitas do que estudiosos descrevem como pensamentos cristalizados — varrem regiões inteiras do Plano Onírico, deixando os sobreviventes levemente diferentes do que eram antes de entrar. O que muda varia: às vezes é um detalhe físico, às vezes é algo que só os companheiros de viagem percebem."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "188-materia-onirica-manipulacao-e-exposicao-prolonga",
+      "part": "Parte VI - Poderes e artes arcanas",
+      "chapter": "Matéria onírica",
+      "category": "Poderes & Arcano",
+      "title": "Manipulação e Exposição Prolongada",
+      "paragraphs": [
+        "Diferente da Energia Onírica, que exige treinamento significativo mesmo para contato superficial seguro, a Matéria Onírica pode ser moldada com relativa facilidade por quem se expõe a ela por tempo suficiente. Habitantes nativos do Plano Onírico costumam desenvolver essa capacidade com treinamento mínimo, como consequência de viverem imersos no plano.",
+        "Esse benefício tem preço. A fronteira entre adaptar-se ao plano e ser consumido por ele é tênue, e cruzá-la sem perceber é a forma mais comum de se perder no Plano Onírico — processo onde a distinção entre o que era o ser e o que é a própria Matéria Onírica ao redor começa a se dissolver, memórias primeiro, identidade depois."
+      ],
+      "bullets": [],
+      "examples": []
+    },
+    {
+      "id": "189-tamanho-viagem-e-montarias-tamanho-viagem-e-mont",
+      "part": "Parte IX - Viagens e montarias",
+      "chapter": "Tamanho, viagem e montarias",
+      "category": "Viagem",
+      "title": "Tamanho, Viagem e Montarias",
+      "paragraphs": [
+        "Use com Combate, Inventário e Carga, Itens e Balanceamento de Criação e Equipamentos.",
+        "[Categorias de tamanho]",
+        "Carga Máxima nunca fica abaixo de 1 por causa do Tamanho.",
+        "#### Diferença de tamanho",
+        "Para cada categoria de diferença, até o máximo de 2 categorias:",
+        "Anti-Pessoal e Anti-Cavalaria mantêm os efeitos definidos em Itens. Um alvo montado conta como montado independentemente do tamanho da montaria.",
+        "[Viagem]",
+        "#### Ritmos",
+        "Terreno difícil reduz a distância pela metade. Terreno extremo reduz para um quarto. Estradas adequadas ignoram a primeira redução causada por terreno comum.",
+        "#### Jornada segura",
+        "Uma criatura pode viajar por 8 horas entre descansos completos sem teste de Exaustão.",
+        "Depois desse limite, faça um teste ao fim de cada bloco adicional de 2 horas:",
+        "VIG + Tolerância contra CD 12 + 2 por teste anterior na mesma jornada",
+        "Botas de Viagem aumentam a jornada segura do usuário para 10 horas. O benefício não se acumula com outro par.",
+        "Sobrecarga impõe Desvantagem nesses testes. Uma criatura Imóvel não pode viajar carregando a própria carga.",
+        "#### Pausas e descanso",
+        "[Montarias]",
+        "#### Aquisição",
+        "Carga adicional já considera sela e capacidade de transporte. Cavaleiro e equipamento carregado consomem essa capacidade.",
+        "#### Fichas básicas",
+        "Ataques de montaria usam 1d20 + atributo indicado + 2. Uma ficha específica pode substituir os valores básicos.",
+        "#### Jornada montada",
+        "Uma montaria viaja com segurança por 10 horas. Depois disso, testa VIG + Tolerância usando seu VIG e bônus treinado +2, conforme a regra de jornada.",
+        "#### Controle e iniciativa",
+        "Uma montaria treinada e seu cavaleiro compartilham a iniciativa e o total de 2 ações do turno.",
+        "Sob perigo excepcional, controlar exige:",
+        "AGI + Montaria ou CAR + Domesticação",
+        "Falha impede a ação pretendida. Falha Grave move a montaria 1 ação em direção segura escolhida pelo Historiador. Falha Desastrosa também derruba o cavaleiro.",
+        "Uma montaria sem cavaleiro age em iniciativa própria conforme o Historiador.",
+        "#### Alvos e queda",
+        "Ataques comuns escolhem cavaleiro ou montaria. Ataques em área podem afetar ambos.",
+        "Quando a montaria cair, for empurrada ou sofrer um Crítico de arma Anti-Cavalaria, o cavaleiro testa:",
+        "AGI + Reflexos, CD 12",
+        "Em sucesso, desmonta em pé numa posição adjacente. Em falha, fica Caído e sofre 1d6 de dano de impacto.",
+        "#### Investida",
+        "Se a montaria mover pelo menos 10 m em linha reta antes de um ataque corpo a corpo do cavaleiro:"
+      ],
+      "bullets": [
+        "a criatura maior recebe +2 em testes de FOR ou VIG para agarrar, empurrar, puxar, carregar ou resistir a essas ações;",
+        "a criatura menor recebe +2 em testes de AGI para escapar de um agarrão ou atravessar espaço ocupado;",
+        "uma criatura não pode montar outra de tamanho igual ou menor;",
+        "puxar à força uma criatura duas categorias maior exige efeito específico ou vantagem ficcional excepcional.",
+        "uma pausa de 1 hora permite usar Respire, mas não reinicia a jornada segura;",
+        "um descanso seguro de 8 horas reinicia a jornada;",
+        "alimento ou água insuficientes causam +1 Exaustão ao fim do dia;",
+        "ambiente extremo pode aumentar a CD em 2 ou 4.",
+        "cavaleiros não fazem teste pelo esforço da marcha enquanto estiverem montados;",
+        "o cavaleiro ainda sofre efeitos de fome, sede, clima e privação de sono;",
+        "montaria Sobrecarregada recebe Desvantagem;",
+        "montaria Imóvel não pode carregar o cavaleiro.",
+        "mover usando o deslocamento da montaria custa 1 ação;",
+        "ordenar um ataque da montaria custa 1 ação;",
+        "montar ou desmontar custa 1 ação;",
+        "o cavaleiro pode atacar normalmente enquanto montado;",
+        "uma Ação Completa consome as duas ações compartilhadas.",
+        "o ataque recebe +2 de dano;",
+        "até o início do próximo turno, ataques Anti-Cavalaria contra o conjunto ativam sua característica;",
+        "uma criatura só recebe o bônus de uma Investida por rodada."
+      ],
+      "examples": []
+    }
+  ]
+}

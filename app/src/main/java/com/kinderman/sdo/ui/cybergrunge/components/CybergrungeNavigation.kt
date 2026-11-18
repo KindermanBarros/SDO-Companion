@@ -127,11 +127,11 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Text(
-                    item.label.uppercase(),
+                AdaptiveSingleLineText(
+                    text = item.label.uppercase(),
                     color = if (item.selected) accent else MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = 0.sp),
-                    textAlign = TextAlign.Center,
+                    minimumSize = 6.sp,
                 )
             }
         }

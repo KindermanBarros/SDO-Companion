@@ -75,8 +75,10 @@ internal fun IdentitySection(
             }
         }
         CollaborativeSheetField("identity/name", "Nome", character.name, enabled = enabled) { onChange(character.copy(name = it)) }
-        Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = MaterialTheme.colorScheme.onSurface)
-        Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
+            Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
+            Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelSmall)
+        }
         AddButton("Selecionar raça, sub-raça e poderes", enabled) { selectingRace = true }
         CollaborativeSheetField("identity/occupation", "Ocupação", character.occupation, enabled = enabled) { onChange(character.copy(occupation = it)) }
         IntegerField("Dinheiro", character.money, enabled) { value ->
@@ -89,13 +91,17 @@ internal fun IdentitySection(
         ChoiceField("Gênero", character.sex.takeIf { it in listOf("Masculino", "Feminino", "N/A") } ?: "N/A", listOf("Masculino", "Feminino", "N/A"), enabled) {
             onChange(character.copy(sex = it))
         }
-        if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                SdoIconButton(onClick = { onChange(character.copy(level = (character.level - 1).coerceAtLeast(1))) }, enabled = enabled && character.level > 1) {
-                    Icon(Icons.Default.Remove, "Diminuir nível")
-                }
-                Text("NÍVEL ${character.level}", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp))
-                SdoIconButton(onClick = { selectingLevel = true }, enabled = enabled) { Icon(Icons.Default.Add, "Aumentar nível") }
+        if (character.isInCreation) Text("NÍVEL 1", color = MaterialTheme.colorScheme.primary) else Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SdoIconButton(onClick = { onChange(character.copy(level = (character.level - 1).coerceAtLeast(1))) }, enabled = enabled && character.level > 1) {
+                Icon(Icons.Default.Remove, "Diminuir nível")
             }
+            Text("NÍVEL ${character.level}", color = MaterialTheme.colorScheme.primary)
+            SdoIconButton(onClick = { selectingLevel = true }, enabled = enabled) { Icon(Icons.Default.Add, "Aumentar nível") }
+        }
     }
     if (selectingRace) RacePickerDialog(character, { selectingRace = false }) { race, subRace, attribute, basePowers, subRacePower ->
         onChange(character.withRaceSelection(race, subRace, attribute, basePowers, subRacePower))

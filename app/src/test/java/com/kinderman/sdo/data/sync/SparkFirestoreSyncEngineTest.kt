@@ -368,7 +368,7 @@ class SparkFirestoreSyncEngineTest {
 
         override fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent> = flowOf()
 
-        override suspend fun fetchAccessibleSheetIds(uid: String, ownedActiveCampaignIds: Set<String>): Set<String> =
+        override suspend fun fetchAccessibleSheetIds(uid: String, ownedActiveCampaignIds: Set<String>, isAdmin: Boolean): Set<String> =
             roots.entries.filter { (_, data) ->
                 data["ownerId"] == uid || (data["campaignId"] in ownedActiveCampaignIds)
             }.mapTo(linkedSetOf()) { it.key }
@@ -413,7 +413,7 @@ class SparkFirestoreSyncEngineTest {
             return flowOf(active)
         }
 
-        override fun observeRemoteChanges(uid: String, ownedActiveCampaignIds: Set<String>): Flow<RemoteSyncEvent> =
+        override fun observeRemoteChanges(uid: String, ownedActiveCampaignIds: Set<String>, isAdmin: Boolean): Flow<RemoteSyncEvent> =
             flowOf()
     }
 

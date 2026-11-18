@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Home
@@ -72,7 +73,7 @@ import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoTextButton
 import kotlinx.coroutines.delay
 
-private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, JOURNAL, SETTINGS }
+private enum class AppSurface { DASHBOARD, SHEET, SESSION, HISTORIAN, JOURNAL, LIBRARY, SETTINGS }
 
 @Composable
 fun SdoApp(
@@ -282,6 +283,7 @@ fun SdoApp(
                     add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
                     if (canOpenHistorian) add(SdoNavigationItem("Mestre", surface == AppSurface.HISTORIAN, Icons.Default.Visibility) { navigate(AppSurface.HISTORIAN) })
                     add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
+                    add(SdoNavigationItem("Biblioteca", surface == AppSurface.LIBRARY, Icons.AutoMirrored.Filled.MenuBook) { navigate(AppSurface.LIBRARY) })
                 })
                 Column(Modifier.weight(1f).fillMaxSize()) {
                 Row(
@@ -365,7 +367,7 @@ fun SdoApp(
                     },
                     session = appSession,
                     catalog = catalog,
-                    readOnly = archived || sheetReadOnlyOffline,
+                    readOnly = (archived && appSession?.isAdmin != true) || sheetReadOnlyOffline,
                     isCampaignHistorian = isCampaignHistorian,
                     isCampaignResponsible = isCampaignResponsible,
                     snackbarHost = { SnackbarHost(snackbar) },
@@ -403,7 +405,7 @@ fun SdoApp(
                     characters = characters,
                     selectedId = selectedId,
                     compact = preferences.density == SdoContentDensity.COMPACT,
-                    readOnly = archived || sheetReadOnlyOffline,
+                    readOnly = (archived && appSession?.isAdmin != true) || sheetReadOnlyOffline,
                     onSelect = { navigate(AppSurface.SESSION, it) },
                     onOpenSheet = {
                         navigate(AppSurface.SHEET, it)
@@ -489,6 +491,19 @@ fun SdoApp(
                     onConfirmDiscard = journalViewModel::confirmDiscard,
                 )
 
+                AppSurface.LIBRARY -> {
+                    val audit by appViewModel.audit.collectAsStateWithLifecycle()
+                    val campaignLibrary by appViewModel.library.collectAsStateWithLifecycle()
+                    com.kinderman.sdo.presentation.library.LibraryScreen(
+                        campaigns = campaigns,
+                        characters = characters,
+                        catalog = catalog,
+                        campaignLibrary = campaignLibrary,
+                        audit = audit,
+                        onBack = { goBack() },
+                    )
+                }
+
                 AppSurface.SETTINGS -> SettingsScreen(
                     preferences = preferences,
                     onPreferencesChange = onPreferencesChange,
@@ -526,6 +541,7 @@ fun SdoApp(
                     add(SdoNavigationItem("Sessão", surface == AppSurface.SESSION, Icons.Default.PlayCircle) { navigate(AppSurface.SESSION, null) })
                     if (canOpenHistorian) add(SdoNavigationItem("Mestre", surface == AppSurface.HISTORIAN, Icons.Default.Visibility) { navigate(AppSurface.HISTORIAN) })
                     add(SdoNavigationItem("Ajustes", surface == AppSurface.SETTINGS, Icons.Default.Settings) { navigate(AppSurface.SETTINGS) })
+                    add(SdoNavigationItem("Biblioteca", surface == AppSurface.LIBRARY, Icons.AutoMirrored.Filled.MenuBook) { navigate(AppSurface.LIBRARY) })
                 })
             }
             }

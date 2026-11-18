@@ -145,6 +145,8 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
         remote.conditionInstances to remote.conditions) { values -> "${values.first.size} conditions" }
     changed("activeModifiers", "Modificadores ativos", local.activeModifiers, remote.activeModifiers) { "${it.size} modificador(es)" }
     changed("story", "História", local.story, remote.story, ::textSummary)
+    changed("transports", "Transporte", local.transports, remote.transports) { values -> namedListSummary(values) { it.name } }
+    changed("familiars", "Familiares", local.familiars, remote.familiars) { values -> namedListSummary(values) { it.name } }
     changed("personalNotes", "Anotações", local.personalNotes, remote.personalNotes) { values -> namedListSummary(values) { it.title } }
     changed("lock", "Bloqueio da ficha", local.lockSnapshot(), remote.lockSnapshot(), ::lockSummary)
 }
@@ -229,6 +231,8 @@ fun mergeCharacterConflict(
         activeModifiers = selected("activeModifiers", local.activeModifiers, remote.activeModifiers),
         story = selected("story", local.story, remote.story),
         notes = remote.notes,
+        transports = selected("transports", local.transports, remote.transports),
+        familiars = selected("familiars", local.familiars, remote.familiars),
         personalNotes = selected("personalNotes", local.personalNotes, remote.personalNotes),
         lockType = lock.type,
         lockedBy = lock.by,
