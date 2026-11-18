@@ -75,6 +75,16 @@
       "collectionGroup": "media",
       "fieldPath": "dataUri",
       "indexes": []
+    },
+    {
+      "collectionGroup": "fields",
+      "fieldPath": "value",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "fields",
+      "fieldPath": "updatedAt",
+      "indexes": []
     }
   ]
 }

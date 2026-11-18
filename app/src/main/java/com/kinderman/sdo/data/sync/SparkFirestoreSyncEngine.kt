@@ -1140,6 +1140,7 @@ class SparkFirestoreSyncEngine(
                 existingRevisions = workingState.fieldRevisions,
                 sheetRevision = workingState.sheetRevision,
                 updatedAt = now,
+                skipDefaultFieldsOnCreate = true,
             )
 
             if (batches.isNotEmpty()) {
@@ -2503,16 +2504,17 @@ class SparkFirestoreSyncEngine(
 
     private suspend fun refreshDiscoveredSheet(accountId: String, sheetId: String) {
         val existing = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot()
+        var prefetchedHead: SparkSheetHead? = null
         if (existing != null && LAST_OPERATION_MARKER in existing.fieldRevisions) {
-            val head = remoteGateway.fetchSheetHead(sheetId)
-            if (head != null && existing.sheetRevision == head.rootRevision &&
-                existing.sheetDeleted == head.deleted &&
-                existing.fieldRevisions[LAST_OPERATION_MARKER] == head.latestOperationAtMs
+            prefetchedHead = remoteGateway.fetchSheetHead(sheetId)
+            if (prefetchedHead != null && existing.sheetRevision == prefetchedHead.rootRevision &&
+                existing.sheetDeleted == prefetchedHead.deleted &&
+                existing.fieldRevisions[LAST_OPERATION_MARKER] == prefetchedHead.latestOperationAtMs
             ) {
                 return
             }
         }
-        refreshSheetFromRemote(accountId, sheetId)
+        refreshSheetFromRemote(accountId, sheetId, prefetchedHead)
     }
 
     /**
@@ -2520,9 +2522,13 @@ class SparkFirestoreSyncEngine(
      * Returns null when the sheet no longer exists remotely. Throws if [accountId] is not the
      * signed-in account.
      */
-    private suspend fun fetchRemoteSnapshot(accountId: String, sheetId: String): AccountSheetSnapshot? {
+    private suspend fun fetchRemoteSnapshot(
+        accountId: String,
+        sheetId: String,
+        prefetchedHead: SparkSheetHead? = null,
+    ): AccountSheetSnapshot? {
         check(isAccountCurrent(accountId)) { "A conta ativa mudou durante a sincronização." }
-        val head = remoteGateway.fetchSheetHead(sheetId)
+        val head = prefetchedHead ?: remoteGateway.fetchSheetHead(sheetId)
         val docs = remoteGateway.fetchSheetDocuments(sheetId) ?: return null
 
         val existing = localStore.getAccountSheet(accountId, sheetId)
@@ -2561,9 +2567,13 @@ class SparkFirestoreSyncEngine(
         )
     }
 
-    suspend fun refreshSheetFromRemote(accountId: String, sheetId: String): Boolean {
+    suspend fun refreshSheetFromRemote(
+        accountId: String,
+        sheetId: String,
+        prefetchedHead: SparkSheetHead? = null,
+    ): Boolean {
         if (!isAccountCurrent(accountId)) return false
-        val snapshot = fetchRemoteSnapshot(accountId, sheetId)
+        val snapshot = fetchRemoteSnapshot(accountId, sheetId, prefetchedHead)
         if (snapshot == null) {
             localStore.withTransaction {
                 val hasPending = localStore.listIntentsForSheet(accountId, sheetId)
