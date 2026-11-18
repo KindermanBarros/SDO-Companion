@@ -370,7 +370,7 @@ class SparkFirestoreSyncEngineTest {
 
         override suspend fun fetchAccessibleSheetIds(uid: String, ownedActiveCampaignIds: Set<String>, isAdmin: Boolean): Set<String> =
             roots.entries.filter { (_, data) ->
-                data["ownerId"] == uid || (data["campaignId"] in ownedActiveCampaignIds)
+                isAdmin || data["ownerId"] == uid || (data["campaignId"] in ownedActiveCampaignIds)
             }.mapTo(linkedSetOf()) { it.key }
 
         override suspend fun writeMediaAvatar(sheetId: String, mediaDoc: Map<String, Any?>) {

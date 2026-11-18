@@ -504,7 +504,9 @@ class FirestoreSparkRemoteGateway(
         val store = firestoreProvider()
         val characters = store.collection(FirestoreCollections.CHARACTERS)
         if (isAdmin) {
-            return runCatching { pagedSheetIds(characters) }.getOrDefault(emptySet())
+            // Never swallow listing failures here: an empty result would make sync() purge every
+            // clean local sheet as "no longer accessible". Let the caller report the failure.
+            return pagedSheetIds(characters)
         }
         val campaigns = store.collection(FirestoreCollections.CAMPAIGNS)
         val remoteOwnedCampaignIds = runCatching {
@@ -683,7 +685,7 @@ class FirestoreSparkRemoteGateway(
 
         val characters = store.collection(FirestoreCollections.CHARACTERS)
         if (isAdmin) {
-            listenCharactersQuery(characters)
+            listenCharactersQuery(characters.orderBy("updatedAt", Query.Direction.DESCENDING))
         } else {
             // Strict Spark v2 ACL: listen ONLY to own sheets + active campaigns owned as GM.
             listenCharactersQuery(characters.whereEqualTo("ownerId", uid))
@@ -3838,6 +3840,8 @@ private fun applyExtendedTargetProjection(
                 character.copy(itemCreationDraft = sharedConverters.stringToItemCreationDraft(payload))
             }
             "learnedKnowledges" -> character.copy(learnedKnowledges = decodeListViaGson<SpecialKnowledge>(plain))
+            "transports" -> character.copy(transports = sharedConverters.stringToTransports(plain?.toString().orEmpty()))
+            "familiars" -> character.copy(familiars = sharedConverters.stringToFamiliars(plain?.toString().orEmpty()))
             "arcaneKnowledges" -> character.copy(arcaneKnowledges = decodeListViaGson<SpecialKnowledge>(plain))
             "battleTechniques" -> character.copy(battleTechniques = decodeListViaGson<SpecialKnowledge>(plain))
             "progressionHistory" -> character.copy(progressionHistory = decodeListViaGson<ProgressionRecord>(plain))

@@ -385,6 +385,31 @@ test('enforces mutual getAfter: rejects receipt without effect, effect without r
   await assertFails(deleteDoc(doc(db, 'characters', ids.char, 'operations', 'op-valid-1')));
 });
 
+test('owner can create and update the structured transports and familiars fields', async () => {
+  await seedBase();
+  const db = env.authenticatedContext(ids.owner).firestore();
+  for (const key of ['transports', 'familiars']) {
+    const value = JSON.stringify([{ id: `${key}-1`, name: 'Cavalo' }]);
+    const opId = `op-create-${key}`;
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'characters', ids.char, 'fields', key), {
+      key,
+      value,
+      revision: 1,
+      lastOperationId: opId,
+      updatedBy: ids.owner,
+      updatedAt: serverTimestamp(),
+    });
+    batch.set(
+      doc(db, 'characters', ids.char, 'operations', opId),
+      makeOp(opId, ids.owner, 'PATCH_FIELDS', [
+        { kind: 'FIELD', itemId: '', key, op: 'CREATE', expectedRevision: 0, nextRevision: 1, desiredValue: value },
+      ]),
+    );
+    await assertSucceeds(batch.commit());
+  }
+});
+
 test('rejects extra fields, non-allowlisted field keys, coarse item bundles, invalid types, and invalid revisions', async () => {
   await seedBase();
   const db = env.authenticatedContext(ids.owner).firestore();
