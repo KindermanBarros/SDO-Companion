@@ -2991,6 +2991,14 @@ class SparkFirestoreSyncEngine(
             if (snapshot.localPhotoUri.isNotBlank() && projected.photoUri.isBlank()) {
                 projected = projected.copy(photoUri = snapshot.localPhotoUri)
             }
+            if (projected.deleted) {
+                intents.forEach { intent ->
+                    intent.effectiveTargets().forEach { t ->
+                        localStore.deleteConflict(accountId, "${intent.operationId}::${t.canonicalTargetKey()}")
+                    }
+                    localStore.deleteConflict(accountId, "${intent.operationId}::${intent.targetKey}")
+                }
+            }
             localStore.upsertCharacter(projected.copy(dirty = false).toRecord())
         }
     }

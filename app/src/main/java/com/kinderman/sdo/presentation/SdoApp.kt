@@ -132,8 +132,19 @@ fun SdoApp(
         sheetIntents.filter { it.status == SheetIntentStatus.ACCESS_DENIED }
     }
 
-    LaunchedEffect(accessDeniedIntents) {
-        if (accessDeniedIntents.isEmpty()) reviewingAccessDenied = false
+    val activeSheetIds = remember(characters) { characters.asSequence().filterNot { it.deleted }.map { it.id }.toSet() }
+    val activeSheetConflict = openSheetConflicts.firstOrNull { it.sheetId in activeSheetIds }
+    val activeLegacyConflict = conflicts.firstOrNull { it.local.id in activeSheetIds }
+    val activeDeniedIntent = accessDeniedIntents.firstOrNull { it.sheetId in activeSheetIds }
+
+    LaunchedEffect(activeDeniedIntent) {
+        if (activeDeniedIntent == null) reviewingAccessDenied = false
+    }
+
+    LaunchedEffect(activeSheetIds, selectedId) {
+        if (selectedId != null && selectedId !in activeSheetIds) {
+            selectedId = null
+        }
     }
 
     val isSyncingNow = characterLoadState.syncing ||
@@ -297,7 +308,9 @@ fun SdoApp(
                         justUpdated = justUpdated,
                         offline = offlineReadOnly,
                         hasError = sheetSyncStatus.hasActionRequired || syncFailure != null,
-                        onClick = appViewModel::sync,
+                        onClick = {
+                            if (activeDeniedIntent != null) reviewingAccessDenied = true else appViewModel.sync()
+                        },
                     )
                 }
                 SdoContentFrame(Modifier.weight(1f)) {
@@ -536,10 +549,6 @@ fun SdoApp(
         }
     }
 
-    val activeSheetIds = remember(characters) { characters.asSequence().filterNot { it.deleted }.map { it.id }.toSet() }
-    val activeSheetConflict = openSheetConflicts.firstOrNull { it.sheetId in activeSheetIds }
-    val activeLegacyConflict = conflicts.firstOrNull { it.local.id in activeSheetIds }
-    val activeDeniedIntent = accessDeniedIntents.firstOrNull { it.sheetId in activeSheetIds }
     when {
         activeSheetConflict != null -> CharacterConflictDialog(
             conflict = activeSheetConflict,

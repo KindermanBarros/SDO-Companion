@@ -911,6 +911,16 @@ private fun applyFieldTarget(
                 ?: return character
             character.copy(protectionAdjustments = map)
         }
+        "transports" -> character.copy(
+            transports = runCatching {
+                sparkJson.decodeFromString<List<CharacterTransport>>(strVal())
+            }.getOrDefault(emptyList()),
+        )
+        "familiars" -> character.copy(
+            familiars = runCatching {
+                sparkJson.decodeFromString<List<CharacterFamiliar>>(strVal())
+            }.getOrDefault(emptyList()),
+        )
         else -> character
     }
 }
