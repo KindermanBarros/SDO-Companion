@@ -240,15 +240,11 @@ internal fun PhaseOneStrictInventorySection(
                 ChoiceField("Estado", item.inventoryState, states, enabled, display = InventoryState::label) { value ->
                     onChange(character.withItemInventoryState(item.id, value))
                 }
-                if (item.canonical) Text(item.effect, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                else {
-                    HudTextField("Nome", item.name, enabled = enabled) { value ->
-                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(name = value))))
-                    }
-                    HudTextField("Descrição", item.effect, multiline = true, enabled = enabled) { value ->
-                        onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
-                    }
-                }
+                Text(
+                    item.effect.ifBlank { "Sem descrição registrada." },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
             }
         }

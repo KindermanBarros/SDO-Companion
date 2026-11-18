@@ -501,7 +501,7 @@ fun SdoApp(
                     syncFailure != null ||
                     sheetSyncStatus.hasActionRequired ||
                     sheetSyncStatus.isSyncing
-                if (showSyncBanner) {
+                if (showSyncBanner && surface == AppSurface.SHEET) {
                     val firstDenied = accessDeniedIntents.firstOrNull()
                     SyncStatusBanner(
                         offlineReadOnly = offlineReadOnly,

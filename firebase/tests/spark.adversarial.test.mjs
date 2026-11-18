@@ -192,21 +192,48 @@ test('rejects legacy protocolVersion != 2 and campaignId == default on character
   }
 });
 
-test('blocks owner spoof, actor spoof, GM self-promotion, peer member access, and admin bypass', async () => {
+test('blocks owner spoof, actor spoof, GM self-promotion, peer member access, and unverified admin bypass while allowing verified admin edits', async () => {
   await seedBase();
   const peerDb = env.authenticatedContext(ids.peer).firestore();
   const outsiderDb = env.authenticatedContext(ids.outsider).firestore();
   const gmDb = env.authenticatedContext(ids.gm).firestore();
+  const unverifiedAdminDb = env.authenticatedContext('admin-unverified', {
+    email: 'kindbarros@gmail.com',
+    email_verified: false,
+  }).firestore();
   const adminDb = env.authenticatedContext('admin-uid', {
     email: 'kindbarros@gmail.com',
     email_verified: true,
   }).firestore();
 
-  // Strict ACL: neither peer member nor admin can read/write another user's sheet
+  // Strict ACL: peer member, outsider, and unverified admin cannot read another user's sheet
   await assertFails(getDoc(doc(peerDb, 'characters', ids.char)));
   await assertFails(getDoc(doc(peerDb, 'characters', ids.char, 'fields', 'name')));
-  await assertFails(getDoc(doc(adminDb, 'characters', ids.char)));
+  await assertFails(getDoc(doc(unverifiedAdminDb, 'characters', ids.char)));
   await assertFails(getDoc(doc(outsiderDb, 'characters', ids.char)));
+
+  // Verified admin can read and edit another user's sheet fields & item quantities
+  await assertSucceeds(getDoc(doc(adminDb, 'characters', ids.char)));
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'characters', ids.char, 'items', 'inv_potion'), makeItem('inv_potion', 'INVENTORY'));
+    await setDoc(doc(db, 'characters', ids.char, 'items', 'inv_potion', 'fields', 'quantity'), makeField('quantity', 2));
+  });
+  const adminEditItemQty = writeBatch(adminDb);
+  adminEditItemQty.update(doc(adminDb, 'characters', ids.char, 'items', 'inv_potion', 'fields', 'quantity'), {
+    value: 5,
+    revision: 2,
+    lastOperationId: 'op-admin-qty',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  adminEditItemQty.set(
+    doc(adminDb, 'characters', ids.char, 'operations', 'op-admin-qty'),
+    makeOp('op-admin-qty', 'admin-uid', 'PATCH_FIELDS', [
+      { kind: 'ITEM_FIELD', itemId: 'inv_potion', key: 'quantity', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 5 },
+    ]),
+  );
+  await assertSucceeds(adminEditItemQty.commit());
 
   // Outsider tries to create sheet claiming ownerId == owner
   const spoofCreate = writeBatch(outsiderDb);
@@ -2163,16 +2190,15 @@ test('fast-create, edit, and delete integrity with owner, verified admin, unveri
   ]));
   await assertSucceeds(editBatch.commit());
 
-  // 3. Strict sheet ACL (no global admin bypass): owner can read own personal sheet and verified admin can read campaign metadata,
-  //    but verified admin (non-owner, non-GM), unverified admin, and outsider cannot read someone else's personal sheet.
+  // 3. Owner and verified admin can read the personal sheet, while unverified admin and outsider cannot.
   const ownerRead = await assertSucceeds(getDoc(doc(ownerDb, 'characters', fastId)));
   assert.equal(ownerRead.data().ownerId, ids.owner);
   await assertSucceeds(getDoc(doc(adminDb, 'campaigns', ids.campaign)));
-  await assertFails(getDoc(doc(adminDb, 'characters', fastId)));
+  await assertSucceeds(getDoc(doc(adminDb, 'characters', fastId)));
   await assertFails(getDoc(doc(unverifiedAdminDb, 'characters', fastId)));
   await assertFails(getDoc(doc(outsiderDb, 'characters', fastId)));
 
-  // 4. Verified admin (non-owner, non-GM) and outsider cannot edit or delete someone else's personal sheet.
+  // 4. Verified admin can edit fields/item quantities on another user's sheet, while outsider cannot edit or delete.
   const adminEditOther = writeBatch(adminDb);
   adminEditOther.update(doc(adminDb, 'characters', fastId, 'fields', 'name'), {
     value: 'Admin Override',
@@ -2184,7 +2210,7 @@ test('fast-create, edit, and delete integrity with owner, verified admin, unveri
   adminEditOther.set(doc(adminDb, 'characters', fastId, 'operations', 'op-admin-edit-other'), makeOp('op-admin-edit-other', 'admin-uid', 'PATCH_FIELDS', [
     { kind: 'FIELD', itemId: '', key: 'name', op: 'SET', expectedRevision: 1, nextRevision: 2, desiredValue: 'Admin Override' },
   ]));
-  await assertFails(adminEditOther.commit());
+  await assertSucceeds(adminEditOther.commit());
 
   const outsiderDel = writeBatch(outsiderDb);
   outsiderDel.update(doc(outsiderDb, 'characters', fastId), {

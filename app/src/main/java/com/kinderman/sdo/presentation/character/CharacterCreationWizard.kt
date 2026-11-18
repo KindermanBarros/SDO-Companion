@@ -31,7 +31,14 @@ private val creationSteps = listOf(
 )
 
 @Composable
-internal fun CharacterCreationWizard(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit, modifier: Modifier = Modifier) {
+internal fun CharacterCreationWizard(
+    character: Character,
+    catalog: List<CatalogEntry>,
+    enabled: Boolean,
+    onChange: (Character) -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenPhotoPicker: () -> Unit = {},
+) {
     val step = character.creationStep.coerceIn(1, CharacterCreation.STEP_COUNT)
     val error = CharacterCreation.flowError(step, character)
     Column(modifier.fillMaxSize()) {
@@ -52,7 +59,7 @@ internal fun CharacterCreationWizard(character: Character, catalog: List<Catalog
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
         when (step) {
-            1 -> item { IdentitySection(character, catalog, enabled, onChange) }
+            1 -> item { IdentitySection(character, catalog, enabled, onOpenPhotoPicker = onOpenPhotoPicker, onChange = onChange) }
             2 -> item { AttributeSection(character, enabled, onChange, showBasicKnowledges = false) }
             3 -> item { PhaseOneKnowledgeSection(character, catalog, enabled, onChange, selectionLimit = 5, lockLevels = true) }
             4 -> {

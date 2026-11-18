@@ -55,17 +55,25 @@ import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 
 @Composable
-internal fun IdentitySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
+internal fun IdentitySection(
+    character: Character,
+    catalog: List<CatalogEntry>,
+    enabled: Boolean,
+    onOpenPhotoPicker: () -> Unit = {},
+    onChange: (Character) -> Unit,
+) {
     var selectingRace by rememberSaveable(character.id) { mutableStateOf(false) }
     var selectingLevel by remember { mutableStateOf(false) }
     TechPanel {
         SectionHeader("01", "Identidade")
-        com.kinderman.sdo.ui.SdoCharacterPhotoPicker(
-            photoUri = character.photoUri,
-            name = character.name,
-            enabled = enabled,
-            onPhotoChange = { onChange(character.copy(photoUri = it)) },
-        )
+        if (enabled) {
+            com.kinderman.sdo.ui.SdoOutlinedButton(
+                onClick = onOpenPhotoPicker,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("ALTERAR IMAGEM DO PERSONAGEM")
+            }
+        }
         CollaborativeSheetField("identity/name", "Nome", character.name, enabled = enabled) { onChange(character.copy(name = it)) }
         Text("RAÇA // ${character.race.ifBlank { "NÃO SELECIONADA" }}", color = MaterialTheme.colorScheme.onSurface)
         Text("SUB-RAÇA // ${character.subRace.ifBlank { "NENHUMA" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -244,10 +252,64 @@ private fun ResourceCurrentControls(label: String, current: Int, maximum: Int, a
 
 @Composable
 internal fun TraitSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    val hasTraits = character.positiveTraits.any(String::isNotBlank) || character.negativeTraits.any(String::isNotBlank)
+    var editing by rememberSaveable(character.id) { mutableStateOf(!hasTraits) }
+    val showEditor = enabled && editing
     TechPanel(accent = MaterialTheme.colorScheme.error) {
-        SectionHeader("03", "Traços")
-        TraitList("Positivos", character.positiveTraits, enabled) { onChange(character.copy(positiveTraits = it)) }
-        TraitList("Negativos", character.negativeTraits, enabled) { onChange(character.copy(negativeTraits = it)) }
+        SectionShowcaseHeader(
+            index = "03",
+            title = "Traços",
+            subtitle = "TRAÇOS DO PERSONAGEM",
+            editing = editing,
+            enabled = enabled,
+            onToggle = { editing = !editing },
+        )
+        if (showEditor) {
+            TraitList("Positivos", character.positiveTraits, enabled) { onChange(character.copy(positiveTraits = it)) }
+            TraitList("Negativos", character.negativeTraits, enabled) { onChange(character.copy(negativeTraits = it)) }
+        } else {
+            TraitReadOnlyShowcase(character)
+        }
+    }
+}
+
+@Composable
+private fun TraitReadOnlyShowcase(character: Character) {
+    val positives = character.positiveTraits.map(String::trim).filter(String::isNotEmpty)
+    val negatives = character.negativeTraits.map(String::trim).filter(String::isNotEmpty)
+    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 10.dp) {
+        TraitShowcaseGroup("POSITIVOS", positives, MaterialTheme.colorScheme.primary)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        TraitShowcaseGroup("NEGATIVOS", negatives, MaterialTheme.colorScheme.error)
+    }
+}
+
+@Composable
+private fun TraitShowcaseGroup(title: String, items: List<String>, accent: Color) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        com.kinderman.sdo.ui.SdoMetadataText(title, color = accent)
+        if (items.isEmpty()) {
+            Text("Nenhum traço registrado.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        } else {
+            items.forEachIndexed { index, trait ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = "${(index + 1).toString().padStart(2, '0')}.",
+                        color = accent,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    Text(
+                        text = trait,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
     }
 }
 

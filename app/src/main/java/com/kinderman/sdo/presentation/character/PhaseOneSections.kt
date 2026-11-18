@@ -284,18 +284,14 @@ internal fun PhaseOnePathSection(
     var editing by rememberSaveable(character.id) { mutableStateOf(character.pathName.isBlank()) }
     val showEditor = enabled && editing
     TechPanel(accent = MaterialTheme.colorScheme.error) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SectionHeader("07", "Caminho")
-            if (enabled) {
-                SdoTextButton(onClick = { editing = !editing }) {
-                    Text(if (showEditor) "VISUALIZAR" else "EDITAR")
-                }
-            }
-        }
+        SectionShowcaseHeader(
+            index = "07",
+            title = "Caminho",
+            subtitle = "CAMINHO DO PERSONAGEM",
+            editing = editing,
+            enabled = enabled,
+            onToggle = { editing = !editing },
+        )
         if (showEditor) {
             HudTextField("Nome do Caminho", character.pathName, enabled = enabled) { onChange(character.copy(pathName = it)) }
             AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
@@ -354,16 +350,12 @@ private fun PathReadOnlyShowcase(character: Character) {
     val keywords = character.pathKeywords.map { it.trim() }.filter { it.isNotEmpty() }
     val pillars = character.pathPillars.map { it.trim() }.filter { it.isNotEmpty() }
 
-    SdoInsetCard(contentPadding = 16.dp) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            SdoMetadataText(
-                "CAMINHO DO PERSONAGEM",
-                color = MaterialTheme.colorScheme.secondary,
-            )
+    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 8.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = pathName.ifBlank { "Caminho não definido" },
                 color = if (pathName.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
             )
             if (motto.isNotBlank()) {
                 Text(

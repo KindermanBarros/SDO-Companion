@@ -72,6 +72,7 @@ internal fun CharacterSheetPager(
     catalog: List<CatalogEntry>,
     editable: Boolean,
     onChange: (Character) -> Unit,
+    onOpenPhotoPicker: () -> Unit = {},
     modifier: Modifier = Modifier,
     saveError: String? = null,
 ) {
@@ -113,6 +114,7 @@ internal fun CharacterSheetPager(
                 catalog = catalog,
                 editable = editable,
                 onChange = onChange,
+                onOpenPhotoPicker = onOpenPhotoPicker,
                 scrollState = pageScrollStates[pageIndex],
                 saveError = saveError,
             )
@@ -233,6 +235,7 @@ private fun SheetPageContent(
     catalog: List<CatalogEntry>,
     editable: Boolean,
     onChange: (Character) -> Unit,
+    onOpenPhotoPicker: () -> Unit,
     scrollState: LazyListState,
     saveError: String?,
 ) {
@@ -245,8 +248,8 @@ private fun SheetPageContent(
     ) {
         when (page) {
             SheetPage.PROFILE -> {
-                item("hero") { SheetHero(character, session, saveError) }
-                item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade", "01") { IdentitySection(character, catalog, editable, onChange) } }
+                item("hero") { SheetHero(character, session, saveError, editable = editable, onOpenPhotoPicker = onOpenPhotoPicker) }
+                item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade", "01") { IdentitySection(character, catalog, editable, onOpenPhotoPicker = onOpenPhotoPicker, onChange = onChange) } }
                 item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
                 item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços", "03") { TraitSection(character, editable, onChange) } }
             }

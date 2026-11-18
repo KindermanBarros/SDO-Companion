@@ -113,11 +113,12 @@ service cloud.firestore {
         );
     }
 
-    // Strict Spark v2 sheet ACL: owner OR current active linked campaign GM only.
+    // Spark v2 sheet ACL: verified administrator, owner, or current active linked campaign GM.
     function canReadCharacterData(charData) {
       let cid = normalizedCampaignId(charData);
       let camp = cid != '' ? get(campaignPath(cid)) : null;
-      return charData.ownerId == request.auth.uid
+      return isAdministrator()
+        || charData.ownerId == request.auth.uid
         || (cid != '' && camp != null && camp.data.state == 'ACTIVE' && camp.data.ownerId == request.auth.uid);
     }
 
@@ -134,7 +135,8 @@ service cloud.firestore {
         && charDoc.data.deleted == false
         && (cid == '' || (camp != null && camp.data.state == 'ACTIVE'))
         && (
-          (charDoc.data.ownerId == request.auth.uid && charDoc.data.get('lockType', 'NONE') != 'HISTORIAN')
+          isAdministrator()
+          || (charDoc.data.ownerId == request.auth.uid && charDoc.data.get('lockType', 'NONE') != 'HISTORIAN')
           || (cid != '' && camp != null && camp.data.ownerId == request.auth.uid)
         );
     }
@@ -733,7 +735,7 @@ service cloud.firestore {
       function validLockOp(before, after, cid, isOwner) {
         let camp = cid != '' ? get(campaignPath(cid)) : null;
         let activeCamp = cid == '' || (camp != null && camp.data.state == 'ACTIVE');
-        let isGm = cid != '' && camp != null && camp.data.ownerId == request.auth.uid;
+        let isGm = isAdministrator() || (cid != '' && camp != null && camp.data.ownerId == request.auth.uid);
         return !before.get('deleted', false)
           && after.deleted == false
           && after.ownerId == before.ownerId
@@ -873,6 +875,7 @@ service cloud.firestore {
           : null;
         let opType = t != null ? opDoc.data.type : '';
         let isOwner = before.ownerId == request.auth.uid;
+        let isAdminOrOwner = isOwner || isAdministrator();
         return t != null
           && before.get('protocolVersion', 0) == 2
           && after.revision == prevRev + 1
@@ -885,9 +888,9 @@ service cloud.firestore {
               : (opType == 'UNLINK_CAMPAIGN'
                 ? (t.op == 'UNLINK' && validUnlinkOp(before, after, prevCid, isOwner))
                 : (opType == 'DELETE_SHEET'
-                  ? (t.op == 'TOMBSTONE' && !before.get('deleted', false) && after.deleted == true && after.ownerId == before.ownerId && after.campaignId == prevCid && after.authorizedCampaignId == '' && keepsRootLock(before, after) && after.appliedDeliveryIds == before.get('appliedDeliveryIds', []) && isOwner)
+                  ? (t.op == 'TOMBSTONE' && !before.get('deleted', false) && after.deleted == true && after.ownerId == before.ownerId && after.campaignId == prevCid && after.authorizedCampaignId == '' && keepsRootLock(before, after) && after.appliedDeliveryIds == before.get('appliedDeliveryIds', []) && isAdminOrOwner)
                   : (opType == 'RESTORE_SHEET'
-                    ? (t.op == 'RESTORE' && before.get('deleted', false) == true && after.deleted == false && after.ownerId == before.ownerId && after.campaignId == prevCid && after.authorizedCampaignId == before.get('authorizedCampaignId', '') && keepsRootLock(before, after) && after.appliedDeliveryIds == before.get('appliedDeliveryIds', []) && (prevCid == '' || campaignIsActive(prevCid)) && isOwner)
+                    ? (t.op == 'RESTORE' && before.get('deleted', false) == true && after.deleted == false && after.ownerId == before.ownerId && after.campaignId == prevCid && after.authorizedCampaignId == before.get('authorizedCampaignId', '') && keepsRootLock(before, after) && after.appliedDeliveryIds == before.get('appliedDeliveryIds', []) && (prevCid == '' || campaignIsActive(prevCid)) && isAdminOrOwner)
                     : (opType == 'TRANSFER_OWNERSHIP'
                       ? (t.op == 'TRANSFER' && validTransferOp(before, after, prevCid, isOwner))
                       : (opType == 'ACCEPT_DELIVERY' && t.op == 'DELIVERY' && validDeliveryOp(before, after, opDoc, prevCid, isOwner))))))));
@@ -1351,20 +1354,20 @@ service cloud.firestore {
           let isOwner = s.ownerId == request.auth.uid;
           let isActiveGm = camp != null && camp.ownerId == request.auth.uid && camp.state == 'ACTIVE';
           return isCreate
-            ? (s.lastOperationId == opData.id && (isOwner || isActiveGm))
+            ? (s.lastOperationId == opData.id && (isOwner || isActiveGm || isAdministrator()))
             : (
               opData.type in ['SET_LOCK', 'DELETE_SHEET', 'RESTORE_SHEET', 'TRANSFER_OWNERSHIP', 'LINK_CAMPAIGN', 'UNLINK_CAMPAIGN']
                 ? (
                   s.get('protocolVersion', 0) == 2
                   && opData.targets.size() == 1
                   && opData.targets[0].kind == 'SHEET'
-                  && (isOwner || (cid != '' && camp != null && camp.ownerId == request.auth.uid) || (opData.type == 'LINK_CAMPAIGN' && isActiveGm))
+                  && (isOwner || (cid != '' && camp != null && camp.ownerId == request.auth.uid) || (opData.type == 'LINK_CAMPAIGN' && isActiveGm) || isAdministrator())
                 )
                 : (opData.type == 'ACCEPT_DELIVERY'
                   ? validAcceptDeliveryOp(opData, s, cid, camp, isOwner)
                   : (s.get('protocolVersion', 0) == 2 && !s.get('deleted', false)
                     && (cid == '' || (camp != null && camp.state == 'ACTIVE'))
-                    && ((isOwner && s.get('lockType', 'NONE') != 'HISTORIAN') || (cid != '' && isActiveGm))
+                    && ((isOwner && s.get('lockType', 'NONE') != 'HISTORIAN') || (cid != '' && isActiveGm) || isAdministrator())
                     && (opData.type != 'ITEM_CONSUME' || validItemConsumeOp(opData, isActiveGm))
                     && (opData.type != 'SESSION_ACTION' || validSessionActionOp(opData, isActiveGm))))
             );
