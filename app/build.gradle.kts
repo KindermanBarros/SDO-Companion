@@ -132,8 +132,8 @@ android {
         }
     }
 
-    val devTestEmail = (propertyOrEnv("SDO_DEV_TEST_EMAIL") ?: "").replace("\"", "\\\"")
-    val devTestPassword = (propertyOrEnv("SDO_DEV_TEST_PASSWORD") ?: "").replace("\"", "\\\"")
+    val devTestEmail = propertyOrEnv("SDO_DEV_TEST_EMAIL").orEmpty()
+    val devTestPassword = propertyOrEnv("SDO_DEV_TEST_PASSWORD").orEmpty()
 
     flavorDimensions += "env"
     productFlavors {
@@ -144,16 +144,18 @@ android {
             resValue("string", "app_name", "SDO Companion (Dev)")
             buildConfigField("String", "ENVIRONMENT", "\"dev\"")
             buildConfigField("boolean", "IS_DEV_ENV", "true")
-            buildConfigField("String", "DEV_TEST_EMAIL", "\"$devTestEmail\"")
-            buildConfigField("String", "DEV_TEST_PASSWORD", "\"$devTestPassword\"")
+            if (devTestEmail.isNotBlank()) {
+                testInstrumentationRunnerArguments["sdoDevTestEmail"] = devTestEmail
+            }
+            if (devTestPassword.isNotBlank()) {
+                testInstrumentationRunnerArguments["sdoDevTestPassword"] = devTestPassword
+            }
         }
         create("prod") {
             dimension = "env"
             resValue("string", "app_name", "SDO Companion")
             buildConfigField("String", "ENVIRONMENT", "\"prod\"")
             buildConfigField("boolean", "IS_DEV_ENV", "false")
-            buildConfigField("String", "DEV_TEST_EMAIL", "\"\"")
-            buildConfigField("String", "DEV_TEST_PASSWORD", "\"\"")
         }
     }
 }

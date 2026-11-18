@@ -226,8 +226,8 @@ service cloud.firestore {
           'name', 'race', 'subRace', 'raceAttribute', 'occupation', 'height', 'age', 'sex', 'size',
           'avatarPreset', 'pathName', 'pathMotto', 'story', 'agilityLimit', 'creationStatus',
           'itemCreationDraft', 'migrationReviewPayload', 'canonicalBodyPayload',
-          'activeModifiersPayload', 'scopedItemCatalogPayload', 'canonicalProgressionPayload'
-        ] && val is string && val.size() <= 250000
+          'activeModifiersPayload', 'scopedItemCatalogPayload', 'canonicalProgressionPayload',
+          'transports', 'familiars'        ] && val is string && val.size() <= 250000
       ) || (
         fieldKey in ['level', 'creationStep'] && val is int && val >= 1 && val <= 20
       ) || (

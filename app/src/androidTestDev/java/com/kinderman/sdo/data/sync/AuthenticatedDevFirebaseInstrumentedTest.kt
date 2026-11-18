@@ -39,8 +39,9 @@ class AuthenticatedDevFirebaseInstrumentedTest {
         assumeTrue("Skipping authenticated dev test: FirebaseApp not initialized (no dev google-services.json).", firebaseInitialized)
 
         val auth = FirebaseAuth.getInstance()
-        val email = BuildConfig.DEV_TEST_EMAIL.trim()
-        val password = BuildConfig.DEV_TEST_PASSWORD
+        val args = InstrumentationRegistry.getArguments()
+        val email = args.getString("sdoDevTestEmail").orEmpty().trim()
+        val password = args.getString("sdoDevTestPassword").orEmpty()
         assumeTrue(
             "Skipping authenticated dev test: SDO_DEV_TEST_EMAIL / SDO_DEV_TEST_PASSWORD not configured.",
             email.isNotEmpty() && password.isNotEmpty(),
