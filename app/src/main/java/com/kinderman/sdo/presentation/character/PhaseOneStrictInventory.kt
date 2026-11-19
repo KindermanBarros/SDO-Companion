@@ -3,31 +3,23 @@ package com.kinderman.sdo.presentation.character
 import com.kinderman.sdo.domain.model.validInventoryStates
 
 import com.kinderman.sdo.ui.SdoCardTitle
-import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
+import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,49 +29,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
-import com.kinderman.sdo.domain.model.BuiltItem
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemPart
-import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemEffect
-import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
-import com.kinderman.sdo.domain.model.ItemCreationDraft
 import com.kinderman.sdo.domain.model.InventoryState
 import com.kinderman.sdo.domain.model.inventoryState
-import com.kinderman.sdo.domain.model.withInventoryState
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.durabilityLabel
 import com.kinderman.sdo.domain.model.isScrap
 import com.kinderman.sdo.domain.model.isBroken
-import com.kinderman.sdo.domain.model.participatesInInitialCreation
 import com.kinderman.sdo.domain.model.effectiveLoad
 import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.withItemInventoryState
-import com.kinderman.sdo.domain.model.withRemovedAbility
 import com.kinderman.sdo.domain.model.withRemovedAshInventoryItem
 import com.kinderman.sdo.domain.model.withAddedAsh
 import com.kinderman.sdo.domain.model.recycleBrokenItem
-import com.kinderman.sdo.domain.model.AshPurity
-import com.kinderman.sdo.domain.model.heritageCostPerDose
 import com.kinderman.sdo.domain.model.handsRequired
-import com.kinderman.sdo.domain.model.synchronizeItemPowers
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.catalog.installEnhancement
-import com.kinderman.sdo.domain.catalog.enhancementInventoryItem
 import com.kinderman.sdo.domain.catalog.removeEnhancement
 import com.kinderman.sdo.domain.catalog.rechargeEnhancement
 import com.kinderman.sdo.domain.catalog.spendEnhancementCharge
-import com.kinderman.sdo.ui.Acid
-import com.kinderman.sdo.ui.Carbon
 import com.kinderman.sdo.ui.HudTextField
-import com.kinderman.sdo.ui.Ice
-import com.kinderman.sdo.ui.Muted
 import com.kinderman.sdo.ui.SectionHeader
-import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.TechPanel
@@ -121,7 +96,21 @@ internal fun PhaseOneStrictInventorySection(
         }
         Text("Efeitos são definidos pelos componentes do item e aplicados automaticamente quando equipado.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         HudTextField("Buscar por nome, categoria, material ou estado", inventoryQuery) { inventoryQuery = it }
-        ChoiceField("Grupo", inventoryGroup, inventoryFilterOptions, true) { inventoryGroup = it }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            inventoryFilterOptions.forEach { option ->
+                val chipLabel = option.removePrefix("Categoria // ")
+                SdoFilterChip(
+                    label = chipLabel,
+                    selected = inventoryGroup == option,
+                    onClick = { inventoryGroup = option },
+                )
+            }
+        }
 
         inventoryGroups(character.inventory).forEach { (group, groupItems) ->
             val visible = groupItems.filter { item ->
@@ -305,14 +294,19 @@ internal fun PhaseOneStrictInventorySection(
     }
 
     when (dialog) {
-        "add" -> AddInventoryChoiceDialog(
-            initialCreation = character.isInCreation,
-            canUseCatalog = itemCatalog.isNotEmpty(),
-            canAddAsh = ashCatalog.isNotEmpty(),
+        "add" -> InventoryItemModal(
+            mode = if (character.isInCreation) ItemModalMode.Creation(remainingHeritage) else ItemModalMode.Sheet,
+            itemCatalog = itemCatalog,
+            ashCatalog = ashCatalog,
+            regionOptions = character.bodyRegions.map { it.name },
             onDismiss = { dialog = null },
-            onChoice = { choice ->
-                onChange(character.copy(itemCreationDraft = null))
-                dialog = choice
+            onAddItem = { item ->
+                onChange(character.addInventoryItem(item).copy(itemCreationDraft = null))
+                dialog = null
+            },
+            onAddAsh = { entry, doses ->
+                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, character.isInCreation))
+                dialog = null
             },
         )
         "glossary" -> EquipmentGlossaryDialog(
@@ -322,268 +316,7 @@ internal fun PhaseOneStrictInventorySection(
                 dialog = null
             },
         )
-        "initial_catalog" -> ItemCatalogDialog(
-            title = "EQUIPAMENTOS INICIAIS // ITENS PRONTOS",
-            entries = itemCatalog,
-            remainingHeritage = remainingHeritage,
-            onDismiss = { dialog = null },
-        ) { item ->
-            onChange(character.addInventoryItem(item))
-            dialog = null
-        }
-        "catalog" -> ItemCatalogDialog(
-            title = "CATÁLOGO DE ITENS",
-            entries = itemCatalog,
-            remainingHeritage = null,
-            onDismiss = { dialog = null },
-        ) { item ->
-            onChange(character.addInventoryItem(item))
-            dialog = null
-        }
-        "initial_gem" -> EnhancementCatalogDialog(
-            technology = false,
-            randomByCategory = true,
-            remainingHeritage = remainingHeritage,
-            onDismiss = { dialog = null },
-        ) { id ->
-            onChange(character.addInventoryItem(enhancementInventoryItem(id, initialCreation = true)))
-            dialog = null
-        }
-        "gem_catalog", "technology_catalog" -> EnhancementCatalogDialog(
-            technology = dialog == "technology_catalog",
-            randomByCategory = false,
-            remainingHeritage = null,
-            onDismiss = { dialog = null },
-        ) { id ->
-            onChange(character.addInventoryItem(enhancementInventoryItem(id)))
-            dialog = null
-        }
-        "initial_weapon", "initial_armor", "initial_accessory" -> StrictItemBuilderDialog(
-            remainingHeritage = remainingHeritage,
-            regionOptions = character.bodyRegions.map { it.name },
-            draft = (character.itemCreationDraft ?: ItemCreationDraft()).copy(category = when (dialog) {
-                "initial_weapon" -> "Arma"
-                "initial_accessory" -> "Acessório"
-                else -> "Armadura"
-            }),
-            onDraftChange = { onChange(character.copy(itemCreationDraft = it)) },
-            onDismiss = { dialog = null },
-        ) { item ->
-            onChange(character.addInventoryItem(item).copy(itemCreationDraft = null))
-            dialog = null
-        }
-        "builder_weapon", "builder_armor", "builder_accessory", "builder_item" -> StrictItemBuilderDialog(
-            remainingHeritage = null,
-            regionOptions = character.bodyRegions.map { it.name },
-            draft = (character.itemCreationDraft ?: ItemCreationDraft()).copy(category = when (dialog) {
-                "builder_weapon" -> "Arma"
-                "builder_armor" -> "Armadura"
-                "builder_accessory" -> "Acessório"
-                else -> "Item"
-            }),
-            onDraftChange = { onChange(character.copy(itemCreationDraft = it)) },
-            onDismiss = { dialog = null },
-        ) { item ->
-            onChange(character.addInventoryItem(item).copy(itemCreationDraft = null))
-            dialog = null
-        }
-        "ash_builder" -> AshBuilderDialog(
-            entries = ashCatalog,
-            remainingHeritage = remainingHeritage.takeIf { character.isInCreation },
-            onDismiss = { dialog = null },
-        ) { entry, doses ->
-            onChange(character.withAddedAsh(entry.toMysticAbility(), doses, character.isInCreation))
-            dialog = null
-        }
-        "narrative" -> {
-            onChange(character.addInventoryItem(InventoryItem(category = "Item", quantity = 1)))
-            dialog = null
-        }
     }
-}
-
-@Composable
-private fun AddInventoryChoiceDialog(initialCreation: Boolean, canUseCatalog: Boolean, canAddAsh: Boolean, onDismiss: () -> Unit, onChoice: (String) -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("ADICIONAR AO INVENTÁRIO") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Escolha como o item será adicionado.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                AddButton("Do catálogo", canUseCatalog) { onChoice(if (initialCreation) "initial_catalog" else "catalog") }
-                AddButton("Construir arma", true) { onChoice(if (initialCreation) "initial_weapon" else "builder_weapon") }
-                AddButton("Construir armadura", true) { onChoice(if (initialCreation) "initial_armor" else "builder_armor") }
-                AddButton("Construir acessório", true) { onChoice(if (initialCreation) "initial_accessory" else "builder_accessory") }
-                AddButton(if (initialCreation) "Sortear gema" else "Adicionar gema", true) { onChoice(if (initialCreation) "initial_gem" else "gem_catalog") }
-                if (!initialCreation) AddButton("Adicionar tecnologia", true) { onChoice("technology_catalog") }
-                if (!initialCreation) AddButton("Construir item comum", true) { onChoice("builder_item") }
-                if (canAddAsh) AddButton("Preparar Cinzas", true) { onChoice("ash_builder") }
-                if (!initialCreation) SdoTextButton(onClick = { onChoice("narrative") }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR ITEM NARRATIVO") }
-            }
-        },
-        confirmButton = {},
-        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
-    )
-}
-
-@Composable
-private fun EnhancementCatalogDialog(
-    technology: Boolean,
-    randomByCategory: Boolean,
-    remainingHeritage: Int?,
-    onDismiss: () -> Unit,
-    onAdd: (String) -> Unit,
-) {
-    val options = ItemCreationRules.enhancementCreationOptions(technology)
-    val categories = options.map { ItemCreationRules.enhancementCategory(it.id) }.distinct().sorted()
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (randomByCategory) "SORTEAR GEMA" else if (technology) "TECNOLOGIAS" else "GEMAS") },
-        text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (randomByCategory) {
-                    Text("Escolha a categoria. A gema completa será sorteada; opções ancestrais não participam da criação.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    categories.forEach { category ->
-                        val eligible = options.filter { ItemCreationRules.enhancementCategory(it.id) == category && (it.creationCost ?: Int.MAX_VALUE) <= (remainingHeritage ?: Int.MAX_VALUE) }
-                        AddButton(category, eligible.isNotEmpty()) { onAdd(eligible.random().id) }
-                    }
-                } else options.forEach { enhancement ->
-                    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(9.dp)) {
-                        Text(enhancement.name)
-                        SdoMetadataText("${ItemCreationRules.enhancementRarity(enhancement.id)} // ${ItemCreationRules.enhancementCategory(enhancement.id)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                        Text(enhancement.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                        SdoTextButton(onClick = { onAdd(enhancement.id) }, modifier = Modifier.fillMaxWidth()) { Text("ADICIONAR") }
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
-    )
-}
-
-@Composable
-private fun AshBuilderDialog(
-    entries: List<CatalogEntry>,
-    remainingHeritage: Int?,
-    onDismiss: () -> Unit,
-    onAdd: (CatalogEntry, Int) -> Unit,
-) {
-    var query by rememberSaveable { mutableStateOf("") }
-    var source by rememberSaveable { mutableStateOf("Todas") }
-    var selectedAshName by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedId by rememberSaveable { mutableStateOf("") }
-    var doses by rememberSaveable { mutableIntStateOf(1) }
-    val sources = listOf("Todas") + entries.mapNotNull { it.catalogAshSource?.label }.distinct().sorted()
-    val grouped = remember(entries) { entries.groupBy(CatalogEntry::name).toSortedMap() }
-    val filteredGroups = grouped.filterValues { variants ->
-        (source == "Todas" || variants.any { it.catalogAshSource?.label == source }) &&
-            (query.isBlank() || variants.any { it.searchableText().contains(query, ignoreCase = true) })
-    }
-    val selectedVariants = selectedAshName?.let(grouped::get).orEmpty().sortedBy { entry ->
-        AshPurity.entries.indexOf(entry.catalogAshPurity ?: AshPurity.RAW)
-    }
-    val selected = selectedVariants.firstOrNull { it.id == selectedId }
-    val purity = selected?.catalogAshPurity ?: AshPurity.RAW
-    val preview = doses.coerceAtLeast(1) * purity.heritageCostPerDose
-    val allowed = selected != null && (remainingHeritage == null || preview <= remainingHeritage)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        modifier = Modifier.fillMaxSize(),
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        title = { Text(selectedAshName?.uppercase() ?: "PREPARAR CINZAS") },
-        text = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                remainingHeritage?.let { remaining ->
-                    val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
-                    Text(
-                        if (selected == null) "HERANÇA // $spent GASTOS // $remaining RESTANTES"
-                        else "HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES",
-                        color = if (selected == null || allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    )
-                    LinearProgressIndicator(
-                        progress = { ((spent + if (selected != null) preview else 0).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                if (selectedAshName == null) {
-                    HudTextField("Buscar por nome, fonte ou efeito", query) { query = it }
-                    ChoiceField("Fonte", source, sources, true) { source = it }
-                    SdoMetadataText("CINZAS // ${filteredGroups.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                    Column(
-                        Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        filteredGroups.forEach { (name, variants) ->
-                            Column(
-                                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).sdoClickable {
-                                    selectedAshName = name
-                                    selectedId = variants.firstOrNull { it.catalogAshPurity == AshPurity.RAW }?.id
-                                        ?: variants.firstOrNull()?.id.orEmpty()
-                                }.padding(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(3.dp),
-                            ) {
-                                Text(name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
-                                Text(
-                                    "${variants.firstOrNull()?.catalogAshSource?.label ?: "Fonte desconhecida"} // ${variants.size} PUREZAS",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    Text(selectedVariants.firstOrNull()?.catalogAshSource?.label ?: "Fonte desconhecida", color = MaterialTheme.colorScheme.primary)
-                    Column(
-                        Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(7.dp),
-                    ) {
-                        selectedVariants.forEach { entry ->
-                            val entryPurity = entry.catalogAshPurity ?: AshPurity.RAW
-                            val isSelected = entry.id == selectedId
-                            Column(
-                                Modifier.fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = .14f) else MaterialTheme.colorScheme.surfaceVariant)
-                                    .sdoClickable { selectedId = entry.id }
-                                    .padding(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(entryPurity.label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleSmall)
-                                    if (isSelected) Text("SELECIONADA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                                }
-                                Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    "${entryPurity.dosesPerLoad} DOSE(S) POR CARGA" + if (remainingHeritage != null) " // ${entryPurity.heritageCostPerDose} PH POR DOSE" else "",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                            }
-                        }
-                    }
-                    IntegerField("Doses", doses, true) { doses = it.coerceAtLeast(1) }
-                    selected?.let {
-                        SdoMetadataText("CARGA ${kotlin.math.ceil(doses.toDouble() / purity.dosesPerLoad).toInt()} // ${purity.dosesPerLoad} DOSE(S) POR CARGA")
-                        if (remainingHeritage != null) SdoMetadataText("CUSTO // $preview PH", color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            if (selectedAshName != null) SdoTextButton(onClick = { selected?.let { onAdd(it, doses) } }, enabled = allowed) {
-                Text(if (allowed) "ADICIONAR" else "SALDO INSUFICIENTE")
-            }
-        },
-        dismissButton = {
-            SdoTextButton(onClick = {
-                if (selectedAshName != null) {
-                    selectedAshName = null
-                    selectedId = ""
-                } else onDismiss()
-            }) { Text(if (selectedAshName != null) "VOLTAR" else "CANCELAR") }
-        },
-    )
 }
 
 private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<InventoryItem>> = linkedMapOf(
@@ -592,348 +325,6 @@ private fun inventoryGroups(items: List<InventoryItem>): Map<String, List<Invent
     "Itens" to items.filterNot { it.category.contains("arma", true) },
 ).let { groups -> groups + ("Itens" to groups.getValue("Itens").filterNot { it.category.contains("armadura", true) || it.category.contains("acessório", true) }) }
 
-
-@Composable
-internal fun UnifiedItemBuilderDialog(
-    remainingHeritage: Int?,
-    regionOptions: List<String>,
-    onDismiss: () -> Unit,
-    onAdd: (InventoryItem) -> Unit,
-) {
-    var draft by remember { mutableStateOf(ItemCreationDraft()) }
-    StrictItemBuilderDialog(remainingHeritage, regionOptions, draft, { draft = it }, onDismiss, onAdd)
-}
-
-@Composable
-private fun StrictItemBuilderDialog(
-    remainingHeritage: Int?,
-    regionOptions: List<String>,
-    draft: ItemCreationDraft,
-    onDraftChange: (ItemCreationDraft) -> Unit,
-    onDismiss: () -> Unit,
-    onAdd: (InventoryItem) -> Unit,
-) {
-    var componentQuery by rememberSaveable { mutableStateOf("") }
-    val category = draft.category
-    val weapon = category == "Arma"
-    val initialCreation = remainingHeritage != null
-    val qualityOptions = ItemCreationRules.qualitiesFor(initialCreation)
-    val basePool: List<ItemPart> = when (category) {
-        "Arma" -> ItemCreationRules.weaponBases
-        "Acessório" -> ItemCreationRules.armorBases.filter { it.group == "Acessório" }
-        else -> ItemCreationRules.armorBases.filterNot { it.group == "Acessório" }
-    }
-    if (category != "Item" && basePool.isEmpty()) {
-        StrictCatalogUnavailableDialog(onDismiss)
-        return
-    }
-    val base: ItemPart = basePool.firstOrNull { it.id == draft.baseId } ?: basePool.firstOrNull()
-        ?: ItemPart("narrative", "Item narrativo", "Item", 0, 0)
-    val materialPool: List<ItemPart> = if (weapon) ItemCreationRules.weaponMaterials else ItemCreationRules.armorMaterials
-    val materials: List<ItemPart> = ItemCreationRules.materialsFor(
-        if (!weapon && base.id == "gibao") materialPool.filter { it.id == "organico" } else materialPool,
-        initialCreation,
-    )
-    if (category != "Item" && materials.isEmpty()) {
-        StrictCatalogUnavailableDialog(onDismiss)
-        return
-    }
-    val material: ItemPart = materials.firstOrNull { it.id == draft.materialId }
-        ?: materials.firstOrNull { it.id == if (!weapon && base.id == "gibao") "organico" else "ligas_comuns" }
-        ?: materials.firstOrNull()
-        ?: ItemPart("narrative", "Sem material", "Material", 0, 0)
-    val hasAlloyComposition = material.id.startsWith("ligas_")
-    val secondaryMaterial: ItemPart? = materials.firstOrNull { it.id == draft.secondaryMaterialId && it.id != material.id }
-    val modifications: List<ItemPart> = (ItemCreationRules.weaponModifications + ItemCreationRules.armorModifications)
-        .filter { it.id in draft.modificationIds }
-    val customName = draft.customName
-    val quality = draft.quality.takeIf { it in qualityOptions } ?: ItemQuality.COMMON
-    val enhancementSlots = if (quality == ItemQuality.MUNDANE) 0 else
-        base.enhancementSlots + modifications.sumOf(ItemPart::enhancementSlots).coerceAtMost(5)
-    val enhancementOptions = ItemCreationRules.compatibleEnhancements(base, initialCreation)
-    val enhancements = enhancementOptions.filter { it.id in draft.enhancementIds }.take(enhancementSlots)
-    val gems: List<ItemPart> = enhancements.filterNot { ItemCreationRules.enhancementIsTechnology(it.id) }
-    val technologies: List<ItemPart> = enhancements.filter { ItemCreationRules.enhancementIsTechnology(it.id) }
-    val commonName = draft.commonName
-    val commonEffect = draft.commonEffect
-    val commonLoad = draft.commonLoad
-    val commonQuantity = draft.commonQuantity
-    val commonCategory = draft.commonCategory
-    val totalSteps = if (category == "Item") 2 else if (hasAlloyComposition) 7 else 6
-    val step = draft.step.coerceIn(1, totalSteps)
-    val stepTitle = if (category == "Item") listOf("DADOS", "REVISÃO")[step - 1]
-        else (if (hasAlloyComposition) listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "APRIMORAMENTOS", "REVISÃO")
-        else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "APRIMORAMENTOS", "REVISÃO"))[step - 1]
-    val qualityStep = if (hasAlloyComposition) 4 else 3
-    val modificationsStep = qualityStep + 1
-    val gemsStep = modificationsStep + 1
-
-    val bases: List<ItemPart> = basePool
-    val availableModifications: List<ItemPart> = ItemCreationRules.compatibleModifications(base, weapon)
-    val built: BuiltItem = ItemCreationRules.build(
-        base = base,
-        material = material,
-        secondaryMaterial = secondaryMaterial,
-        modifications = modifications,
-        gemSlots = 0,
-        technologySlots = 0,
-        customName = customName,
-        quality = quality,
-        components = gems,
-        technologies = technologies,
-        enhancementSlots = enhancementSlots,
-    )
-    val builtCreationCost = built.creationCost
-    val allowedByBudget = remainingHeritage == null || (builtCreationCost != null && builtCreationCost <= remainingHeritage)
-    val commonEffects = buildList {
-        if (draft.commonPg != 0) add(ItemEffect("custom:pg", ItemEffectType.PG, draft.commonPg, condition = ItemEffectCondition.EQUIPPED))
-        if (draft.commonPl != 0) add(ItemEffect("custom:pl", ItemEffectType.PL, draft.commonPl, target = draft.commonRegion, condition = ItemEffectCondition.EQUIPPED))
-        draft.commonAgilityLimit?.let { add(ItemEffect("custom:la", ItemEffectType.AGILITY_LIMIT, it, condition = ItemEffectCondition.EQUIPPED)) }
-        if (draft.commonAttack != 0) add(ItemEffect("custom:attack", ItemEffectType.ATTACK, draft.commonAttack, condition = ItemEffectCondition.WIELDED))
-        if (draft.commonDamage != 0) add(ItemEffect("custom:damage", ItemEffectType.PHYSICAL_DAMAGE, draft.commonDamage, condition = ItemEffectCondition.WIELDED))
-    }
-    val commonItem = InventoryItem(
-        name = commonName.trim(), category = commonCategory, effect = commonEffect,
-        load = commonLoad, quantity = commonQuantity, region = draft.commonRegion,
-        durabilityCurrent = draft.commonDurability.coerceAtLeast(1), durabilityMax = draft.commonDurability.coerceAtLeast(1),
-        pg = draft.commonPg, pl = draft.commonPl, agilityLimit = draft.commonAgilityLimit, quality = quality,
-        mechanicalEffects = commonEffects,
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        modifier = Modifier.fillMaxSize(),
-        properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
-        title = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(if (initialCreation) "CRIAR ITEM // $remainingHeritage PH" else "CRIAR ITEM")
-                SdoMetadataText("$step DE $totalSteps  //  $stepTitle", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-            }
-        },
-        text = {
-            Column(
-                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                remainingHeritage?.let { remaining ->
-                    val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
-                    val preview = if (category == "Item") 0 else built.creationCost ?: 0
-                    SdoMetadataText("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = MaterialTheme.colorScheme.primary)
-                    LinearProgressIndicator(
-                        progress = { ((spent + preview).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                if (step == 1 && category == "Item") {
-                    ChoiceField("Categoria", commonCategory, listOf("Arma", "Armadura", "Acessório", "Escudo", "Consumível", "Munição", "Ferramenta", "Recipiente de Carga", "Item"), true) { onDraftChange(draft.copy(commonCategory = it)) }
-                    ChoiceField("Qualidade", quality.takeIf { it in qualityOptions } ?: ItemQuality.COMMON, qualityOptions, true, display = { it.label }) { onDraftChange(draft.copy(quality = it)) }
-                    HudTextField("Nome do item", commonName) { onDraftChange(draft.copy(commonName = it)) }
-                    TwoFields(
-                        { IntegerField("Quantidade", commonQuantity, true, it) { value -> onDraftChange(draft.copy(commonQuantity = value.coerceAtLeast(1))) } },
-                        { IntegerField("Carga total", commonLoad, true, it) { value -> onDraftChange(draft.copy(commonLoad = value.coerceAtLeast(0))) } },
-                    )
-                    HudTextField("Descrição ou efeito", commonEffect, multiline = true) { onDraftChange(draft.copy(commonEffect = it)) }
-                    val regions = listOf("Nenhuma") + regionOptions.distinct()
-                    ChoiceField("Região corporal", draft.commonRegion.ifBlank { "Nenhuma" }, regions, true) {
-                        onDraftChange(draft.copy(commonRegion = it.takeUnless { value -> value == "Nenhuma" }.orEmpty()))
-                    }
-                    TwoFields(
-                        { IntegerField("Durabilidade", draft.commonDurability.coerceAtLeast(1), true, it) { value -> onDraftChange(draft.copy(commonDurability = value.coerceAtLeast(1))) } },
-                        { IntegerField("Alcance", draft.commonRange, true, it) { value -> onDraftChange(draft.copy(commonRange = value.coerceAtLeast(0))) } },
-                    )
-                    TwoFields(
-                        { IntegerField("PG", draft.commonPg, true, it) { value -> onDraftChange(draft.copy(commonPg = value)) } },
-                        { IntegerField("PL", draft.commonPl, true, it) { value -> onDraftChange(draft.copy(commonPl = value)) } },
-                    )
-                    TwoFields(
-                        { IntegerField("Ataque", draft.commonAttack, true, it) { value -> onDraftChange(draft.copy(commonAttack = value)) } },
-                        { IntegerField("Dano", draft.commonDamage, true, it) { value -> onDraftChange(draft.copy(commonDamage = value)) } },
-                    )
-                }
-                if (step == 1 && category != "Item") {
-                    ChoiceField("Categoria", category, listOf("Arma", "Armadura", "Acessório"), true) { selected ->
-                        onDraftChange(draft.copy(category = selected, baseId = "", materialId = "", secondaryMaterialId = "", modificationIds = emptyList()))
-                    }
-                    HudTextField("Nome personalizado", customName) { onDraftChange(draft.copy(customName = it)) }
-                    ChoiceField<String>("Tipo", base.id, bases.map { it.id }, true, display = { id: String -> bases.firstOrNull { it.id == id }?.name ?: id }) { id: String ->
-                        val selected = bases.firstOrNull { it.id == id } ?: return@ChoiceField
-                        val nextMaterialId = if (!weapon && selected.id == "gibao") "organico" else draft.materialId
-                        onDraftChange(draft.copy(baseId = id, materialId = nextMaterialId, modificationIds = modifications.filter { it in ItemCreationRules.compatibleModifications(selected, weapon) }.map { it.id }))
-                    }
-                    ItemPartDetails("DETALHES DO TIPO", base, weapon, initialCreation)
-                }
-                if (step == 2 && category != "Item") {
-                    ChoiceField<String>("Material principal", material.id, materials.map { it.id }, true, display = { id: String -> materials.firstOrNull { it.id == id }?.name ?: id }) { id: String ->
-                        onDraftChange(draft.copy(
-                            materialId = id,
-                            secondaryMaterialId = draft.secondaryMaterialId.takeIf { id.startsWith("ligas_") && it != id }.orEmpty(),
-                        ))
-                    }
-                    ItemPartDetails("DETALHES DO MATERIAL", material, weapon, initialCreation)
-                }
-                if (step == 3 && category != "Item" && hasAlloyComposition) {
-                    Text("COMPOSIÇÃO DA LIGA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                    Text("Use o material puro ou combine dois materiais diferentes. A liga reúne os traços e equilibra os valores dos dois.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    val secondaryOptions = listOf("") + materials.filter { it.id != material.id }.map { it.id }
-                    ChoiceField<String>("Segundo material", secondaryMaterial?.id.orEmpty(), secondaryOptions, true, display = { id: String ->
-                        materials.firstOrNull { it.id == id }?.name ?: "Sem mistura — material puro"
-                    }) { id -> onDraftChange(draft.copy(secondaryMaterialId = id)) }
-                    val composition = ItemCreationRules.mixMaterials(material, secondaryMaterial)
-                    ItemPartDetails(if (secondaryMaterial == null) "COMPOSIÇÃO PURA" else "RESULTADO DA LIGA", composition, weapon, initialCreation)
-                }
-                if (step == qualityStep && category != "Item") {
-                    ChoiceField<String>("Qualidade", quality.takeIf { it in qualityOptions }?.name ?: ItemQuality.COMMON.name, qualityOptions.map { it.name }, true, display = { name: String -> ItemQuality.valueOf(name).label }) { name: String -> onDraftChange(draft.copy(quality = ItemQuality.valueOf(name))) }
-                    QualityDetails(quality, weapon, initialCreation)
-                    if (initialCreation) Text(
-                        "CUSTO ATUAL // ${built.creationCost} PH // SALDO ${remainingHeritage - (built.creationCost ?: 0)}",
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                if (step == modificationsStep && category != "Item") {
-                    Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                    HudTextField("Filtrar por nome, grupo ou efeito", componentQuery) { componentQuery = it }
-                    availableModifications.filter { modification ->
-                        componentQuery.isBlank() || listOf(modification.name, modification.group, modification.effect).any { it.contains(componentQuery, true) }
-                    }.groupBy { it.group }.forEach { (group, groupModifications) ->
-                        Text(group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                        groupModifications.forEach { modification: ItemPart ->
-                        val checked = modification in modifications
-                        Row(Modifier.fillMaxWidth().sdoClickable { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) }) {
-                            Checkbox(checked, onCheckedChange = { onDraftChange(draft.copy(modificationIds = ItemCreationRules.toggleModification(modifications, modification).map { it.id })) })
-                            Column(Modifier.padding(top = 8.dp)) {
-                                Text(modification.name, color = MaterialTheme.colorScheme.onSurface)
-                                if (modification.effect.isNotBlank()) Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                                ItemPartStats(modification, initialCreation)
-                            }
-                        }
-                    }
-                    }
-                }
-                if (step == gemsStep && category != "Item") {
-                    SdoMetadataText("ESPAÇOS DE APRIMORAMENTO // ${enhancements.size}/$enhancementSlots", color = MaterialTheme.colorScheme.primary)
-                    Text("A base do item e uma modificação de Encaixe determinam o total disponível.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                    val available = enhancementOptions.filterNot { candidate -> enhancements.any { it.id == candidate.id } }
-                    if (quality != ItemQuality.MUNDANE && enhancements.size < enhancementSlots && available.isNotEmpty()) {
-                        ChoiceField<String>("Adicionar aprimoramento", "", available.map { it.id }, true, display = { id ->
-                            available.firstOrNull { it.id == id }?.let { "${if (ItemCreationRules.enhancementIsTechnology(it.id)) "Tecnologia" else "Gema"} // ${it.name}" } ?: "Selecionar"
-                        }) { id -> onDraftChange(draft.copy(enhancementIds = draft.enhancementIds + id)) }
-                    }
-                    enhancements.forEach { enhancement ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Column(Modifier.weight(1f)) {
-                                Text(enhancement.name)
-                                Text(if (ItemCreationRules.enhancementIsTechnology(enhancement.id)) "TECNOLOGIA // ${enhancement.materialTier}" else "GEMA // ${enhancement.materialTier}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                                Text(enhancement.effect, style = MaterialTheme.typography.bodySmall)
-                                ItemPartStats(enhancement, initialCreation)
-                            }
-                            RemoveButton(true, "Remover ${enhancement.name}") {
-                                onDraftChange(draft.copy(enhancementIds = draft.enhancementIds - enhancement.id))
-                            }
-                        }
-                    }
-                }
-                if (step == totalSteps) {
-                Text("REVISE ANTES DE CRIAR", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                SdoCardTitle(if (category == "Item") commonName.ifBlank { "Item sem nome" } else built.name, style = MaterialTheme.typography.titleLarge)
-                if (category == "Item") SdoMetadataText("Item comum // Quantidade $commonQuantity // Carga $commonLoad")
-                else SdoMetadataText("${if (weapon) "Arma" else "Armadura / Acessório"} // ${ItemCreationRules.mixMaterials(material, secondaryMaterial).name} // ${quality.label}")
-                if (weapon) SdoMetadataText("EMPUNHADURA // ${built.toInventoryItem().handsRequired()} MÃO(S)")
-                if (modifications.isNotEmpty()) SdoMetadataText("MODIFICAÇÕES // ${modifications.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (gems.isNotEmpty()) SdoMetadataText("GEMAS // ${gems.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (technologies.isNotEmpty()) SdoMetadataText("TECNOLOGIAS // ${technologies.joinToString { it.name }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (category != "Item") {
-                    val finalMaterial = ItemCreationRules.mixMaterials(material, secondaryMaterial)
-                    val selectedEffects = buildList {
-                        add(base.effect)
-                        add(finalMaterial.effect)
-                        finalMaterial.traitIds.mapTo(this) { traitId ->
-                            "${ItemCreationRules.traitName(traitId)}: ${ItemCreationRules.traitDescription(traitId)}"
-                        }
-                        ItemCreationRules.qualityEffect(quality, armor = !weapon)?.let(::add)
-                        modifications.mapTo(this) { "${it.name}: ${it.effect}" }
-                        gems.mapTo(this) { "${it.name}: ${it.effect}" }
-                        technologies.mapTo(this) { "${it.name}: ${it.effect}" }
-                    }.filter(String::isNotBlank).distinct()
-                    if (selectedEffects.isNotEmpty()) {
-                        Text("EFEITOS ESCOLHIDOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                        selectedEffects.forEach { effect -> Text("• $effect", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
-                    }
-                    if (initialCreation) SdoMetadataText("CUSTO // ${built.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary)
-                    SdoMetadataText("PG ${built.pg} // PL ${built.pl}", color = MaterialTheme.colorScheme.onSurface)
-                    SdoMetadataText("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    built.agilityLimit?.let { SdoMetadataText("LIMITE DE AGILIDADE // $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    if (built.region.isNotBlank()) SdoMetadataText("REGIÃO // ${built.region}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (!allowedByBudget) Text("Custo acima dos PH restantes ou item # não disponível na criação inicial.", color = MaterialTheme.colorScheme.error)
-                }
-            }
-            }
-        },
-        confirmButton = {
-            SdoTextButton(
-                enabled = step < totalSteps || if (category == "Item") commonName.isNotBlank() else allowedByBudget,
-                onClick = { if (step < totalSteps) onDraftChange(draft.copy(step = step + 1)) else onAdd(if (category == "Item") commonItem else built.toInventoryItem(initialCreation = initialCreation)) },
-            ) { Text(if (step < totalSteps) "CONTINUAR" else "CRIAR ITEM") }
-        },
-        dismissButton = { SdoTextButton(onClick = { if (step > 1) onDraftChange(draft.copy(step = step - 1)) else onDismiss() }) { Text(if (step > 1) "VOLTAR" else "CANCELAR") } },
-    )
-}
-
-@Composable
-private fun ItemPartDetails(title: String, part: ItemPart, weapon: Boolean, showHeritageCost: Boolean) {
-    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 4.dp) {
-        Text(title, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-        Text(part.effect.ifBlank { "Sem efeito adicional." }, color = MaterialTheme.colorScheme.onSurface)
-        if (part.traitIds.isNotEmpty()) Text(
-            "TRAÇOS // ${part.traitIds.joinToString { ItemCreationRules.traitName(it).uppercase() }}",
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.bodySmall,
-        )
-        part.traitIds.forEach { traitId ->
-            ItemCreationRules.traitDescription(traitId).takeIf(String::isNotBlank)?.let { description ->
-                SdoMetadataText("${ItemCreationRules.traitName(traitId)} // $description", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-            }
-        }
-        if (part.damageBonus != 0) SdoMetadataText("DANO // +${part.damageBonus}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        if (part.damageReduction != 0) SdoMetadataText("REDUÇÃO // +${part.damageReduction}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        if (part.categoryDieShift != 0) SdoMetadataText("CATEGORIA DE DADO // ${signed(part.categoryDieShift)}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-        ItemPartStats(part, showHeritageCost, includeProtection = false)
-        if (!weapon) {
-            SdoMetadataText("PROTEÇÃO // PG ${part.pg} // PL ${part.pl}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-            part.agilityLimit?.let { limit ->
-                SdoMetadataText("LIMITE DE AGILIDADE // $limit", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-            }
-        }
-        if (part.region.isNotBlank()) SdoMetadataText("REGIÃO // ${part.region}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-    }
-}
-
-@Composable
-private fun ItemPartStats(part: ItemPart, showHeritageCost: Boolean, includeProtection: Boolean = true) {
-    val load = if (part.load > 0) "+${part.load}" else part.load.toString()
-    Text(
-        buildList {
-            if (part.durability != 0) add("DURABILIDADE ${part.durability}")
-            if (part.load != 0) add("CARGA $load")
-            if (includeProtection && part.pg != 0) add("PG ${signed(part.pg)}")
-            if (includeProtection && part.pl != 0) add("PL ${signed(part.pl)}")
-            if (includeProtection) part.agilityLimit?.let { add("LA $it") }
-        }.ifEmpty { listOf("SEM AJUSTES NUMÉRICOS") }.joinToString(" // "),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.bodySmall,
-    )
-    if (showHeritageCost) SdoMetadataText("CUSTO // ${part.creationCost ?: "#"} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
-}
-
-@Composable
-private fun QualityDetails(quality: ItemQuality, weapon: Boolean, showHeritageCost: Boolean) {
-    SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 4.dp) {
-        Text("EFEITO DA QUALIDADE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-        Text(ItemCreationRules.qualityEffect(quality, armor = !weapon) ?: "Funcionamento padrão, sem bônus adicionais.")
-        if (showHeritageCost) SdoMetadataText("AJUSTE DE CUSTO // ${signed(quality.creationAdjustment)} PH", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
-    }
-}
-
-private fun signed(value: Int): String = if (value > 0) "+$value" else value.toString()
 
 internal fun ItemEffect.presentationLabel(): String {
     if (type == ItemEffectType.RULE) return description.ifBlank { "Regra especial" }
@@ -954,14 +345,4 @@ internal fun ItemEffect.presentationLabel(): String {
     }
     val target = resolvedTargetId.ifBlank { target }.takeIf(String::isNotBlank)?.let { " · $it" }.orEmpty()
     return "$typeLabel ${if (value > 0) "+" else ""}$value$target"
-}
-
-@Composable
-private fun StrictCatalogUnavailableDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("CATÁLOGO DE ITENS INDISPONÍVEL") },
-        text = { Text("Não há bases ou materiais compatíveis para este construtor. Feche a tela e tente sincronizar novamente.") },
-        confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
-    )
 }
