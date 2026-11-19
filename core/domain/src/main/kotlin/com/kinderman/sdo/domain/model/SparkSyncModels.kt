@@ -1138,6 +1138,21 @@ private fun applyItemFieldTarget(
                 "available" -> existing.copy(available = boolVal(existing.available))
                 "linkedItemId" -> existing.copy(linkedItemId = strVal(existing.linkedItemId))
                 "meta" -> if (obj != null) existing.copy(
+                    name = obj["name"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.name,
+                    cost = obj["cost"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.cost,
+                    costType = obj["costType"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawType -> runCatching { AbilityCostType.valueOf(rawType) }.getOrNull() }
+                        ?: existing.costType,
+                    costValue = obj["costValue"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.costValue,
+                    action = obj["action"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.action,
+                    range = obj["range"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.range,
+                    duration = obj["duration"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.duration,
+                    effect = obj["effect"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.effect,
+                    active = obj["active"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.booleanOrNull ?: existing.active,
+                    favorite = obj["favorite"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.booleanOrNull ?: existing.favorite,
+                    available = obj["available"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.booleanOrNull ?: existing.available,
+                    linkedItemId = obj["linkedItemId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.linkedItemId,
                     origin = obj["origin"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.origin,
                     category = obj["category"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.category,
                     limit = obj["limit"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.limit,
@@ -1185,6 +1200,28 @@ private fun applyItemFieldTarget(
                 "favorite" -> existing.copy(favorite = boolVal(existing.favorite))
                 "available" -> existing.copy(available = boolVal(existing.available))
                 "linkedItemId" -> existing.copy(linkedInventoryItemId = strVal(existing.linkedInventoryItemId))
+                "meta" -> if (obj != null) existing.copy(
+                    name = obj["name"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.name,
+                    cost = obj["cost"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.cost,
+                    costType = obj["costType"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawType -> runCatching { AbilityCostType.valueOf(rawType) }.getOrNull() }
+                        ?: existing.costType,
+                    costValue = obj["costValue"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.costValue,
+                    action = obj["action"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.action,
+                    range = obj["range"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.range,
+                    duration = obj["duration"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.duration,
+                    effect = obj["effect"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.effect,
+                    favorite = obj["favorite"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.booleanOrNull ?: existing.favorite,
+                    available = obj["available"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.booleanOrNull ?: existing.available,
+                    linkedInventoryItemId = obj["linkedInventoryItemId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: obj["linkedItemId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.linkedInventoryItemId,
+                    catalogEntryId = obj["catalogEntryId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.catalogEntryId,
+                    catalogVersion = obj["catalogVersion"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.catalogVersion,
+                ) else existing
                 else -> existing
             }
             val exists = character.mysticAbilities.any { it.id == id }

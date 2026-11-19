@@ -915,6 +915,68 @@ object SparkWireCodec {
                         !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
                     }
                 }
+            } else if (oldBundle == null && itemId.startsWith("pow_")) {
+                val metaDoc = bundle.fields["meta"]
+                if (metaDoc != null) {
+                    val fullMeta = LinkedHashMap<String, Any?>()
+                    fullMeta.putAll(asMap(metaDoc["value"]))
+                    listOf(
+                        "name", "cost", "costType", "costValue", "action", "range", "duration",
+                        "effect", "active", "favorite", "available", "modifiers", "linkedItemId",
+                    ).forEach { key ->
+                        if (bundle.fields.containsKey(key)) fullMeta[key] = bundle.fields[key]?.get("value")
+                    }
+                    linkedMapOf("meta" to (metaDoc + ("value" to fullMeta)))
+                } else {
+                    changedFields.filter { (fieldKey, fieldDoc) ->
+                        !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
+                    }
+                }
+            } else if (oldBundle == null && itemId.startsWith("mys_")) {
+                val metaDoc = bundle.fields["meta"]
+                if (metaDoc != null) {
+                    val fullMeta = LinkedHashMap<String, Any?>()
+                    fullMeta.putAll(asMap(metaDoc["value"]))
+                    listOf(
+                        "name", "cost", "costType", "costValue", "action", "range", "duration",
+                        "effect", "favorite", "available",
+                    ).forEach { key ->
+                        if (bundle.fields.containsKey(key)) fullMeta[key] = bundle.fields[key]?.get("value")
+                    }
+                    bundle.fields["linkedItemId"]?.get("value")?.let { fullMeta["linkedInventoryItemId"] = it }
+                    linkedMapOf("meta" to (metaDoc + ("value" to fullMeta)))
+                } else {
+                    changedFields.filter { (fieldKey, fieldDoc) ->
+                        !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
+                    }
+                }
+            } else if (oldBundle == null && itemId.startsWith("abil_")) {
+                val metaDoc = bundle.fields["meta"]
+                if (metaDoc != null) {
+                    val fullMeta = LinkedHashMap<String, Any?>()
+                    fullMeta.putAll(asMap(metaDoc["value"]))
+                    bundle.fields["name"]?.get("value")?.let { fullMeta["name"] = it }
+                    bundle.fields["cost"]?.get("value")?.let { fullMeta["cost"] = it }
+                    bundle.fields["action"]?.get("value")?.let { fullMeta["execution"] = it }
+                    bundle.fields["range"]?.get("value")?.let { fullMeta["range"] = it }
+                    if (bundle.fields.containsKey("duration")) fullMeta["duration"] = bundle.fields["duration"]?.get("value")
+                    bundle.fields["effect"]?.get("value")?.let { fullMeta["effect"] = it }
+                    bundle.fields["favorite"]?.get("value")?.let { fullMeta["favorite"] = it }
+                    bundle.fields["available"]?.get("value")?.let { fullMeta["available"] = it }
+                    if (bundle.fields.containsKey("modifiers")) fullMeta["mechanicalEffect"] = bundle.fields["modifiers"]?.get("value")
+                    linkedMapOf("meta" to (metaDoc + ("value" to fullMeta)))
+                } else {
+                    changedFields.filter { (fieldKey, fieldDoc) ->
+                        !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
+                    }
+                }
+            } else if (oldBundle == null && itemId.startsWith("cond_")) {
+                val payloadDoc = bundle.fields["payload"]
+                if (payloadDoc != null) {
+                    linkedMapOf("payload" to payloadDoc)
+                } else {
+                    changedFields
+                }
             } else if (oldBundle == null) {
                 // Skip default/empty item fields on creation so new items/powers fit in 1-2 transactions instead of 4-5.
                 changedFields.filter { (fieldKey, fieldDoc) ->
@@ -1102,6 +1164,14 @@ object SparkWireCodec {
             "duration", "modifiers" -> value == null
             "active", "favorite" -> value == false
             "available" -> value == true
+            else -> false
+        }
+        itemId.startsWith("lcond_") -> when (fieldKey) {
+            "intensity", "duration", "summary", "origin" -> value == ""
+            else -> false
+        }
+        itemId.startsWith("note_") -> when (fieldKey) {
+            "title", "text" -> value == ""
             else -> false
         }
         else -> false
