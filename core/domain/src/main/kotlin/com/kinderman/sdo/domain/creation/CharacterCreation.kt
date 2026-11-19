@@ -110,10 +110,15 @@ object CharacterCreation {
             6 -> {
                 val catalogedPath = character.powers.any { it.sourceType == PowerSourceType.PATH }
                 val initialPowers = character.powers.count {
-                    it.sourceType != PowerSourceType.RACE && it.sourceType != PowerSourceType.PATH
+                    it.sourceType !in setOf(
+                        PowerSourceType.RACE,
+                        PowerSourceType.PATH,
+                        PowerSourceType.KNOWLEDGE,
+                        PowerSourceType.ITEM,
+                    )
                 }
                 val powerSelectionIsValid = if (catalogedPath) {
-                    character.powers.count { it.sourceType == PowerSourceType.PATH } == 2
+                    character.powers.count { it.sourceType == PowerSourceType.PATH } >= 2
                 } else initialPowers == 2
                 if (
                     character.pathName.isBlank() ||

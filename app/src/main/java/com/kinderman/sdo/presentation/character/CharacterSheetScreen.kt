@@ -126,7 +126,7 @@ fun CharacterSheetScreen(
     BackHandler { if (canLeaveCreation) onClose(current) }
 
     val changeCharacter: (Character) -> Unit = { changed ->
-        if (!readOnly) {
+        if (editable) {
             val before = current
             val removedItems = before.inventory.filter { previous -> changed.inventory.none { it.id == previous.id } }
             val draftState = changed.copy(updatedAt = maxOf(System.currentTimeMillis(), before.updatedAt + 1), dirty = true)

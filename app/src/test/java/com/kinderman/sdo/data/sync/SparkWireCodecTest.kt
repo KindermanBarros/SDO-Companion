@@ -424,4 +424,44 @@ class SparkWireCodecTest {
         assertEquals(null, decoded.conditionInstances.single().intensity)
         assertEquals(com.kinderman.sdo.domain.model.ConditionKind.Abalado, decoded.conditionInstances.single().kind)
     }
+
+    @Test
+    fun `editing attribute omitted on fast-create materializes parent item and preserves all default attributes on decode`() {
+        val initial = Character(id = "sheet-attr-sparse", ownerId = "owner-1", name = "Sparse").toRecord()
+        val edited = initial.toDomain().let { ch ->
+            ch.copy(attributes = ch.attributes.map { if (it.acronym == "FOR") it.copy(value = 3) else it })
+        }.toRecord()
+
+        val batches = SparkWireCodec.buildOperationBatches(
+            before = initial,
+            after = edited,
+            operationIdPrefix = "op-edit-for",
+            actorUid = "owner-1",
+            existingRevisions = emptyMap(),
+            sheetRevision = 1L,
+        )
+
+        val allTargets = batches.flatMap { it.targets }
+        assertTrue(
+            "Expected ITEM CREATE for attr_FOR",
+            allTargets.any { it.kind == com.kinderman.sdo.domain.model.TargetKind.ITEM && it.itemId == "attr_FOR" && it.op == com.kinderman.sdo.domain.model.TargetOp.CREATE },
+        )
+        assertTrue(
+            "Expected ITEM_FIELD CREATE for attr_FOR/value",
+            allTargets.any { it.kind == com.kinderman.sdo.domain.model.TargetKind.ITEM_FIELD && it.itemId == "attr_FOR" && it.key == "value" },
+        )
+
+        // Decode a sparse snapshot containing ONLY attr_FOR with value=3 (no AGI..CAR docs and no skill docs).
+        val fullDocs = SparkWireCodec.toSparkDocuments(edited)
+        val sparseForBundle = fullDocs.items.getValue("attr_FOR").let { b ->
+            b.copy(fields = b.fields.filterKeys { it in setOf("name", "acronym", "value") })
+        }
+        val sparseDocs = fullDocs.copy(items = mapOf("attr_FOR" to sparseForBundle))
+        val decoded = SparkWireCodec.fromSparkDocuments(sparseDocs).toDomain()
+
+        assertEquals(6, decoded.attributes.size)
+        assertEquals(3, decoded.attributes.first { it.acronym == "FOR" }.value)
+        assertTrue(decoded.attributes.first { it.acronym == "FOR" }.skills.isNotEmpty())
+        assertEquals(0, decoded.attributes.first { it.acronym == "AGI" }.value)
+    }
 }

@@ -427,7 +427,12 @@ internal fun PhaseOnePowerSection(
         runCatching(block).onSuccess(onChange).onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_SHORT).show() }
     }
     val selectedInitialPowers = character.powers.count {
-        it.sourceType != PowerSourceType.RACE && it.sourceType != PowerSourceType.PATH
+        it.sourceType !in setOf(
+            PowerSourceType.RACE,
+            PowerSourceType.PATH,
+            PowerSourceType.KNOWLEDGE,
+            PowerSourceType.ITEM,
+        )
     }
     val canAddPower = selectionLimit == null || selectedInitialPowers < selectionLimit
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
@@ -474,7 +479,12 @@ internal fun PhaseOnePowerSection(
             alreadyAddedCatalogIds = character.powers.mapNotNull { it.catalogEntryId.takeIf(String::isNotBlank) }.toSet(),
             onSelect = { entry ->
                 val canSelect = selectionLimit == null || character.powers.count {
-                    it.sourceType != PowerSourceType.RACE && it.sourceType != PowerSourceType.PATH
+                    it.sourceType !in setOf(
+                        PowerSourceType.RACE,
+                        PowerSourceType.PATH,
+                        PowerSourceType.KNOWLEDGE,
+                        PowerSourceType.ITEM,
+                    )
                 } < selectionLimit
                 if (canSelect && (character.powers.none { it.catalogEntryId == entry.id } || entry.repeatable)) {
                     val power = entry.toStructuredPower()

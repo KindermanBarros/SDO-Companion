@@ -170,4 +170,18 @@ class CharacterCreationTest {
         )
         assertEquals(true, CharacterCreation.validateStep(4, character).any { it.code == CharacterCreationErrorCode.MILESTONE_REWARD_MISSING })
     }
+
+    @Test fun `knowledge milestone and race powers do not block step six initial power validation`() {
+        val character = Character(
+            pathName = "Caminho Próprio",
+            pathPillars = listOf("Um", "Dois", "Três"),
+            powers = listOf(
+                Power(name = "Poder Racial", sourceType = PowerSourceType.RACE),
+                Power(name = "Recompensa Nível 3", sourceType = PowerSourceType.KNOWLEDGE),
+                Power(name = "Poder Inicial 1", sourceType = PowerSourceType.CATALOG),
+                Power(name = "Poder Inicial 2", sourceType = PowerSourceType.MANUAL),
+            ),
+        )
+        assertNull(CharacterCreation.stepError(6, character))
+    }
 }
