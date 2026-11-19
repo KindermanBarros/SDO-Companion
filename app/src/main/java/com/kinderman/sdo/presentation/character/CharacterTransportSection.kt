@@ -281,7 +281,7 @@ internal fun CharacterTransportSection(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(Modifier.width(6.dp))
-                        Text("Adicionar exemplo")
+                        Text("Adicionar do catálogo")
                     }
                 } else {
                     SdoOutlinedButton(

@@ -730,7 +730,7 @@ internal fun AbilityAvailabilityEditor(
 
 @Composable
 internal fun NarrativeSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
-    var editing by rememberSaveable(character.id) { mutableStateOf(character.story.isBlank()) }
+    var editing by rememberSaveable(character.id) { mutableStateOf(false) }
     var confirmClear by rememberSaveable(character.id) { mutableStateOf(false) }
     val showEditor = enabled && editing
     TechPanel {

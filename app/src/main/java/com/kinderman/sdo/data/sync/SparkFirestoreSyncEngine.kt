@@ -1551,6 +1551,11 @@ class SparkFirestoreSyncEngine(
                     TargetKind.ITEM -> {
                         val remoteItem = remoteItems[target.itemId]
                         val itemDeleted = (remoteItem?.get("deleted") as? Boolean) == true
+                        if (target.op == TargetOp.TOMBSTONE && (remoteItem == null || itemDeleted)) {
+                            val remoteRev = asLong(remoteItem?.get("revision")) ?: target.expectedRevision
+                            resolvedTargets += target.copy(expectedRevision = remoteRev, nextRevision = remoteRev)
+                            continue
+                        }
                         if (itemDeleted && target.op != TargetOp.RESTORE) {
                             return@runTransaction DrainTxOutcome.Tombstoned(
                                 reason = "Item ${target.itemId} foi excluÃ­do remotamente.",
@@ -1690,6 +1695,10 @@ class SparkFirestoreSyncEngine(
                         }
                     }
                 }
+            }
+
+            if (pendingWrites.isEmpty()) {
+                return@runTransaction DrainTxOutcome.Committed(resolvedTargets, nowMs)
             }
 
             // 4. Write immutable operations/{opId} + targets + optional delivery state atomically!
