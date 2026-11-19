@@ -209,7 +209,10 @@ internal fun <T> ChoiceField(
                 text = "$label // ${display(value)}",
                 color = LocalContentColor.current,
                 style = labelStyle,
-                autoSize = TextAutoSize.StepBased(minFontSize = minimumLabelSize, maxFontSize = labelStyle.fontSize),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = if (minimumLabelSize.value <= labelStyle.fontSize.value) minimumLabelSize else labelStyle.fontSize,
+                    maxFontSize = labelStyle.fontSize,
+                ),
             )
         }
         DropdownMenu(

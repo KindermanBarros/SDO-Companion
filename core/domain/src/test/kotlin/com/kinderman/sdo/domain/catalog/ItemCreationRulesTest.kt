@@ -1,5 +1,6 @@
 package com.kinderman.sdo.domain.catalog
 
+import com.kinderman.sdo.domain.model.addInventoryItem
 import com.kinderman.sdo.domain.model.initialCreationCost
 import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.ItemEffectType
@@ -255,5 +256,40 @@ class ItemCreationRulesTest {
 
         assertEquals(1, inventory.durabilityCurrent)
         assertEquals(1, inventory.durabilityMax)
+    }
+
+    @Test fun allCreationCatalogItemsAndBundledAmmoCountHeritagePointsValidly() {
+        val creationItems = ItemCreationRules.catalog.filter { it.creationCost != "#" }
+        assertTrue(creationItems.isNotEmpty())
+        creationItems.forEach { entry ->
+            val converted = entry.toInventoryItem(initialCreation = true)
+            assertTrue(
+                "Expected positive PH cost for ${entry.id} (${entry.name}), got ${converted.initialCreationCost()}",
+                converted.initialCreationCost() >= 1,
+            )
+        }
+
+        val mundaneKnife = ItemCreationRules.build(
+            base = ItemCreationRules.weaponBases.first { it.id == "faca" },
+            material = ItemCreationRules.weaponMaterials.first { it.id == "sucata" },
+            modifications = emptyList(),
+            gemSlots = 0,
+            technologySlots = 0,
+            quality = ItemQuality.MUNDANE,
+        )
+        assertEquals(1, mundaneKnife.creationCost)
+
+        val bow = ItemCreationRules.build(
+            base = ItemCreationRules.weaponBases.first { it.id == "arco_curto" },
+            material = ItemCreationRules.weaponMaterials.first { it.id == "ligas_comuns" },
+            modifications = emptyList(),
+            gemSlots = 0,
+            technologySlots = 0,
+        ).toInventoryItem(initialCreation = true)
+        val character = com.kinderman.sdo.domain.model.Character().addInventoryItem(bow)
+        val ammo = character.inventory.first { it.category == "Munição" }
+        assertEquals(com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE, ammo.acquisitionSource)
+        assertEquals(0, ammo.heritageCost)
+        assertEquals(bow.initialCreationCost(), com.kinderman.sdo.domain.creation.CharacterCreation.heritageSpent(character))
     }
 }

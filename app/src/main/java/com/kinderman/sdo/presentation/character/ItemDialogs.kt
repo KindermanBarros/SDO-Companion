@@ -7,16 +7,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
+import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -121,48 +124,78 @@ internal fun ItemCatalogDialog(
         title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                remainingHeritage?.let {
-                    Text("PONTOS DE HERANÇA RESTANTES // $it / ${ItemCreationRules.HERITAGE_BUDGET}", color = if (it > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                remainingHeritage?.let { remaining ->
+                    val spent = (ItemCreationRules.HERITAGE_BUDGET - remaining).coerceAtLeast(0)
+                    Text(
+                        "PONTOS DE HERANÇA // $spent / ${ItemCreationRules.HERITAGE_BUDGET} PH GASTOS • $remaining RESTANTES",
+                        color = if (remaining > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    LinearProgressIndicator(
+                        progress = { (spent.toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                     Text("Itens acima do saldo são bloqueados. Itens # não participam da criação com PH.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 HudTextField("Buscar item", query) { query = it }
-                ChoiceField(
-                    label = "CATEGORIA",
-                    value = category,
-                    options = listOf("") + categories,
-                    enabled = true,
-                    display = { it.ifBlank { "TODAS" } },
-                ) { category = it }
-                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 460.dp)) {
-                    items(filtered, key = { "${it.kind}:${it.id}" }) { entry ->
-                        val numericCost = entry.creationCost.toIntOrNull()
-                        val allowed = remainingHeritage == null || numericCost != null && numericCost <= remainingHeritage
-                        val overBudget = remainingHeritage != null && (numericCost == null || numericCost > remainingHeritage)
-                        Column(
-                            Modifier.fillMaxWidth().sdoClickable(enabled = !overBudget) {
-                                if (allowed) {
-                                    if (entry.group.equals("Ferramenta", ignoreCase = true)) {
-                                        pendingToolId = entry.id
-                                        toolName = ""
-                                    } else {
-                                        onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
-                                    }
-                                }
-                            }.padding(vertical = 9.dp),
-                            verticalArrangement = Arrangement.spacedBy(3.dp),
-                        ) {
-                            Text(entry.name, color = if (allowed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    SdoFilterChip(
+                        label = "Todas",
+                        selected = category.isBlank(),
+                        onClick = { category = "" },
+                    )
+                    categories.forEach { cat ->
+                        SdoFilterChip(
+                            label = cat,
+                            selected = category.equals(cat, ignoreCase = true),
+                            onClick = { category = cat },
+                        )
+                    }
+                }
+                LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(min = 120.dp, max = 380.dp)) {
+                    if (filtered.isEmpty()) {
+                        item(key = "empty") {
                             Text(
-                                if (remainingHeritage != null) {
-                                    "${entry.group} // CRIAÇÃO ${entry.creationCost.ifBlank { "—" }} PH // CARGA ${entry.load}"
-                                } else {
-                                    "${entry.group} // CARGA ${entry.load}"
-                                },
-                                color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.labelSmall,
+                                "Nenhum item encontrado para este filtro.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(vertical = 12.dp),
                             )
-                            Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                    } else {
+                        itemsIndexed(filtered, key = { index, entry -> "${entry.kind}:${entry.id}:$index" }) { _, entry ->
+                            val numericCost = entry.creationCost.toIntOrNull()?.coerceAtLeast(1)
+                            val allowed = remainingHeritage == null || (numericCost != null && numericCost <= remainingHeritage)
+                            val overBudget = remainingHeritage != null && (numericCost == null || numericCost > remainingHeritage)
+                            Column(
+                                Modifier.fillMaxWidth().sdoClickable(enabled = !overBudget) {
+                                    if (allowed) {
+                                        if (entry.group.equals("Ferramenta", ignoreCase = true)) {
+                                            pendingToolId = entry.id
+                                            toolName = ""
+                                        } else {
+                                            onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
+                                        }
+                                    }
+                                }.padding(vertical = 9.dp),
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
+                            ) {
+                                Text(entry.name, color = if (allowed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
+                                Text(
+                                    if (remainingHeritage != null) {
+                                        "${entry.group} // CRIAÇÃO ${numericCost ?: "—"} PH // CARGA ${entry.load}"
+                                    } else {
+                                        "${entry.group} // CARGA ${entry.load}"
+                                    },
+                                    color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                                Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            }
                         }
                     }
                 }

@@ -139,6 +139,9 @@ internal fun PhaseOneStrictInventorySection(
             var expanded by rememberSaveable(item.id) { mutableStateOf(false) }
             val compactDetails = buildList {
                 add(item.inventoryState.label.uppercase())
+                if (character.isInCreation && item.acquisitionSource == com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE) {
+                    add("${item.initialCreationCost()} PH")
+                }
                 add("CARGA ${item.effectiveLoad()}")
                 if (item.quantity > 1 || item.linkedAshId.isNotBlank() || item.category.equals("Munição", true) || item.category.contains("Consumível", true)) {
                     add("QTD ${item.quantity}")
@@ -314,7 +317,7 @@ internal fun PhaseOneStrictInventorySection(
         )
         "glossary" -> EquipmentGlossaryDialog(
             onDismiss = { dialog = null },
-            onUse = { entry ->
+            onUse = if (character.isInCreation) null else { entry ->
                 onChange(character.addInventoryItem(InventoryItem(name = entry.term, category = if (entry.section == "Armas") "Arma" else "Item", effect = entry.definition)))
                 dialog = null
             },
@@ -611,7 +614,6 @@ private fun StrictItemBuilderDialog(
     onAdd: (InventoryItem) -> Unit,
 ) {
     var componentQuery by rememberSaveable { mutableStateOf("") }
-    val step = draft.step
     val category = draft.category
     val weapon = category == "Arma"
     val initialCreation = remainingHeritage != null
@@ -658,6 +660,7 @@ private fun StrictItemBuilderDialog(
     val commonQuantity = draft.commonQuantity
     val commonCategory = draft.commonCategory
     val totalSteps = if (category == "Item") 2 else if (hasAlloyComposition) 7 else 6
+    val step = draft.step.coerceIn(1, totalSteps)
     val stepTitle = if (category == "Item") listOf("DADOS", "REVISÃO")[step - 1]
         else (if (hasAlloyComposition) listOf("BASE", "MATERIAL", "LIGA", "QUALIDADE", "MODIFICAÇÕES", "APRIMORAMENTOS", "REVISÃO")
         else listOf("BASE", "MATERIAL", "QUALIDADE", "MODIFICAÇÕES", "APRIMORAMENTOS", "REVISÃO"))[step - 1]
@@ -752,15 +755,15 @@ private fun StrictItemBuilderDialog(
                         onDraftChange(draft.copy(category = selected, baseId = "", materialId = "", secondaryMaterialId = "", modificationIds = emptyList()))
                     }
                     HudTextField("Nome personalizado", customName) { onDraftChange(draft.copy(customName = it)) }
-                    ChoiceField<String>("Tipo", base.id, bases.map { it.id }, true, display = { id: String -> bases.first { it.id == id }.name }) { id: String ->
-                        val selected = bases.first { it.id == id }
+                    ChoiceField<String>("Tipo", base.id, bases.map { it.id }, true, display = { id: String -> bases.firstOrNull { it.id == id }?.name ?: id }) { id: String ->
+                        val selected = bases.firstOrNull { it.id == id } ?: return@ChoiceField
                         val nextMaterialId = if (!weapon && selected.id == "gibao") "organico" else draft.materialId
                         onDraftChange(draft.copy(baseId = id, materialId = nextMaterialId, modificationIds = modifications.filter { it in ItemCreationRules.compatibleModifications(selected, weapon) }.map { it.id }))
                     }
                     ItemPartDetails("DETALHES DO TIPO", base, weapon, initialCreation)
                 }
                 if (step == 2 && category != "Item") {
-                    ChoiceField<String>("Material principal", material.id, materials.map { it.id }, true, display = { id: String -> materials.first { it.id == id }.name }) { id: String ->
+                    ChoiceField<String>("Material principal", material.id, materials.map { it.id }, true, display = { id: String -> materials.firstOrNull { it.id == id }?.name ?: id }) { id: String ->
                         onDraftChange(draft.copy(
                             materialId = id,
                             secondaryMaterialId = draft.secondaryMaterialId.takeIf { id.startsWith("ligas_") && it != id }.orEmpty(),

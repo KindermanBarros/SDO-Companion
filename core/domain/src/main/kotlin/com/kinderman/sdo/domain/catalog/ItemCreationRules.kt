@@ -181,7 +181,7 @@ object ItemCreationRules {
             modifications.map { it.creationCost } + installedComponents.map { it.creationCost } + technologies.map { it.creationCost }
         val componentCost = if (numericCosts.any { it == null }) null else
             numericCosts.filterNotNull().sum()
-        val creationCost = componentCost?.let { (it + quality.creationAdjustment).coerceAtLeast(0) }
+        val creationCost = componentCost?.let { (it + quality.creationAdjustment).coerceAtLeast(1) }
         val armor = base.group == "Armadura" || base.group == "Escudo" || base.group == "Acessório"
         val protective = base.group == "Armadura" || base.group == "Escudo"
         val qualityPg = if (protective) when (quality) {
@@ -464,7 +464,7 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
         ).joinToString("\n"),
         category = group,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.NARRATIVE,
-        heritageCost = creationCost.toIntOrNull().takeIf { initialCreation },
+        heritageCost = if (initialCreation) (creationCost.toIntOrNull() ?: 1).coerceAtLeast(1) else null,
         purchasePrice = null,
         catalogEntryId = id,
         catalogVersion = version,
