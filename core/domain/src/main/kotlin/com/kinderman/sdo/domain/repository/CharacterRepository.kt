@@ -44,6 +44,11 @@ interface CharacterRepository {
     suspend fun delete(session: UserSession, character: Character)
     suspend fun sync(session: UserSession): List<CharacterSyncConflict>
     suspend fun syncCharacter(session: UserSession, characterId: String): List<CharacterSyncConflict> = sync(session)
+    suspend fun syncCharacter(
+        session: UserSession,
+        characterId: String,
+        pullRemote: Boolean,
+    ): List<CharacterSyncConflict> = syncCharacter(session, characterId)
     suspend fun resolveConflict(
         session: UserSession,
         conflict: CharacterSyncConflict,

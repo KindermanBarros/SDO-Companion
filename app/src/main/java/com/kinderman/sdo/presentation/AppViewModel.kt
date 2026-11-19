@@ -717,7 +717,7 @@ class AppViewModel(
                 cloudSyncing = _loadState.value.cloudSyncing || fromCloud,
             )
             try {
-                runCatching { repository.syncCharacter(session, characterId) }
+                runCatching { repository.syncCharacter(session, characterId, pullRemote = fromCloud) }
                     .onSuccess { charConflicts ->
                         _conflicts.value = _conflicts.value.filterNot { it.local.id == characterId } + charConflicts
                     }

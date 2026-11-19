@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken
 import com.kinderman.sdo.data.local.CharacterConverters
 import com.kinderman.sdo.data.local.CharacterRecord
 import com.kinderman.sdo.data.local.normalizedForSparkV2
+import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.domain.model.Ability
 import com.kinderman.sdo.domain.model.AbilityCostType
 import com.kinderman.sdo.domain.model.AshPurity
@@ -802,20 +803,24 @@ object SparkWireCodec {
             )
         }
 
-        // Fast creation: omit every field/item whose absence decodes to the identical sheet.
-        // Readers rebuild those values from their defaults, so the transaction stays tiny.
+        // Fast creation: omit every field/item whose absence decodes to the identical domain sheet.
+        // Readers rebuild those values from their defaults, so creation fits in a single transaction.
         val redundantFields = mutableSetOf<String>()
         val redundantItemIds = mutableSetOf<String>()
         if (beforeDocs == null && skipDefaultFieldsOnCreate) {
-            val full = fromSparkDocuments(afterDocs)
+            val fullDomain = fromSparkDocuments(afterDocs).toDomain()
             afterDocs.fields.keys.forEach { key ->
-                if (fromSparkDocuments(afterDocs.copy(fields = afterDocs.fields - key)) == full) redundantFields += key
+                if (fromSparkDocuments(afterDocs.copy(fields = afterDocs.fields - key)).toDomain() == fullDomain) {
+                    redundantFields += key
+                }
             }
             val trimmed = afterDocs.copy(fields = afterDocs.fields - redundantFields)
             val attributeIds = afterDocs.items.filter { (id, bundle) ->
                 bundle.document["kind"] == "ATTRIBUTE" || id.startsWith("attr_")
             }.keys
-            if (attributeIds.isNotEmpty() && fromSparkDocuments(trimmed.copy(items = trimmed.items - attributeIds)) == full) {
+            if (attributeIds.isNotEmpty() &&
+                fromSparkDocuments(trimmed.copy(items = trimmed.items - attributeIds)).toDomain() == fullDomain
+            ) {
                 redundantItemIds += attributeIds
             }
         }

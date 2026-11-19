@@ -161,8 +161,15 @@ class SyncedCharacterRepository(
     }
 
     override suspend fun syncCharacter(session: UserSession, characterId: String): List<CharacterSyncConflict> =
+        syncCharacter(session, characterId, pullRemote = true)
+
+    override suspend fun syncCharacter(
+        session: UserSession,
+        characterId: String,
+        pullRemote: Boolean,
+    ): List<CharacterSyncConflict> =
         syncMutex.withLock {
-            syncEngine?.syncCharacter(session, characterId) ?: emptyList()
+            syncEngine?.syncCharacter(session, characterId, pullRemote = pullRemote) ?: emptyList()
         }
 
     override suspend fun resolveConflict(

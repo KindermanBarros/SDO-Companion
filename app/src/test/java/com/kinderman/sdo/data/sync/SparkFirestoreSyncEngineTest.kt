@@ -362,11 +362,26 @@ class SparkFirestoreSyncEngineTest {
             )
         }
 
-        override suspend fun fetchSheetHead(sheetId: String): SparkSheetHead? = roots[sheetId]?.let {
-            SparkSheetHead((it["revision"] as Number).toLong(), it["deleted"] == true, latestOperationAtMs)
+        var fetchHeadCount = 0
+        var fetchDocsCount = 0
+        var transactionCount = 0
+        var lastIsLocalOperation: ((String) -> Boolean)? = null
+
+        override suspend fun fetchSheetHead(sheetId: String): SparkSheetHead? {
+            fetchHeadCount++
+            return roots[sheetId]?.let {
+                SparkSheetHead((it["revision"] as Number).toLong(), it["deleted"] == true, latestOperationAtMs)
+            }
         }
 
-        override fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent> = flowOf()
+        override fun observeSheetReceipts(
+            sheetId: String,
+            ownUid: String,
+            isLocalOperation: (String) -> Boolean,
+        ): Flow<RemoteSyncEvent> {
+            lastIsLocalOperation = isLocalOperation
+            return flowOf()
+        }
 
         override suspend fun fetchAccessibleSheetIds(uid: String, ownedActiveCampaignIds: Set<String>, isAdmin: Boolean): Set<String> =
             roots.entries.filter { (_, data) ->
@@ -413,8 +428,15 @@ class SparkFirestoreSyncEngineTest {
             return flowOf(active)
         }
 
-        override fun observeRemoteChanges(uid: String, ownedActiveCampaignIds: Set<String>, isAdmin: Boolean): Flow<RemoteSyncEvent> =
-            flowOf()
+        override fun observeRemoteChanges(
+            uid: String,
+            ownedActiveCampaignIds: Set<String>,
+            isAdmin: Boolean,
+            isLocalOperation: (String) -> Boolean,
+        ): Flow<RemoteSyncEvent> {
+            lastIsLocalOperation = isLocalOperation
+            return flowOf()
+        }
     }
 
     private var signedInUid: String? = "player-1"
@@ -1346,5 +1368,28 @@ class SparkFirestoreSyncEngineTest {
         assertEquals(4, refreshed?.level)
         assertEquals(12, refreshed?.life?.current)
         assertEquals(2L, store.getAccountSheet("player-1", "sheet-cloud-1")?.sheetRevision)
+    }
+
+    @Test
+    fun createSheetCommitsInSingleTransactionWithoutRedundantRemotePullOrSelfEcho() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+
+        val created = engine.create(user, user.uid, "")
+        val intentsBeforeDrain = store.listIntentsForSheet(user.uid, created.id)
+        assertEquals("New empty sheet must fit in a single Spark transaction", 1, intentsBeforeDrain.size)
+
+        engine.syncCharacter(user, created.id, pullRemote = false)
+
+        assertEquals("Local push must not re-fetch sheet head", 0, remote.fetchHeadCount)
+        assertNotNull(remote.roots[created.id])
+        assertTrue(store.listIntentsForSheet(user.uid, created.id).all { it.status == SheetIntentStatus.CONFIRMED.name })
+
+        // Verify observeRemoteChanges receives a predicate that suppresses our own committed opId.
+        engine.observeRemoteChanges(user, emptySet()).collect {}
+        val opId = intentsBeforeDrain.single().operationId
+        val predicate = requireNotNull(remote.lastIsLocalOperation)
+        assertTrue("Committed local operationId must be suppressed from remote echo", predicate(opId))
+        assertFalse("Foreign operationId must NOT be suppressed", predicate("other-device-op"))
     }
 }
