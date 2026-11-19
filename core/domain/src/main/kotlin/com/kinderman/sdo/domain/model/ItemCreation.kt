@@ -205,6 +205,7 @@ fun Character.addInventoryItem(item: InventoryItem): Character {
             catalogEntryId = "ammo.standard.${resolved.baseId}",
             canonical = true,
             acquisitionSource = resolved.acquisitionSource,
+            heritageCost = 0.takeIf { resolved.acquisitionSource == ItemAcquisitionSource.HERITAGE },
         )
     }
     return copy(inventory = inventory + resolved + listOfNotNull(ammunition)).synchronizeItemPowers()
