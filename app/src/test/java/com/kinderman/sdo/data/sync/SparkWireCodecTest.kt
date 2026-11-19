@@ -702,4 +702,99 @@ class SparkWireCodecTest {
         assertEquals(1, invEditTargets.size)
         assertEquals("quantity", invEditTargets.single().key)
     }
+
+    @Test
+    fun addingPowersMysticAndConditionsPacksEachIntoTwoTargetsWithinRulesLimits() {
+        val before = Character(
+            id = "sheet-fast-other",
+            ownerId = "owner-1",
+            name = "Ayla",
+        )
+        val power = com.kinderman.sdo.domain.model.Power(
+            id = "pow-fast-1",
+            name = "Golpe Solar",
+            cost = "2 PE",
+            costType = com.kinderman.sdo.domain.model.AbilityCostType.ENERGY,
+            costValue = 2,
+            action = "Ação",
+            range = "Corpo a corpo",
+            effect = "Causa dano radiante",
+            sourceType = com.kinderman.sdo.domain.model.PowerSourceType.PATH,
+        )
+        val mystic = com.kinderman.sdo.domain.model.MysticAbility(
+            id = "mys-fast-1",
+            name = "Chama Arcana",
+            cost = "3 PA",
+            costType = com.kinderman.sdo.domain.model.AbilityCostType.ARCANE,
+            costValue = 3,
+            action = "Ação",
+            range = "Médio",
+            effect = "Incendeia o alvo",
+        )
+        val cond = com.kinderman.sdo.domain.model.ConditionInstance(
+            instanceId = com.kinderman.sdo.domain.model.ConditionInstanceId("cond-fast-1"),
+            payload = com.kinderman.sdo.domain.model.ConditionPayload(
+                kind = com.kinderman.sdo.domain.model.ConditionKind.Abalado,
+                intensity = 2,
+                duration = com.kinderman.sdo.domain.model.Duration(
+                    com.kinderman.sdo.domain.model.DurationKind.Instant,
+                ),
+            ),
+        )
+        val after = before.copy(
+            powers = listOf(power),
+            mysticAbilities = listOf(mystic),
+            conditionInstances = listOf(cond),
+        )
+
+        val batches = SparkWireCodec.buildOperationBatches(
+            before = before.toRecord(),
+            after = after.toRecord(),
+            operationIdPrefix = "op-fast-all",
+            actorUid = "owner-1",
+            existingRevisions = emptyMap(),
+            sheetRevision = 1L,
+        )
+        val allWrites = batches.flatMap { it.writes }
+        val powWrites = allWrites.filter { it.target.itemId == "pow_pow-fast-1" }
+        val mysWrites = allWrites.filter { it.target.itemId == "mys_mys-fast-1" }
+        val condWrites = allWrites.filter { it.target.itemId == "cond_cond-fast-1" }
+
+        assertEquals(2, powWrites.size)
+        assertEquals("meta", powWrites.first { it.target.kind == TargetKind.ITEM_FIELD }.target.key)
+        assertTrue((powWrites.first { it.target.kind == TargetKind.ITEM_FIELD }.documentData["value"] as Map<*, *>).size <= 50)
+
+        assertEquals(2, mysWrites.size)
+        assertEquals("meta", mysWrites.first { it.target.kind == TargetKind.ITEM_FIELD }.target.key)
+        assertTrue((mysWrites.first { it.target.kind == TargetKind.ITEM_FIELD }.documentData["value"] as Map<*, *>).size <= 50)
+
+        assertEquals(2, condWrites.size)
+        assertEquals("payload", condWrites.first { it.target.kind == TargetKind.ITEM_FIELD }.target.key)
+
+        // Optimistic replay preserves packed Power & MysticAbility fields.
+        val intents = batches.map { batch ->
+            com.kinderman.sdo.domain.model.SheetIntent(
+                operationId = batch.operationId,
+                accountId = "owner-1",
+                sheetId = before.id,
+                type = batch.type,
+                targetKey = batch.targets.first().canonicalTargetKey(),
+                targets = batch.targets,
+                baseRevision = 1L,
+            )
+        }
+        val replayed = com.kinderman.sdo.domain.model.applyPendingIntentsOnConfirmed(
+            confirmed = com.kinderman.sdo.domain.model.AccountSheetSnapshot(
+                accountId = "owner-1",
+                sheetId = before.id,
+                sheetRevision = 1L,
+                confirmedCharacter = before,
+            ),
+            intents = intents,
+        ).projectedCharacter
+        assertEquals("Golpe Solar", replayed.powers.single().name)
+        assertEquals(2, replayed.powers.single().costValue)
+        assertEquals("Chama Arcana", replayed.mysticAbilities.single().name)
+        assertEquals(3, replayed.mysticAbilities.single().costValue)
+    }
 }
