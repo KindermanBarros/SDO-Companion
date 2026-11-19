@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
@@ -16,8 +18,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.ui.SdoButton
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +29,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import com.kinderman.sdo.ui.SdoOutlinedButton
+import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -190,8 +196,8 @@ internal fun <T> ChoiceField(
     searchable: Boolean = options.size > 8,
     onValue: (T) -> Unit,
 ) {
-    var expanded by rememberSaveable(label) { mutableStateOf(false) }
-    var query by rememberSaveable(label) { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
     var anchorWidth by remember { mutableStateOf(0) }
     val density = LocalDensity.current
     val labelStyle = MaterialTheme.typography.labelLarge
@@ -215,23 +221,71 @@ internal fun <T> ChoiceField(
                 ),
             )
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false; query = "" },
-            offset = DpOffset(0.dp, 4.dp),
-            modifier = Modifier
-                .then(if (anchorWidth > 0) Modifier.requiredWidth(with(density) { anchorWidth.toDp() }) else Modifier)
-                .heightIn(max = if (searchable) 320.dp else 360.dp),
-        ) {
-            Column {
-                if (searchable) HudTextField("Buscar em $label", query, Modifier.fillMaxWidth().padding(horizontal = 8.dp)) { query = it }
-                visibleOptions.forEach { option ->
+        if (searchable) {
+            if (expanded) {
+                AlertDialog(
+                    onDismissRequest = { expanded = false; query = "" },
+                    title = { Text(label.uppercase()) },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            HudTextField("Buscar em $label", query, Modifier.fillMaxWidth()) { query = it }
+                            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
+                                if (visibleOptions.isEmpty()) {
+                                    item(key = "empty") {
+                                        Text(
+                                            "Nenhuma opção encontrada",
+                                            modifier = Modifier.padding(12.dp),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                } else {
+                                    itemsIndexed(visibleOptions, key = { index, option -> "${display(option)}:$index" }) { _, option ->
+                                        val selected = option == value
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .heightIn(min = 48.dp)
+                                                .sdoClickable {
+                                                    onValue(option)
+                                                    expanded = false
+                                                    query = ""
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 12.dp),
+                                            verticalArrangement = Arrangement.Center,
+                                        ) {
+                                            Text(
+                                                text = display(option),
+                                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                                style = if (selected) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+                                            )
+                                        }
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        SdoTextButton(onClick = { expanded = false; query = "" }) { Text("FECHAR") }
+                    },
+                )
+            }
+        } else {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                offset = DpOffset(0.dp, 4.dp),
+                modifier = Modifier
+                    .then(if (anchorWidth > 0) Modifier.requiredWidth(with(density) { anchorWidth.toDp() }) else Modifier)
+                    .heightIn(max = 360.dp),
+            ) {
+                options.forEach { option ->
                     DropdownMenuItem(
                         text = { Text(display(option)) },
-                        onClick = { onValue(option); expanded = false; query = "" },
+                        onClick = { onValue(option); expanded = false },
                     )
                 }
-                if (visibleOptions.isEmpty()) Text("Nenhuma opção encontrada", modifier = Modifier.padding(12.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

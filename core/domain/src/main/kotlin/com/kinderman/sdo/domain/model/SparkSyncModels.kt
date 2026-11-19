@@ -414,6 +414,10 @@ fun applyPendingIntentsOnConfirmed(
             }
 
             if (stepSheetDeleted && target.op != TargetOp.RESTORE) {
+                if (target.op == TargetOp.TOMBSTONE) {
+                    stepCharacter = stepCharacter.copy(deleted = true)
+                    continue
+                }
                 failureStatus = SheetIntentStatus.CONFLICT
                 failureMessage = "A ficha foi excluída remotamente."
                 stepConflicts += buildConflictItem(
@@ -432,6 +436,10 @@ fun applyPendingIntentsOnConfirmed(
                 target.itemId in stepTombstones &&
                 target.op != TargetOp.RESTORE
             ) {
+                if (target.kind == TargetKind.ITEM && target.op == TargetOp.TOMBSTONE) {
+                    stepCharacter = removeItemByWireId(stepCharacter, target.itemId)
+                    continue
+                }
                 failureStatus = SheetIntentStatus.CONFLICT
                 failureMessage = "Item ${target.itemId} foi excluído remotamente."
                 stepConflicts += buildConflictItem(
