@@ -464,4 +464,57 @@ class SparkWireCodecTest {
         assertTrue(decoded.attributes.first { it.acronym == "FOR" }.skills.isNotEmpty())
         assertEquals(0, decoded.attributes.first { it.acronym == "AGI" }.value)
     }
+
+    @Test
+    fun `simultaneous field edit and item removal separates tombstones into DELETE_ITEM batch with matching operationId`() {
+        val oldPower = com.kinderman.sdo.domain.model.Power(id = "pow-old", name = "Antigo", costValue = -2)
+        val newPower = com.kinderman.sdo.domain.model.Power(id = "pow-new", name = "Novo", costValue = -1)
+        val before = Character(
+            id = "sheet-path-switch",
+            ownerId = "owner-1",
+            pathName = "Caminho A",
+            powers = listOf(oldPower),
+        ).toRecord()
+        val after = before.toDomain().copy(
+            pathName = "Caminho B",
+            powers = listOf(newPower),
+        ).toRecord()
+
+        val batches = SparkWireCodec.buildOperationBatches(
+            before = before,
+            after = after,
+            operationIdPrefix = "op-switch-path",
+            actorUid = "owner-1",
+            existingRevisions = mapOf("field:pathName" to 1L, "item:pow_pow-old" to 1L),
+            sheetRevision = 1L,
+        )
+
+        val tombstoneBatches = batches.filter { b -> b.targets.any { it.op == com.kinderman.sdo.domain.model.TargetOp.TOMBSTONE } }
+        assertTrue("Expected at least one tombstone batch", tombstoneBatches.isNotEmpty())
+        tombstoneBatches.forEach { batch ->
+            assertEquals(com.kinderman.sdo.domain.model.OperationType.DELETE_ITEM, batch.type)
+            assertTrue(batch.targets.all { it.op == com.kinderman.sdo.domain.model.TargetOp.TOMBSTONE })
+        }
+        batches.forEach { batch ->
+            batch.writes.forEach { write ->
+                if (!write.isMedia && "lastOperationId" in write.documentData) {
+                    assertEquals(batch.operationId, write.documentData["lastOperationId"])
+                }
+            }
+        }
+        val docs = SparkWireCodec.toSparkDocuments(
+            after.copy(
+                inventory = listOf(
+                    InventoryItem(id = "inv-neg", name = "Negativo", durabilityCurrent = -3, durabilityMax = -1, pg = -2, pl = -4, load = -5),
+                ),
+            ),
+        )
+        assertTrue((docs.items.getValue("pow_pow-new").fields.getValue("costValue")["value"] as Int) >= 0)
+        val invFields = docs.items.getValue("inv_inv-neg").fields
+        assertEquals(0, invFields.getValue("durabilityCurrent")["value"])
+        assertEquals(0, invFields.getValue("durabilityMax")["value"])
+        assertEquals(0, invFields.getValue("pg")["value"])
+        assertEquals(0, invFields.getValue("pl")["value"])
+        assertEquals(0, invFields.getValue("load")["value"])
+    }
 }

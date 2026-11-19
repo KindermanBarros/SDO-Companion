@@ -270,25 +270,29 @@ object SparkWireCodec {
             items[itemId] = SparkItemBundle(
                 document = itemDoc(itemId, "INVENTORY"),
                 fields = linkedMapOf(
-                    "name" to itemFieldDoc(itemId, "name", item.name),
-                    "state" to itemFieldDoc(itemId, "state", item.state),
+                    "name" to itemFieldDoc(itemId, "name", item.name.take(2000)),
+                    "state" to itemFieldDoc(itemId, "state", item.state.take(2000)),
                     "quantity" to itemFieldDoc(itemId, "quantity", item.quantity.coerceAtLeast(0)),
-                    "durabilityCurrent" to itemFieldDoc(itemId, "durabilityCurrent", item.durabilityCurrent),
-                    "durabilityMax" to itemFieldDoc(itemId, "durabilityMax", item.durabilityMax),
+                    "durabilityCurrent" to itemFieldDoc(itemId, "durabilityCurrent", item.durabilityCurrent.coerceAtLeast(0)),
+                    "durabilityMax" to itemFieldDoc(itemId, "durabilityMax", item.durabilityMax.coerceAtLeast(0)),
                     "itemCondition" to itemFieldDoc(itemId, "itemCondition", item.itemCondition.name),
-                    "region" to itemFieldDoc(itemId, "region", item.region),
-                    "effect" to itemFieldDoc(itemId, "effect", item.effect),
-                    "load" to itemFieldDoc(itemId, "load", item.load),
-                    "backpackCapacity" to itemFieldDoc(itemId, "backpackCapacity", item.backpackCapacity),
-                    "agilityLimit" to itemFieldDoc(itemId, "agilityLimit", item.agilityLimit),
+                    "region" to itemFieldDoc(itemId, "region", item.region.take(2000)),
+                    "effect" to itemFieldDoc(itemId, "effect", item.effect.take(2000)),
+                    "load" to itemFieldDoc(itemId, "load", item.load.coerceAtLeast(0)),
+                    "backpackCapacity" to itemFieldDoc(itemId, "backpackCapacity", item.backpackCapacity.coerceAtLeast(0)),
+                    "agilityLimit" to itemFieldDoc(itemId, "agilityLimit", item.agilityLimit?.coerceAtLeast(0)),
                     "quality" to itemFieldDoc(itemId, "quality", item.quality.name),
-                    "pg" to itemFieldDoc(itemId, "pg", item.pg),
-                    "pl" to itemFieldDoc(itemId, "pl", item.pl),
-                    "category" to itemFieldDoc(itemId, "category", item.category),
-                    "linkedAshId" to itemFieldDoc(itemId, "linkedAshId", item.linkedAshId),
+                    "pg" to itemFieldDoc(itemId, "pg", item.pg.coerceAtLeast(0)),
+                    "pl" to itemFieldDoc(itemId, "pl", item.pl.coerceAtLeast(0)),
+                    "category" to itemFieldDoc(itemId, "category", item.category.take(2000)),
+                    "linkedAshId" to itemFieldDoc(itemId, "linkedAshId", item.linkedAshId.take(2000)),
                     "ashPurity" to itemFieldDoc(itemId, "ashPurity", item.ashPurity.name),
                     "enhancements" to itemFieldDoc(itemId, "enhancements", enhancementsMap),
-                    "mechanicalEffects" to itemFieldDoc(itemId, "mechanicalEffects", plain["mechanicalEffects"]),
+                    "mechanicalEffects" to itemFieldDoc(
+                        itemId,
+                        "mechanicalEffects",
+                        (plain["mechanicalEffects"] as? List<*> ?: emptyList<Any?>()).take(100),
+                    ),
                     "meta" to itemFieldDoc(itemId, "meta", metaMap),
                 ),
             )
@@ -306,8 +310,12 @@ object SparkWireCodec {
                         "definition" to itemFieldDoc(itemId, "definition", plain(encoded.get("definition"))),
                         "scope" to itemFieldDoc(itemId, "scope", plain(encoded.get("scope"))),
                         "material" to itemFieldDoc(itemId, "material", plain(encoded.get("material"))),
-                        "installations" to itemFieldDoc(itemId, "installations", plain(encoded.get("installations"))),
-                        "stack" to itemFieldDoc(itemId, "stack", plain(encoded.get("stack"))),
+                        "installations" to itemFieldDoc(
+                            itemId,
+                            "installations",
+                            (plain(encoded.get("installations")) as? List<*> ?: emptyList<Any?>()).take(50),
+                        ),
+                        "stack" to itemFieldDoc(itemId, "stack", plain(encoded.get("stack")) ?: 0),
                         "consumable" to itemFieldDoc(itemId, "consumable", plain(encoded.get("consumable"))),
                         "ammo" to itemFieldDoc(itemId, "ammo", plain(encoded.get("ammo"))),
                         "reload" to itemFieldDoc(itemId, "reload", plain(encoded.get("reload"))),
@@ -334,19 +342,19 @@ object SparkWireCodec {
                 items[itemId] = SparkItemBundle(
                     document = itemDoc(itemId, "ABILITY"),
                     fields = linkedMapOf(
-                        "name" to itemFieldDoc(itemId, "name", ability.name),
-                        "cost" to itemFieldDoc(itemId, "cost", rawMap["cost"]),
-                        "costType" to itemFieldDoc(itemId, "costType", ability.cost::class.simpleName.orEmpty()),
-                        "costValue" to itemFieldDoc(itemId, "costValue", ability.cost.amount),
-                        "action" to itemFieldDoc(itemId, "action", rawMap["execution"]),
-                        "range" to itemFieldDoc(itemId, "range", rawMap["range"]),
+                        "name" to itemFieldDoc(itemId, "name", ability.name.take(2000)),
+                        "cost" to itemFieldDoc(itemId, "cost", rawMap["cost"] ?: ""),
+                        "costType" to itemFieldDoc(itemId, "costType", ability.cost::class.simpleName.orEmpty().take(2000)),
+                        "costValue" to itemFieldDoc(itemId, "costValue", ability.cost.amount.coerceAtLeast(0)),
+                        "action" to itemFieldDoc(itemId, "action", rawMap["execution"] ?: ""),
+                        "range" to itemFieldDoc(itemId, "range", rawMap["range"] ?: ""),
                         "duration" to itemFieldDoc(itemId, "duration", rawMap["duration"]),
-                        "effect" to itemFieldDoc(itemId, "effect", ability.effect),
+                        "effect" to itemFieldDoc(itemId, "effect", ability.effect.take(2000)),
                         "active" to itemFieldDoc(itemId, "active", false),
                         "favorite" to itemFieldDoc(itemId, "favorite", ability.favorite),
                         "available" to itemFieldDoc(itemId, "available", ability.available),
                         "modifiers" to itemFieldDoc(itemId, "modifiers", rawMap["mechanicalEffect"]),
-                        "linkedItemId" to itemFieldDoc(itemId, "linkedItemId", ability.ashData?.linkedItemId?.value.orEmpty()),
+                        "linkedItemId" to itemFieldDoc(itemId, "linkedItemId", ability.ashData?.linkedItemId?.value.orEmpty().take(2000)),
                         "meta" to itemFieldDoc(itemId, "meta", metaMap),
                     ),
                 )
@@ -364,19 +372,19 @@ object SparkWireCodec {
             items[itemId] = SparkItemBundle(
                 document = itemDoc(itemId, "POWER"),
                 fields = linkedMapOf(
-                    "name" to itemFieldDoc(itemId, "name", power.name),
-                    "cost" to itemFieldDoc(itemId, "cost", power.cost),
+                    "name" to itemFieldDoc(itemId, "name", power.name.take(2000)),
+                    "cost" to itemFieldDoc(itemId, "cost", power.cost.take(2000)),
                     "costType" to itemFieldDoc(itemId, "costType", power.costType.name),
-                    "costValue" to itemFieldDoc(itemId, "costValue", power.costValue),
-                    "action" to itemFieldDoc(itemId, "action", power.action),
-                    "range" to itemFieldDoc(itemId, "range", power.range),
-                    "duration" to itemFieldDoc(itemId, "duration", power.duration),
-                    "effect" to itemFieldDoc(itemId, "effect", power.effect),
+                    "costValue" to itemFieldDoc(itemId, "costValue", power.costValue.coerceAtLeast(0)),
+                    "action" to itemFieldDoc(itemId, "action", power.action.take(2000)),
+                    "range" to itemFieldDoc(itemId, "range", power.range.take(2000)),
+                    "duration" to itemFieldDoc(itemId, "duration", power.duration.take(2000)),
+                    "effect" to itemFieldDoc(itemId, "effect", power.effect.take(2000)),
                     "active" to itemFieldDoc(itemId, "active", power.active),
                     "favorite" to itemFieldDoc(itemId, "favorite", power.favorite),
                     "available" to itemFieldDoc(itemId, "available", power.available),
-                    "modifiers" to itemFieldDoc(itemId, "modifiers", plain["modifiers"]),
-                    "linkedItemId" to itemFieldDoc(itemId, "linkedItemId", power.linkedItemId),
+                    "modifiers" to itemFieldDoc(itemId, "modifiers", (plain["modifiers"] as? List<*>)?.take(100)),
+                    "linkedItemId" to itemFieldDoc(itemId, "linkedItemId", power.linkedItemId.take(2000)),
                     "meta" to itemFieldDoc(itemId, "meta", metaMap),
                 ),
             )
@@ -393,19 +401,19 @@ object SparkWireCodec {
             items[itemId] = SparkItemBundle(
                 document = itemDoc(itemId, "MYSTIC"),
                 fields = linkedMapOf(
-                    "name" to itemFieldDoc(itemId, "name", mystic.name),
-                    "cost" to itemFieldDoc(itemId, "cost", mystic.cost),
+                    "name" to itemFieldDoc(itemId, "name", mystic.name.take(2000)),
+                    "cost" to itemFieldDoc(itemId, "cost", mystic.cost.take(2000)),
                     "costType" to itemFieldDoc(itemId, "costType", mystic.costType.name),
-                    "costValue" to itemFieldDoc(itemId, "costValue", mystic.costValue),
-                    "action" to itemFieldDoc(itemId, "action", mystic.action),
-                    "range" to itemFieldDoc(itemId, "range", mystic.range),
-                    "duration" to itemFieldDoc(itemId, "duration", mystic.duration),
-                    "effect" to itemFieldDoc(itemId, "effect", mystic.effect),
+                    "costValue" to itemFieldDoc(itemId, "costValue", mystic.costValue.coerceAtLeast(0)),
+                    "action" to itemFieldDoc(itemId, "action", mystic.action.take(2000)),
+                    "range" to itemFieldDoc(itemId, "range", mystic.range.take(2000)),
+                    "duration" to itemFieldDoc(itemId, "duration", mystic.duration.take(2000)),
+                    "effect" to itemFieldDoc(itemId, "effect", mystic.effect.take(2000)),
                     "active" to itemFieldDoc(itemId, "active", false),
                     "favorite" to itemFieldDoc(itemId, "favorite", mystic.favorite),
                     "available" to itemFieldDoc(itemId, "available", mystic.available),
                     "modifiers" to itemFieldDoc(itemId, "modifiers", emptyList<Any?>()),
-                    "linkedItemId" to itemFieldDoc(itemId, "linkedItemId", mystic.linkedInventoryItemId),
+                    "linkedItemId" to itemFieldDoc(itemId, "linkedItemId", mystic.linkedInventoryItemId.take(2000)),
                     "meta" to itemFieldDoc(itemId, "meta", metaMap),
                 ),
             )
@@ -436,11 +444,11 @@ object SparkWireCodec {
             items[itemId] = SparkItemBundle(
                 document = itemDoc(itemId, "LEGACY_CONDITION"),
                 fields = linkedMapOf(
-                    "name" to itemFieldDoc(itemId, "name", cond.name),
-                    "intensity" to itemFieldDoc(itemId, "intensity", cond.intensity),
-                    "duration" to itemFieldDoc(itemId, "duration", cond.duration),
-                    "summary" to itemFieldDoc(itemId, "summary", cond.summary),
-                    "origin" to itemFieldDoc(itemId, "origin", cond.origin),
+                    "name" to itemFieldDoc(itemId, "name", cond.name.take(20000)),
+                    "intensity" to itemFieldDoc(itemId, "intensity", cond.intensity.take(200)),
+                    "duration" to itemFieldDoc(itemId, "duration", cond.duration.take(20000)),
+                    "summary" to itemFieldDoc(itemId, "summary", cond.summary.take(20000)),
+                    "origin" to itemFieldDoc(itemId, "origin", cond.origin.take(20000)),
                     "payload" to itemFieldDoc(itemId, "payload", linkedMapOf("id" to cond.id)),
                 ),
             )
@@ -451,18 +459,18 @@ object SparkWireCodec {
             items[itemId] = SparkItemBundle(
                 document = itemDoc(itemId, "NOTE"),
                 fields = linkedMapOf(
-                    "title" to itemFieldDoc(itemId, "title", note.title),
-                    "text" to itemFieldDoc(itemId, "text", note.text),
+                    "title" to itemFieldDoc(itemId, "title", note.title.take(200)),
+                    "text" to itemFieldDoc(itemId, "text", note.text.take(20000)),
                 ),
             )
         }
 
         normalized.attributes.forEach { attr ->
-            val acronym = attr.acronym.ifBlank { attr.name }
+            val acronym = attr.acronym.ifBlank { attr.name }.take(16)
             val itemId = encodeWireElementId("attr", acronym)
             val itemFields = linkedMapOf<String, Map<String, Any?>>()
-            itemFields["name"] = itemFieldDoc(itemId, "name", attr.name)
-            itemFields["acronym"] = itemFieldDoc(itemId, "acronym", attr.acronym)
+            itemFields["name"] = itemFieldDoc(itemId, "name", attr.name.take(64))
+            itemFields["acronym"] = itemFieldDoc(itemId, "acronym", attr.acronym.take(16))
             itemFields["value"] = itemFieldDoc(itemId, "value", attr.value)
             itemFields["modifier"] = itemFieldDoc(itemId, "modifier", attr.modifier)
             attr.skills.forEach { skill ->
@@ -470,7 +478,7 @@ object SparkWireCodec {
                 val nameKey = "skill_${slug}_name"
                 val valueKey = "skill_${slug}_value"
                 val modKey = "skill_${slug}_modifier"
-                itemFields[nameKey] = itemFieldDoc(itemId, nameKey, skill.name)
+                itemFields[nameKey] = itemFieldDoc(itemId, nameKey, skill.name.take(64))
                 itemFields[valueKey] = itemFieldDoc(itemId, valueKey, skill.value)
                 itemFields[modKey] = itemFieldDoc(itemId, modKey, skill.modifier)
             }
@@ -940,7 +948,14 @@ object SparkWireCodec {
 
         return chunkWritesWithinBudget(writes).mapIndexed { index, chunk ->
             val opId = if (index == 0) operationIdPrefix else "${operationIdPrefix}_$index"
-            val targets = chunk.map { it.target }
+            val stampedWrites = chunk.map { write ->
+                if (write.isMedia || "lastOperationId" !in write.documentData) {
+                    write
+                } else {
+                    write.copy(documentData = write.documentData + ("lastOperationId" to opId))
+                }
+            }
+            val targets = stampedWrites.map { it.target }
             val opType = inferOperationType(before == null, targets)
             val hash = computeCanonicalPayloadHash(
                 sheetId = after.id,
@@ -952,7 +967,7 @@ object SparkWireCodec {
                 operationId = opId,
                 type = opType,
                 targets = targets,
-                writes = chunk,
+                writes = stampedWrites,
                 payloadHash = hash,
             )
         }
@@ -960,19 +975,27 @@ object SparkWireCodec {
 
     private fun chunkWritesWithinBudget(writes: List<SparkTargetWrite>): List<List<SparkTargetWrite>> {
         if (writes.isEmpty()) return emptyList()
-        val batches = mutableListOf<List<SparkTargetWrite>>()
-        var current = mutableListOf<SparkTargetWrite>()
-        for (write in writes) {
-            val candidate = current + write
-            if (!isWithinSparkTransactionBudget(candidate.map { it.target })) {
-                if (current.isNotEmpty()) {
-                    batches += current.toList()
-                    current = mutableListOf()
-                }
-            }
-            current += write
+        // Firestore Rules require TOMBSTONE item updates to execute under DELETE_ITEM (never mixed with UPSERT_ITEM/PATCH_FIELDS).
+        val (tombstones, mutations) = writes.partition {
+            it.target.kind == TargetKind.ITEM && it.target.op == TargetOp.TOMBSTONE
         }
-        if (current.isNotEmpty()) batches += current.toList()
+        val batches = mutableListOf<List<SparkTargetWrite>>()
+        fun appendChunked(group: List<SparkTargetWrite>) {
+            var current = mutableListOf<SparkTargetWrite>()
+            for (write in group) {
+                val candidate = current + write
+                if (!isWithinSparkTransactionBudget(candidate.map { it.target })) {
+                    if (current.isNotEmpty()) {
+                        batches += current.toList()
+                        current = mutableListOf()
+                    }
+                }
+                current += write
+            }
+            if (current.isNotEmpty()) batches += current.toList()
+        }
+        appendChunked(mutations)
+        appendChunked(tombstones)
         return batches
     }
 
