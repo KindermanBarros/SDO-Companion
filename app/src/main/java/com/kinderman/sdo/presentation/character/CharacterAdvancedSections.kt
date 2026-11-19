@@ -31,6 +31,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.addInventoryItem
+import com.kinderman.sdo.domain.model.withAddedAsh
+import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.ConditionKind
@@ -157,29 +159,38 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
     }
     when (dialog) {
         "glossary" -> EquipmentGlossaryDialog { dialog = null }
-        "initial" -> InitialShopDialog(
-            remainingHeritage = remainingHeritage,
-            catalogAvailable = catalog.isNotEmpty(),
+        "initial", "initial_catalog", "initial_builder" -> InventoryItemModal(
+            mode = ItemModalMode.Creation(remainingHeritage),
+            itemCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ITEM },
+            ashCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ASH },
+            regionOptions = character.bodyRegions.map { it.name },
+            initialTab = if (dialog == "initial_builder") ItemModalTab.BUILDER else ItemModalTab.CATALOG,
             onDismiss = { dialog = null },
-            onCatalog = { dialog = "initial_catalog" },
-            onBuilder = { dialog = "initial_builder" },
+            onAddItem = { item ->
+                onChange(character.addInventoryItem(item))
+                dialog = null
+            },
+            onAddAsh = { entry, doses ->
+                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, initialCreation = true))
+                dialog = null
+            },
         )
-        "initial_builder" -> UnifiedItemBuilderDialog(remainingHeritage, character.bodyRegions.map { it.name }, { dialog = null }) { item ->
-            onChange(character.addInventoryItem(item))
-            dialog = null
-        }
-        "builder" -> UnifiedItemBuilderDialog(null, character.bodyRegions.map { it.name }, { dialog = null }) { item ->
-            onChange(character.addInventoryItem(item))
-            dialog = null
-        }
-        "initial_catalog" -> ItemCatalogDialog("EQUIPAMENTOS INICIAIS // ITENS PRONTOS", catalog, remainingHeritage, { dialog = "initial" }) { item ->
-            onChange(character.addInventoryItem(item))
-            dialog = null
-        }
-        "catalog" -> ItemCatalogDialog("CATÁLOGO DE ITENS", catalog, null, { dialog = null }) { item ->
-            onChange(character.addInventoryItem(item))
-            dialog = null
-        }
+        "catalog", "builder" -> InventoryItemModal(
+            mode = ItemModalMode.Sheet,
+            itemCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ITEM },
+            ashCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ASH },
+            regionOptions = character.bodyRegions.map { it.name },
+            initialTab = if (dialog == "builder") ItemModalTab.BUILDER else ItemModalTab.CATALOG,
+            onDismiss = { dialog = null },
+            onAddItem = { item ->
+                onChange(character.addInventoryItem(item))
+                dialog = null
+            },
+            onAddAsh = { entry, doses ->
+                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, initialCreation = false))
+                dialog = null
+            },
+        )
     }
 }
 

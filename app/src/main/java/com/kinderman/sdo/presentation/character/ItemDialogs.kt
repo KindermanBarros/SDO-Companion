@@ -1,508 +1,165 @@
 package com.kinderman.sdo.presentation.character
 
-import com.kinderman.sdo.ui.sdoClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import com.kinderman.sdo.ui.SdoFilterChip
-import com.kinderman.sdo.ui.SdoTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.kinderman.sdo.domain.catalog.EquipmentGlossary
-import com.kinderman.sdo.domain.catalog.ItemCreationRules
-import com.kinderman.sdo.domain.model.CatalogEntry
-import com.kinderman.sdo.domain.model.CatalogKind
+import com.kinderman.sdo.domain.catalog.GlossaryEntry
 import com.kinderman.sdo.domain.model.InventoryItem
-import com.kinderman.sdo.domain.model.ItemPart
-import com.kinderman.sdo.domain.model.ItemQuality
 import com.kinderman.sdo.domain.model.matchesRegion
-import com.kinderman.sdo.domain.catalog.toInventoryItem
-import com.kinderman.sdo.ui.Acid
 import com.kinderman.sdo.ui.HudTextField
-import com.kinderman.sdo.ui.Ice
-import com.kinderman.sdo.ui.Muted
-import com.kinderman.sdo.ui.Signal
-import com.kinderman.sdo.ui.TechCutDark
+import com.kinderman.sdo.ui.SdoFilterChip
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.sdoClickable
 
 @Composable
-internal fun InitialShopDialog(
-    remainingHeritage: Int,
-    catalogAvailable: Boolean,
+internal fun EquipmentGlossaryDialog(
+    onUse: ((GlossaryEntry) -> Unit)? = null,
     onDismiss: () -> Unit,
-    onCatalog: () -> Unit,
-    onBuilder: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("EQUIPAMENTOS INICIAIS // $remainingHeritage PH") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Use seus Pontos de Herança em equipamentos prontos ou monte um item parte a parte.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                SdoTextButton(onClick = onCatalog, enabled = catalogAvailable, modifier = Modifier.fillMaxWidth()) { Text("ESCOLHER ITEM PRONTO") }
-                SdoTextButton(onClick = onBuilder, modifier = Modifier.fillMaxWidth()) { Text("CONSTRUIR ITEM COM PH") }
-            }
-        },
-        confirmButton = {},
-        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
-    )
-}
-
-@Composable
-internal fun ItemCatalogDialog(
-    title: String,
-    entries: List<CatalogEntry>,
-    remainingHeritage: Int?,
-    onDismiss: () -> Unit,
-    onSelect: (InventoryItem) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var pendingToolId by remember { mutableStateOf<String?>(null) }
-    var toolName by remember { mutableStateOf("") }
-    val categories = remember(entries) {
-        entries.filter { it.kind == CatalogKind.ITEM }.map(CatalogEntry::group).filter(String::isNotBlank).distinct().sorted()
+    var section by remember { mutableStateOf("Termos") }
+    var group by remember { mutableStateOf("Todos") }
+    val sections = remember { listOf("Termos", "Materiais", "Armas") }
+    val groups = remember(section) {
+        EquipmentGlossary.entries.filter { it.section == section }.map { it.group }.distinct().sorted()
     }
-    val filtered = remember(entries, query, category, remainingHeritage) {
+    val filtered = remember(query, section, group) {
         val needle = query.trim()
-        entries.filter { entry ->
-            entry.kind == CatalogKind.ITEM &&
-                (category.isBlank() || entry.group.equals(category, ignoreCase = true)) &&
-                (remainingHeritage == null || entry.creationCost.toIntOrNull() != null) &&
-                (needle.isEmpty() || entry.name.contains(needle, true) || entry.group.contains(needle, true) || entry.summary.contains(needle, true))
-        }
+        EquipmentGlossary.entries.filter { entry ->
+            entry.section == section &&
+                (group == "Todos" || entry.group == group) &&
+                (needle.isEmpty() ||
+                    entry.term.contains(needle, ignoreCase = true) ||
+                    entry.group.contains(needle, ignoreCase = true) ||
+                    entry.definition.contains(needle, ignoreCase = true))
+        }.sortedWith(compareBy({ it.group }, { it.term }))
     }
-    val pendingTool = entries.firstOrNull { it.id == pendingToolId }
-    if (pendingTool != null) {
-        AlertDialog(
-            onDismissRequest = { pendingToolId = null },
-            title = { Text("IDENTIFICAR FERRAMENTA") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        "${pendingTool.name} // informe o nome ou ofício para diferenciar este conjunto no inventário.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    HudTextField("Nome ou ofício", toolName) { toolName = it }
-                    Text("Ex.: Relojoeiro — será salva como ${pendingTool.name} — Relojoeiro.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                }
-            },
-            confirmButton = {
-                SdoTextButton(
-                    onClick = {
-                        onSelect(pendingTool.toInventoryItem(initialCreation = remainingHeritage != null).copy(name = "${pendingTool.name} — ${toolName.trim()}"))
-                    },
-                    enabled = toolName.isNotBlank(),
-                ) { Text("ADICIONAR") }
-            },
-            dismissButton = { SdoTextButton(onClick = { pendingToolId = null }) { Text("VOLTAR") } },
-        )
-        return
-    }
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                remainingHeritage?.let { remaining ->
-                    val spent = (ItemCreationRules.HERITAGE_BUDGET - remaining).coerceAtLeast(0)
-                    Text(
-                        "PONTOS DE HERANÇA // $spent / ${ItemCreationRules.HERITAGE_BUDGET} PH GASTOS • $remaining RESTANTES",
-                        color = if (remaining > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                    LinearProgressIndicator(
-                        progress = { (spent.toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Text("Itens acima do saldo são bloqueados. Itens # não participam da criação com PH.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                }
-                HudTextField("Buscar item", query) { query = it }
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        ),
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .imePadding(),
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(Modifier.fillMaxSize()) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    SdoFilterChip(
-                        label = "Todas",
-                        selected = category.isBlank(),
-                        onClick = { category = "" },
+                    Text(
+                        text = "GLOSSÁRIO DE EQUIPAMENTOS",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f),
                     )
-                    categories.forEach { cat ->
-                        SdoFilterChip(
-                            label = cat,
-                            selected = category.equals(cat, ignoreCase = true),
-                            onClick = { category = cat },
-                        )
-                    }
+                    SdoTextButton(onClick = onDismiss) { Text("FECHAR") }
                 }
-                LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(min = 120.dp, max = 380.dp)) {
-                    if (filtered.isEmpty()) {
-                        item(key = "empty") {
-                            Text(
-                                "Nenhum item encontrado para este filtro.",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(vertical = 12.dp),
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    HudTextField("Buscar termo, item ou material", query) { query = it }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        sections.forEach { sec ->
+                            SdoFilterChip(
+                                label = sec,
+                                selected = section == sec,
+                                onClick = {
+                                    section = sec
+                                    group = "Todos"
+                                },
                             )
                         }
-                    } else {
-                        itemsIndexed(filtered, key = { index, entry -> "${entry.kind}:${entry.id}:$index" }) { _, entry ->
-                            val numericCost = entry.creationCost.toIntOrNull()?.coerceAtLeast(1)
-                            val allowed = remainingHeritage == null || (numericCost != null && numericCost <= remainingHeritage)
-                            val overBudget = remainingHeritage != null && (numericCost == null || numericCost > remainingHeritage)
-                            Column(
-                                Modifier.fillMaxWidth().sdoClickable(enabled = !overBudget) {
-                                    if (allowed) {
-                                        if (entry.group.equals("Ferramenta", ignoreCase = true)) {
-                                            pendingToolId = entry.id
-                                            toolName = ""
-                                        } else {
-                                            onSelect(entry.toInventoryItem(initialCreation = remainingHeritage != null))
-                                        }
-                                    }
-                                }.padding(vertical = 9.dp),
-                                verticalArrangement = Arrangement.spacedBy(3.dp),
-                            ) {
-                                Text(entry.name, color = if (allowed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleSmall)
-                                Text(
-                                    if (remainingHeritage != null) {
-                                        "${entry.group} // CRIAÇÃO ${numericCost ?: "—"} PH // CARGA ${entry.load}"
-                                    } else {
-                                        "${entry.group} // CARGA ${entry.load}"
-                                    },
-                                    color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                                Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        SdoFilterChip(
+                            label = "Todos",
+                            selected = group == "Todos",
+                            onClick = { group = "Todos" },
+                        )
+                        groups.forEach { grp ->
+                            SdoFilterChip(
+                                label = grp,
+                                selected = group == grp,
+                                onClick = { group = if (group == grp) "Todos" else grp },
+                            )
+                        }
+                    }
+                    SdoMetadataText(
+                        text = "RESULTADOS // ${filtered.size}",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+                LazyColumn(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    itemsIndexed(filtered, key = { index, it -> "${it.section}:${it.group}:${it.referenceId}:${it.term}:$index" }) { _, entry ->
+                        SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 4.dp) {
+                            Text(entry.term, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                            SdoMetadataText(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                            Text(entry.definition, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                            if (onUse != null && entry.referenceId.isNotBlank()) {
+                                SdoTextButton(onClick = { onUse(entry) }) { Text("USAR COMO BASE") }
                             }
                         }
                     }
                 }
             }
-        },
-        confirmButton = {},
-        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
-    )
-}
-
-@Composable
-internal fun ItemBuilderDialog(
-    remainingHeritage: Int?,
-    onDismiss: () -> Unit,
-    onAdd: (InventoryItem) -> Unit,
-) {
-    val initialBase = ItemCreationRules.weaponBases.firstOrNull()
-    val initialMaterial = ItemCreationRules.weaponMaterials.firstOrNull { it.id == "ligas_comuns" }
-        ?: ItemCreationRules.weaponMaterials.firstOrNull()
-    if (initialBase == null || initialMaterial == null) {
-        UnavailableItemCatalogDialog(onDismiss)
-        return
-    }
-    var weapon by remember { mutableStateOf(true) }
-    var base by remember { mutableStateOf(initialBase) }
-    var material by remember { mutableStateOf(initialMaterial) }
-    var secondaryMaterial by remember { mutableStateOf<ItemPart?>(null) }
-    var modifications by remember { mutableStateOf(emptyList<ItemPart>()) }
-    var customName by remember { mutableStateOf("") }
-    var quality by remember { mutableStateOf(ItemQuality.COMMON) }
-    var enhancements by remember { mutableStateOf(emptyList<ItemPart>()) }
-    var picker by remember { mutableStateOf<String?>(null) }
-    val availableBases = if (weapon) ItemCreationRules.weaponBases else ItemCreationRules.armorBases
-    val allMaterials = when {
-        weapon -> ItemCreationRules.weaponMaterials
-        base.id == "gibao" -> ItemCreationRules.armorMaterials.filter { it.id == "organico" }
-        else -> ItemCreationRules.armorMaterials
-    }
-    val initialCreation = remainingHeritage != null
-    val qualityOptions = ItemCreationRules.qualitiesFor(initialCreation)
-    val availableMaterials = ItemCreationRules.materialsFor(allMaterials, initialCreation)
-    val availableSecondaryMaterials = availableMaterials.filter { it.id != material.id }
-    val availableModifications = ItemCreationRules.compatibleModifications(base, weapon)
-    val enhancementSlots = if (quality == ItemQuality.MUNDANE) 0 else
-        base.enhancementSlots + modifications.sumOf(ItemPart::enhancementSlots).coerceAtMost(5)
-    val availableEnhancements = ItemCreationRules.compatibleEnhancements(base, initialCreation)
-    val effectiveEnhancements = enhancements.take(enhancementSlots)
-    val installedGems = effectiveEnhancements.filterNot { ItemCreationRules.enhancementIsTechnology(it.id) }
-    val installedTechnologies = effectiveEnhancements.filter { ItemCreationRules.enhancementIsTechnology(it.id) }
-    val built = ItemCreationRules.build(
-        base, material, modifications, 0, 0, customName, quality,
-        secondaryMaterial = secondaryMaterial,
-        components = installedGems,
-        technologies = installedTechnologies,
-        enhancementSlots = enhancementSlots,
-    )
-    val builtCreationCost = built.creationCost
-    val allowed = remainingHeritage == null || (builtCreationCost != null && builtCreationCost <= remainingHeritage)
-    val overBudget = remainingHeritage != null && (builtCreationCost == null || builtCreationCost > remainingHeritage)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (initialCreation) "CONSTRUTOR // CRIAÇÃO INICIAL" else "CONSTRUTOR DE ITEM") },
-        text = {
-            Column(
-                Modifier.fillMaxWidth().heightIn(max = 570.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(9.dp),
-            ) {
-                remainingHeritage?.let { remaining ->
-                    val spent = ItemCreationRules.HERITAGE_BUDGET - remaining
-                    val preview = built.creationCost ?: 0
-                    Text("HERANÇA // $spent GASTOS + $preview PREVIEW // ${remaining - preview} RESTANTES", color = MaterialTheme.colorScheme.primary)
-                    LinearProgressIndicator(
-                        progress = { ((spent + preview).toFloat() / ItemCreationRules.HERITAGE_BUDGET).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    SdoTextButton(onClick = {
-                        val nextBase = ItemCreationRules.weaponBases.firstOrNull()
-                        val nextMaterial = ItemCreationRules.weaponMaterials.firstOrNull { it.id == "ligas_comuns" }
-                            ?: ItemCreationRules.weaponMaterials.firstOrNull()
-                        if (nextBase != null && nextMaterial != null) {
-                            weapon = true
-                            base = nextBase
-                            material = nextMaterial
-                            secondaryMaterial = null
-                            modifications = emptyList()
-                        }
-                    }) { Text(if (weapon) "[ ARMA ]" else "ARMA") }
-                    SdoTextButton(onClick = {
-                        val nextBase = ItemCreationRules.armorBases.firstOrNull()
-                        val nextMaterial = ItemCreationRules.armorMaterials.firstOrNull { it.id == "ligas_comuns" }
-                            ?: ItemCreationRules.armorMaterials.firstOrNull()
-                        if (nextBase != null && nextMaterial != null) {
-                            weapon = false
-                            base = nextBase
-                            material = nextMaterial
-                            secondaryMaterial = null
-                            modifications = emptyList()
-                        }
-                    }) { Text(if (!weapon) "[ ARMADURA / ACESSÓRIO ]" else "ARMADURA / ACESSÓRIO") }
-                }
-                HudTextField("Nome personalizado (opcional)", customName) { customName = it }
-                SdoTextButton(onClick = { picker = "base" }, modifier = Modifier.fillMaxWidth()) { Text("TIPO // ${base.name}") }
-                Text("MATERIAL PREDOMINANTE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                Text("Partes, camadas e ligas compatíveis pertencem à mesma composição; o material só é contabilizado uma vez.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                SdoTextButton(onClick = { picker = "material" }, modifier = Modifier.fillMaxWidth()) { Text("MATERIAL // ${material.name}") }
-                Text("LIGA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                Text("Combine um segundo material ou mantenha a composição pura.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                SdoTextButton(onClick = { picker = "secondaryMaterial" }, modifier = Modifier.fillMaxWidth()) {
-                    Text("SEGUNDO MATERIAL // ${secondaryMaterial?.name ?: "SEM MISTURA"}")
-                }
-                if (secondaryMaterial != null) SdoTextButton(onClick = { secondaryMaterial = null }, modifier = Modifier.fillMaxWidth()) { Text("USAR MATERIAL PURO") }
-                val composition = ItemCreationRules.mixMaterials(material, secondaryMaterial)
-                if (composition.traitIds.isNotEmpty()) Text(
-                    "TRAÇOS // ${composition.traitIds.joinToString { ItemCreationRules.traitName(it).uppercase() }}",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                SdoTextButton(
-                    onClick = {
-                        if (qualityOptions.isNotEmpty()) {
-                            quality = qualityOptions[(qualityOptions.indexOf(quality).coerceAtLeast(0) + 1) % qualityOptions.size]
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("QUALIDADE // ${quality.label}") }
-                Text("MODIFICAÇÕES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                availableModifications.forEach { modification ->
-                    val checked = modification in modifications
-                    Row(
-                        Modifier.fillMaxWidth().sdoClickable {
-                            modifications = ItemCreationRules.toggleModification(modifications, modification)
-                        },
-                    ) {
-                        Checkbox(checked, onCheckedChange = { modifications = ItemCreationRules.toggleModification(modifications, modification) })
-                        Column(Modifier.padding(top = 8.dp)) {
-                            Text(
-                                if (initialCreation) "${modification.name} // ${modification.creationCost ?: "#"} PH"
-                                else modification.name,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(modification.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-                Text("ESPAÇOS DE APRIMORAMENTO // ${effectiveEnhancements.size}/$enhancementSlots", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                Text("Os espaços vêm do item e de uma modificação de Encaixe.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                Text("APRIMORAMENTOS", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                availableEnhancements.forEach { gem ->
-                    val checked = gem in enhancements
-                    Row(Modifier.fillMaxWidth().sdoClickable(enabled = quality != ItemQuality.MUNDANE) {
-                        enhancements = if (checked) enhancements - gem else if (enhancements.size < enhancementSlots) enhancements + gem else enhancements
-                    }) {
-                        Checkbox(checked, enabled = quality != ItemQuality.MUNDANE, onCheckedChange = {
-                            enhancements = if (checked) enhancements - gem else if (enhancements.size < enhancementSlots) enhancements + gem else enhancements
-                        })
-                        Column(Modifier.padding(top = 8.dp)) {
-                            Text(if (initialCreation) "${gem.name} // ${gem.creationCost} PH" else gem.name, color = MaterialTheme.colorScheme.onSurface)
-                            Text(if (ItemCreationRules.enhancementIsTechnology(gem.id)) "TECNOLOGIA // ${gem.materialTier}" else "GEMA // ${gem.materialTier}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                            Text(gem.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-                if (initialCreation) {
-                    Text("CUSTO // ${built.creationCost ?: "#"} PH", color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)
-                }
-                Text("PG ${built.pg} // PL ${built.pl} // LA ${built.agilityLimit ?: "—"}", color = MaterialTheme.colorScheme.primary)
-                Text("CARGA ${built.load} // DURABILIDADE ${built.durability}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(built.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                if (initialCreation && !allowed) Text(
-                    if (built.creationCost == null) "Itens # não podem ser criados com PH." else "Custo acima dos Pontos de Herança restantes.",
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        },
-        confirmButton = {
-            SdoTextButton(onClick = {
-                if (allowed) onAdd(built.toInventoryItem(initialCreation = initialCreation))
-            }, enabled = !overBudget) {
-                Text(when {
-                    allowed -> "ADICIONAR"
-                    overBudget -> "SALDO INSUFICIENTE"
-                    else -> "REVISAR E ADICIONAR"
-                })
-            }
-        },
-        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
-    )
-
-    if (picker != null) ItemPartPickerDialog(
-        title = when (picker) {
-            "base" -> "SELECIONAR TIPO"
-            "secondaryMaterial" -> "MISTURAR SEGUNDO MATERIAL"
-            else -> "SELECIONAR MATERIAL"
-        },
-        parts = when (picker) {
-            "base" -> availableBases
-            "secondaryMaterial" -> availableSecondaryMaterials
-            else -> availableMaterials
-        },
-        showHeritageCost = initialCreation,
-        onDismiss = { picker = null },
-    ) { part ->
-        if (picker == "base") {
-            base = part
-            modifications = modifications.filter { it in ItemCreationRules.compatibleModifications(part, weapon) }
-            if (!weapon && part.id == "gibao") {
-                ItemCreationRules.armorMaterials.firstOrNull { it.id == "organico" }?.let { material = it }
-            }
-        } else if (picker == "secondaryMaterial") {
-            secondaryMaterial = part
-        } else {
-            material = part
-            if (secondaryMaterial?.id == part.id) secondaryMaterial = null
         }
-        picker = null
     }
-}
-
-@Composable
-private fun ItemPartPickerDialog(
-    title: String,
-    parts: List<ItemPart>,
-    showHeritageCost: Boolean,
-    onDismiss: () -> Unit,
-    onSelect: (ItemPart) -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
-                items(parts.distinctBy(ItemPart::id), key = ItemPart::id) { part ->
-                    Column(Modifier.fillMaxWidth().sdoClickable { onSelect(part) }.padding(vertical = 10.dp)) {
-                        Text(part.name, color = MaterialTheme.colorScheme.onSurface)
-                        Text(
-                            if (showHeritageCost) {
-                                "CRIAÇÃO ${part.creationCost ?: "#"} PH"
-                            } else {
-                                part.group
-                            },
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                        if (part.effect.isNotBlank()) Text(part.effect, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
-    )
-}
-
-@Composable
-private fun UnavailableItemCatalogDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("CATÁLOGO DE ITENS INDISPONÍVEL") },
-        text = { Text("As bases ou materiais necessários não foram carregados. Feche a tela e tente sincronizar novamente.") },
-        confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
-    )
-}
-
-
-@Composable
-internal fun EquipmentGlossaryDialog(onUse: ((com.kinderman.sdo.domain.catalog.GlossaryEntry) -> Unit)? = null, onDismiss: () -> Unit) {
-    var query by remember { mutableStateOf("") }
-    var section by remember { mutableStateOf("Termos") }
-    var group by remember { mutableStateOf("Todos") }
-    val groups = remember(section) { EquipmentGlossary.entries.filter { it.section == section }.map { it.group }.distinct().sorted() }
-    val filtered = remember(query, section, group) {
-        val needle = query.trim()
-        EquipmentGlossary.entries.filter { entry ->
-            entry.section == section && (group == "Todos" || entry.group == group) && (needle.isEmpty() ||
-                entry.term.contains(needle, ignoreCase = true) ||
-                entry.group.contains(needle, ignoreCase = true) ||
-                entry.definition.contains(needle, ignoreCase = true))
-        }.sortedWith(compareBy({ it.group }, { it.term }))
-    }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("GLOSSÁRIO DE EQUIPAMENTOS") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                HudTextField("Buscar termo, item ou material", query) { query = it }
-                ChoiceField("Consulta", section, listOf("Termos", "Materiais", "Armas"), true) { section = it; group = "Todos" }
-                ChoiceField("Categoria", group, listOf("Todos") + groups, true) { group = it }
-                Text("RESULTADOS // ${filtered.size}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 500.dp)) {
-                    items(filtered, key = { "${it.section}:${it.group}:${it.referenceId}:${it.term}" }) { entry ->
-                        Column(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(entry.term, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
-                            Text(entry.group.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
-                            Text(entry.definition, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                            if (onUse != null && entry.referenceId.isNotBlank()) SdoTextButton(onClick = { onUse(entry) }) { Text("USAR COMO BASE") }
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                }
-            }
-        },
-        confirmButton = { SdoTextButton(onClick = onDismiss) { Text("FECHAR") } },
-    )
 }
 
 @Composable
