@@ -421,7 +421,7 @@ object SparkWireCodec {
                     document = itemDoc(itemId, "CONDITION"),
                     fields = linkedMapOf(
                         "name" to itemFieldDoc(itemId, "name", cond.name),
-                        "intensity" to itemFieldDoc(itemId, "intensity", cond.intensity),
+                        "intensity" to itemFieldDoc(itemId, "intensity", cond.intensity ?: 0),
                         "duration" to itemFieldDoc(itemId, "duration", fullMap["payload"]?.let { asMap(it)["duration"] }),
                         "summary" to itemFieldDoc(itemId, "summary", cond.name),
                         "origin" to itemFieldDoc(itemId, "origin", fullMap["source"]),
