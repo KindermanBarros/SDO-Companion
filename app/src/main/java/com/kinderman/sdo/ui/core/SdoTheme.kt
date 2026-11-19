@@ -579,8 +579,8 @@ fun TechPanel(
     ) {
         CompositionLocalProvider(LocalCollapsibleSectionTitle provides null) {
             Column(
-                modifier = Modifier.padding(if (compactCards) 11.dp else 16.dp),
-                verticalArrangement = Arrangement.spacedBy(if (compactCards) 6.dp else 10.dp),
+                modifier = Modifier.padding(if (compactCards) 10.dp else 13.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compactCards) 5.dp else 7.dp),
             ) {
                 content()
             }
@@ -617,7 +617,7 @@ fun SectionHeader(index: String, title: String, modifier: Modifier = Modifier) {
     if (LocalCollapsibleSectionTitle.current != null) return
 
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

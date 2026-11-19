@@ -68,9 +68,10 @@ interface CharacterDao {
     @Transaction
     suspend fun saveEditorChange(candidate: Character) {
         val current = get(candidate.id)?.toDomain()
-        val rebased = if (current != null && candidate.editingBase != null) {
+        val editingBase = candidate.editingBase
+        val rebased = if (current != null && editingBase != null) {
             val normalized = candidate.toRecord().toDomain()
-            val base = candidate.editingBase.toRecord().toDomain()
+            val base = editingBase.toRecord().toDomain()
             val edited = characterEditKeys(base, normalized)
             applyCharacterEditKeys(current, normalized, edited).copy(
                 updatedAt = candidate.updatedAt, lastEditedBy = candidate.lastEditedBy, dirty = true,

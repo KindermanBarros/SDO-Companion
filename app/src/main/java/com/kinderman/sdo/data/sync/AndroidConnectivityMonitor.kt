@@ -5,6 +5,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import com.kinderman.sdo.domain.repository.ConnectivityMonitor
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * Tracks real-time internet availability using Android's [ConnectivityManager].
  */
-class AndroidConnectivityMonitor(context: Context) : ConnectivityMonitor {
+class AndroidConnectivityMonitor @Inject constructor(
+    @ApplicationContext context: Context,
+) : ConnectivityMonitor {
     private val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
     private val _isOnline = MutableStateFlow(currentOnlineState())
     override val isOnline: StateFlow<Boolean> = _isOnline.asStateFlow()

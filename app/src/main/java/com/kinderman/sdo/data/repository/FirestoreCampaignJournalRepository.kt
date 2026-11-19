@@ -17,13 +17,14 @@ import com.kinderman.sdo.domain.model.JournalSnapshot
 import com.kinderman.sdo.domain.model.JournalSyncState
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.repository.CampaignJournalRepository
+import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-class FirestoreCampaignJournalRepository : CampaignJournalRepository {
+class FirestoreCampaignJournalRepository @Inject constructor() : CampaignJournalRepository {
     private val cache = ConcurrentHashMap<String, List<CampaignJournalEntry>>()
 
     override fun observe(session: UserSession, campaign: Campaign): Flow<JournalSnapshot> = callbackFlow {

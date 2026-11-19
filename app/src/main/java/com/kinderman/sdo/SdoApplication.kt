@@ -2,18 +2,10 @@ package com.kinderman.sdo
 
 import android.app.Application
 import android.util.Log
-import androidx.room.Room
 import com.google.firebase.FirebaseApp
-import com.kinderman.sdo.data.auth.FirebaseAuthRepository
+import com.kinderman.sdo.data.di.ApplicationScope
 import com.kinderman.sdo.data.local.AppDatabase
 import com.kinderman.sdo.data.local.CharacterMigrationManager
-import com.kinderman.sdo.data.repository.FirestoreCampaignJournalRepository
-import com.kinderman.sdo.data.repository.LocalCatalogRepository
-import com.kinderman.sdo.data.repository.SyncedCampaignRepository
-import com.kinderman.sdo.data.repository.SyncedCharacterRepository
-import com.kinderman.sdo.data.repository.SyncedOperationsRepository
-import com.kinderman.sdo.data.repository.SyncedOwnerRepository
-import com.kinderman.sdo.data.sync.AndroidConnectivityMonitor
 import com.kinderman.sdo.data.sync.SparkFirestoreSyncEngine
 import com.kinderman.sdo.domain.repository.AuthRepository
 import com.kinderman.sdo.domain.repository.CampaignJournalRepository
@@ -23,91 +15,30 @@ import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.ConnectivityMonitor
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+@HiltAndroidApp
 class SdoApplication : Application() {
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    lateinit var sparkSyncEngine: SparkFirestoreSyncEngine
-    lateinit var characterRepository: CharacterRepository
-    lateinit var authRepository: AuthRepository
-    lateinit var ownerRepository: OwnerRepository
-    lateinit var catalogRepository: CatalogRepository
-    lateinit var campaignRepository: CampaignRepository
-    lateinit var campaignJournalRepository: CampaignJournalRepository
-    lateinit var operationsRepository: OperationsRepository
-    lateinit var connectivityMonitor: ConnectivityMonitor
+    @Inject @ApplicationScope lateinit var applicationScope: CoroutineScope
+    @Inject lateinit var db: AppDatabase
+    @Inject lateinit var characterMigrationManager: CharacterMigrationManager
+    @Inject lateinit var sparkSyncEngine: SparkFirestoreSyncEngine
+    @Inject lateinit var characterRepository: CharacterRepository
+    @Inject lateinit var authRepository: AuthRepository
+    @Inject lateinit var ownerRepository: OwnerRepository
+    @Inject lateinit var catalogRepository: CatalogRepository
+    @Inject lateinit var campaignRepository: CampaignRepository
+    @Inject lateinit var campaignJournalRepository: CampaignJournalRepository
+    @Inject lateinit var operationsRepository: OperationsRepository
+    @Inject lateinit var connectivityMonitor: ConnectivityMonitor
 
     override fun onCreate() {
-        super.onCreate()
         runCatching { FirebaseApp.initializeApp(this) }
             .onFailure { Log.e("SDO_FIREBASE", "Firebase initialization failed", it) }
-        val db = Room.databaseBuilder(this, AppDatabase::class.java, "sdo.db")
-            .addMigrations(
-                AppDatabase.MIGRATION_1_2,
-                AppDatabase.MIGRATION_2_3,
-                AppDatabase.MIGRATION_3_4,
-                AppDatabase.MIGRATION_4_5,
-                AppDatabase.MIGRATION_5_6,
-                AppDatabase.MIGRATION_6_7,
-                AppDatabase.MIGRATION_7_8,
-                AppDatabase.MIGRATION_8_9,
-                AppDatabase.MIGRATION_9_10,
-                AppDatabase.MIGRATION_10_11,
-                AppDatabase.MIGRATION_11_12,
-                AppDatabase.MIGRATION_12_13,
-                AppDatabase.MIGRATION_13_14,
-                AppDatabase.MIGRATION_14_15,
-                AppDatabase.MIGRATION_15_16,
-                AppDatabase.MIGRATION_16_17,
-                AppDatabase.MIGRATION_17_18,
-                AppDatabase.MIGRATION_18_19,
-                AppDatabase.MIGRATION_19_20,
-                AppDatabase.MIGRATION_20_21,
-                AppDatabase.MIGRATION_21_22,
-                AppDatabase.MIGRATION_22_23,
-                AppDatabase.MIGRATION_23_24,
-                AppDatabase.MIGRATION_24_25,
-                AppDatabase.MIGRATION_25_26,
-                AppDatabase.MIGRATION_26_27,
-                AppDatabase.MIGRATION_27_28,
-                AppDatabase.MIGRATION_28_29,
-                AppDatabase.MIGRATION_29_30,
-                AppDatabase.MIGRATION_30_31,
-                AppDatabase.MIGRATION_31_32,
-                AppDatabase.MIGRATION_32_33,
-                AppDatabase.MIGRATION_33_34,
-                AppDatabase.MIGRATION_34_35,
-            )
-            .build()
-        sparkSyncEngine = SparkFirestoreSyncEngine(this, db, applicationScope)
-        val characterMigrationManager = CharacterMigrationManager()
-        characterRepository = SyncedCharacterRepository(
-            dao = db.characterDao(),
-            ownerDao = db.ownerDao(),
-            campaignDao = db.campaignDao(),
-            migrationManager = characterMigrationManager,
-            syncEngine = sparkSyncEngine,
-        )
-        ownerRepository = SyncedOwnerRepository(db.ownerDao())
-        catalogRepository = LocalCatalogRepository(db.catalogDao())
-        campaignRepository = SyncedCampaignRepository(
-            dao = db.campaignDao(),
-            characterDao = db.characterDao(),
-            syncEngine = sparkSyncEngine,
-        )
-        campaignJournalRepository = FirestoreCampaignJournalRepository()
-        operationsRepository = SyncedOperationsRepository(
-            dao = db.operationsDao(),
-            campaignDao = db.campaignDao(),
-            migrationManager = characterMigrationManager,
-            syncEngine = sparkSyncEngine,
-        )
-        authRepository = FirebaseAuthRepository()
-        connectivityMonitor = AndroidConnectivityMonitor(this)
+        super.onCreate()
         applicationScope.launch {
             characterMigrationManager.migrateStoredCharacters(db.characterDao())
             catalogRepository.refreshBundledCatalog()

@@ -206,6 +206,8 @@ fun HistorianDashboardScreen(
     var search by rememberSaveable { mutableStateOf("") }
     var operationSearch by rememberSaveable { mutableStateOf("") }
     var operationFilter by rememberSaveable { mutableStateOf(OperationFilter.ALL) }
+    var showOperationFiltersDialog by rememberSaveable { mutableStateOf(false) }
+    var singleStatTarget by remember { mutableStateOf<Pair<String, HistorianSingleStatField>?>(null) }
     var librarySource by rememberSaveable { mutableStateOf(LibrarySource.ALL) }
     var libraryCategory by rememberSaveable { mutableStateOf(LibraryCategory.ALL) }
     var libraryChoice by rememberSaveable { mutableStateOf<String?>(null) }
@@ -261,7 +263,13 @@ fun HistorianDashboardScreen(
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { if (!cybergrunge) Text("PAINEL DO HISTORIADOR") },
+                    title = {
+                        com.kinderman.sdo.ui.AdaptiveSingleLineText(
+                            "PAINEL DO HISTORIADOR",
+                            style = MaterialTheme.typography.titleMedium,
+                            minimumSize = 10.sp,
+                        )
+                    },
                     navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -283,7 +291,11 @@ fun HistorianDashboardScreen(
                     )
                 }
                 item {
-                    SdoResponsiveGrid(HistorianSection.entries.toList(), minItemWidth = 104.dp, maxColumns = 3) { target, modifier ->
+                    SdoResponsiveGrid(
+                        HistorianSection.entries.toList(),
+                        minItemWidth = if (cybergrunge) 144.dp else 104.dp,
+                        maxColumns = 3,
+                    ) { target, modifier ->
                         SdoFilterChip(target.label, section == target, { section = target }, modifier)
                     }
                 }
@@ -370,18 +382,24 @@ fun HistorianDashboardScreen(
                             }
                             if (campaignCharacters.isNotEmpty()) {
                                 item("operation_filters:${campaign.id}") {
-                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.Bottom,
+                                    ) {
                                         HudTextField(
                                             label = "Buscar personagem",
                                             value = operationSearch,
+                                            modifier = Modifier.weight(1f),
                                             onValue = { operationSearch = it },
                                         )
-                                        SdoResponsiveGrid(OperationFilter.entries, minItemWidth = 112.dp) { filter, modifier ->
-                                            SdoFilterChip(
-                                                label = filter.label,
-                                                selected = operationFilter == filter,
-                                                onClick = { operationFilter = filter },
-                                                modifier = modifier,
+                                        com.kinderman.sdo.ui.SdoOutlinedButton(
+                                            onClick = { showOperationFiltersDialog = true },
+                                            modifier = Modifier.testTag("historian_filter_trigger"),
+                                        ) {
+                                            Text(
+                                                if (operationFilter == OperationFilter.ALL) "Filtros"
+                                                else "Filtros (1)",
                                             )
                                         }
                                     }
@@ -406,6 +424,9 @@ fun HistorianDashboardScreen(
                                     onOpenSheet = onOpenSheet,
                                     onQuickAction = { preset ->
                                         if (canOperate(character)) actionTarget = character.id to preset
+                                    },
+                                    onAdjustStat = { statField ->
+                                        if (canOperate(character)) singleStatTarget = character.id to statField
                                     },
                                     onRemoveCondition = { condition ->
                                         if (canOperate(character)) {
@@ -571,6 +592,45 @@ fun HistorianDashboardScreen(
             },
         )
     }
+    if (showOperationFiltersDialog) {
+        AlertDialog(
+            onDismissRequest = { showOperationFiltersDialog = false },
+            title = { Text("FILTROS DO MODO MESTRE") },
+            text = {
+                SdoResponsiveGrid(OperationFilter.entries, minItemWidth = 120.dp) { filter, modifier ->
+                    SdoFilterChip(
+                        label = filter.label,
+                        selected = operationFilter == filter,
+                        onClick = { operationFilter = filter },
+                        modifier = modifier,
+                    )
+                }
+            },
+            confirmButton = {
+                SdoTextButton(onClick = { showOperationFiltersDialog = false }) { Text("APLICAR") }
+            },
+            dismissButton = {
+                SdoTextButton(onClick = { operationFilter = OperationFilter.ALL; showOperationFiltersDialog = false }) { Text("LIMPAR") }
+            },
+        )
+    }
+    singleStatTarget?.let { (characterId, statField) ->
+        val character = selectedCharacters.firstOrNull { it.id == characterId }
+        if (character == null) {
+            singleStatTarget = null
+        } else {
+            SingleStatQuickAdjustDialog(
+                character = character,
+                field = statField,
+                writable = canOperate(character),
+                onDismiss = { singleStatTarget = null },
+                onApply = { command ->
+                    if (canOperate(character)) onApplyCommand(character, command)
+                    singleStatTarget = null
+                },
+            )
+        }
+    }
     actionTarget?.let { (characterId, preset) ->
         val character = selectedCharacters.firstOrNull { it.id == characterId }
         if (character == null) {
@@ -640,6 +700,84 @@ private fun LibraryChoiceDialog(title: String, options: List<Pair<String, String
 private fun formatAuditTime(timestamp: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(timestamp))
 
+private enum class HistorianSingleStatField(
+    val label: String,
+    val operationType: SessionOperationType,
+    val resource: SessionResource? = null,
+) {
+    LIFE("Vida", SessionOperationType.RESOURCE, SessionResource.LIFE),
+    SANITY("Sanidade", SessionOperationType.RESOURCE, SessionResource.SANITY),
+    ENERGY("Energia", SessionOperationType.RESOURCE, SessionResource.ENERGY),
+    ARCANE("Arcano", SessionOperationType.RESOURCE, SessionResource.ARCANE),
+    EXHAUSTION("Exaustão", SessionOperationType.RESOURCE, SessionResource.EXHAUSTION),
+    DESTINY("Destino", SessionOperationType.DESTINY, SessionResource.DESTINY),
+    CORRUPTION("Corrupção", SessionOperationType.RESOURCE, SessionResource.CORRUPTION),
+    MONEY("Dinheiro", SessionOperationType.MONEY, null),
+}
+
+@Composable
+private fun SingleStatQuickAdjustDialog(
+    character: Character,
+    field: HistorianSingleStatField,
+    writable: Boolean,
+    onDismiss: () -> Unit,
+    onApply: (SessionCommand) -> Unit,
+) {
+    var delta by rememberSaveable(character.id, field.name) { mutableStateOf(0) }
+    var reason by rememberSaveable(character.id, field.name) { mutableStateOf("") }
+    val currentDisplay = when (field) {
+        HistorianSingleStatField.LIFE -> "${character.life.current}/${character.lifeMaximum}"
+        HistorianSingleStatField.SANITY -> "${character.sanity.current}/${character.sanityMaximum}"
+        HistorianSingleStatField.ENERGY -> "${character.energy.current}/${character.energyMaximum}"
+        HistorianSingleStatField.ARCANE -> "${character.arcane.current}/${character.arcaneMaximum}"
+        HistorianSingleStatField.EXHAUSTION -> "${character.exhaustion.current}/${character.exhaustion.maximum}"
+        HistorianSingleStatField.DESTINY -> "${character.destiny.current}/${character.destinyMaximum}"
+        HistorianSingleStatField.CORRUPTION -> "${character.corruption.current}%"
+        HistorianSingleStatField.MONEY -> "${character.money}"
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text(field.label.uppercase(), style = MaterialTheme.typography.titleMedium)
+                Text("${character.name} · Atual: $currentDisplay", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(-5, -1, 1, 5).forEach { step ->
+                        SdoOutlinedButton(
+                            onClick = { delta += step },
+                            enabled = writable,
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+                        ) { Text(if (step > 0) "+$step" else "$step") }
+                    }
+                }
+                IntegerField("Ajuste (${if (delta >= 0) "+$delta" else "$delta"})", delta, writable) { delta = it }
+                HudTextField("Motivo (opcional)", reason, enabled = writable, onValue = { reason = it })
+            }
+        },
+        confirmButton = {
+            SdoTextButton(
+                onClick = {
+                    onApply(
+                        SessionCommand(
+                            type = field.operationType,
+                            resource = field.resource,
+                            amount = delta,
+                            reason = reason.trim(),
+                        ),
+                    )
+                },
+                enabled = writable && delta != 0,
+            ) { Text("APLICAR") }
+        },
+        dismissButton = { SdoTextButton(onClick = onDismiss) { Text("CANCELAR") } },
+    )
+}
+
 @Composable
 private fun OperationalCharacterCard(
     character: Character,
@@ -648,6 +786,7 @@ private fun OperationalCharacterCard(
     onOpenSession: (String) -> Unit,
     onOpenSheet: (String) -> Unit,
     onQuickAction: (QuickActionKind?) -> Unit,
+    onAdjustStat: (HistorianSingleStatField) -> Unit,
     onRemoveCondition: (com.kinderman.sdo.domain.model.ConditionInstance) -> Unit,
 ) {
     var expanded by rememberSaveable(character.id) { mutableStateOf(false) }
@@ -687,16 +826,26 @@ private fun OperationalCharacterCard(
                 )
             }
         }
-        SdoDataModules(
-            listOf(
-                "Vida" to "${character.life.current}/${character.lifeMaximum}",
-                "Sanidade" to "${character.sanity.current}/${character.sanityMaximum}",
-                "Energia / Arcano" to "${character.energy.current}/${character.energyMaximum} • ${character.arcane.current}/${character.arcaneMaximum}",
-                "Exaustão / Destino" to "${character.exhaustion.current}/${character.exhaustion.maximum} • ${character.destiny.current}/${character.destinyMaximum}",
-                "Corrupção / Dinheiro" to "${character.corruption.current}% • ${character.money}",
-                "Sincronização" to if (character.dirty) "ALTERAÇÃO LOCAL" else "EM DIA",
-            ),
+        val clickableStats = listOf(
+            Triple("Vida", "${character.life.current}/${character.lifeMaximum}", HistorianSingleStatField.LIFE),
+            Triple("Sanidade", "${character.sanity.current}/${character.sanityMaximum}", HistorianSingleStatField.SANITY),
+            Triple("Energia", "${character.energy.current}/${character.energyMaximum}", HistorianSingleStatField.ENERGY),
+            Triple("Arcano", "${character.arcane.current}/${character.arcaneMaximum}", HistorianSingleStatField.ARCANE),
+            Triple("Exaustão", "${character.exhaustion.current}/${character.exhaustion.maximum}", HistorianSingleStatField.EXHAUSTION),
+            Triple("Destino", "${character.destiny.current}/${character.destinyMaximum}", HistorianSingleStatField.DESTINY),
+            Triple("Corrupção", "${character.corruption.current}%", HistorianSingleStatField.CORRUPTION),
+            Triple("Dinheiro", "${character.money}", HistorianSingleStatField.MONEY),
         )
+        SdoResponsiveGrid(clickableStats, minItemWidth = 128.dp, maxColumns = 2) { (label, value, field), tileModifier ->
+            SdoInsetCard(
+                modifier = tileModifier.then(if (writable) Modifier.sdoClickable { onAdjustStat(field) } else Modifier),
+                contentPadding = 8.dp,
+                verticalSpacing = 2.dp,
+            ) {
+                Text(label.uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                Text(value, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
         if (alerts.isNotEmpty()) {
             SdoInsetCard(accent = MaterialTheme.colorScheme.error) {
                 Text("ALERTAS", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)

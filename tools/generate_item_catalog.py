@@ -136,7 +136,7 @@ if __name__ == "__main__":
     subprocess.run(structured_command, check=True)
     items_path = ROOT / "catalogs/items.json"
     modifications_path = ROOT / "catalogs/modifications.json"
-    output_path = ROOT / "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedItemParts.kt"
+    output_path = ROOT / "core/domain/src/main/kotlin/com/kinderman/sdo/domain/catalog/GeneratedItemParts.kt"
     items = json.loads(items_path.read_text())
     modifications = json.loads(modifications_path.read_text())
     validate(items, modifications)

@@ -6,13 +6,14 @@ import com.kinderman.sdo.domain.catalog.BuiltInCatalog
 import com.kinderman.sdo.domain.catalog.KnowledgeCatalog
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.repository.CatalogRepository
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Dispatchers
 
-class LocalCatalogRepository(private val dao: CatalogDao) : CatalogRepository {
+class LocalCatalogRepository @Inject constructor(private val dao: CatalogDao) : CatalogRepository {
     override fun observe(): Flow<List<CatalogEntry>> =
         dao.observeAll().map { rows -> rows.map { it.toDomain() } }
             .distinctUntilChanged().flowOn(Dispatchers.Default)

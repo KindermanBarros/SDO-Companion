@@ -1,0 +1,4 @@
+name = "implementer"
+description = "Implement an approved Android change within its assigned scope."
+model = "gpt-6.1-terra"
+developer_instructions = "Read AGENTS.md and .agents/agents/implementer.md; follow that canonical role definition."

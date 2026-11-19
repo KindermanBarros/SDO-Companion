@@ -1,0 +1,4 @@
+name = "planner"
+description = "Plan requirements, architecture, and verifiable slices."
+model = "gpt-6.1-sol"
+developer_instructions = "Read AGENTS.md and .agents/agents/planner.md; follow that canonical role definition."

@@ -44,6 +44,7 @@ Requests recorded on 2026-11-12. Unimplemented items carry no fixed priority or 
 | BACKLOG-019 | Remove campaign spoilers (e.g., silos and current-plot references) from the local database/catalogs, validated against `projetos/solidao-dos-oprimidos` lore repository | [Product overview](product.md) | Done; owner approved 2026-11-18 |
 | BACKLOG-020 | Add lore-grounded powers, mystic abilities, special knowledges, paths, and items from the world's past (`projetos/solidao-dos-oprimidos`) without spoiling current campaign events | [Product overview](product.md) | Done; owner approved 2026-11-18 |
 | BACKLOG-021 | Styled non-editable preview for Personal Notes (`Registros Pessoais`) when collapsed/read-only, matching the `BACKLOG-015` Path visual upgrade | [Character sheets](requirements/character-sheets.md) | Done; owner approved 2026-11-18 |
+| BACKLOG-022 | Epic: Audit and curate `player_handbook_rules.json` game rules content in Biblioteca against the canonical SDO rulebook (accuracy, formatting, missing sections, spoiler check) | [Codex](requirements/codex.md) | ToDo; owner requested 2026-11-18 |
 
 Owner closure 2026-11-16 23:32 America/La_Paz: ongoing delivered tasks are closed by explicit request. BACKLOG-005 remains ToDo; BACKLOG-011 remains superseded. Unimplemented scope, coverage improvement, authenticated multi-device verification and production cutover remain pending; closure does not claim those checks or operations occurred. See [Memory](../MEMORY.md). Earlier dated dispositions below are historical.
 

@@ -142,7 +142,7 @@ if __name__ == '__main__':
     technologies = document("TECHNOLOGY", build_technologies(), 2)
     outputs = {args.catalog_dir / 'gems.json': json.dumps(gems, ensure_ascii=False, indent=2) + '\n',
                args.catalog_dir / 'technologies.json': json.dumps(technologies, ensure_ascii=False, indent=2) + '\n',
-               ROOT / 'app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedGemCatalog.kt': kotlin(gems)}
+               ROOT / 'core/domain/src/main/kotlin/com/kinderman/sdo/domain/catalog/GeneratedGemCatalog.kt': kotlin(gems)}
     for path, content in outputs.items():
         if args.check:
             assert path.read_text() == content, f'{path.name} differs from generated catalog'

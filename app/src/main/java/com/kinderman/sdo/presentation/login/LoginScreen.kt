@@ -14,17 +14,29 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import com.kinderman.sdo.ui.SdoButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import com.kinderman.sdo.ui.SdoOutlinedButton
+import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.kinderman.sdo.BuildConfig
 import com.kinderman.sdo.MainActivity
 import com.kinderman.sdo.presentation.AuthUiState
 import com.kinderman.sdo.ui.Acid
@@ -46,7 +58,12 @@ fun LoginScreen(
     allowDemo: Boolean,
     onGoogleLogin: () -> Unit,
     onDemo: () -> Unit,
+    onDevEmailLogin: ((String, String) -> Unit)? = null,
 ) {
+    var devArrowTapCount by remember { mutableIntStateOf(0) }
+    var showDevEmailDialog by remember { mutableStateOf(false) }
+    var devEmail by remember { mutableStateOf("") }
+    var devPassword by remember { mutableStateOf("") }
     HudBackground {
         Column(
             Modifier.align(Alignment.Center).padding(22.dp),
@@ -96,8 +113,58 @@ fun LoginScreen(
                         Text("MODO LOCAL // OFFLINE")
                     }
                 }
-                ComplianceMark()
+                ComplianceMark(
+                    modifier = if (BuildConfig.IS_DEV_ENV && onDevEmailLogin != null) {
+                        Modifier.testTag("dev_login_secret_trigger").sdoClickable {
+                            devArrowTapCount += 1
+                            if (devArrowTapCount >= 3) {
+                                devArrowTapCount = 0
+                                showDevEmailDialog = true
+                            }
+                        }
+                    } else {
+                        Modifier
+                    },
+                )
             }
+        }
+        if (BuildConfig.IS_DEV_ENV && showDevEmailDialog && onDevEmailLogin != null) {
+            AlertDialog(
+                onDismissRequest = { showDevEmailDialog = false },
+                title = { Text("DEV // LOGIN EMAIL E SENHA") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedTextField(
+                            value = devEmail,
+                            onValueChange = { devEmail = it },
+                            label = { Text("Email") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth().testTag("dev_login_email"),
+                        )
+                        OutlinedTextField(
+                            value = devPassword,
+                            onValueChange = { devPassword = it },
+                            label = { Text("Senha") },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth().testTag("dev_login_password"),
+                        )
+                    }
+                },
+                confirmButton = {
+                    SdoTextButton(
+                        onClick = {
+                            showDevEmailDialog = false
+                            onDevEmailLogin(devEmail, devPassword)
+                        },
+                        enabled = devEmail.isNotBlank() && devPassword.isNotBlank() && !state.loading,
+                        modifier = Modifier.testTag("dev_login_submit"),
+                    ) { Text("ENTRAR") }
+                },
+                dismissButton = {
+                    SdoTextButton(onClick = { showDevEmailDialog = false }) { Text("CANCELAR") }
+                },
+            )
         }
     }
 }

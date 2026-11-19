@@ -197,12 +197,12 @@ fun CharacterSheetScreen(
                     TopAppBar(
                         title = {
                             Column {
-                                if (!cybergrunge) AdaptiveSingleLineText(
+                                AdaptiveSingleLineText(
                                     current.name.uppercase(),
                                     style = MaterialTheme.typography.titleMedium,
                                     minimumSize = 9.sp,
                                 )
-                                Text(
+                                AdaptiveSingleLineText(
                                     text = when {
                                         readOnly -> "Campanha arquivada · somente leitura"
                                         session.isAdmin -> "Acesso administrativo"
@@ -213,6 +213,7 @@ fun CharacterSheetScreen(
                                     },
                                     color = if (readOnly || current.isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                                     style = MaterialTheme.typography.labelSmall,
+                                    minimumSize = 8.sp,
                                 )
                             }
                         },

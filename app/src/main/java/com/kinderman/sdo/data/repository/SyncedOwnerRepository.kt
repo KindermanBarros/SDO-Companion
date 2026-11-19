@@ -8,11 +8,12 @@ import com.kinderman.sdo.data.local.toDomain
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.repository.OwnerRepository
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-class SyncedOwnerRepository(
+class SyncedOwnerRepository @Inject constructor(
     private val dao: OwnerDao,
 ) : OwnerRepository {
     override fun observe(): Flow<List<UserProfile>> =

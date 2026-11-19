@@ -417,38 +417,40 @@ private fun SessionContent(
                 }
             }
             item(key = "session_ability_filters") {
-                ChoiceField(
-                    label = stringResource(R.string.session_ability_filter),
-                    value = abilityFilter,
-                    options = listOf(ALL_ABILITIES) + AbilityKind.entries.map { it.name },
-                    enabled = true,
-                    modifier = Modifier.fillMaxWidth().testTag("session_ability_filter"),
-                    display = { value -> AbilityKind.entries.firstOrNull { it.name == value }?.label ?: allAbilitiesLabel },
-                ) { abilityFilter = it }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SdoFilterChip(
-                        label = stringResource(R.string.session_favorites),
-                        selected = favoritesOnly,
-                        onClick = { favoritesOnly = !favoritesOnly },
-                        modifier = Modifier.weight(1f).testTag("session_favorites"),
-                    )
-                    SdoFilterChip(
-                        label = stringResource(R.string.session_available),
-                        selected = availableOnly,
-                        onClick = { availableOnly = !availableOnly },
-                        modifier = Modifier.weight(1f).testTag("session_available"),
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ChoiceField(
+                        label = stringResource(R.string.session_ability_filter),
+                        value = abilityFilter,
+                        options = listOf(ALL_ABILITIES) + AbilityKind.entries.map { it.name },
+                        enabled = true,
+                        modifier = Modifier.fillMaxWidth().testTag("session_ability_filter"),
+                        display = { value -> AbilityKind.entries.firstOrNull { it.name == value }?.label ?: allAbilitiesLabel },
+                    ) { abilityFilter = it }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SdoFilterChip(
+                            label = stringResource(R.string.session_favorites),
+                            selected = favoritesOnly,
+                            onClick = { favoritesOnly = !favoritesOnly },
+                            modifier = Modifier.weight(1f).testTag("session_favorites"),
+                        )
+                        SdoFilterChip(
+                            label = stringResource(R.string.session_available),
+                            selected = availableOnly,
+                            onClick = { availableOnly = !availableOnly },
+                            modifier = Modifier.weight(1f).testTag("session_available"),
+                        )
+                    }
+                    if (abilityFilter != ALL_ABILITIES || favoritesOnly || availableOnly) {
+                        SdoTextButton(
+                            onClick = { abilityFilter = ALL_ABILITIES; favoritesOnly = false; availableOnly = false },
+                            modifier = Modifier.testTag("session_clear_filters"),
+                        ) { Text(stringResource(R.string.session_clear_filters)) }
+                    }
+                    SdoMetadataText(
+                        stringResource(R.string.session_ability_count, filteredEntries.size, entries.size),
+                        style = MaterialTheme.typography.labelSmall,
                     )
                 }
-                if (abilityFilter != ALL_ABILITIES || favoritesOnly || availableOnly) {
-                    SdoTextButton(
-                        onClick = { abilityFilter = ALL_ABILITIES; favoritesOnly = false; availableOnly = false },
-                        modifier = Modifier.testTag("session_clear_filters"),
-                    ) { Text(stringResource(R.string.session_clear_filters)) }
-                }
-                SdoMetadataText(
-                    stringResource(R.string.session_ability_count, filteredEntries.size, entries.size),
-                    style = MaterialTheme.typography.labelSmall,
-                )
             }
             item(key = "session_ability_header") {
                 SectionHeader("02", stringResource(R.string.session_ability_section))
@@ -687,16 +689,24 @@ private fun ResourceControl(
     onChange: (Int) -> Unit,
 ) {
     Column(
-        modifier.background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(topEnd = 8.dp, bottomStart = 6.dp)).padding(if (compact) 5.dp else 7.dp),
+        modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant, CutCornerShape(topEnd = 8.dp, bottomStart = 6.dp))
+            .padding(horizontal = if (compact) 6.dp else 8.dp, vertical = if (compact) 4.dp else 6.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
-        Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            SdoIconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+            Text("$current/$maximum", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+        }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            SdoIconButton({ onChange(current - 1) }, enabled = enabled && current > 0, modifier = Modifier.weight(1f).heightIn(min = 36.dp)) {
                 Icon(Icons.Default.Remove, stringResource(R.string.session_decrease_resource, label))
             }
-            SdoIconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+            SdoIconButton({ onChange(current + 1) }, enabled = enabled && current < maximum, modifier = Modifier.weight(1f).heightIn(min = 36.dp)) {
                 Icon(Icons.Default.Add, stringResource(R.string.session_increase_resource, label))
             }
         }

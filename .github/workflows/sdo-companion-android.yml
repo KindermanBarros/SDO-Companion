@@ -3,9 +3,9 @@ name: SDO Companion Android release
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'core/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   pull_request:
-    paths: ['app/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'core/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   workflow_dispatch:
 
 permissions:
@@ -46,7 +46,7 @@ jobs:
       # Pull requests never receive signing/Firebase secrets and do not produce an APK.
       # Packaging is restricted to the trusted main-branch release job below.
       - name: Run debug checks
-        run: gradle lintProdDebug testProdDebugUnitTest testDevDebugUnitTest assembleProdDebugAndroidTest assembleDevDebugAndroidTest --build-cache --stacktrace
+        run: gradle :core:domain:test lintProdDebug testProdDebugUnitTest testDevDebugUnitTest assembleProdDebugAndroidTest assembleDevDebugAndroidTest --build-cache --stacktrace
 
       - name: Enforce presentation design-system boundary
         shell: bash
