@@ -37,6 +37,7 @@ jobs:
   validate:
     name: Validate Firebase rules and migration
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout selected version
         uses: actions/checkout@v6
@@ -66,7 +67,7 @@ jobs:
         run: node --test firebase/tests/migration.test.mjs firebase/tests/rollback-media.test.mjs
 
       - name: Archive validated Firebase configuration
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: firebase-config-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -81,6 +82,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       GOOGLE_CREDENTIALS_JSON_DEV: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SDO_COMPANION_DEV }}
     steps:
@@ -109,10 +111,11 @@ jobs:
 
   deploy:
     name: Deploy Firestore production
-    # The breaking protocol cutover requires the documented backup and writer fence.
+    # Production rules deploy stays manually gated via workflow_dispatch.
     if: github.event_name == 'workflow_dispatch'
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: firebase-production
     env:
       GOOGLE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SDO_COMPANION || secrets.FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT_KEY || secrets.GCP_SA_KEY || secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}

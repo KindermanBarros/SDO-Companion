@@ -3,7 +3,7 @@ name: Authenticated Dev Firebase Tests
 on:
   pull_request:
     branches: [main]
-    paths: ['app/**', 'firebase/**', '.github/workflows/dev-authenticated-tests.yml']
+    paths: ['app/**', 'core/**', 'firebase/**', '*.gradle.kts', 'gradle/**', '.github/actions/**', '.github/workflows/dev-authenticated-tests.yml']
   workflow_dispatch:
 
 permissions:
@@ -47,8 +47,8 @@ jobs:
         uses: ./.github/actions/restore-android-secrets
         with:
           env: dev
-      - name: Run unit tests and build dev test APKs
-        run: ./gradlew :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleDevDebugAndroidTest --build-cache --stacktrace
+      - name: Build dev test APKs
+        run: ./gradlew :app:assembleDevDebug :app:assembleDevDebugAndroidTest --build-cache --stacktrace
       - name: Run authenticated dev instrumented test on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:

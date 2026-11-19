@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'app/**'
+      - 'core/**'
       - 'gradle/**'
       - '*.gradle.kts'
       - '.github/workflows/adaptive-ui.yml'
@@ -52,7 +53,7 @@ jobs:
           script: bash .github/scripts/run-adaptive-ui-tests.sh
       - name: Upload test results and layout captures
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: adaptive-ui-results
           path: |

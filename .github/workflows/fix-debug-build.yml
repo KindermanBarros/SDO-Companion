@@ -3,8 +3,15 @@ name: Authenticated dev debug APK
 on:
   pull_request:
     branches: [main]
-  push:
-    branches-ignore: [main]
+    paths:
+      - 'app/**'
+      - 'core/**'
+      - 'catalogs/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - '.github/actions/**'
+      - '.github/workflows/fix-debug-build.yml'
   workflow_dispatch:
 
 permissions:
@@ -19,6 +26,7 @@ jobs:
     name: Build authenticated dev debug APK
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       GOOGLE_SERVICES_JSON_DEV: ${{ secrets.GOOGLE_SERVICES_JSON_DEV }}
       SDO_KEYSTORE_BASE64: ${{ secrets.SDO_KEYSTORE_BASE64 }}
@@ -47,7 +55,7 @@ jobs:
         with:
           apk: app/build/outputs/apk/dev/debug/app-dev-debug.apk
       - name: Upload authenticated dev debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sdo-companion-dev-debug-${{ github.sha }}
           path: app/build/outputs/apk/dev/debug/app-dev-debug.apk

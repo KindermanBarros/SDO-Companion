@@ -13,13 +13,14 @@ permissions:
 
 concurrency:
   group: android-release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
     name: Verify Android pull request
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout pull request
         uses: actions/checkout@v6
@@ -40,13 +41,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: '9.7.1'
 
       # Pull requests never receive signing/Firebase secrets and do not produce an APK.
       # Packaging is restricted to the trusted main-branch release job below.
       - name: Run debug checks
-        run: gradle :core:domain:test lintProdDebug testProdDebugUnitTest testDevDebugUnitTest assembleProdDebugAndroidTest assembleDevDebugAndroidTest --build-cache --stacktrace
+        run: ./gradlew :core:domain:test lintProdDebug testProdDebugUnitTest testDevDebugUnitTest assembleProdDebugAndroidTest assembleDevDebugAndroidTest --build-cache --stacktrace
 
       - name: Enforce presentation design-system boundary
         shell: bash
@@ -61,6 +60,7 @@ jobs:
     name: Build and publish Android release
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     env:
@@ -117,22 +117,24 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Set up Java 25
+        if: steps.version.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
 
       - name: Set up Gradle
+        if: steps.version.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
         uses: gradle/actions/setup-gradle@v5
-        with:
-          gradle-version: '9.7.1'
 
       - name: Restore protected build files
+        if: steps.version.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/restore-android-secrets
         with:
           env: prod
 
       - name: Build and verify signed release APK
+        if: steps.version.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
         id: package
         shell: bash
         run: |
@@ -144,7 +146,7 @@ jobs:
               "-PreleaseCode=${{ steps.version.outputs.version_code }}"
             )
           fi
-          gradle assembleProdRelease --build-cache --stacktrace "${version_args[@]}"
+          ./gradlew assembleProdRelease --build-cache --stacktrace "${version_args[@]}"
           mkdir -p release
           if [[ "${{ steps.version.outputs.should_release }}" == "true" ]]; then
             apk_name="sdo-companion-v${{ steps.version.outputs.version }}.apk"
@@ -152,18 +154,30 @@ jobs:
             apk_name="sdo-companion-release.apk"
           fi
           cp app/build/outputs/apk/prod/release/app-prod-release.apk "release/$apk_name"
+          apk_bytes="$(wc -c < "release/$apk_name" | tr -d ' ')"
+          apk_sha256="$(sha256sum "release/$apk_name" | awk '{print $1}')"
           echo "apk_path=release/$apk_name" >> "$GITHUB_OUTPUT"
+          {
+            echo '### Android release APK'
+            echo
+            echo "- Artifact: \`$apk_name\`"
+            echo "- Size: \`$apk_bytes\` bytes"
+            echo "- SHA-256: \`$apk_sha256\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify release APK certificate
+        if: steps.version.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/verify-android-signature
         with:
           apk: ${{ steps.package.outputs.apk_path }}
 
       - name: Upload signed APK artifact
-        uses: actions/upload-artifact@v4
+        if: steps.version.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
         with:
           name: sdo-companion-release-apk
           path: release/*.apk
+          retention-days: 30
 
       - name: Publish GitHub Release
         if: steps.version.outputs.should_release == 'true'
