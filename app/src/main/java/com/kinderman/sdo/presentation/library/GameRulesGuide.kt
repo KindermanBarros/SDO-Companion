@@ -119,7 +119,25 @@ internal object GameRulesGuide {
             val loaded = runCatching {
                 context.assets.open("player_handbook_rules.json").bufferedReader().use { reader ->
                     json.decodeFromString<PlayerHandbookDocument>(reader.readText()).sections.map { topic ->
-                        if (topic.keywords.isNotEmpty()) topic else topic.copy(keywords = deriveKeywords(topic))
+                        val cleanedBlocks = topic.blocks.mapNotNull { block ->
+                            val cleanParagraphs = block.paragraphs.map(String::trim).filter(String::isNotBlank)
+                            val cleanBullets = block.bullets.map(String::trim).filter(String::isNotBlank)
+                            if (block.heading.isBlank() && cleanParagraphs.isEmpty() && cleanBullets.isEmpty()) {
+                                null
+                            } else {
+                                block.copy(
+                                    heading = block.heading.trim(),
+                                    paragraphs = cleanParagraphs,
+                                    bullets = cleanBullets,
+                                )
+                            }
+                        }
+                        val normalized = topic.copy(
+                            summary = topic.summary.trim(),
+                            blocks = cleanedBlocks,
+                        )
+                        if (normalized.keywords.isNotEmpty()) normalized
+                        else normalized.copy(keywords = deriveKeywords(normalized))
                     }
                 }
             }.getOrDefault(emptyList())
