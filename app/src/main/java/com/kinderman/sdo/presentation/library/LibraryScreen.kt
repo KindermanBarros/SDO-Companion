@@ -2,6 +2,7 @@ package com.kinderman.sdo.presentation.library
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,6 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -187,6 +192,7 @@ fun LibraryScreen(
     var selectedCampaignId by rememberSaveable { mutableStateOf("") }
     var ruleSearch by rememberSaveable { mutableStateOf("") }
     var ruleCategory by rememberSaveable { mutableStateOf("Todas") }
+    var ruleKeyword by rememberSaveable { mutableStateOf("Todas") }
     var showFiltersDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val handbookRules = remember(context) { GameRulesGuide.load(context) }
@@ -246,11 +252,14 @@ fun LibraryScreen(
     }
 
     val ruleQuery = ruleSearch.trim()
-    val filteredRules = remember(handbookRules, ruleQuery, ruleCategory) {
+    val filteredRules = remember(handbookRules, ruleQuery, ruleCategory, ruleKeyword) {
         handbookRules.filter { topic ->
+            val keywords = topic.effectiveKeywords()
             (ruleCategory == "Todas" || topic.category == ruleCategory) &&
+                (ruleKeyword == "Todas" || keywords.any { it.equals(ruleKeyword, ignoreCase = true) }) &&
                 (ruleQuery.isBlank() ||
                     listOf(topic.title, topic.chapter, topic.part, topic.category, topic.summary)
+                        .plus(keywords)
                         .plus(topic.formulas)
                         .plus(topic.scales)
                         .plus(topic.examples)
@@ -464,39 +473,89 @@ fun LibraryScreen(
                         TechPanel(accent = MaterialTheme.colorScheme.primary) {
                             SectionHeader("01", "Livro do Jogador • Regras")
                             HudTextField(
-                                label = "Buscar regra",
+                                label = "Buscar regra ou keyword",
                                 value = ruleSearch,
-                                placeholder = "Ex.: teste, trauma, esquiva, runas",
+                                placeholder = "Ex.: combate, ataque, ações, trauma, runas",
                                 onValue = { ruleSearch = it },
                             )
-                            SdoMetadataText("TEMA", color = MaterialTheme.colorScheme.secondary)
-                            SdoResponsiveGrid(GameRulesGuide.categories, minItemWidth = 136.dp) { category, modifier ->
-                                SdoFilterChip(
-                                    label = category,
-                                    selected = ruleCategory == category,
-                                    onClick = { ruleCategory = category },
-                                    modifier = modifier,
-                                )
+                            SdoMetadataText("KEYWORDS", color = MaterialTheme.colorScheme.primary)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                GameRulesGuide.featuredKeywords.forEach { keyword ->
+                                    SdoFilterChip(
+                                        label = keyword,
+                                        selected = ruleKeyword == keyword,
+                                        onClick = { ruleKeyword = if (ruleKeyword == keyword) "Todas" else keyword },
+                                    )
+                                }
                             }
-                            SdoMetadataText(
-                                "${filteredRules.size} seções de regras locais (sem tabelas)",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                            SdoMetadataText("TEMA", color = MaterialTheme.colorScheme.secondary)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                GameRulesGuide.categories.forEach { category ->
+                                    SdoFilterChip(
+                                        label = category,
+                                        selected = ruleCategory == category,
+                                        onClick = { ruleCategory = if (ruleCategory == category) "Todas" else category },
+                                    )
+                                }
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                SdoMetadataText(
+                                    "${filteredRules.size} regras encontradas",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                if (ruleQuery.isNotBlank() || ruleCategory != "Todas" || ruleKeyword != "Todas") {
+                                    com.kinderman.sdo.ui.SdoTextButton(
+                                        onClick = {
+                                            ruleSearch = ""
+                                            ruleCategory = "Todas"
+                                            ruleKeyword = "Todas"
+                                        },
+                                    ) { Text("LIMPAR FILTROS") }
+                                }
+                            }
                         }
                     }
 
                     if (filteredRules.isEmpty()) {
                         item(key = "rules-empty") {
-                            SdoInsetCard(contentPadding = 16.dp) {
+                            SdoInsetCard(contentPadding = 16.dp, verticalSpacing = 8.dp) {
                                 Text(
-                                    "Nenhuma regra encontrada para essa busca.",
+                                    "Nenhuma regra encontrada para os filtros selecionados.",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
+                                com.kinderman.sdo.ui.SdoTextButton(
+                                    onClick = {
+                                        ruleSearch = ""
+                                        ruleCategory = "Todas"
+                                        ruleKeyword = "Todas"
+                                    },
+                                ) { Text("LIMPAR FILTROS") }
                             }
                         }
                     } else {
                         items(filteredRules, key = { "rule:${it.id}" }) { topic ->
-                            GameRuleCard(topic = topic, forceExpanded = ruleQuery.isNotBlank())
+                            GameRuleCard(
+                                topic = topic,
+                                forceExpanded = ruleQuery.isNotBlank(),
+                                activeKeyword = ruleKeyword,
+                                onSelectKeyword = { selected ->
+                                    ruleKeyword = if (ruleKeyword == selected) "Todas" else selected
+                                },
+                            )
                         }
                     }
                 }
@@ -565,89 +624,153 @@ fun LibraryScreen(
 private fun GameRuleCard(
     topic: GameRuleTopic,
     forceExpanded: Boolean,
+    activeKeyword: String,
+    onSelectKeyword: (String) -> Unit,
 ) {
     var expanded by rememberSaveable(topic.id) { mutableStateOf(false) }
     val isExpanded = forceExpanded || expanded
+    val keywords = remember(topic) { topic.effectiveKeywords() }
+
     TechPanel(
-        accent = MaterialTheme.colorScheme.secondary,
+        accent = MaterialTheme.colorScheme.primary,
         modifier = Modifier.clickable { expanded = !expanded },
     ) {
-        FlowRow(
+        Row(
             modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            TelemetryTag(topic.category.uppercase(), MaterialTheme.colorScheme.primary)
-            TelemetryTag(topic.chapter.uppercase(), MaterialTheme.colorScheme.secondary)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                SdoMetadataText(
+                    text = "${topic.category.uppercase()} // ${topic.chapter.uppercase()}",
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                SdoCardTitle(topic.title, color = MaterialTheme.colorScheme.onSurface)
+            }
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "Recolher regra" else "Expandir regra",
+                tint = MaterialTheme.colorScheme.primary,
+            )
         }
-        SdoCardTitle(topic.title, color = MaterialTheme.colorScheme.onSurface)
+
+        if (keywords.isNotEmpty()) {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                keywords.forEach { keyword ->
+                    val selected = activeKeyword.equals(keyword, ignoreCase = true)
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier.clickable { onSelectKeyword(keyword) },
+                    ) {
+                        TelemetryTag(
+                            text = "#${keyword.uppercase()}",
+                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+            }
+        }
+
         val preview = topic.summary.ifBlank {
             topic.formulas.firstOrNull() ?: topic.scales.firstOrNull().orEmpty()
         }
-        if (!isExpanded && preview.isNotBlank()) {
-            Text(
-                text = preview,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 2,
-            )
+        if (!isExpanded) {
+            if (preview.isNotBlank()) {
+                Text(
+                    text = preview,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                )
+            }
             val detailCount = topic.blocks.sumOf { it.paragraphs.size + it.bullets.size } +
                 topic.formulas.size + topic.scales.size + topic.examples.size
-            SdoMetadataText("Toque para ler regra completa ($detailCount itens)", color = MaterialTheme.colorScheme.primary)
+            SdoMetadataText(
+                text = "TOQUE PARA LER A REGRA COMPLETA ($detailCount ITENS)",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelSmall,
+            )
         } else {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             if (topic.formulas.isNotEmpty()) {
-                SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
+                SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 6.dp) {
                     SdoMetadataText("FÓRMULA / REGRA-CHAVE", color = MaterialTheme.colorScheme.primary)
                     topic.formulas.forEach { formula ->
                         Text(
                             text = formula,
                             color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.titleSmall,
+                            style = MaterialTheme.typography.titleSmall.copy(lineHeight = 21.sp),
                         )
                     }
                 }
             }
             topic.blocks.forEach { block ->
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (block.heading.isNotBlank()) {
-                        SdoMetadataText(block.heading.uppercase(), color = MaterialTheme.colorScheme.secondary)
+                        SdoMetadataText(
+                            text = block.heading.uppercase(),
+                            color = MaterialTheme.colorScheme.secondary,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                     }
                     block.paragraphs.forEach { paragraph ->
                         Text(
                             text = paragraph,
                             color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
                         )
                     }
-                    block.bullets.forEach { bullet ->
-                        Text(
-                            text = "• $bullet",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
+                    if (block.bullets.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            block.bullets.forEach { bullet ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.Top,
+                                ) {
+                                    Text(
+                                        text = "▸",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    Text(
+                                        text = bullet,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 21.sp),
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
             if (topic.scales.isNotEmpty()) {
-                SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
+                SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 6.dp) {
                     SdoMetadataText("ESCALA / REFERÊNCIA", color = MaterialTheme.colorScheme.secondary)
-                    topic.scales.forEach { row ->
+                    topic.scales.forEachIndexed { index, row ->
                         Text(
                             text = row,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodySmall.copy(lineHeight = 20.sp),
                         )
+                        if (index < topic.scales.lastIndex) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        }
                     }
                 }
             }
             if (topic.examples.isNotEmpty()) {
-                SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
+                SdoInsetCard(contentPadding = 12.dp, verticalSpacing = 6.dp) {
                     SdoMetadataText("EXEMPLO PRÁTICO", color = MaterialTheme.colorScheme.primary)
                     topic.examples.forEach { example ->
                         Text(
                             text = example,
                             color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
                         )
                     }
                 }
