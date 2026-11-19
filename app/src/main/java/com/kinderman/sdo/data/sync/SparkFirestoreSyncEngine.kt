@@ -399,7 +399,7 @@ class SparkFirestoreSyncEngine(
 
         if (accountId != DEMO_ACCOUNT_ID) {
             mediaToUpload?.let { uploadAvatarIfChanged(candidate.id, it) }
-            if (shouldSchedule) schedule(accountId)
+            if (shouldSchedule) schedule(accountId, targetSheetId = candidate.id)
         }
     }
 
@@ -1051,269 +1051,308 @@ class SparkFirestoreSyncEngine(
                     .forEach { blockedOps += it.operationId }
             }
 
-            for (queuedIntent in pending) {
-                val intent = localStore.getIntent(uid, queuedIntent.operationId)?.toDomain() ?: continue
+            val remainingQueue = ArrayDeque(pending)
+            while (remainingQueue.isNotEmpty()) {
                 if (!isStillCurrent(uid, generation)) return@withLock true
-                // The client never sends MIGRATE_V2 receipts; only the admin migration tool may.
-                if (intent.type == OperationType.MIGRATE_V2) {
-                    blockedOps += intent.operationId
-                    localStore.withTransaction {
-                        localStore.upsertIntent(
-                            intent.copy(
-                                status = SheetIntentStatus.REJECTED,
-                                error = "MIGRATE_V2 nÃ£o Ã© enviado pelo aplicativo.",
-                                updatedAt = clock.nowMillis(),
-                            ).toRecord(),
-                        )
-                        pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                    }
-                    continue
-                }
-                val depId = intent.dependsOnOperationId
-                if (!depId.isNullOrBlank()) {
-                    val dep = localStore.getIntent(uid, depId)
-                    val depStatus = dep?.status
-                    val depFailed = depId in blockedOps || depStatus in setOf(
-                        SheetIntentStatus.CONFLICT.name,
-                        SheetIntentStatus.REJECTED.name,
-                        SheetIntentStatus.ACCESS_DENIED.name,
-                        SheetIntentStatus.PAUSED_DEPENDENCY.name,
-                        SheetIntentStatus.DRAFT.name,
-                    )
-                    if (depFailed) {
+                val prevBlockedCount = blockedOps.size
+                val wave = mutableListOf<SheetIntent>()
+                val waveTargetKeys = mutableSetOf<String>()
+                val waveSheetRootIds = mutableSetOf<String>()
+                val deferred = mutableListOf<SheetIntent>()
+
+                while (remainingQueue.isNotEmpty()) {
+                    val queuedIntent = remainingQueue.removeFirst()
+                    val intent = localStore.getIntent(uid, queuedIntent.operationId)?.toDomain() ?: continue
+                    if (intent.type == OperationType.MIGRATE_V2) {
                         blockedOps += intent.operationId
                         localStore.withTransaction {
                             localStore.upsertIntent(
                                 intent.copy(
-                                    status = SheetIntentStatus.PAUSED_DEPENDENCY,
+                                    status = SheetIntentStatus.REJECTED,
+                                    error = "MIGRATE_V2 nÃ£o Ã© enviado pelo aplicativo.",
                                     updatedAt = clock.nowMillis(),
                                 ).toRecord(),
                             )
-                            reprojectSheetLocked(uid, intent.sheetId)
+                            pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
                         }
                         continue
                     }
-                    // Dependents run only after a CONFIRMED prerequisite receipt; a prerequisite that is
-                    // still PENDING/SENDING (e.g. transient network failure) keeps this intent waiting
-                    // while independent intents continue.
-                    if (depStatus != SheetIntentStatus.CONFIRMED.name) {
+                    val depId = intent.dependsOnOperationId
+                    if (!depId.isNullOrBlank()) {
+                        val dep = localStore.getIntent(uid, depId)
+                        val depStatus = dep?.status
+                        val depFailed = depId in blockedOps || depStatus in setOf(
+                            SheetIntentStatus.CONFLICT.name,
+                            SheetIntentStatus.REJECTED.name,
+                            SheetIntentStatus.ACCESS_DENIED.name,
+                            SheetIntentStatus.PAUSED_DEPENDENCY.name,
+                            SheetIntentStatus.DRAFT.name,
+                        )
+                        if (depFailed) {
+                            blockedOps += intent.operationId
+                            localStore.withTransaction {
+                                localStore.upsertIntent(
+                                    intent.copy(
+                                        status = SheetIntentStatus.PAUSED_DEPENDENCY,
+                                        updatedAt = clock.nowMillis(),
+                                    ).toRecord(),
+                                )
+                                reprojectSheetLocked(uid, intent.sheetId)
+                            }
+                            continue
+                        }
+                        if (depStatus != SheetIntentStatus.CONFIRMED.name) {
+                            deferred += intent
+                            continue
+                        }
+                    }
+
+                    val targetKeys = intent.effectiveTargets().map { "${intent.sheetId}:${it.canonicalTargetKey()}" }
+                    val touchesSheetRoot = intent.type == OperationType.CREATE_SHEET ||
+                        intent.effectiveTargets().any { it.kind == TargetKind.SHEET }
+                    val collides = targetKeys.any { it in waveTargetKeys } ||
+                        (touchesSheetRoot && intent.sheetId in waveSheetRootIds) ||
+                        wave.size >= 6
+                    if (collides) {
+                        deferred += intent
                         continue
                     }
+                    wave += intent
+                    waveTargetKeys += targetKeys
+                    if (touchesSheetRoot) waveSheetRootIds += intent.sheetId
                 }
 
-                localStore.upsertIntent(
-                    intent.copy(status = SheetIntentStatus.SENDING, updatedAt = clock.nowMillis()).toRecord(),
-                )
+                if (wave.isEmpty()) break
 
-                recordLocalOperation(intent.operationId)
-                val outcome = try {
-                    executeIntentTransaction(uid, intent)
-                } catch (denied: SparkPermissionDeniedException) {
-                    recentLocalOperationIds.remove(intent.operationId)
-                    if (!isStillCurrent(uid, generation)) {
-                        // Credentials changed underneath us: never classify A's draft with B's identity.
-                        localStore.upsertIntent(intent.copy(status = SheetIntentStatus.PENDING).toRecord())
-                        return@withLock true
-                    }
-                    blockedOps += intent.operationId
-                    localStore.withTransaction {
-                        localStore.upsertIntent(
-                            intent.copy(
-                                status = SheetIntentStatus.ACCESS_DENIED,
-                                error = denied.message ?: "Sem permissÃ£o para sincronizar esta alteraÃ§Ã£o.",
-                                updatedAt = clock.nowMillis(),
-                            ).toRecord(),
-                        )
-                        pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                        reprojectSheetLocked(uid, intent.sheetId)
-                    }
-                    continue
-                } catch (transient: SparkTransientNetworkException) {
-                    recentLocalOperationIds.remove(intent.operationId)
-                    allTransientSucceeded = false
+                wave.forEach { intent ->
                     localStore.upsertIntent(
-                        intent.copy(
-                            status = SheetIntentStatus.PENDING,
-                            error = transient.message.orEmpty(),
-                            updatedAt = clock.nowMillis(),
-                        ).toRecord(),
+                        intent.copy(status = SheetIntentStatus.SENDING, updatedAt = clock.nowMillis()).toRecord(),
                     )
-                    errors.value = transient.message
-                    continue
+                    recordLocalOperation(intent.operationId)
                 }
 
-                if (!isStillCurrent(uid, generation) &&
-                    outcome !is DrainTxOutcome.Committed &&
-                    outcome !is DrainTxOutcome.AlreadyCommitted
-                ) {
-                    localStore.upsertIntent(intent.copy(status = SheetIntentStatus.PENDING).toRecord())
-                    return@withLock true
+                val waveResults = coroutineScope {
+                    wave.map { intent ->
+                        async {
+                            intent to runCatching { executeIntentTransaction(uid, intent) }
+                        }
+                    }.awaitAll()
                 }
 
-                when (outcome) {
-                    is DrainTxOutcome.Committed -> {
+                var madeProgress = false
+                val sheetsToRefreshAfterWave = mutableSetOf<String>()
+                for ((intent, result) in waveResults) {
+                    val outcome = try {
+                        result.getOrThrow()
+                    } catch (denied: SparkPermissionDeniedException) {
+                        recentLocalOperationIds.remove(intent.operationId)
+                        if (!isStillCurrent(uid, generation)) {
+                            localStore.upsertIntent(intent.copy(status = SheetIntentStatus.PENDING).toRecord())
+                            return@withLock true
+                        }
+                        blockedOps += intent.operationId
                         localStore.withTransaction {
                             localStore.upsertIntent(
                                 intent.copy(
-                                    status = SheetIntentStatus.CONFIRMED,
-                                    error = "",
-                                    updatedAt = outcome.serverTimestamp,
+                                    status = SheetIntentStatus.ACCESS_DENIED,
+                                    error = denied.message ?: "Sem permissÃ£o para sincronizar esta alteraÃ§Ã£o.",
+                                    updatedAt = clock.nowMillis(),
                                 ).toRecord(),
                             )
-                            applyCommittedTargetsToAccountSheetLocked(
-                                accountId = uid,
-                                intent = intent,
-                                resolvedTargets = outcome.resolvedTargets,
-                                serverTimestamp = outcome.serverTimestamp,
-                            )
-                            rebindDependentsLocked(intent, outcome.resolvedTargets)
+                            pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
                             reprojectSheetLocked(uid, intent.sheetId)
                         }
-                        if (intent.type == OperationType.CREATE_SHEET) {
-                            localStore.getAccountSheet(uid, intent.sheetId)?.let { createdSnap ->
-                                if (createdSnap.localPhotoUri.isNotBlank()) {
-                                    val docs = SparkWireCodec.toSparkDocuments(
-                                        record = createdSnap.toSnapshot().confirmedCharacter.toRecord()
-                                            .copy(photoUri = createdSnap.localPhotoUri),
-                                        updatedBy = uid,
+                        continue
+                    } catch (transient: SparkTransientNetworkException) {
+                        recentLocalOperationIds.remove(intent.operationId)
+                        allTransientSucceeded = false
+                        localStore.upsertIntent(
+                            intent.copy(
+                                status = SheetIntentStatus.PENDING,
+                                error = transient.message.orEmpty(),
+                                updatedAt = clock.nowMillis(),
+                            ).toRecord(),
+                        )
+                        errors.value = transient.message
+                        continue
+                    }
+
+                    if (!isStillCurrent(uid, generation) &&
+                        outcome !is DrainTxOutcome.Committed &&
+                        outcome !is DrainTxOutcome.AlreadyCommitted
+                    ) {
+                        localStore.upsertIntent(intent.copy(status = SheetIntentStatus.PENDING).toRecord())
+                        return@withLock true
+                    }
+
+                    when (outcome) {
+                        is DrainTxOutcome.Committed -> {
+                            madeProgress = true
+                            localStore.withTransaction {
+                                localStore.upsertIntent(
+                                    intent.copy(
+                                        status = SheetIntentStatus.CONFIRMED,
+                                        error = "",
                                         updatedAt = outcome.serverTimestamp,
-                                    )
-                                    docs.mediaAvatar?.let { uploadAvatarIfChanged(intent.sheetId, it) }
+                                    ).toRecord(),
+                                )
+                                applyCommittedTargetsToAccountSheetLocked(
+                                    accountId = uid,
+                                    intent = intent,
+                                    resolvedTargets = outcome.resolvedTargets,
+                                    serverTimestamp = outcome.serverTimestamp,
+                                )
+                                rebindDependentsLocked(intent, outcome.resolvedTargets)
+                                reprojectSheetLocked(uid, intent.sheetId)
+                            }
+                            if (intent.type == OperationType.CREATE_SHEET) {
+                                localStore.getAccountSheet(uid, intent.sheetId)?.let { createdSnap ->
+                                    if (createdSnap.localPhotoUri.isNotBlank()) {
+                                        val docs = SparkWireCodec.toSparkDocuments(
+                                            record = createdSnap.toSnapshot().confirmedCharacter.toRecord()
+                                                .copy(photoUri = createdSnap.localPhotoUri),
+                                            updatedBy = uid,
+                                            updatedAt = outcome.serverTimestamp,
+                                        )
+                                        docs.mediaAvatar?.let { uploadAvatarIfChanged(intent.sheetId, it) }
+                                    }
                                 }
                             }
                         }
-                    }
-                    is DrainTxOutcome.AlreadyCommitted -> {
-                        when (outcome.receipt.verifyAgainst(intent)) {
-                            IdempotencyMatchResult.MATCHED_COMMITTED -> {
-                                // Lost acknowledgement: the commit happened but we never saw it. Pull the
-                                // committed remote state (values + revisions) into the confirmed snapshot
-                                // BEFORE acknowledging, otherwise replay would roll the value back and
-                                // later dependents would raise false conflicts.
-                                val fetched = try {
-                                    fetchRemoteSnapshot(uid, intent.sheetId)
-                                } catch (error: Exception) {
-                                    if (error is CancellationException) throw error
-                                    null
-                                }
-                                if (fetched == null) {
-                                    allTransientSucceeded = false
-                                    localStore.upsertIntent(
-                                        intent.copy(
-                                            status = SheetIntentStatus.PENDING,
-                                            updatedAt = clock.nowMillis(),
-                                        ).toRecord(),
-                                    )
-                                } else {
-                                    localStore.withTransaction {
-                                        localStore.upsertAccountSheet(fetched.toRecord())
+                        is DrainTxOutcome.AlreadyCommitted -> {
+                            when (outcome.receipt.verifyAgainst(intent)) {
+                                IdempotencyMatchResult.MATCHED_COMMITTED -> {
+                                    val fetched = try {
+                                        fetchRemoteSnapshot(uid, intent.sheetId)
+                                    } catch (error: Exception) {
+                                        if (error is CancellationException) throw error
+                                        null
+                                    }
+                                    if (fetched == null) {
+                                        allTransientSucceeded = false
                                         localStore.upsertIntent(
                                             intent.copy(
-                                                status = SheetIntentStatus.CONFIRMED,
-                                                error = "",
+                                                status = SheetIntentStatus.PENDING,
                                                 updatedAt = clock.nowMillis(),
                                             ).toRecord(),
                                         )
-                                        rebindDependentsLocked(intent, outcome.receipt.targets)
+                                    } else {
+                                        madeProgress = true
+                                        localStore.withTransaction {
+                                            localStore.upsertAccountSheet(fetched.toRecord())
+                                            localStore.upsertIntent(
+                                                intent.copy(
+                                                    status = SheetIntentStatus.CONFIRMED,
+                                                    error = "",
+                                                    updatedAt = clock.nowMillis(),
+                                                ).toRecord(),
+                                            )
+                                            rebindDependentsLocked(intent, outcome.receipt.targets)
+                                            reprojectSheetLocked(uid, intent.sheetId)
+                                        }
+                                    }
+                                }
+                                IdempotencyMatchResult.HASH_MISMATCH,
+                                IdempotencyMatchResult.OUTCOME_NOT_COMMITTED -> {
+                                    blockedOps += intent.operationId
+                                    localStore.withTransaction {
+                                        localStore.upsertIntent(
+                                            intent.copy(
+                                                status = SheetIntentStatus.REJECTED,
+                                                error = "Idempotency mismatch: operationId reused with different payload.",
+                                                updatedAt = clock.nowMillis(),
+                                            ).toRecord(),
+                                        )
+                                        pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
                                         reprojectSheetLocked(uid, intent.sheetId)
                                     }
                                 }
                             }
-                            IdempotencyMatchResult.HASH_MISMATCH,
-                            IdempotencyMatchResult.OUTCOME_NOT_COMMITTED -> {
-                                blockedOps += intent.operationId
-                                localStore.withTransaction {
-                                    localStore.upsertIntent(
-                                        intent.copy(
-                                            status = SheetIntentStatus.REJECTED,
-                                            error = "Idempotency mismatch: operationId reused with different payload.",
+                        }
+                        is DrainTxOutcome.IdempotencyMismatch -> {
+                            blockedOps += intent.operationId
+                            localStore.withTransaction {
+                                localStore.upsertIntent(
+                                    intent.copy(
+                                        status = SheetIntentStatus.REJECTED,
+                                        error = outcome.reason,
+                                        updatedAt = clock.nowMillis(),
+                                    ).toRecord(),
+                                )
+                                pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
+                                reprojectSheetLocked(uid, intent.sheetId)
+                            }
+                        }
+                        is DrainTxOutcome.Tombstoned -> {
+                            blockedOps += intent.operationId
+                            localStore.withTransaction {
+                                localStore.upsertIntent(
+                                    intent.copy(
+                                        status = SheetIntentStatus.REJECTED,
+                                        error = outcome.reason,
+                                        updatedAt = clock.nowMillis(),
+                                    ).toRecord(),
+                                )
+                                val snap = localStore.getAccountSheet(uid, intent.sheetId)?.toSnapshot()
+                                if (snap != null) {
+                                    val updatedSnap = if (outcome.isSheet) {
+                                        snap.copy(
+                                            sheetDeleted = true,
+                                            confirmedCharacter = snap.confirmedCharacter.copy(deleted = true),
                                             updatedAt = clock.nowMillis(),
-                                        ).toRecord(),
-                                    )
-                                    pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                                    reprojectSheetLocked(uid, intent.sheetId)
+                                        )
+                                    } else {
+                                        snap.copy(
+                                            tombstonedItemIds = snap.tombstonedItemIds + outcome.itemId,
+                                            updatedAt = clock.nowMillis(),
+                                        )
+                                    }
+                                    localStore.upsertAccountSheet(updatedSnap.toRecord())
                                 }
+                                pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
+                                reprojectSheetLocked(uid, intent.sheetId)
                             }
                         }
-                    }
-                    is DrainTxOutcome.IdempotencyMismatch -> {
-                        blockedOps += intent.operationId
-                        localStore.withTransaction {
-                            localStore.upsertIntent(
-                                intent.copy(
-                                    status = SheetIntentStatus.REJECTED,
-                                    error = outcome.reason,
-                                    updatedAt = clock.nowMillis(),
-                                ).toRecord(),
-                            )
-                            pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                            reprojectSheetLocked(uid, intent.sheetId)
-                        }
-                    }
-                    is DrainTxOutcome.Tombstoned -> {
-                        blockedOps += intent.operationId
-                        localStore.withTransaction {
-                            localStore.upsertIntent(
-                                intent.copy(
-                                    status = SheetIntentStatus.REJECTED,
-                                    error = outcome.reason,
-                                    updatedAt = clock.nowMillis(),
-                                ).toRecord(),
-                            )
-                            val snap = localStore.getAccountSheet(uid, intent.sheetId)?.toSnapshot()
-                            if (snap != null) {
-                                val updatedSnap = if (outcome.isSheet) {
-                                    snap.copy(
-                                        sheetDeleted = true,
-                                        confirmedCharacter = snap.confirmedCharacter.copy(deleted = true),
+                        is DrainTxOutcome.Rejected -> {
+                            blockedOps += intent.operationId
+                            localStore.withTransaction {
+                                localStore.upsertIntent(
+                                    intent.copy(
+                                        status = SheetIntentStatus.REJECTED,
+                                        error = outcome.reason,
                                         updatedAt = clock.nowMillis(),
-                                    )
-                                } else {
-                                    snap.copy(
-                                        tombstonedItemIds = snap.tombstonedItemIds + outcome.itemId,
-                                        updatedAt = clock.nowMillis(),
-                                    )
-                                }
-                                localStore.upsertAccountSheet(updatedSnap.toRecord())
+                                    ).toRecord(),
+                                )
+                                pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
+                                reprojectSheetLocked(uid, intent.sheetId)
                             }
-                            pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                            reprojectSheetLocked(uid, intent.sheetId)
                         }
-                    }
-                    is DrainTxOutcome.Rejected -> {
-                        blockedOps += intent.operationId
-                        localStore.withTransaction {
-                            localStore.upsertIntent(
-                                intent.copy(
-                                    status = SheetIntentStatus.REJECTED,
-                                    error = outcome.reason,
-                                    updatedAt = clock.nowMillis(),
-                                ).toRecord(),
-                            )
-                            pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                            reprojectSheetLocked(uid, intent.sheetId)
+                        is DrainTxOutcome.RevisionConflict -> {
+                            blockedOps += intent.operationId
+                            localStore.withTransaction {
+                                localStore.upsertConflicts(outcome.conflicts.map(SheetConflictItem::toRecord))
+                                localStore.upsertIntent(
+                                    intent.copy(
+                                        status = SheetIntentStatus.CONFLICT,
+                                        error = outcome.conflicts.firstOrNull()?.let {
+                                            "Conflito de revisÃ£o em ${it.targetKey} (base ${it.baseRevision}, remota ${it.remoteRevision})."
+                                        } ?: "Conflito de revisÃ£o.",
+                                        updatedAt = clock.nowMillis(),
+                                    ).toRecord(),
+                                )
+                                pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
+                                reprojectSheetLocked(uid, intent.sheetId)
+                            }
+                            sheetsToRefreshAfterWave += intent.sheetId
                         }
-                    }
-                    is DrainTxOutcome.RevisionConflict -> {
-                        blockedOps += intent.operationId
-                        localStore.withTransaction {
-                            localStore.upsertConflicts(outcome.conflicts.map(SheetConflictItem::toRecord))
-                            localStore.upsertIntent(
-                                intent.copy(
-                                    status = SheetIntentStatus.CONFLICT,
-                                    error = outcome.conflicts.firstOrNull()?.let {
-                                        "Conflito de revisÃ£o em ${it.targetKey} (base ${it.baseRevision}, remota ${it.remoteRevision})."
-                                    } ?: "Conflito de revisÃ£o.",
-                                    updatedAt = clock.nowMillis(),
-                                ).toRecord(),
-                            )
-                            pauseDependentsLocked(uid, intent.sheetId, intent.operationId, blockedOps)
-                            reprojectSheetLocked(uid, intent.sheetId)
-                        }
-                        // Refresh full remote state in background / right away so UI shows latest remote.
-                        runCatching { refreshSheetFromRemote(uid, intent.sheetId) }
                     }
                 }
+                sheetsToRefreshAfterWave.forEach { sheetId ->
+                    runCatching { refreshSheetFromRemote(uid, sheetId) }
+                }
+                if (deferred.isEmpty()) break
+                if (!madeProgress && blockedOps.size == prevBlockedCount) break
+                deferred.forEach { remainingQueue.addLast(it) }
             }
             if (allTransientSucceeded) errors.value = null
             allTransientSucceeded
@@ -2488,9 +2527,11 @@ class SparkFirestoreSyncEngine(
         createdAt: Long,
     ): List<SheetIntent> {
         val localHeads = workingHeads.toMutableMap()
-        return batches.mapIndexed { idx, batch ->
-            val dep = batch.targets.firstNotNullOfOrNull { localHeads[it.canonicalTargetKey()] }
-                ?: if (idx > 0) batches[idx - 1].operationId else createOpId
+        return batches.map { batch ->
+            val dep = batch.targets.firstNotNullOfOrNull { target ->
+                localHeads[target.canonicalTargetKey()]
+                    ?: if (target.kind == TargetKind.ITEM_FIELD) localHeads["item:${target.itemId}"] else null
+            } ?: createOpId
             val intent = SheetIntent(
                 operationId = batch.operationId,
                 accountId = accountId,

@@ -517,4 +517,74 @@ class SparkWireCodecTest {
         assertEquals(0, invFields.getValue("pl")["value"])
         assertEquals(0, invFields.getValue("load")["value"])
     }
+
+    @Test
+    fun `replaying inventory and power meta targets preserves heritageCost acquisitionSource and power sourceType`() {
+        val before = Character(
+            id = "sheet-replay-meta",
+            ownerId = "owner-1",
+            creationStatus = com.kinderman.sdo.domain.model.CharacterCreationStatus.DRAFT,
+            creationStep = 7,
+        )
+        val heritageItem = InventoryItem(
+            id = "inv-heritage-1",
+            name = "Espada Longa",
+            category = "Arma média",
+            acquisitionSource = com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE,
+            heritageCost = 5,
+            catalogEntryId = "item.regular_6",
+            baseId = "espada_longa",
+            materialId = "ligas_comuns",
+            canonical = true,
+        )
+        val pathPower = com.kinderman.sdo.domain.model.Power(
+            id = "pow-path-1",
+            name = "Poder do Caminho",
+            sourceType = com.kinderman.sdo.domain.model.PowerSourceType.PATH,
+        )
+        val after = before.copy(
+            inventory = listOf(heritageItem),
+            powers = listOf(pathPower),
+        )
+        val batches = SparkWireCodec.buildOperationBatches(
+            before = before.toRecord(),
+            after = after.toRecord(),
+            operationIdPrefix = "op-replay-meta",
+            actorUid = "owner-1",
+            existingRevisions = emptyMap(),
+            sheetRevision = 1L,
+        )
+        val intents = batches.map { batch ->
+            com.kinderman.sdo.domain.model.SheetIntent(
+                operationId = batch.operationId,
+                accountId = "owner-1",
+                sheetId = before.id,
+                type = batch.type,
+                targetKey = batch.targets.first().canonicalTargetKey(),
+                targets = batch.targets,
+                baseRevision = 1L,
+            )
+        }
+        val replay = com.kinderman.sdo.domain.model.applyPendingIntentsOnConfirmed(
+            confirmed = com.kinderman.sdo.domain.model.AccountSheetSnapshot(
+                accountId = "owner-1",
+                sheetId = before.id,
+                sheetRevision = 1L,
+                confirmedCharacter = before,
+            ),
+            intents = intents,
+        )
+        val replayed = replay.projectedCharacter
+
+        assertEquals(5, com.kinderman.sdo.domain.creation.CharacterCreation.heritageSpent(replayed))
+        assertEquals(
+            com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE,
+            replayed.inventory.single().acquisitionSource,
+        )
+        assertEquals(5, replayed.inventory.single().heritageCost)
+        assertEquals(
+            com.kinderman.sdo.domain.model.PowerSourceType.PATH,
+            replayed.powers.single().sourceType,
+        )
+    }
 }

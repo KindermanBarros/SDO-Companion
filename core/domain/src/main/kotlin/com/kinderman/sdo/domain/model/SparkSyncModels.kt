@@ -1015,6 +1015,42 @@ private fun applyItemFieldTarget(
                     enhancementChargesMax = obj["enhancementChargesMax"]?.jsonPrimitive?.intOrNull
                         ?: existing.enhancementChargesMax,
                 ) else existing
+                "meta" -> if (obj != null) existing.copy(
+                    catalogEntryId = obj["catalogEntryId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.catalogEntryId,
+                    catalogVersion = obj["catalogVersion"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.catalogVersion,
+                    baseId = obj["baseId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.baseId,
+                    materialId = obj["materialId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.materialId,
+                    secondaryMaterialId = obj["secondaryMaterialId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.secondaryMaterialId,
+                    modificationIds = (obj["modificationIds"] as? JsonArray)
+                        ?.mapNotNull { it.takeUnless { el -> el is JsonNull }?.jsonPrimitive?.content }
+                        ?: existing.modificationIds,
+                    gemSlots = obj["gemSlots"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull ?: existing.gemSlots,
+                    technologySlots = obj["technologySlots"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.technologySlots,
+                    acquisitionSource = obj["acquisitionSource"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawSrc -> runCatching { ItemAcquisitionSource.valueOf(rawSrc) }.getOrNull() }
+                        ?: existing.acquisitionSource,
+                    heritageCost = if ("heritageCost" in obj) {
+                        obj["heritageCost"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                    } else {
+                        existing.heritageCost
+                    },
+                    purchasePrice = if ("purchasePrice" in obj) {
+                        obj["purchasePrice"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                    } else {
+                        existing.purchasePrice
+                    },
+                    acquiredAt = obj["acquiredAt"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.longOrNull
+                        ?: existing.acquiredAt,
+                    canonical = obj["canonical"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.booleanOrNull
+                        ?: existing.canonical,
+                    dataVersion = obj["dataVersion"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.dataVersion,
+                ) else existing
                 else -> existing
             }
             val exists = character.inventory.any { it.id == id }
@@ -1062,6 +1098,29 @@ private fun applyItemFieldTarget(
                 "favorite" -> existing.copy(favorite = boolVal(existing.favorite))
                 "available" -> existing.copy(available = boolVal(existing.available))
                 "linkedItemId" -> existing.copy(linkedItemId = strVal(existing.linkedItemId))
+                "meta" -> if (obj != null) existing.copy(
+                    origin = obj["origin"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.origin,
+                    category = obj["category"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.category,
+                    limit = obj["limit"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.limit,
+                    sourceType = obj["sourceType"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawSrc -> runCatching { PowerSourceType.valueOf(rawSrc) }.getOrNull() }
+                        ?: existing.sourceType,
+                    sourceId = obj["sourceId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.sourceId,
+                    catalogEntryId = obj["catalogEntryId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.catalogEntryId,
+                    catalogVersion = obj["catalogVersion"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.catalogVersion,
+                    canonicalSource = obj["canonicalSource"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawSrc -> runCatching { AbilitySource.valueOf(rawSrc) }.getOrNull() }
+                        ?: existing.canonicalSource,
+                    knowledgeId = obj["knowledgeId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.knowledgeId,
+                    knowledgeLevel = if ("knowledgeLevel" in obj) {
+                        obj["knowledgeLevel"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                    } else {
+                        existing.knowledgeLevel
+                    },
+                ) else existing
                 else -> existing
             }
             val exists = character.powers.any { it.id == id }

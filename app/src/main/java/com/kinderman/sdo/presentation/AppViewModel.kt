@@ -579,7 +579,7 @@ class AppViewModel(
         if (!shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.EDITING_IDLE)) return
         remoteSyncDebounceJob?.cancel()
         remoteSyncDebounceJob = scope.launch {
-            delay(350)
+            delay(120)
             startCharacterSync(characterId)
         }
     }
