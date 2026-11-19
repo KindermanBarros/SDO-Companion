@@ -41,7 +41,7 @@ Status: InDevReview (owner approved visual/UI changes 2026-11-18 22:25 America/L
 
 ## Edit/view icon toggles, Dashboard card polish, Falhas alignment & unrestricted admin access
 
-Status: InProgress; updated 2026-11-18 13:01 America/La_Paz on `fix/compact-edit-toggle-icons`.
+Status: InDevReview; updated 2026-11-19 17:00 America/La_Paz. All scope items delivered on `main` (commit `296a418` and descendants) and further refined in PR #159 (`lab/ui-crop-presets-conditions-topbar`); original branch `fix/compact-edit-toggle-icons` absorbed and removed.
 Scope:
 - Icon toggles (`CharacterFields.kt`): replaced `EDITAR`/`VISUALIZAR` text in `CompactEditToggleButton` with `SdoIconButton` (`Icons.Default.Edit` / `Icons.Default.Visibility`) across Notes, Conditions, Path, Traits, History, and Inventory items.
 - Dashboard cards (`DashboardScreen.kt`, `SdoPrimitiveControls.kt`, `compact_dashboard_strings.xml`): removed `ID.*` noise and 3-line `OWNER` box, condensed race/occupation, added semantic color hierarchy (`primary` name, `secondary` campaign, `tertiary` owner, status `accent` forwarded through `SdoCard` to `CyberGrungePanel`), and shortened search hint.
