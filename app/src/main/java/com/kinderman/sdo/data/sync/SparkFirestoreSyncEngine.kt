@@ -114,777 +114,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
 
-private const val DEMO_ACCOUNT_ID = "demo-player"
+internal const val DEMO_ACCOUNT_ID = "demo-player"
 
-interface SparkClock {
-    fun nowMillis(): Long
-}
-
-object SystemSparkClock : SparkClock {
-    override fun nowMillis(): Long = System.currentTimeMillis()
-}
-
-interface SparkWorkScheduler {
-    fun schedule(accountId: String)
-}
-
-class WorkManagerSparkScheduler(private val context: Context) : SparkWorkScheduler {
-    override fun schedule(accountId: String) {
-        if (accountId.isBlank() || accountId == DEMO_ACCOUNT_ID) return
-        runCatching {
-            val request = OneTimeWorkRequestBuilder<SparkSheetSyncWorker>()
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build(),
-                )
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
-                .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "spark-sheet-sync",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                request,
-            )
-        }
-    }
-}
-
-interface SparkTransactionContext {
-    fun getRoot(sheetId: String): Map<String, Any?>?
-    fun getField(sheetId: String, fieldKey: String): Map<String, Any?>?
-    fun getItem(sheetId: String, itemId: String): Map<String, Any?>?
-    fun getItemField(sheetId: String, itemId: String, fieldKey: String): Map<String, Any?>?
-    fun getOperation(sheetId: String, operationId: String): Map<String, Any?>?
-    fun getCampaign(campaignId: String): Map<String, Any?>?
-    fun getMember(campaignId: String, uid: String): Map<String, Any?>?
-    fun getDelivery(deliveryId: String): Map<String, Any?>?
-
-    fun setRoot(sheetId: String, data: Map<String, Any?>)
-    fun setField(sheetId: String, fieldKey: String, data: Map<String, Any?>)
-    fun setItem(sheetId: String, itemId: String, data: Map<String, Any?>)
-    fun setItemField(sheetId: String, itemId: String, fieldKey: String, data: Map<String, Any?>)
-    fun setOperation(sheetId: String, operationId: String, data: Map<String, Any?>)
-    fun setMember(campaignId: String, uid: String, data: Map<String, Any?>)
-    fun setDelivery(deliveryId: String, data: Map<String, Any?>)
-
-    fun serverTimestampToken(): Any
-    fun currentTimestampMillis(): Long
-}
-
-/** Cheap change-detector for a sheet: root revision plus the creation time of the latest receipt. */
-data class SparkSheetHead(
-    val rootRevision: Long,
-    val deleted: Boolean,
-    val latestOperationAtMs: Long,
-)
-
-private const val ROOT_QUERY_LIMIT = 100L
-private const val LAST_OPERATION_MARKER = "@lastOperationAt"
-
-interface SparkRemoteGateway {
-    suspend fun <T> runTransaction(sheetId: String, block: (SparkTransactionContext) -> T): T
-    suspend fun fetchSheetDocuments(sheetId: String): SparkSheetDocuments?
-
-    /** Root document + latest receipt only (two small reads) so unchanged sheets are never re-downloaded. */
-    suspend fun fetchSheetHead(sheetId: String): SparkSheetHead?
-    suspend fun fetchAccessibleSheetIds(
-        uid: String,
-        ownedActiveCampaignIds: Set<String>,
-        isAdmin: Boolean = false,
-    ): Set<String>
-    suspend fun writeMediaAvatar(sheetId: String, mediaDoc: Map<String, Any?>)
-    suspend fun deleteMediaAvatar(sheetId: String)
-    suspend fun writePresence(sheetId: String, presenceId: String, data: Map<String, Any?>)
-    suspend fun deletePresence(sheetId: String, presenceId: String)
-    fun observePresence(sheetId: String, ownPresenceId: String, ownUid: String): Flow<Map<String, String>>
-
-    /** Bounded root-level listeners only (own sheets + owned active campaigns); never per-sheet. */
-    fun observeRemoteChanges(
-        uid: String,
-        ownedActiveCampaignIds: Set<String>,
-        isAdmin: Boolean = false,
-    ): Flow<RemoteSyncEvent>
-
-    /** Receipt listener for exactly one OPEN sheet. */
-    fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent>
-}
-
-interface SparkLocalStore {
-    suspend fun <T> withTransaction(block: suspend () -> T): T
-    suspend fun getAccountSheet(accountId: String, sheetId: String): AccountSheetRecord?
-    suspend fun listAccountSheets(accountId: String): List<AccountSheetRecord>
-    fun observeAccountSheets(accountId: String): Flow<List<AccountSheetRecord>>
-    suspend fun upsertAccountSheet(record: AccountSheetRecord)
-    suspend fun deleteAccountSheet(accountId: String, sheetId: String)
-
-    suspend fun listIntentsForSheet(accountId: String, sheetId: String): List<SheetIntentRecord>
-    suspend fun listActiveIntents(accountId: String): List<SheetIntentRecord>
-    fun observeIntents(accountId: String): Flow<List<SheetIntentRecord>>
-    suspend fun getIntent(accountId: String, operationId: String): SheetIntentRecord?
-    suspend fun upsertIntent(intent: SheetIntentRecord)
-    suspend fun upsertIntents(intents: List<SheetIntentRecord>)
-    suspend fun deleteIntent(accountId: String, operationId: String)
-
-    fun observeOpenConflicts(accountId: String): Flow<List<SheetConflictRecord>>
-    suspend fun getConflict(accountId: String, id: String): SheetConflictRecord?
-    suspend fun upsertConflict(conflict: SheetConflictRecord)
-    suspend fun upsertConflicts(conflicts: List<SheetConflictRecord>)
-    suspend fun deleteConflict(accountId: String, id: String)
-
-    suspend fun getCharacter(sheetId: String): CharacterRecord?
-    suspend fun allCharacters(): List<CharacterRecord>
-    suspend fun upsertCharacter(record: CharacterRecord)
-    suspend fun purgeCharacter(sheetId: String)
-
-    suspend fun getCampaign(campaignId: String): CampaignRecord?
-    suspend fun listOwnedActiveCampaignIds(uid: String): Set<String>
-    suspend fun getMember(campaignId: String, uid: String): CampaignMemberRecord?
-    suspend fun upsertMember(member: CampaignMemberRecord)
-
-    suspend fun getOperationByIdempotencyKey(key: String): SessionOperationRecord?
-    suspend fun upsertOperation(operation: SessionOperationRecord)
-
-    suspend fun listLegacyOutbox(accountId: String): List<SheetOutboxRecord>
-    suspend fun markLegacyOutboxStatus(operationId: String, status: String)
-    suspend fun listLegacyRoutes(accountId: String): List<SheetRouteRecord>
-    suspend fun removeLegacyRoute(accountId: String, sheetId: String)
-}
-
-class SparkPermissionDeniedException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
-
-class SparkTransientNetworkException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
-
-class RoomSparkLocalStore(private val db: AppDatabase) : SparkLocalStore {
-    private val accountSheetDao = db.accountSheetDao()
-    private val intentDao = db.sheetIntentDao()
-    private val conflictDao = db.sheetConflictDao()
-    private val characterDao = db.characterDao()
-    private val campaignDao = db.campaignDao()
-    private val operationsDao = db.operationsDao()
-    private val legacyDao = db.sheetSyncDao()
-
-    override suspend fun <T> withTransaction(block: suspend () -> T): T = db.withTransaction(block)
-
-    override suspend fun getAccountSheet(accountId: String, sheetId: String): AccountSheetRecord? =
-        accountSheetDao.get(accountId, sheetId)
-
-    override suspend fun listAccountSheets(accountId: String): List<AccountSheetRecord> =
-        db.openHelper.readableDatabase.query(
-            "SELECT accountId, sheetId, sheetRevision, fieldRevisionsJson, confirmedJson, localPhotoUri, updatedAt " +
-                "FROM account_sheets WHERE accountId = ?",
-            arrayOf(accountId),
-        ).use { cursor ->
-            buildList {
-                while (cursor.moveToNext()) {
-                    add(
-                        AccountSheetRecord(
-                            accountId = cursor.getString(0),
-                            sheetId = cursor.getString(1),
-                            sheetRevision = cursor.getLong(2),
-                            fieldRevisionsJson = cursor.getString(3),
-                            confirmedJson = cursor.getString(4),
-                            localPhotoUri = cursor.getString(5),
-                            updatedAt = cursor.getLong(6),
-                        ),
-                    )
-                }
-            }
-        }
-
-    override fun observeAccountSheets(accountId: String): Flow<List<AccountSheetRecord>> =
-        accountSheetDao.observeAll(accountId)
-
-    override suspend fun upsertAccountSheet(record: AccountSheetRecord) = accountSheetDao.upsert(record)
-
-    override suspend fun deleteAccountSheet(accountId: String, sheetId: String) =
-        accountSheetDao.delete(accountId, sheetId)
-
-    override suspend fun listIntentsForSheet(accountId: String, sheetId: String): List<SheetIntentRecord> =
-        intentDao.listForSheet(accountId, sheetId)
-
-    override suspend fun listActiveIntents(accountId: String): List<SheetIntentRecord> =
-        intentDao.listActive(accountId)
-
-    override fun observeIntents(accountId: String): Flow<List<SheetIntentRecord>> =
-        intentDao.observeForAccount(accountId)
-
-    override suspend fun getIntent(accountId: String, operationId: String): SheetIntentRecord? =
-        intentDao.get(accountId, operationId)
-
-    override suspend fun upsertIntent(intent: SheetIntentRecord) = intentDao.upsert(intent)
-
-    override suspend fun upsertIntents(intents: List<SheetIntentRecord>) {
-        if (intents.isNotEmpty()) intentDao.upsertAll(intents)
-    }
-
-    override suspend fun deleteIntent(accountId: String, operationId: String) =
-        intentDao.delete(accountId, operationId)
-
-    override fun observeOpenConflicts(accountId: String): Flow<List<SheetConflictRecord>> =
-        conflictDao.observeOpen(accountId)
-
-    override suspend fun getConflict(accountId: String, id: String): SheetConflictRecord? =
-        conflictDao.get(accountId, id)
-
-    override suspend fun upsertConflict(conflict: SheetConflictRecord) = conflictDao.upsert(conflict)
-
-    override suspend fun upsertConflicts(conflicts: List<SheetConflictRecord>) {
-        if (conflicts.isNotEmpty()) conflictDao.upsertAll(conflicts)
-    }
-
-    override suspend fun deleteConflict(accountId: String, id: String) = conflictDao.delete(accountId, id)
-
-    override suspend fun getCharacter(sheetId: String): CharacterRecord? = characterDao.get(sheetId)
-
-    override suspend fun allCharacters(): List<CharacterRecord> = characterDao.all()
-
-    override suspend fun upsertCharacter(record: CharacterRecord) = characterDao.upsert(record)
-
-    override suspend fun purgeCharacter(sheetId: String) = characterDao.purge(sheetId)
-
-    override suspend fun getCampaign(campaignId: String): CampaignRecord? = campaignDao.campaign(campaignId)
-
-    override suspend fun listOwnedActiveCampaignIds(uid: String): Set<String> =
-        campaignDao.ownedCampaigns(uid)
-            .filter { it.state == CampaignState.ACTIVE.name }
-            .mapTo(linkedSetOf(), CampaignRecord::id)
-
-    override suspend fun getMember(campaignId: String, uid: String): CampaignMemberRecord? =
-        campaignDao.member(campaignId, uid)
-
-    override suspend fun upsertMember(member: CampaignMemberRecord) = campaignDao.upsertMember(member)
-
-    override suspend fun getOperationByIdempotencyKey(key: String): SessionOperationRecord? =
-        operationsDao.operationByIdempotencyKey(key)
-
-    override suspend fun upsertOperation(operation: SessionOperationRecord) = operationsDao.upsertOperation(operation)
-
-    override suspend fun listLegacyOutbox(accountId: String): List<SheetOutboxRecord> =
-        legacyDao.pending(accountId)
-
-    override suspend fun markLegacyOutboxStatus(operationId: String, status: String) {
-        val existing = legacyDao.operation(operationId) ?: return
-        legacyDao.upsertOperation(existing.copy(status = status))
-    }
-
-    override suspend fun listLegacyRoutes(accountId: String): List<SheetRouteRecord> =
-        db.openHelper.readableDatabase.query(
-            "SELECT accountId, sheetId, status, accessEpoch, revision, confirmedJson FROM sheet_routes WHERE accountId = ?",
-            arrayOf(accountId),
-        ).use { cursor ->
-            buildList {
-                while (cursor.moveToNext()) {
-                    add(
-                        SheetRouteRecord(
-                            accountId = cursor.getString(0),
-                            sheetId = cursor.getString(1),
-                            status = cursor.getString(2),
-                            accessEpoch = cursor.getLong(3),
-                            revision = cursor.getLong(4),
-                            confirmedJson = cursor.getString(5),
-                        ),
-                    )
-                }
-            }
-        }
-
-    override suspend fun removeLegacyRoute(accountId: String, sheetId: String) =
-        legacyDao.removeRoute(accountId, sheetId)
-}
-
-class FirestoreSparkRemoteGateway(
-    private val firestoreProvider: () -> FirebaseFirestore = { Firebase.firestore },
-    private val clock: SparkClock = SystemSparkClock,
-) : SparkRemoteGateway {
-
-    override suspend fun <T> runTransaction(sheetId: String, block: (SparkTransactionContext) -> T): T {
-        val store = firestoreProvider()
-        return try {
-            store.runTransaction { tx ->
-                block(FirestoreTransactionContext(store, tx, clock))
-            }.await()
-        } catch (error: FirebaseFirestoreException) {
-            when (error.code) {
-                FirebaseFirestoreException.Code.PERMISSION_DENIED,
-                FirebaseFirestoreException.Code.UNAUTHENTICATED ->
-                    throw SparkPermissionDeniedException(error.message ?: "Permissão negada.", error)
-                FirebaseFirestoreException.Code.UNAVAILABLE,
-                FirebaseFirestoreException.Code.DEADLINE_EXCEEDED,
-                FirebaseFirestoreException.Code.ABORTED,
-                FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED ->
-                    throw SparkTransientNetworkException(error.message ?: "Falha temporária de rede.", error)
-                else -> throw error
-            }
-        }
-    }
-
-    override suspend fun fetchSheetDocuments(sheetId: String): SparkSheetDocuments? {
-        if (sheetId.isBlank()) return null
-        val store = firestoreProvider()
-        val charRef = store.collection(FirestoreCollections.CHARACTERS).document(sheetId)
-        val rootSnap = try {
-            charRef.get().await()
-        } catch (error: FirebaseFirestoreException) {
-            if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ||
-                error.code == FirebaseFirestoreException.Code.NOT_FOUND
-            ) {
-                return null
-            }
-            throw error
-        }
-        if (!rootSnap.exists()) return null
-        val rootData = normalizeFirestoreMap(rootSnap.data.orEmpty())
-        val (fieldsSnap, itemsSnap, avatarSnap) = coroutineScope {
-            val fieldsJob = async { charRef.collection(FirestoreCollections.CHARACTER_FIELDS).get().await() }
-            val itemsJob = async { charRef.collection(FirestoreCollections.CHARACTER_ITEMS).get().await() }
-            val avatarJob = async {
-                runCatching {
-                    charRef.collection(FirestoreCollections.CHARACTER_MEDIA)
-                        .document(FirestoreCollections.AVATAR_DOCUMENT)
-                        .get()
-                        .await()
-                }.getOrNull()
-            }
-            Triple(fieldsJob.await(), itemsJob.await(), avatarJob.await())
-        }
-
-        val fields = linkedMapOf<String, Map<String, Any?>>()
-        fieldsSnap.documents.forEach { doc ->
-            fields[doc.id] = normalizeFirestoreMap(doc.data.orEmpty())
-        }
-
-        val items = linkedMapOf<String, SparkItemBundle>()
-        val itemFieldMaps = coroutineScope {
-            itemsSnap.documents.map { itemDoc ->
-                async {
-                    val itemData = normalizeFirestoreMap(itemDoc.data.orEmpty())
-                    val itemFieldsSnap = itemDoc.reference
-                        .collection(FirestoreCollections.CHARACTER_FIELDS)
-                        .get()
-                        .await()
-                    val itemFields = linkedMapOf<String, Map<String, Any?>>()
-                    itemFieldsSnap.documents.forEach { f ->
-                        itemFields[f.id] = normalizeFirestoreMap(f.data.orEmpty())
-                    }
-                    itemDoc.id to SparkItemBundle(document = itemData, fields = itemFields)
-                }
-            }.awaitAll()
-        }
-        itemFieldMaps.forEach { (itemId, bundle) ->
-            items[itemId] = bundle
-        }
-
-        val mediaAvatar = avatarSnap?.takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-        return SparkSheetDocuments(
-            root = rootData,
-            fields = fields,
-            items = items,
-            mediaAvatar = mediaAvatar,
-        )
-    }
-
-    private suspend fun pagedSheetIds(query: Query): Set<String> {
-        val ids = linkedSetOf<String>()
-        var cursor: DocumentSnapshot? = null
-        do {
-            val page = (cursor?.let { query.startAfter(it) } ?: query)
-                .limit(ROOT_QUERY_LIMIT).get().await().documents
-            ids += page.map(DocumentSnapshot::getId)
-            cursor = page.lastOrNull()
-        } while (page.size == ROOT_QUERY_LIMIT.toInt())
-        return ids
-    }
-
-    override suspend fun fetchAccessibleSheetIds(
-        uid: String,
-        ownedActiveCampaignIds: Set<String>,
-        isAdmin: Boolean,
-    ): Set<String> {
-        if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) return emptySet()
-        val store = firestoreProvider()
-        val characters = store.collection(FirestoreCollections.CHARACTERS)
-        if (isAdmin) {
-            // Never swallow listing failures here: an empty result would make sync() purge every
-            // clean local sheet as "no longer accessible". Let the caller report the failure.
-            return pagedSheetIds(characters)
-        }
-        val campaigns = store.collection(FirestoreCollections.CAMPAIGNS)
-        val remoteOwnedCampaignIds = runCatching {
-            campaigns.whereEqualTo("ownerId", uid).get().await().documents
-                .filter { it.getString("state") == CampaignState.ACTIVE.name }
-                .mapTo(linkedSetOf(), DocumentSnapshot::getId)
-        }.getOrDefault(emptySet())
-        val effectiveCampaignIds = (ownedActiveCampaignIds + remoteOwnedCampaignIds)
-            .filter(String::isNotBlank)
-            .toSet()
-
-        return coroutineScope {
-            val ownJob = async {
-                pagedSheetIds(characters.whereEqualTo("ownerId", uid))
-            }
-            val gmJobs = effectiveCampaignIds.map { cid ->
-                async {
-                    runCatching {
-                        pagedSheetIds(characters.whereEqualTo("campaignId", cid))
-                    }.getOrDefault(emptySet())
-                }
-            }
-            val result = linkedSetOf<String>()
-            result += ownJob.await()
-            gmJobs.awaitAll().forEach { result += it }
-            result
-        }
-    }
-
-    override suspend fun writeMediaAvatar(sheetId: String, mediaDoc: Map<String, Any?>) {
-        val store = firestoreProvider()
-        val payload = linkedMapOf<String, Any?>().apply {
-            putAll(mediaDoc)
-            put("updatedAt", FieldValue.serverTimestamp())
-        }
-        store.collection(FirestoreCollections.CHARACTERS)
-            .document(sheetId)
-            .collection(FirestoreCollections.CHARACTER_MEDIA)
-            .document(FirestoreCollections.AVATAR_DOCUMENT)
-            .set(payload)
-            .await()
-    }
-
-    override suspend fun deleteMediaAvatar(sheetId: String) {
-        val store = firestoreProvider()
-        runCatching {
-            store.collection(FirestoreCollections.CHARACTERS)
-                .document(sheetId)
-                .collection(FirestoreCollections.CHARACTER_MEDIA)
-                .document(FirestoreCollections.AVATAR_DOCUMENT)
-                .delete()
-                .await()
-        }
-    }
-
-    override suspend fun writePresence(sheetId: String, presenceId: String, data: Map<String, Any?>) {
-        val store = firestoreProvider()
-        val payload = linkedMapOf<String, Any?>().apply {
-            putAll(data)
-            put("updatedAt", FieldValue.serverTimestamp())
-        }
-        store.collection(FirestoreCollections.CHARACTERS)
-            .document(sheetId)
-            .collection(FirestoreCollections.CHARACTER_PRESENCE)
-            .document(presenceId)
-            .set(payload)
-            .await()
-    }
-
-    override suspend fun deletePresence(sheetId: String, presenceId: String) {
-        val store = firestoreProvider()
-        runCatching {
-            store.collection(FirestoreCollections.CHARACTERS)
-                .document(sheetId)
-                .collection(FirestoreCollections.CHARACTER_PRESENCE)
-                .document(presenceId)
-                .delete()
-                .await()
-        }
-    }
-
-    override fun observePresence(
-        sheetId: String,
-        ownPresenceId: String,
-        ownUid: String,
-    ): Flow<Map<String, String>> = callbackFlow {
-        if (sheetId.isBlank() || ownUid.isBlank() || ownUid == DEMO_ACCOUNT_ID) {
-            trySend(emptyMap())
-            awaitClose {}
-            return@callbackFlow
-        }
-        val store = runCatching { firestoreProvider() }.getOrNull() ?: run {
-            trySend(emptyMap())
-            awaitClose {}
-            return@callbackFlow
-        }
-        val registration = store.collection(FirestoreCollections.CHARACTERS)
-            .document(sheetId)
-            .collection(FirestoreCollections.CHARACTER_PRESENCE)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) {
-                    trySend(emptyMap())
-                    return@addSnapshotListener
-                }
-                val now = clock.nowMillis()
-                val active = linkedMapOf<String, String>()
-                snapshot.documents.forEach { doc ->
-                    if (doc.id == ownPresenceId) return@forEach
-                    val expiresAtMs = doc.getTimestamp("expiresAt")?.toDate()?.time
-                        ?: doc.getLong("expiresAt")
-                        ?: 0L
-                    if (expiresAtMs <= now) return@forEach
-                    val fieldKey = doc.getString("fieldKey").orEmpty()
-                    if (fieldKey.isBlank()) return@forEach
-                    val uid = doc.getString("uid").orEmpty()
-                    active[fieldKey] = if (uid == ownUid) "Outro dispositivo" else "Outro participante"
-                }
-                trySend(active)
-            }
-        awaitClose { registration.remove() }
-    }
-
-    override fun observeRemoteChanges(
-        uid: String,
-        ownedActiveCampaignIds: Set<String>,
-        isAdmin: Boolean,
-    ): Flow<RemoteSyncEvent> = callbackFlow {
-        if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) {
-            awaitClose {}
-            return@callbackFlow
-        }
-        val store = runCatching { firestoreProvider() }.getOrNull() ?: run {
-            awaitClose {}
-            return@callbackFlow
-        }
-        val registrations = mutableListOf<ListenerRegistration>()
-
-        // Dashboard listeners are bounded, root-level only. Per-sheet receipt listeners are attached
-        // exclusively for OPEN sheets through [observeSheetReceipts].
-        fun listenCharactersQuery(query: Query) {
-            val initialized = AtomicBoolean(false)
-            registrations += query.limit(ROOT_QUERY_LIMIT).addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
-                if (snapshot.metadata.hasPendingWrites() || snapshot.metadata.isFromCache) {
-                    initialized.compareAndSet(false, true)
-                    return@addSnapshotListener
-                }
-                if (!initialized.compareAndSet(false, true)) {
-                    val changedIds = snapshot.documentChanges.mapTo(linkedSetOf()) { it.document.id }
-                    if (changedIds.isNotEmpty()) {
-                        trySend(
-                            RemoteSyncEvent(
-                                fromCloud = true,
-                                characterIds = changedIds,
-                                fullSync = false,
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-
-        fun listenCollection(query: Query) {
-            val initialized = AtomicBoolean(false)
-            registrations += query.addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
-                if (snapshot.metadata.hasPendingWrites() || snapshot.metadata.isFromCache) {
-                    initialized.compareAndSet(false, true)
-                    return@addSnapshotListener
-                }
-                if (!initialized.compareAndSet(false, true) && snapshot.documentChanges.isNotEmpty()) {
-                    trySend(RemoteSyncEvent(fromCloud = true, fullSync = true))
-                }
-            }
-        }
-
-        val characters = store.collection(FirestoreCollections.CHARACTERS)
-        if (isAdmin) {
-            listenCharactersQuery(characters.orderBy("updatedAt", Query.Direction.DESCENDING))
-        } else {
-            // Strict Spark v2 ACL: listen ONLY to own sheets + active campaigns owned as GM.
-            listenCharactersQuery(characters.whereEqualTo("ownerId", uid))
-            ownedActiveCampaignIds.filter(String::isNotBlank).distinct().forEach { campaignId ->
-                listenCharactersQuery(characters.whereEqualTo("campaignId", campaignId))
-            }
-        }
-        ownedActiveCampaignIds.filter(String::isNotBlank).distinct().forEach { campaignId ->
-            listenCollection(store.collection(FirestoreCollections.CAMPAIGN_LIBRARY).whereEqualTo("campaignId", campaignId))
-            listenCollection(store.collection(FirestoreCollections.CAMPAIGN_AUDIT).whereEqualTo("campaignId", campaignId))
-        }
-        listenCollection(
-            store.collectionGroup(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
-                .whereEqualTo("userId", uid),
-        )
-        listenCollection(
-            store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES)
-                .whereEqualTo("recipientId", uid),
-        )
-
-        awaitClose {
-            registrations.forEach(ListenerRegistration::remove)
-        }
-    }
-
-    override suspend fun fetchSheetHead(sheetId: String): SparkSheetHead? {
-        if (sheetId.isBlank()) return null
-        val charRef = firestoreProvider().collection(FirestoreCollections.CHARACTERS).document(sheetId)
-        val root = try {
-            charRef.get().await()
-        } catch (error: FirebaseFirestoreException) {
-            if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ||
-                error.code == FirebaseFirestoreException.Code.NOT_FOUND
-            ) {
-                return null
-            }
-            throw error
-        }
-        if (!root.exists()) return null
-        val latest = charRef.collection(FirestoreCollections.CHARACTER_OPERATIONS)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(1)
-            .get()
-            .await()
-            .documents
-            .firstOrNull()
-        val latestMs = asLong(normalizeFirestoreValue(latest?.get("createdAt"))) ?: 0L
-        return SparkSheetHead(
-            rootRevision = root.getLong("revision") ?: 0L,
-            deleted = root.getBoolean("deleted") == true,
-            latestOperationAtMs = latestMs,
-        )
-    }
-
-    override fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent> = callbackFlow {
-        val store = runCatching { firestoreProvider() }.getOrNull()
-        if (store == null || sheetId.isBlank() || ownUid.isBlank() || ownUid == DEMO_ACCOUNT_ID) {
-            awaitClose {}
-            return@callbackFlow
-        }
-        val initialized = AtomicBoolean(false)
-        val registration = store.collection(FirestoreCollections.CHARACTERS)
-            .document(sheetId)
-            .collection(FirestoreCollections.CHARACTER_OPERATIONS)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(1)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
-                if (snapshot.metadata.hasPendingWrites() || snapshot.metadata.isFromCache) {
-                    initialized.compareAndSet(false, true)
-                    return@addSnapshotListener
-                }
-                if (!initialized.compareAndSet(false, true) &&
-                    snapshot.documentChanges.isNotEmpty()
-                ) {
-                    trySend(RemoteSyncEvent(fromCloud = true, characterIds = setOf(sheetId), fullSync = false))
-                }
-            }
-        awaitClose { registration.remove() }
-    }
-
-    private class FirestoreTransactionContext(
-        private val store: FirebaseFirestore,
-        private val tx: Transaction,
-        private val clock: SparkClock,
-    ) : SparkTransactionContext {
-        private fun charRef(sheetId: String) = store.collection(FirestoreCollections.CHARACTERS).document(sheetId)
-
-        override fun getRoot(sheetId: String): Map<String, Any?>? =
-            tx.get(charRef(sheetId)).takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getField(sheetId: String, fieldKey: String): Map<String, Any?>? =
-            tx.get(charRef(sheetId).collection(FirestoreCollections.CHARACTER_FIELDS).document(fieldKey))
-                .takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getItem(sheetId: String, itemId: String): Map<String, Any?>? =
-            tx.get(charRef(sheetId).collection(FirestoreCollections.CHARACTER_ITEMS).document(itemId))
-                .takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getItemField(sheetId: String, itemId: String, fieldKey: String): Map<String, Any?>? =
-            tx.get(
-                charRef(sheetId)
-                    .collection(FirestoreCollections.CHARACTER_ITEMS)
-                    .document(itemId)
-                    .collection(FirestoreCollections.CHARACTER_FIELDS)
-                    .document(fieldKey),
-            ).takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getOperation(sheetId: String, operationId: String): Map<String, Any?>? =
-            tx.get(charRef(sheetId).collection(FirestoreCollections.CHARACTER_OPERATIONS).document(operationId))
-                .takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getCampaign(campaignId: String): Map<String, Any?>? =
-            tx.get(store.collection(FirestoreCollections.CAMPAIGNS).document(campaignId))
-                .takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getMember(campaignId: String, uid: String): Map<String, Any?>? =
-            tx.get(
-                store.collection(FirestoreCollections.CAMPAIGNS)
-                    .document(campaignId)
-                    .collection(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
-                    .document(uid),
-            ).takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun getDelivery(deliveryId: String): Map<String, Any?>? =
-            tx.get(store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).document(deliveryId))
-                .takeIf { it.exists() }?.data?.let(::normalizeFirestoreMap)
-
-        override fun setRoot(sheetId: String, data: Map<String, Any?>) {
-            tx.set(charRef(sheetId), data)
-        }
-
-        override fun setField(sheetId: String, fieldKey: String, data: Map<String, Any?>) {
-            tx.set(charRef(sheetId).collection(FirestoreCollections.CHARACTER_FIELDS).document(fieldKey), data)
-        }
-
-        override fun setItem(sheetId: String, itemId: String, data: Map<String, Any?>) {
-            tx.set(charRef(sheetId).collection(FirestoreCollections.CHARACTER_ITEMS).document(itemId), data)
-        }
-
-        override fun setItemField(sheetId: String, itemId: String, fieldKey: String, data: Map<String, Any?>) {
-            tx.set(
-                charRef(sheetId)
-                    .collection(FirestoreCollections.CHARACTER_ITEMS)
-                    .document(itemId)
-                    .collection(FirestoreCollections.CHARACTER_FIELDS)
-                    .document(fieldKey),
-                data,
-            )
-        }
-
-        override fun setOperation(sheetId: String, operationId: String, data: Map<String, Any?>) {
-            tx.set(charRef(sheetId).collection(FirestoreCollections.CHARACTER_OPERATIONS).document(operationId), data)
-        }
-
-        override fun setMember(campaignId: String, uid: String, data: Map<String, Any?>) {
-            tx.set(
-                store.collection(FirestoreCollections.CAMPAIGNS)
-                    .document(campaignId)
-                    .collection(FirestoreCollections.CAMPAIGN_MEMBERS_SUBCOLLECTION)
-                    .document(uid),
-                data,
-            )
-        }
-
-        override fun setDelivery(deliveryId: String, data: Map<String, Any?>) {
-            tx.set(store.collection(FirestoreCollections.CAMPAIGN_DELIVERIES).document(deliveryId), data)
-        }
-
-        override fun serverTimestampToken(): Any = FieldValue.serverTimestamp()
-
-        override fun currentTimestampMillis(): Long = clock.nowMillis()
-    }
-}
-
-private sealed interface DrainTxOutcome {
-    data class Committed(
-        val resolvedTargets: List<SparkTargetSpec>,
-        val serverTimestamp: Long,
-        val appliedDeliveryId: String? = null,
-        val updatedRoot: Map<String, Any?>? = null,
-    ) : DrainTxOutcome
-
-    data class AlreadyCommitted(val receipt: OperationReceipt) : DrainTxOutcome
-    data class IdempotencyMismatch(val reason: String) : DrainTxOutcome
-    data class Tombstoned(val reason: String, val isSheet: Boolean, val itemId: String = "") : DrainTxOutcome
-    data class Rejected(val reason: String) : DrainTxOutcome
-    data class RevisionConflict(
-        val conflicts: List<SheetConflictItem>,
-        val remoteRoot: Map<String, Any?>?,
-    ) : DrainTxOutcome
-}
-
-/**
- * Single Spark Firestore Protocol v2 synchronization engine.
- * Owns durable account-scoped intents (`sheet_intents`), confirmed caches (`account_sheets`),
- * structured conflicts (`sheet_conflicts`), WorkManager drain, ephemeral Firestore presence,
- * and <= 64 KiB avatar thumbnail media sync.
- */
 class SparkFirestoreSyncEngine(
     private val localStore: SparkLocalStore,
     private val remoteGateway: SparkRemoteGateway,
@@ -995,12 +226,12 @@ class SparkFirestoreSyncEngine(
         ensureAccountProjected(accountId)
         val normalizedCampaignId = normalizeCampaignId(campaignId)
         if (ownerId != accountId) {
-            check(normalizedCampaignId.isNotBlank()) { "A Mestre só pode atribuir uma ficha dentro da campanha." }
+            check(normalizedCampaignId.isNotBlank()) { "A Mestre sÃ³ pode atribuir uma ficha dentro da campanha." }
             check(localStore.getCampaign(normalizedCampaignId)?.ownerId == accountId || session.isAdmin) {
                 "Somente a Mestre da campanha pode atribuir fichas."
             }
             check(localStore.getMember(normalizedCampaignId, ownerId)?.state == CampaignMemberState.ACTIVE.name) {
-                "A ficha só pode ser atribuída a um jogador ativo da campanha."
+                "A ficha sÃ³ pode ser atribuÃ­da a um jogador ativo da campanha."
             }
         }
         val now = clock.nowMillis()
@@ -1093,7 +324,7 @@ class SparkFirestoreSyncEngine(
                 candidate.copy(dirty = false)
             }
             check(CharacterAccessPolicy.canEdit(session, currentProjected, isCampaignHistorian(session, currentProjected))) {
-                "Você não pode editar esta ficha."
+                "VocÃª nÃ£o pode editar esta ficha."
             }
 
             val base = candidate.editingBase ?: currentProjected
@@ -1167,7 +398,7 @@ class SparkFirestoreSyncEngine(
     suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) {
         ensureAccountProjected(session.uid)
         check(CharacterAccessPolicy.canChangePlayerLock(session, character, isCampaignHistorian(session, character))) {
-            "O bloqueio do jogador só pode ser alterado pelo dono e não substitui o bloqueio do historiador."
+            "O bloqueio do jogador sÃ³ pode ser alterado pelo dono e nÃ£o substitui o bloqueio do historiador."
         }
         enqueueLockChange(session.uid, character, if (locked) CharacterLock.PLAYER else CharacterLock.NONE)
     }
@@ -1237,9 +468,9 @@ class SparkFirestoreSyncEngine(
         val accountId = session.uid
         ensureAccountProjected(accountId)
         check(CharacterAccessPolicy.canTransferOwnership(session, isCampaignResponsible(session, character))) {
-            "Somente a responsável principal pode transferir uma ficha."
+            "Somente a responsÃ¡vel principal pode transferir uma ficha."
         }
-        check(owner.uid.isNotBlank()) { "O novo owner é inválido." }
+        check(owner.uid.isNotBlank()) { "O novo owner Ã© invÃ¡lido." }
         if (character.canonicalSchemaVersion != CURRENT_CHARACTER_SCHEMA_VERSION) {
             throw DomainError.LegacyWriteRejected()
         }
@@ -1282,7 +513,7 @@ class SparkFirestoreSyncEngine(
         val accountId = session.uid
         ensureAccountProjected(accountId)
         check(CharacterAccessPolicy.canDelete(session, character, isCampaignHistorian(session, character))) {
-            "Esta ficha não pode ser removida."
+            "Esta ficha nÃ£o pode ser removida."
         }
         // Optimistically hide the character in the local UI projection immediately (<5ms) before
         // acquiring drainMutex or probing Firestore in cancelUnpublishedSheet.
@@ -1389,7 +620,7 @@ class SparkFirestoreSyncEngine(
     ): Boolean {
         val accountId = session.uid
         ensureAccountProjected(accountId)
-        require(command.idempotencyKey.isNotBlank()) { "A ação precisa de uma chave de operação." }
+        require(command.idempotencyKey.isNotBlank()) { "A aÃ§Ã£o precisa de uma chave de operaÃ§Ã£o." }
         if (localStore.getIntent(accountId, command.idempotencyKey) != null ||
             localStore.getOperationByIdempotencyKey(command.idempotencyKey) != null
         ) {
@@ -1403,7 +634,7 @@ class SparkFirestoreSyncEngine(
             val existingIntents = localStore.listIntentsForSheet(accountId, character.id)
                 .map(SheetIntentRecord::toDomain)
             val currentProjected = projectReplay(snapshot, existingIntents).projectedCharacter
-            check(!currentProjected.deleted) { "Esta ficha foi excluída." }
+            check(!currentProjected.deleted) { "Esta ficha foi excluÃ­da." }
             if (currentProjected.canonicalSchemaVersion != CURRENT_CHARACTER_SCHEMA_VERSION) {
                 throw DomainError.LegacyWriteRejected()
             }
@@ -1412,14 +643,14 @@ class SparkFirestoreSyncEngine(
             if (consume != null) {
                 require(currentProjected.inventory.firstOrNull { it.id == consume.itemInstanceId.value }
                     ?.mechanicalEffects.orEmpty().isEmpty()) {
-                    "Efeitos de consumo exigem um ajuste explícito da Mestre."
+                    "Efeitos de consumo exigem um ajuste explÃ­cito da Mestre."
                 }
             }
             if (command.type == SessionOperationType.ABILITY_USE) {
                 val cost = currentProjected.allCanonicalAbilitiesSafely()
                     .firstOrNull { it.id == command.targetId }?.cost
                 require(cost !is com.kinderman.sdo.domain.model.AbilityCost.AshCost) {
-                    "Este custo exige um ajuste explícito da Mestre."
+                    "Este custo exige um ajuste explÃ­cito da Mestre."
                 }
             }
             val activeGm = currentProjected.campaignId.takeIf(String::isNotBlank)?.let {
@@ -1431,7 +662,7 @@ class SparkFirestoreSyncEngine(
                 SessionOperationType.NOTE, SessionOperationType.CONDITION_ADD,
                 SessionOperationType.CONDITION_REMOVE, SessionOperationType.ABILITY_USE,
             ) || consume != null) {
-                "Esta ação exige um ajuste explícito da Mestre."
+                "Esta aÃ§Ã£o exige um ajuste explÃ­cito da Mestre."
             }
             // Compute mutation purely before persisting anything!
             val mutation = currentProjected.applySessionCommand(command, accountId)
@@ -1453,7 +684,7 @@ class SparkFirestoreSyncEngine(
                     val beforeValue = jsonToPlainValue(target.baseValueJson)
                     require(computeFieldDelta(target.key, beforeValue, target.delta ?: 0,
                         target.minValue, target.maxValue).isSuccess) {
-                        "Este recurso exige um ajuste explícito da Mestre."
+                        "Este recurso exige um ajuste explÃ­cito da Mestre."
                     }
                 }
                 validateAtomicSparkActionBudget(
@@ -1508,11 +739,11 @@ class SparkFirestoreSyncEngine(
             )
             val allTargets = batches.flatMap { it.targets }
             require(allTargets.size <= 5) {
-                "Entrega excede o limite atômico. Solicite um ajuste explícito à Mestre."
+                "Entrega excede o limite atÃ´mico. Solicite um ajuste explÃ­cito Ã  Mestre."
             }
             validateAtomicSparkActionBudget(allTargets, "Entrega")
             val root = allTargets.singleOrNull { it.kind == TargetKind.SHEET }
-                ?: error("Entrega exige a confirmação da ficha na mesma transação.")
+                ?: error("Entrega exige a confirmaÃ§Ã£o da ficha na mesma transaÃ§Ã£o.")
             val targets = listOf(root.copy(
                 op = TargetOp.DELIVERY,
                 valueJson = plainGson.toJson(mapOf("deliveryId" to deliveryId)),
@@ -1818,7 +1049,7 @@ class SparkFirestoreSyncEngine(
                         localStore.upsertIntent(
                             intent.copy(
                                 status = SheetIntentStatus.REJECTED,
-                                error = "MIGRATE_V2 não é enviado pelo aplicativo.",
+                                error = "MIGRATE_V2 nÃ£o Ã© enviado pelo aplicativo.",
                                 updatedAt = clock.nowMillis(),
                             ).toRecord(),
                         )
@@ -1875,7 +1106,7 @@ class SparkFirestoreSyncEngine(
                         localStore.upsertIntent(
                             intent.copy(
                                 status = SheetIntentStatus.ACCESS_DENIED,
-                                error = denied.message ?: "Sem permissão para sincronizar esta alteração.",
+                                error = denied.message ?: "Sem permissÃ£o para sincronizar esta alteraÃ§Ã£o.",
                                 updatedAt = clock.nowMillis(),
                             ).toRecord(),
                         )
@@ -2056,8 +1287,8 @@ class SparkFirestoreSyncEngine(
                                 intent.copy(
                                     status = SheetIntentStatus.CONFLICT,
                                     error = outcome.conflicts.firstOrNull()?.let {
-                                        "Conflito de revisão em ${it.targetKey} (base ${it.baseRevision}, remota ${it.remoteRevision})."
-                                    } ?: "Conflito de revisão.",
+                                        "Conflito de revisÃ£o em ${it.targetKey} (base ${it.baseRevision}, remota ${it.remoteRevision})."
+                                    } ?: "Conflito de revisÃ£o.",
                                     updatedAt = clock.nowMillis(),
                                 ).toRecord(),
                             )
@@ -2129,7 +1360,7 @@ class SparkFirestoreSyncEngine(
             val isSheetDeleted = (remoteRoot?.get("deleted") as? Boolean) == true
             val isCreateSheet = intent.type == OperationType.CREATE_SHEET
             if (!isCreateSheet && remoteRoot == null) {
-                return@runTransaction DrainTxOutcome.Rejected("Ficha remota não encontrada.")
+                return@runTransaction DrainTxOutcome.Rejected("Ficha remota nÃ£o encontrada.")
             }
 
             val resolvedTargets = mutableListOf<SparkTargetSpec>()
@@ -2143,7 +1374,7 @@ class SparkFirestoreSyncEngine(
                         return@runTransaction DrainTxOutcome.Committed(emptyList(), nowMs)
                     }
                     return@runTransaction DrainTxOutcome.Tombstoned(
-                        reason = "A ficha foi excluída remotamente.",
+                        reason = "A ficha foi excluÃ­da remotamente.",
                         isSheet = true,
                     )
                 }
@@ -2260,7 +1491,7 @@ class SparkFirestoreSyncEngine(
                         val itemDeleted = (remoteItem?.get("deleted") as? Boolean) == true
                         if (itemDeleted && target.op != TargetOp.RESTORE) {
                             return@runTransaction DrainTxOutcome.Tombstoned(
-                                reason = "Item ${target.itemId} foi excluído remotamente.",
+                                reason = "Item ${target.itemId} foi excluÃ­do remotamente.",
                                 isSheet = false,
                                 itemId = target.itemId,
                             )
@@ -2304,7 +1535,7 @@ class SparkFirestoreSyncEngine(
                         val remoteItem = remoteItems[target.itemId]
                         if ((remoteItem?.get("deleted") as? Boolean) == true && target.op != TargetOp.RESTORE) {
                             return@runTransaction DrainTxOutcome.Tombstoned(
-                                reason = "Item ${target.itemId} foi excluído remotamente.",
+                                reason = "Item ${target.itemId} foi excluÃ­do remotamente.",
                                 isSheet = false,
                                 itemId = target.itemId,
                             )
@@ -2324,7 +1555,7 @@ class SparkFirestoreSyncEngine(
                                 asLong(prevMap["quantity"])
                             } else {
                                 asLong(rawPrev)
-                            } ?: return@runTransaction DrainTxOutcome.Rejected("Valor numérico inválido.")
+                            } ?: return@runTransaction DrainTxOutcome.Rejected("Valor numÃ©rico invÃ¡lido.")
                             val minVal = (target.minValue ?: 0).toLong()
                             val maxVal = (target.maxValue ?: Int.MAX_VALUE).toLong()
                             val nextVal = prevVal + delta
@@ -2527,7 +1758,7 @@ class SparkFirestoreSyncEngine(
         sheetId: String,
         prefetchedHead: SparkSheetHead? = null,
     ): AccountSheetSnapshot? {
-        check(isAccountCurrent(accountId)) { "A conta ativa mudou durante a sincronização." }
+        check(isAccountCurrent(accountId)) { "A conta ativa mudou durante a sincronizaÃ§Ã£o." }
         val head = prefetchedHead ?: remoteGateway.fetchSheetHead(sheetId)
         val docs = remoteGateway.fetchSheetDocuments(sheetId) ?: return null
 
@@ -2685,7 +1916,7 @@ class SparkFirestoreSyncEngine(
                             localStore.upsertIntent(
                                 intent.copy(
                                     status = SheetIntentStatus.REJECTED,
-                                    error = "Envelope legado v32 inválido para reconciliação automática.",
+                                    error = "Envelope legado v32 invÃ¡lido para reconciliaÃ§Ã£o automÃ¡tica.",
                                     updatedAt = clock.nowMillis(),
                                 ).toRecord(),
                             )
@@ -2729,7 +1960,7 @@ class SparkFirestoreSyncEngine(
                         localStore.upsertIntent(
                             syntheticIntent.copy(
                                 status = SheetIntentStatus.REJECTED,
-                                error = "Envelope legado v32 inválido.",
+                                error = "Envelope legado v32 invÃ¡lido.",
                             ).toRecord(),
                         )
                     }
@@ -3569,462 +2800,4 @@ class SparkFirestoreSyncEngine(
             )
         }
     }
-}
-
-class SparkSheetSyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters) {
-    override suspend fun doWork(): Result = try {
-        val app = applicationContext as SdoApplication
-        if (app.sparkSyncEngine.drain()) Result.success() else Result.retry()
-    } catch (error: Exception) {
-        if (error is CancellationException) throw error
-        Log.e("SDO_SYNC", "SparkSheetSyncWorker failed", error)
-        Result.retry()
-    }
-}
-
-private val sharedPlainGson = GsonBuilder().create()
-private val sharedConverters = CharacterConverters()
-private val sharedJson = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-
-internal fun normalizeFirestoreMap(input: Map<String, Any?>): Map<String, Any?> =
-    input.mapValues { (_, v) -> normalizeFirestoreValue(v) }
-
-internal fun normalizeFirestoreValue(value: Any?): Any? = when (value) {
-    is Timestamp -> value.toDate().time
-    is Map<*, *> -> value.entries.associate { it.key.toString() to normalizeFirestoreValue(it.value) }
-    is List<*> -> value.map(::normalizeFirestoreValue)
-    else -> value
-}
-
-internal fun jsonToPlainValue(raw: String?): Any? {
-    if (raw.isNullOrBlank()) return ""
-    val parsed = runCatching { JsonParser.parseString(raw) }.getOrNull() ?: return raw
-    return gsonElementToPlain(parsed)
-}
-
-private fun gsonElementToPlain(element: JsonElement?): Any? = when {
-    element == null || element.isJsonNull -> null
-    element.isJsonObject -> element.asJsonObject.entrySet().associate { it.key to gsonElementToPlain(it.value) }
-    element.isJsonArray -> element.asJsonArray.map(::gsonElementToPlain)
-    element.asJsonPrimitive.isBoolean -> element.asBoolean
-    element.asJsonPrimitive.isNumber -> element.asString.toLongOrNull() ?: element.asDouble
-    else -> element.asString
-}
-
-private fun asLong(raw: Any?): Long? = when (raw) {
-    is Long -> raw
-    is Int -> raw.toLong()
-    is Number -> raw.toLong()
-    is String -> raw.toLongOrNull()
-    else -> null
-}
-
-private fun asInt(raw: Any?): Int? = asLong(raw)?.toInt()
-
-private fun summarizePlainJson(raw: String): String {
-    if (raw.isBlank()) return "—"
-    val parsed = runCatching { JsonParser.parseString(raw) }.getOrNull() ?: return raw.take(120)
-    return when {
-        parsed.isJsonPrimitive -> parsed.asJsonPrimitive.asString.take(120)
-        parsed.isJsonObject -> {
-            val obj = parsed.asJsonObject
-            if (obj.has("current") && obj.has("maximum")) {
-                "${obj.get("current").asString}/${obj.get("maximum").asString}"
-            } else {
-                raw.take(120)
-            }
-        }
-        else -> raw.take(120)
-    }
-}
-
-private fun decodeLegacyCharacterRecord(raw: String): CharacterRecord? {
-    if (raw.isBlank() || !raw.trimStart().startsWith("{")) return null
-    return runCatching {
-        val defaults = sharedPlainGson.toJsonTree(CharacterRecord()).asJsonObject
-        val incoming = JsonParser.parseString(raw).asJsonObject
-        incoming.entrySet().forEach { (key, value) ->
-            if (!value.isJsonNull || defaults.get(key)?.isJsonNull != false) {
-                defaults.add(key, value)
-            }
-        }
-        sharedPlainGson.fromJson(defaults, CharacterRecord::class.java)?.normalizedForSparkV2()
-    }.getOrNull()
-}
-
-private fun parseOperationReceipt(data: Map<String, Any?>): OperationReceipt {
-    val opType = runCatching { OperationType.valueOf(data["type"]?.toString().orEmpty()) }
-        .getOrDefault(OperationType.PATCH_FIELDS)
-    val preconditions = data["preconditions"] as? Map<*, *>
-    val payloadHash = preconditions?.get("payloadHash")?.toString().orEmpty()
-    val rawTargets = (data["targets"] as? List<*>).orEmpty().mapNotNull { entry ->
-        val map = entry as? Map<*, *> ?: return@mapNotNull null
-        val kind = runCatching { TargetKind.valueOf(map["kind"]?.toString().orEmpty()) }.getOrNull()
-            ?: return@mapNotNull null
-        val op = runCatching { TargetOp.valueOf(map["op"]?.toString().orEmpty()) }.getOrNull()
-            ?: return@mapNotNull null
-        SparkTargetSpec(
-            kind = kind,
-            itemId = map["itemId"]?.toString().orEmpty(),
-            key = map["key"]?.toString().orEmpty(),
-            op = op,
-            expectedRevision = asLong(map["expectedRevision"]) ?: 0L,
-            nextRevision = asLong(map["nextRevision"]) ?: 1L,
-            delta = asInt(map["delta"]),
-            baseValueJson = map["baseValue"]?.let(sharedPlainGson::toJson),
-            valueJson = map["desiredValue"]?.let(sharedPlainGson::toJson),
-        )
-    }
-    return OperationReceipt(
-        id = data["id"]?.toString().orEmpty(),
-        actorUid = data["actorUid"]?.toString().orEmpty(),
-        type = opType,
-        outcome = data["outcome"]?.toString().orEmpty(),
-        schemaVersion = asInt(data["schemaVersion"]) ?: 2,
-        createdAt = asLong(data["createdAt"]) ?: 0L,
-        targets = rawTargets,
-        payloadHash = payloadHash,
-        campaignId = preconditions?.get("campaignId")?.toString(),
-        lockType = preconditions?.get("lockType")?.toString(),
-    )
-}
-
-private fun expectedItemKindFromId(itemId: String): String = when {
-    itemId.startsWith("inv_") -> "INVENTORY"
-    itemId.startsWith("istate_") -> "ITEM_STATE"
-    itemId.startsWith("abil_") -> "ABILITY"
-    itemId.startsWith("pow_") -> "POWER"
-    itemId.startsWith("mys_") -> "MYSTIC"
-    itemId.startsWith("cond_") -> "CONDITION"
-    itemId.startsWith("lcond_") -> "LEGACY_CONDITION"
-    itemId.startsWith("note_") -> "NOTE"
-    itemId.startsWith("attr_") -> "ATTRIBUTE"
-    else -> ""
-}
-
-private fun computeFieldDelta(
-    key: String,
-    prevValue: Any?,
-    delta: Int,
-    minValue: Int?,
-    maxValue: Int?,
-): Result<Any> {
-    if (key == "money") {
-        val current = asLong(prevValue)
-            ?: return Result.failure(DomainError.ValidationError("Saldo monetário inválido."))
-        val min = (minValue ?: 0).toLong()
-        val max = (maxValue ?: Int.MAX_VALUE).toLong()
-        val next = current + delta
-        return if (next < min || next > max) {
-            Result.failure(DomainError.InsufficientResource("Dinheiro insuficiente (atual=$current, delta=$delta)."))
-        } else {
-            Result.success(next)
-        }
-    }
-    val map = (prevValue as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value }?.toMutableMap()
-        ?: return Result.failure(DomainError.ValidationError("Recurso $key inválido."))
-    val current = asLong(map["current"]) ?: 0L
-    val min = (minValue ?: 0).toLong()
-    val maxBound = minOf(if (delta > 0) maxValue?.toLong() ?: Int.MAX_VALUE.toLong() else Int.MAX_VALUE.toLong(),
-        if (delta > 0) asLong(map["maximum"]) ?: 0L else Int.MAX_VALUE.toLong(),
-        if (key == "corruption") 100L else Int.MAX_VALUE.toLong())
-    val next = current + delta
-    if (next < min || next > maxBound) {
-        return Result.failure(DomainError.InsufficientResource("Recurso $key insuficiente (atual=$current, delta=$delta)."))
-    }
-    map["current"] = next
-    return Result.success(map)
-}
-
-private fun buildUpdatedRootDoc(
-    sheetId: String,
-    actorUid: String,
-    remoteRoot: Map<String, Any?>?,
-    target: SparkTargetSpec,
-    operationId: String,
-    nextRevision: Long,
-    serverTimestampToken: Any,
-    deliveryId: String,
-): Map<String, Any?> {
-    val desired = jsonToPlainValue(target.valueJson) as? Map<*, *> ?: emptyMap<String, Any?>()
-    if (target.op == TargetOp.CREATE || remoteRoot == null) {
-        val lockType = desired["lockType"]?.toString() ?: "NONE"
-        val isLocked = lockType != "NONE"
-        val deliveries = (desired["appliedDeliveryIds"] as? List<*>)?.mapNotNull { it?.toString() }.orEmpty()
-        return linkedMapOf(
-            "id" to sheetId,
-            "ownerId" to (desired["ownerId"]?.toString()?.ifBlank { actorUid } ?: actorUid),
-            "campaignId" to normalizeCampaignId(desired["campaignId"]?.toString().orEmpty()),
-            "authorizedCampaignId" to normalizeCampaignId(desired["authorizedCampaignId"]?.toString().orEmpty()),
-            "deleted" to false,
-            "schemaVersion" to SparkWireCodec.SCHEMA_VERSION,
-            "canonicalSchemaVersion" to (asInt(desired["canonicalSchemaVersion"]) ?: CURRENT_CHARACTER_SCHEMA_VERSION),
-            "itemSchemaVersion" to (asInt(desired["itemSchemaVersion"]) ?: 0),
-            "protocolVersion" to SparkWireCodec.PROTOCOL_VERSION,
-            "lockType" to lockType,
-            "isLocked" to isLocked,
-            "lockedBy" to if (isLocked) actorUid else "",
-            "lockedAt" to if (isLocked) serverTimestampToken else null,
-            "revision" to nextRevision,
-            "lastOperationId" to operationId,
-            "updatedBy" to actorUid,
-            "updatedAt" to serverTimestampToken,
-            "appliedDeliveryIds" to deliveries,
-        )
-    }
-
-    val result = LinkedHashMap<String, Any?>(remoteRoot)
-    result["id"] = sheetId
-    result["schemaVersion"] = SparkWireCodec.SCHEMA_VERSION
-    result["protocolVersion"] = SparkWireCodec.PROTOCOL_VERSION
-    result["revision"] = nextRevision
-    result["lastOperationId"] = operationId
-    result["updatedBy"] = actorUid
-    result["updatedAt"] = serverTimestampToken
-    when (target.op) {
-        TargetOp.LOCK -> {
-            val lockType = desired["lockType"]?.toString() ?: "NONE"
-            val locked = lockType != "NONE"
-            result["lockType"] = lockType
-            result["isLocked"] = locked
-            result["lockedBy"] = if (locked) actorUid else ""
-            result["lockedAt"] = if (locked) serverTimestampToken else null
-        }
-        TargetOp.TRANSFER -> {
-            result["ownerId"] = desired["ownerId"]?.toString() ?: result["ownerId"]
-            result["authorizedCampaignId"] = ""
-        }
-        TargetOp.LINK -> {
-            val nextCid = normalizeCampaignId(desired["campaignId"]?.toString().orEmpty())
-            val authCid = normalizeCampaignId(desired["authorizedCampaignId"]?.toString().orEmpty())
-            result["campaignId"] = nextCid
-            result["authorizedCampaignId"] = authCid
-        }
-        TargetOp.UNLINK -> {
-            result["campaignId"] = ""
-            result["authorizedCampaignId"] = ""
-        }
-        TargetOp.TOMBSTONE -> {
-            result["deleted"] = true
-            result["authorizedCampaignId"] = ""
-        }
-        TargetOp.RESTORE -> {
-            result["deleted"] = false
-        }
-        TargetOp.DELIVERY -> {
-            val prev = (remoteRoot["appliedDeliveryIds"] as? List<*>)?.mapNotNull { it?.toString() }.orEmpty()
-            result["appliedDeliveryIds"] = if (deliveryId.isNotBlank() && deliveryId !in prev) {
-                prev + deliveryId
-            } else {
-                prev
-            }
-        }
-        TargetOp.SET, TargetOp.CREATE, TargetOp.DELTA -> {
-            desired["canonicalSchemaVersion"]?.let { result["canonicalSchemaVersion"] = asInt(it) ?: 0 }
-            desired["itemSchemaVersion"]?.let { result["itemSchemaVersion"] = asInt(it) ?: 0 }
-        }
-    }
-    return result
-}
-
-private fun applyExtendedTargetProjection(
-    character: Character,
-    target: SparkTargetSpec,
-    absoluteForDelta: Boolean = true,
-): Character {
-    if (target.op == TargetOp.DELTA && !absoluteForDelta) return character
-    val raw = target.valueJson.orEmpty()
-    if (target.kind == TargetKind.FIELD) {
-        val plain = jsonToPlainValue(raw)
-        return when (target.key) {
-            "creationStatus" -> character.copy(
-                creationStatus = runCatching {
-                    com.kinderman.sdo.domain.model.CharacterCreationStatus.valueOf(plain?.toString().orEmpty())
-                }.getOrDefault(character.creationStatus),
-            )
-            "creationRulesVersion" -> character.copy(creationRulesVersion = asInt(plain) ?: character.creationRulesVersion)
-            "creationCompletedAt" -> character.copy(creationCompletedAt = asLong(plain))
-            "progressionLifeBonus" -> character.copy(progressionLifeBonus = asInt(plain) ?: character.progressionLifeBonus)
-            "progressionSanityBonus" -> character.copy(progressionSanityBonus = asInt(plain) ?: character.progressionSanityBonus)
-            "progressionArcaneBonus" -> character.copy(progressionArcaneBonus = asInt(plain) ?: character.progressionArcaneBonus)
-            "progressionEnergyBonus" -> character.copy(progressionEnergyBonus = asInt(plain) ?: character.progressionEnergyBonus)
-            "canonicalBodyPayload" -> {
-                val payload = plain?.toString().orEmpty()
-                val rec = character.toRecord().copy(canonicalBodyPayload = payload).toDomain()
-                character.copy(bodyState = rec.bodyState, bodyRegions = rec.bodyRegions, organs = rec.organs)
-            }
-            "activeModifiersPayload" -> {
-                val payload = plain?.toString().orEmpty()
-                val rec = character.toRecord().copy(activeModifiersPayload = payload).toDomain()
-                character.copy(activeModifiers = rec.activeModifiers)
-            }
-            "scopedItemCatalogPayload" -> {
-                val payload = plain?.toString().orEmpty()
-                val rec = character.toRecord().copy(scopedItemCatalogPayload = payload).toDomain()
-                character.copy(customItemCatalog = rec.customItemCatalog)
-            }
-            "canonicalProgressionPayload" -> {
-                val payload = plain?.toString().orEmpty()
-                val rec = character.toRecord().copy(canonicalProgressionPayload = payload).toDomain()
-                character.copy(progression = rec.progression)
-            }
-            "migrationReviewPayload" -> {
-                val payload = plain?.toString().orEmpty()
-                val rec = character.toRecord().copy(migrationReviewPayload = payload).toDomain()
-                character.copy(migrationReviews = rec.migrationReviews)
-            }
-            "itemCreationDraft" -> {
-                val payload = plain?.toString().orEmpty()
-                character.copy(itemCreationDraft = sharedConverters.stringToItemCreationDraft(payload))
-            }
-            "learnedKnowledges" -> character.copy(learnedKnowledges = decodeListViaGson<SpecialKnowledge>(plain))
-            "transports" -> character.copy(transports = sharedConverters.stringToTransports(plain?.toString().orEmpty()))
-            "familiars" -> character.copy(familiars = sharedConverters.stringToFamiliars(plain?.toString().orEmpty()))
-            "arcaneKnowledges" -> character.copy(arcaneKnowledges = decodeListViaGson<SpecialKnowledge>(plain))
-            "battleTechniques" -> character.copy(battleTechniques = decodeListViaGson<SpecialKnowledge>(plain))
-            "progressionHistory" -> character.copy(progressionHistory = decodeListViaGson<ProgressionRecord>(plain))
-            "money" -> if (target.op == TargetOp.DELTA && target.valueJson == null) {
-                character
-            } else {
-                character.copy(money = asInt(plain) ?: character.money)
-            }
-            "life", "sanity", "arcane", "energy", "destiny", "exhaustion", "corruption" -> {
-                val map = plain as? Map<*, *> ?: return character
-                val res = ResourceValue(
-                    current = asInt(map["current"]) ?: 0,
-                    maximum = asInt(map["maximum"]) ?: 0,
-                    adjustment = asInt(map["adjustment"]) ?: 0,
-                )
-                when (target.key) {
-                    "life" -> character.copy(life = res)
-                    "sanity" -> character.copy(sanity = res)
-                    "arcane" -> character.copy(arcane = res)
-                    "energy" -> character.copy(energy = res)
-                    "destiny" -> character.copy(destiny = res)
-                    "exhaustion" -> character.copy(exhaustion = res)
-                    "corruption" -> character.copy(corruption = res)
-                    else -> character
-                }
-            }
-            else -> character
-        }
-    }
-    if (target.kind == TargetKind.ITEM && target.op == TargetOp.TOMBSTONE) {
-        return when {
-            target.itemId.startsWith("abil_") -> {
-                val id = decodeWireElementId("abil", target.itemId)
-                character.copy(abilities = character.abilities.filterNot { it.id == id })
-            }
-            target.itemId.startsWith("cond_") -> {
-                val id = decodeWireElementId("cond", target.itemId)
-                character.copy(conditionInstances = character.conditionInstances.filterNot { it.instanceId.value == id })
-            }
-            target.itemId.startsWith("lcond_") -> {
-                val id = decodeWireElementId("lcond", target.itemId)
-                character.copy(conditions = character.conditions.filterNot { it.id == id })
-            }
-            target.itemId.startsWith("istate_") -> {
-                val id = decodeWireElementId("istate", target.itemId)
-                character.copy(itemStates = character.itemStates.filterNot { it.id.value == id })
-            }
-            else -> character
-        }
-    }
-    if (target.kind == TargetKind.ITEM_FIELD) {
-        val plain = jsonToPlainValue(raw)
-        if (target.op == TargetOp.DELTA && target.itemId.startsWith("inv_") && target.key == "quantity" && target.valueJson != null) {
-            val invId = decodeWireElementId("inv", target.itemId)
-            val newQty = asInt(plain) ?: return character
-            return character.copy(
-                inventory = character.inventory.map { item ->
-                    if (item.id == invId) item.copy(quantity = newQty) else item
-                },
-            )
-        }
-        if (target.itemId.startsWith("cond_") && target.key == "payload") {
-            val instance = runCatching {
-                sharedJson.decodeFromString(ConditionInstance.serializer(), sharedPlainGson.toJson(plain))
-            }.getOrNull() ?: return character
-            val existing = character.conditionInstances.any { it.instanceId == instance.instanceId }
-            return character.copy(
-                conditionInstances = if (existing) {
-                    character.conditionInstances.map { if (it.instanceId == instance.instanceId) instance else it }
-                } else {
-                    character.conditionInstances + instance
-                },
-            )
-        }
-        if (target.itemId.startsWith("abil_")) {
-            val id = decodeWireElementId("abil", target.itemId)
-            val existing = character.abilities.firstOrNull { it.id == id }
-                ?: Ability(
-                    id = id,
-                    name = id.ifBlank { "Habilidade" },
-                    kind = com.kinderman.sdo.domain.model.AbilityKind.POWER,
-                    cost = com.kinderman.sdo.domain.model.AbilityCost.PowerCost(0),
-                )
-            val updated = when (target.key) {
-                "name" -> plain?.toString()?.takeIf { it.isNotBlank() }?.let { existing.copy(name = it) } ?: existing
-                "effect" -> existing.copy(effect = plain?.toString().orEmpty())
-                "favorite" -> existing.copy(favorite = plain as? Boolean ?: existing.favorite)
-                "available" -> existing.copy(available = plain as? Boolean ?: existing.available)
-                "cost" -> runCatching {
-                    sharedJson.decodeFromString(
-                        com.kinderman.sdo.domain.model.AbilityCost.serializer(),
-                        sharedPlainGson.toJson(plain),
-                    )
-                }.getOrNull()?.let { existing.copy(cost = it) } ?: existing
-                "action" -> runCatching {
-                    sharedJson.decodeFromString(
-                        com.kinderman.sdo.domain.model.Execution.serializer(),
-                        sharedPlainGson.toJson(plain),
-                    )
-                }.getOrNull()?.let { existing.copy(execution = it) } ?: existing
-                "range" -> runCatching {
-                    sharedJson.decodeFromString(
-                        com.kinderman.sdo.domain.model.RangeSpec.serializer(),
-                        sharedPlainGson.toJson(plain),
-                    )
-                }.getOrNull()?.let { existing.copy(range = it) } ?: existing
-                "duration" -> if (plain == null) {
-                    existing.copy(duration = null)
-                } else {
-                    runCatching {
-                        sharedJson.decodeFromString(
-                            com.kinderman.sdo.domain.model.Duration.serializer(),
-                            sharedPlainGson.toJson(plain),
-                        )
-                    }.getOrNull()?.let { existing.copy(duration = it) } ?: existing
-                }
-                "meta" -> {
-                    val meta = (plain as? Map<*, *>)?.entries
-                        ?.associate { it.key.toString() to it.value }
-                        ?.toMutableMap()
-                        ?: return character
-                    val kindVal = runCatching {
-                        com.kinderman.sdo.domain.model.AbilityKind.valueOf(meta["kind"]?.toString().orEmpty())
-                    }.getOrDefault(existing.kind)
-                    existing.copy(kind = kindVal)
-                }
-                else -> existing
-            }
-            val exists = character.abilities.any { it.id == id }
-            return character.copy(
-                abilities = if (exists) {
-                    character.abilities.map { if (it.id == id) updated else it }
-                } else {
-                    character.abilities + updated
-                },
-            )
-        }
-    }
-    return character
-}
-
-private inline fun <reified T> decodeListViaGson(plain: Any?): List<T> {
-    val list = plain as? List<*> ?: return emptyList()
-    val type = TypeToken.getParameterized(List::class.java, T::class.java).type
-    return runCatching {
-        sharedPlainGson.fromJson<List<T>>(sharedPlainGson.toJson(list), type)
-    }.getOrDefault(emptyList())
 }

@@ -172,11 +172,13 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
         Text("OPERAÇÕES ESTRUTURADAS", color = MaterialTheme.colorScheme.primary)
         ability.mechanicalEffect?.operations.orEmpty().forEachIndexed { index, operation ->
             AbilityOperationEditor(operation, mechanicsEditable, { replacement ->
-                val operations = ability.mechanicalEffect!!.operations.mapIndexed { current, value -> if (current == index) replacement else value }
-                update(ability.copy(mechanicalEffect = MechanicalEffect(operations, ability.mechanicalEffect.usage, ability.mechanicalEffect.trigger)))
+                val effect = ability.mechanicalEffect!!
+                val operations = effect.operations.mapIndexed { current, value -> if (current == index) replacement else value }
+                update(ability.copy(mechanicalEffect = MechanicalEffect(operations, effect.usage, effect.trigger)))
             }, {
-                val operations = ability.mechanicalEffect!!.operations.filterIndexed { current, _ -> current != index }
-                update(ability.copy(mechanicalEffect = operations.takeIf { it.isNotEmpty() }?.let { MechanicalEffect(it, ability.mechanicalEffect.usage, ability.mechanicalEffect.trigger) }))
+                val effect = ability.mechanicalEffect!!
+                val operations = effect.operations.filterIndexed { current, _ -> current != index }
+                update(ability.copy(mechanicalEffect = operations.takeIf { it.isNotEmpty() }?.let { MechanicalEffect(it, effect.usage, effect.trigger) }))
             })
         }
         if (!published && !isRacial) AddButton("Adicionar operação", enabled) {

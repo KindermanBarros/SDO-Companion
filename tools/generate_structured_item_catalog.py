@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "app/src/main/java/com/kinderman/sdo/domain/catalog/GeneratedStructuredItemCatalog.kt"
+OUTPUT = ROOT / "core/domain/src/main/kotlin/com/kinderman/sdo/domain/catalog/GeneratedStructuredItemCatalog.kt"
 
 
 def quote(value):

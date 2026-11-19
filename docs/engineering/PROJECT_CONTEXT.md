@@ -6,7 +6,8 @@ Current source snapshot; [ARCHITECTURE](ARCHITECTURE.md) governs its baseline. P
 
 | Module | Type / runs on | Responsibility | Depends on |
 |---|---|---|---|
-| :app | Android application, API 30+ | Character sheets, campaigns, codex, local storage and Firebase integration | No project module |
+| `:app` | Android application, API 30+ | Compose UI, ViewModels, Hilt DI, Room persistence, Firebase Auth & Spark Firestore sync | `:core:domain` |
+| `:core:domain` | Pure Kotlin/JVM library | Domain models, rules, catalogs, progression, policies, use cases, repository contracts | None |
 
 Confirmed target hardware: smartphone (owner confirmation). Specific models and physical-device acceptance: Pending. Responsive layouts do not establish physical-device acceptance.
 

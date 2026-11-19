@@ -1,0 +1,4 @@
+name = "tester"
+description = "Implement and run the assigned test evidence."
+model = "gpt-6-luna"
+developer_instructions = "Read AGENTS.md and .agents/agents/tester.md; follow that canonical role definition."

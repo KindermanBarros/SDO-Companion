@@ -15,7 +15,9 @@ import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.SdoThemeVariant
 import com.kinderman.sdo.ui.SdoVisualMode
 import com.kinderman.sdo.ui.SdoResponsiveFrame
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

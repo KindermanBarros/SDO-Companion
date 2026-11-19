@@ -1,0 +1,4 @@
+name = "evaluator"
+description = "Independently review implementation and verification evidence."
+model = "gpt-6.1-sol"
+developer_instructions = "Read AGENTS.md and .agents/agents/evaluator.md; follow that canonical role definition."

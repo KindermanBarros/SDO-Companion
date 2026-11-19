@@ -680,7 +680,8 @@ private fun StrictItemBuilderDialog(
         technologies = technologies,
         enhancementSlots = enhancementSlots,
     )
-    val allowedByBudget = remainingHeritage == null || (built.creationCost != null && built.creationCost <= remainingHeritage)
+    val builtCreationCost = built.creationCost
+    val allowedByBudget = remainingHeritage == null || (builtCreationCost != null && builtCreationCost <= remainingHeritage)
     val commonEffects = buildList {
         if (draft.commonPg != 0) add(ItemEffect("custom:pg", ItemEffectType.PG, draft.commonPg, condition = ItemEffectCondition.EQUIPPED))
         if (draft.commonPl != 0) add(ItemEffect("custom:pl", ItemEffectType.PL, draft.commonPl, target = draft.commonRegion, condition = ItemEffectCondition.EQUIPPED))

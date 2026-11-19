@@ -10,6 +10,8 @@ import com.kinderman.sdo.domain.model.JournalSaveResult
 import com.kinderman.sdo.domain.model.JournalSyncState
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.repository.CampaignJournalRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -56,10 +58,13 @@ data class JournalUiState(
         } ?: false
 }
 
+@HiltViewModel
 class JournalViewModel(
     private val repository: CampaignJournalRepository,
     private val externalScope: CoroutineScope? = null,
 ) : ViewModel() {
+    @Inject
+    constructor(repository: CampaignJournalRepository) : this(repository, null)
     private val scope: CoroutineScope
         get() = externalScope ?: viewModelScope
     private val _state = MutableStateFlow(JournalUiState())

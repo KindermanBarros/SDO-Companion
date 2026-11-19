@@ -33,6 +33,8 @@ import com.kinderman.sdo.domain.usecase.SaveCharacter
 import com.kinderman.sdo.domain.usecase.SetHistorianLock
 import com.kinderman.sdo.domain.usecase.SetPlayerLock
 import com.kinderman.sdo.domain.usecase.TransferCharacterOwner
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -72,6 +74,7 @@ internal fun shouldRunRemoteSync(automaticSync: Boolean, trigger: RemoteSyncTrig
     trigger == RemoteSyncTrigger.MANUAL || automaticSync
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@HiltViewModel
 class AppViewModel(
     private val repository: CharacterRepository,
     private val ownerRepository: OwnerRepository,
@@ -82,6 +85,24 @@ class AppViewModel(
     private val externalScope: CoroutineScope? = null,
     private val cloudSyncPulseMs: Long = 800L,
 ) : ViewModel() {
+    @Inject
+    constructor(
+        repository: CharacterRepository,
+        ownerRepository: OwnerRepository,
+        catalogRepository: CatalogRepository,
+        campaignRepository: CampaignRepository,
+        operationsRepository: OperationsRepository,
+        connectivityMonitor: ConnectivityMonitor,
+    ) : this(
+        repository = repository,
+        ownerRepository = ownerRepository,
+        catalogRepository = catalogRepository,
+        campaignRepository = campaignRepository,
+        operationsRepository = operationsRepository,
+        connectivityMonitor = connectivityMonitor,
+        externalScope = null,
+        cloudSyncPulseMs = 800L,
+    )
     private val scope: CoroutineScope
         get() = externalScope ?: viewModelScope
     private val saveCharacter = SaveCharacter(repository)

@@ -27,10 +27,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
@@ -182,6 +187,7 @@ fun LibraryScreen(
     var selectedCampaignId by rememberSaveable { mutableStateOf("") }
     var ruleSearch by rememberSaveable { mutableStateOf("") }
     var ruleCategory by rememberSaveable { mutableStateOf("Todas") }
+    var showFiltersDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val handbookRules = remember(context) { GameRulesGuide.load(context) }
 
@@ -300,49 +306,39 @@ fun LibraryScreen(
 
                 if (activeTab == LibraryTab.COMPENDIUM) {
                 item(key = "filters") {
+                    val activeFilterCount = (if (scopeFilter != LibraryScopeFilter.ALL) 1 else 0) +
+                        (if (kindFilter != LibraryKindFilter.ALL) 1 else 0) +
+                        (if (activeCampaignId.isNotBlank()) 1 else 0)
+                    val total = filteredCampaignEntries.values.sumOf { it.size } +
+                        filteredSessionAdditions.size +
+                        filteredBaseEntries.size
                     TechPanel(accent = MaterialTheme.colorScheme.primary) {
-                        SectionHeader("01", "Explorar e filtrar")
-                        HudTextField(
-                            label = "Buscar na biblioteca",
-                            value = search,
-                            placeholder = "Nome, efeito, campanha ou sessão",
-                            onValue = { search = it },
-                        )
-                        SdoMetadataText("ORIGEM DOS DADOS", color = MaterialTheme.colorScheme.secondary)
-                        SdoResponsiveGrid(LibraryScopeFilter.entries, minItemWidth = 128.dp) { option, modifier ->
-                            SdoFilterChip(
-                                label = option.label,
-                                selected = scopeFilter == option,
-                                onClick = { scopeFilter = option },
-                                modifier = modifier,
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Bottom,
+                        ) {
+                            HudTextField(
+                                label = "Buscar na biblioteca",
+                                value = search,
+                                placeholder = "Nome, efeito ou campanha",
+                                modifier = Modifier.weight(1f),
+                                onValue = { search = it },
                             )
+                            com.kinderman.sdo.ui.SdoOutlinedButton(
+                                onClick = { showFiltersDialog = true },
+                                modifier = Modifier.testTag("library_filter_trigger"),
+                            ) {
+                                Text(if (activeFilterCount > 0) "Filtros ($activeFilterCount)" else "Filtros")
+                            }
                         }
-                        if (campaigns.isNotEmpty() && scopeFilter != LibraryScopeFilter.BASE) {
-                            ChoiceField(
-                                label = "Campanha",
-                                value = activeCampaignId,
-                                options = campaignOptions,
-                                enabled = true,
-                                display = { id ->
-                                    if (id.isBlank()) "Todas as campanhas"
-                                    else campaignById[id]?.name ?: id
-                                },
-                            ) { selectedCampaignId = it }
-                        }
-                        SdoMetadataText("CATEGORIA", color = MaterialTheme.colorScheme.secondary)
-                        SdoResponsiveGrid(LibraryKindFilter.entries, minItemWidth = 132.dp) { option, modifier ->
-                            SdoFilterChip(
-                                label = option.label,
-                                selected = kindFilter == option,
-                                onClick = { kindFilter = option },
-                                modifier = modifier,
-                            )
-                        }
-                        val total = filteredCampaignEntries.values.sumOf { it.size } +
-                            filteredSessionAdditions.size +
-                            filteredBaseEntries.size
+                        val activeSummary = buildList {
+                            add(scopeFilter.label)
+                            if (activeCampaignId.isNotBlank()) add(campaignById[activeCampaignId]?.name ?: activeCampaignId)
+                            add(kindFilter.label)
+                        }.joinToString(" // ")
                         SdoMetadataText(
-                            "$total REGISTROS EXIBIDOS",
+                            "$total REGISTROS // $activeSummary",
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
@@ -518,6 +514,61 @@ fun LibraryScreen(
                 }
             }
         }
+    }
+    if (showFiltersDialog) {
+        AlertDialog(
+            onDismissRequest = { showFiltersDialog = false },
+            title = { Text("FILTROS DA BIBLIOTECA") },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    SdoMetadataText("ORIGEM DOS DADOS", color = MaterialTheme.colorScheme.secondary)
+                    SdoResponsiveGrid(LibraryScopeFilter.entries, minItemWidth = 112.dp) { option, modifier ->
+                        SdoFilterChip(
+                            label = option.label,
+                            selected = scopeFilter == option,
+                            onClick = { scopeFilter = option },
+                            modifier = modifier,
+                        )
+                    }
+                    if (campaigns.isNotEmpty() && scopeFilter != LibraryScopeFilter.BASE) {
+                        ChoiceField(
+                            label = "Campanha",
+                            value = activeCampaignId,
+                            options = campaignOptions,
+                            enabled = true,
+                            display = { id ->
+                                if (id.isBlank()) "Todas as campanhas"
+                                else campaignById[id]?.name ?: id
+                            },
+                        ) { selectedCampaignId = it }
+                    }
+                    SdoMetadataText("CATEGORIA", color = MaterialTheme.colorScheme.secondary)
+                    SdoResponsiveGrid(LibraryKindFilter.entries, minItemWidth = 116.dp) { option, modifier ->
+                        SdoFilterChip(
+                            label = option.label,
+                            selected = kindFilter == option,
+                            onClick = { kindFilter = option },
+                            modifier = modifier,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                com.kinderman.sdo.ui.SdoTextButton(onClick = { showFiltersDialog = false }) { Text("APLICAR") }
+            },
+            dismissButton = {
+                com.kinderman.sdo.ui.SdoTextButton(
+                    onClick = {
+                        scopeFilter = LibraryScopeFilter.ALL
+                        kindFilter = LibraryKindFilter.ALL
+                        selectedCampaignId = ""
+                    },
+                ) { Text("LIMPAR") }
+            },
+        )
     }
 }
 

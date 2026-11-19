@@ -69,8 +69,8 @@ internal fun CyberGrungePanel(
         }
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
             Column(
-                modifier = Modifier.padding(start = if (compact) 14.dp else 18.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
+                modifier = Modifier.padding(start = if (compact) 12.dp else 15.dp, top = 10.dp, end = 12.dp, bottom = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 8.dp),
             ) {
                 if (!compact) CyberGrungePanelChrome()
                 content()
@@ -170,15 +170,18 @@ internal fun CyberGrungeField(
     onValue: (String) -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
+    val fieldShape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp)
+    val filled = value.isNotEmpty()
+    val recessedFill = if (filled) Color.Black.copy(alpha = 0.82f) else Color.Transparent
     val colors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = .72f),
-        focusedContainerColor = MaterialTheme.colorScheme.surface,
-        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedBorderColor = if (filled) MaterialTheme.colorScheme.secondary.copy(alpha = .72f) else Color.Transparent,
+        focusedContainerColor = if (filled) recessedFill else Color.Black.copy(alpha = 0.45f),
+        unfocusedContainerColor = recessedFill,
         focusedLabelColor = MaterialTheme.colorScheme.primary,
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .72f),
     )
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
         Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         androidx.compose.foundation.text.BasicTextField(
             value = value, onValueChange = onValue, enabled = enabled, singleLine = !multiline,
@@ -186,9 +189,9 @@ internal fun CyberGrungeField(
             minLines = if (multiline) 3 else 1,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),
-            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 88.dp else 48.dp)
+            modifier = Modifier.fillMaxWidth().heightIn(min = if (multiline) 84.dp else 46.dp)
                 .semantics { contentDescription = label }.then(
-                if (value.isEmpty()) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
+                if (!filled) Modifier.testTag("cybergrunge-empty-signal") else Modifier,
             ),
             decorationBox = { inner ->
                 OutlinedTextFieldDefaults.DecorationBox(
@@ -200,12 +203,21 @@ internal fun CyberGrungeField(
                     colors = colors,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 10.dp),
                     container = {
-                        Box {
+                        Box(Modifier.fillMaxSize()) {
+                            // Recessed black card + 10% opacity depth layer appears only when filled
+                            if (filled) {
+                                Box(
+                                    Modifier
+                                        .matchParentSize()
+                                        .padding(top = 2.dp, start = 2.dp)
+                                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f), fieldShape),
+                                )
+                            }
                             OutlinedTextFieldDefaults.Container(
                                 enabled = enabled, isError = false, interactionSource = interaction, colors = colors,
-                                shape = CutCornerShape(topEnd = 16.dp, bottomStart = 10.dp),
+                                shape = fieldShape,
                             )
-                            if (value.isEmpty() && placeholder == null) CyberGrungeEmptySignal(
+                            if (!filled && placeholder == null) CyberGrungeEmptySignal(
                                 Modifier.align(Alignment.Center).padding(horizontal = 14.dp),
                             )
                         }

@@ -27,7 +27,7 @@ import java.security.MessageDigest
         CampaignAlertSettingsRecord::class,
     ],
     version = 35,
-    exportSchema = false,
+    exportSchema = true,
 )
 @TypeConverters(CharacterConverters::class)
 abstract class AppDatabase : RoomDatabase() {

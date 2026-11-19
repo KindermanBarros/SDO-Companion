@@ -219,8 +219,9 @@ internal fun ItemBuilderDialog(
         technologies = installedTechnologies,
         enhancementSlots = enhancementSlots,
     )
-    val allowed = remainingHeritage == null || built.creationCost != null && built.creationCost <= remainingHeritage
-    val overBudget = remainingHeritage != null && (built.creationCost == null || built.creationCost > remainingHeritage)
+    val builtCreationCost = built.creationCost
+    val allowed = remainingHeritage == null || (builtCreationCost != null && builtCreationCost <= remainingHeritage)
+    val overBudget = remainingHeritage != null && (builtCreationCost == null || builtCreationCost > remainingHeritage)
 
     AlertDialog(
         onDismissRequest = onDismiss,

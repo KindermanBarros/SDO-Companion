@@ -81,20 +81,11 @@ fun SdoApp(
     preferences: SdoPreferences,
     onPreferencesChange: (SdoPreferences) -> Unit,
 ) {
-    val application = LocalContext.current.applicationContext as SdoApplication
-    val appViewModel: AppViewModel = viewModel(
-        factory = AppViewModelFactory(
-            application.characterRepository,
-            application.ownerRepository,
-            application.catalogRepository,
-            application.campaignRepository,
-            application.operationsRepository,
-            application.connectivityMonitor,
-        ),
-    )
-    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(application.authRepository))
-    val journalViewModel: JournalViewModel = viewModel(factory = JournalViewModelFactory(application.campaignJournalRepository))
+    val appViewModel: AppViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
+    val journalViewModel: JournalViewModel = viewModel()
     val authenticatedSession by authViewModel.session.collectAsStateWithLifecycle()
+    val authState by authViewModel.state.collectAsStateWithLifecycle()
     val appSession by appViewModel.session.collectAsStateWithLifecycle()
     val characters by appViewModel.characters.collectAsStateWithLifecycle()
     val campaigns by appViewModel.campaigns.collectAsStateWithLifecycle()
@@ -250,16 +241,21 @@ fun SdoApp(
     }
 
     when {
-        authViewModel.state.initializing -> CyberLoadingScreen(CyberLoadingMode.AUTH_BOOT)
+        authState.initializing -> CyberLoadingScreen(CyberLoadingMode.AUTH_BOOT)
 
-        authViewModel.state.loading -> CyberLoadingScreen(CyberLoadingMode.GOOGLE_AUTH)
+        authState.loading -> CyberLoadingScreen(CyberLoadingMode.GOOGLE_AUTH)
 
         authenticatedSession == null && !demo -> SdoContentFrame(maxContentWidth = 640.dp) { LoginScreen(
             activity = activity,
-            state = authViewModel.state,
+            state = authState,
             allowDemo = !authViewModel.configured,
             onGoogleLogin = { authViewModel.login(activity) },
             onDemo = { demo = true },
+            onDevEmailLogin = if (com.kinderman.sdo.BuildConfig.IS_DEV_ENV) {
+                { email, password -> authViewModel.loginWithEmailPassword(email, password) }
+            } else {
+                null
+            },
         ) }
 
         appSession == null ->
@@ -517,14 +513,20 @@ fun SdoApp(
                 )
 
                 AppSurface.LIBRARY -> {
-                    val audit by appViewModel.audit.collectAsStateWithLifecycle()
-                    val campaignLibrary by appViewModel.library.collectAsStateWithLifecycle()
+                    val libraryViewModel: com.kinderman.sdo.presentation.library.LibraryViewModel = viewModel()
+                    val libraryCampaignIds = remember(campaigns) {
+                        campaigns.filterNot { it.isDeleted }.mapTo(linkedSetOf()) { it.id }
+                    }
+                    LaunchedEffect(libraryCampaignIds) {
+                        libraryViewModel.setAccessibleCampaignIds(libraryCampaignIds)
+                    }
+                    val libraryState by libraryViewModel.state.collectAsStateWithLifecycle()
                     com.kinderman.sdo.presentation.library.LibraryScreen(
                         campaigns = campaigns,
                         characters = characters,
-                        catalog = catalog,
-                        campaignLibrary = campaignLibrary,
-                        audit = audit,
+                        catalog = libraryState.catalog,
+                        campaignLibrary = libraryState.campaignLibrary,
+                        audit = libraryState.audit,
                         onBack = { goBack() },
                     )
                 }

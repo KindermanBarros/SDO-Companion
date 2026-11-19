@@ -17,23 +17,36 @@
         "data": [
           "app/src/main/java/com/kinderman/sdo/data"
         ],
-        "domain": [
-          "app/src/main/java/com/kinderman/sdo/domain"
-        ],
         "ui": [
           "app/src/main/java/com/kinderman/sdo/ui",
           "app/src/main/java/com/kinderman/sdo/presentation"
         ]
       }
+    },
+    {
+      "name": ":core:domain",
+      "path": "core/domain",
+      "main": [
+        "core/domain/src/main/kotlin"
+      ],
+      "test": [
+        "core/domain/src/test/kotlin"
+      ],
+      "android_test": [],
+      "layers": {
+        "domain": [
+          "core/domain/src/main/kotlin/com/kinderman/sdo/domain"
+        ]
+      }
     }
   ],
   "commands": {
-    "build": ["cmd", "/c", "gradlew.bat", ":app:assembleDebug"],
-    "unit_tests": ["cmd", "/c", "gradlew.bat", ":app:cleanTestDebugUnitTest", ":app:testDebugUnitTest", "--rerun-tasks"],
-    "ktlint": ["cmd", "/c", "gradlew.bat", ":app:ktlintCheck"],
-    "detekt": ["cmd", "/c", "gradlew.bat", ":app:detekt"],
-    "lint": ["cmd", "/c", "gradlew.bat", ":app:lintDebug"],
-    "coverage_report": ["cmd", "/c", "gradlew.bat", ":app:koverXmlReportDebug"]
+    "build": ["./gradlew", ":app:assembleProdDebug"],
+    "unit_tests": ["./gradlew", ":core:domain:test", ":app:testProdDebugUnitTest"],
+    "ktlint": ["./gradlew", ":app:ktlintCheck"],
+    "detekt": ["./gradlew", ":app:detekt"],
+    "lint": ["./gradlew", ":app:lintProdDebug"],
+    "coverage_report": ["./gradlew", ":app:koverXmlReportProdDebug"]
   },
   "navigation": {
     "destinations": "app/src/main/java/com/kinderman/sdo/presentation/SdoApp.kt",
@@ -48,8 +61,8 @@
     "runner": "androidx.test.runner.AndroidJUnitRunner"
   },
   "unknowns": [
-    "Manual DI requires an explicit Hilt policy decision; no exception or migration is approved.",
-    "Custom AppSurface navigation requires a policy/checker compatibility decision and real navigation regression contracts; empty argument maps are unresolved, not proof of no arguments.",
-    "Full-source, Ktlint and Detekt report existing application violations; 61.24 percent overall coverage is below the mandatory 80 percent threshold."
+    "Hilt migration and feature ViewModel split are authorized in docs/engineering/ARCHITECTURE.md and tracked in docs/current/architecture_upgrade_playbook.md.",
+    "Custom AppSurface navigation remains the active baseline; navigation-compose dependency is scheduled for removal.",
+    "Ktlint/Detekt baseline cleanup and overall coverage improvement remain incremental follow-ups."
   ]
 }

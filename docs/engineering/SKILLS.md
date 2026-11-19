@@ -43,10 +43,10 @@ Move a skill from "Not applicable" to "Situational" only when the project's scop
 
 ## Local setup tools
 
-The repository contains .agents/skills/harness-router, project-onboarding, documentation-and-adrs, and multi-agent-codex-orchestration.
+The repository contains `.agents/skills/android-architecture`, `harness-router`, `project-onboarding`, `documentation-and-adrs`, and `multi-agent-codex-orchestration` (plus Android implementation/review/testing skills under `.agents/skills/`).
 For harness maintenance, follow root AGENTS.md and the [Project contract](../../.agents/gates/project-contract.md).
-The current CI catalog owns executable checks; legacy script gates were retired by the owner. Skill guidance must not reintroduce them.
+The current CI catalog owns executable checks; legacy script gates (`harness/scripts/`) were retired and removed. Skill guidance must not reintroduce them.
 The Primary Android skill names above are guidance, not verified installations in this session.
-No skills were installed or removed.
+Installed by owner authorization (2026-11-18): `.agents/skills/android-architecture/SKILL.md`.
 
 Pen developer tooling: @pen.dev/cli 0.3.16 is installed globally under the active Node version (owner-authorized). CLI version/headless help and authenticated headless editing/reopen/export pass. This adds no application dependency.
