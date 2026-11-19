@@ -1385,6 +1385,9 @@ class SparkFirestoreSyncEngine(
             } else {
                 effectiveTargets
             }
+            val createdItemIds = readableTargets
+                .filter { it.kind == TargetKind.ITEM && it.op == TargetOp.CREATE }
+                .mapTo(mutableSetOf()) { it.itemId }
             readableTargets.forEach { target ->
                 when (target.kind) {
                     TargetKind.SHEET -> Unit
@@ -1394,8 +1397,13 @@ class SparkFirestoreSyncEngine(
                         if (target.itemId !in remoteItems) {
                             remoteItems[target.itemId] = ctx.getItem(intent.sheetId, target.itemId)
                         }
-                        remoteItemFields[target.itemId to target.key] =
-                            ctx.getItemField(intent.sheetId, target.itemId, target.key)
+                        // Skip reading child fields of a brand-new item being created in this same transaction.
+                        if (target.itemId in createdItemIds && remoteItems[target.itemId] == null) {
+                            remoteItemFields[target.itemId to target.key] = null
+                        } else {
+                            remoteItemFields[target.itemId to target.key] =
+                                ctx.getItemField(intent.sheetId, target.itemId, target.key)
+                        }
                     }
                 }
             }

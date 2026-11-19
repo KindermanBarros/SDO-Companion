@@ -890,6 +890,31 @@ object SparkWireCodec {
                 bundle.fields.filterKeys { key ->
                     key in changedFields || key == "name" || key == "acronym" || key in skillNameKeys
                 }
+            } else if (oldBundle == null && itemId.startsWith("inv_")) {
+                // Pack new inventory items into a single `meta` field (<= 50 map keys per Rules) so
+                // creating 1-2 items commits in ONE atomic Firestore transaction instead of 2-5 chained ones.
+                // Subsequent edits still patch individual subfields which override `meta` on decode.
+                val metaDoc = bundle.fields["meta"]
+                if (metaDoc != null) {
+                    val fullMeta = LinkedHashMap<String, Any?>()
+                    fullMeta.putAll(asMap(metaDoc["value"]))
+                    fullMeta.putAll(asMap(bundle.fields["enhancements"]?.get("value")))
+                    listOf(
+                        "name", "state", "quantity", "durabilityCurrent", "durabilityMax",
+                        "itemCondition", "region", "effect", "load", "backpackCapacity",
+                        "agilityLimit", "quality", "pg", "pl", "category", "linkedAshId",
+                        "ashPurity", "mechanicalEffects",
+                    ).forEach { key ->
+                        if (bundle.fields.containsKey(key)) {
+                            fullMeta[key] = bundle.fields[key]?.get("value")
+                        }
+                    }
+                    linkedMapOf("meta" to (metaDoc + ("value" to fullMeta)))
+                } else {
+                    changedFields.filter { (fieldKey, fieldDoc) ->
+                        !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
+                    }
+                }
             } else if (oldBundle == null) {
                 // Skip default/empty item fields on creation so new items/powers fit in 1-2 transactions instead of 4-5.
                 changedFields.filter { (fieldKey, fieldDoc) ->
@@ -1064,6 +1089,12 @@ object SparkWireCodec {
             "active", "favorite" -> value == false
             "available" -> value == true
             "modifiers" -> value == null || (value is List<*> && value.isEmpty())
+            else -> false
+        }
+        itemId.startsWith("istate_") -> when (fieldKey) {
+            "material", "consumable", "ammo", "reload", "container" -> value == null
+            "installations" -> value is List<*> && value.isEmpty()
+            "stack" -> value == 1 || (value is Map<*, *> && value.size == 1 && asInt(value["quantity"]) == 1)
             else -> false
         }
         itemId.startsWith("abil_") -> when (fieldKey) {

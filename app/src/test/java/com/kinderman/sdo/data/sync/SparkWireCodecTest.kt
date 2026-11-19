@@ -587,4 +587,119 @@ class SparkWireCodecTest {
             replayed.powers.single().sourceType,
         )
     }
+
+    @Test
+    fun addingInventoryItemsPacksIntoSingleAtomicMetaBatchAndFollowUpEditPatchesSingleField() {
+        val before = Character(
+            id = "sheet-fast-inv",
+            ownerId = "owner-1",
+            name = "Ayla",
+        )
+        val sword = InventoryItem(
+            id = "inv-fast-1",
+            name = "Espada Longa",
+            category = "Arma média",
+            load = 2,
+            durabilityCurrent = 5,
+            durabilityMax = 5,
+            effect = "Corte preciso",
+            quantity = 1,
+            acquisitionSource = com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE,
+            heritageCost = 5,
+            catalogEntryId = "item.regular_6",
+            canonical = true,
+        )
+        val ammo = InventoryItem(
+            id = "inv-fast-2",
+            name = "Flechas",
+            category = "Munição",
+            load = 1,
+            quantity = 10,
+            acquisitionSource = com.kinderman.sdo.domain.model.ItemAcquisitionSource.HERITAGE,
+            heritageCost = 0,
+        )
+        val afterSingleAdd = before.copy(inventory = listOf(sword))
+        val singleAddBatches = SparkWireCodec.buildOperationBatches(
+            before = before.toRecord(),
+            after = afterSingleAdd.toRecord(),
+            operationIdPrefix = "op-fast-single",
+            actorUid = "owner-1",
+            existingRevisions = emptyMap(),
+            sheetRevision = 1L,
+        )
+        // A brand-new inventory item packs `inv_` into 2 targets (item + meta) and omits default `istate_` fields,
+        // fitting in <= 2 parallel batches instead of 5-7 chained transactions.
+        assertTrue("Expected <= 2 batches for 1 new item, got ${singleAddBatches.size}", singleAddBatches.size <= 2)
+        val singleInvTargets = singleAddBatches.flatMap { it.targets }.filter { it.itemId == "inv_inv-fast-1" }
+        assertEquals(2, singleInvTargets.size)
+        assertEquals("meta", singleInvTargets.first { it.kind == TargetKind.ITEM_FIELD }.key)
+
+        val afterAdd = before.copy(inventory = listOf(sword, ammo))
+        val addBatches = SparkWireCodec.buildOperationBatches(
+            before = before.toRecord(),
+            after = afterAdd.toRecord(),
+            operationIdPrefix = "op-fast-add",
+            actorUid = "owner-1",
+            existingRevisions = emptyMap(),
+            sheetRevision = 1L,
+        )
+        // Two brand-new inventory items (inv_ + istate_ each) fit in <= 3 batches (was 10+!).
+        assertTrue("Expected <= 3 batches for 2 new items, got ${addBatches.size}", addBatches.size <= 3)
+        val metaWrite = addBatches.flatMap { it.writes }.first {
+            it.target.kind == TargetKind.ITEM_FIELD && it.target.itemId == "inv_inv-fast-1"
+        }
+        assertEquals("meta", metaWrite.target.key)
+        val metaValue = metaWrite.documentData["value"] as Map<*, *>
+        assertTrue("Rules limit meta map to <= 50 keys, got ${metaValue.size}", metaValue.size <= 50)
+
+        // Optimistic replay preserves every packed field of both items.
+        val intents = addBatches.map { batch ->
+            com.kinderman.sdo.domain.model.SheetIntent(
+                operationId = batch.operationId,
+                accountId = "owner-1",
+                sheetId = before.id,
+                type = batch.type,
+                targetKey = batch.targets.first().canonicalTargetKey(),
+                targets = batch.targets,
+                baseRevision = 1L,
+            )
+        }
+        val replayed = com.kinderman.sdo.domain.model.applyPendingIntentsOnConfirmed(
+            confirmed = com.kinderman.sdo.domain.model.AccountSheetSnapshot(
+                accountId = "owner-1",
+                sheetId = before.id,
+                sheetRevision = 1L,
+                confirmedCharacter = before,
+            ),
+            intents = intents,
+        ).projectedCharacter
+        val replayedSword = replayed.inventory.first { it.id == "inv-fast-1" }
+        assertEquals("Espada Longa", replayedSword.name)
+        assertEquals("Arma média", replayedSword.category)
+        assertEquals(2, replayedSword.load)
+        assertEquals(5, replayedSword.durabilityCurrent)
+        assertEquals("Corte preciso", replayedSword.effect)
+        assertEquals(5, replayedSword.heritageCost)
+
+        // Follow-up edit on quantity patches ONLY the single quantity subfield in 1 transaction.
+        val afterEdit = afterAdd.copy(inventory = listOf(sword, ammo.copy(quantity = 9)))
+        val editBatches = SparkWireCodec.buildOperationBatches(
+            before = afterAdd.toRecord(),
+            after = afterEdit.toRecord(),
+            operationIdPrefix = "op-fast-edit",
+            actorUid = "owner-1",
+            existingRevisions = mapOf(
+                "item:inv_inv-fast-1" to 1L,
+                "item:inv_inv-fast-1/field:meta" to 1L,
+                "item:inv_inv-fast-2" to 1L,
+                "item:inv_inv-fast-2/field:meta" to 1L,
+                "item:istate_inv-fast-2" to 1L,
+            ),
+            sheetRevision = 1L,
+        )
+        assertEquals(1, editBatches.size)
+        val invEditTargets = editBatches.single().targets.filter { it.itemId == "inv_inv-fast-2" }
+        assertEquals(1, invEditTargets.size)
+        assertEquals("quantity", invEditTargets.single().key)
+    }
 }

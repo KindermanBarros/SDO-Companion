@@ -1016,6 +1016,45 @@ private fun applyItemFieldTarget(
                         ?: existing.enhancementChargesMax,
                 ) else existing
                 "meta" -> if (obj != null) existing.copy(
+                    name = obj["name"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.name,
+                    state = obj["state"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.state,
+                    quantity = obj["quantity"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.quantity,
+                    durabilityCurrent = obj["durabilityCurrent"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.durabilityCurrent,
+                    durabilityMax = obj["durabilityMax"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.durabilityMax,
+                    itemCondition = obj["itemCondition"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawCond -> runCatching { ItemCondition.valueOf(rawCond) }.getOrNull() }
+                        ?: existing.itemCondition,
+                    region = obj["region"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.region,
+                    effect = obj["effect"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.effect,
+                    load = obj["load"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.load,
+                    backpackCapacity = obj["backpackCapacity"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull?.coerceAtLeast(0)
+                        ?: existing.backpackCapacity,
+                    agilityLimit = if ("agilityLimit" in obj) {
+                        obj["agilityLimit"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                    } else {
+                        existing.agilityLimit
+                    },
+                    quality = obj["quality"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawQual -> runCatching { ItemQuality.valueOf(rawQual) }.getOrNull() }
+                        ?: existing.quality,
+                    pg = obj["pg"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull ?: existing.pg,
+                    pl = obj["pl"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull ?: existing.pl,
+                    category = obj["category"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: existing.category,
+                    linkedAshId = obj["linkedAshId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?: existing.linkedAshId,
+                    ashPurity = obj["ashPurity"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
+                        ?.let { rawPurity -> runCatching { AshPurity.valueOf(rawPurity) }.getOrNull() }
+                        ?: existing.ashPurity,
+                    enhancementSlots = obj["enhancementSlots"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.enhancementSlots,
+                    enhancementChargesCurrent = obj["enhancementChargesCurrent"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.enhancementChargesCurrent,
+                    enhancementChargesMax = obj["enhancementChargesMax"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull
+                        ?: existing.enhancementChargesMax,
                     catalogEntryId = obj["catalogEntryId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
                         ?: existing.catalogEntryId,
                     catalogVersion = obj["catalogVersion"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.intOrNull

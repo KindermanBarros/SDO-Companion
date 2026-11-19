@@ -35,18 +35,18 @@ Paths below are relative to app/src/main/java/com/kinderman/sdo/.
 | Screens | presentation/ feature folders |
 | State and coordination | presentation/AppViewModel.kt, AuthViewModel.kt |
 | Surface navigation | presentation/SdoApp.kt |
-| Business rules and repository contracts | domain/ |
-| Database, auth and persistence integrations | data/ |
+| Business rules and repository contracts | `core/domain/src/main/kotlin/com/kinderman/sdo/domain/` |
+| Unified inventory & creation item modal | `presentation/character/InventoryItemModal.kt` |
+| Database, auth and persistence integrations | data/ (`data/sync/SparkWireCodec.kt`, `SparkFirestoreSyncEngine.kt`) |
 | Shared controls and themes | ui/ |
-| Tests | Mirrored packages under app/src/test/java and app/src/androidTest/java |
+| Tests | `core/domain/src/test/kotlin` and mirrored packages under `app/src/test/java`, `app/src/androidTest/java` |
 
 ## Current limitations
 
 | Observation | Implication |
 |---|---|
-| AuthRepository imports Activity | Domain is not wholly platform-independent |
-| Manual DI; custom navigation | Do not document Hilt or NavHost as implemented |
-| Several independent state flows | Do not claim a single UiState contract |
+| Custom surface navigation | Do not document Jetpack Navigation `NavHost` as implemented |
+| Several independent state flows in `AppViewModel` | Do not claim a single global `UiState` contract |
 | Existing onboarding reports failing quality/coverage gates | Full onboarding acceptance remains unverified |
 | Legacy script gates removed by owner | Use current CI catalog and distinguish test execution from evidence review |
 
