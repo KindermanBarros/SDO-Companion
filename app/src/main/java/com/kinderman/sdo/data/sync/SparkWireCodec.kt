@@ -855,14 +855,18 @@ object SparkWireCodec {
             if (itemId in redundantItemIds) return@forEach
             val oldBundle = beforeDocs?.items?.get(itemId)
             val itemExpectedRev = if (oldBundle == null) 0L else (existingRevisions["item:$itemId"] ?: 0L)
-            if (oldBundle == null) {
-                val itemNextRev = itemExpectedRev + 1L
+            val changedFields = bundle.fields.filter { (fieldKey, fieldDoc) ->
+                oldBundle == null || oldBundle.fields[fieldKey]?.get("value") != fieldDoc["value"]
+            }
+            val needsItemCreate = oldBundle == null || (itemExpectedRev == 0L && changedFields.isNotEmpty())
+            if (needsItemCreate) {
+                val itemNextRev = 1L
                 writes += SparkTargetWrite(
                     target = SparkTargetSpec(
                         kind = TargetKind.ITEM,
                         itemId = itemId,
                         op = TargetOp.CREATE,
-                        expectedRevision = itemExpectedRev,
+                        expectedRevision = 0L,
                         nextRevision = itemNextRev,
                         baseValueJson = null,
                         valueJson = plainGson.toJson(bundle.document),
@@ -870,30 +874,39 @@ object SparkWireCodec {
                     documentData = bundle.document + ("revision" to itemNextRev),
                 )
             }
-            bundle.fields.forEach { (fieldKey, fieldDoc) ->
+            val fieldsToWrite = if (oldBundle != null && needsItemCreate) {
+                val skillNameKeys = changedFields.keys
+                    .filter { it.startsWith("skill_") && (it.endsWith("_value") || it.endsWith("_modifier")) }
+                    .map { it.substringBeforeLast('_') + "_name" }
+                    .toSet()
+                bundle.fields.filterKeys { key ->
+                    key in changedFields || key == "name" || key == "acronym" || key in skillNameKeys
+                }
+            } else {
+                changedFields
+            }
+            fieldsToWrite.forEach { (fieldKey, fieldDoc) ->
                 val oldFieldValue = oldBundle?.fields?.get(fieldKey)?.get("value")
                 val newFieldValue = fieldDoc["value"]
-                if (oldBundle == null || oldFieldValue != newFieldValue) {
-                    val expectedRev = if (oldBundle == null) {
-                        0L
-                    } else {
-                        existingRevisions["item:$itemId/field:$fieldKey"] ?: 0L
-                    }
-                    val nextRev = expectedRev + 1L
-                    writes += SparkTargetWrite(
-                        target = SparkTargetSpec(
-                            kind = TargetKind.ITEM_FIELD,
-                            itemId = itemId,
-                            key = fieldKey,
-                            op = if (oldBundle == null || expectedRev == 0L) TargetOp.CREATE else TargetOp.SET,
-                            expectedRevision = expectedRev,
-                            nextRevision = nextRev,
-                            baseValueJson = if (oldBundle == null) null else plainGson.toJson(oldFieldValue),
-                            valueJson = plainGson.toJson(newFieldValue),
-                        ),
-                        documentData = fieldDoc + ("revision" to nextRev),
-                    )
+                val expectedRev = if (oldBundle == null || needsItemCreate) {
+                    0L
+                } else {
+                    existingRevisions["item:$itemId/field:$fieldKey"] ?: 0L
                 }
+                val nextRev = expectedRev + 1L
+                writes += SparkTargetWrite(
+                    target = SparkTargetSpec(
+                        kind = TargetKind.ITEM_FIELD,
+                        itemId = itemId,
+                        key = fieldKey,
+                        op = if (oldBundle == null || expectedRev == 0L) TargetOp.CREATE else TargetOp.SET,
+                        expectedRevision = expectedRev,
+                        nextRevision = nextRev,
+                        baseValueJson = if (oldBundle == null || needsItemCreate) null else plainGson.toJson(oldFieldValue),
+                        valueJson = plainGson.toJson(newFieldValue),
+                    ),
+                    documentData = fieldDoc + ("revision" to nextRev),
+                )
             }
         }
 
@@ -1091,19 +1104,29 @@ object SparkWireCodec {
     private fun asInt(raw: Any?): Int? = asLong(raw)?.toInt()
 
     private fun orderSkillsDeterministically(acronym: String, skills: List<SkillValue>): List<SkillValue> {
-        val defaultOrder = defaultAttributes()
+        val defaultSkills = defaultAttributes()
             .firstOrNull { it.acronym.equals(acronym, ignoreCase = true) }
             ?.skills
-            ?.mapIndexed { idx, s -> s.name to idx }
-            ?.toMap()
             .orEmpty()
-        return skills.sortedWith(compareBy({ defaultOrder[it.name] ?: Int.MAX_VALUE }, { it.name }))
+        val byName = LinkedHashMap<String, SkillValue>()
+        defaultSkills.forEach { byName[it.name] = it }
+        skills.forEach { byName[it.name] = it }
+        val defaultOrder = defaultSkills.mapIndexed { idx, s -> s.name to idx }.toMap()
+        return byName.values.sortedWith(compareBy({ defaultOrder[it.name] ?: Int.MAX_VALUE }, { it.name }))
     }
 
     private fun orderAttributesDeterministically(attributes: List<AttributeValue>): List<AttributeValue> {
-        val defaultOrder = defaultAttributes()
-            .mapIndexed { idx, attr -> attr.acronym to idx }
-            .toMap()
-        return attributes.sortedWith(compareBy({ defaultOrder[it.acronym] ?: Int.MAX_VALUE }, { it.acronym }))
+        val defaults = defaultAttributes()
+        val byAcronym = LinkedHashMap<String, AttributeValue>()
+        defaults.forEach { byAcronym[it.acronym] = it }
+        attributes.forEach { attr ->
+            val fallback = byAcronym[attr.acronym]
+            byAcronym[attr.acronym] = attr.copy(
+                name = attr.name.ifBlank { fallback?.name.orEmpty() },
+                skills = orderSkillsDeterministically(attr.acronym, attr.skills),
+            )
+        }
+        val defaultOrder = defaults.mapIndexed { idx, attr -> attr.acronym to idx }.toMap()
+        return byAcronym.values.sortedWith(compareBy({ defaultOrder[it.acronym] ?: Int.MAX_VALUE }, { it.acronym }))
     }
 }
