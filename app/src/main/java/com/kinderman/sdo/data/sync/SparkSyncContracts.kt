@@ -202,10 +202,15 @@ interface SparkRemoteGateway {
         uid: String,
         ownedActiveCampaignIds: Set<String>,
         isAdmin: Boolean = false,
+        isLocalOperation: (String) -> Boolean = { false },
     ): Flow<RemoteSyncEvent>
 
     /** Receipt listener for exactly one OPEN sheet. */
-    fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent>
+    fun observeSheetReceipts(
+        sheetId: String,
+        ownUid: String,
+        isLocalOperation: (String) -> Boolean = { false },
+    ): Flow<RemoteSyncEvent>
 }
 
 interface SparkLocalStore {

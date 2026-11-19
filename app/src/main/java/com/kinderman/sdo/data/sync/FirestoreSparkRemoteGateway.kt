@@ -356,6 +356,7 @@ class FirestoreSparkRemoteGateway(
         uid: String,
         ownedActiveCampaignIds: Set<String>,
         isAdmin: Boolean,
+        isLocalOperation: (String) -> Boolean,
     ): Flow<RemoteSyncEvent> = callbackFlow {
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) {
             awaitClose {}
@@ -378,7 +379,12 @@ class FirestoreSparkRemoteGateway(
                     return@addSnapshotListener
                 }
                 if (!initialized.compareAndSet(false, true)) {
-                    val changedIds = snapshot.documentChanges.mapTo(linkedSetOf()) { it.document.id }
+                    val changedIds = snapshot.documentChanges
+                        .filterNot { change ->
+                            val lastOpId = change.document.getString("lastOperationId")
+                            !lastOpId.isNullOrBlank() && isLocalOperation(lastOpId)
+                        }
+                        .mapTo(linkedSetOf()) { it.document.id }
                     if (changedIds.isNotEmpty()) {
                         trySend(
                             RemoteSyncEvent(
@@ -463,7 +469,11 @@ class FirestoreSparkRemoteGateway(
         )
     }
 
-    override fun observeSheetReceipts(sheetId: String, ownUid: String): Flow<RemoteSyncEvent> = callbackFlow {
+    override fun observeSheetReceipts(
+        sheetId: String,
+        ownUid: String,
+        isLocalOperation: (String) -> Boolean,
+    ): Flow<RemoteSyncEvent> = callbackFlow {
         val store = runCatching { firestoreProvider() }.getOrNull()
         if (store == null || sheetId.isBlank() || ownUid.isBlank() || ownUid == DEMO_ACCOUNT_ID) {
             awaitClose {}
@@ -482,7 +492,7 @@ class FirestoreSparkRemoteGateway(
                     return@addSnapshotListener
                 }
                 if (!initialized.compareAndSet(false, true) &&
-                    snapshot.documentChanges.isNotEmpty()
+                    snapshot.documentChanges.any { !isLocalOperation(it.document.id) }
                 ) {
                     trySend(RemoteSyncEvent(fromCloud = true, characterIds = setOf(sheetId), fullSync = false))
                 }

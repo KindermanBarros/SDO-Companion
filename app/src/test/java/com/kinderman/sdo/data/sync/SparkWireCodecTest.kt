@@ -390,6 +390,7 @@ class SparkWireCodecTest {
         )
         val fastTargets = batches.sumOf { it.targets.size }
         val fullTargets = fullBatches.sumOf { it.targets.size }
-        assertTrue("fast=$fastTargets full=$fullTargets", fastTargets in 1..16 && fastTargets < fullTargets / 5)
+        assertEquals("New default sheet must fit in a single Spark transaction", 1, batches.size)
+        assertTrue("fast=$fastTargets full=$fullTargets", fastTargets in 1..7 && fastTargets < fullTargets / 5)
     }
 }
