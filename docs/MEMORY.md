@@ -3,6 +3,18 @@
 This single file (`docs/MEMORY.md`) centralizes all task history, active states (`InProgress` / `InDevReview`), completed deliveries (`Done`), and persistent project decisions for SDO Companion.
 **Strict rule**: Never create separate history or task-state files under `.docs/HistoryRecords/`, `.docs/OngoingTasks/`, or `.docs/CompletedTasks/`. All history updates and task summaries belong exclusively here.
 
+## Non-square avatar crop, clickable preset modals, Conditions/History fixes & top-bar vertical space
+
+Status: InDevReview; updated 2026-11-19 00:58 America/La_Paz on `main`.
+- **Non-square photo cropper (`SdoCharacterAvatar.kt`, `strings.xml`, `SdoAvatarCropMathTest.kt`)**: decoded picked photos via API 30+ `ImageDecoder` (preserving EXIF orientation and bounding preview size to `1024px`). Square (`width == height`) photos compress directly within the `<= 64 KiB` budget as before; non-square photos open an in-app 1:1 Compose `AvatarCropDialog` (pan + pinch/slider zoom with clamped bounds and cut-corner/token framing guide) before cropping and compressing.
+- **Clickable Transport & Familiar preset cards (`CharacterTransportSection.kt`, `CharacterFamiliarSection.kt`)**: removed the redundant `Adicionar` button in `TransportPresetDialog` and `FamiliarPresetDialog` and made each preset `SdoInsetCard` directly clickable via `.sdoClickable`.
+- **Conditions editing & Firestore mirror fix (`CharacterAdvancedSections.kt`, `SparkWireCodec.kt`, `SparkWireCodecTest.kt`)**: opened newly added conditions directly in edit mode, wrapped `ConditionEditor` in `key(condition.instanceId.value)`, made collapsed condition cards clickable to enter edit mode, preserved `draftDescription` across field updates, and wrote `cond.intensity ?: 0` for the `cond_` `"intensity"` mirror field (preserving `null` in `payload`) so Firestore Rules (`isInt32`) accept edits when intensity is unset.
+- **History delete action (`CharacterFields.kt`, `CharacterAdvancedSections.kt`)**: added an optional `trailingActions` slot to `SectionShowcaseHeader` and a confirmed `Apagar história` button in `NarrativeSection` when `story` is non-blank.
+- **Removed duplicate top bar on bottom-nav tabs (`SessionModeScreen.kt`, `HistorianDashboardScreen.kt`, `LibraryScreen.kt`, `SettingsScreen.kt`)**: removed the redundant `TopAppBar` on the 4 non-Dashboard bottom-nav tabs so they match `DashboardScreen` and recover vertical space (retaining `BackHandler` and placing `SessionModeScreen`'s journal/sheet icon actions inline beside the section jump selector).
+- **Validation**: `:core:domain:test :app:testProdDebugUnitTest :app:assembleProdDebug` **PASS** (including new `SdoAvatarCropMathTest` and `SparkWireCodecTest` null-intensity regression). No Room schema, Firestore Rules, or external dependency changes; runtime/visual verification on device remains owner review.
+
+---
+
 ## Architecture & harness upgrade (Phases 0, 1, 2, 3.1–3.3 & Phase 4 `:core:domain`)
 
 Status: InDevReview (owner approved visual/UI changes 2026-11-18 22:25 America/La_Paz; connection/sync review pending); updated 2026-11-18 23:22 America/La_Paz on `perf/firestore-fast-sync-and-indexes` (PR #156).

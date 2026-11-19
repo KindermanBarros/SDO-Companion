@@ -137,30 +137,23 @@ fun SessionModeScreen(
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    title = { Text(if (character == null) "MODO SESSÃO" else character.name.uppercase()) },
-                    navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
-                    actions = {
-                        if (character != null && canOpenJournal(character)) SdoIconButton({ onOpenJournal(character) }) {
-                            Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
-                        }
-                        if (character != null) SdoIconButton({ onOpenSheet(character.id) }) {
-                            Icon(Icons.Default.EditNote, "Abrir ficha completa")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    ),
-                )
-            },
         ) { padding ->
             if (character == null) {
                 CharacterSelector(characters, Modifier.padding(padding), onSelect)
             } else {
                 key(character.id) {
-                    SessionContent(character, compact, readOnly, Modifier.padding(padding), onCommand, onInventoryStateChange, onToggleAbilityFavorite)
+                    SessionContent(
+                        character = character,
+                        compact = compact,
+                        readOnly = readOnly,
+                        canOpenJournal = canOpenJournal(character),
+                        onOpenJournal = { onOpenJournal(character) },
+                        onOpenSheet = { onOpenSheet(character.id) },
+                        modifier = Modifier.padding(padding),
+                        onCommand = onCommand,
+                        onInventoryStateChange = onInventoryStateChange,
+                        onToggleAbilityFavorite = onToggleAbilityFavorite,
+                    )
                 }
             }
         }
@@ -175,9 +168,11 @@ private fun CharacterSelector(characters: List<Character>, modifier: Modifier, o
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            TechPanel {
-                Text("Escolha uma ficha para a sessão", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
-            }
+            SdoScreenMasthead(
+                eyebrow = "SESSION // PLAY",
+                title = "MODO SESSÃO",
+                metadata = "ESCOLHA UMA FICHA PARA A SESSÃO",
+            )
         }
         items(characters, key = Character::id) { character ->
             val maximum = character.lifeMaximum.coerceAtLeast(1)
@@ -230,6 +225,9 @@ private fun SessionContent(
     character: Character,
     compact: Boolean,
     readOnly: Boolean,
+    canOpenJournal: Boolean,
+    onOpenJournal: () -> Unit,
+    onOpenSheet: () -> Unit,
     modifier: Modifier,
     onCommand: (Character, SessionCommand) -> Unit,
     onInventoryStateChange: (Character, String, InventoryState) -> Unit,
@@ -282,14 +280,28 @@ private fun SessionContent(
     val allAbilitiesLabel = stringResource(R.string.session_all_abilities)
     val spacing = if (compact) 8.dp else 14.dp
     Column(modifier.fillMaxSize()) {
-        ChoiceField(
-            label = stringResource(R.string.session_jump_to),
-            value = currentSection,
-            options = SessionSection.entries,
-            enabled = true,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).testTag("session_section_jump"),
-            display = { sectionLabels.getValue(it) },
-        ) { section -> scope.launch { listState.scrollToItem(sectionIndices.getValue(section)) } }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ChoiceField(
+                label = stringResource(R.string.session_jump_to),
+                value = currentSection,
+                options = SessionSection.entries,
+                enabled = true,
+                modifier = Modifier.weight(1f).testTag("session_section_jump"),
+                display = { sectionLabels.getValue(it) },
+            ) { section -> scope.launch { listState.scrollToItem(sectionIndices.getValue(section)) } }
+            if (canOpenJournal) {
+                SdoIconButton(onOpenJournal) {
+                    Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
+                }
+            }
+            SdoIconButton(onOpenSheet) {
+                Icon(Icons.Default.EditNote, "Abrir ficha completa")
+            }
+        }
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth().testTag("session_list"),
             state = listState,

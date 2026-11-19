@@ -68,6 +68,11 @@
     <string name="avatar_picker_change_photo">Trocar foto</string>
     <string name="avatar_picker_add_photo">Adicionar foto</string>
     <string name="avatar_picker_remove_photo">Remover foto</string>
+    <string name="avatar_crop_title">ENQUADRAR FOTO</string>
+    <string name="avatar_crop_hint">Arraste e dê zoom para enquadrar no formato quadrado (1:1).</string>
+    <string name="avatar_crop_zoom">Zoom</string>
+    <string name="avatar_crop_apply">Recortar</string>
+    <string name="avatar_crop_cancel">Cancelar</string>
     <string name="conflict_dialog_manual_label">MESCLAR MANUALMENTE</string>
     <string name="conflict_dialog_manual_hint">Comece pela versão local e escreva o valor que deseja manter.</string>
     <string name="conflict_dialog_manual_unsupported">Para mesclar este conteúdo, escolha uma versão e ajuste os detalhes na ficha.</string>

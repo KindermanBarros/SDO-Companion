@@ -393,4 +393,35 @@ class SparkWireCodecTest {
         assertEquals("New default sheet must fit in a single Spark transaction", 1, batches.size)
         assertTrue("fast=$fastTargets full=$fullTargets", fastTargets in 1..7 && fastTargets < fullTargets / 5)
     }
+
+    @Test
+    fun `condition with null intensity encodes valid int32 mirror field and preserves null on decode`() {
+        val original = Character(
+            id = "sheet-cond-null-intensity",
+            ownerId = "owner-1",
+            name = "Cond Test",
+            conditionInstances = listOf(
+                com.kinderman.sdo.domain.model.ConditionInstance(
+                    payload = com.kinderman.sdo.domain.model.ConditionPayload(
+                        kind = com.kinderman.sdo.domain.model.ConditionKind.Abalado,
+                        intensity = null,
+                        duration = com.kinderman.sdo.domain.model.Duration(
+                            com.kinderman.sdo.domain.model.DurationKind.Instant,
+                        ),
+                    ),
+                    source = com.kinderman.sdo.domain.model.Source.narrative(
+                        com.kinderman.sdo.domain.model.NarrativeSourceId("manual-condition"),
+                    ),
+                ),
+            ),
+        ).toRecord().normalizedForSparkV2()
+
+        val docs = SparkWireCodec.toSparkDocuments(original)
+        val condBundle = docs.items.values.first { it.document["kind"] == "CONDITION" }
+        assertEquals(0, condBundle.fields["intensity"]?.get("value"))
+
+        val decoded = SparkWireCodec.fromSparkDocuments(docs).toDomain()
+        assertEquals(null, decoded.conditionInstances.single().intensity)
+        assertEquals(com.kinderman.sdo.domain.model.ConditionKind.Abalado, decoded.conditionInstances.single().kind)
+    }
 }

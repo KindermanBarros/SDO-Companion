@@ -133,6 +133,7 @@ internal fun SectionShowcaseHeader(
     editing: Boolean,
     enabled: Boolean,
     onToggle: () -> Unit,
+    trailingActions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
 ) {
     val collapsedTitle = com.kinderman.sdo.ui.LocalCollapsibleSectionTitle.current
     Row(
@@ -150,6 +151,7 @@ internal fun SectionShowcaseHeader(
             )
         }
         CompactEditToggleButton(editing = enabled && editing, enabled = enabled, onClick = onToggle)
+        trailingActions()
     }
 }
 

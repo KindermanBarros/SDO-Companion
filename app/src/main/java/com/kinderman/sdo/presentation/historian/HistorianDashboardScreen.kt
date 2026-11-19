@@ -261,22 +261,6 @@ fun HistorianDashboardScreen(
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    title = {
-                        com.kinderman.sdo.ui.AdaptiveSingleLineText(
-                            "PAINEL DO HISTORIADOR",
-                            style = MaterialTheme.typography.titleMedium,
-                            minimumSize = 10.sp,
-                        )
-                    },
-                    navigationIcon = { SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    ),
-                )
-            },
         ) { padding ->
             LazyColumn(
                 modifier = Modifier.padding(padding).fillMaxSize().testTag("historian_screen_list"),

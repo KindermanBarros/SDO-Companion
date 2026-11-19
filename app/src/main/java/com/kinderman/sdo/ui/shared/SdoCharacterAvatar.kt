@@ -3,6 +3,7 @@ package com.kinderman.sdo.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.util.Base64
 import androidx.annotation.StringRes
@@ -14,22 +15,28 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -38,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -48,23 +56,32 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.R
 import java.io.ByteArrayOutputStream
 import java.io.File
+import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val MAX_AVATAR_DIMENSION_PX = 256
+private const val MAX_CROP_PREVIEW_DIMENSION_PX = 1024
 private const val MAX_AVATAR_THUMBNAIL_BYTES = 65_536
+private const val MIN_CROP_ZOOM = 1f
+private const val MAX_CROP_ZOOM = 4f
 private val AVATAR_DIMENSION_STEPS = listOf(MAX_AVATAR_DIMENSION_PX, 192, 144, 112, 96)
 private val AVATAR_COMPRESSION_STEPS = listOf(82, 70, 58, 46, 34, 24)
 
@@ -197,12 +214,20 @@ fun SdoCharacterPhotoPicker(
     val scope = rememberCoroutineScope()
     var processing by remember { mutableStateOf(false) }
     var showCompressionError by remember { mutableStateOf(false) }
+    var pendingCropBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val selectedPreset = remember(photoUri) { resolveAvatarPreset(photoUri) }
     val thumbnailSizeBytes = remember(photoUri) {
         if (photoUri.startsWith("data:image/", ignoreCase = true)) {
             photoUri.toByteArray(Charsets.UTF_8).size
         } else {
             0
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            pendingCropBitmap?.takeUnless { it.isRecycled }?.recycle()
+            pendingCropBitmap = null
         }
     }
 
@@ -213,12 +238,24 @@ fun SdoCharacterPhotoPicker(
         processing = true
         showCompressionError = false
         scope.launch {
-            val encoded = withContext(Dispatchers.IO) { encodePickedAvatar(context, uri) }
-            processing = false
-            if (encoded != null) {
-                onPhotoChange(encoded)
-            } else {
+            val decoded = withContext(Dispatchers.IO) { decodePickedAvatarForCrop(context, uri) }
+            if (decoded == null) {
+                processing = false
                 showCompressionError = true
+                return@launch
+            }
+            if (decoded.width == decoded.height) {
+                val encoded = withContext(Dispatchers.IO) { encodeSquareAvatarBitmap(decoded) }
+                processing = false
+                if (encoded != null) {
+                    onPhotoChange(encoded)
+                } else {
+                    showCompressionError = true
+                }
+            } else {
+                pendingCropBitmap?.takeUnless { it.isRecycled }?.recycle()
+                pendingCropBitmap = decoded
+                processing = false
             }
         }
     }
@@ -345,6 +382,44 @@ fun SdoCharacterPhotoPicker(
                 }
             }
         }
+    }
+
+    pendingCropBitmap?.let { sourceBitmap ->
+        AvatarCropDialog(
+            bitmap = sourceBitmap,
+            onDismiss = {
+                if (pendingCropBitmap === sourceBitmap) pendingCropBitmap = null
+                sourceBitmap.takeUnless { it.isRecycled }?.recycle()
+            },
+            onConfirm = { cropRect ->
+                if (pendingCropBitmap === sourceBitmap) pendingCropBitmap = null
+                processing = true
+                showCompressionError = false
+                scope.launch {
+                    val encoded = withContext(Dispatchers.IO) {
+                        val cropped = runCatching {
+                            Bitmap.createBitmap(
+                                sourceBitmap,
+                                cropRect.left,
+                                cropRect.top,
+                                cropRect.side,
+                                cropRect.side,
+                            )
+                        }.getOrNull()
+                        if (cropped !== sourceBitmap) {
+                            sourceBitmap.takeUnless { it.isRecycled }?.recycle()
+                        }
+                        if (cropped == null) null else encodeSquareAvatarBitmap(cropped)
+                    }
+                    processing = false
+                    if (encoded != null) {
+                        onPhotoChange(encoded)
+                    } else {
+                        showCompressionError = true
+                    }
+                }
+            },
+        )
     }
 }
 
@@ -518,19 +593,190 @@ private fun decodeAvatarBitmap(context: Context, photoUri: String): ImageBitmap?
     }
 }.getOrNull()
 
-private fun encodePickedAvatar(context: Context, uri: Uri): String? = runCatching {
-    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    context.contentResolver.openInputStream(uri)?.use { stream ->
-        BitmapFactory.decodeStream(stream, null, bounds)
-    }
-    val sampleSize = calculateSampleSize(bounds.outWidth, bounds.outHeight, MAX_AVATAR_DIMENSION_PX * 2)
-    val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-    val decoded = context.contentResolver.openInputStream(uri)?.use { stream ->
-        BitmapFactory.decodeStream(stream, null, decodeOptions)
-    } ?: return null
+internal data class SquareCropRect(
+    val left: Int,
+    val top: Int,
+    val side: Int,
+)
 
-    val square = centerCropSquare(decoded)
-    if (square !== decoded) decoded.recycle()
+internal fun computeSquareCropRect(
+    bitmapWidth: Int,
+    bitmapHeight: Int,
+    viewportSizePx: Float,
+    zoom: Float,
+    offsetX: Float,
+    offsetY: Float,
+): SquareCropRect {
+    val safeW = bitmapWidth.coerceAtLeast(1)
+    val safeH = bitmapHeight.coerceAtLeast(1)
+    val safeViewport = viewportSizePx.coerceAtLeast(1f)
+    val safeZoom = zoom.coerceIn(MIN_CROP_ZOOM, MAX_CROP_ZOOM)
+    val baseScale = max(safeViewport / safeW.toFloat(), safeViewport / safeH.toFloat())
+    val totalScale = baseScale * safeZoom
+    val displayW = safeW * totalScale
+    val displayH = safeH * totalScale
+    val maxOffsetX = ((displayW - safeViewport) / 2f).coerceAtLeast(0f)
+    val maxOffsetY = ((displayH - safeViewport) / 2f).coerceAtLeast(0f)
+    val clampedX = offsetX.coerceIn(-maxOffsetX, maxOffsetX)
+    val clampedY = offsetY.coerceIn(-maxOffsetY, maxOffsetY)
+    val rawLeft = (displayW / 2f - safeViewport / 2f - clampedX) / totalScale
+    val rawTop = (displayH / 2f - safeViewport / 2f - clampedY) / totalScale
+    val rawSide = safeViewport / totalScale
+    val side = rawSide.roundToInt().coerceIn(1, minOf(safeW, safeH))
+    val left = rawLeft.roundToInt().coerceIn(0, (safeW - side).coerceAtLeast(0))
+    val top = rawTop.roundToInt().coerceIn(0, (safeH - side).coerceAtLeast(0))
+    return SquareCropRect(left = left, top = top, side = side)
+}
+
+@Composable
+private fun AvatarCropDialog(
+    bitmap: Bitmap,
+    onDismiss: () -> Unit,
+    onConfirm: (SquareCropRect) -> Unit,
+) {
+    val preview = remember(bitmap) { bitmap.asImageBitmap() }
+    var zoom by remember(bitmap) { mutableFloatStateOf(MIN_CROP_ZOOM) }
+    var offsetX by remember(bitmap) { mutableFloatStateOf(0f) }
+    var offsetY by remember(bitmap) { mutableFloatStateOf(0f) }
+    var viewportPx by remember(bitmap) { mutableFloatStateOf(0f) }
+    val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surface
+    val frameShape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp)
+
+    fun clampOffsets(targetZoom: Float, rawX: Float, rawY: Float): Pair<Float, Float> {
+        if (viewportPx <= 0f) return 0f to 0f
+        val baseScale = max(viewportPx / bitmap.width.toFloat(), viewportPx / bitmap.height.toFloat())
+        val displayW = bitmap.width * baseScale * targetZoom
+        val displayH = bitmap.height * baseScale * targetZoom
+        val maxX = ((displayW - viewportPx) / 2f).coerceAtLeast(0f)
+        val maxY = ((displayH - viewportPx) / 2f).coerceAtLeast(0f)
+        return rawX.coerceIn(-maxX, maxX) to rawY.coerceIn(-maxY, maxY)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.avatar_crop_title)) },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                SdoMetadataText(
+                    text = stringResource(R.string.avatar_crop_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(frameShape)
+                        .clipToBounds()
+                        .background(surface)
+                        .onSizeChanged { size ->
+                            viewportPx = size.width.toFloat()
+                            val (cx, cy) = clampOffsets(zoom, offsetX, offsetY)
+                            offsetX = cx
+                            offsetY = cy
+                        }
+                        .pointerInput(bitmap) {
+                            detectTransformGestures { _, pan, gestureZoom, _ ->
+                                val nextZoom = (zoom * gestureZoom).coerceIn(MIN_CROP_ZOOM, MAX_CROP_ZOOM)
+                                val (cx, cy) = clampOffsets(nextZoom, offsetX + pan.x, offsetY + pan.y)
+                                zoom = nextZoom
+                                offsetX = cx
+                                offsetY = cy
+                            }
+                        }
+                        .border(2.dp, primary, frameShape),
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val v = size.minDimension
+                        if (v > 0f && bitmap.width > 0 && bitmap.height > 0) {
+                            val baseScale = max(v / bitmap.width.toFloat(), v / bitmap.height.toFloat())
+                            val dstW = (bitmap.width * baseScale * zoom).roundToInt().coerceAtLeast(1)
+                            val dstH = (bitmap.height * baseScale * zoom).roundToInt().coerceAtLeast(1)
+                            val dstLeft = ((v - dstW) / 2f + offsetX).roundToInt()
+                            val dstTop = ((v - dstH) / 2f + offsetY).roundToInt()
+                            drawImage(
+                                image = preview,
+                                dstOffset = IntOffset(dstLeft, dstTop),
+                                dstSize = IntSize(dstW, dstH),
+                            )
+                            drawCircle(
+                                color = primary.copy(alpha = 0.35f),
+                                radius = v * 0.48f,
+                                center = center,
+                                style = Stroke(width = 1.5.dp.toPx()),
+                            )
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    SdoMetadataText(
+                        text = stringResource(R.string.avatar_crop_zoom),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Slider(
+                        value = zoom,
+                        onValueChange = { nextZoom ->
+                            val (cx, cy) = clampOffsets(nextZoom, offsetX, offsetY)
+                            zoom = nextZoom
+                            offsetX = cx
+                            offsetY = cy
+                        },
+                        valueRange = MIN_CROP_ZOOM..MAX_CROP_ZOOM,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            SdoTextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.avatar_crop_cancel))
+            }
+        },
+        confirmButton = {
+            SdoTextButton(
+                onClick = {
+                    val cropRect = computeSquareCropRect(
+                        bitmapWidth = bitmap.width,
+                        bitmapHeight = bitmap.height,
+                        viewportSizePx = if (viewportPx > 0f) viewportPx else minOf(bitmap.width, bitmap.height).toFloat(),
+                        zoom = zoom,
+                        offsetX = offsetX,
+                        offsetY = offsetY,
+                    )
+                    onConfirm(cropRect)
+                },
+            ) {
+                Text(stringResource(R.string.avatar_crop_apply))
+            }
+        },
+    )
+}
+
+private fun decodePickedAvatarForCrop(context: Context, uri: Uri): Bitmap? = runCatching {
+    val source = ImageDecoder.createSource(context.contentResolver, uri)
+    ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+        val maxSide = maxOf(info.size.width, info.size.height)
+        if (maxSide > MAX_CROP_PREVIEW_DIMENSION_PX) {
+            val scale = MAX_CROP_PREVIEW_DIMENSION_PX.toFloat() / maxSide.toFloat()
+            val targetW = (info.size.width * scale).roundToInt().coerceAtLeast(1)
+            val targetH = (info.size.height * scale).roundToInt().coerceAtLeast(1)
+            decoder.setTargetSize(targetW, targetH)
+        }
+    }
+}.getOrNull()
+
+private fun encodeSquareAvatarBitmap(source: Bitmap): String? = runCatching {
+    val square = centerCropSquare(source)
+    if (square !== source) source.takeUnless { it.isRecycled }?.recycle()
 
     var encodedWithinBudget: String? = null
     try {
@@ -558,19 +804,10 @@ private fun encodePickedAvatar(context: Context, uri: Uri): String? = runCatchin
             if (encodedWithinBudget != null) break
         }
     } finally {
-        square.recycle()
+        square.takeUnless { it.isRecycled }?.recycle()
     }
     encodedWithinBudget
 }.getOrNull()
-
-private fun calculateSampleSize(width: Int, height: Int, targetMax: Int): Int {
-    if (width <= 0 || height <= 0) return 1
-    var sample = 1
-    while (width / sample > targetMax && height / sample > targetMax) {
-        sample *= 2
-    }
-    return sample.coerceAtLeast(1)
-}
 
 private fun centerCropSquare(source: Bitmap): Bitmap {
     val side = minOf(source.width, source.height).coerceAtLeast(1)

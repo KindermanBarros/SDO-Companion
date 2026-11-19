@@ -47,6 +47,7 @@ import com.kinderman.sdo.ui.SdoTextButton
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.sdoClickable
 import java.util.UUID
 
 private val familiarSizes = listOf("Pequeno", "Médio")
@@ -554,28 +555,21 @@ private fun FamiliarPresetDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(filtered, key = { it.id }) { preset ->
-                        SdoInsetCard(contentPadding = 10.dp, verticalSpacing = 4.dp) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    SdoCardTitle(preset.name, color = MaterialTheme.colorScheme.onSurface)
-                                    SdoMetadataText(
-                                        "${preset.rarity.label} • ${preset.species} • ${preset.movement} • PV ${preset.maxHp}",
-                                        color = MaterialTheme.colorScheme.secondary,
-                                    )
-                                    Text(
-                                        text = preset.specialTrait,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                                SdoTextButton(onClick = { onSelect(preset) }) {
-                                    Text("Adicionar")
-                                }
-                            }
+                        SdoInsetCard(
+                            modifier = Modifier.fillMaxWidth().sdoClickable { onSelect(preset) },
+                            contentPadding = 10.dp,
+                            verticalSpacing = 4.dp,
+                        ) {
+                            SdoCardTitle(preset.name, color = MaterialTheme.colorScheme.onSurface)
+                            SdoMetadataText(
+                                "${preset.rarity.label} • ${preset.species} • ${preset.movement} • PV ${preset.maxHp}",
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                            Text(
+                                text = preset.specialTrait,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                         }
                     }
                 }

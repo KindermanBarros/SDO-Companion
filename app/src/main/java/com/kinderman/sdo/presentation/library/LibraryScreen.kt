@@ -262,18 +262,6 @@ fun LibraryScreen(
     HudBackground {
         Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    title = { Text("BIBLIOTECA") },
-                    navigationIcon = {
-                        SdoIconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    ),
-                )
-            },
         ) { padding ->
             LazyColumn(
                 modifier = Modifier.padding(padding).fillMaxSize(),
