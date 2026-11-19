@@ -890,6 +890,11 @@ object SparkWireCodec {
                 bundle.fields.filterKeys { key ->
                     key in changedFields || key == "name" || key == "acronym" || key in skillNameKeys
                 }
+            } else if (oldBundle == null) {
+                // Skip default/empty item fields on creation so new items/powers fit in 1-2 transactions instead of 4-5.
+                changedFields.filter { (fieldKey, fieldDoc) ->
+                    !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
+                }
             } else {
                 changedFields
             }
@@ -1035,6 +1040,40 @@ object SparkWireCodec {
             }
         }
         return EncodedAvatar("", null, photoUri)
+    }
+
+    private fun isDefaultItemFieldOnCreate(itemId: String, fieldKey: String, value: Any?): Boolean = when {
+        itemId.startsWith("inv_") -> when (fieldKey) {
+            "pg", "pl", "backpackCapacity", "load", "quantity" -> value == 0
+            "agilityLimit" -> value == null
+            "region", "effect", "linkedAshId" -> value == ""
+            "itemCondition" -> value == ItemCondition.NORMAL.name
+            "quality" -> value == ItemQuality.COMMON.name
+            "ashPurity" -> value == AshPurity.RAW.name
+            "mechanicalEffects" -> value is List<*> && value.isEmpty()
+            "enhancements" -> value is Map<*, *> &&
+                (value["installedEnhancements"] as? List<*>).orEmpty().isEmpty() &&
+                asInt(value["enhancementSlots"]) == 0 &&
+                asInt(value["enhancementChargesCurrent"]) == 0 &&
+                asInt(value["enhancementChargesMax"]) == 0
+            else -> false
+        }
+        itemId.startsWith("pow_") || itemId.startsWith("mys_") -> when (fieldKey) {
+            "cost", "action", "range", "duration", "effect", "linkedItemId" -> value == ""
+            "costValue" -> value == 0
+            "active", "favorite" -> value == false
+            "available" -> value == true
+            "modifiers" -> value == null || (value is List<*> && value.isEmpty())
+            else -> false
+        }
+        itemId.startsWith("abil_") -> when (fieldKey) {
+            "effect", "linkedItemId" -> value == ""
+            "duration", "modifiers" -> value == null
+            "active", "favorite" -> value == false
+            "available" -> value == true
+            else -> false
+        }
+        else -> false
     }
 
     private fun rootChanged(before: Map<String, Any?>, after: Map<String, Any?>): Boolean {
