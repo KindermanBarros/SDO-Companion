@@ -161,12 +161,6 @@ fun SdoApp(
         }
     }
 
-    LaunchedEffect(surface, appSession?.uid) {
-        if (surface == AppSurface.HISTORIAN && appSession != null) {
-            appViewModel.sync()
-        }
-    }
-
     LaunchedEffect(surface, selectedJournalCampaignId, appSession?.uid, campaigns, memberships) {
         if (appSession == null) {
             journalViewModel.clearContext()

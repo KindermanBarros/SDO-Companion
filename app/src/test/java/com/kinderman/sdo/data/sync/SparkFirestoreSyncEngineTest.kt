@@ -1423,4 +1423,83 @@ class SparkFirestoreSyncEngineTest {
         assertEquals("Arquivista", remote.fields["sheet-1" to "occupation"]?.get("value"))
         assertTrue(store.listIntentsForSheet("player-1", "sheet-1").all { it.status == SheetIntentStatus.CONFIRMED.name })
     }
+
+    @Test
+    fun addingEditingAndRemovingConditionsNeverTriggersFalseConflict() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        val existingCond = com.kinderman.sdo.domain.model.ConditionInstance(
+            instanceId = com.kinderman.sdo.domain.model.ConditionInstanceId("cond-migrated-1"),
+            payload = com.kinderman.sdo.domain.model.ConditionPayload(
+                kind = com.kinderman.sdo.domain.model.ConditionKind.Abalado,
+                intensity = 1,
+                duration = com.kinderman.sdo.domain.model.Duration(com.kinderman.sdo.domain.model.DurationKind.Scene),
+            ),
+        )
+        val initial = Character(
+            id = "sheet-cond",
+            ownerId = "player-1",
+            name = "Ayla",
+            conditionInstances = listOf(existingCond),
+            canonicalSchemaVersion = CURRENT_CHARACTER_SCHEMA_VERSION,
+            dirty = false,
+        ).toRecord().toDomain().copy(dirty = false)
+
+        // Seed remote with full mirror fields (name/intensity/duration/summary/origin/payload) at rev=1 like migrated sheets.
+        remote.seedFromCharacter(initial.toRecord(), sheetRev = 1L)
+        engine.sync(user)
+
+        // 1. Edit existing condition kind + intensity + duration (matching CharacterAdvancedSections.updateInstances).
+        val hydrated1 = store.getCharacter("sheet-cond")!!.toDomain()
+        val updatedExisting = existingCond.copy(
+            payload = existingCond.payload.copy(
+                kind = com.kinderman.sdo.domain.model.ConditionKind.entries.last(),
+                intensity = 3,
+                duration = com.kinderman.sdo.domain.model.Duration(com.kinderman.sdo.domain.model.DurationKind.Turns, turns = 2),
+            ),
+        )
+        val step1 = hydrated1.copy(conditionInstances = listOf(updatedExisting), conditions = emptyList()).toRecord().toDomain()
+            .copy(editingBase = hydrated1)
+        engine.save(user, step1)
+        engine.drain("player-1")
+        assertTrue("Expected zero conflicts when editing migrated condition", store.observeOpenConflicts("player-1").first().isEmpty())
+
+        // 2. Add a brand-new condition, drain, then immediately edit it twice and add a custom summary description.
+        val hydrated2 = store.getCharacter("sheet-cond")!!.toDomain()
+        val addedCond = com.kinderman.sdo.domain.model.ConditionInstance(
+            instanceId = com.kinderman.sdo.domain.model.ConditionInstanceId("cond-new-2"),
+            payload = com.kinderman.sdo.domain.model.ConditionPayload(
+                kind = com.kinderman.sdo.domain.model.ConditionKind.Abalado,
+                duration = com.kinderman.sdo.domain.model.Duration(com.kinderman.sdo.domain.model.DurationKind.Instant),
+            ),
+        )
+        val step2 = hydrated2.copy(conditionInstances = hydrated2.conditionInstances + addedCond, conditions = emptyList()).toRecord().toDomain()
+            .copy(editingBase = hydrated2)
+        engine.save(user, step2)
+        engine.drain("player-1")
+        assertTrue("Expected zero conflicts when adding condition", store.observeOpenConflicts("player-1").first().isEmpty())
+
+        val hydrated3 = store.getCharacter("sheet-cond")!!.toDomain()
+        val editedNew = addedCond.copy(payload = addedCond.payload.copy(intensity = 2))
+        val withSummary = hydrated3.copy(conditionInstances = listOf(updatedExisting, editedNew), conditions = emptyList()).toRecord().toDomain().let { c ->
+            c.copy(
+                conditions = c.conditions.map { legacy ->
+                    if (legacy.id == "cond-new-2") legacy.copy(summary = "Nota customizada") else legacy
+                },
+                editingBase = hydrated3,
+            )
+        }
+        engine.save(user, withSummary)
+        engine.drain("player-1")
+        assertTrue("Expected zero conflicts when editing newly added condition + summary", store.observeOpenConflicts("player-1").first().isEmpty())
+
+        // 3. Remove condition -> zero conflicts.
+        val hydrated4 = store.getCharacter("sheet-cond")!!.toDomain()
+        val afterRemove = hydrated4.copy(conditionInstances = listOf(updatedExisting), conditions = emptyList()).toRecord().toDomain()
+            .copy(editingBase = hydrated4)
+        engine.save(user, afterRemove)
+        engine.drain("player-1")
+        assertTrue("Expected zero conflicts when removing condition", store.observeOpenConflicts("player-1").first().isEmpty())
+        assertTrue(store.listIntentsForSheet("player-1", "sheet-cond").all { it.status == SheetIntentStatus.CONFIRMED.name })
+    }
 }

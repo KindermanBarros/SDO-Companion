@@ -830,7 +830,10 @@ private fun removeItemByWireId(character: Character, wireItemId: String): Charac
     }
     wireItemId.startsWith("cond_") -> {
         val id = decodeWireElementId("cond", wireItemId)
-        character.copy(conditionInstances = character.conditionInstances.filterNot { it.instanceId.value == id })
+        character.copy(
+            conditionInstances = character.conditionInstances.filterNot { it.instanceId.value == id },
+            conditions = character.conditions.filterNot { it.id == id },
+        )
     }
     wireItemId.startsWith("istate_") -> {
         val id = decodeWireElementId("istate", wireItemId)
@@ -1287,6 +1290,41 @@ private fun applyItemFieldTarget(
                 },
             )
         }
+        wireItemId.startsWith("cond_") -> {
+            if (fieldKey != "payload") return character
+            val instance = runCatching {
+                sparkJson.decodeFromString(ConditionInstance.serializer(), raw)
+            }.getOrNull() ?: return character
+            val exists = character.conditionInstances.any { it.instanceId == instance.instanceId }
+            val nextInstances = if (exists) {
+                character.conditionInstances.map { if (it.instanceId == instance.instanceId) instance else it }
+            } else {
+                character.conditionInstances + instance
+            }
+            val summaries = character.conditions.associate { it.id to it.summary }
+            val syncedLegacy = nextInstances.map { inst ->
+                val baseEffect = inst.toLegacyEffect()
+                val existingSummary = summaries[inst.instanceId.value]
+                if (!existingSummary.isNullOrBlank()) baseEffect.copy(summary = existingSummary) else baseEffect
+            }
+            character.copy(conditionInstances = nextInstances, conditions = syncedLegacy)
+        }
+        wireItemId.startsWith("lcond_") -> {
+            val id = decodeWireElementId("lcond", wireItemId)
+            val existing = character.conditions.firstOrNull { it.id == id } ?: ConditionEffect(id = id)
+            val updated = when (fieldKey) {
+                "name" -> existing.copy(name = strVal(existing.name))
+                "intensity" -> existing.copy(intensity = strVal(existing.intensity))
+                "duration" -> existing.copy(duration = strVal(existing.duration))
+                "summary" -> existing.copy(summary = strVal(existing.summary))
+                "origin" -> existing.copy(origin = strVal(existing.origin))
+                else -> existing
+            }
+            val exists = character.conditions.any { it.id == id }
+            character.copy(
+                conditions = if (exists) character.conditions.map { if (it.id == id) updated else it } else character.conditions + updated,
+            )
+        }
         else -> character
     }
 }
@@ -1401,6 +1439,24 @@ private fun readTargetJson(character: Character, target: SparkTargetSpec): Strin
                     }
                 }
                 else -> "{}"
+            }
+        } else if (target.itemId.startsWith("cond_")) {
+            val id = decodeWireElementId("cond", target.itemId)
+            val inst = character.conditionInstances.firstOrNull { it.instanceId.value == id }
+            if (inst == null) "{}" else when (target.key) {
+                "payload" -> sparkJson.encodeToString(ConditionInstance.serializer(), inst)
+                else -> JsonPrimitive(inst.name).toString()
+            }
+        } else if (target.itemId.startsWith("lcond_")) {
+            val id = decodeWireElementId("lcond", target.itemId)
+            val cond = character.conditions.firstOrNull { it.id == id }
+            if (cond == null) "{}" else when (target.key) {
+                "name" -> JsonPrimitive(cond.name).toString()
+                "intensity" -> JsonPrimitive(cond.intensity).toString()
+                "duration" -> JsonPrimitive(cond.duration).toString()
+                "summary" -> JsonPrimitive(cond.summary).toString()
+                "origin" -> JsonPrimitive(cond.origin).toString()
+                else -> JsonObject(linkedMapOf("id" to JsonPrimitive(cond.id))).toString()
             }
         } else "{}"
     }

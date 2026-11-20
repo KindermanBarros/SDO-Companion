@@ -464,7 +464,10 @@ internal fun applyExtendedTargetProjection(
             }
             target.itemId.startsWith("cond_") -> {
                 val id = decodeWireElementId("cond", target.itemId)
-                character.copy(conditionInstances = character.conditionInstances.filterNot { it.instanceId.value == id })
+                character.copy(
+                    conditionInstances = character.conditionInstances.filterNot { it.instanceId.value == id },
+                    conditions = character.conditions.filterNot { it.id == id },
+                )
             }
             target.itemId.startsWith("lcond_") -> {
                 val id = decodeWireElementId("lcond", target.itemId)
@@ -493,12 +496,39 @@ internal fun applyExtendedTargetProjection(
                 sharedJson.decodeFromString(ConditionInstance.serializer(), sharedPlainGson.toJson(plain))
             }.getOrNull() ?: return character
             val existing = character.conditionInstances.any { it.instanceId == instance.instanceId }
+            val nextInstances = if (existing) {
+                character.conditionInstances.map { if (it.instanceId == instance.instanceId) instance else it }
+            } else {
+                character.conditionInstances + instance
+            }
+            val summaries = character.conditions.associate { it.id to it.summary }
+            val syncedLegacy = nextInstances.map { inst ->
+                val baseEffect = with(inst) { com.kinderman.sdo.domain.model.ConditionEffect(id = instanceId.value) }
+                val canonicalEffect = com.kinderman.sdo.domain.model.Character().let {
+                    com.kinderman.sdo.data.local.CharacterRecord(
+                        canonicalConditionsPayload = sharedConverters.canonicalConditionsToString(listOf(inst)),
+                    ).toDomain().conditions.firstOrNull()
+                } ?: baseEffect
+                val existingSummary = summaries[inst.instanceId.value]
+                if (!existingSummary.isNullOrBlank()) canonicalEffect.copy(summary = existingSummary) else canonicalEffect
+            }
+            return character.copy(conditionInstances = nextInstances, conditions = syncedLegacy)
+        }
+        if (target.itemId.startsWith("lcond_")) {
+            val id = decodeWireElementId("lcond", target.itemId)
+            val existing = character.conditions.firstOrNull { it.id == id } ?: ConditionEffect(id = id)
+            val text = plain?.toString().orEmpty()
+            val updated = when (target.key) {
+                "name" -> existing.copy(name = text)
+                "intensity" -> existing.copy(intensity = text)
+                "duration" -> existing.copy(duration = text)
+                "summary" -> existing.copy(summary = text)
+                "origin" -> existing.copy(origin = text)
+                else -> existing
+            }
+            val exists = character.conditions.any { it.id == id }
             return character.copy(
-                conditionInstances = if (existing) {
-                    character.conditionInstances.map { if (it.instanceId == instance.instanceId) instance else it }
-                } else {
-                    character.conditionInstances + instance
-                },
+                conditions = if (exists) character.conditions.map { if (it.id == id) updated else it } else character.conditions + updated,
             )
         }
         if (target.itemId.startsWith("abil_")) {

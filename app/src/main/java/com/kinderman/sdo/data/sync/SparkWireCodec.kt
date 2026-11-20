@@ -972,13 +972,11 @@ object SparkWireCodec {
                         !isDefaultItemFieldOnCreate(itemId, fieldKey, fieldDoc["value"])
                     }
                 }
-            } else if (oldBundle == null && itemId.startsWith("cond_")) {
-                val payloadDoc = bundle.fields["payload"]
-                if (payloadDoc != null) {
-                    linkedMapOf("payload" to payloadDoc)
-                } else {
-                    changedFields
-                }
+            } else if (itemId.startsWith("cond_")) {
+                // Canonical ConditionInstance is losslessly stored in `payload` (and decoded solely from `payload`).
+                // Always write only `payload` on both create and update so mirror fields (name/intensity/duration/etc.)
+                // never trigger stale/missing revision conflicts against migrated sheets or split into multi-batch ops.
+                changedFields.filterKeys { it == "payload" }
             } else if (oldBundle == null) {
                 // Skip default/empty item fields on creation so new items/powers fit in 1-2 transactions instead of 4-5.
                 changedFields.filter { (fieldKey, fieldDoc) ->
