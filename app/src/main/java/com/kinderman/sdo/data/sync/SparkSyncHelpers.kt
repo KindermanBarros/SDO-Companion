@@ -417,6 +417,9 @@ internal fun applyExtendedTargetProjection(
                 val rec = character.toRecord().copy(migrationReviewPayload = payload).toDomain()
                 character.copy(migrationReviews = rec.migrationReviews)
             }
+            "unrecognizedFieldsPayload" -> {
+                character.copy(unrecognizedFieldsJson = plain?.toString().orEmpty())
+            }
             "itemCreationDraft" -> {
                 val payload = plain?.toString().orEmpty()
                 character.copy(itemCreationDraft = sharedConverters.stringToItemCreationDraft(payload))

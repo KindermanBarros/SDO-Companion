@@ -523,7 +523,16 @@ fun applyPendingIntentsOnConfirmed(
                 TargetOp.LINK,
                 TargetOp.UNLINK,
                 TargetOp.DELIVERY -> {
+                    val localJson = target.valueJson ?: intent.desiredPayloadJson
+                    val remoteJson = readTargetJson(stepCharacter, target)
                     if (currentRev != target.expectedRevision) {
+                        if (target.kind != TargetKind.SHEET &&
+                            canonicalizeJsonOrString(remoteJson) == canonicalizeJsonOrString(localJson)
+                        ) {
+                            // Identical value already committed remotely: converge without conflict.
+                            stepRevisions[targetKey] = currentRev
+                            continue
+                        }
                         failureStatus = SheetIntentStatus.CONFLICT
                         failureMessage = "Conflito de revisão em $targetKey (esperada ${target.expectedRevision}, remota $currentRev)."
                         stepConflicts += buildConflictItem(
@@ -532,8 +541,8 @@ fun applyPendingIntentsOnConfirmed(
                             baseRev = target.expectedRevision,
                             remoteRev = currentRev,
                             remoteSummary = summarizeTarget(stepCharacter, target),
-                            remoteJson = readTargetJson(stepCharacter, target),
-                            localJson = target.valueJson ?: intent.desiredPayloadJson,
+                            remoteJson = remoteJson,
+                            localJson = localJson,
                         )
                         break
                     }

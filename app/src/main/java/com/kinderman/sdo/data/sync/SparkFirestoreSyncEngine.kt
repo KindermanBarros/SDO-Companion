@@ -1511,7 +1511,18 @@ class SparkFirestoreSyncEngine(
                                 )
                             }
                         } else {
+                            val desiredPlain = jsonToPlainValue(target.valueJson ?: intent.desiredPayloadJson)
                             if (target.expectedRevision != remoteRev) {
+                                if (remoteDoc != null &&
+                                    plainGson.toJsonTree(remoteDoc["value"]) == plainGson.toJsonTree(desiredPlain)
+                                ) {
+                                    resolvedTargets += target.copy(
+                                        expectedRevision = remoteRev,
+                                        nextRevision = remoteRev,
+                                        baseValueJson = plainGson.toJson(remoteDoc["value"]),
+                                    )
+                                    continue
+                                }
                                 return@runTransaction DrainTxOutcome.RevisionConflict(
                                     conflicts = listOf(
                                         buildConflict(
@@ -1525,7 +1536,6 @@ class SparkFirestoreSyncEngine(
                                 )
                             }
                             val nextRev = remoteRev + 1L
-                            val desiredPlain = jsonToPlainValue(target.valueJson ?: intent.desiredPayloadJson)
                             val resolved = target.copy(
                                 expectedRevision = remoteRev,
                                 nextRevision = nextRev,
@@ -1656,7 +1666,18 @@ class SparkFirestoreSyncEngine(
                                 )
                             }
                         } else {
+                            val desiredPlain = jsonToPlainValue(target.valueJson ?: intent.desiredPayloadJson)
                             if (target.expectedRevision != remoteRev) {
+                                if (remoteDoc != null &&
+                                    plainGson.toJsonTree(remoteDoc["value"]) == plainGson.toJsonTree(desiredPlain)
+                                ) {
+                                    resolvedTargets += target.copy(
+                                        expectedRevision = remoteRev,
+                                        nextRevision = remoteRev,
+                                        baseValueJson = plainGson.toJson(remoteDoc["value"]),
+                                    )
+                                    continue
+                                }
                                 return@runTransaction DrainTxOutcome.RevisionConflict(
                                     conflicts = listOf(
                                         buildConflict(
@@ -1670,7 +1691,6 @@ class SparkFirestoreSyncEngine(
                                 )
                             }
                             val nextRev = remoteRev + 1L
-                            val desiredPlain = jsonToPlainValue(target.valueJson ?: intent.desiredPayloadJson)
                             val resolved = target.copy(
                                 expectedRevision = remoteRev,
                                 nextRevision = nextRev,

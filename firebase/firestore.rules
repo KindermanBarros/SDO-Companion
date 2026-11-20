@@ -225,7 +225,7 @@ service cloud.firestore {
         fieldKey in [
           'name', 'race', 'subRace', 'raceAttribute', 'occupation', 'height', 'age', 'sex', 'size',
           'avatarPreset', 'pathName', 'pathMotto', 'story', 'agilityLimit', 'creationStatus',
-          'itemCreationDraft', 'migrationReviewPayload', 'canonicalBodyPayload',
+          'itemCreationDraft', 'migrationReviewPayload', 'unrecognizedFieldsPayload', 'canonicalBodyPayload',
           'activeModifiersPayload', 'scopedItemCatalogPayload', 'canonicalProgressionPayload',
           'transports', 'familiars'        ] && val is string && val.size() <= 250000
       ) || (
