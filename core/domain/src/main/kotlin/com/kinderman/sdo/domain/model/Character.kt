@@ -401,6 +401,7 @@ data class Character(
     val itemSchemaVersion: Int = CURRENT_ITEM_DATA_VERSION,
     val canonicalSchemaVersion: Int = CURRENT_CHARACTER_SCHEMA_VERSION,
     val migrationReviews: List<NeedsReview> = emptyList(),
+    val unrecognizedFieldsJson: String = "",
     val progressionLifeBonus: Int = 0,
     val progressionSanityBonus: Int = 0,
     val progressionArcaneBonus: Int = 0,

@@ -626,4 +626,37 @@ class SparkSyncDomainTest {
         val rejected = runCatching { validateAtomicSparkActionBudget(tooManyItemFields, "Consumo composto") }
         assertTrue(rejected.exceptionOrNull() is DomainError.ValidationError)
     }
+
+    @Test
+    fun identicalRemoteValueConvergesWithoutConflict() {
+        val remote = sampleSnapshot(
+            sheetRevision = 3L,
+            fieldRevisions = mapOf("field:occupation" to 3L),
+            character = sampleSnapshot().confirmedCharacter.copy(occupation = "Cronista"),
+        )
+        val staleSameValue = SheetIntent(
+            operationId = "op-same-value",
+            accountId = "player-1",
+            sheetId = "sheet-1",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:occupation",
+            targets = listOf(
+                SparkTargetSpec(
+                    kind = TargetKind.FIELD,
+                    key = "occupation",
+                    op = TargetOp.SET,
+                    expectedRevision = 1L,
+                    nextRevision = 2L,
+                    valueJson = "\"Cronista\"",
+                ),
+            ),
+            baseRevision = 1L,
+        )
+
+        val replay = applyPendingIntentsOnConfirmed(remote, listOf(staleSameValue))
+
+        assertTrue(replay.conflicts.isEmpty())
+        assertEquals(SheetIntentStatus.PENDING, replay.intents.single().status)
+        assertEquals("Cronista", replay.projectedCharacter.occupation)
+    }
 }

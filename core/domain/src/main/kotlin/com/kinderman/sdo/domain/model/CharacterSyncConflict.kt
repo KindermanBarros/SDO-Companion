@@ -22,6 +22,7 @@ const val MAX_AUTOMATIC_CONFLICT_FIELDS = 5
  * Legacy documents without field metadata retain their document-time fallback.
  * Exact ties keep the committed remote value so clients converge instead of oscillating.
  */
+@Deprecated("Use revision-based Spark conflict detection in SparkSyncModels.")
 fun automaticRemoteFieldIds(conflict: CharacterSyncConflict): Set<String> {
     fun editTime(character: Character, fieldId: String, fallback: Long): Long {
         val group = if (fieldId == "inventory" || fieldId == "itemStates") listOf("inventory", "itemStates") else listOf(fieldId)
@@ -72,6 +73,9 @@ fun characterConflictFields(local: Character, remote: Character): List<Character
     changed("ownerId", "Proprietário", local.ownerId, remote.ownerId, ::textSummary)
     changed("canonicalSchemaVersion", "Versão do contrato", local.canonicalSchemaVersion, remote.canonicalSchemaVersion)
     changed("migrationReviews", "Pendências de migração", local.migrationReviews, remote.migrationReviews) { "${it.size} pendência(s)" }
+    changed("unrecognizedFieldsJson", "Campos legados preservados", local.unrecognizedFieldsJson, remote.unrecognizedFieldsJson) {
+        if (it.isBlank()) "—" else "${it.length} chars"
+    }
     changed("campaignId", "Campanha", local.campaignId, remote.campaignId, ::textSummary)
     changed("name", "Nome", local.name, remote.name, ::textSummary)
     changed("race", "Raça", local.race, remote.race, ::textSummary)
@@ -166,6 +170,7 @@ fun mergeCharacterConflict(
         },
         canonicalSchemaVersion = selected("canonicalSchemaVersion", local.canonicalSchemaVersion, remote.canonicalSchemaVersion),
         migrationReviews = selected("migrationReviews", local.migrationReviews, remote.migrationReviews),
+        unrecognizedFieldsJson = selected("unrecognizedFieldsJson", local.unrecognizedFieldsJson, remote.unrecognizedFieldsJson),
         ownerId = selected("ownerId", local.ownerId, remote.ownerId),
         campaignId = selected("campaignId", local.campaignId, remote.campaignId),
         name = selected("name", local.name, remote.name),

@@ -797,4 +797,97 @@ class SparkWireCodecTest {
         assertEquals("Chama Arcana", replayed.mysticAbilities.single().name)
         assertEquals(3, replayed.mysticAbilities.single().costValue)
     }
+
+    @Test
+    fun appGeneratedWireDocumentsMatchFirestoreRulesContract() {
+        val full = Character(
+            id = "sheet-rules-audit",
+            ownerId = "uid-player-1",
+            campaignId = "default",
+            name = "Arion",
+            race = "Humano",
+            occupation = "Cronista",
+            photoUri = "data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=",
+            level = 5,
+            money = 250,
+            life = ResourceValue(current = 18, maximum = 22, adjustment = 2),
+            sanity = ResourceValue(current = 15, maximum = 20, adjustment = 0),
+            arcane = ResourceValue(current = 8, maximum = 10, adjustment = 1),
+            energy = ResourceValue(current = 12, maximum = 14, adjustment = 0),
+            destiny = ResourceValue(current = 3, maximum = 5, adjustment = 0),
+            exhaustion = ResourceValue(current = 1, maximum = 10, adjustment = 0),
+            corruption = ResourceValue(current = 5, maximum = 100, adjustment = 0),
+            unrecognizedFieldsJson = """{"legacyExtra":"ok"}""",
+            inventory = listOf(InventoryItem(id = "inv-1", name = "Lanterna", quantity = 1)),
+            powers = listOf(Power(id = "pow-1", name = "Centelha")),
+            mysticAbilities = listOf(MysticAbility(id = "mys-1", name = "Véu")),
+            personalNotes = listOf(PersonalNote(id = "note-1", title = "Diário", text = "Entrada 1")),
+            transports = listOf(com.kinderman.sdo.domain.model.CharacterTransport(id = "tr-1", name = "Cavalo")),
+            familiars = listOf(com.kinderman.sdo.domain.model.CharacterFamiliar(id = "fam-1", name = "Corvo")),
+        ).toRecord().normalizedForSparkV2()
+
+        val docs = SparkWireCodec.toSparkDocuments(full, revision = 1L, lastOperationId = "op-create-1", updatedBy = "uid-player-1")
+
+        // 1. Root document shape: exact 18 keys, normalized campaignId, protocolVersion=2, schemaVersion=2
+        val expectedRootKeys = setOf(
+            "id", "ownerId", "campaignId", "authorizedCampaignId", "deleted",
+            "schemaVersion", "canonicalSchemaVersion", "itemSchemaVersion", "protocolVersion",
+            "lockType", "isLocked", "lockedBy", "lockedAt",
+            "revision", "lastOperationId", "updatedBy", "updatedAt", "appliedDeliveryIds",
+        )
+        assertEquals(expectedRootKeys, docs.root.keys)
+        assertEquals("", docs.root["campaignId"])
+        assertEquals(2, docs.root["schemaVersion"])
+        assertEquals(2, docs.root["protocolVersion"])
+        assertEquals("NONE", docs.root["lockType"])
+        assertEquals(false, docs.root["isLocked"])
+        assertNull(docs.root["lockedAt"])
+
+        // 2. Field documents: exact 6 keys, every key in Rules allowlist, bounded types
+        val allowedFieldKeys = setOf(
+            "name", "race", "subRace", "raceAttribute", "occupation", "height", "age", "sex", "size",
+            "avatarPreset", "pathName", "pathMotto", "story", "agilityLimit", "creationStatus",
+            "itemCreationDraft", "migrationReviewPayload", "unrecognizedFieldsPayload", "canonicalBodyPayload",
+            "activeModifiersPayload", "scopedItemCatalogPayload", "canonicalProgressionPayload",
+            "transports", "familiars",
+            "level", "creationStep", "creationRulesVersion", "creationCompletedAt",
+            "money", "containerCapacity",
+            "progressionLifeBonus", "progressionSanityBonus", "progressionArcaneBonus", "progressionEnergyBonus",
+            "life", "sanity", "arcane", "energy", "destiny", "exhaustion", "corruption",
+            "positiveTraits", "negativeTraits", "pathKeywords", "pathPillars",
+            "learnedKnowledges", "arcaneKnowledges", "battleTechniques", "progressionHistory",
+            "protectionAdjustments",
+        )
+        docs.fields.forEach { (fieldKey, doc) ->
+            assertTrue("Field key '$fieldKey' is not allowlisted in firestore.rules", fieldKey in allowedFieldKeys)
+            assertEquals(setOf("key", "value", "revision", "lastOperationId", "updatedBy", "updatedAt"), doc.keys)
+            assertEquals(fieldKey, doc["key"])
+            when (val v = doc["value"]) {
+                is String -> assertTrue(v.length <= 250_000)
+                is List<*> -> assertTrue(v.size <= 500)
+                is Map<*, *> -> assertTrue(v.size <= 100)
+            }
+        }
+        assertEquals("""{"legacyExtra":"ok"}""", docs.fields["unrecognizedFieldsPayload"]?.get("value"))
+
+        // 3. Item documents & item field documents: exact shapes and valid prefixes
+        val validPrefixes = listOf("inv_", "istate_", "abil_", "pow_", "mys_", "cond_", "lcond_", "note_", "attr_")
+        docs.items.forEach { (itemId, bundle) ->
+            assertTrue("Invalid itemId prefix: $itemId", validPrefixes.any { itemId.startsWith(it) })
+            assertEquals(setOf("id", "kind", "deleted", "revision", "lastOperationId", "updatedBy", "updatedAt"), bundle.document.keys)
+            bundle.fields.forEach { (fKey, fDoc) ->
+                assertEquals(setOf("key", "value", "revision", "lastOperationId", "updatedBy", "updatedAt"), fDoc.keys)
+                assertEquals(fKey, fDoc["key"])
+            }
+        }
+
+        // 4. Media avatar shape matches Rules (dataUri <= 65536 bytes, mimeType, width/height in 1..256)
+        val avatar = docs.mediaAvatar
+        assertNotNull(avatar)
+        assertEquals(setOf("dataUri", "mimeType", "width", "height", "updatedBy", "updatedAt"), avatar!!.keys)
+        assertEquals("image/webp", avatar["mimeType"])
+        assertTrue((avatar["width"] as Int) in 1..256)
+        assertTrue((avatar["height"] as Int) in 1..256)
+        assertTrue((avatar["dataUri"] as String).toByteArray(Charsets.UTF_8).size <= 65_536)
+    }
 }

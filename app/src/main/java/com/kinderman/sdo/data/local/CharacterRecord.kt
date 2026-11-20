@@ -122,6 +122,8 @@ data class CharacterRecord(
     val itemSchemaVersion: Int = 0,
     val canonicalSchemaVersion: Int = 0,
     val migrationReviewPayload: String = "",
+    @ColumnInfo(defaultValue = "''")
+    val unrecognizedFieldsJson: String = "",
     val canonicalAbilitiesPayload: String = "",
     val canonicalBodyPayload: String = "",
     val canonicalConditionsPayload: String = "",
@@ -254,6 +256,7 @@ fun CharacterRecord.toDomain(): Character {
     customItemCatalog = decodedItemCatalog,
     progression = decodedProgression,
     migrationReviews = runCatching { MigrationReviewCodec.decode(migrationReviewPayload) }.getOrDefault(emptyList()),
+    unrecognizedFieldsJson = unrecognizedFieldsJson,
     progressionLifeBonus = progressionLifeBonus,
     progressionSanityBonus = progressionSanityBonus,
     progressionArcaneBonus = progressionArcaneBonus,
@@ -372,6 +375,7 @@ fun Character.toRecord(): CharacterRecord {
     itemSchemaVersion = itemSchemaVersion,
     canonicalSchemaVersion = canonicalSchemaVersion,
     migrationReviewPayload = MigrationReviewCodec.encode(migrationReviews),
+    unrecognizedFieldsJson = unrecognizedFieldsJson,
     canonicalAbilitiesPayload = canonicalConverters.canonicalAbilitiesToString(abilitiesForPersistence()),
     canonicalBodyPayload = canonicalConverters.canonicalBodyToString(persistedBody).orEmpty(),
     canonicalConditionsPayload = canonicalConverters.canonicalConditionsToString(persistedConditions),
@@ -508,6 +512,7 @@ fun firestoreCharacterPatch(
     diff("itemSchemaVersion", before.itemSchemaVersion, after.itemSchemaVersion)
     diff("canonicalSchemaVersion", before.canonicalSchemaVersion, after.canonicalSchemaVersion)
     diff("migrationReviewPayload", before.migrationReviewPayload, after.migrationReviewPayload)
+    diff("unrecognizedFieldsPayload", before.unrecognizedFieldsJson, after.unrecognizedFieldsJson)
     diff("canonicalAbilitiesPayload", before.canonicalAbilitiesPayload, after.canonicalAbilitiesPayload)
     diff("canonicalBodyPayload", before.canonicalBodyPayload, after.canonicalBodyPayload)
     diff("canonicalConditionsPayload", before.canonicalConditionsPayload, after.canonicalConditionsPayload)

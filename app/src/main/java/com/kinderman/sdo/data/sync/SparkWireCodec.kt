@@ -174,6 +174,7 @@ object SparkWireCodec {
         putField("creationStatus", normalized.creationStatus)
         putField("itemCreationDraft", converters.itemCreationDraftToString(normalized.itemCreationDraft).orEmpty())
         putField("migrationReviewPayload", normalized.migrationReviewPayload)
+        putField("unrecognizedFieldsPayload", normalized.unrecognizedFieldsJson)
         putField("canonicalBodyPayload", normalized.canonicalBodyPayload)
         putField("activeModifiersPayload", normalized.activeModifiersPayload)
         putField("scopedItemCatalogPayload", normalized.scopedItemCatalogPayload)
@@ -698,6 +699,7 @@ object SparkWireCodec {
             itemSchemaVersion = asInt(root["itemSchemaVersion"]) ?: 0,
             canonicalSchemaVersion = asInt(root["canonicalSchemaVersion"]) ?: 0,
             migrationReviewPayload = str("migrationReviewPayload"),
+            unrecognizedFieldsJson = str("unrecognizedFieldsPayload"),
             canonicalAbilitiesPayload = if (abilities.isEmpty()) "" else converters.canonicalAbilitiesToString(abilities),
             canonicalBodyPayload = str("canonicalBodyPayload"),
             canonicalConditionsPayload = if (conditionInstances.isEmpty()) "" else converters.canonicalConditionsToString(conditionInstances),

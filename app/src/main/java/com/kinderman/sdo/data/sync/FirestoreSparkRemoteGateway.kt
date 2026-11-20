@@ -157,6 +157,10 @@ class FirestoreSparkRemoteGateway(
         }
         if (!rootSnap.exists()) return null
         val rootData = normalizeFirestoreMap(rootSnap.data.orEmpty())
+        val protocolVersion = (rootData["protocolVersion"] as? Number)?.toInt() ?: 0
+        if (protocolVersion < SparkWireCodec.PROTOCOL_VERSION) {
+            return LegacyFirestoreNormalizer.normalizeToSparkDocuments(sheetId, rootData)
+        }
         val (fieldsSnap, itemsSnap, avatarSnap) = coroutineScope {
             val fieldsJob = async { charRef.collection(FirestoreCollections.CHARACTER_FIELDS).get().await() }
             val itemsJob = async { charRef.collection(FirestoreCollections.CHARACTER_ITEMS).get().await() }
