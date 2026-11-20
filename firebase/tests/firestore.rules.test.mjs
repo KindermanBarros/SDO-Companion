@@ -1389,3 +1389,156 @@ test('validItemFieldValue accepts SparkWireCodec shapes for inv_, abil_, cond_, 
   );
   await assertSucceeds(condBatch.commit());
 });
+
+test('verified administrator can transfer ownership, link/unlink sheets, read standalone audit, and preserve legacy null lockedAt on root updates', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async (context) => {
+    const adminBypass = context.firestore();
+    await setDoc(doc(adminBypass, 'users', ids.otherPlayer), { role: 'USER', email: 'other@example.com' });
+    await setDoc(doc(adminBypass, 'campaignAudit', 'audit-standalone'), {
+      id: 'audit-standalone',
+      idempotencyKey: 'audit-standalone',
+      campaignId: '',
+      actorId: ids.player,
+      createdAt: 1,
+    });
+    // Simulate legacy locked sheet where lockedAt was null (like production sheet 7b45ed0f)
+    await updateDoc(doc(adminBypass, 'characters', ids.character), {
+      lockType: 'PLAYER',
+      isLocked: true,
+      lockedBy: ids.player,
+      lockedAt: null,
+    });
+  });
+
+  const adminDb = env.authenticatedContext('admin-uid', {
+    email: 'kindbarros@gmail.com',
+    email_verified: true,
+  }).firestore();
+
+  // 1. Admin reads standalone campaignAudit entry of another user
+  await assertSucceeds(getDoc(doc(adminDb, 'campaignAudit', 'audit-standalone')));
+
+  // 2. Admin unlinks legacy-locked sheet (preserving lockType=PLAYER, lockedAt=null)
+  const unlinkBatch = writeBatch(adminDb);
+  unlinkBatch.update(doc(adminDb, 'characters', ids.character), {
+    campaignId: '',
+    authorizedCampaignId: '',
+    revision: 2,
+    lastOperationId: 'op-admin-unlink',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  unlinkBatch.set(
+    doc(adminDb, 'characters', ids.character, 'operations', 'op-admin-unlink'),
+    makeOp('op-admin-unlink', 'admin-uid', 'UNLINK_CAMPAIGN', [
+      { kind: 'SHEET', itemId: '', key: '', op: 'UNLINK', expectedRevision: 1, nextRevision: 2 },
+    ]),
+  );
+  await assertSucceeds(unlinkBatch.commit());
+
+  // 3. Admin transfers ownership of standalone sheet to another existing user
+  const transferBatch = writeBatch(adminDb);
+  transferBatch.update(doc(adminDb, 'characters', ids.character), {
+    ownerId: ids.otherPlayer,
+    authorizedCampaignId: '',
+    revision: 3,
+    lastOperationId: 'op-admin-transfer',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  transferBatch.set(
+    doc(adminDb, 'characters', ids.character, 'operations', 'op-admin-transfer'),
+    makeOp('op-admin-transfer', 'admin-uid', 'TRANSFER_OWNERSHIP', [
+      { kind: 'SHEET', itemId: '', key: '', op: 'TRANSFER', expectedRevision: 2, nextRevision: 3 },
+    ]),
+  );
+  await assertSucceeds(transferBatch.commit());
+
+  // 4. Admin links transferred sheet back to active campaign alongside member activation
+  const linkBatch = writeBatch(adminDb);
+  linkBatch.update(doc(adminDb, 'campaigns', ids.campaign, 'members', ids.otherPlayer), {
+    state: 'ACTIVE',
+    characterIds: [ids.character],
+    updatedAt: 2,
+  });
+  linkBatch.update(doc(adminDb, 'characters', ids.character), {
+    campaignId: ids.campaign,
+    authorizedCampaignId: '',
+    revision: 4,
+    lastOperationId: 'op-admin-link',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  linkBatch.set(
+    doc(adminDb, 'characters', ids.character, 'operations', 'op-admin-link'),
+    makeOp('op-admin-link', 'admin-uid', 'LINK_CAMPAIGN', [
+      { kind: 'SHEET', itemId: '', key: '', op: 'LINK', expectedRevision: 3, nextRevision: 4 },
+    ]),
+  );
+  await assertSucceeds(linkBatch.commit());
+
+  // 5. Admin updates migrated item field with nested nulls + cond_ summary
+  await env.withSecurityRulesDisabled(async (context) => {
+    const adminBypass = context.firestore();
+    await setDoc(doc(adminBypass, 'characters', ids.character, 'items', 'cond_c1'), {
+      id: 'cond_c1',
+      kind: 'CONDITION',
+      deleted: false,
+      revision: 1,
+      lastOperationId: 'mig_1',
+      updatedBy: ids.otherPlayer,
+      updatedAt: 1,
+    });
+    await setDoc(doc(adminBypass, 'characters', ids.character, 'items', 'cond_c1', 'fields', 'payload'), {
+      key: 'payload',
+      value: { instanceId: 'c1', payload: { kind: 'Cego', intensity: null, duration: { kind: 'Scene', turns: null } } },
+      revision: 1,
+      lastOperationId: 'mig_1',
+      updatedBy: ids.otherPlayer,
+      updatedAt: 1,
+    });
+  });
+
+  const condEditBatch = writeBatch(adminDb);
+  condEditBatch.update(doc(adminDb, 'characters', ids.character, 'items', 'cond_c1', 'fields', 'payload'), {
+    value: { instanceId: 'c1', payload: { kind: 'Cego', intensity: 2, duration: { kind: 'Scene', turns: null } } },
+    revision: 2,
+    lastOperationId: 'op-admin-cond-edit',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  condEditBatch.set(doc(adminDb, 'characters', ids.character, 'items', 'cond_c1', 'fields', 'summary'), {
+    key: 'summary',
+    value: 'Descrição admin',
+    revision: 1,
+    lastOperationId: 'op-admin-cond-edit',
+    updatedBy: 'admin-uid',
+    updatedAt: serverTimestamp(),
+  });
+  condEditBatch.set(
+    doc(adminDb, 'characters', ids.character, 'operations', 'op-admin-cond-edit'),
+    makeOp('op-admin-cond-edit', 'admin-uid', 'PATCH_FIELDS', [
+      {
+        kind: 'ITEM_FIELD',
+        itemId: 'cond_c1',
+        key: 'payload',
+        op: 'SET',
+        expectedRevision: 1,
+        nextRevision: 2,
+        baseValue: { instanceId: 'c1', payload: { kind: 'Cego', intensity: null, duration: { kind: 'Scene', turns: null } } },
+        desiredValue: { instanceId: 'c1', payload: { kind: 'Cego', intensity: 2, duration: { kind: 'Scene', turns: null } } },
+      },
+      {
+        kind: 'ITEM_FIELD',
+        itemId: 'cond_c1',
+        key: 'summary',
+        op: 'CREATE',
+        expectedRevision: 0,
+        nextRevision: 1,
+        desiredValue: 'Descrição admin',
+      },
+    ]),
+  );
+  await assertSucceeds(condEditBatch.commit());
+});

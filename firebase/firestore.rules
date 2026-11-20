@@ -178,7 +178,7 @@ service cloud.firestore {
         && opDoc.data.createdAt == request.time;
     }
 
-    function validCharacterRootShape(data, charId) {
+    function validCharacterRootShapeWithLock(data, charId, allowLegacyNullLockedAt) {
       return data.size() == 18
         && data.keys().hasAll([
           'id', 'ownerId', 'campaignId', 'authorizedCampaignId', 'deleted',
@@ -203,7 +203,11 @@ service cloud.firestore {
         && data.isLocked is bool
         && data.isLocked == (data.lockType != 'NONE')
         && data.lockedBy is string
-        && (data.lockType == 'NONE' ? (data.lockedBy == '' && data.lockedAt == null) : (isSafeId(data.lockedBy) && data.lockedAt is timestamp))
+        && (
+          data.lockType == 'NONE'
+            ? (data.lockedBy == '' && data.lockedAt == null)
+            : (isSafeId(data.lockedBy) && (data.lockedAt is timestamp || (allowLegacyNullLockedAt && data.lockedAt == null)))
+        )
         && data.revision is int
         && data.revision >= 1
         && isSafeId(data.lastOperationId)
@@ -211,6 +215,10 @@ service cloud.firestore {
         && data.updatedAt == request.time
         && data.appliedDeliveryIds is list
         && data.appliedDeliveryIds.size() <= 500;
+    }
+
+    function validCharacterRootShape(data, charId) {
+      return validCharacterRootShapeWithLock(data, charId, false);
     }
 
     function keepsRootLock(before, after) {
@@ -565,7 +573,8 @@ service cloud.firestore {
 
     match /campaignAudit/{operationId} {
       allow read: if signedIn() && (
-        (resource.data.campaignId == '' && resource.data.actorId == request.auth.uid)
+        isAdministrator()
+        || (resource.data.campaignId == '' && resource.data.actorId == request.auth.uid)
         || (resource.data.campaignId != '' && canReadCampaign(resource.data.campaignId))
       );
       allow create: if signedIn()
@@ -795,6 +804,13 @@ service cloud.firestore {
               && (prevCid == nextCid || (prevCid == '' && before.get('authorizedCampaignId', '') == nextCid))
               && isActiveMemberAfter(nextCid, before.ownerId)
             )
+            // Verified administrator links sheet to an active campaign
+            || (
+              isAdministrator()
+              && nextCid != ''
+              && authCid == ''
+              && (camp.data.ownerId == after.ownerId || isActiveMemberAfter(nextCid, before.ownerId))
+            )
           );
       }
 
@@ -809,6 +825,7 @@ service cloud.firestore {
           && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
           && (
             isOwner
+            || isAdministrator()
             || (
               camp != null
               && camp.data.ownerId == request.auth.uid
@@ -850,7 +867,7 @@ service cloud.firestore {
           && after.authorizedCampaignId == ''
           && keepsRootLock(before, after)
           && after.appliedDeliveryIds == before.get('appliedDeliveryIds', [])
-          && isOwner
+          && (isOwner || isAdministrator())
           && exists(userPath(after.ownerId))
           && (
             cid == ''
@@ -911,7 +928,11 @@ service cloud.firestore {
         && allowCharacterCreate();
 
       allow update: if signedIn()
-        && validCharacterRootShape(request.resource.data, charId)
+        && validCharacterRootShapeWithLock(
+          request.resource.data,
+          charId,
+          keepsRootLock(resource.data, request.resource.data) && resource.data.get('lockedAt', null) == null
+        )
         && allowCharacterUpdate();
 
       allow delete: if false;

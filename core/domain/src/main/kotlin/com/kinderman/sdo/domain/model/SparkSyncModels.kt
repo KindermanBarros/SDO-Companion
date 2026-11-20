@@ -1342,6 +1342,19 @@ private fun applyItemFieldTarget(
             )
         }
         wireItemId.startsWith("cond_") -> {
+            if (fieldKey == "summary") {
+                val id = decodeWireElementId("cond", wireItemId)
+                val nextSummary = strVal("")
+                val exists = character.conditions.any { it.id == id }
+                val updatedConditions = if (exists) {
+                    character.conditions.map { if (it.id == id) it.copy(summary = nextSummary) else it }
+                } else {
+                    val base = character.conditionInstances.firstOrNull { it.instanceId.value == id }?.toLegacyEffect()
+                        ?: ConditionEffect(id = id)
+                    character.conditions + base.copy(summary = nextSummary)
+                }
+                return character.copy(conditions = updatedConditions)
+            }
             if (fieldKey != "payload") return character
             val instance = runCatching {
                 sparkJson.decodeFromString(ConditionInstance.serializer(), raw)
@@ -1496,6 +1509,7 @@ private fun readTargetJson(character: Character, target: SparkTargetSpec): Strin
             val inst = character.conditionInstances.firstOrNull { it.instanceId.value == id }
             if (inst == null) "{}" else when (target.key) {
                 "payload" -> sparkJson.encodeToString(ConditionInstance.serializer(), inst)
+                "summary" -> JsonPrimitive(character.conditions.firstOrNull { it.id == id }?.summary.orEmpty()).toString()
                 else -> JsonPrimitive(inst.name).toString()
             }
         } else if (target.itemId.startsWith("lcond_")) {

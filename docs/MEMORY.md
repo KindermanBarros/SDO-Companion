@@ -4,6 +4,17 @@ Centralizes active task states (`InProgress` / `InDevReview`), durable project i
 
 ## Active & Recent Deliveries (`InDevReview`)
 
+### Admin field-update `ACCESS_DENIED` fixes, condition `summary` unification & admin Rules ACLs (`BACKLOG-024`, `InDevReview`)
+Updated: 2026-11-20 14:25 America/La_Paz on `main`.
+- **Nested-`null` `baseValue` & partial-convergence receipt fixes (`SparkFirestoreSyncEngine`, `SparkWireCodec`)**:
+  - Fixed `PERMISSION_DENIED` (`SheetIntentStatus.ACCESS_DENIED`) on updates to 424 migrated production item fields containing nested `null` map entries (`abil_*`, `inv_*`, `cond_*`, `istate_*`) by preserving raw Firestore `remoteDoc["value"]` verbatim in `operations/{opId}.targets[].baseValue` and serializing wire JSON with `serializeNulls()`.
+  - Fixed partial-convergence `PERMISSION_DENIED` in multi-target intents by recording only actually written targets (`writtenTargets`) in `operations/{opId}.targets` while advancing local revisions for converged targets.
+- **Condition `summary` unification & zombie-tombstone prevention (`SparkWireCodec`, `CharacterRecord`, `SparkSyncModels`, `SparkSyncHelpers`)**:
+  - Stored user condition notes directly in `cond_<id>/fields/summary` (eliminating duplicate 6-target `lcond_<id>` creation/tombstone cycles), preserved condition `summary` across `fromSparkDocuments -> toDomain()`, and ignored orphaned `lcond_<id>` items whose canonical `cond_<id>` is tombstoned.
+- **Admin Rules & repository ACL alignment (`firebase/firestore.rules`, `SyncedCampaignRepository`, `SparkFirestoreSyncEngine`)**:
+  - Allowed verified administrator (`isAdministrator()`) on `TRANSFER_OWNERSHIP`, `LINK_CAMPAIGN`, `UNLINK_CAMPAIGN`, standalone `campaignAudit` reads, `applySessionCommand` GM overrides, full campaign discovery in `SyncedCampaignRepository.sync`, and root updates preserving legacy `lockedAt == null` (`keepsRootLock`).
+- **Evidence & limitations**: `:core:domain:test`, `:app:testDevDebugUnitTest` (187 tests), `:app:assembleDevDebug`, `npm --prefix firebase run test:rules` (63/63), and `.agents/gates/validate-harness.ps1` passed; updated `firebase/firestore.rules` requires push/deploy to `sdo-companion` before live cloud Rules changes take effect, and physical-device runtime verification is owned by developer.
+
 ### Sync debouncing, commit-on-blur fields, intent coalescing & conflict resolution fixes
 Updated: 2026-11-20 12:01 America/La_Paz on `main`.
 - **Commit-on-blur sheet inputs (`CollaborativeSheetField`, `SheetTextField`, `IntegerField`, `CharacterSheetScreen`, sheet sections)**:

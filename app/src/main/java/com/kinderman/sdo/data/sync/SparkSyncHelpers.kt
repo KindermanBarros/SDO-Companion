@@ -491,6 +491,20 @@ internal fun applyExtendedTargetProjection(
                 },
             )
         }
+        if (target.itemId.startsWith("cond_") && target.key == "summary") {
+            val id = decodeWireElementId("cond", target.itemId)
+            val nextSummary = plain?.toString().orEmpty()
+            val exists = character.conditions.any { it.id == id }
+            val updatedConditions = if (exists) {
+                character.conditions.map { if (it.id == id) it.copy(summary = nextSummary) else it }
+            } else {
+                val base = character.conditionInstances.firstOrNull { it.instanceId.value == id }
+                    ?.let { com.kinderman.sdo.data.local.CharacterRecord(canonicalConditionsPayload = sharedConverters.canonicalConditionsToString(listOf(it))).toDomain().conditions.firstOrNull() }
+                    ?: ConditionEffect(id = id)
+                character.conditions + base.copy(summary = nextSummary)
+            }
+            return character.copy(conditions = updatedConditions)
+        }
         if (target.itemId.startsWith("cond_") && target.key == "payload") {
             val instance = runCatching {
                 sharedJson.decodeFromString(ConditionInstance.serializer(), sharedPlainGson.toJson(plain))

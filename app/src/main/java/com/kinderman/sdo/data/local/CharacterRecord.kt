@@ -223,6 +223,7 @@ fun CharacterRecord.toDomain(): Character {
         .takeIf(canonicalConverters::isProgressionPayloadValid)
         ?.let(canonicalConverters::stringToCanonicalProgression)
         ?: com.kinderman.sdo.domain.model.CharacterProgression()
+    val legacyConditionSummaries = conditions.associate { it.id to it.summary }
 
     return Character(
     id = id,
@@ -312,7 +313,11 @@ fun CharacterRecord.toDomain(): Character {
         })
     },
     mysticAbilities = mysticAbilities.map(MysticAbility::canonicalized),
-    conditions = decodedConditions?.map { it.toLegacyEffect() } ?: conditions,
+    conditions = decodedConditions?.map { instance ->
+        val legacy = instance.toLegacyEffect()
+        val savedSummary = legacyConditionSummaries[legacy.id]
+        if (!savedSummary.isNullOrBlank()) legacy.copy(summary = savedSummary) else legacy
+    } ?: conditions,
     story = story,
     notes = notes,
     transports = transports,

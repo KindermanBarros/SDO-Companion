@@ -674,7 +674,7 @@ class SparkFirestoreSyncEngine(
                     "Este custo exige um ajuste explÃ­cito da Mestre."
                 }
             }
-            val activeGm = currentProjected.campaignId.takeIf(String::isNotBlank)?.let {
+            val activeGm = session.isAdmin || currentProjected.campaignId.takeIf(String::isNotBlank)?.let {
                 localStore.getCampaign(it)?.ownerId == accountId
             } == true
             require(activeGm || command.type in setOf(
@@ -1565,6 +1565,8 @@ class SparkFirestoreSyncEngine(
             }
 
             val resolvedTargets = mutableListOf<SparkTargetSpec>()
+            val writtenTargets = mutableListOf<SparkTargetSpec>()
+            val rawBaseValues = mutableMapOf<String, Any?>()
             val pendingWrites = mutableListOf<() -> Unit>()
             val txConflicts = mutableListOf<SheetConflictItem>()
             val serverTs = ctx.serverTimestampToken()
@@ -1606,6 +1608,7 @@ class SparkFirestoreSyncEngine(
                         )
                         val resolved = target.copy(expectedRevision = remoteRev, nextRevision = nextRev)
                         resolvedTargets += resolved
+                        writtenTargets += resolved
                         pendingWrites += { ctx.setRoot(intent.sheetId, updatedRoot) }
                     }
                     TargetKind.FIELD -> {
@@ -1628,10 +1631,12 @@ class SparkFirestoreSyncEngine(
                             val resolved = target.copy(
                                 expectedRevision = remoteRev,
                                 nextRevision = nextRev,
-                                baseValueJson = plainGson.toJson(prevVal),
-                                valueJson = plainGson.toJson(nextVal),
+                                baseValueJson = wireGson.toJson(prevVal),
+                                valueJson = wireGson.toJson(nextVal),
                             )
+                            rawBaseValues[resolved.canonicalTargetKey()] = prevVal
                             resolvedTargets += resolved
+                            writtenTargets += resolved
                             pendingWrites += {
                                 ctx.setField(
                                     intent.sheetId,
@@ -1650,12 +1655,12 @@ class SparkFirestoreSyncEngine(
                             val desiredPlain = jsonToPlainValue(target.valueJson ?: intent.desiredPayloadJson)
                             if (target.expectedRevision != remoteRev) {
                                 if (remoteDoc != null &&
-                                    plainGson.toJsonTree(remoteDoc["value"]) == plainGson.toJsonTree(desiredPlain)
+                                    wireGson.toJsonTree(remoteDoc["value"]) == wireGson.toJsonTree(desiredPlain)
                                 ) {
                                     resolvedTargets += target.copy(
                                         expectedRevision = remoteRev,
                                         nextRevision = remoteRev,
-                                        baseValueJson = plainGson.toJson(remoteDoc["value"]),
+                                        baseValueJson = wireGson.toJson(remoteDoc["value"]),
                                     )
                                     continue
                                 }
@@ -1671,9 +1676,13 @@ class SparkFirestoreSyncEngine(
                             val resolved = target.copy(
                                 expectedRevision = remoteRev,
                                 nextRevision = nextRev,
-                                baseValueJson = if (remoteDoc == null) null else plainGson.toJson(remoteDoc["value"]),
+                                baseValueJson = if (remoteDoc == null) null else wireGson.toJson(remoteDoc["value"]),
                             )
+                            if (remoteDoc != null) {
+                                rawBaseValues[resolved.canonicalTargetKey()] = remoteDoc["value"]
+                            }
                             resolvedTargets += resolved
+                            writtenTargets += resolved
                             pendingWrites += {
                                 ctx.setField(
                                     intent.sheetId,
@@ -1724,6 +1733,7 @@ class SparkFirestoreSyncEngine(
                         val deletedFlag = target.op == TargetOp.TOMBSTONE
                         val resolved = target.copy(expectedRevision = remoteRev, nextRevision = nextRev)
                         resolvedTargets += resolved
+                        writtenTargets += resolved
                         pendingWrites += {
                             ctx.setItem(
                                 intent.sheetId,
@@ -1778,10 +1788,12 @@ class SparkFirestoreSyncEngine(
                             val resolved = target.copy(
                                 expectedRevision = remoteRev,
                                 nextRevision = nextRev,
-                                baseValueJson = plainGson.toJson(rawPrev),
-                                valueJson = plainGson.toJson(nextFieldVal),
+                                baseValueJson = wireGson.toJson(rawPrev),
+                                valueJson = wireGson.toJson(nextFieldVal),
                             )
+                            rawBaseValues[resolved.canonicalTargetKey()] = rawPrev
                             resolvedTargets += resolved
+                            writtenTargets += resolved
                             pendingWrites += {
                                 ctx.setItemField(
                                     intent.sheetId,
@@ -1801,12 +1813,12 @@ class SparkFirestoreSyncEngine(
                             val desiredPlain = jsonToPlainValue(target.valueJson ?: intent.desiredPayloadJson)
                             if (target.expectedRevision != remoteRev) {
                                 if (remoteDoc != null &&
-                                    plainGson.toJsonTree(remoteDoc["value"]) == plainGson.toJsonTree(desiredPlain)
+                                    wireGson.toJsonTree(remoteDoc["value"]) == wireGson.toJsonTree(desiredPlain)
                                 ) {
                                     resolvedTargets += target.copy(
                                         expectedRevision = remoteRev,
                                         nextRevision = remoteRev,
-                                        baseValueJson = plainGson.toJson(remoteDoc["value"]),
+                                        baseValueJson = wireGson.toJson(remoteDoc["value"]),
                                     )
                                     continue
                                 }
@@ -1822,9 +1834,13 @@ class SparkFirestoreSyncEngine(
                             val resolved = target.copy(
                                 expectedRevision = remoteRev,
                                 nextRevision = nextRev,
-                                baseValueJson = if (remoteDoc == null) null else plainGson.toJson(remoteDoc["value"]),
+                                baseValueJson = if (remoteDoc == null) null else wireGson.toJson(remoteDoc["value"]),
                             )
+                            if (remoteDoc != null) {
+                                rawBaseValues[resolved.canonicalTargetKey()] = remoteDoc["value"]
+                            }
                             resolvedTargets += resolved
+                            writtenTargets += resolved
                             pendingWrites += {
                                 ctx.setItemField(
                                     intent.sheetId,
@@ -1852,7 +1868,7 @@ class SparkFirestoreSyncEngine(
                 )
             }
 
-            if (pendingWrites.isEmpty()) {
+            if (pendingWrites.isEmpty() || writtenTargets.isEmpty()) {
                 return@runTransaction DrainTxOutcome.Committed(resolvedTargets, nowMs)
             }
 
@@ -1874,7 +1890,8 @@ class SparkFirestoreSyncEngine(
                     ctx.setDelivery(deliveryId, acceptedDelivery)
                 }
             }
-            val receiptTargets = resolvedTargets.map { target ->
+            val receiptTargets = writtenTargets.map { target ->
+                val targetKey = target.canonicalTargetKey()
                 linkedMapOf<String, Any?>().apply {
                     put("kind", target.kind.name)
                     put("itemId", target.itemId)
@@ -1882,8 +1899,12 @@ class SparkFirestoreSyncEngine(
                     put("op", target.op.name)
                     put("expectedRevision", target.expectedRevision)
                     put("nextRevision", target.nextRevision)
-                    if (target.op != TargetOp.CREATE && target.baseValueJson != null) {
-                        put("baseValue", jsonToPlainValue(target.baseValueJson))
+                    if (target.op != TargetOp.CREATE) {
+                        if (targetKey in rawBaseValues) {
+                            put("baseValue", rawBaseValues[targetKey])
+                        } else if (target.baseValueJson != null) {
+                            put("baseValue", jsonToPlainValue(target.baseValueJson))
+                        }
                     }
                     if (target.delta != null) {
                         put("delta", target.delta)
@@ -3128,6 +3149,7 @@ class SparkFirestoreSyncEngine(
         private const val PRESENCE_TTL_MS = 90_000L
 
         private val plainGson = GsonBuilder().create()
+        private val wireGson = GsonBuilder().serializeNulls().create()
         private val converters = CharacterConverters()
         private val revMapType = object : TypeToken<Map<String, Long>>() {}.type
         private val canonicalJson = Json { ignoreUnknownKeys = true; encodeDefaults = true }

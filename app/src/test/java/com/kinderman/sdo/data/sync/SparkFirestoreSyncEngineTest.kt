@@ -1626,4 +1626,128 @@ class SparkFirestoreSyncEngineTest {
         assertEquals("Ayla L", mergedLocal.name)
         assertEquals("Nova História", mergedLocal.story)
     }
+
+    @Test
+    fun adminUpdatesPreserveNestedNullBaseValueOmitConvergedReceiptTargetsAndKeepConditionSummary() = runBlocking {
+        signedInUid = "admin-uid"
+        val (engine, store, remote) = newHarness()
+        val admin = UserSession("admin-uid", "kindbarros@gmail.com", "Admin", com.kinderman.sdo.domain.model.UserRole.ADMIN)
+        val cond = com.kinderman.sdo.domain.model.ConditionInstance(
+            instanceId = com.kinderman.sdo.domain.model.ConditionInstanceId("cond-migrated-1"),
+            payload = com.kinderman.sdo.domain.model.ConditionPayload(
+                kind = com.kinderman.sdo.domain.model.ConditionKind.Cego,
+                duration = com.kinderman.sdo.domain.model.Duration(com.kinderman.sdo.domain.model.DurationKind.Scene),
+            ),
+        )
+        val initial = baseSheet().copy(
+            id = "sheet-prod-1",
+            ownerId = "player-owner",
+            name = "Calizinha",
+            occupation = "Caçadora",
+            conditionInstances = listOf(cond),
+        )
+        remote.seedFromCharacter(initial.toRecord(), sheetRev = 2L)
+        val migratedPayloadWithNulls = remote.itemFields[Triple("sheet-prod-1", "cond_cond-migrated-1", "payload")]!!["value"] as Map<*, *>
+        assertTrue(
+            "Seeded payload must contain nested null keys just like migrated production sheets",
+            (migratedPayloadWithNulls["payload"] as Map<*, *>).containsKey("intensity") &&
+                (migratedPayloadWithNulls["payload"] as Map<*, *>)["intensity"] == null,
+        )
+        // Also seed an orphaned lcond_ whose canonical cond_ was previously tombstoned
+        remote.items["sheet-prod-1" to "cond_deleted-old"] = mapOf(
+            "id" to "cond_deleted-old",
+            "kind" to "CONDITION",
+            "deleted" to true,
+            "revision" to 2L,
+        )
+        remote.items["sheet-prod-1" to "lcond_deleted-old"] = mapOf(
+            "id" to "lcond_deleted-old",
+            "kind" to "LEGACY_CONDITION",
+            "deleted" to false,
+            "revision" to 1L,
+        )
+        remote.itemFields[Triple("sheet-prod-1", "lcond_deleted-old", "name")] = mapOf("key" to "name", "value" to "Imobilizado", "revision" to 1L)
+        remote.itemFields[Triple("sheet-prod-1", "lcond_deleted-old", "summary")] = mapOf("key" to "summary", "value" to "antiga", "revision" to 1L)
+        remote.itemFields[Triple("sheet-prod-1", "lcond_deleted-old", "payload")] = mapOf("key" to "payload", "value" to mapOf("id" to "deleted-old"), "revision" to 1L)
+
+        engine.sync(admin)
+        val synced = store.getCharacter("sheet-prod-1")!!.toDomain()
+        // Tombstoned cond_deleted-old must NOT resurrect from orphaned lcond_deleted-old
+        assertEquals(listOf("cond-migrated-1"), synced.conditionInstances.map { it.instanceId.value })
+        assertTrue(synced.conditions.none { it.id == "deleted-old" })
+
+        // 1. Admin updates condition intensity -> receipt's baseValue must retain nested nulls verbatim!
+        val updatedCond = cond.copy(payload = cond.payload.copy(intensity = 3))
+        val edit1 = synced.copy(
+            conditionInstances = listOf(updatedCond),
+            conditions = synced.conditions.map { if (it.id == "cond-migrated-1") it.copy(summary = "Descrição admin") else it },
+            editingBase = synced,
+        )
+        engine.save(admin, edit1)
+        engine.drain(admin.uid)
+        val opAfterCondEdit = remote.operations.entries
+            .filter { it.key.first == "sheet-prod-1" }
+            .map { it.value }
+            .first { (it["targets"] as? List<*>)?.any { t -> (t as? Map<*, *>)?.get("key") == "payload" } == true }
+        val payloadTargetReceipt = (opAfterCondEdit["targets"] as List<*>).map { it as Map<*, *> }.first { it["key"] == "payload" }
+        assertEquals(migratedPayloadWithNulls, payloadTargetReceipt["baseValue"])
+        assertTrue(remote.items.keys.none { it == ("sheet-prod-1" to "lcond_cond-migrated-1") })
+
+        // Summary must survive remote refresh -> toDomain(), and clearing + re-entering summary must not fail!
+        engine.refreshSheetFromRemote(admin.uid, "sheet-prod-1")
+        val refreshedWithSummary = store.getCharacter("sheet-prod-1")!!.toDomain()
+        assertEquals(
+            "Descrição admin",
+            refreshedWithSummary.conditions.firstOrNull { it.id == "cond-migrated-1" }?.summary,
+        )
+        val clearedSummary = refreshedWithSummary.copy(
+            conditions = refreshedWithSummary.conditions.map { if (it.id == "cond-migrated-1") it.copy(summary = "") else it },
+            editingBase = refreshedWithSummary,
+        )
+        engine.save(admin, clearedSummary)
+        engine.drain(admin.uid)
+        val afterClear = store.getCharacter("sheet-prod-1")!!.toDomain()
+        val reenteredSummary = afterClear.copy(
+            conditions = afterClear.conditions.map { if (it.id == "cond-migrated-1") it.copy(summary = "Nova descrição") else it },
+            editingBase = afterClear,
+        )
+        engine.save(admin, reenteredSummary)
+        engine.drain(admin.uid)
+        assertTrue(store.listIntentsForSheet(admin.uid, "sheet-prod-1").all { it.status == SheetIntentStatus.CONFIRMED.name })
+
+        // 2. Partial convergence in multi-target intent: converged target must NOT appear in op receipt targets!
+        remote.fields["sheet-prod-1" to "name"] = mapOf(
+            "key" to "name",
+            "value" to "Calizinha Prime",
+            "revision" to 5L,
+            "lastOperationId" to "other-op",
+            "updatedBy" to "player-owner",
+            "updatedAt" to 5000L,
+        )
+        val partialConvergeIntent = SheetIntent(
+            operationId = "op-partial-converge",
+            accountId = admin.uid,
+            sheetId = "sheet-prod-1",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:name",
+            targets = listOf(
+                SparkTargetSpec(kind = TargetKind.FIELD, key = "name", op = TargetOp.SET, expectedRevision = 2L, nextRevision = 3L, valueJson = "\"Calizinha Prime\""),
+                SparkTargetSpec(kind = TargetKind.FIELD, key = "occupation", op = TargetOp.SET, expectedRevision = 2L, nextRevision = 3L, baseValueJson = "\"Caçadora\"", valueJson = "\"Arquivista\""),
+            ),
+            baseRevision = 2L,
+        )
+        store.upsertIntent(partialConvergeIntent.toRecord())
+        engine.drain(admin.uid)
+        assertEquals(SheetIntentStatus.CONFIRMED.name, store.getIntent(admin.uid, "op-partial-converge")?.status)
+        val partialReceipt = remote.operations["sheet-prod-1" to "op-partial-converge"]!!
+        val receiptTargets = (partialReceipt["targets"] as List<*>).map { it as Map<*, *> }
+        assertEquals(1, receiptTargets.size)
+        assertEquals("occupation", receiptTargets.single()["key"])
+        assertEquals(
+            5L,
+            store.getAccountSheet(admin.uid, "sheet-prod-1")?.let {
+                com.google.gson.Gson().fromJson(it.fieldRevisionsJson, Map::class.java)["field:name"] as? Number
+            }?.toLong(),
+        )
+    }
 }

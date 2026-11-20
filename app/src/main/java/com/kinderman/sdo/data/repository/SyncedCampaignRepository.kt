@@ -479,7 +479,7 @@ class SyncedCampaignRepository(
                 "A ficha já está vinculada a outra campanha ativa."
             }
             val authorizedCid = normalizeCampaignId(rawRoot["authorizedCampaignId"] as? String ?: "")
-            if (!isOwner) {
+            if (!isOwner && !session.isAdmin) {
                 check(remoteCampaign.ownerId == session.uid) {
                     "Somente o dono ou a Mestre da campanha pode vincular esta ficha."
                 }
@@ -586,7 +586,7 @@ class SyncedCampaignRepository(
         check(session.isAdmin || isOwner || isGm) {
             "Somente o dono da ficha ou a Mestre da campanha pode desvincular esta ficha."
         }
-        if (!isOwner && localCampaign?.isArchived == true) {
+        if (!isOwner && !session.isAdmin && localCampaign?.isArchived == true) {
             error("Campanha arquivada: somente o dono pode desvincular a ficha.")
         }
 
@@ -600,10 +600,10 @@ class SyncedCampaignRepository(
             val campaignSnap = transaction.get(campaignRef)
             val remoteCampOwner = campaignSnap.getString("ownerId").orEmpty()
             val remoteCampState = campaignSnap.getString("state").orEmpty()
-            check(isOwner || remoteCampOwner == session.uid) {
+            check(session.isAdmin || isOwner || remoteCampOwner == session.uid) {
                 "Somente o dono da ficha ou a Mestre da campanha pode desvincular esta ficha."
             }
-            if (!isOwner && remoteCampState != CampaignState.ACTIVE.name) {
+            if (!isOwner && !session.isAdmin && remoteCampState != CampaignState.ACTIVE.name) {
                 error("Campanha arquivada: somente o dono pode desvincular a ficha.")
             }
             val sheetSnap = transaction.get(sheetRef)
@@ -681,8 +681,8 @@ class SyncedCampaignRepository(
             } else {
                 null
             }
-            // Only update members/{uid} when campaign is ACTIVE (or GM); owner unlink on ARCHIVED keeps sheet-only atomic tx.
-            if (nextMember != null && (remoteCampState == CampaignState.ACTIVE.name || remoteCampOwner == session.uid)) {
+            // Only update members/{uid} when campaign is ACTIVE (or GM/Admin); owner unlink on ARCHIVED keeps sheet-only atomic tx.
+            if (nextMember != null && (remoteCampState == CampaignState.ACTIVE.name || remoteCampOwner == session.uid || session.isAdmin)) {
                 transaction.set(memberRef, memberToFirestoreMap(nextMember))
             }
             nextRevision to nextMember
@@ -692,7 +692,7 @@ class SyncedCampaignRepository(
             dao.upsertMember(updatedMember.toRecord())
         }
         val unlinked = character.copy(campaignId = "", dirty = false)
-        if (isOwner) {
+        if (isOwner || session.isAdmin) {
             syncEngine?.recordConfirmedSheetLinkUpdate(session.uid, character.id, "", nextRev, unlinked)
         } else {
             // Immediately revoke GM's local access and projection.
@@ -758,7 +758,11 @@ class SyncedCampaignRepository(
                     .await()
             }
             val ownedJob = async {
-                campaigns.whereEqualTo("ownerId", session.uid).get().await()
+                if (session.isAdmin) {
+                    campaigns.get().await()
+                } else {
+                    campaigns.whereEqualTo("ownerId", session.uid).get().await()
+                }
             }
             membershipsJob.await() to ownedJob.await()
         }

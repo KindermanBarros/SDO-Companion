@@ -40,6 +40,7 @@ import com.kinderman.sdo.domain.model.encodeSkillSlug
 import com.kinderman.sdo.domain.model.encodeWireElementId
 import com.kinderman.sdo.domain.model.isWithinSparkTransactionBudget
 import com.kinderman.sdo.domain.model.normalizeCampaignId
+import com.kinderman.sdo.domain.model.toLegacyEffect
 
 data class SparkItemBundle(
     val document: Map<String, Any?>,
@@ -420,19 +421,23 @@ object SparkWireCodec {
             )
         }
 
+        val conditionSummaryById = normalized.conditions.associate { it.id to it.summary }
+        val canonicalConditionIds = linkedSetOf<String>()
         if (normalized.canonicalConditionsPayload.isNotBlank()) {
             converters.stringToCanonicalConditions(normalized.canonicalConditionsPayload).forEach { cond ->
+                canonicalConditionIds += cond.instanceId.value
                 val itemId = encodeWireElementId("cond", cond.instanceId.value)
                 val fullMap = objectMap(
                     JsonParser.parseString(canonicalJson.encodeToString(ConditionInstance.serializer(), cond)).asJsonObject,
                 )
+                val customSummary = conditionSummaryById[cond.instanceId.value].orEmpty().take(20000)
                 items[itemId] = SparkItemBundle(
                     document = itemDoc(itemId, "CONDITION"),
                     fields = linkedMapOf(
                         "name" to itemFieldDoc(itemId, "name", cond.name),
                         "intensity" to itemFieldDoc(itemId, "intensity", cond.intensity ?: 0),
                         "duration" to itemFieldDoc(itemId, "duration", fullMap["payload"]?.let { asMap(it)["duration"] }),
-                        "summary" to itemFieldDoc(itemId, "summary", cond.name),
+                        "summary" to itemFieldDoc(itemId, "summary", customSummary),
                         "origin" to itemFieldDoc(itemId, "origin", fullMap["source"]),
                         "payload" to itemFieldDoc(itemId, "payload", fullMap),
                     ),
@@ -441,6 +446,7 @@ object SparkWireCodec {
         }
 
         normalized.conditions.forEach { cond ->
+            if (cond.id in canonicalConditionIds) return@forEach
             val itemId = encodeWireElementId("lcond", cond.id)
             items[itemId] = SparkItemBundle(
                 document = itemDoc(itemId, "LEGACY_CONDITION"),
@@ -527,6 +533,8 @@ object SparkWireCodec {
         val powers = mutableListOf<Power>()
         val mysticAbilities = mutableListOf<MysticAbility>()
         val conditionInstances = mutableListOf<ConditionInstance>()
+        val condSummaries = linkedMapOf<String, String>()
+        val condFallbackSummaries = linkedMapOf<String, String>()
         val legacyConditions = mutableListOf<ConditionEffect>()
         val notes = mutableListOf<PersonalNote>()
         val attributes = mutableListOf<AttributeValue>()
@@ -629,21 +637,42 @@ object SparkWireCodec {
                 }
                 kind == "CONDITION" || itemId.startsWith("cond_") -> {
                     val payloadMap = asMap(prop("payload"))
-                    conditionInstances += canonicalJson.decodeFromString(
+                    val decodedInst = canonicalJson.decodeFromString(
                         ConditionInstance.serializer(),
                         plainGson.toJson(payloadMap),
                     )
+                    conditionInstances += decodedInst
+                    val summaryDoc = bundle.fields["summary"]
+                    val rawSummary = summaryDoc?.get("value") as? String
+                    val summaryRev = asLong(summaryDoc?.get("revision")) ?: 0L
+                    val isMigratedMirror = summaryRev <= 1L &&
+                        rawSummary == decodedInst.name &&
+                        bundle.fields.containsKey("origin")
+                    if (rawSummary != null && !isMigratedMirror) {
+                        condSummaries[decodedInst.instanceId.value] = rawSummary
+                    }
                 }
                 kind == "LEGACY_CONDITION" || itemId.startsWith("lcond_") -> {
                     val payloadMap = asMap(prop("payload"))
-                    legacyConditions += ConditionEffect(
-                        id = payloadMap["id"] as? String ?: decodeWireElementId("lcond", itemId),
-                        name = prop("name") as? String ?: "",
-                        intensity = prop("intensity") as? String ?: "",
-                        duration = prop("duration") as? String ?: "",
-                        origin = prop("origin") as? String ?: "",
-                        summary = prop("summary") as? String ?: "",
-                    )
+                    val rawId = payloadMap["id"] as? String ?: decodeWireElementId("lcond", itemId)
+                    val canonicalDoc = docs.items[encodeWireElementId("cond", rawId)]?.document
+                    if (canonicalDoc != null) {
+                        if ((canonicalDoc["deleted"] as? Boolean) != true) {
+                            val legacySummary = prop("summary") as? String ?: ""
+                            if (legacySummary.isNotBlank()) {
+                                condFallbackSummaries[rawId] = legacySummary
+                            }
+                        }
+                    } else {
+                        legacyConditions += ConditionEffect(
+                            id = rawId,
+                            name = prop("name") as? String ?: "",
+                            intensity = prop("intensity") as? String ?: "",
+                            duration = prop("duration") as? String ?: "",
+                            origin = prop("origin") as? String ?: "",
+                            summary = prop("summary") as? String ?: "",
+                        )
+                    }
                 }
                 kind == "NOTE" || itemId.startsWith("note_") -> {
                     notes += PersonalNote(
@@ -680,6 +709,21 @@ object SparkWireCodec {
         val isLocked = root["isLocked"] as? Boolean ?: (lockType != "NONE")
         val updatedAt = asLong(root["updatedAt"]) ?: 0L
         val rootRev = asLong(root["revision"]) ?: 0L
+
+        val resolvedConditions = if (conditionInstances.isNotEmpty()) {
+            val withSummaries = conditionInstances.map { inst ->
+                val resolvedSummary = condSummaries[inst.instanceId.value]
+                    ?: condFallbackSummaries[inst.instanceId.value].orEmpty()
+                inst.toLegacyEffect().copy(summary = resolvedSummary)
+            }
+            if (withSummaries.any { it.summary.isNotBlank() } || legacyConditions.isNotEmpty()) {
+                withSummaries + legacyConditions
+            } else {
+                emptyList()
+            }
+        } else {
+            legacyConditions
+        }
 
         return CharacterRecord(
             id = root["id"] as? String ?: "",
@@ -750,7 +794,7 @@ object SparkWireCodec {
             containerCapacity = intVal("containerCapacity"),
             agilityLimit = str("agilityLimit"),
             mysticAbilities = mysticAbilities,
-            conditions = legacyConditions,
+            conditions = resolvedConditions,
             isLocked = isLocked,
             lockType = lockType,
             lockedBy = root["lockedBy"] as? String ?: "",
@@ -806,8 +850,8 @@ object SparkWireCodec {
                     op = if (beforeDocs == null) TargetOp.CREATE else TargetOp.SET,
                     expectedRevision = if (beforeDocs == null) 0L else sheetRevision,
                     nextRevision = nextRev,
-                    baseValueJson = beforeDocs?.root?.let(plainGson::toJson),
-                    valueJson = plainGson.toJson(afterDocs.root),
+                    baseValueJson = beforeDocs?.root?.let(gson::toJson),
+                    valueJson = gson.toJson(afterDocs.root),
                 ),
                 documentData = afterDocs.root + ("revision" to nextRev),
             )
@@ -853,8 +897,8 @@ object SparkWireCodec {
                         op = if (beforeDocs == null || expectedRev == 0L) TargetOp.CREATE else TargetOp.SET,
                         expectedRevision = expectedRev,
                         nextRevision = nextRev,
-                        baseValueJson = if (beforeDocs == null) null else plainGson.toJson(oldValue),
-                        valueJson = plainGson.toJson(newValue),
+                        baseValueJson = if (beforeDocs == null) null else gson.toJson(oldValue),
+                        valueJson = gson.toJson(newValue),
                     ),
                     documentData = doc + ("revision" to nextRev),
                 )
@@ -879,7 +923,7 @@ object SparkWireCodec {
                         expectedRevision = 0L,
                         nextRevision = itemNextRev,
                         baseValueJson = null,
-                        valueJson = plainGson.toJson(bundle.document),
+                        valueJson = gson.toJson(bundle.document),
                     ),
                     documentData = bundle.document + ("revision" to itemNextRev),
                 )
@@ -973,10 +1017,12 @@ object SparkWireCodec {
                     }
                 }
             } else if (itemId.startsWith("cond_")) {
-                // Canonical ConditionInstance is losslessly stored in `payload` (and decoded solely from `payload`).
-                // Always write only `payload` on both create and update so mirror fields (name/intensity/duration/etc.)
-                // never trigger stale/missing revision conflicts against migrated sheets or split into multi-batch ops.
-                changedFields.filterKeys { it == "payload" }
+                // Canonical ConditionInstance is stored in `payload` and its optional user note in `summary`.
+                // Omit derived mirror fields (name/intensity/duration/origin) so edits never split across batches.
+                changedFields.filter { (fieldKey, fieldDoc) ->
+                    fieldKey == "payload" ||
+                        (fieldKey == "summary" && (oldBundle != null || (fieldDoc["value"] as? String).orEmpty().isNotEmpty()))
+                }
             } else if (oldBundle == null) {
                 // Skip default/empty item fields on creation so new items/powers fit in 1-2 transactions instead of 4-5.
                 changedFields.filter { (fieldKey, fieldDoc) ->
@@ -1002,8 +1048,8 @@ object SparkWireCodec {
                         op = if (oldBundle == null || expectedRev == 0L) TargetOp.CREATE else TargetOp.SET,
                         expectedRevision = expectedRev,
                         nextRevision = nextRev,
-                        baseValueJson = if (oldBundle == null || needsItemCreate) null else plainGson.toJson(oldFieldValue),
-                        valueJson = plainGson.toJson(newFieldValue),
+                        baseValueJson = if (oldBundle == null || needsItemCreate) null else gson.toJson(oldFieldValue),
+                        valueJson = gson.toJson(newFieldValue),
                     ),
                     documentData = fieldDoc + ("revision" to nextRev),
                 )
@@ -1022,7 +1068,7 @@ object SparkWireCodec {
                         op = TargetOp.TOMBSTONE,
                         expectedRevision = expectedRev,
                         nextRevision = nextRev,
-                        baseValueJson = plainGson.toJson(beforeDocs.items[oldItemId]?.document),
+                        baseValueJson = gson.toJson(beforeDocs.items[oldItemId]?.document),
                         valueJson = "{\"deleted\":true}",
                     ),
                     documentData = linkedMapOf(
