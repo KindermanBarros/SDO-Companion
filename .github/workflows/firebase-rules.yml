@@ -111,8 +111,7 @@ jobs:
 
   deploy:
     name: Deploy Firestore production
-    # Production rules deploy stays manually gated via workflow_dispatch.
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 15
