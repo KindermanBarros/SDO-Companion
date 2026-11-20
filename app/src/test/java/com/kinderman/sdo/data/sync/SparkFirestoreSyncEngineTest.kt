@@ -1392,4 +1392,35 @@ class SparkFirestoreSyncEngineTest {
         assertTrue("Committed local operationId must be suppressed from remote echo", predicate(opId))
         assertFalse("Foreign operationId must NOT be suppressed", predicate("other-device-op"))
     }
+
+    @Test
+    fun rapidSequentialEditsToSameFieldBeforeSyncCompletesNeverRaiseConflict() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        val initial = Character(
+            id = "sheet-1",
+            ownerId = "player-1",
+            name = "Ayla",
+            occupation = "Aprendiz",
+            canonicalSchemaVersion = CURRENT_CHARACTER_SCHEMA_VERSION,
+            dirty = false,
+        )
+        remote.seedFromCharacter(initial.toRecord(), sheetRev = 1L)
+        engine.sync(user)
+
+        // Rapidly edit the same field twice before drain() runs.
+        val firstEdit = initial.copy(occupation = "Cronista", editingBase = initial)
+        engine.save(user, firstEdit)
+        val secondEdit = firstEdit.copy(occupation = "Arquivista", editingBase = firstEdit)
+        engine.save(user, secondEdit)
+
+        // No conflict popup during optimistic projection!
+        assertTrue(store.observeOpenConflicts("player-1").first().isEmpty())
+
+        // Drain both chained edits and verify stale refreshSheetFromRemote never regresses revisions.
+        engine.drain("player-1")
+        assertTrue(store.observeOpenConflicts("player-1").first().isEmpty())
+        assertEquals("Arquivista", remote.fields["sheet-1" to "occupation"]?.get("value"))
+        assertTrue(store.listIntentsForSheet("player-1", "sheet-1").all { it.status == SheetIntentStatus.CONFIRMED.name })
+    }
 }

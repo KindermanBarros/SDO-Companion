@@ -1915,7 +1915,14 @@ class SparkFirestoreSyncEngine(
         }
         if (!isAccountCurrent(accountId)) return false
         localStore.withTransaction {
-            localStore.upsertAccountSheet(snapshot.toRecord())
+            val existing = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot()
+            val staleRemote = existing != null &&
+                snapshot.sheetRevision <= existing.sheetRevision &&
+                snapshot.fieldRevisions.all { (k, rev) -> rev <= (existing.fieldRevisions[k] ?: 0L) } &&
+                existing.fieldRevisions.any { (k, rev) -> rev > (snapshot.fieldRevisions[k] ?: 0L) }
+            if (!staleRemote) {
+                localStore.upsertAccountSheet(snapshot.toRecord())
+            }
             reprojectSheetLocked(accountId, sheetId)
         }
         return true
