@@ -24,8 +24,8 @@ Character sync uses the unified 100% Spark Firestore Protocol v2 (`protocolVersi
 
 ## Authoritative field and security contracts
 
-- DTO/entity fields and local outbox: `CharacterRecord.kt`, `CampaignRecords.kt`, `OperationRecords.kt`, `OwnerRecord.kt`, and `SheetSyncRecord.kt` (Room v33 account-scoped `account_sheets`, `sheet_intents`, `sheet_conflicts`) under `app/src/main/java/com/kinderman/sdo/data/local/`.
-- Normalization and RPG contracts: existing `docs/contracts/` documents.
+- DTO/entity fields and local outbox: `CharacterRecord.kt`, `CampaignRecords.kt`, `OperationRecords.kt`, `OwnerRecord.kt`, and `SheetSyncRecord.kt` (Room v36, account-scoped `account_sheets`, `sheet_intents`, `sheet_conflicts`) under `app/src/main/java/com/kinderman/sdo/data/local/`.
+- Normalization and RPG contracts: typed Kotlin models and rules in `:core:domain` plus `LegacyFirestoreNormalizer.kt`.
 - Repository and sync operations: `app/src/main/java/com/kinderman/sdo/data/repository/` and `SparkWireCodec.kt`.
 - Security Rules: `firebase/firestore.rules` (Firestore) and `firebase/database.rules.json` (isolated RTDB grid).
 - Deployment procedure: [Firebase deployment](../../firebase-deploy.md).

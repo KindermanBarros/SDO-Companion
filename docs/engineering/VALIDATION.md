@@ -38,5 +38,3 @@ Run .agents/gates/tests/validate-harness-tests.ps1 when structural policy change
 - Coverage thresholds remain 80% overall and 90% for new ViewModels/use cases when applicable; report generation alone is not acceptance.
 - UI screenshots and approved references are different artifacts. Missing runtime/pixel evidence is not PASS.
 - Before commit remove .scratch entirely and run the pre-commit hook plus scoped git diff --check.
-
-[Test inventory](Validation/test_inventory.md) is historical inventory; current test counts come from actual reports.

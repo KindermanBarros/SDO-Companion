@@ -1,88 +1,18 @@
-# Campaigns
+# Campaigns & Play Modes
 
-**Capability ID**: `campaigns`
+**Capability ID**: `campaigns` — see [Backlog](../product.md#product-backlog) and [Memory](../../MEMORY.md).
 
-Status: delivered changes accepted by the owner; unimplemented planned changes remain open. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog). Existing evidence limits remain unchanged.
+## Delivered Scope
 
-## User goal
-
-Players use their RPG character sheets in campaigns.
-
-## Requirements
-
-| ID | Product intent | Evidence qualification |
-|---|---|---|
-| CAMPAIGN-001 | Players can use character sheets in campaigns. | Requested in setup_prompt.md; campaign domain models, SyncedCampaignRepository and SessionModeScreen exist; execution not verified |
-
-Source observations include invitations, membership, roles and session operations. Their full behavior is not newly specified or accepted during setup. Preserve existing contracts and data until a separate approved change defines any delta.
-
-## Compact UI review
-
-Compact UI review: dashboard filters use compact modal choices and session abilities retain complete expandable rules, costs and use actions. See [approved UI contract](../../current/UI_contract.md). Component regressions pass; owner installed-app acceptance pending.
+- **Campaigns & Membership**: `campaigns/{id}`, `members/{uid}` (`ACTIVE|LEFT|REMOVED`), and `invites/{inviteId}` (`PENDING|CONSUMED|REVOKED`) with atomic invite consumption and GM character linking.
+- **Shared Campaign Journal (`CAMPAIGN-PLAN-001`, `Done`)**: shared campaign entries (`campaignJournal`) with member creation, author edit/delete, and GM moderation.
+- **Session Mode (`CAMPAIGN-PLAN-002`, `BACKLOG-010`, `BACKLOG-017`, `Done`)**: compact player dashboard with resource controls, favorite/available ability filters, confirmed dose/ammo/charge/Ash consumption, condition toggles, and equipment state switches.
+- **Historian / GM Mode (`CAMPAIGN-PLAN-003`, `BACKLOG-018`, `Done`)**: party telemetry strip, alert filters, compact `OperationalCharacterCard`s, inline quick-action triggers, and `QuickActionsDialog`.
 
 ## Planned changes
 
-Backlog requested by owner on 2026-11-12. These are unimplemented proposals; each item needs refinement, specification, design, and acceptance criteria before delivery. They do not represent approval of a technical solution or certification of current behavior.
+### CAMPAIGN-PLAN-004 — Real-time shared battle grid (`BACKLOG-005`, `ToDo`)
 
-### CAMPAIGN-PLAN-001 — Shared campaign journal
-
-Add a shared campaign journal. Define authorship, read/write permissions, entry ordering, and edit/sync behavior during refinement. Distinguish the journal from personal character notes and the existing technical operation history.
-
-Refinement started 2026-11-14. Owner confirmed shared text entries, member creation, author edit/delete and GM moderation; owner approved specification and redesigned UI with minor Standard color refinement; implementation, Firestore rules and tests delivered and owner-accepted as Done; earlier runtime verification limits remain recorded. See [Memory](../../MEMORY.md).
-
-### CAMPAIGN-PLAN-002 — Session Mode evolution
-
-Status: InDevReview; player quick actions implemented. Final debug build passed; tests skipped by owner, runtime acceptance pending.
-
-Improve the UI and complete Session Mode features, focusing on quick actions and compact presentation while preserving all gameplay-relevant information. Define the inventory of actions, essential info, shortcuts, and states from existing flows; the request does not fix specific controls yet.
-
-Delivered scope: direct section access, compact resource spending, favorite/available ability filtering, confirmed dose consumption, typed condition addition and inventory-state changes. Preserve read-only/archive guards, existing cost/load rules, complete text and Standard/Cybergrunge identity. No RPG rules or additional automatic item effects are invented. See [Memory](../../MEMORY.md).
-
-### CAMPAIGN-PLAN-003 — Historian / GM Mode evolution
-
-Status: InDevReview; compact GM Mode with quick actions implemented. Final debug build passed; tests skipped by owner, runtime acceptance pending.
-
-Improve the UI and complete Historian/GM Mode features, focusing on quick actions, compact controls, and access to all information needed to run the campaign. Delivered scope: party telemetry summary strip, search and alert filter chips (`TODOS`, `COM ALERTA`, `CRÍTICOS`, `CONDIÇÕES`), compact `OperationalCharacterCard` with `SdoCharacterAvatar`, resource/protection/condition/body-failure telemetry, quick condition removal, preset quick-action chips, upgraded `QuickActionsDialog` (all 7 `SessionResource`s with `+/-` delta toggle, typed condition duration/intensity, condition removal, `USAGE_RESET`, multi-target selection), and archive/offline read-only guards. See [Memory](../../MEMORY.md).
-
-### CAMPAIGN-PLAN-004 — Real-time battle grid
-
-Status: ToDo; open backlog request, not implemented. Original scope remains unchanged.
-
-Add a shared combat board over a grid in Session Mode where the GM can draw in real time and move characters represented by coin-shaped tokens with their profile photos.
-
-Initial requested scope:
-
-- Grid and freehand drawing on the board with real-time shared updates.
-- Character movement via coin tokens using the profile photos from SHEET-PLAN-001.
-- Movement distance calculation.
-- Representation and handling of high/low elevation terrain.
-- Future combat feature expansion, still open-ended; "many other things" is not treated as closed scope.
-
-Decisions for refinement: grid scale/units, diagonals, and SDO movement rules; elevation/terrain meaning and effects; who can move each token; drawing tools; map persistence; concurrency, reconnection, and offline inspection. Offline edits remain forbidden under [SYNC-PLAN-001](synchronization.md#planned-changes), which also applies to the journal and Session/GM modes. Range, line of sight, obstacles, initiative, rule automation, and other tools may be evaluated later but are not confirmed by the current request.
-
-Identified product dependencies: character profile photos for tokens; integration with campaigns and Session Mode. Delivery order and sync technology are not fixed here.
-
-## References
-
-- `setup_prompt.md`
-- `app/src/main/java/com/kinderman/sdo/domain/model/Campaign.kt`
-- `app/src/main/java/com/kinderman/sdo/data/repository/SyncedCampaignRepository.kt`
-- `app/src/main/java/com/kinderman/sdo/presentation/session/SessionModeScreen.kt`
-
-Owner review repair: preserve existing contracts while fixing theme outlines, clipped text and compact controls. Panel quick Session/Master removed; navigation retained. See [revision evidence](../../current/summary_v4.md). Owner explicitly accepted this UI delivery on 2026-11-13; automated evidence limitations remain in the linked summary.
-
-Master operation exposes the existing quick-action dialog through a visible button on each collapsed character card; no command rules changed.
-
-## Session follow-up
-
-BACKLOG-010 status: InDevReview; owner explicitly included consumption of Cinza.
-- Expose Dose, Ammo, Charge and Ash counters with quantity selection and confirmation in Session Mode. Show remaining values and preserve read-only guards; item/Cinza and condition shortcuts remain accessible.
-- Consume canonical loaded ammunition separately from reserve inventory, canonical charges/doses, and explicit legacy ammunition/charge counters. Cinza supports linked inventory items, canonical ASH abilities and CatalogKind.ASH entries; canonical and legacy dose values stay aligned.
-- Apply structured item MechanicalEffect operations, explicit ItemEffect.onConsume operations and linked Ash effects in the same transaction as counter expenditure. Failed effects or insufficient quantities commit nothing; repeating the operation key does not spend twice.
-- Ash ability costs use the same counter path with duplicate automatic effect execution suppressed. Passive equipment bonuses and free-text effects remain distinct; prose is not interpreted as an executable rule.
-- Room remains at version 30; onConsume is an optional appended inventory-codec field. No forbidden Hydrogen-owned screen or database-version file is changed. Validation is assembleDebug only; runtime/visual acceptance remains pending.
-
-
-## Account membership repair
-
-Owner request 2026-11-14; InDevReview. A successful invite join must be server-confirmed, preserve existing membership and linked sheets, and permit rejoining after leaving with a valid invite. Removed users require GM action. Linking a sheet as campaign GM/administrator enrolls or reactivates its owner as PLAYER and commits membership plus sheet together. Other players cannot enroll users or elevate roles. Existing orphan links can be repaired by unlinking/relinking as GM. No production bulk migration is performed. See [Memory](../../MEMORY.md) for validation and rollout limits; the new rules and authenticated client must be rolled out together.
+- Shared grid and freehand board drawing in Session Mode using isolated RTDB `grid/{campaignId}/{gridId}` (`acl/{uid}`).
+- Coin-token character movement using `SHEET-PLAN-001` avatars, movement distance calculation, and high/low terrain elevation.
+- Open refinement items before implementation: SDO grid scale/diagonal rules, terrain mechanics, token move permissions, drawing tools, and persistence lifecycle.

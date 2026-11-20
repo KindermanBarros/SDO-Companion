@@ -61,8 +61,8 @@
     "runner": "androidx.test.runner.AndroidJUnitRunner"
   },
   "unknowns": [
-    "Hilt migration and feature ViewModel split are authorized in docs/engineering/ARCHITECTURE.md and tracked in docs/current/architecture_upgrade_playbook.md.",
-    "Custom AppSurface navigation remains the active baseline; navigation-compose dependency is scheduled for removal.",
+    "Feature ViewModel extraction from AppViewModel is tracked in docs/engineering/ARCHITECTURE.md.",
+    "Custom AppSurface navigation remains the active baseline.",
     "Ktlint/Detekt baseline cleanup and overall coverage improvement remain incremental follow-ups."
   ]
 }

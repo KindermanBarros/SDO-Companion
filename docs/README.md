@@ -1,26 +1,18 @@
-# Documentation
+# Documentation Index
 
-This is the single documentation root. Start with the topic you need; do not load every guide.
+Single documentation root. Load only the file needed for the active task.
 
 | Topic | Canonical owner |
 |---|---|
-| Project-wide agent invariants | [AGENTS](../AGENTS.md) |
-| Product scope and backlog | [Product](product/product.md) and its linked requirements |
-| Architecture policy | [Architecture](engineering/ARCHITECTURE.md) |
-| Package ownership and current flows | [Project context](engineering/PROJECT_CONTEXT.md) |
-| Observed architecture evidence | [Source map](architecture/architecture-map.md); not policy |
-| Code and resource conventions | [Code standards](engineering/CODE_STANDARDS.md) |
-| Dependencies and build configuration | [Tech stack](engineering/TECH_STACK.md) |
-| Visual identity and interaction | [Design system](design/design_system.md) |
-| Task planning and history | [Planning](engineering/TASK_PLANNING.md) and [Memory](MEMORY.md) |
+| Project-wide agent rules | [AGENTS](../AGENTS.md) |
+| Product scope & backlog | [Product](product/product.md) and [requirements](product/requirements/README.md) |
+| Architecture baseline | [Architecture](engineering/ARCHITECTURE.md) |
+| Module & package map | [Project context](engineering/PROJECT_CONTEXT.md) |
+| Firebase wire & security boundary | [Firebase contract](engineering/Architecture/firebase_contract.md) and [deploy guide](firebase-deploy.md) |
+| Code & resource conventions | [Code standards](engineering/CODE_STANDARDS.md) |
+| Build & dependencies | [Tech stack](engineering/TECH_STACK.md) |
+| Visual modes & controls | [Design system](design/design_system.md) |
+| Task planning & history | [Task planning](engineering/TASK_PLANNING.md) and [Memory](MEMORY.md) |
 | Verification selection | [Validation](engineering/VALIDATION.md) |
-| Git operations | [Git standards](engineering/GIT_STANDARDS.md) |
-| Agent roles and adapters | [Agent ownership](../.agents/README.md) |
-
-## Ownership
-
-`engineering/` holds governing engineering policy; `architecture/` holds source observations.
-`contracts/` holds existing data/domain contracts; the [Firebase boundary](engineering/Architecture/firebase_contract.md) indexes SDK ownership.
-`design/` owns shared and mode-specific design rules. Task-specific UI contracts and approved Pen references remain under `current/` or `changes/assets/`.
-`current/` contains scoped contracts/evidence, not another policy hierarchy. Completed task summaries belong in Memory.
-An observed implementation, historical plan or successful design export does not override policy or establish runtime acceptance.
+| Git conventions | [Git standards](engineering/GIT_STANDARDS.md) |
+| Agent roles & gates | [Agent ownership](../.agents/README.md) |

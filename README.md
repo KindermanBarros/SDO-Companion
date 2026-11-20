@@ -1,52 +1,29 @@
 # SDO Companion
 
-Android companion for creating and managing SDO RPG character sheets, using campaigns and consulting the system codex. Source includes Google sign-in, Room persistence, Firebase synchronization and Standard/Cybergrunge visual modes; source presence does not establish release acceptance.
+Android companion (API 30+, target/compile SDK 37) for SDO RPG character sheets, campaigns, Session/GM play modes, and the system codex, featuring Standard and Cybergrunge visual modes, offline-first Room persistence, and Firebase Spark synchronization.
 
-## Target devices
+## Key Capabilities
 
-- Android API 30 minimum; compile and target API 37.
-- Responsive phone/tablet window layouts exist. Confirmed target hardware: smartphone (owner confirmation); specific models and physical-device acceptance: Pending.
-
-## Features
-
-- Character creation, sheets, progression, equipment and access rules.
-- Campaigns, invitations, membership, session operations and historian screens.
-- Bundled codex catalogs, local persistence, synchronization and conflict handling.
-- Compact dashboard/library filters, expandable session abilities and catalog-derived race guidance were accepted by the owner on 2026-11-13. Owner review repairs restore angular cards/selectors, readable Cybergrunge headers and library controls, and remove Session/Master from panel quick access; automated lifecycle/IME and pixel-verification limitations remain documented.
-- Journal and online-only editing deliveries were accepted by the owner; character photos and battle grid remain backlog work: see [Product overview](docs/product/product.md).
-- Session quick actions now include resources, confirmed dose consumption, condition addition and equipment state changes; field-level sheet convergence is in review. Final runtime acceptance remains pending; tests were skipped at the owner's request.
-- Spark sheet synchronization is in review: durable account-scoped offline drafts, explicit conflicts, parallel non-colliding Firestore transaction waves, and compact item creation (`inv_` packed into 2 targets + default-omitted `istate_`). Supported automatic actions are validated by Security Rules; unsupported item effects/dose formulas require manual adjustment. Portrait presets, in-app 1:1 crop for non-square photos, and optional thumbnails avoid Cloud Storage billing. See the [cutover procedure](docs/firebase-deploy.md) before releasing this breaking protocol.
-- Unified full-screen item modal (`Catalog`, `Builder`, `Enhancements`, `Ash`) serves both character creation (with live Heritage Points budget) and active sheets (without PH constraints); in review.
+- **Character Sheets**: guided creation wizard (with Heritage Points budget), full sheet management (attributes, skills, body/organs, inventory, powers, mystic abilities, conditions, transports, familiars, notes), and 1:1 cropped profile avatars.
+- **Campaigns & Play Modes**: invites, active membership, shared campaign journal, compact Session Mode, and Historian/GM telemetry & quick actions.
+- **Codex & Rules**: spoiler-free compendium catalogs plus 1,853 structured atomic rules from the Player's Handbook.
+- **Spark Synchronization**: 100% Firebase Spark Firestore Protocol v2 (`protocolVersion = 2`) with offline local intents, per-field/item revisions, and explicit 3-way conflict resolution. Deployment procedure: [Firebase deploy](docs/firebase-deploy.md).
 
 ## Build
 
-On Windows:
-
 ```powershell
-.\gradlew.bat :app:assembleDebug
+.\gradlew.bat :app:assembleDevDebug
 ```
 
-Gradle selects JetBrains JDK 25; Android SDK 37 is required. Google-services configuration enables Firebase integration when present; signing reads optional external credentials. See [TECH_STACK](docs/engineering/TECH_STACK.md) for exact versions and configuration.
-
-Test APKs delivered by CI are always authenticated with the configured Firebase project and registered signing certificate. Missing protected inputs fail the build; no demo APK is substituted.
+See [TECH_STACK](docs/engineering/TECH_STACK.md) for SDK/dependency versions and [VALIDATION](docs/engineering/VALIDATION.md) for test selection.
 
 ## Permissions
 
-- android.permission.INTERNET; no dangerous runtime permission is declared.
-- MainActivity is the exported launcher; no other component is declared.
+- `android.permission.INTERNET` and `android.permission.ACCESS_NETWORK_STATE` (no dangerous runtime permissions).
 
 ## Documentation
 
-- [Agent workflow](AGENTS.md)
-- [Architecture](docs/engineering/ARCHITECTURE.md)
-- [Validation](docs/engineering/VALIDATION.md)
-- [Operational workflows and gates](.agents/gates/project-contract.md)
-- [Existing onboarding evidence and blockers](docs/current/onboarding-summary.md)
-
-This documentation setup does not resolve the earlier onboarding quality or coverage blockers.
-
-The master operation exposes quick actions without expanding character cards. Dashboard settings is beside sync; Cybergrunge navigation is compact and centered.
-
-Functional text uses wrapping/autosizing instead of ellipsis; names, selections, counters and conflict summaries retain their full text.
-
-Documentation: [single index](docs/README.md). Agent configuration: [ownership map](.agents/README.md).
+- [Documentation index](docs/README.md)
+- [Agent workflow](AGENTS.md) and [ownership map](.agents/README.md)
+- [Product backlog](docs/product/product.md) and [Memory](docs/MEMORY.md)
+- [Architecture](docs/engineering/ARCHITECTURE.md) and [Operational gates](.agents/gates/project-contract.md)

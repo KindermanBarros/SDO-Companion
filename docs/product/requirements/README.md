@@ -1,10 +1,8 @@
-# Capability requirements
+# Capability Requirements
 
-These are draft living requirements captured during adoption. Source observations are qualified separately from user intent; no existing behavior has been accepted through runtime testing here.
+Living product requirements indexed by [Product Overview](../product.md).
 
 - [Character sheets](character-sheets.md)
-- [Campaigns](campaigns.md)
-- [Codex](codex.md)
-- [Sincronização e conectividade](synchronization.md)
-
-Keep each capability in its existing file for future changes. The product overview owns the sole lifecycle tracker. Original RPG contracts remain under `docs/contracts/`; onboarding does not redefine their rules.
+- [Campaigns & play modes](campaigns.md)
+- [Codex & rules](codex.md)
+- [Synchronization & connectivity](synchronization.md)

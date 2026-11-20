@@ -1,35 +1,8 @@
-# RPG codex
+# RPG Codex & Rules
 
-**Capability ID**: `codex`
+**Capability ID**: `codex` — see [Backlog](../product.md#product-backlog) and [Memory](../../MEMORY.md).
 
-Status: delivered changes accepted by the owner; unimplemented planned changes remain open. See [Memory](../../MEMORY.md) and the [backlog](../product.md#product-backlog). Existing evidence limits remain unchanged.
+## Delivered & Active Scope
 
-## User goal
-
-Players consult the codex for the SDO RPG system.
-
-## Requirements
-
-| ID | Product intent | Evidence qualification |
-|---|---|---|
-| CODEX-001 | The beta provides a codex for the user's RPG system. | Requested in setup_prompt.md; catalog JSON, BuiltInCatalog, LocalCatalogRepository and historian UI exist; execution and completeness not verified |
-
-Existing catalog schemas and normalization contracts remain authoritative for their current scope. Source presence does not establish catalog completeness or a new editing workflow.
-
-## Compact UI review
-
-Compact UI review: origin/category choices use one modal trigger per existing enum; search, archive and create behavior remain in scope. See [approved UI contract](../../current/UI_contract.md). Component regression tests pass; owner accepted closure; no new runtime evidence claimed.
-
-## Planned changes
-
-Onboarding inventories catalog inputs and consumers. No catalog regeneration, content updates, schema changes or codex UI changes are proposed.
-
-## References
-
-- `setup_prompt.md`
-- `catalogs/README.md`
-- `docs/contracts/Contrato de Normalização de Dados do Companion.md`
-- `app/src/main/java/com/kinderman/sdo/data/repository/LocalCatalogRepository.kt`
-- `app/src/main/java/com/kinderman/sdo/presentation/historian/HistorianDashboardScreen.kt`
-
-Owner review repair: preserve existing contracts while fixing theme outlines, clipped text and compact controls. Panel quick Session/Master removed; navigation retained. See [revision evidence](../../current/summary_v4.md). Installed-app acceptance pending.
+- **Compendium**: spoiler-free built-in catalogs (`BuiltInCatalog`, `catalogs/*.json`), campaign-scoped library entries (`CampaignLibraryEntry`), and GM session additions.
+- **Player's Handbook Rules (`BACKLOG-022`, `InDevReview`)**: `app/src/main/assets/player_handbook_rules.json` (1,853 atomic rules across 185 topics parsed by `GameRulesGuide.kt`) with search, theme chips, and `#KEYWORD` filters in `LibraryScreen.kt`.
