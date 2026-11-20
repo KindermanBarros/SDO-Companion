@@ -16,7 +16,7 @@ fun SdoField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        CyberGrungeField(label, value, modifier, multiline, supportingText, enabled, keyboardOptions, onValueChange)
+        CyberGrungeField(label, value, modifier, multiline, supportingText, enabled, keyboardOptions, onValue = onValueChange)
         return
     }
     HudTextField(

@@ -1502,4 +1502,128 @@ class SparkFirestoreSyncEngineTest {
         assertTrue("Expected zero conflicts when removing condition", store.observeOpenConflicts("player-1").first().isEmpty())
         assertTrue(store.listIntentsForSheet("player-1", "sheet-cond").all { it.status == SheetIntentStatus.CONFIRMED.name })
     }
+
+    @Test
+    fun rapidPendingFieldSavesCoalesceIntoSingleIntentAndRevertDropsIntent() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        val initial = baseSheet().copy(name = "Ayla", occupation = "Vigia")
+        remote.seedFromCharacter(initial.toRecord(), sheetRev = 1L)
+        engine.sync(user)
+
+        remote.transientFailureCount = 100
+        val base = store.getCharacter("sheet-1")!!.toDomain()
+        engine.save(user, base.copy(name = "A", editingBase = base))
+        val d1 = store.getCharacter("sheet-1")!!.toDomain()
+        engine.save(user, d1.copy(name = "Ay", editingBase = d1))
+        val d2 = store.getCharacter("sheet-1")!!.toDomain()
+        engine.save(user, d2.copy(name = "Ayla Vespera", editingBase = d2))
+        val d3 = store.getCharacter("sheet-1")!!.toDomain()
+        engine.save(user, d3.copy(occupation = "Exploradora", editingBase = d3))
+
+        val pendingBeforeRevert = store.listIntentsForSheet(user.uid, "sheet-1")
+            .filter { it.status == SheetIntentStatus.PENDING.name }
+        assertEquals(1, pendingBeforeRevert.size)
+        assertEquals(2, pendingBeforeRevert.single().toDomain().effectiveTargets().size)
+
+        val d4 = store.getCharacter("sheet-1")!!.toDomain()
+        engine.save(user, d4.copy(occupation = "Vigia", editingBase = d4))
+        val pendingAfterPartialRevert = store.listIntentsForSheet(user.uid, "sheet-1")
+            .filter { it.status == SheetIntentStatus.PENDING.name }
+        assertEquals(1, pendingAfterPartialRevert.size)
+        assertEquals(1, pendingAfterPartialRevert.single().toDomain().effectiveTargets().size)
+
+        remote.transientFailureCount = 0
+        val opsBefore = remote.operations.size
+        engine.drain(user.uid)
+        assertEquals(opsBefore + 1, remote.operations.size)
+        assertEquals("Ayla Vespera", remote.fields["sheet-1" to "name"]?.get("value"))
+    }
+
+    @Test
+    fun resolvingConflictRebasesTransitiveDependentsForBothLocalAndRemoteChoices() = runBlocking {
+        for (chooseRemote in listOf(true, false)) {
+            val (engine, store, remote) = newHarness()
+            val user = session("player-1")
+            val sheetId = if (chooseRemote) "sheet-remote-choice" else "sheet-local-choice"
+            val initial = baseSheet().copy(id = sheetId, name = "Ayla")
+            remote.seedFromCharacter(initial.toRecord(), sheetRev = 1L)
+            engine.sync(user)
+
+            remote.fields[sheetId to "name"] = mapOf(
+                "key" to "name",
+                "value" to "Ayla Remota",
+                "revision" to 4L,
+                "lastOperationId" to "remote-op",
+                "updatedBy" to "gm-1",
+                "updatedAt" to 20_000L,
+            )
+
+            val op1 = edit("op-1", "name", "\"Passo 1\"", revision = 1L).copy(sheetId = sheetId, createdAt = 100L)
+            val op2 = edit("op-2", "name", "\"Passo 2\"", revision = 2L, dependency = "op-1").copy(sheetId = sheetId, createdAt = 200L)
+            val op3 = edit("op-3", "name", "\"Passo Final\"", revision = 3L, dependency = "op-2").copy(sheetId = sheetId, createdAt = 300L)
+            store.upsertIntents(listOf(op1.toRecord(), op2.toRecord(), op3.toRecord()))
+
+            engine.drain(user.uid)
+            val openConflict = store.observeOpenConflicts(user.uid).first().single()
+            assertEquals("op-1::field:name", openConflict.id)
+            assertEquals(SheetIntentStatus.PAUSED_DEPENDENCY.name, store.getIntent(user.uid, "op-2")?.status)
+            assertEquals(SheetIntentStatus.PAUSED_DEPENDENCY.name, store.getIntent(user.uid, "op-3")?.status)
+
+            engine.resolveIntentConflict(user, openConflict.id, useRemote = chooseRemote)
+            engine.drain(user.uid)
+
+            assertTrue("Expected zero open conflicts for chooseRemote=$chooseRemote", store.observeOpenConflicts(user.uid).first().isEmpty())
+            assertEquals(SheetIntentStatus.CONFIRMED.name, store.getIntent(user.uid, "op-2")?.status)
+            assertEquals(SheetIntentStatus.CONFIRMED.name, store.getIntent(user.uid, "op-3")?.status)
+            assertEquals("Passo Final", remote.fields[sheetId to "name"]?.get("value"))
+            val expectedFinalRev = if (chooseRemote) 6L else 7L
+            assertEquals(expectedFinalRev, (remote.fields[sheetId to "name"]?.get("revision") as Number).toLong())
+        }
+    }
+
+    @Test
+    fun multiTargetConflictAndMonotonicRemoteRefreshDoNotLoseState() = runBlocking {
+        val (engine, store, remote) = newHarness()
+        val user = session("player-1")
+        val initial = baseSheet().copy(name = "Ayla", occupation = "Vigia")
+        remote.seedFromCharacter(initial.toRecord(), sheetRev = 1L)
+        engine.sync(user)
+
+        remote.fields["sheet-1" to "name"] = mapOf("key" to "name", "value" to "Ayla R", "revision" to 3L)
+        remote.fields["sheet-1" to "occupation"] = mapOf("key" to "occupation", "value" to "Cronista R", "revision" to 3L)
+
+        val multi = SheetIntent(
+            operationId = "op-multi",
+            accountId = user.uid,
+            sheetId = "sheet-1",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:name",
+            targets = listOf(
+                SparkTargetSpec(kind = TargetKind.FIELD, key = "name", op = TargetOp.SET, expectedRevision = 1L, nextRevision = 2L, valueJson = "\"Ayla L\""),
+                SparkTargetSpec(kind = TargetKind.FIELD, key = "occupation", op = TargetOp.SET, expectedRevision = 1L, nextRevision = 2L, valueJson = "\"Cronista L\""),
+            ),
+            baseRevision = 1L,
+        )
+        store.upsertIntent(multi.toRecord())
+        engine.drain(user.uid)
+
+        assertEquals(2, store.observeOpenConflicts(user.uid).first().size)
+
+        engine.resolveIntentConflict(user, "op-multi::field:name", useRemote = false)
+        assertEquals(1, store.observeOpenConflicts(user.uid).first().size)
+
+        engine.resolveIntentConflict(user, "op-multi::field:occupation", useRemote = true)
+        engine.drain(user.uid)
+        assertTrue(store.observeOpenConflicts(user.uid).first().isEmpty())
+        assertEquals("Ayla L", remote.fields["sheet-1" to "name"]?.get("value"))
+        assertEquals("Cronista R", remote.fields["sheet-1" to "occupation"]?.get("value"))
+
+        remote.fields["sheet-1" to "name"] = mapOf("key" to "name", "value" to "Stale Name", "revision" to 2L)
+        remote.fields["sheet-1" to "story"] = mapOf("key" to "story", "value" to "Nova História", "revision" to 5L)
+        engine.refreshSheetFromRemote(user.uid, "sheet-1")
+        val mergedLocal = store.getCharacter("sheet-1")!!.toDomain()
+        assertEquals("Ayla L", mergedLocal.name)
+        assertEquals("Nova História", mergedLocal.story)
+    }
 }

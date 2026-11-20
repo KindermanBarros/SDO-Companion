@@ -17,6 +17,7 @@ Android companion for creating and managing SDO RPG character sheets, running ca
 |---|---|---|---|
 | BACKLOG-005 | Real-time shared battle grid in Session Mode | [Campaigns — CAMPAIGN-PLAN-004](requirements/campaigns.md#planned-changes) | ToDo |
 | BACKLOG-022 | Curate & verify `player_handbook_rules.json` in Biblioteca against canonical SDO rulebook | [Codex](requirements/codex.md) | InDevReview (1,853 atomic rules integrated) |
+| BACKLOG-023 | Commit-on-blur debouncing, pending intent coalescing & transitive conflict resolution audit/fixes | [Synchronization](requirements/synchronization.md) | InDevReview |
 | BACKLOG-001..004, 006..010, 012..021 | Journal, Session/GM quick actions, avatars, Spark v2 sync, UI & spoiler-free lore upgrades | [Memory](../MEMORY.md) | Done (BACKLOG-011 superseded by BACKLOG-013) |
 
 ## Workflow Rules

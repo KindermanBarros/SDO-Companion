@@ -419,7 +419,7 @@ fun applyPendingIntentsOnConfirmed(
                     continue
                 }
                 failureStatus = SheetIntentStatus.CONFLICT
-                failureMessage = "A ficha foi excluída remotamente."
+                if (failureMessage.isBlank()) failureMessage = "A ficha foi excluída remotamente."
                 stepConflicts += buildConflictItem(
                     intent = intent,
                     target = target,
@@ -429,7 +429,7 @@ fun applyPendingIntentsOnConfirmed(
                     remoteJson = "{\"deleted\":true}",
                     localJson = target.valueJson ?: intent.desiredPayloadJson,
                 )
-                break
+                continue
             }
 
             if ((target.kind == TargetKind.ITEM || target.kind == TargetKind.ITEM_FIELD) &&
@@ -441,7 +441,7 @@ fun applyPendingIntentsOnConfirmed(
                     continue
                 }
                 failureStatus = SheetIntentStatus.CONFLICT
-                failureMessage = "Item ${target.itemId} foi excluído remotamente."
+                if (failureMessage.isBlank()) failureMessage = "Item ${target.itemId} foi excluído remotamente."
                 stepConflicts += buildConflictItem(
                     intent = intent,
                     target = target,
@@ -451,7 +451,7 @@ fun applyPendingIntentsOnConfirmed(
                     remoteJson = "{\"deleted\":true}",
                     localJson = target.valueJson ?: intent.desiredPayloadJson,
                 )
-                break
+                continue
             }
 
             when (target.op) {
@@ -469,7 +469,7 @@ fun applyPendingIntentsOnConfirmed(
                 TargetOp.TOMBSTONE -> {
                     if (target.kind != TargetKind.SHEET && currentRev != target.expectedRevision) {
                         failureStatus = SheetIntentStatus.CONFLICT
-                        failureMessage = "Revisão divergente ao excluir $targetKey."
+                        if (failureMessage.isBlank()) failureMessage = "Revisão divergente ao excluir $targetKey."
                         stepConflicts += buildConflictItem(
                             intent = intent,
                             target = target,
@@ -479,7 +479,7 @@ fun applyPendingIntentsOnConfirmed(
                             remoteJson = readTargetJson(stepCharacter, target),
                             localJson = "{\"deleted\":true}",
                         )
-                        break
+                        continue
                     }
                     if (target.kind == TargetKind.SHEET) {
                         stepSheetDeleted = true
@@ -494,7 +494,7 @@ fun applyPendingIntentsOnConfirmed(
                 TargetOp.RESTORE -> {
                     if (currentRev != target.expectedRevision) {
                         failureStatus = SheetIntentStatus.CONFLICT
-                        failureMessage = "Revisão divergente ao restaurar $targetKey."
+                        if (failureMessage.isBlank()) failureMessage = "Revisão divergente ao restaurar $targetKey."
                         stepConflicts += buildConflictItem(
                             intent = intent,
                             target = target,
@@ -504,7 +504,7 @@ fun applyPendingIntentsOnConfirmed(
                             remoteJson = "{\"deleted\":true}",
                             localJson = target.valueJson ?: intent.desiredPayloadJson,
                         )
-                        break
+                        continue
                     }
                     if (target.kind == TargetKind.SHEET) {
                         stepSheetDeleted = false
@@ -526,6 +526,15 @@ fun applyPendingIntentsOnConfirmed(
                     val localJson = target.valueJson ?: intent.desiredPayloadJson
                     val remoteJson = readTargetJson(stepCharacter, target)
                     if (currentRev != target.expectedRevision) {
+                        if (target.kind == TargetKind.ITEM &&
+                            target.op == TargetOp.CREATE &&
+                            target.expectedRevision == 0L &&
+                            currentRev > 0L &&
+                            target.itemId !in stepTombstones
+                        ) {
+                            stepRevisions[targetKey] = currentRev
+                            continue
+                        }
                         if (target.kind != TargetKind.SHEET &&
                             canonicalizeJsonOrString(remoteJson) == canonicalizeJsonOrString(localJson)
                         ) {
@@ -534,7 +543,9 @@ fun applyPendingIntentsOnConfirmed(
                             continue
                         }
                         failureStatus = SheetIntentStatus.CONFLICT
-                        failureMessage = "Conflito de revisão em $targetKey (esperada ${target.expectedRevision}, remota $currentRev)."
+                        if (failureMessage.isBlank()) {
+                            failureMessage = "Conflito de revisão em $targetKey (esperada ${target.expectedRevision}, remota $currentRev)."
+                        }
                         stepConflicts += buildConflictItem(
                             intent = intent,
                             target = target,
@@ -544,7 +555,7 @@ fun applyPendingIntentsOnConfirmed(
                             remoteJson = remoteJson,
                             localJson = localJson,
                         )
-                        break
+                        continue
                     }
                     stepCharacter = applyTargetToCharacter(stepCharacter, target, intent.desiredPayloadJson)
                     if (target.kind == TargetKind.SHEET) {
@@ -589,14 +600,21 @@ fun buildConflictResolutionIntent(
     useRemote: Boolean,
     customValueJson: String? = null,
     createdAt: Long = 0L,
+    originalIntent: SheetIntent? = null,
 ): SheetIntent? {
     if (useRemote) return null
     val chosenPayload = customValueJson ?: conflict.localPayloadJson
-    val target = parseTargetFromConflict(conflict, chosenPayload)
+    val originalTarget = originalIntent?.effectiveTargets()
+        ?.firstOrNull { it.canonicalTargetKey() == conflict.targetKey }
+    val target = parseTargetFromConflict(conflict, chosenPayload, originalTarget)
     val type = when (target.kind) {
-        TargetKind.SHEET -> OperationType.SET_LOCK
+        TargetKind.SHEET -> originalIntent?.type ?: inferRootOperationType(target.op)
         TargetKind.FIELD -> OperationType.PATCH_FIELDS
-        TargetKind.ITEM -> OperationType.UPSERT_ITEM
+        TargetKind.ITEM -> when (target.op) {
+            TargetOp.TOMBSTONE -> OperationType.DELETE_ITEM
+            TargetOp.RESTORE -> OperationType.RESTORE_ITEM
+            else -> OperationType.UPSERT_ITEM
+        }
         TargetKind.ITEM_FIELD -> OperationType.PATCH_FIELDS
     }
     return SheetIntent(
@@ -617,19 +635,52 @@ fun buildConflictResolutionIntent(
     )
 }
 
-private fun parseTargetFromConflict(conflict: SheetConflictItem, chosenPayload: String): SparkTargetSpec {
+private fun parseTargetFromConflict(
+    conflict: SheetConflictItem,
+    chosenPayload: String,
+    originalTarget: SparkTargetSpec? = null,
+): SparkTargetSpec {
     val parsed = parseFallbackTarget(
         targetKey = conflict.targetKey,
         type = OperationType.PATCH_FIELDS,
         baseRevision = conflict.remoteRevision,
         desiredPayloadJson = chosenPayload,
     )
+    val resolvedOp = when {
+        originalTarget != null && originalTarget.op != TargetOp.CREATE && originalTarget.op != TargetOp.DELTA ->
+            originalTarget.op
+        parsed.kind == TargetKind.SHEET -> inferSheetTargetOp(chosenPayload)
+        parsed.kind == TargetKind.ITEM && chosenPayload.contains("\"deleted\":true") -> TargetOp.TOMBSTONE
+        else -> TargetOp.SET
+    }
     return parsed.copy(
-        op = TargetOp.SET,
+        op = resolvedOp,
         expectedRevision = conflict.remoteRevision,
         nextRevision = conflict.remoteRevision + 1L,
+        baseValueJson = conflict.remotePayloadJson,
         valueJson = chosenPayload,
     )
+}
+
+private fun inferSheetTargetOp(payload: String): TargetOp = when {
+    payload.contains("\"deliveryId\"") -> TargetOp.DELIVERY
+    payload.contains("\"ownerId\"") -> TargetOp.TRANSFER
+    payload.contains("\"campaignId\"") -> {
+        if (payload.contains("\"campaignId\":\"\"")) TargetOp.UNLINK else TargetOp.LINK
+    }
+    payload.contains("\"deleted\":true") -> TargetOp.TOMBSTONE
+    payload.contains("\"deleted\":false") -> TargetOp.RESTORE
+    else -> TargetOp.LOCK
+}
+
+private fun inferRootOperationType(op: TargetOp): OperationType = when (op) {
+    TargetOp.TRANSFER -> OperationType.TRANSFER_OWNERSHIP
+    TargetOp.LINK -> OperationType.LINK_CAMPAIGN
+    TargetOp.UNLINK -> OperationType.UNLINK_CAMPAIGN
+    TargetOp.DELIVERY -> OperationType.ACCEPT_DELIVERY
+    TargetOp.TOMBSTONE -> OperationType.DELETE_SHEET
+    TargetOp.RESTORE -> OperationType.RESTORE_SHEET
+    else -> OperationType.SET_LOCK
 }
 
 private fun parseFallbackTarget(

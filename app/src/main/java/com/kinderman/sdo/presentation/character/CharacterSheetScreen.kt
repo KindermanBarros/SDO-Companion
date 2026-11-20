@@ -121,9 +121,20 @@ fun CharacterSheetScreen(
     val canDelete = CharacterAccessPolicy.canDelete(session, current, isCampaignHistorian)
     val canChangePlayerLock = !readOnly &&
         CharacterAccessPolicy.canChangePlayerLock(session, current, isCampaignHistorian)
+    val commitRegistry = remember(character.id) { SheetFieldCommitRegistry() }
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val flushFocusedEdits: () -> Unit = {
+        commitRegistry.flushAll()
+        focusManager.clearFocus()
+    }
     val canLeaveCreation = !current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()
     val cybergrunge = LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE
-    BackHandler { if (canLeaveCreation) onClose(current) }
+    BackHandler {
+        flushFocusedEdits()
+        if (!current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()) {
+            onClose(current)
+        }
+    }
 
     val changeCharacter: (Character) -> Unit = { changed ->
         if (editable) {
@@ -182,7 +193,13 @@ fun CharacterSheetScreen(
     )
 
     androidx.compose.runtime.CompositionLocalProvider(
-        LocalSheetFieldCollaboration provides SheetFieldCollaboration(fieldPresence, onFieldFocus),
+        LocalSheetFieldCollaboration provides SheetFieldCollaboration(
+            presence = fieldPresence,
+            onFocus = onFieldFocus,
+            commitRegistry = commitRegistry,
+            isSheetContext = true,
+            commitOnBlur = !current.isInCreation,
+        ),
     ) {
         HudBackground {
             Scaffold(
@@ -217,21 +234,40 @@ fun CharacterSheetScreen(
                                 )
                             }
                         },
-                        navigationIcon = { SdoIconButton(onClick = { onClose(current) }, enabled = canLeaveCreation) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
+                        navigationIcon = {
+                            SdoIconButton(
+                                onClick = {
+                                    flushFocusedEdits()
+                                    if (!current.isInCreation || CharacterCreation.validateStep(1, current).isEmpty()) {
+                                        onClose(current)
+                                    }
+                                },
+                                enabled = canLeaveCreation,
+                            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
+                        },
                         actions = {
                             var overflowExpanded by remember { mutableStateOf(false) }
                             val hasAdminReset = session.isAdmin && !readOnly && !current.isInCreation
                             val hasHistorianLock = !readOnly && CharacterAccessPolicy.canChangeHistorianLock(session, isCampaignHistorian)
                             val hasOverflow = hasAdminReset || hasHistorianLock || canChangePlayerLock || canDelete
 
-                            SdoIconButton({ onOpenSession(current.id) }) {
+                            SdoIconButton({
+                                flushFocusedEdits()
+                                onOpenSession(current.id)
+                            }) {
                                 Icon(Icons.Default.PlayCircle, "Abrir modo sessão", tint = MaterialTheme.colorScheme.secondary)
                             }
-                            if (onOpenJournal != null) SdoIconButton(onOpenJournal) {
+                            if (onOpenJournal != null) SdoIconButton({
+                                flushFocusedEdits()
+                                onOpenJournal()
+                            }) {
                                 Icon(Icons.AutoMirrored.Filled.MenuBook, "Abrir diário da campanha", tint = MaterialTheme.colorScheme.secondary)
                             }
                             if (editable) SdoIconButton(
-                                onClick = { draft.undo()?.let(onAutosave) },
+                                onClick = {
+                                    flushFocusedEdits()
+                                    draft.undo()?.let(onAutosave)
+                                },
                                 enabled = draft.undoCount.value > 0,
                             ) {
                                 Icon(
@@ -240,7 +276,10 @@ fun CharacterSheetScreen(
                                     tint = if (draft.undoCount.value > 0) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline,
                                 )
                             }
-                            if (editable) SdoIconButton({ onSave(current) }) {
+                            if (editable) SdoIconButton({
+                                flushFocusedEdits()
+                                onSave(current)
+                            }) {
                                 Icon(Icons.Default.Save, "Salvar", tint = MaterialTheme.colorScheme.primary)
                             }
                             if (hasOverflow) {

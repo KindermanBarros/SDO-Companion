@@ -167,6 +167,7 @@ internal fun CyberGrungeField(
     placeholder: String?,
     enabled: Boolean,
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions,
+    keyboardActions: androidx.compose.foundation.text.KeyboardActions = androidx.compose.foundation.text.KeyboardActions.Default,
     onValue: (String) -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -185,7 +186,7 @@ internal fun CyberGrungeField(
         Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
         androidx.compose.foundation.text.BasicTextField(
             value = value, onValueChange = onValue, enabled = enabled, singleLine = !multiline,
-            keyboardOptions = keyboardOptions, interactionSource = interaction,
+            keyboardOptions = keyboardOptions, keyboardActions = keyboardActions, interactionSource = interaction,
             minLines = if (multiline) 3 else 1,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium),

@@ -108,11 +108,11 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
         CollaborativeSheetField("path/motto", "Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
         SdoMetadataText("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathKeywords.forEachIndexed { index, keyword ->
-            HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) { onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it))) }
+            SheetTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled, fieldKey = "path/keyword/$index") { onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it))) }
         }
         SdoMetadataText("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         character.pathPillars.forEachIndexed { index, pillar ->
-            HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) { onChange(character.copy(pathPillars = character.pathPillars.replace(index, it))) }
+            SheetTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled, fieldKey = "path/pillar/$index") { onChange(character.copy(pathPillars = character.pathPillars.replace(index, it))) }
         }
     }
     if (selecting) CatalogPickerDialog("SELECIONAR CAMINHO", catalog, { selecting = false }) { entry ->
@@ -361,7 +361,7 @@ internal fun OrganSection(character: Character, enabled: Boolean, onChange: (Cha
                 ChoiceField("Órgão", organ.organ, OrganSlot.entries, enabled, display = { it.label }) { slot ->
                     updateOrgan(organ.copy(organ = slot, customName = if (slot == OrganSlot.Other) organ.customName else ""))
                 }
-                if (organ.organ == OrganSlot.Other) HudTextField("Identificação", organ.customName, enabled = enabled) {
+                if (organ.organ == OrganSlot.Other) SheetTextField("Identificação", organ.customName, enabled = enabled, fieldKey = "body/organ/$index/customName") {
                     updateOrgan(organ.copy(customName = it))
                 }
                 TwoFields(
@@ -478,7 +478,7 @@ private fun MysticEditor(
                 }
                 onValue(ability.copy(type = value, costType = costType))
             } },
-            { HudTextField("Nome", ability.name, it, enabled = enabled) { value -> onValue(ability.copy(name = value)) } },
+            { SheetTextField("Nome", ability.name, it, enabled = enabled, fieldKey = "mysticAbilities/${ability.id}/name") { value -> onValue(ability.copy(name = value)) } },
         )
         if (ability.type.equals("Cinza", true)) {
             TwoFields(
@@ -666,7 +666,7 @@ private fun ConditionEditor(
                     onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), draftDescription)
                 } },
             )
-            HudTextField("Descrição", draftDescription, multiline = true, enabled = enabled) {
+            SheetTextField("Descrição", draftDescription, multiline = true, enabled = enabled, fieldKey = "conditions/${condition.instanceId.value}/description") {
                 draftDescription = it
                 onValue(condition, it)
             }

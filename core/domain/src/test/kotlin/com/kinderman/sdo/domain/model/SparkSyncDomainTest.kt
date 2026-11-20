@@ -659,4 +659,85 @@ class SparkSyncDomainTest {
         assertEquals(SheetIntentStatus.PENDING, replay.intents.single().status)
         assertEquals("Cronista", replay.projectedCharacter.occupation)
     }
+
+    @Test
+    fun buildConflictResolutionPreservesRootOpsAndMultiTargetReplayCollectsAllConflicts() {
+        val transferOriginal = SheetIntent(
+            operationId = "op-transfer",
+            accountId = "player-1",
+            sheetId = "sheet-1",
+            type = OperationType.TRANSFER_OWNERSHIP,
+            targetKey = "sheet",
+            targets = listOf(
+                SparkTargetSpec(
+                    kind = TargetKind.SHEET,
+                    op = TargetOp.TRANSFER,
+                    expectedRevision = 1L,
+                    nextRevision = 2L,
+                    valueJson = "{\"ownerId\":\"player-2\"}",
+                ),
+            ),
+            baseRevision = 1L,
+            desiredPayloadJson = "{\"ownerId\":\"player-2\"}",
+        )
+        val sheetConflict = SheetConflictItem(
+            id = "op-transfer::sheet",
+            accountId = "player-1",
+            sheetId = "sheet-1",
+            operationId = "op-transfer",
+            targetKey = "sheet",
+            label = "Ficha",
+            baseRevision = 1L,
+            remoteRevision = 4L,
+            baseSummary = "v1",
+            localSummary = "player-2",
+            remoteSummary = "v4",
+            basePayloadJson = "{}",
+            localPayloadJson = "{\"ownerId\":\"player-2\"}",
+            remotePayloadJson = "{\"revision\":4}",
+        )
+        val resolvedTransfer = buildConflictResolutionIntent(
+            conflict = sheetConflict,
+            newOperationId = "op-transfer-resolved",
+            useRemote = false,
+            originalIntent = transferOriginal,
+        )!!
+        assertEquals(OperationType.TRANSFER_OWNERSHIP, resolvedTransfer.type)
+        assertEquals(TargetOp.TRANSFER, resolvedTransfer.effectiveTargets().single().op)
+        assertEquals(4L, resolvedTransfer.effectiveTargets().single().expectedRevision)
+        assertEquals(5L, resolvedTransfer.effectiveTargets().single().nextRevision)
+
+        val remote = sampleSnapshot(
+            sheetRevision = 2L,
+            fieldRevisions = mapOf("field:name" to 3L, "field:occupation" to 4L, "item:inv_1" to 2L),
+            character = sampleSnapshot().confirmedCharacter.copy(name = "Remota", occupation = "Guardiã"),
+        )
+        val multiTarget = SheetIntent(
+            operationId = "op-multi",
+            accountId = "player-1",
+            sheetId = "sheet-1",
+            type = OperationType.PATCH_FIELDS,
+            targetKey = "field:name",
+            targets = listOf(
+                SparkTargetSpec(kind = TargetKind.FIELD, key = "name", op = TargetOp.SET, expectedRevision = 1L, nextRevision = 2L, valueJson = "\"Local\""),
+                SparkTargetSpec(kind = TargetKind.FIELD, key = "occupation", op = TargetOp.SET, expectedRevision = 1L, nextRevision = 2L, valueJson = "\"Exploradora\""),
+            ),
+            baseRevision = 1L,
+        )
+        val itemCreate = SheetIntent(
+            operationId = "op-item-create",
+            accountId = "player-1",
+            sheetId = "sheet-1",
+            type = OperationType.UPSERT_ITEM,
+            targetKey = "item:inv_1",
+            targets = listOf(
+                SparkTargetSpec(kind = TargetKind.ITEM, itemId = "inv_1", op = TargetOp.CREATE, expectedRevision = 0L, nextRevision = 1L),
+            ),
+            baseRevision = 0L,
+        )
+        val replay = applyPendingIntentsOnConfirmed(remote, listOf(multiTarget, itemCreate))
+        assertEquals(2, replay.conflicts.size)
+        assertEquals(setOf("field:name", "field:occupation"), replay.conflicts.map { it.targetKey }.toSet())
+        assertEquals(SheetIntentStatus.PENDING, replay.intents[1].status)
+    }
 }

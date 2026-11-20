@@ -454,6 +454,71 @@ class AppViewModelSyncPolicyTest {
         assertEquals(0, characterRepo.saveCount)
     }
 
+    @Test
+    fun autosaveHoldsEditsWhileFieldFocusedAndFlushesOnceWhenFocusEnds() = runBlocking {
+        val vm = AppViewModel(
+            repository = characterRepo,
+            ownerRepository = FakeOwnerRepository(),
+            catalogRepository = FakeCatalogRepository(),
+            campaignRepository = campaignRepo,
+            operationsRepository = operationsRepo,
+            connectivityMonitor = connectivity,
+            externalScope = testScope,
+            cloudSyncPulseMs = 0L,
+            autosaveDebounceMs = 80L,
+            editingIdleSyncDelayMs = 80L,
+        )
+        vm.setSession(session)
+        vm.setSheetPresenceActive(active = true, characterId = "char-focus")
+        vm.setFieldPresence("char-focus", "identity/name", active = true)
+
+        // Simulate typing multiple characters with pauses longer than debounce while still focused.
+        listOf("A", "Ar", "Ari", "Aria", "Aria Vespera").forEach { typed ->
+            vm.autosave(Character(id = "char-focus", ownerId = session.uid, name = typed))
+            delay(40)
+        }
+        delay(200)
+        assertEquals("Zero saves should fire while field remains focused", 0, characterRepo.saveCount)
+        assertTrue(characterRepo.syncedCharacterIds.isEmpty())
+
+        // Losing focus flushes the final edited state once and triggers a single character sync.
+        vm.setFieldPresence("char-focus", "identity/name", active = false)
+        delay(220)
+        assertEquals(1, characterRepo.saveCount)
+        assertEquals("Aria Vespera", characterRepo.lastSavedCharacter?.name)
+        assertEquals(listOf("char-focus"), characterRepo.syncedCharacterIds)
+    }
+
+    @Test
+    fun perCharacterDebounceIsolatesSheetsAndCloseFlushesImmediately() = runBlocking {
+        val vm = AppViewModel(
+            repository = characterRepo,
+            ownerRepository = FakeOwnerRepository(),
+            catalogRepository = FakeCatalogRepository(),
+            campaignRepository = campaignRepo,
+            operationsRepository = operationsRepo,
+            connectivityMonitor = connectivity,
+            externalScope = testScope,
+            cloudSyncPulseMs = 0L,
+            autosaveDebounceMs = 60L,
+            editingIdleSyncDelayMs = 80L,
+        )
+        vm.setSession(session)
+
+        vm.autosave(Character(id = "char-a", ownerId = session.uid, name = "A1"))
+        vm.autosave(Character(id = "char-a", ownerId = session.uid, name = "A2"))
+        vm.autosave(Character(id = "char-b", ownerId = session.uid, name = "B1"))
+        delay(250)
+
+        assertEquals(2, characterRepo.saveCount)
+        assertEquals(setOf("char-a", "char-b"), characterRepo.syncedCharacterIds.toSet())
+
+        characterRepo.syncedCharacterIds.clear()
+        vm.closeCharacter(Character(id = "char-close", ownerId = session.uid, name = "Fechada"))
+        delay(30)
+        assertEquals(listOf("char-close"), characterRepo.syncedCharacterIds)
+    }
+
     private class FakeConnectivityMonitor(initialOnline: Boolean) : ConnectivityMonitor {
         val onlineState = MutableStateFlow(initialOnline)
         override val isOnline = onlineState
@@ -534,6 +599,7 @@ class AppViewModelSyncPolicyTest {
             }
         val remoteChanges = MutableSharedFlow<RemoteSyncEvent>(extraBufferCapacity = 4)
         var saveCount = 0
+        var lastSavedCharacter: Character? = null
         var deleteCount = 0
         var syncCount = 0
         val syncedCharacterIds = mutableListOf<String>()
@@ -547,6 +613,7 @@ class AppViewModelSyncPolicyTest {
 
         override suspend fun save(session: UserSession, character: Character) {
             saveCount++
+            lastSavedCharacter = character
         }
 
         override suspend fun setPlayerLocked(session: UserSession, character: Character, locked: Boolean) = Unit

@@ -84,6 +84,8 @@ class AppViewModel(
     private val connectivityMonitor: ConnectivityMonitor = AlwaysOnlineConnectivityMonitor,
     private val externalScope: CoroutineScope? = null,
     private val cloudSyncPulseMs: Long = 800L,
+    private val autosaveDebounceMs: Long = 0L,
+    private val editingIdleSyncDelayMs: Long = 1_200L,
 ) : ViewModel() {
     @Inject
     constructor(
@@ -102,6 +104,8 @@ class AppViewModel(
         connectivityMonitor = connectivityMonitor,
         externalScope = null,
         cloudSyncPulseMs = 800L,
+        autosaveDebounceMs = 0L,
+        editingIdleSyncDelayMs = 1_200L,
     )
     private val scope: CoroutineScope
         get() = externalScope ?: viewModelScope
@@ -123,7 +127,10 @@ class AppViewModel(
     private val localSaveMutex = Mutex()
     private val autosaveJobs = mutableMapOf<String, Job>()
     private val pendingAutosaves = mutableMapOf<String, Character>()
-    private var remoteSyncDebounceJob: Job? = null
+    private val remoteSyncDebounceJobs = mutableMapOf<String, Job>()
+    private val characterSyncJobs = mutableMapOf<String, Job>()
+    private val characterSyncRerunPullRemote = mutableMapOf<String, Boolean>()
+    private val focusedSheetFields = mutableMapOf<String, MutableSet<String>>()
     private var cloudSyncPulseJob: Job? = null
     private var isSheetSurfaceActive = false
     private var activePresenceCharacterId: String? = null
@@ -161,7 +168,12 @@ class AppViewModel(
         val nextId = if (active) characterId?.takeIf(String::isNotBlank) else null
         val previousId = activePresenceCharacterId
         if (previousId != null && (!active || previousId != nextId)) {
+            focusedSheetFields.remove(previousId)
             clearFieldPresenceInternal(previousId)
+            if (previousId in pendingAutosaves) {
+                autosaveJobs.remove(previousId)?.cancel()
+                scope.launch { flushPendingAutosave(previousId, scheduleRemote = true) }
+            }
         }
         isSheetSurfaceActive = active
         activePresenceCharacterId = nextId
@@ -171,6 +183,24 @@ class AppViewModel(
         if (characterId.isBlank()) return
         if (active && (!isSheetSurfaceActive || (activePresenceCharacterId != null && activePresenceCharacterId != characterId))) {
             return
+        }
+        if (active && !fieldKey.isNullOrBlank()) {
+            focusedSheetFields.getOrPut(characterId) { linkedSetOf() }.add(fieldKey)
+            autosaveJobs.remove(characterId)?.cancel()
+            remoteSyncDebounceJobs.remove(characterId)?.cancel()
+        } else if (!active) {
+            if (fieldKey.isNullOrBlank()) {
+                focusedSheetFields.remove(characterId)
+            } else {
+                focusedSheetFields[characterId]?.let { fields ->
+                    fields.remove(fieldKey)
+                    if (fields.isEmpty()) focusedSheetFields.remove(characterId)
+                }
+            }
+            if (characterId in pendingAutosaves) {
+                autosaveJobs.remove(characterId)?.cancel()
+                scope.launch { flushPendingAutosave(characterId, scheduleRemote = true) }
+            }
         }
         val session = currentSession.value ?: return
         if (active) {
@@ -255,8 +285,7 @@ class AppViewModel(
                     lastSyncFailure = null
                     startSync(initial = false)
                 } else if (!online) {
-                    remoteSyncDebounceJob?.cancel()
-                    remoteSyncDebounceJob = null
+                    cancelRemoteSyncDebounces()
                 }
                 wasOnline = online
             }
@@ -275,16 +304,7 @@ class AppViewModel(
 
     fun setSession(session: UserSession) {
         if (currentSession.value == session) return
-        autosaveJobs.values.forEach(Job::cancel)
-        autosaveJobs.clear()
-        pendingAutosaves.clear()
-        remoteSyncDebounceJob?.cancel()
-        remoteSyncDebounceJob = null
-        cloudSyncPulseJob?.cancel()
-        cloudSyncPulseJob = null
-        syncJob?.cancel()
-        syncJob = null
-        syncRequested = false
+        resetTransientSyncJobs()
         isSheetSurfaceActive = false
         activePresenceCharacterId = null
         _conflicts.value = emptyList()
@@ -308,16 +328,7 @@ class AppViewModel(
     }
 
     fun clearSession() {
-        autosaveJobs.values.forEach(Job::cancel)
-        autosaveJobs.clear()
-        pendingAutosaves.clear()
-        remoteSyncDebounceJob?.cancel()
-        remoteSyncDebounceJob = null
-        cloudSyncPulseJob?.cancel()
-        cloudSyncPulseJob = null
-        syncJob?.cancel()
-        syncJob = null
-        syncRequested = false
+        resetTransientSyncJobs()
         isSheetSurfaceActive = false
         activePresenceCharacterId = null
         currentSession.value = null
@@ -330,6 +341,27 @@ class AppViewModel(
         _loadState.value = CharacterLoadState()
     }
 
+    private fun cancelRemoteSyncDebounces() {
+        remoteSyncDebounceJobs.values.forEach(Job::cancel)
+        remoteSyncDebounceJobs.clear()
+    }
+
+    private fun resetTransientSyncJobs() {
+        autosaveJobs.values.forEach(Job::cancel)
+        autosaveJobs.clear()
+        pendingAutosaves.clear()
+        focusedSheetFields.clear()
+        cancelRemoteSyncDebounces()
+        characterSyncJobs.values.forEach(Job::cancel)
+        characterSyncJobs.clear()
+        characterSyncRerunPullRemote.clear()
+        cloudSyncPulseJob?.cancel()
+        cloudSyncPulseJob = null
+        syncJob?.cancel()
+        syncJob = null
+        syncRequested = false
+    }
+
     fun add() = runCharacterAction { session -> repository.create(session).id }
 
     fun addToCampaign(campaign: Campaign, ownerId: String) = runCharacterAction("Ficha criada na campanha") { session ->
@@ -338,15 +370,30 @@ class AppViewModel(
 
     fun save(character: Character) {
         if (!ensureSheetMutation(character)) return
+        focusedSheetFields.remove(character.id)
         autosaveJobs.remove(character.id)?.cancel()
         pendingAutosaves.remove(character.id)
-        saveLocally(character, notify = true)
+        remoteSyncDebounceJobs.remove(character.id)?.cancel()
+        saveLocally(character, notify = true, immediateRemote = true)
     }
 
     fun autosave(character: Character) {
         if (!ensureSheetMutation(character)) return
-        // Persist every edit immediately; debounce network delivery in the durable sync layer.
-        saveLocally(character, notify = false)
+        pendingAutosaves[character.id] = character
+        autosaveJobs.remove(character.id)?.cancel()
+        remoteSyncDebounceJobs.remove(character.id)?.cancel()
+        if (focusedSheetFields[character.id]?.isNotEmpty() == true) {
+            return
+        }
+        if (autosaveDebounceMs <= 0L) {
+            val pending = pendingAutosaves.remove(character.id) ?: character
+            saveLocally(pending, notify = false, immediateRemote = false)
+        } else {
+            autosaveJobs[character.id] = scope.launch {
+                delay(autosaveDebounceMs)
+                flushPendingAutosave(character.id, scheduleRemote = true)
+            }
+        }
     }
     fun changeItemState(character: Character, itemId: String, state: InventoryState) {
         if (!ensureSheetMutation(character)) return
@@ -477,10 +524,12 @@ class AppViewModel(
     }
 
     fun delete(character: Character) {
+        focusedSheetFields.remove(character.id)
         autosaveJobs.remove(character.id)?.cancel()
         pendingAutosaves.remove(character.id)
-        remoteSyncDebounceJob?.cancel()
-        remoteSyncDebounceJob = null
+        remoteSyncDebounceJobs.remove(character.id)?.cancel()
+        characterSyncJobs.remove(character.id)?.cancel()
+        characterSyncRerunPullRemote.remove(character.id)
         _conflicts.value = _conflicts.value.filterNot { it.local.id == character.id }
         _saveErrors.value = _saveErrors.value - character.id
         runCharacterAction("Personagem removido") { session ->
@@ -504,6 +553,7 @@ class AppViewModel(
 
     fun onAppBackgrounded(changingConfiguration: Boolean = false) {
         if (!appVisibility.stopped(changingConfiguration)) return
+        focusedSheetFields.clear()
         activePresenceCharacterId?.let { characterId ->
             clearFieldPresenceInternal(characterId)
             activePresenceCharacterId = null
@@ -515,23 +565,32 @@ class AppViewModel(
     }
 
     fun closeCharacter(character: Character) {
+        focusedSheetFields.remove(character.id)
         if (isMutationBlockedOffline(currentSession.value) && character.id !in offlineEditableIds.value) {
             autosaveJobs.remove(character.id)?.cancel()
             pendingAutosaves.remove(character.id)
+            remoteSyncDebounceJobs.remove(character.id)?.cancel()
             return
         }
         pendingAutosaves[character.id] = character
         autosaveJobs.remove(character.id)?.cancel()
+        remoteSyncDebounceJobs.remove(character.id)?.cancel()
         scope.launch {
             flushPendingAutosave(character.id, scheduleRemote = false)
             if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.SHEET_CLOSED)) startCharacterSync(character.id)
         }
     }
 
-    private fun saveLocally(character: Character, notify: Boolean) {
+    private fun saveLocally(character: Character, notify: Boolean, immediateRemote: Boolean = false) {
         val session = currentSession.value ?: return
         scope.launch {
-            persistLocally(character, notify, session)
+            persistLocally(
+                character = character,
+                notify = notify,
+                capturedSession = session,
+                scheduleRemote = true,
+                immediateRemote = immediateRemote,
+            )
         }
     }
 
@@ -539,12 +598,16 @@ class AppViewModel(
         character: Character,
         notify: Boolean,
         capturedSession: UserSession? = currentSession.value,
+        scheduleRemote: Boolean = true,
+        immediateRemote: Boolean = false,
     ) {
         val session = capturedSession ?: return
         try {
             localSaveMutex.withLock { saveCharacter(session, character) }
             _saveErrors.value = _saveErrors.value - character.id
-            if (automaticSync) scheduleRemoteSync(character.id)
+            if (scheduleRemote && automaticSync) {
+                scheduleRemoteSync(character.id, immediate = immediateRemote)
+            }
         } catch (cancelled: CancellationException) {
             // Superseding an autosave is normal while the player is editing.
             throw cancelled
@@ -561,8 +624,15 @@ class AppViewModel(
         // misleading "was canceled" snackbar to the user.
         autosaveJobs.remove(characterId)
         val character = pendingAutosaves.remove(characterId) ?: return
-        persistLocally(character, notify = false)
-        if (!scheduleRemote) remoteSyncDebounceJob?.cancel()
+        if (!scheduleRemote) {
+            remoteSyncDebounceJobs.remove(characterId)?.cancel()
+        }
+        persistLocally(
+            character = character,
+            notify = false,
+            scheduleRemote = scheduleRemote,
+            immediateRemote = false,
+        )
     }
 
     private suspend fun flushAllPendingAutosaves() {
@@ -570,17 +640,34 @@ class AppViewModel(
         autosaveJobs.values.forEach(Job::cancel)
         autosaveJobs.clear()
         pendingAutosaves.clear()
-        pending.forEach { persistLocally(it, notify = false) }
-        remoteSyncDebounceJob?.cancel()
-        remoteSyncDebounceJob = null
+        focusedSheetFields.clear()
+        cancelRemoteSyncDebounces()
+        pending.forEach {
+            persistLocally(
+                character = it,
+                notify = false,
+                scheduleRemote = false,
+                immediateRemote = false,
+            )
+        }
     }
 
-    private fun scheduleRemoteSync(characterId: String) {
+    private fun scheduleRemoteSync(characterId: String, immediate: Boolean = false) {
         if (!shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.EDITING_IDLE)) return
-        remoteSyncDebounceJob?.cancel()
-        remoteSyncDebounceJob = scope.launch {
-            delay(120)
+        remoteSyncDebounceJobs.remove(characterId)?.cancel()
+        if (immediate || editingIdleSyncDelayMs <= 0L) {
             startCharacterSync(characterId)
+            return
+        }
+        remoteSyncDebounceJobs[characterId] = scope.launch {
+            try {
+                delay(editingIdleSyncDelayMs)
+                startCharacterSync(characterId)
+            } finally {
+                if (remoteSyncDebounceJobs[characterId] === currentCoroutineContext()[Job]) {
+                    remoteSyncDebounceJobs.remove(characterId)
+                }
+            }
         }
     }
 
@@ -677,6 +764,11 @@ class AppViewModel(
         }
     }
 
+    private fun hasActiveSyncWork(excludingJob: Job? = null): Boolean {
+        if (syncJob != null && syncJob !== excludingJob && syncJob?.isActive == true) return true
+        return characterSyncJobs.values.any { it !== excludingJob && it.isActive }
+    }
+
     private fun handleRemoteSyncEvent(event: RemoteSyncEvent) {
         if (!event.fromCloud) return
         val session = currentSession.value ?: return
@@ -686,7 +778,7 @@ class AppViewModel(
             _loadState.value = _loadState.value.copy(cloudSyncing = true)
             cloudSyncPulseJob = scope.launch {
                 delay(cloudSyncPulseMs)
-                if (syncJob?.isActive != true) {
+                if (!hasActiveSyncWork()) {
                     _loadState.value = _loadState.value.copy(cloudSyncing = false)
                 }
             }
@@ -707,15 +799,27 @@ class AppViewModel(
             _loadState.value = CharacterLoadState()
             return
         }
+        remoteSyncDebounceJobs.remove(characterId)?.cancel()
         if (syncJob?.isActive == true) {
-            syncRequested = true
+            if (fromCloud) {
+                syncRequested = true
+            } else {
+                characterSyncRerunPullRemote[characterId] =
+                    (characterSyncRerunPullRemote[characterId] == true) || fromCloud
+            }
             return
         }
-        scope.launch {
+        if (characterSyncJobs[characterId]?.isActive == true) {
+            characterSyncRerunPullRemote[characterId] =
+                (characterSyncRerunPullRemote[characterId] == true) || fromCloud
+            return
+        }
+        val job = scope.launch {
             _loadState.value = _loadState.value.copy(
                 syncing = true,
                 cloudSyncing = _loadState.value.cloudSyncing || fromCloud,
             )
+            val thisJob = currentCoroutineContext()[Job]
             try {
                 runCatching { repository.syncCharacter(session, characterId, pullRemote = fromCloud) }
                     .onSuccess { charConflicts ->
@@ -726,13 +830,26 @@ class AppViewModel(
                         android.util.Log.e("SDO_SYNC", "syncCharacter($characterId) failed", error)
                     }
             } finally {
-                val keepCloudSyncing = fromCloud && (cloudSyncPulseMs > 0L && cloudSyncPulseJob?.isActive == true)
+                if (characterSyncJobs[characterId] === thisJob) {
+                    characterSyncJobs.remove(characterId)
+                }
+                val rerunPull = characterSyncRerunPullRemote.remove(characterId)
+                val otherActive = hasActiveSyncWork(excludingJob = thisJob)
+                val keepCloudSyncing = cloudSyncPulseMs > 0L && cloudSyncPulseJob?.isActive == true
                 _loadState.value = _loadState.value.copy(
-                    syncing = false,
-                    cloudSyncing = if (fromCloud && !keepCloudSyncing) false else _loadState.value.cloudSyncing,
+                    syncing = otherActive,
+                    cloudSyncing = if (fromCloud && !keepCloudSyncing && !otherActive) {
+                        false
+                    } else {
+                        _loadState.value.cloudSyncing
+                    },
                 )
+                if (rerunPull != null && currentSession.value == session) {
+                    startCharacterSync(characterId, fromCloud = rerunPull)
+                }
             }
         }
+        characterSyncJobs[characterId] = job
     }
 
     private fun isMutationBlockedOffline(session: UserSession?): Boolean =
@@ -829,13 +946,22 @@ class AppViewModel(
                 _syncFailure.value = failure
                 _message.value = failure
             } finally {
-                if (syncJob === currentCoroutineContext()[Job]) {
-                    val keepCloudSyncing = cloudSyncPulseJob?.isActive == true
-                    _loadState.value = CharacterLoadState(cloudSyncing = keepCloudSyncing)
+                val thisJob = currentCoroutineContext()[Job]
+                if (syncJob === thisJob) {
                     syncJob = null
+                    val otherActive = hasActiveSyncWork(excludingJob = thisJob)
+                    val keepCloudSyncing = cloudSyncPulseJob?.isActive == true
+                    _loadState.value = CharacterLoadState(
+                        syncing = otherActive,
+                        cloudSyncing = keepCloudSyncing,
+                    )
                     if (syncRequested) {
                         syncRequested = false
                         startSync(initial = false)
+                    } else if (characterSyncRerunPullRemote.isNotEmpty()) {
+                        val reruns = characterSyncRerunPullRemote.toMap()
+                        characterSyncRerunPullRemote.clear()
+                        reruns.forEach { (id, pull) -> startCharacterSync(id, fromCloud = pull) }
                     }
                 }
             }

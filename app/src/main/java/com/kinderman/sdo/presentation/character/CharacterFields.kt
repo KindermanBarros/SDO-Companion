@@ -40,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -61,24 +62,99 @@ internal fun IntegerField(
     value: Int,
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    fieldKey: String = "int:$label",
     onValue: (Int) -> Unit,
 ) {
-    var input by remember(value) { mutableStateOf(value.takeUnless { it == 0 }?.toString().orEmpty()) }
+    val collaboration = LocalSheetFieldCollaboration.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val currentOnFocus by androidx.compose.runtime.rememberUpdatedState(collaboration.onFocus)
+    val currentOnValue by androidx.compose.runtime.rememberUpdatedState(onValue)
+    val deferCommit = collaboration.isSheetContext && collaboration.commitOnBlur
+    var focused by remember(fieldKey) { mutableStateOf(false) }
+    var input by remember(fieldKey) { mutableStateOf(value.takeUnless { it == 0 }?.toString().orEmpty()) }
+    var committedValue by remember(fieldKey) { mutableStateOf(value) }
+
+    val parseInput: (String) -> Int? = { normalized ->
+        when {
+            normalized.isEmpty() || normalized == "-" -> 0
+            else -> normalized.toIntOrNull()
+        }
+    }
+
+    val commitIfDirty = remember(fieldKey) {
+        {
+            val parsed = parseInput(input)
+            if (parsed != null && parsed != committedValue) {
+                committedValue = parsed
+                currentOnValue(parsed)
+            }
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(value, focused) {
+        if (!focused) {
+            input = value.takeUnless { it == 0 }?.toString().orEmpty()
+            committedValue = value
+        }
+    }
+
+    androidx.compose.runtime.DisposableEffect(fieldKey, collaboration.commitRegistry) {
+        if (collaboration.isSheetContext) {
+            collaboration.commitRegistry.register(fieldKey, commitIfDirty)
+        }
+        onDispose {
+            if (collaboration.isSheetContext) {
+                collaboration.commitRegistry.unregister(fieldKey)
+            }
+            if (deferCommit) {
+                commitIfDirty()
+            }
+            if (focused) {
+                currentOnFocus(fieldKey, false)
+            }
+        }
+    }
+
     HudTextField(
         label = label,
         value = input,
-        modifier = modifier,
+        modifier = modifier.onFocusChanged { state ->
+            if (focused != state.isFocused) {
+                focused = state.isFocused
+                if (!focused && deferCommit) {
+                    commitIfDirty()
+                }
+                currentOnFocus(fieldKey, focused)
+            }
+        },
         placeholder = "0",
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+            imeAction = androidx.compose.ui.text.input.ImeAction.Done,
+        ),
+        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+            onDone = {
+                if (deferCommit) commitIfDirty()
+                focusManager.clearFocus()
+            },
+        ),
         enabled = enabled,
     ) { raw ->
         val normalized = raw.filterIndexed { index, character ->
             character.isDigit() || (index == 0 && character == '-')
         }
         input = normalized
-        when {
-            normalized.isEmpty() -> onValue(0)
-            normalized != "-" -> normalized.toIntOrNull()?.let(onValue)
+        if (!deferCommit) {
+            when {
+                normalized.isEmpty() -> {
+                    committedValue = 0
+                    currentOnValue(0)
+                }
+                normalized != "-" -> normalized.toIntOrNull()?.let { parsed ->
+                    committedValue = parsed
+                    currentOnValue(parsed)
+                }
+            }
         }
     }
 }

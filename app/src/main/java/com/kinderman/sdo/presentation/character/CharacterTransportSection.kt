@@ -397,10 +397,11 @@ private fun TransportCard(
                 )
             }
         } else {
-            HudTextField(
+            SheetTextField(
                 label = "Nome",
                 value = transport.name,
                 enabled = editable,
+                fieldKey = "transport/${transport.id}/name",
             ) { onUpdate(transport.copy(name = it)) }
 
             TwoFields(
@@ -433,79 +434,82 @@ private fun TransportCard(
 
             TwoFields(
                 first = { mod ->
-                    HudTextField(
+                    SheetTextField(
                         label = "Movimento",
                         value = transport.movement,
                         placeholder = "Ex.: 16 m, voo 18 m",
                         enabled = editable,
                         modifier = mod,
+                        fieldKey = "transport/${transport.id}/movement",
                     ) { onUpdate(transport.copy(movement = it)) }
                 },
                 second = { mod ->
-                    HudTextField(
+                    IntegerField(
                         label = "Carga adicional",
-                        value = transport.loadCapacity.toString(),
+                        value = transport.loadCapacity,
                         enabled = editable,
                         modifier = mod,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    ) { onUpdate(transport.copy(loadCapacity = it.toIntOrNull() ?: 0)) }
+                        fieldKey = "transport/${transport.id}/loadCapacity",
+                    ) { onUpdate(transport.copy(loadCapacity = it)) }
                 },
             )
 
             TwoFields(
                 first = { mod ->
-                    HudTextField(
+                    IntegerField(
                         label = "PV atual",
-                        value = transport.hp.toString(),
+                        value = transport.hp,
                         enabled = editable,
                         modifier = mod,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    ) { onUpdate(transport.copy(hp = it.toIntOrNull() ?: 0)) }
+                        fieldKey = "transport/${transport.id}/hp",
+                    ) { onUpdate(transport.copy(hp = it)) }
                 },
                 second = { mod ->
-                    HudTextField(
+                    IntegerField(
                         label = "PV máximo",
-                        value = transport.maxHp.toString(),
+                        value = transport.maxHp,
                         enabled = editable,
                         modifier = mod,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    ) { onUpdate(transport.copy(maxHp = it.toIntOrNull() ?: 0)) }
+                        fieldKey = "transport/${transport.id}/maxHp",
+                    ) { onUpdate(transport.copy(maxHp = it)) }
                 },
             )
 
             TwoFields(
                 first = { mod ->
-                    HudTextField(
+                    IntegerField(
                         label = "Proteção Geral (PG)",
-                        value = transport.generalProtection.toString(),
+                        value = transport.generalProtection,
                         enabled = editable,
                         modifier = mod,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    ) { onUpdate(transport.copy(generalProtection = it.toIntOrNull() ?: 0)) }
+                        fieldKey = "transport/${transport.id}/generalProtection",
+                    ) { onUpdate(transport.copy(generalProtection = it)) }
                 },
                 second = { mod ->
-                    HudTextField(
+                    IntegerField(
                         label = "Proteção Local (PL)",
-                        value = transport.localProtection.toString(),
+                        value = transport.localProtection,
                         enabled = editable,
                         modifier = mod,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    ) { onUpdate(transport.copy(localProtection = it.toIntOrNull() ?: 0)) }
+                        fieldKey = "transport/${transport.id}/localProtection",
+                    ) { onUpdate(transport.copy(localProtection = it)) }
                 },
             )
 
-            HudTextField(
+            SheetTextField(
                 label = "Ataque / manobra",
                 value = transport.attack,
                 placeholder = "Ex.: coice, 1d8 + FOR",
                 enabled = editable,
+                fieldKey = "transport/${transport.id}/attack",
             ) { onUpdate(transport.copy(attack = it)) }
 
-            HudTextField(
+            SheetTextField(
                 label = "Observações",
                 value = transport.notes,
                 multiline = true,
                 enabled = editable,
+                fieldKey = "transport/${transport.id}/notes",
             ) { onUpdate(transport.copy(notes = it)) }
         }
     }

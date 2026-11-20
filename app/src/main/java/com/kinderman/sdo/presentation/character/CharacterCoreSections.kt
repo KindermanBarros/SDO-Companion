@@ -324,7 +324,7 @@ private fun TraitList(title: String, values: List<String>, enabled: Boolean, onV
     Text(title.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
     values.forEachIndexed { index, value ->
         Row(Modifier.fillMaxWidth()) {
-            HudTextField("Traço ${index + 1}", value, Modifier.weight(1f), enabled = enabled) { onValues(values.replace(index, it)) }
+            SheetTextField("Traço ${index + 1}", value, Modifier.weight(1f), enabled = enabled, fieldKey = "traits/$title/$index") { onValues(values.replace(index, it)) }
             RemoveButton(enabled, "Remover traço") { onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index }) }
         }
     }
@@ -449,10 +449,10 @@ private fun KnowledgeList(
                 Text("REG.${(index + 1).toString().padStart(2, '0')}", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                 RemoveButton(enabled, "Remover conhecimento") { onValues(values.filterIndexed { itemIndex, _ -> itemIndex != index }) }
             }
-            HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
+            SheetTextField("Nome", knowledge.name, enabled = enabled, fieldKey = "knowledge/$title/${knowledge.id}/name") { onValues(values.replace(index, knowledge.copy(name = it))) }
             TwoFields(
-                { HudTextField("Atributo", knowledge.attribute, it, enabled = enabled) { value -> onValues(values.replace(index, knowledge.copy(attribute = value.uppercase()))) } },
-                { IntegerField("Valor", knowledge.value, enabled, it) { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
+                { SheetTextField("Atributo", knowledge.attribute, it, enabled = enabled, fieldKey = "knowledge/$title/${knowledge.id}/attribute") { value -> onValues(values.replace(index, knowledge.copy(attribute = value.uppercase()))) } },
+                { IntegerField("Valor", knowledge.value, enabled, it, fieldKey = "knowledge/$title/${knowledge.id}/value") { value -> onValues(values.replace(index, knowledge.copy(value = value))) } },
             )
             if (knowledge.name.isNotBlank() && totalValue(knowledge.name) != knowledge.value) {
                 Text("TOTAL EQUIPADO // ${totalValue(knowledge.name)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)

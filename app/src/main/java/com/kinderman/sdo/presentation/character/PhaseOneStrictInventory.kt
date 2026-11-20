@@ -246,29 +246,29 @@ internal fun PhaseOneStrictInventorySection(
                     )
                 }
                 if (enabled && editingItem) {
-                    HudTextField("Nome", item.name, enabled = enabled) { value ->
+                    SheetTextField("Nome", item.name, enabled = enabled, fieldKey = "inventory/${item.id}/name") { value ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(name = value))))
                     }
-                    HudTextField("Categoria", item.category, enabled = enabled) { value ->
+                    SheetTextField("Categoria", item.category, enabled = enabled, fieldKey = "inventory/${item.id}/category") { value ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(category = value))))
                     }
                     TwoFields(
-                        { IntegerField("Quantidade", item.quantity, enabled, it) { qty ->
+                        { IntegerField("Quantidade", item.quantity, enabled, it, fieldKey = "inventory/${item.id}/quantity") { qty ->
                             onChange(character.copy(inventory = character.inventory.replace(index, item.copy(quantity = qty.coerceAtLeast(0)))))
                         } },
-                        { IntegerField("Carga", item.load, enabled, it) { load ->
+                        { IntegerField("Carga", item.load, enabled, it, fieldKey = "inventory/${item.id}/load") { load ->
                             onChange(character.copy(inventory = character.inventory.replace(index, item.copy(load = load.coerceAtLeast(0)))))
                         } },
                     )
                     TwoFields(
-                        { IntegerField("Durabilidade atual", item.durabilityCurrent, enabled, it) { cur ->
+                        { IntegerField("Durabilidade atual", item.durabilityCurrent, enabled, it, fieldKey = "inventory/${item.id}/durabilityCurrent") { cur ->
                             onChange(character.copy(inventory = character.inventory.replace(index, item.copy(durabilityCurrent = cur.coerceAtLeast(0)))))
                         } },
-                        { IntegerField("Durabilidade máxima", item.durabilityMax, enabled, it) { max ->
+                        { IntegerField("Durabilidade máxima", item.durabilityMax, enabled, it, fieldKey = "inventory/${item.id}/durabilityMax") { max ->
                             onChange(character.copy(inventory = character.inventory.replace(index, item.copy(durabilityMax = max.coerceAtLeast(0)))))
                         } },
                     )
-                    HudTextField("Descrição", item.effect, multiline = true, enabled = enabled) { value ->
+                    SheetTextField("Descrição", item.effect, multiline = true, enabled = enabled, fieldKey = "inventory/${item.id}/effect") { value ->
                         onChange(character.copy(inventory = character.inventory.replace(index, item.copy(effect = value))))
                     }
                 } else {

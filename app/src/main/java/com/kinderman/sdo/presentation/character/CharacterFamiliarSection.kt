@@ -398,20 +398,22 @@ private fun FamiliarEditorFields(
 ) {
     TwoFields(
         first = { mod ->
-            HudTextField(
+            SheetTextField(
                 label = "Nome",
                 value = familiar.name,
                 enabled = enabled,
                 modifier = mod,
+                fieldKey = "familiar/${familiar.id}/name",
             ) { onUpdate(familiar.copy(name = it)) }
         },
         second = { mod ->
-            HudTextField(
+            SheetTextField(
                 label = "Espécie / tipo",
                 value = familiar.species,
                 placeholder = "Ex.: Corvo, Salamandra",
                 enabled = enabled,
                 modifier = mod,
+                fieldKey = "familiar/${familiar.id}/species",
             ) { onUpdate(familiar.copy(species = it)) }
         },
     )
@@ -446,72 +448,77 @@ private fun FamiliarEditorFields(
 
     TwoFields(
         first = { mod ->
-            HudTextField(
+            SheetTextField(
                 label = "Movimento",
                 value = familiar.movement,
                 placeholder = "Ex.: 12 m, voo 14 m",
                 enabled = enabled,
                 modifier = mod,
+                fieldKey = "familiar/${familiar.id}/movement",
             ) { onUpdate(familiar.copy(movement = it)) }
         },
         second = { mod ->
-            HudTextField(
+            IntegerField(
                 label = "Proteção Geral (PG)",
-                value = familiar.generalProtection.toString(),
+                value = familiar.generalProtection,
                 enabled = enabled,
                 modifier = mod,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            ) { onUpdate(familiar.copy(generalProtection = it.toIntOrNull() ?: 0)) }
+                fieldKey = "familiar/${familiar.id}/generalProtection",
+            ) { onUpdate(familiar.copy(generalProtection = it)) }
         },
     )
 
     TwoFields(
         first = { mod ->
-            HudTextField(
+            IntegerField(
                 label = "PV atual",
-                value = familiar.hp.toString(),
+                value = familiar.hp,
                 enabled = enabled,
                 modifier = mod,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            ) { onUpdate(familiar.copy(hp = it.toIntOrNull() ?: 0)) }
+                fieldKey = "familiar/${familiar.id}/hp",
+            ) { onUpdate(familiar.copy(hp = it)) }
         },
         second = { mod ->
-            HudTextField(
+            IntegerField(
                 label = "PV máximo",
-                value = familiar.maxHp.toString(),
+                value = familiar.maxHp,
                 enabled = enabled,
                 modifier = mod,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            ) { onUpdate(familiar.copy(maxHp = it.toIntOrNull() ?: 0)) }
+                fieldKey = "familiar/${familiar.id}/maxHp",
+            ) { onUpdate(familiar.copy(maxHp = it)) }
         },
     )
 
-    HudTextField(
+    SheetTextField(
         label = "Sentidos",
         value = familiar.senses,
         placeholder = "Ex.: Visão noturna, faro apurado",
         enabled = enabled,
+        fieldKey = "familiar/${familiar.id}/senses",
     ) { onUpdate(familiar.copy(senses = it)) }
 
-    HudTextField(
+    SheetTextField(
         label = "Característica especial",
         value = familiar.specialTrait,
         multiline = true,
         enabled = enabled,
+        fieldKey = "familiar/${familiar.id}/specialTrait",
     ) { onUpdate(familiar.copy(specialTrait = it)) }
 
-    HudTextField(
+    SheetTextField(
         label = "Ataque / ação",
         value = familiar.attack,
         placeholder = "Ex.: bicada, 1d4 + AGI",
         enabled = enabled,
+        fieldKey = "familiar/${familiar.id}/attack",
     ) { onUpdate(familiar.copy(attack = it)) }
 
-    HudTextField(
+    SheetTextField(
         label = "Observações",
         value = familiar.notes,
         multiline = true,
         enabled = enabled,
+        fieldKey = "familiar/${familiar.id}/notes",
     ) { onUpdate(familiar.copy(notes = it)) }
 }
 
@@ -611,11 +618,15 @@ private fun CustomFamiliarDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                FamiliarEditorFields(
-                    familiar = draft,
-                    enabled = true,
-                    onUpdate = { draft = it },
-                )
+                androidx.compose.runtime.CompositionLocalProvider(
+                    LocalSheetFieldCollaboration provides SheetFieldCollaboration(isSheetContext = false),
+                ) {
+                    FamiliarEditorFields(
+                        familiar = draft,
+                        enabled = true,
+                        onUpdate = { draft = it },
+                    )
+                }
             }
         },
         confirmButton = {

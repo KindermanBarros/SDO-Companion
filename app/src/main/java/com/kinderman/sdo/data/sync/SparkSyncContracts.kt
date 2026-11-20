@@ -141,7 +141,7 @@ class WorkManagerSparkScheduler(private val context: Context) : SparkWorkSchedul
                 .build()
             WorkManager.getInstance(context).enqueueUniqueWork(
                 "spark-sheet-sync",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                ExistingWorkPolicy.REPLACE,
                 request,
             )
         }
@@ -175,6 +175,7 @@ data class SparkSheetHead(
     val rootRevision: Long,
     val deleted: Boolean,
     val latestOperationAtMs: Long,
+    val latestOperationId: String = "",
 )
 
 internal const val ROOT_QUERY_LIMIT = 100L

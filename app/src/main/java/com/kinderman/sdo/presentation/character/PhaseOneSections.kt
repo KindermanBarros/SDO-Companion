@@ -226,7 +226,7 @@ private fun PhaseOneKnowledgeList(
             }
             if (expandedKnowledgeId != knowledge.id) return@SdoInsetCard
             if (!published) {
-                HudTextField("Nome", knowledge.name, enabled = enabled) { onValues(values.replace(index, knowledge.copy(name = it))) }
+                SheetTextField("Nome", knowledge.name, enabled = enabled, fieldKey = "phase1/knowledge/${knowledge.id}/name") { onValues(values.replace(index, knowledge.copy(name = it))) }
             }
             val selectedAttribute = knowledge.attribute.takeIf { current -> attributeOptions.any { it.first == current } }
                 ?: attributeOptions.firstOrNull()?.first.orEmpty()
@@ -293,18 +293,18 @@ internal fun PhaseOnePathSection(
             onToggle = { editing = !editing },
         )
         if (showEditor) {
-            HudTextField("Nome do Caminho", character.pathName, enabled = enabled) { onChange(character.copy(pathName = it)) }
+            SheetTextField("Nome do Caminho", character.pathName, enabled = enabled, fieldKey = "path/name") { onChange(character.copy(pathName = it)) }
             AddButton("Preencher pelo catálogo", enabled && catalog.isNotEmpty()) { selecting = true }
-            HudTextField("Lema", character.pathMotto, enabled = enabled) { onChange(character.copy(pathMotto = it)) }
+            SheetTextField("Lema", character.pathMotto, enabled = enabled, fieldKey = "path/motto") { onChange(character.copy(pathMotto = it)) }
             Text("PALAVRAS-CHAVE // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
             character.pathKeywords.forEachIndexed { index, keyword ->
-                HudTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled) {
+                SheetTextField("Palavra-chave ${index + 1}", keyword, enabled = enabled, fieldKey = "path/keyword/$index") {
                     onChange(character.copy(pathKeywords = character.pathKeywords.replace(index, it)))
                 }
             }
             Text("PILARES // 3", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
             character.pathPillars.forEachIndexed { index, pillar ->
-                HudTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled) {
+                SheetTextField("Pilar ${index + 1}", pillar, multiline = true, enabled = enabled, fieldKey = "path/pillar/$index") {
                     onChange(character.copy(pathPillars = character.pathPillars.replace(index, it)))
                 }
             }
@@ -538,7 +538,7 @@ private fun StructuredPowerEditor(
             )
             return@SdoInsetCard
         }
-        HudTextField("Nome", power.name, enabled = enabled) { onValue(power.copy(name = it)) }
+        SheetTextField("Nome", power.name, enabled = enabled, fieldKey = "powers/${power.id}/name") { onValue(power.copy(name = it)) }
         val knowledges = character.learnedKnowledges + character.arcaneKnowledges + character.battleTechniques
         val sourceOptions = AbilitySource.entries.filterNot { it == AbilitySource.KNOWLEDGE && knowledges.isEmpty() }
         ChoiceField("Fonte", power.canonicalSource, sourceOptions, enabled, display = { it.label }) { source ->
@@ -605,7 +605,7 @@ private fun StructuredPowerEditor(
             { IntegerField("Tempo de execução", power.timeValue, enabled, it) { value -> onValue(power.copy(timeValue = value.coerceAtLeast(0))) } },
             { ChoiceField("Unidade", power.timeUnit, AbilityTimeUnit.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(timeUnit = value)) } },
         )
-        HudTextField("Alvo / Área (opcional)", power.targetArea, enabled = enabled) { onValue(power.copy(targetArea = it)) }
+        SheetTextField("Alvo / Área (opcional)", power.targetArea, enabled = enabled, fieldKey = "powers/${power.id}/targetArea") { onValue(power.copy(targetArea = it)) }
         if (power.executionType != AbilityExecution.PASSIVE) {
             TwoFields(
                 { ChoiceField("Duração", power.durationType, AbilityDuration.entries, enabled, it, display = { value -> value.label }) { value -> onValue(power.copy(durationType = value, duration = value.label)) } },
@@ -635,8 +635,8 @@ private fun StructuredPowerEditor(
                         onValue = { onValue(power.copy(modifiers = power.modifiers.replace(modifierIndex, it))) })
                 }
                 AddButton("Adicionar modificador", enabled) { onValue(power.copy(modifiers = power.modifiers + AbilityModifier())) }
-            } else HudTextField("Efeito", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
-        } else HudTextField("Efeito", power.effect, multiline = true, enabled = enabled) { onValue(power.copy(effect = it)) }
+            } else SheetTextField("Efeito", power.effect, multiline = true, enabled = enabled, fieldKey = "powers/${power.id}/effect") { onValue(power.copy(effect = it)) }
+        } else SheetTextField("Efeito", power.effect, multiline = true, enabled = enabled, fieldKey = "powers/${power.id}/effect") { onValue(power.copy(effect = it)) }
     }
 }
 

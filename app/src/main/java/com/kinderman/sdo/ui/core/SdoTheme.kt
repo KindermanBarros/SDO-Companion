@@ -775,10 +775,11 @@ fun HudTextField(
     placeholder: String? = null,
     enabled: Boolean = true,
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
+    keyboardActions: androidx.compose.foundation.text.KeyboardActions = androidx.compose.foundation.text.KeyboardActions.Default,
     onValue: (String) -> Unit,
 ) {
     if (LocalSdoPreferences.current.visualMode == SdoVisualMode.CYBERGRUNGE) {
-        CyberGrungeField(label, value, modifier, multiline, placeholder, enabled, keyboardOptions, onValue)
+        CyberGrungeField(label, value, modifier, multiline, placeholder, enabled, keyboardOptions, keyboardActions, onValue)
         return
     }
     val interaction =
@@ -802,6 +803,7 @@ fun HudTextField(
             .then(Modifier.heightIn(min = if (compact) 48.dp else 56.dp)),
         interactionSource = interaction,
         keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         singleLine = !multiline,
         cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
         minLines = if (multiline) 3 else 1,

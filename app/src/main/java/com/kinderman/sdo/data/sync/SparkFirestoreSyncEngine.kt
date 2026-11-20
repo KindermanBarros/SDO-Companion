@@ -123,6 +123,7 @@ class SparkFirestoreSyncEngine(
     private val workScheduler: SparkWorkScheduler,
     private val clock: SparkClock = SystemSparkClock,
     private val currentUidProvider: () -> String? = { runCatching { FirebaseAuth.getInstance().currentUser?.uid }.getOrNull() },
+    private val drainDebounceMs: Long = 0L,
 ) {
     constructor(
         context: Context,
@@ -135,21 +136,29 @@ class SparkFirestoreSyncEngine(
         scope = scope,
         workScheduler = WorkManagerSparkScheduler(context),
         clock = clock,
+        drainDebounceMs = 800L,
     )
 
     private val drainMutex = Mutex()
     private val accountMutex = Mutex()
+    private val scheduleLock = Any()
+    private var scheduledDrainJob: kotlinx.coroutines.Job? = null
+    private var pendingScheduledSheetIds: MutableSet<String>? = mutableSetOf()
     private val syncing = MutableStateFlow(false)
     private val errors = MutableStateFlow<String?>(null)
     private val connectionId = UUID.randomUUID().toString()
     private val lastPresenceState = ConcurrentHashMap<String, Pair<String?, Long>>()
     private val lastUploadedAvatarHash = ConcurrentHashMap<String, String>()
-    private val recentLocalOperationIds = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
+    private val recentLocalOperationIds: MutableSet<String> = java.util.Collections.synchronizedSet(
+        object : LinkedHashMap<String, Boolean>(256, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Boolean>?): Boolean =
+                size > MAX_RECENT_LOCAL_OPS
+        }.let(java.util.Collections::newSetFromMap),
+    )
     private val reconciledAccounts = java.util.Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
 
     private fun recordLocalOperation(operationId: String) {
         if (operationId.isBlank()) return
-        if (recentLocalOperationIds.size >= 512) recentLocalOperationIds.clear()
         recentLocalOperationIds += operationId
     }
 
@@ -383,23 +392,27 @@ class SparkFirestoreSyncEngine(
             )
 
             if (batches.isNotEmpty()) {
-                val newIntents = buildChainedIntentsFromBatches(
+                val coalescedPlan = coalesceOrChainBatches(
                     batches = batches,
+                    existingIntents = existingIntents,
                     accountId = accountId,
                     sheetId = candidate.id,
                     workingHeads = workingState.targetHeads,
                     createOpId = workingState.pendingCreateOpId,
-                    createdAt = now,
+                    now = now,
                 )
-                localStore.upsertIntents(newIntents.map(SheetIntent::toRecord))
-                shouldSchedule = true
+                coalescedPlan.deletedIds.forEach { localStore.deleteIntent(accountId, it) }
+                if (coalescedPlan.upserts.isNotEmpty()) {
+                    localStore.upsertIntents(coalescedPlan.upserts.map(SheetIntent::toRecord))
+                }
+                shouldSchedule = coalescedPlan.upserts.isNotEmpty()
             }
             reprojectSheetLocked(accountId, candidate.id)
         }
 
         if (accountId != DEMO_ACCOUNT_ID) {
             mediaToUpload?.let { uploadAvatarIfChanged(candidate.id, it) }
-            if (shouldSchedule) schedule(accountId, targetSheetId = candidate.id)
+            if (shouldSchedule) schedule(accountId, targetSheetId = candidate.id, immediate = false)
         }
     }
 
@@ -788,6 +801,7 @@ class SparkFirestoreSyncEngine(
         ensureAccountProjected(accountId)
         val now = clock.nowMillis()
         var shouldSchedule = false
+        var refreshRemoteSheetId: String? = null
         localStore.withTransaction {
             val conflictRecord = localStore.getConflict(accountId, conflictId) ?: return@withTransaction
             val conflict = conflictRecord.toDomain()
@@ -798,8 +812,10 @@ class SparkFirestoreSyncEngine(
             }
             localStore.upsertConflict(conflictRecord.copy(resolutionStatus = resolutionStatus.name))
 
-            val sheetIntents = localStore.listIntentsForSheet(accountId, conflict.sheetId)
-                .map(SheetIntentRecord::toDomain)
+            val sheetIntents = orderIntentsTopologically(
+                localStore.listIntentsForSheet(accountId, conflict.sheetId).map(SheetIntentRecord::toDomain),
+            )
+            val original = sheetIntents.firstOrNull { it.operationId == conflict.operationId }
             val newOpId = UUID.randomUUID().toString()
             val fieldResolution = buildConflictResolutionIntent(
                 conflict = conflict,
@@ -807,23 +823,54 @@ class SparkFirestoreSyncEngine(
                 useRemote = useRemote,
                 customValueJson = customValueJson,
                 createdAt = now,
+                originalIntent = original,
             )
 
-            val original = sheetIntents.firstOrNull { it.operationId == conflict.operationId }
             val remaining = original?.effectiveTargets().orEmpty()
                 .filterNot { it.canonicalTargetKey() == conflict.targetKey }
-            val replacementTargets = remaining + fieldResolution?.effectiveTargets().orEmpty()
+            val stillOpenOtherConflicts = remaining.any { remTarget ->
+                val otherId = "${conflict.operationId}::${remTarget.canonicalTargetKey()}"
+                localStore.getConflict(accountId, otherId)?.resolutionStatus == ConflictResolutionStatus.OPEN.name
+            }
+
+            var snap = localStore.getAccountSheet(accountId, conflict.sheetId)?.toSnapshot()
+            if (useRemote && snap != null) {
+                val localSnapRev = if (conflict.targetKey.startsWith("sheet")) snap.sheetRevision else snap.fieldRevisions[conflict.targetKey] ?: 0L
+                if (localSnapRev < conflict.remoteRevision) {
+                    snap = applyRemoteConflictFallbackSnapshot(snap, conflict, now)
+                    localStore.upsertAccountSheet(snap.toRecord())
+                    refreshRemoteSheetId = conflict.sheetId
+                }
+            }
+
+            if (stillOpenOtherConflicts && original != null) {
+                val shrunk = original.copy(
+                    targetKey = remaining.first().canonicalTargetKey(),
+                    targets = remaining,
+                    payloadHash = computeCanonicalPayloadHash(conflict.sheetId, original.type, remaining.first().canonicalTargetKey(), remaining, original.desiredPayloadJson),
+                    status = SheetIntentStatus.CONFLICT,
+                    updatedAt = now,
+                )
+                localStore.upsertIntent(shrunk.toRecord())
+                if (fieldResolution != null) {
+                    localStore.upsertIntent(fieldResolution.toRecord())
+                    shouldSchedule = true
+                }
+                reprojectSheetLocked(accountId, conflict.sheetId)
+                return@withTransaction
+            }
+
+            val rebasedRemaining = rebaseRemainingTargets(remaining, snap)
+            val replacementTargets = rebasedRemaining + fieldResolution?.effectiveTargets().orEmpty()
+            val resolvedType = if (rebasedRemaining.isEmpty() && fieldResolution != null) fieldResolution.type else original?.type ?: fieldResolution?.type ?: OperationType.PATCH_FIELDS
+            val resolvedPayload = if (rebasedRemaining.isEmpty() && fieldResolution != null) fieldResolution.desiredPayloadJson else original?.desiredPayloadJson.orEmpty()
             val resolutionIntent = if (replacementTargets.isEmpty()) null else {
                 (fieldResolution ?: requireNotNull(original)).copy(
                     operationId = newOpId,
                     targets = replacementTargets,
-                    type = original?.type ?: OperationType.PATCH_FIELDS,
-                    desiredPayloadJson = original?.desiredPayloadJson.orEmpty(),
-                    payloadHash = computeCanonicalPayloadHash(
-                        conflict.sheetId, original?.type ?: OperationType.PATCH_FIELDS,
-                        replacementTargets.first().canonicalTargetKey(), replacementTargets,
-                        original?.desiredPayloadJson.orEmpty(),
-                    ),
+                    type = resolvedType,
+                    desiredPayloadJson = resolvedPayload,
+                    payloadHash = computeCanonicalPayloadHash(conflict.sheetId, resolvedType, replacementTargets.first().canonicalTargetKey(), replacementTargets, resolvedPayload),
                     targetKey = replacementTargets.first().canonicalTargetKey(),
                     dependsOnOperationId = original?.dependsOnOperationId,
                     status = SheetIntentStatus.PENDING,
@@ -833,32 +880,27 @@ class SparkFirestoreSyncEngine(
                 )
             }
 
-            // Supersede the conflicted intent so it no longer blocks the queue.
             localStore.deleteIntent(accountId, conflict.operationId)
-
-            // Unpause dependents: re-anchor to new resolution intent (if local/custom) or clear dependency.
-            sheetIntents.filter { it.dependsOnOperationId == conflict.operationId }.forEach { dependent ->
-                val updatedDep = dependent.copy(
-                    dependsOnOperationId = resolutionIntent?.operationId,
-                    status = if (dependent.status == SheetIntentStatus.PAUSED_DEPENDENCY) {
-                        SheetIntentStatus.PENDING
-                    } else {
-                        dependent.status
-                    },
-                    error = "",
-                    updatedAt = now,
-                )
-                localStore.upsertIntent(updatedDep.toRecord())
-            }
-
+            val unpausedAny = rebaseAndUnpauseConflictDependentsLocked(
+                sheetIntents = sheetIntents,
+                conflict = conflict,
+                useRemote = useRemote,
+                resolutionIntent = resolutionIntent,
+                now = now,
+            )
             if (resolutionIntent != null) {
                 localStore.upsertIntent(resolutionIntent.toRecord())
-                shouldSchedule = true
             }
+            shouldSchedule = resolutionIntent != null || unpausedAny
             reprojectSheetLocked(accountId, conflict.sheetId)
         }
-        if (shouldSchedule && accountId != DEMO_ACCOUNT_ID) {
-            schedule(accountId)
+        if (accountId != DEMO_ACCOUNT_ID) {
+            refreshRemoteSheetId?.let { sheetId ->
+                scope.launch { runCatching { refreshSheetFromRemote(accountId, sheetId) } }
+            }
+            if (shouldSchedule) {
+                schedule(accountId, immediate = true)
+            }
         }
     }
 
@@ -903,22 +945,27 @@ class SparkFirestoreSyncEngine(
                     updatedAt = now,
                 ),
             )
-            // Unpause dependents so they wait cleanly on the retried draft.
-            localStore.listIntentsForSheet(accountId, sheetId)
-                .filter { it.dependsOnOperationId == intentId && it.status == SheetIntentStatus.PAUSED_DEPENDENCY.name }
-                .forEach { dep ->
+            // Unpause dependents transitively so chained drafts wait cleanly on the retried draft.
+            val unpausedIds = mutableSetOf(intentId)
+            val allSheetIntents = orderIntentsTopologically(
+                localStore.listIntentsForSheet(accountId, sheetId).map(SheetIntentRecord::toDomain),
+            )
+            allSheetIntents.forEach { dep ->
+                if (dep.status == SheetIntentStatus.PAUSED_DEPENDENCY && dep.dependsOnOperationId in unpausedIds) {
+                    unpausedIds += dep.operationId
                     localStore.upsertIntent(
                         dep.copy(
-                            status = SheetIntentStatus.PENDING.name,
+                            status = SheetIntentStatus.PENDING,
                             error = "",
                             updatedAt = now,
-                        ),
+                        ).toRecord(),
                     )
                 }
+            }
             reprojectSheetLocked(accountId, sheetId)
         }
         if (sheetId.isNotBlank() && accountId != DEMO_ACCOUNT_ID) {
-            schedule(accountId)
+            schedule(accountId, targetSheetId = sheetId, immediate = true)
         }
     }
 
@@ -926,29 +973,81 @@ class SparkFirestoreSyncEngine(
         val accountId = session.uid
         ensureAccountProjected(accountId)
         val now = clock.nowMillis()
+        var sheetIdToSchedule: String? = null
         localStore.withTransaction {
             val record = localStore.getIntent(accountId, intentId) ?: return@withTransaction
+            val discarded = record.toDomain()
             val sheetId = record.sheetId
             localStore.deleteIntent(accountId, intentId)
-            val targetId = "${intentId}::${record.targetKey}"
-            localStore.deleteConflict(accountId, targetId)
-            localStore.listIntentsForSheet(accountId, sheetId)
-                .filter { it.dependsOnOperationId == intentId }
-                .forEach { dep ->
+            discarded.effectiveTargets().forEach { t ->
+                localStore.deleteConflict(accountId, "${intentId}::${t.canonicalTargetKey()}")
+            }
+            localStore.deleteConflict(accountId, "${intentId}::${record.targetKey}")
+            val snap = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot()
+            val workingRevByKey = linkedMapOf<String, Long>()
+            discarded.effectiveTargets().forEach { t ->
+                val key = t.canonicalTargetKey()
+                workingRevByKey[key] = when {
+                    snap == null -> t.expectedRevision
+                    t.kind == TargetKind.SHEET -> snap.sheetRevision
+                    else -> snap.fieldRevisions[key] ?: t.expectedRevision
+                }
+            }
+            val ordered = orderIntentsTopologically(
+                localStore.listIntentsForSheet(accountId, sheetId).map(SheetIntentRecord::toDomain),
+            )
+            val unpausedChain = mutableSetOf(intentId)
+            ordered.forEach { dep ->
+                val directChild = dep.dependsOnOperationId == intentId
+                val nextDepId = if (directChild) discarded.dependsOnOperationId else dep.dependsOnOperationId
+                val inUnpausedChain = dep.dependsOnOperationId in unpausedChain
+                var targetChanged = false
+                val updatedTargets = dep.effectiveTargets().map { target ->
+                    val key = target.canonicalTargetKey()
+                    val headRev = workingRevByKey[key]
+                    if (headRev != null && target.op != TargetOp.DELTA) {
+                        val nextRev = headRev + 1L
+                        workingRevByKey[key] = nextRev
+                        if (target.expectedRevision != headRev || target.nextRevision != nextRev) {
+                            targetChanged = true
+                            target.copy(expectedRevision = headRev, nextRevision = nextRev)
+                        } else {
+                            target
+                        }
+                    } else {
+                        target
+                    }
+                }
+                val nextStatus = if (inUnpausedChain && dep.status == SheetIntentStatus.PAUSED_DEPENDENCY) {
+                    unpausedChain += dep.operationId
+                    sheetIdToSchedule = sheetId
+                    SheetIntentStatus.PENDING
+                } else {
+                    dep.status
+                }
+                if (directChild || targetChanged || nextStatus != dep.status) {
+                    val finalTargets = if (targetChanged || dep.targets.isNotEmpty()) updatedTargets else dep.targets
                     localStore.upsertIntent(
                         dep.copy(
-                            dependsOnOperationId = null,
-                            status = if (dep.status == SheetIntentStatus.PAUSED_DEPENDENCY.name) {
-                                SheetIntentStatus.PENDING.name
+                            dependsOnOperationId = nextDepId,
+                            targets = finalTargets,
+                            baseRevision = finalTargets.firstOrNull()?.expectedRevision ?: dep.baseRevision,
+                            payloadHash = if (targetChanged) {
+                                computeCanonicalPayloadHash(dep.sheetId, dep.type, dep.targetKey, finalTargets, dep.desiredPayloadJson)
                             } else {
-                                dep.status
+                                dep.payloadHash
                             },
+                            status = nextStatus,
                             error = "",
                             updatedAt = now,
-                        ),
+                        ).toRecord(),
                     )
                 }
+            }
             reprojectSheetLocked(accountId, sheetId)
+        }
+        if (sheetIdToSchedule != null && accountId != DEMO_ACCOUNT_ID) {
+            schedule(accountId, targetSheetId = sheetIdToSchedule, immediate = true)
         }
     }
 
@@ -987,20 +1086,60 @@ class SparkFirestoreSyncEngine(
     fun schedule(
         accountId: String? = activeAccountId ?: currentUidProvider(),
         targetSheetId: String? = null,
+        immediate: Boolean = true,
     ) {
         val uid = accountId ?: return
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) return
-        workScheduler.schedule(uid)
-        scope.launch {
-            runCatching { drain(uid, targetSheetId = targetSheetId) }
-                .onFailure { error ->
+        val effectiveDelay = if (immediate) 0L else drainDebounceMs
+        synchronized(scheduleLock) {
+            if (targetSheetId.isNullOrBlank()) {
+                pendingScheduledSheetIds = null
+            } else {
+                pendingScheduledSheetIds?.add(targetSheetId)
+            }
+            scheduledDrainJob?.cancel()
+            scheduledDrainJob = scope.launch {
+                val thisJob = kotlinx.coroutines.currentCoroutineContext()[kotlinx.coroutines.Job]
+                if (effectiveDelay > 0L) {
+                    kotlinx.coroutines.delay(effectiveDelay)
+                }
+                val sheetsToDrain = synchronized(scheduleLock) {
+                    val captured = pendingScheduledSheetIds?.toSet()
+                    pendingScheduledSheetIds = mutableSetOf()
+                    if (scheduledDrainJob === thisJob) {
+                        scheduledDrainJob = null
+                    }
+                    captured
+                }
+                workScheduler.schedule(uid)
+                val singleSheet = sheetsToDrain?.singleOrNull()
+                val drainAll = sheetsToDrain == null || sheetsToDrain.size > 1
+                runCatching {
+                    drain(uid, targetSheetId = if (drainAll) null else singleSheet)
+                }.onFailure { error ->
                     if (error is CancellationException) throw error
                     errors.value = error.message
                 }
+            }
         }
     }
 
     suspend fun drain(accountIdOverride: String? = null, targetSheetId: String? = null): Boolean = drainMutex.withLock {
+        synchronized(scheduleLock) {
+            if (targetSheetId == null) {
+                scheduledDrainJob?.cancel()
+                scheduledDrainJob = null
+                pendingScheduledSheetIds = mutableSetOf()
+            } else {
+                pendingScheduledSheetIds?.let { pending ->
+                    pending.remove(targetSheetId)
+                    if (pending.isEmpty()) {
+                        scheduledDrainJob?.cancel()
+                        scheduledDrainJob = null
+                    }
+                }
+            }
+        }
         val uid = accountIdOverride ?: currentUidProvider() ?: return@withLock true
         if (uid.isBlank() || uid == DEMO_ACCOUNT_ID) return@withLock true
         // Unconditional auth gate (also for scheduled/WorkManager drains with an explicit uid):
@@ -1427,6 +1566,7 @@ class SparkFirestoreSyncEngine(
 
             val resolvedTargets = mutableListOf<SparkTargetSpec>()
             val pendingWrites = mutableListOf<() -> Unit>()
+            val txConflicts = mutableListOf<SheetConflictItem>()
             val serverTs = ctx.serverTimestampToken()
             val nowMs = ctx.currentTimestampMillis()
 
@@ -1445,17 +1585,13 @@ class SparkFirestoreSyncEngine(
                     TargetKind.SHEET -> {
                         val remoteRev = asLong(remoteRoot?.get("revision")) ?: 0L
                         if (target.op != TargetOp.CREATE && target.op != TargetOp.TOMBSTONE && target.expectedRevision != remoteRev) {
-                            return@runTransaction DrainTxOutcome.RevisionConflict(
-                                conflicts = listOf(
-                                    buildConflict(
-                                        intent = intent,
-                                        target = target,
-                                        remoteRev = remoteRev,
-                                        remoteValue = remoteRoot.orEmpty(),
-                                    ),
-                                ),
-                                remoteRoot = remoteRoot,
+                            txConflicts += buildConflict(
+                                intent = intent,
+                                target = target,
+                                remoteRev = remoteRev,
+                                remoteValue = remoteRoot.orEmpty(),
                             )
+                            continue
                         }
                         val nextRev = remoteRev + 1L
                         val updatedRoot = buildUpdatedRootDoc(
@@ -1523,17 +1659,13 @@ class SparkFirestoreSyncEngine(
                                     )
                                     continue
                                 }
-                                return@runTransaction DrainTxOutcome.RevisionConflict(
-                                    conflicts = listOf(
-                                        buildConflict(
-                                            intent = intent,
-                                            target = target,
-                                            remoteRev = remoteRev,
-                                            remoteValue = remoteDoc?.get("value"),
-                                        ),
-                                    ),
-                                    remoteRoot = remoteRoot,
+                                txConflicts += buildConflict(
+                                    intent = intent,
+                                    target = target,
+                                    remoteRev = remoteRev,
+                                    remoteValue = remoteDoc?.get("value"),
                                 )
+                                continue
                             }
                             val nextRev = remoteRev + 1L
                             val resolved = target.copy(
@@ -1575,17 +1707,17 @@ class SparkFirestoreSyncEngine(
                         }
                         val remoteRev = asLong(remoteItem?.get("revision")) ?: 0L
                         if (target.expectedRevision != remoteRev) {
-                            return@runTransaction DrainTxOutcome.RevisionConflict(
-                                conflicts = listOf(
-                                    buildConflict(
-                                        intent = intent,
-                                        target = target,
-                                        remoteRev = remoteRev,
-                                        remoteValue = remoteItem ?: mapOf("deleted" to itemDeleted),
-                                    ),
-                                ),
-                                remoteRoot = remoteRoot,
+                            if (target.op == TargetOp.CREATE && target.expectedRevision == 0L && remoteRev > 0L && !itemDeleted) {
+                                resolvedTargets += target.copy(expectedRevision = remoteRev, nextRevision = remoteRev)
+                                continue
+                            }
+                            txConflicts += buildConflict(
+                                intent = intent,
+                                target = target,
+                                remoteRev = remoteRev,
+                                remoteValue = remoteItem ?: mapOf("deleted" to itemDeleted),
                             )
+                            continue
                         }
                         val nextRev = remoteRev + 1L
                         val kind = expectedItemKindFromId(target.itemId)
@@ -1678,17 +1810,13 @@ class SparkFirestoreSyncEngine(
                                     )
                                     continue
                                 }
-                                return@runTransaction DrainTxOutcome.RevisionConflict(
-                                    conflicts = listOf(
-                                        buildConflict(
-                                            intent = intent,
-                                            target = target,
-                                            remoteRev = remoteRev,
-                                            remoteValue = remoteDoc?.get("value"),
-                                        ),
-                                    ),
-                                    remoteRoot = remoteRoot,
+                                txConflicts += buildConflict(
+                                    intent = intent,
+                                    target = target,
+                                    remoteRev = remoteRev,
+                                    remoteValue = remoteDoc?.get("value"),
                                 )
+                                continue
                             }
                             val nextRev = remoteRev + 1L
                             val resolved = target.copy(
@@ -1715,6 +1843,13 @@ class SparkFirestoreSyncEngine(
                         }
                     }
                 }
+            }
+
+            if (txConflicts.isNotEmpty()) {
+                return@runTransaction DrainTxOutcome.RevisionConflict(
+                    conflicts = txConflicts,
+                    remoteRoot = remoteRoot,
+                )
             }
 
             if (pendingWrites.isEmpty()) {
@@ -1836,10 +1971,21 @@ class SparkFirestoreSyncEngine(
         if (existing != null && LAST_OPERATION_MARKER in existing.fieldRevisions) {
             prefetchedHead = remoteGateway.fetchSheetHead(sheetId)
             if (prefetchedHead != null && existing.sheetRevision == prefetchedHead.rootRevision &&
-                existing.sheetDeleted == prefetchedHead.deleted &&
-                existing.fieldRevisions[LAST_OPERATION_MARKER] == prefetchedHead.latestOperationAtMs
+                existing.sheetDeleted == prefetchedHead.deleted
             ) {
-                return
+                if (existing.fieldRevisions[LAST_OPERATION_MARKER] == prefetchedHead.latestOperationAtMs) {
+                    return
+                }
+                if (prefetchedHead.latestOperationId.isNotBlank() &&
+                    prefetchedHead.latestOperationId in recentLocalOperationIds
+                ) {
+                    localStore.withTransaction {
+                        val current = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot() ?: return@withTransaction
+                        val updatedRevs = current.fieldRevisions + (LAST_OPERATION_MARKER to prefetchedHead.latestOperationAtMs)
+                        localStore.upsertAccountSheet(current.copy(fieldRevisions = updatedRevs).toRecord())
+                    }
+                    return
+                }
             }
         }
         refreshSheetFromRemote(accountId, sheetId, prefetchedHead)
@@ -1916,12 +2062,9 @@ class SparkFirestoreSyncEngine(
         if (!isAccountCurrent(accountId)) return false
         localStore.withTransaction {
             val existing = localStore.getAccountSheet(accountId, sheetId)?.toSnapshot()
-            val staleRemote = existing != null &&
-                snapshot.sheetRevision <= existing.sheetRevision &&
-                snapshot.fieldRevisions.all { (k, rev) -> rev <= (existing.fieldRevisions[k] ?: 0L) } &&
-                existing.fieldRevisions.any { (k, rev) -> rev > (snapshot.fieldRevisions[k] ?: 0L) }
-            if (!staleRemote) {
-                localStore.upsertAccountSheet(snapshot.toRecord())
+            val merged = mergeRemoteSnapshotMonotonically(existing, snapshot)
+            if (merged != null) {
+                localStore.upsertAccountSheet(merged.toRecord())
             }
             reprojectSheetLocked(accountId, sheetId)
         }
@@ -1931,21 +2074,27 @@ class SparkFirestoreSyncEngine(
     fun observeOpenSheet(sheetId: String): Flow<Unit> = kotlinx.coroutines.flow.flow {
         val uid = currentUidProvider() ?: return@flow
         if (!isAccountCurrent(uid) || uid == DEMO_ACCOUNT_ID) return@flow
-        suspend fun refresh() {
+        suspend fun refresh(initial: Boolean) {
             try {
-                if (isAccountCurrent(uid)) refreshSheetFromRemote(uid, sheetId)
+                if (isAccountCurrent(uid)) {
+                    if (initial) {
+                        refreshDiscoveredSheet(uid, sheetId)
+                    } else {
+                        refreshSheetFromRemote(uid, sheetId)
+                    }
+                }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 errors.value = error.message
             }
         }
-        refresh()
+        refresh(initial = true)
         remoteGateway.observeSheetReceipts(
             sheetId = sheetId,
             ownUid = uid,
             isLocalOperation = { it in recentLocalOperationIds },
         ).collect {
-            refresh()
+            refresh(initial = false)
             emit(Unit)
         }
     }
@@ -2319,7 +2468,9 @@ class SparkFirestoreSyncEngine(
     private suspend fun reprojectSheetLocked(accountId: String, sheetId: String) {
         val record = localStore.getAccountSheet(accountId, sheetId) ?: return
         val snapshot = record.toSnapshot()
-        val intents = localStore.listIntentsForSheet(accountId, sheetId).map(SheetIntentRecord::toDomain)
+        val intents = orderIntentsTopologically(
+            localStore.listIntentsForSheet(accountId, sheetId).map(SheetIntentRecord::toDomain),
+        )
         if (!isAccountCurrent(accountId) || activeAccountId != accountId) return
         val replay = projectReplay(snapshot, intents)
 
@@ -2411,27 +2562,58 @@ class SparkFirestoreSyncEngine(
     }
 
     private suspend fun rebindDependentsLocked(parent: SheetIntent, committed: List<SparkTargetSpec>) {
-        val prior = parent.effectiveTargets().associateBy { it.canonicalTargetKey() }
         val confirmed = committed.associateBy { it.canonicalTargetKey() }
-        localStore.listIntentsForSheet(parent.accountId, parent.sheetId).map { it.toDomain() }
-            .filter { it.dependsOnOperationId == parent.operationId &&
-                it.status in setOf(SheetIntentStatus.PENDING, SheetIntentStatus.PAUSED_DEPENDENCY) }
-            .forEach { dependent ->
-                val targets = dependent.effectiveTargets().map { target ->
-                    val key = target.canonicalTargetKey()
-                    val previous = prior[key]
-                    val resolved = confirmed[key]
-                    if (previous != null && resolved != null && target.expectedRevision == previous.nextRevision) {
-                        target.copy(expectedRevision = resolved.nextRevision,
-                            nextRevision = resolved.nextRevision + 1,
-                            baseValueJson = resolved.valueJson ?: target.baseValueJson)
+        val ordered = orderIntentsTopologically(
+            localStore.listIntentsForSheet(parent.accountId, parent.sheetId).map { it.toDomain() },
+        )
+        val workingRevByKey = LinkedHashMap<String, Long>()
+        val workingValueByKey = LinkedHashMap<String, String?>()
+        confirmed.forEach { (key, spec) ->
+            workingRevByKey[key] = spec.nextRevision
+            workingValueByKey[key] = spec.valueJson
+        }
+        val activeChain = mutableSetOf(parent.operationId)
+        for (dependent in ordered) {
+            if (dependent.dependsOnOperationId !in activeChain) continue
+            if (dependent.status !in setOf(SheetIntentStatus.PENDING, SheetIntentStatus.PAUSED_DEPENDENCY)) continue
+            activeChain += dependent.operationId
+            var changed = false
+            val targets = dependent.effectiveTargets().map { target ->
+                val key = target.canonicalTargetKey()
+                val headRev = workingRevByKey[key]
+                if (headRev != null && target.op != TargetOp.DELTA) {
+                    val nextRev = if (target.op == TargetOp.TOMBSTONE && target.kind == TargetKind.SHEET) headRev else headRev + 1L
+                    val nextBase = workingValueByKey[key] ?: target.baseValueJson
+                    workingRevByKey[key] = nextRev
+                    workingValueByKey[key] = target.valueJson
+                    if (target.expectedRevision != headRev || target.nextRevision != nextRev || target.baseValueJson != nextBase) {
+                        changed = true
+                        target.copy(expectedRevision = headRev, nextRevision = nextRev, baseValueJson = nextBase)
                     } else target
+                } else {
+                    if (headRev != null && target.op == TargetOp.DELTA) workingRevByKey[key] = headRev + 1L
+                    target
                 }
-                localStore.upsertIntent(dependent.copy(targets = targets,
-                    payloadHash = computeCanonicalPayloadHash(dependent.sheetId, dependent.type,
-                        dependent.targetKey, targets, dependent.desiredPayloadJson),
-                    status = SheetIntentStatus.PENDING, error = "").toRecord())
             }
+            if (changed || dependent.status != SheetIntentStatus.PENDING) {
+                localStore.upsertIntent(
+                    dependent.copy(
+                        targets = targets,
+                        baseRevision = targets.firstOrNull()?.expectedRevision ?: dependent.baseRevision,
+                        baseValueJson = targets.firstOrNull()?.baseValueJson ?: dependent.baseValueJson,
+                        payloadHash = computeCanonicalPayloadHash(
+                            dependent.sheetId,
+                            dependent.type,
+                            dependent.targetKey,
+                            targets,
+                            dependent.desiredPayloadJson,
+                        ),
+                        status = SheetIntentStatus.PENDING,
+                        error = "",
+                    ).toRecord(),
+                )
+            }
+        }
     }
 
     private suspend fun applyCommittedTargetsToAccountSheetLocked(
@@ -2538,7 +2720,7 @@ class SparkFirestoreSyncEngine(
         val heads = mutableMapOf<String, String>()
         var createOpId: String? = null
 
-        intents.filter {
+        orderIntentsTopologically(intents).filter {
             it.status in setOf(
                 SheetIntentStatus.PENDING,
                 SheetIntentStatus.SENDING,
@@ -2849,8 +3031,99 @@ class SparkFirestoreSyncEngine(
         )
     }
 
+    private suspend fun rebaseAndUnpauseConflictDependentsLocked(
+        sheetIntents: List<SheetIntent>,
+        conflict: SheetConflictItem,
+        useRemote: Boolean,
+        resolutionIntent: SheetIntent?,
+        now: Long,
+    ): Boolean {
+        val workingRevByKey = linkedMapOf<String, Long>()
+        val workingValueByKey = linkedMapOf<String, String?>()
+        if (useRemote) {
+            workingRevByKey[conflict.targetKey] = conflict.remoteRevision
+            workingValueByKey[conflict.targetKey] = conflict.remotePayloadJson
+        }
+        resolutionIntent?.effectiveTargets()?.forEach { t ->
+            workingRevByKey[t.canonicalTargetKey()] = t.nextRevision
+            workingValueByKey[t.canonicalTargetKey()] = t.valueJson
+        }
+        val blockedIds = sheetIntents
+            .filter {
+                it.operationId != conflict.operationId &&
+                    it.status in setOf(
+                        SheetIntentStatus.CONFLICT,
+                        SheetIntentStatus.REJECTED,
+                        SheetIntentStatus.ACCESS_DENIED,
+                        SheetIntentStatus.DRAFT,
+                    )
+            }
+            .mapTo(mutableSetOf()) { it.operationId }
+
+        val affectedChain = mutableSetOf(conflict.operationId)
+        var unpausedAny = false
+        for (candidate in sheetIntents) {
+            if (candidate.operationId == conflict.operationId) continue
+            val directChild = candidate.dependsOnOperationId == conflict.operationId
+            val inAffectedChain = candidate.dependsOnOperationId in affectedChain
+            val newDepId = if (directChild) resolutionIntent?.operationId else candidate.dependsOnOperationId
+            if (!newDepId.isNullOrBlank() && newDepId in blockedIds) {
+                blockedIds += candidate.operationId
+                continue
+            }
+            if (!inAffectedChain) continue
+            affectedChain += candidate.operationId
+
+            var targetChanged = false
+            val updatedTargets = candidate.effectiveTargets().map { target ->
+                val key = target.canonicalTargetKey()
+                val headRev = workingRevByKey[key]
+                if (headRev != null && target.op != TargetOp.DELTA) {
+                    val nextRev = if (target.op == TargetOp.TOMBSTONE && target.kind == TargetKind.SHEET) headRev else headRev + 1L
+                    val nextBase = workingValueByKey[key] ?: target.baseValueJson
+                    workingRevByKey[key] = nextRev
+                    workingValueByKey[key] = target.valueJson
+                    if (target.expectedRevision != headRev || target.nextRevision != nextRev || target.baseValueJson != nextBase) {
+                        targetChanged = true
+                        target.copy(expectedRevision = headRev, nextRevision = nextRev, baseValueJson = nextBase)
+                    } else target
+                } else {
+                    if (headRev != null && target.op == TargetOp.DELTA) workingRevByKey[key] = headRev + 1L
+                    target
+                }
+            }
+            val nextStatus = if (candidate.status == SheetIntentStatus.PAUSED_DEPENDENCY) {
+                unpausedAny = true
+                SheetIntentStatus.PENDING
+            } else {
+                candidate.status
+            }
+            if (newDepId != candidate.dependsOnOperationId || targetChanged || nextStatus != candidate.status) {
+                val finalTargets = if (targetChanged || candidate.targets.isNotEmpty()) updatedTargets else candidate.targets
+                localStore.upsertIntent(
+                    candidate.copy(
+                        dependsOnOperationId = newDepId,
+                        targets = finalTargets,
+                        baseRevision = finalTargets.firstOrNull()?.expectedRevision ?: candidate.baseRevision,
+                        baseValueJson = finalTargets.firstOrNull()?.baseValueJson ?: candidate.baseValueJson,
+                        payloadHash = if (targetChanged) {
+                            computeCanonicalPayloadHash(candidate.sheetId, candidate.type, candidate.targetKey, finalTargets, candidate.desiredPayloadJson)
+                        } else {
+                            candidate.payloadHash
+                        },
+                        status = nextStatus,
+                        error = "",
+                        updatedAt = now,
+                    ).toRecord(),
+                )
+            }
+        }
+        return unpausedAny
+    }
+
     companion object {
         const val DEMO_ACCOUNT_ID = "demo-player"
+        private const val MAX_RECENT_LOCAL_OPS = 512
         private const val PRESENCE_HEARTBEAT_THROTTLE_MS = 25_000L
         private const val PRESENCE_TTL_MS = 90_000L
 

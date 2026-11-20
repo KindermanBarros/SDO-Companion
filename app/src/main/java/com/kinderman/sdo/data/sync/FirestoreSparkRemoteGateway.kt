@@ -470,6 +470,7 @@ class FirestoreSparkRemoteGateway(
             rootRevision = root.getLong("revision") ?: 0L,
             deleted = root.getBoolean("deleted") == true,
             latestOperationAtMs = latestMs,
+            latestOperationId = latest?.id.orEmpty(),
         )
     }
 

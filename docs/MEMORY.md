@@ -4,6 +4,17 @@ Centralizes active task states (`InProgress` / `InDevReview`), durable project i
 
 ## Active & Recent Deliveries (`InDevReview`)
 
+### Sync debouncing, commit-on-blur fields, intent coalescing & conflict resolution fixes
+Updated: 2026-11-20 12:01 America/La_Paz on `main`.
+- **Commit-on-blur sheet inputs (`CollaborativeSheetField`, `SheetTextField`, `IntegerField`, `CharacterSheetScreen`, sheet sections)**:
+  - Active sheet text and numeric inputs buffer typing locally while focused and commit edits only on focus loss, IME `Done`, disposal, or synchronous `SheetFieldCommitRegistry.flushAll()` before `Save`/`Back`/`Undo`/surface switches (while Creation Wizard preserves live draft validation and holds network sync until blur).
+- **Focus-aware debouncing & outbox coalescing (`AppViewModel`, `SparkFirestoreSyncEngine`, `SparkSyncHelpers`, `SparkSyncContracts`)**:
+  - Replaced the 120ms single-job sync trigger with focus-gated `pendingAutosaves`, per-character `1,200ms` idle sync debouncing, serialized `characterSyncJobs` state tracking, `800ms` debounced `schedule(immediate = false)` on saves, `ExistingWorkPolicy.REPLACE` WorkManager scheduling, and `coalesceOrChainBatches` so repeated `PENDING` `PATCH_FIELDS` edits collapse into one transaction (and reverted edits drop out).
+  - Eliminated redundant full-sheet downloads by checking `SparkSheetHead.latestOperationId` against bounded LRU `recentLocalOperationIds` and using `refreshDiscoveredSheet` on initial sheet open.
+- **Conflict resolution & race fixes (`SparkSyncModels`, `SparkFirestoreSyncEngine`, `SparkSyncHelpers`)**:
+  - Collected all target conflicts in multi-target intents instead of aborting on the first target, preserved root `OperationType`/`TargetOp` on `TargetKind.SHEET` conflicts, converged idempotent `TargetKind.ITEM` `CREATE` targets, topologically ordered intents during reprojection, transitively rebased/unpaused dependent chains for both `useRemote = true` and `useRemote = false`, and added monotonic per-target remote snapshot merging (`mergeRemoteSnapshotMonotonically`).
+- **Evidence & limitations**: `:core:domain:test`, `:app:testDevDebugUnitTest` (186 tests), `:app:assembleDevDebug`, and `.agents/gates/validate-harness.ps1` passed; physical-device runtime verification owned by developer.
+
 ### Canonical schema, legacy v1 normalization, Rules auto-deploy & conflict fixes
 Updated: 2026-11-20 02:35 America/La_Paz on `main`.
 - **Canonical unknown-field preservation & Room v36**: added `unrecognizedFieldsJson` to `Character` / `CharacterRecord` (`MIGRATION_35_36`, `36.json`), wired `unrecognizedFieldsPayload` in `SparkWireCodec` and `firebase/firestore.rules`, and deprecated legacy timestamp-LWW `automaticRemoteFieldIds`.

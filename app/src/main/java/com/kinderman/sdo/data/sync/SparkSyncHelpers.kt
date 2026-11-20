@@ -605,3 +605,263 @@ private inline fun <reified T> decodeListViaGson(plain: Any?): List<T> {
         sharedPlainGson.fromJson<List<T>>(sharedPlainGson.toJson(list), type)
     }.getOrDefault(emptyList())
 }
+
+internal data class CoalescedBatchPlan(
+    val upserts: List<SheetIntent>,
+    val deletedIds: Set<String>,
+)
+
+internal fun coalesceOrChainBatches(
+    batches: List<SparkOperationBatch>,
+    existingIntents: List<SheetIntent>,
+    accountId: String,
+    sheetId: String,
+    workingHeads: Map<String, String>,
+    createOpId: String?,
+    now: Long,
+): CoalescedBatchPlan {
+    val dependedIds = existingIntents.mapNotNull { it.dependsOnOperationId }.toSet()
+    val mutablePending = existingIntents
+        .filter {
+            it.status == SheetIntentStatus.PENDING &&
+                it.type == OperationType.PATCH_FIELDS &&
+                it.operationId !in dependedIds &&
+                it.effectiveTargets().all { t ->
+                    t.op == TargetOp.SET && (t.kind == TargetKind.FIELD || t.kind == TargetKind.ITEM_FIELD)
+                }
+        }
+        .associateByTo(LinkedHashMap()) { it.operationId }
+
+    val localHeads = workingHeads.toMutableMap()
+    val updatedIds = linkedSetOf<String>()
+    val deletedIds = linkedSetOf<String>()
+    val uncoalesced = mutableListOf<SparkOperationBatch>()
+
+    for (batch in batches) {
+        val coalesceable = batch.type == OperationType.PATCH_FIELDS &&
+            batch.targets.isNotEmpty() &&
+            batch.targets.all { t ->
+                t.op == TargetOp.SET && (t.kind == TargetKind.FIELD || t.kind == TargetKind.ITEM_FIELD)
+            }
+        if (!coalesceable) {
+            uncoalesced += batch
+            continue
+        }
+        val leftover = mutableListOf<SparkTargetSpec>()
+        for (newTarget in batch.targets) {
+            val key = newTarget.canonicalTargetKey()
+            val candidate = localHeads[key]?.let { mutablePending[it] }
+            val oldTarget = candidate?.effectiveTargets()?.firstOrNull { it.canonicalTargetKey() == key }
+            if (candidate != null && oldTarget != null) {
+                val reverted = candidate.dependsOnOperationId == null &&
+                    oldTarget.baseValueJson != null &&
+                    newTarget.valueJson == oldTarget.baseValueJson
+                val nextTargets = if (reverted) {
+                    candidate.effectiveTargets().filterNot { it.canonicalTargetKey() == key }
+                } else {
+                    candidate.effectiveTargets().map { t ->
+                        if (t.canonicalTargetKey() == key) t.copy(valueJson = newTarget.valueJson) else t
+                    }
+                }
+                if (nextTargets.isEmpty()) {
+                    mutablePending.remove(candidate.operationId)
+                    updatedIds.remove(candidate.operationId)
+                    deletedIds += candidate.operationId
+                    localHeads.remove(key)
+                } else {
+                    val firstKey = nextTargets.first().canonicalTargetKey()
+                    mutablePending[candidate.operationId] = candidate.copy(
+                        targetKey = firstKey,
+                        targets = nextTargets,
+                        baseRevision = nextTargets.first().expectedRevision,
+                        baseValueJson = nextTargets.first().baseValueJson.orEmpty(),
+                        payloadHash = computeCanonicalPayloadHash(sheetId, candidate.type, firstKey, nextTargets, candidate.desiredPayloadJson),
+                        updatedAt = now,
+                    )
+                    updatedIds += candidate.operationId
+                    if (reverted) localHeads.remove(key)
+                }
+            } else {
+                leftover += newTarget
+            }
+        }
+        if (leftover.isNotEmpty()) {
+            val host = mutablePending.values.lastOrNull { h ->
+                h.dependsOnOperationId == createOpId &&
+                    leftover.all { t ->
+                        val itemHead = if (t.kind == TargetKind.ITEM_FIELD) localHeads["item:${t.itemId}"] else null
+                        localHeads[t.canonicalTargetKey()] == null && itemHead == null
+                    } &&
+                    h.effectiveTargets().size + leftover.size <= 5
+            }
+            if (host != null) {
+                val combined = host.effectiveTargets() + leftover
+                mutablePending[host.operationId] = host.copy(
+                    targets = combined,
+                    payloadHash = computeCanonicalPayloadHash(sheetId, host.type, host.targetKey, combined, host.desiredPayloadJson),
+                    updatedAt = now,
+                )
+                updatedIds += host.operationId
+                leftover.forEach { localHeads[it.canonicalTargetKey()] = host.operationId }
+            } else {
+                uncoalesced += batch.copy(targets = leftover)
+            }
+        }
+    }
+    val chained = uncoalesced.map { batch ->
+        val dep = batch.targets.firstNotNullOfOrNull { target ->
+            localHeads[target.canonicalTargetKey()]
+                ?: if (target.kind == TargetKind.ITEM_FIELD) localHeads["item:${target.itemId}"] else null
+        } ?: createOpId
+        val intent = SheetIntent(
+            operationId = batch.operationId,
+            accountId = accountId,
+            sheetId = sheetId,
+            type = batch.type,
+            targetKey = batch.targets.first().canonicalTargetKey(),
+            targets = batch.targets,
+            dependsOnOperationId = dep,
+            baseRevision = batch.targets.first().expectedRevision,
+            baseValueJson = batch.targets.first().baseValueJson.orEmpty(),
+            desiredPayloadJson = "",
+            status = SheetIntentStatus.PENDING,
+            createdAt = now,
+            updatedAt = now,
+        )
+        batch.targets.forEach { localHeads[it.canonicalTargetKey()] = intent.operationId }
+        intent
+    }
+    return CoalescedBatchPlan(upserts = updatedIds.mapNotNull { mutablePending[it] } + chained, deletedIds = deletedIds)
+}
+
+internal fun rebaseRemainingTargets(
+    remaining: List<SparkTargetSpec>,
+    snap: AccountSheetSnapshot?,
+): List<SparkTargetSpec> = remaining.map { remTarget ->
+    val key = remTarget.canonicalTargetKey()
+    val latestRev = when {
+        snap == null -> remTarget.expectedRevision
+        remTarget.kind == TargetKind.SHEET -> snap.sheetRevision
+        else -> snap.fieldRevisions[key] ?: remTarget.expectedRevision
+    }
+    if (latestRev != remTarget.expectedRevision && remTarget.op != TargetOp.DELTA) {
+        remTarget.copy(expectedRevision = latestRev, nextRevision = latestRev + 1L)
+    } else {
+        remTarget
+    }
+}
+
+internal fun applyRemoteConflictFallbackSnapshot(
+    snap: AccountSheetSnapshot,
+    conflict: SheetConflictItem,
+    now: Long,
+): AccountSheetSnapshot {
+    val synthetic = buildConflictResolutionIntent(
+        conflict = conflict.copy(localPayloadJson = conflict.remotePayloadJson),
+        newOperationId = "remote-fallback",
+        useRemote = false,
+        createdAt = now,
+    ) ?: return snap
+    val target = synthetic.effectiveTargets().singleOrNull() ?: return snap
+    val localRev = if (target.kind == TargetKind.SHEET) snap.sheetRevision else snap.fieldRevisions[conflict.targetKey] ?: 0L
+    val adjustedTarget = target.copy(expectedRevision = localRev, nextRevision = conflict.remoteRevision)
+    var updatedChar = applyPendingIntentsOnConfirmed(
+        confirmed = snap,
+        intents = listOf(synthetic.copy(targets = listOf(adjustedTarget), status = SheetIntentStatus.PENDING)),
+    ).projectedCharacter
+    updatedChar = applyExtendedTargetProjection(updatedChar, adjustedTarget)
+    val nextFieldRevs = snap.fieldRevisions.toMutableMap()
+    var nextSheetRev = snap.sheetRevision
+    if (target.kind == TargetKind.SHEET) {
+        nextSheetRev = maxOf(nextSheetRev, conflict.remoteRevision)
+    } else {
+        nextFieldRevs[conflict.targetKey] = maxOf(nextFieldRevs[conflict.targetKey] ?: 0L, conflict.remoteRevision)
+    }
+    return snap.copy(
+        sheetRevision = nextSheetRev,
+        fieldRevisions = nextFieldRevs,
+        confirmedCharacter = updatedChar.copy(dirty = false),
+        updatedAt = now,
+    )
+}
+
+internal fun mergeRemoteSnapshotMonotonically(
+    existing: AccountSheetSnapshot?,
+    snapshot: AccountSheetSnapshot,
+): AccountSheetSnapshot? {
+    if (existing == null) return snapshot
+    val realKeys = (existing.fieldRevisions.keys + snapshot.fieldRevisions.keys)
+        .filterNot { it == LAST_OPERATION_MARKER }
+    val remoteHasNewer = snapshot.sheetRevision > existing.sheetRevision ||
+        snapshot.sheetDeleted != existing.sheetDeleted ||
+        realKeys.any { k -> (snapshot.fieldRevisions[k] ?: 0L) > (existing.fieldRevisions[k] ?: 0L) }
+    val existingHasNewer = existing.sheetRevision > snapshot.sheetRevision ||
+        realKeys.any { k -> (existing.fieldRevisions[k] ?: 0L) > (snapshot.fieldRevisions[k] ?: 0L) }
+    if (!remoteHasNewer && existingHasNewer) return null
+    if (!existingHasNewer) return snapshot
+
+    val snapDocs = SparkWireCodec.toSparkDocuments(
+        record = snapshot.confirmedCharacter.toRecord(),
+        revision = snapshot.sheetRevision,
+        updatedBy = snapshot.confirmedCharacter.lastEditedBy,
+        updatedAt = snapshot.updatedAt,
+    )
+    val existingDocs = SparkWireCodec.toSparkDocuments(
+        record = existing.confirmedCharacter.toRecord(),
+        revision = existing.sheetRevision,
+        updatedBy = existing.confirmedCharacter.lastEditedBy,
+        updatedAt = existing.updatedAt,
+    )
+    val mergedRoot = if (existing.sheetRevision > snapshot.sheetRevision) existingDocs.root else snapDocs.root
+    val mergedFields = LinkedHashMap(snapDocs.fields)
+    existingDocs.fields.forEach { (fk, doc) ->
+        if ((existing.fieldRevisions["field:$fk"] ?: 0L) > (snapshot.fieldRevisions["field:$fk"] ?: 0L)) {
+            mergedFields[fk] = doc
+        }
+    }
+    val mergedItems = LinkedHashMap(snapDocs.items)
+    existingDocs.items.forEach { (itemId, exBundle) ->
+        val snapBundle = mergedItems[itemId]
+        val exRev = existing.fieldRevisions["item:$itemId"] ?: 0L
+        val snRev = snapshot.fieldRevisions["item:$itemId"] ?: 0L
+        if (snapBundle == null && exRev > snRev && itemId !in snapshot.tombstonedItemIds) {
+            mergedItems[itemId] = exBundle
+        } else if (snapBundle != null) {
+            val itemDoc = if (exRev > snRev) exBundle.document else snapBundle.document
+            val itemFields = LinkedHashMap(snapBundle.fields)
+            exBundle.fields.forEach { (fk, fDoc) ->
+                if ((existing.fieldRevisions["item:$itemId/field:$fk"] ?: 0L) >
+                    (snapshot.fieldRevisions["item:$itemId/field:$fk"] ?: 0L)
+                ) {
+                    itemFields[fk] = fDoc
+                }
+            }
+            mergedItems[itemId] = SparkItemBundle(document = itemDoc, fields = itemFields)
+        }
+    }
+    val mergedTombstones = LinkedHashSet(snapshot.tombstonedItemIds)
+    existing.tombstonedItemIds.forEach { itemId ->
+        if ((existing.fieldRevisions["item:$itemId"] ?: 0L) > (snapshot.fieldRevisions["item:$itemId"] ?: 0L)) {
+            mergedTombstones += itemId
+            mergedItems.remove(itemId)
+        }
+    }
+    val mergedDomain = SparkWireCodec.fromSparkDocuments(
+        SparkSheetDocuments(
+            root = mergedRoot,
+            fields = mergedFields,
+            items = mergedItems,
+            mediaAvatar = snapDocs.mediaAvatar ?: existingDocs.mediaAvatar,
+            localPhotoUri = snapshot.localPhotoUri,
+        ),
+    ).copy(id = snapshot.sheetId, dirty = false).toDomain()
+    val mergedRevs = LinkedHashMap<String, Long>()
+    realKeys.forEach { k -> mergedRevs[k] = maxOf(existing.fieldRevisions[k] ?: 0L, snapshot.fieldRevisions[k] ?: 0L) }
+    return snapshot.copy(
+        sheetRevision = maxOf(existing.sheetRevision, snapshot.sheetRevision),
+        fieldRevisions = mergedRevs,
+        confirmedCharacter = mergedDomain,
+        tombstonedItemIds = mergedTombstones,
+        sheetDeleted = mergedDomain.deleted,
+    )
+}
