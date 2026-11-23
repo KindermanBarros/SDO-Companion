@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.13.0"
-composeBom = "2026.09.00"
+composeBom = "2026.11.01"
 credentials = "1.6.0"
 firebaseBom = "34.19.0"
 googleid = "1.2.1"
