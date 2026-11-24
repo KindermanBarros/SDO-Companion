@@ -27,6 +27,7 @@ import com.kinderman.sdo.domain.model.DivineScale
 import com.kinderman.sdo.domain.model.DivineTier
 import com.kinderman.sdo.domain.model.ExecutionKind
 import com.kinderman.sdo.domain.model.applyDivineCorruption
+import com.kinderman.sdo.domain.model.currentDivinePillars
 import com.kinderman.sdo.domain.model.performDomainAct
 import com.kinderman.sdo.domain.model.toDeityPublicProfile
 import com.kinderman.sdo.ui.SdoField
@@ -52,14 +53,19 @@ internal fun CharacterAscensionEditor(
     DivineEditorDialog(
         R.string.character_divine_edit_ascension,
         onDismiss,
-        canApply = draft.tier.playableOnCharacterSheet &&
+        canApply = DivineRules.validAscensionPillars(ascension, draft) && draft.tier.playableOnCharacterSheet &&
             (draft.tier != DivineTier.AVATAR || draft.patronDeityId.isNotBlank()),
         onApply = { onSave(draft) },
     ) {
         DivineChoices(
             DivineTier.entries.filter(DivineTier::playableOnCharacterSheet),
             draft.tier, { it.label },
-        ) { draft = draft.copy(tier = it) }
+        ) { tier ->
+            draft = draft.copy(
+                tier = tier,
+                pillars = if (tier == ascension.tier) ascension.pillars else draft.pillars,
+            )
+        }
         if (usesPatron) {
             DivineDeityPicker(R.string.character_divine_choose_patron, draft.patronDeityId, deities) { deity ->
                 draft = draft.copy(patronDeityId = deity?.id.orEmpty(), patronName = deity?.name.orEmpty())
@@ -68,16 +74,19 @@ internal fun CharacterAscensionEditor(
         if (conceptual) {
             val maximum = if (draft.tier == DivineTier.LESSER_GOD) 4 else 5
             Text(stringResource(R.string.character_divine_pillar_range, maximum))
+            Text(stringResource(R.string.character_divine_pillar_budget, draft.pillars.totalPoints))
+            if (draft.tier == ascension.tier) Text(stringResource(R.string.character_divine_pillar_milestones_only))
             SdoResponsiveGrid(DivinePillarKind.entries, maxColumns = 2) { pillar, modifier ->
                 SdoField(
                     label = pillar.label,
-                    value = draft.pillars.get(pillar).coerceAtMost(maximum).toString(),
+                    value = draft.pillars.get(pillar).toString(),
                     onValueChange = { input ->
                         if (input.isEmpty() || input.toIntOrNull()?.let { it in 0..maximum } == true) {
                             draft = draft.copy(pillars = draft.pillars.with(pillar, input.toIntOrNull() ?: 0))
                         }
                     },
                     modifier = modifier.testTag("character_divine_edit_pillar_${pillar.name}"),
+                    enabled = draft.tier != ascension.tier,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
@@ -181,7 +190,7 @@ internal fun CharacterDomainActEditor(
     val extraPd = extra.toIntOrNull()
     val available = character.destiny.current
     val canApply = basePd != null && extraPd != null && basePd <= available && extraPd <= available - basePd &&
-        !character.divineRuntime.tabuViolatedInScene
+        character.corruption.current < 100 && !character.divineRuntime.tabuViolatedInScene
     DivineEditorDialog(
         R.string.character_divine_domain_act, onDismiss, canApply,
         onApply = {
@@ -192,7 +201,7 @@ internal fun CharacterDomainActEditor(
         DivineNumberField(R.string.character_divine_base_pd, base) { base = it }
         DivineNumberField(R.string.character_divine_extra_pd, extra) { extra = it }
         val dc = DivineRules.calculateDirectResistanceDc(
-            character.divineAscension.pillars.get(pillar), (extraPd ?: 0).coerceAtMost(available.coerceAtLeast(0)),
+            character.currentDivinePillars().get(pillar), (extraPd ?: 0).coerceAtMost(available.coerceAtLeast(0)),
         )
         Text(stringResource(R.string.character_divine_resistance, dc))
         Text(stringResource(R.string.character_divine_available_pd, available))

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deity_detail_epigraph">Epígrafe</string>
+    <string name="deity_detail_overview">Visão geral</string>
+    <string name="deity_detail_public_image">Imagem pública</string>
+    <string name="deity_detail_identity">Identidade</string>
+    <string name="deity_detail_name">Nome</string>
+    <string name="deity_detail_category">Categoria</string>
+    <string name="deity_detail_domain">Domínio</string>
+    <string name="deity_detail_sanctuary">Santuário</string>
+    <string name="deity_detail_stance">Postura</string>
+    <string name="deity_detail_cult">Culto</string>
+    <string name="deity_detail_manifestation">Manifestação</string>
+    <string name="deity_detail_thought">Linha de pensamento</string>
+    <string name="deity_detail_tabu">Tabu</string>
+    <string name="deity_detail_pillars">Pilares</string>
+    <string name="deity_detail_aspect">Aspecto</string>
+    <string name="deity_detail_presence">Presença</string>
+    <string name="deity_detail_stats">Estatísticas táticas</string>
+    <string name="deity_detail_attributes">Atributos</string>
+    <string name="deity_detail_protections">Proteções</string>
+    <string name="deity_detail_destiny">Pontos de Destino</string>
+    <string name="deity_detail_corruption">Corrupção irradiada</string>
+    <string name="deity_detail_intensity">Intensidade</string>
+    <string name="deity_detail_peculiar_effect">Efeito peculiar</string>
+    <string name="deity_detail_acts">Atos de Domínio</string>
+    <string name="deity_detail_passives">Capacidades passivas</string>
+    <string name="deity_detail_gift">Dádiva de Arauto e Avatar</string>
+    <string name="deity_detail_execution">Execução</string>
+    <string name="deity_detail_effect">Efeito</string>
+    <string name="deity_detail_downside">Contrapartida</string>
+    <string name="deity_detail_behavior">Comportamento</string>
+    <string name="deity_detail_mystery">Mistério central</string>
+    <string name="deity_detail_hooks">Ganchos de mesa</string>
+    <string name="deity_detail_tags">Marcadores</string>
+    <string name="deity_detail_field">%1$s: %2$s</string>
+    <string name="deity_detail_pools">PV: %1$d · PE: %2$d · PM: %3$d · PS: %4$d · PD: %5$d</string>
+    <string name="deity_detail_cost">Custo: %1$d PD</string>
+    <string name="deity_detail_dc">CD indicada: %1$d</string>
+</resources>

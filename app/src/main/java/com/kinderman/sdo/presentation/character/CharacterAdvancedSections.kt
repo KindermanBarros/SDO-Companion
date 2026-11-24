@@ -1,5 +1,14 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.heightIn
+import com.kinderman.sdo.domain.model.withKind
+import com.kinderman.sdo.R
+import com.kinderman.sdo.ui.SdoSwitch
+
+
 import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -607,23 +616,34 @@ private fun ConditionEditor(
             TwoFields(
                 { IntegerField("Intensidade", condition.intensity ?: 0, enabled, it) { value -> onValue(condition.copy(payload = condition.payload.copy(intensity = value.takeIf { it > 0 })), draftDescription) } },
                 { ChoiceField("Duração", selectedDuration, DurationKind.entries, enabled, it, display = { value -> value.label }) { value ->
-                    val duration = when (value) {
-                        DurationKind.Instant, DurationKind.Scene, DurationKind.Session -> Duration(value)
-                        DurationKind.Turns -> Duration(value, turns = condition.duration?.turns ?: 1)
-                        DurationKind.Timed -> Duration(value, timed = condition.duration?.timed ?: TimedDuration(1, DurationTimeUnit.Hours))
-                    }
+                    val duration = condition.duration.withKind(value)
                     onValue(condition.copy(payload = condition.payload.copy(duration = duration)), draftDescription)
                 } },
             )
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics(mergeDescendants = true) {}
+                    .testTag("condition_channeling_" + condition.instanceId.value),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.sustained_channeling_label), Modifier.weight(1f))
+                SdoSwitch(
+                    checked = condition.duration?.requiresChanneling == true,
+                    enabled = enabled,
+                    onCheckedChange = { required ->
+                        val duration = (condition.duration ?: Duration(DurationKind.Scene)).copy(requiresChanneling = required)
+                        onValue(condition.copy(payload = condition.payload.copy(duration = duration)), draftDescription)
+                    },
+                )
+            }
             if (selectedDuration == DurationKind.Turns) IntegerField("Quantidade de turnos", condition.duration?.turns ?: 1, enabled) { value ->
-                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Turns, turns = value.coerceAtLeast(1)))), draftDescription)
+                onValue(condition.copy(payload = condition.payload.copy(duration = condition.duration.withKind(DurationKind.Turns).copy(turns = value.coerceAtLeast(1)))), draftDescription)
             }
             if (selectedDuration == DurationKind.Timed) TwoFields(
                 { IntegerField("Tempo", condition.duration?.timed?.amount ?: 1, enabled, it) { value ->
-                    onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), draftDescription)
+                    onValue(condition.copy(payload = condition.payload.copy(duration = condition.duration.withKind(DurationKind.Timed).copy(timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), draftDescription)
                 } },
                 { ChoiceField("Unidade", condition.duration?.timed?.unit ?: DurationTimeUnit.Hours, DurationTimeUnit.entries, enabled, it, display = { unit -> unit.label }) { unit ->
-                    onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), draftDescription)
+                    onValue(condition.copy(payload = condition.payload.copy(duration = condition.duration.withKind(DurationKind.Timed).copy(timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), draftDescription)
                 } },
             )
             SheetTextField("Descrição", draftDescription, multiline = true, enabled = enabled, fieldKey = "conditions/${condition.instanceId.value}/description") {

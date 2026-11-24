@@ -529,6 +529,8 @@ data class Duration(
     val kind: DurationKind,
     val turns: Int? = null,
     val timed: TimedDuration? = null,
+    /** Whether the bearer must channel arcane or divine power to maintain this effect. */
+    val requiresChanneling: Boolean = false,
 ) {
     init {
         require((kind == DurationKind.Turns) == (turns != null)) {
@@ -1990,3 +1992,25 @@ fun Character.withCanonicalConditions(instances: List<ConditionInstance>): Chara
     conditionInstances = instances,
     conditions = instances.map { it.toLegacyEffect() },
 )
+
+/** Change duration shape without losing its explicit channeling requirement. */
+fun Duration?.withKind(kind: DurationKind): Duration = Duration(
+    kind = kind,
+    turns = if (kind == DurationKind.Turns) this?.turns ?: 1 else null,
+    timed = if (kind == DurationKind.Timed) this?.timed ?: TimedDuration(1, DurationTimeUnit.Hours) else null,
+    requiresChanneling = this?.requiresChanneling == true,
+)
+
+/** Propagate explicit maintenance to produced state without changing unrelated operations. */
+fun EffectOperation.withChannelingDuration(duration: Duration?): EffectOperation {
+    if (duration?.requiresChanneling != true) return this
+    return when (this) {
+        is EffectOperation.AddModifier -> copy(modifier = modifier.copy(
+            duration = (modifier.duration ?: duration).copy(requiresChanneling = true),
+        ))
+        is EffectOperation.ApplyCondition -> copy(condition = condition.copy(
+            duration = (condition.duration ?: duration).copy(requiresChanneling = true),
+        ))
+        else -> this
+    }
+}

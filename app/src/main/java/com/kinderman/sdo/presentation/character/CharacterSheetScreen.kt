@@ -55,6 +55,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.DeityDetailView
+import com.kinderman.sdo.domain.model.DivineTier
+import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.creation.CharacterCreation
 import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CatalogEntry
@@ -83,6 +86,7 @@ fun CharacterSheetScreen(
     character: Character?,
     session: UserSession?,
     catalog: List<CatalogEntry>,
+    loadDeityDetail: suspend (String, String?) -> DeityDetailView? = { _, _ -> null },
     readOnly: Boolean = false,
     saveError: String? = null,
     isCampaignHistorian: Boolean = false,
@@ -108,6 +112,24 @@ fun CharacterSheetScreen(
         CharacterSheetDraftViewModel(character)
     }
     var current by draft.current
+    val patronId = current.divineAscension.patronDeityId
+    val campaignId = normalizeCampaignId(current.campaignId).takeIf { it.isNotBlank() }
+    val canReadPatronPresence = CharacterAccessPolicy.canChangeAscension(session, isCampaignResponsible)
+    val divineTier = current.divineAscension.tier
+    var patronPresenca by remember(current.id, patronId, campaignId, session, canReadPatronPresence, divineTier) {
+        mutableStateOf<Int?>(null)
+    }
+    LaunchedEffect(current.id, patronId, campaignId, session, canReadPatronPresence, divineTier) {
+        if (divineTier == DivineTier.AVATAR && patronId.isNotBlank() && canReadPatronPresence) {
+            try {
+                patronPresenca = loadDeityDetail(patronId, campaignId)?.gmContent?.pillars?.presenca
+            } catch (error: kotlinx.coroutines.CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                patronPresenca = null
+            }
+        }
+    }
     var confirmDelete by rememberSaveable(character.id) { mutableStateOf(false) }
     var confirmHeritageReset by rememberSaveable(character.id) { mutableStateOf(false) }
     var showPhotoPicker by rememberSaveable(character.id) { mutableStateOf(false) }
@@ -362,6 +384,7 @@ fun CharacterSheetScreen(
                     modifier = Modifier.padding(padding),
                     onOpenPhotoPicker = { if (editable) showPhotoPicker = true },
                 ) else CharacterSheetPager(
+                    patronPresenca = patronPresenca,
                     character = current,
                     saveError = saveError,
                     canChangeAscension = editable &&

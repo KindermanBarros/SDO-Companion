@@ -1598,6 +1598,73 @@ test('deity spoilers follow campaign ownership and verified administrator access
   await assertFails(getDoc(globalRef(owner)));
 });
 
+for (const { role, actorUid, archived, unrelatedGm, allowed } of [
+  { role: 'ordinary sheet owner', actorUid: ids.player, allowed: false },
+  { role: 'active campaign owner', actorUid: ids.owner, allowed: true },
+  { role: 'unrelated campaign owner', actorUid: ids.outsider, unrelatedGm: true, allowed: false },
+  { role: 'archived campaign owner', actorUid: ids.owner, archived: true, allowed: false },
+]) {
+  for (const existing of [false, true]) {
+    test(`${role} ${allowed ? 'can' : 'cannot'} ${existing ? 'update' : 'create'} linked character ascension`, async () => {
+      await seed({ archived });
+      const key = 'divineAscensionPayload';
+      await env.withSecurityRulesDisabled(async (context) => {
+        const db = context.firestore();
+        if (existing) {
+          await setDoc(
+            doc(db, 'characters', ids.character, 'fields', key),
+            makeField(key, ''),
+          );
+        }
+        if (unrelatedGm) {
+          const campaign = await getDoc(doc(db, 'campaigns', ids.campaign));
+          await setDoc(doc(db, 'campaigns', 'unrelated-campaign'), {
+            ...campaign.data(),
+            id: 'unrelated-campaign',
+            ownerId: actorUid,
+          });
+          await setDoc(
+            doc(db, 'campaigns', 'unrelated-campaign', 'members', actorUid),
+            makeMember('unrelated-campaign', actorUid),
+          );
+        }
+      });
+
+      const db = env.authenticatedContext(actorUid).firestore();
+      const opId = 'op-ascension';
+      const value = '{"tier":"AVATAR"}';
+      const batch = writeBatch(db);
+      const fieldRef = doc(db, 'characters', ids.character, 'fields', key);
+      const field = {
+        value,
+        revision: existing ? 2 : 1,
+        lastOperationId: opId,
+        updatedBy: actorUid,
+        updatedAt: serverTimestamp(),
+      };
+      if (existing) {
+        batch.update(fieldRef, field);
+      } else {
+        batch.set(fieldRef, { key, ...field });
+      }
+      batch.set(
+        doc(db, 'characters', ids.character, 'operations', opId),
+        makeOp(opId, actorUid, 'PATCH_FIELDS', [
+          {
+            kind: 'FIELD', itemId: '', key,
+            op: existing ? 'SET' : 'CREATE',
+            expectedRevision: existing ? 1 : 0,
+            nextRevision: existing ? 2 : 1,
+            ...(existing ? { baseValue: '' } : {}),
+            desiredValue: value,
+          },
+        ]),
+      );
+      await (allowed ? assertSucceeds(batch.commit()) : assertFails(batch.commit()));
+    });
+  }
+}
+
 test('active campaign owner can update linked character ascension', async () => {
   await seed();
   await env.withSecurityRulesDisabled(async (context) => {

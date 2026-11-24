@@ -1,5 +1,14 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.heightIn
+import com.kinderman.sdo.domain.model.withKind
+import com.kinderman.sdo.R
+import com.kinderman.sdo.ui.SdoSwitch
+
+
 import com.kinderman.sdo.ui.SdoCardTitle
 import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
@@ -141,6 +150,20 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
             if (value.isNotBlank()) update(ability.copy(name = value))
         }
         val durationKind = ability.duration?.kind ?: DurationKind.Instant
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics(mergeDescendants = true) {}
+                .testTag("ability_channeling_" + ability.id),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.sustained_channeling_label), Modifier.weight(1f))
+            SdoSwitch(
+                checked = ability.duration?.requiresChanneling == true,
+                enabled = mechanicsEditable && ability.execution.kind != ExecutionKind.Passive,
+                onCheckedChange = { required ->
+                    update(ability.copy(duration = (ability.duration ?: Duration(DurationKind.Scene)).copy(requiresChanneling = required)))
+                },
+            )
+        }
         val trigger = ability.mechanicalEffect?.trigger
         TwoFields(
             { field -> ChoiceField("Categoria", ability.kind, allowedKinds.toList(), mechanicsEditable, field, display = AbilityKind::label) { kind ->
@@ -153,11 +176,7 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
         TwoFields(
             { field -> ChoiceField("Alcance", ability.range.band, RangeBand.entries, mechanicsEditable, field, display = RangeBand::label) { update(ability.copy(range = RangeSpec(it))) } },
             { field -> ChoiceField("Duração", durationKind, DurationKind.entries, mechanicsEditable, field, display = DurationKind::label) { kind ->
-                update(ability.copy(duration = when (kind) {
-                    DurationKind.Turns -> Duration(kind, turns = 1)
-                    DurationKind.Timed -> Duration(kind, timed = TimedDuration(1, DurationTimeUnit.Hours))
-                    else -> Duration(kind)
-                }))
+                update(ability.copy(duration = ability.duration.withKind(kind)))
             } },
         )
         TwoFields(

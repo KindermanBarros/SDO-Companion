@@ -63,4 +63,10 @@
     <string name="character_divine_darno_reading">Pode ler a escrita de Darno.</string>
     <string name="character_divine_darno_runes">Pode inscrever runas instantâneas de Darno por %1$d PD.</string>
     <string name="character_divine_darno_echo">Eco Emocional ativo.</string>
+    <string name="character_divine_pillar_budget">Total: %1$d pontos. Ascensão a Deus Menor: 8; a Deus Maior: +4 sem reduzir Pilares. Edições preservam os Pilares atuais.</string>
+    <string name="character_divine_autonomy_unknown">Teste de autonomia necessário: CD 15 + Presença atual da patrona (não informada).</string>
+    <string name="character_divine_pillar_current_permanent">%1$s: %2$d atual / %3$d permanente</string>
+    <string name="character_divine_defeated">Manifestação banida; derrota não implica morte divina.</string>
+    <string name="character_divine_fate_blocked">Entidade selada ou apagada: canalização bloqueada.</string>
+    <string name="character_divine_pillar_milestones_only">Altere Pilares permanentes pelo fluxo de marcos do poder divino.</string>
 </resources>

@@ -6,6 +6,69 @@ import org.junit.Test
 
 class ItemCategoryTest {
     @Test
+    fun catalogBatchRefillsEmptyStackWithoutCreatingAnExtraUnit() {
+        val empty = InventoryItem(
+            id = "empty", catalogEntryId = "item.potion", category = "Consumível",
+            quantity = 0, load = 0,
+        )
+        val original = Character(inventory = listOf(empty))
+
+        val changed = original.addCatalogInventoryItems(
+            listOf(empty.copy(id = "refill", quantity = 3, load = 2)),
+        )
+
+        assertEquals(0, original.inventory.single().quantity)
+        assertEquals(empty.id, changed.inventory.single().id)
+        assertEquals(3, changed.inventory.single().quantity)
+        assertEquals(2, changed.inventory.single().effectiveLoad())
+    }
+
+    @Test
+    fun catalogBatchPreservesTotalConsumableLoadAcrossMultipleMerges() {
+        for (category in listOf("Consumível", "Consumível arcano")) {
+            val existing = InventoryItem(
+                id = "existing", catalogEntryId = "item.potion", category = category,
+                quantity = 2, load = 3,
+                acquisitionSource = ItemAcquisitionSource.HERITAGE, heritageCost = 4,
+            )
+            val incoming = existing.copy(id = "incoming", quantity = 3, load = 2, heritageCost = 6)
+            val original = Character(inventory = listOf(existing))
+
+            val changed = original.addCatalogInventoryItems(
+                listOf(incoming, incoming.copy(id = "another", quantity = 1, load = 1, heritageCost = 2)),
+            )
+
+            val merged = changed.inventory.single()
+            assertEquals(existing, original.inventory.single())
+            assertEquals(existing.id, merged.id)
+            assertEquals(6, merged.quantity)
+            assertEquals(6, merged.effectiveLoad())
+            assertEquals(12, merged.heritageCost)
+        }
+    }
+
+    @Test
+    fun catalogBatchRetainsQuantityBasedLoadForAmmunitionAndLinkedAshes() {
+        val ammunition = InventoryItem(
+            id = "ammo", catalogEntryId = "item.ammo", category = "Munição",
+            quantity = 6, load = 1,
+        )
+        val ash = InventoryItem(
+            id = "ash", catalogEntryId = "item.ash", category = "Cinza",
+            linkedAshId = "ability", ashPurity = AshPurity.REFINED, quantity = 1, load = 1,
+        )
+        for (existing in listOf(ammunition, ash)) {
+            val original = Character(inventory = listOf(existing))
+            val changed = original.addCatalogInventoryItems(listOf(existing.copy(id = "incoming")))
+            val merged = changed.inventory.single()
+
+            assertEquals(existing.quantity * 2, merged.quantity)
+            assertEquals(existing.load, merged.load)
+            assertEquals(existing.copy(quantity = existing.quantity * 2).effectiveLoad(), merged.effectiveLoad())
+        }
+    }
+
+    @Test
     fun bowsAndShieldsUseCanonicalSectionsAndEquipmentOptions() {
         val bow = InventoryItem(category = "Arco ou besta")
         val shield = InventoryItem(category = "Escudo")

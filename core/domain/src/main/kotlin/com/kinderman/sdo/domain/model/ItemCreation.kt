@@ -244,7 +244,14 @@ fun Character.addCatalogInventoryItems(items: List<InventoryItem>): Character {
             null
         }
         if (matchingStack != null) {
-            val baseQty = matchingStack.quantity.coerceAtLeast(1)
+            val baseQty = matchingStack.quantity.coerceAtLeast(0)
+            val mergedLoad = if (matchingStack.linkedAshId.isNotBlank() ||
+                matchingStack.resolvedCategory().canonical == CanonicalItemCategory.AMMUNITION
+            ) {
+                matchingStack.load
+            } else {
+                matchingStack.load + candidate.load
+            }
             val mergedCost = if (matchingStack.acquisitionSource == ItemAcquisitionSource.HERITAGE) {
                 (matchingStack.heritageCost ?: 0) + (candidate.heritageCost ?: 0)
             } else {
@@ -253,7 +260,11 @@ fun Character.addCatalogInventoryItems(items: List<InventoryItem>): Character {
             acc.copy(
                 inventory = acc.inventory.map { row ->
                     if (row.id == matchingStack.id) {
-                        row.copy(quantity = baseQty + incomingQty, heritageCost = mergedCost)
+                        row.copy(
+                            quantity = baseQty + incomingQty,
+                            load = mergedLoad,
+                            heritageCost = mergedCost,
+                        )
                     } else {
                         row
                     }

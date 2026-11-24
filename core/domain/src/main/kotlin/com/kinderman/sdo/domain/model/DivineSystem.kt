@@ -148,6 +148,20 @@ data class CharacterDivineRuntime(
     val marks: List<DivineMark> = emptyList(),
     val tabuViolatedInScene: Boolean = false,
     val pdSpentInCurrentScene: Int = 0,
+    val channeledInCurrentScene: Boolean = false,
+    val links: List<DivineLink> = emptyList(),
+    val pillarSuppression: DivinePillars = DivinePillars(),
+    val scenePillarSuppression: DivinePillars = DivinePillars(),
+    val sceneSuppressionCauseIds: Set<String> = emptySet(),
+    val suppressionCauseIds: Set<String> = emptySet(),
+    val restorativeSceneIds: Set<String> = emptySet(),
+    val restorationSessionIds: Set<String> = emptySet(),
+    val growthArcIds: Set<String> = emptySet(),
+    val lossArcIds: Set<String> = emptySet(),
+    val pillarMilestoneIds: Set<String> = emptySet(),
+    val linkScenePayments: Map<String, Int> = emptyMap(),
+    val divineFate: DivineFate = DivineFate.ACTIVE,
+    val divineFateCauseIds: Set<String> = emptySet(),
 )
 
 /** Official corruption threshold stages (`Corrupção Divina.md:11-17`). */
@@ -313,6 +327,20 @@ data class DeityDetailView(
 )
 
 object DivineRules {
+    fun validAscensionPillars(previous: CharacterDivineAscension, next: CharacterDivineAscension): Boolean {
+        if (next.tier.scale != DivineScale.CONCEPTUAL_PILLARS) return true
+        val cap = if (next.tier == DivineTier.LESSER_GOD) 4 else 5
+        if (next.pillars != next.pillars.clamped(cap)) return false
+        if (previous.tier == next.tier) return next.pillars == previous.pillars
+        return when (next.tier) {
+            DivineTier.LESSER_GOD -> next.pillars.totalPoints == 8
+            DivineTier.GREATER_GOD -> previous.tier == DivineTier.LESSER_GOD &&
+                next.pillars.totalPoints == previous.pillars.totalPoints + 4 &&
+                DivinePillarKind.entries.all { next.pillars.get(it) >= previous.pillars.get(it) }
+            else -> true
+        }
+    }
+
     const val DEFAULT_CORRUPTION_GAIN = 5
     const val DEFAULT_CORRUPTION_PURIFICATION = -5
     const val TABU_VIOLATION_PD_COST = 2
@@ -421,8 +449,8 @@ object DivineRules {
         }
         val sanityRupture = !usesPillars && character.sanityMaximum > 0 && character.sanity.current <= 0
         val darnoEcho = instantDarno && (character.corruption.current >= 50 || sanityRupture || distressedConditions)
-        val autonomyDc = if (tier == DivineTier.AVATAR && runtime.pdSpentInCurrentScene >= 2) {
-            15 + (patronPresenca ?: 3).coerceIn(0, 5)
+        val autonomyDc = if (tier == DivineTier.AVATAR && (runtime.pdSpentInCurrentScene >= 2 || runtime.tabuViolatedInScene) && patronPresenca != null) {
+            15 + patronPresenca.coerceIn(0, 5)
         } else {
             null
         }
@@ -442,7 +470,7 @@ object DivineRules {
             isLivingSensoryAnchor = activeMarks.isNotEmpty(),
             domainActsBlockedByTabu = runtime.tabuViolatedInScene,
             corruptionStage = DivineCorruptionStage.fromPercentage(character.corruption.current),
-            presencaQualitativeSummary = presencaQualitativeDescription(ascension.pillars.presenca),
+            presencaQualitativeSummary = presencaQualitativeDescription(character.currentDivinePillars().presenca),
             avatarAutonomyCheckDc = autonomyDc,
         )
     }
@@ -476,6 +504,9 @@ fun Character.derivedDivineEffects(patronPresenca: Int? = null): DerivedDivineEf
 fun Character.withDivineAscension(next: CharacterDivineAscension): Character {
     require(next.tier.playableOnCharacterSheet) {
         "Primordiais são forças cósmicas sem ficha jogável (Deidades e Avatares.md:21)."
+    }
+    require(DivineRules.validAscensionPillars(divineAscension, next)) {
+        "Distribuição de Pilares inválida para esta ascensão."
     }
     val pillarCap = if (next.tier == DivineTier.LESSER_GOD) 4 else 5
     val sanitized = when (next.tier) {
@@ -515,7 +546,7 @@ fun Character.withDivineAscension(next: CharacterDivineAscension): Character {
     }
     val updated = copy(divineAscension = sanitized)
     val newCeiling = updated.destinyMaximum
-    val grantedPd = maxOf(destiny.current, sanitized.tier.pdPerSession).coerceAtMost(newCeiling)
+    val grantedPd = destiny.current.coerceIn(0, newCeiling)
     return updated.copy(destiny = destiny.copy(current = grantedPd, maximum = newCeiling))
 }
 
@@ -525,13 +556,19 @@ fun Character.performDomainAct(baseCostPd: Int, extraPdInvested: Int = 0): Chara
         "Atos de Domínio estão bloqueados nesta cena por violação de Tabu."
     }
     require(baseCostPd >= 0 && extraPdInvested >= 0) { "Custos de Destino não podem ser negativos." }
+    require(baseCostPd <= destiny.current && extraPdInvested <= destiny.current - baseCostPd) {
+        "Pontos de Destino insuficientes."
+    }
     val totalCost = baseCostPd + extraPdInvested
     require(destiny.current >= totalCost) {
         "Pontos de Destino insuficientes (necessário $totalCost PD, saldo atual ${destiny.current} PD)."
     }
-    return copy(
+    return channelDivineOrArcanePower().copy(
         destiny = destiny.copy(current = destiny.current - totalCost, maximum = destinyMaximum),
-        divineRuntime = divineRuntime.copy(pdSpentInCurrentScene = divineRuntime.pdSpentInCurrentScene + totalCost),
+        divineRuntime = divineRuntime.copy(
+            pdSpentInCurrentScene = divineRuntime.pdSpentInCurrentScene + totalCost,
+            channeledInCurrentScene = true,
+        ),
     )
 }
 
@@ -551,8 +588,11 @@ fun Character.violateDivineTabu(): Character {
 /** Scene reset clears scene-scoped Tabu Domain Act lock and scene PD counter (`Deidades e Avatares.md:42`). */
 fun Character.resetDivineScene(): Character = copy(
     divineRuntime = divineRuntime.copy(
+        scenePillarSuppression = DivinePillars(),
+        sceneSuppressionCauseIds = emptySet(),
         tabuViolatedInScene = false,
         pdSpentInCurrentScene = 0,
+        channeledInCurrentScene = false,
     ),
 )
 
@@ -603,7 +643,7 @@ fun Character.applyDivineCorruption(
         rawAmount = rawAmount,
     )
     val nextValue = (corruption.current + appliedDelta).coerceIn(0, 100)
-    return copy(corruption = corruption.copy(current = nextValue, maximum = 100))
+    return withDivineCorruption(corruption.copy(current = nextValue, maximum = 100))
 }
 
 fun Character.withAddedDivineMark(mark: DivineMark): Character =
@@ -622,3 +662,39 @@ fun Character.withRemovedDivineMark(markId: String): Character =
             marks = divineRuntime.marks.filterNot { it.id == markId },
         ),
     )
+
+/** Apply an absolute Destiny edit while preserving cumulative Avatar expenditure. */
+fun Character.withTrackedDestiny(value: ResourceValue): Character {
+    val next = value.copy(current = value.current.coerceIn(0, destinyMaximum), maximum = destinyMaximum)
+    val spent = (destiny.current - next.current).coerceAtLeast(0)
+    return copy(
+        destiny = next,
+        divineRuntime = if (divineAscension.tier == DivineTier.AVATAR) {
+            divineRuntime.copy(pdSpentInCurrentScene = divineRuntime.pdSpentInCurrentScene + spent)
+        } else divineRuntime,
+    )
+}
+
+/** Register voluntary channeling, including zero-cost uses, once per scene. */
+fun Character.channelDivineOrArcanePower(): Character {
+    require(divineRuntime.divineFate != DivineFate.SEALED && divineRuntime.divineFate != DivineFate.ERASED) {
+        "Entidade selada ou apagada n\u00e3o pode canalizar poder."
+    }
+    require(corruption.current < 100) { "Ruptura impede canalização voluntária." }
+    val exhausted = corruption.current >= 75 && !divineRuntime.channeledInCurrentScene
+    return copy(
+        exhaustion = if (exhausted) exhaustion.copy(current = exhaustion.current + 1) else exhaustion,
+        divineRuntime = divineRuntime.copy(channeledInCurrentScene = true),
+    )
+}
+
+/** Absolute corruption update shared by exposure, session commands, and manual edits. */
+fun Character.withDivineCorruption(value: ResourceValue): Character {
+    val updated = copy(corruption = value.copy(current = value.current.coerceIn(0, 100), maximum = 100))
+    if (updated.corruption.current < 100) return updated
+    return updated.copy(
+        activeModifiers = updated.activeModifiers.filterNot { it.duration?.requiresChanneling == true },
+    ).withCanonicalConditions(
+        updated.canonicalConditions().filterNot { it.duration?.requiresChanneling == true },
+    )
+}

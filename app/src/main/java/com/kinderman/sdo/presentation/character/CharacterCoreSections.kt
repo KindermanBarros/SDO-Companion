@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.withDivineCorruption
+import com.kinderman.sdo.domain.model.withTrackedDestiny
 import com.kinderman.sdo.domain.model.ResourceValue
 import com.kinderman.sdo.domain.model.SpecialKnowledge
 import com.kinderman.sdo.domain.model.agilityLimitBreakdown
@@ -154,11 +156,11 @@ internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (
             enabled = enabled,
         ) { onChange(character.copy(energy = it)) }
         ManualResourceEditor("DESTINO", character.destiny.copy(maximum = character.destinyMaximum), MaterialTheme.colorScheme.secondary, enabled, fixedMaximum = character.destinyMaximum) {
-            onChange(character.copy(destiny = it.copy(maximum = 5)))
+            onChange(character.withTrackedDestiny(it))
         }
         ManualResourceEditor("EXAUSTÃO", character.exhaustion, MaterialTheme.colorScheme.error, enabled) { onChange(character.copy(exhaustion = it)) }
         ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption.copy(maximum = 100), MaterialTheme.colorScheme.tertiary, enabled, fixedMaximum = 100) {
-            onChange(character.copy(corruption = it.copy(maximum = 100)))
+            onChange(character.withDivineCorruption(it))
         }
     }
 }

@@ -27,8 +27,10 @@ import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.DeityDetailView
 import com.kinderman.sdo.domain.model.DivinePillarKind
 import com.kinderman.sdo.domain.model.DivineRules
+import com.kinderman.sdo.domain.model.DivineFate
 import com.kinderman.sdo.domain.model.DivineTier
 import com.kinderman.sdo.domain.model.convertVitalityOrAnchorToDestiny
+import com.kinderman.sdo.domain.model.currentDivinePillars
 import com.kinderman.sdo.domain.model.derivedDivineEffects
 import com.kinderman.sdo.domain.model.resetDivineScene
 import com.kinderman.sdo.domain.model.toDeityPublicProfile
@@ -53,12 +55,14 @@ internal fun CharacterDivineSection(
     editable: Boolean,
     canChangeAscension: Boolean,
     onChange: (Character) -> Unit,
+    patronPresenca: Int? = null,
 ) {
     val deities = catalog.filter { it.kind == CatalogKind.DEITY }.distinctBy(CatalogEntry::id)
     val deitiesById = deities.associateBy(CatalogEntry::id)
     val ascension = character.divineAscension
     val runtime = character.divineRuntime
-    val effects = character.derivedDivineEffects()
+    val effects = character.derivedDivineEffects(patronPresenca)
+    val currentPillars = character.currentDivinePillars()
     var dialog by rememberSaveable(character.id) { mutableStateOf<DivineDialog?>(null) }
     var deityId by rememberSaveable(character.id) { mutableStateOf<String?>(null) }
     var markId by rememberSaveable(character.id) { mutableStateOf<String?>(null) }
@@ -90,12 +94,19 @@ internal fun CharacterDivineSection(
             SdoResponsiveGrid(DivinePillarKind.entries) { pillar, modifier ->
                 SdoCard(modifier = modifier) {
                     Text(
-                        stringResource(R.string.character_divine_pillar_value, pillar.label, ascension.pillars.get(pillar)),
+                        stringResource(
+                            R.string.character_divine_pillar_current_permanent,
+                            pillar.label, currentPillars.get(pillar), ascension.pillars.get(pillar),
+                        ),
                         modifier = Modifier.padding(12.dp).testTag("character_divine_pillar_${pillar.name}"),
                     )
                 }
             }
             Text(effects.presencaQualitativeSummary)
+            if (runtime.divineFate == DivineFate.DEFEATED) Text(stringResource(R.string.character_divine_defeated))
+            if (runtime.divineFate == DivineFate.SEALED || runtime.divineFate == DivineFate.ERASED) {
+                Text(stringResource(R.string.character_divine_fate_blocked))
+            }
         }
         if (effects.immuneToMortalMentalEffects) Text(stringResource(R.string.character_divine_mental_immunity))
         if (effects.canReadDarnoScript) Text(stringResource(R.string.character_divine_darno_reading))
@@ -162,11 +173,16 @@ internal fun CharacterDivineSection(
 
         if (effects.tier != DivineTier.MORTAL) {
             Text(stringResource(R.string.character_divine_scene_pd, runtime.pdSpentInCurrentScene))
+            if (effects.tier == DivineTier.AVATAR && patronPresenca == null &&
+                (runtime.pdSpentInCurrentScene >= 2 || runtime.tabuViolatedInScene)) {
+                Text(stringResource(R.string.character_divine_autonomy_unknown))
+            }
             effects.avatarAutonomyCheckDc?.let { Text(stringResource(R.string.character_divine_autonomy, it)) }
             if (effects.domainActsBlockedByTabu) Text(stringResource(R.string.character_divine_blocked))
             if (editable) {
                 if (effects.usesConceptualPillars) {
-                    DivineAction(R.string.character_divine_domain_act, "domain_act", !effects.domainActsBlockedByTabu) {
+                    DivineAction(R.string.character_divine_domain_act, "domain_act", !effects.domainActsBlockedByTabu && character.corruption.current < 100 &&
+                        runtime.divineFate != DivineFate.SEALED && runtime.divineFate != DivineFate.ERASED) {
                         dialog = DivineDialog.DOMAIN_ACT
                     }
                 }
@@ -175,7 +191,7 @@ internal fun CharacterDivineSection(
                         dialog = DivineDialog.TABU
                     }
                 }
-                if (runtime.tabuViolatedInScene || runtime.pdSpentInCurrentScene > 0) {
+                if (runtime.tabuViolatedInScene || runtime.pdSpentInCurrentScene > 0 || runtime.channeledInCurrentScene) {
                     DivineAction(R.string.character_divine_reset, "reset") { dialog = DivineDialog.RESET }
                 }
                 DivineAction(

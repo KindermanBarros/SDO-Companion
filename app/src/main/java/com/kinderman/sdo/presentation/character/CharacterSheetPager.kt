@@ -87,12 +87,13 @@ internal fun CharacterSheetPager(
     modifier: Modifier = Modifier,
     saveError: String? = null,
     canChangeAscension: Boolean = false,
+    patronPresenca: Int? = null,
 ) {
     val conceptual = character.derivedDivineEffects().usesConceptualPillars
     key(character.id, conceptual) {
         CharacterSheetPages(
             character, session, catalog, editable, onChange, onOpenPhotoPicker,
-            modifier, saveError, canChangeAscension, conceptual,
+            modifier, saveError, canChangeAscension, conceptual, patronPresenca,
         )
     }
 }
@@ -109,6 +110,7 @@ private fun CharacterSheetPages(
     saveError: String?,
     canChangeAscension: Boolean,
     conceptual: Boolean,
+    patronPresenca: Int?,
 ) {
     val pages = if (conceptual) {
         listOf(
@@ -149,6 +151,7 @@ private fun CharacterSheetPages(
                 saveError = saveError,
                 canChangeAscension = canChangeAscension,
                 conceptual = conceptual,
+                patronPresenca = patronPresenca,
             )
         }
     }
@@ -272,6 +275,7 @@ private fun SheetPageContent(
     saveError: String?,
     canChangeAscension: Boolean,
     conceptual: Boolean,
+    patronPresenca: Int?,
 ) {
     val compactCards = com.kinderman.sdo.ui.LocalSdoPreferences.current.compactCards
     LazyColumn(
@@ -288,7 +292,10 @@ private fun SheetPageContent(
                     }
                 }
                 item("divine") {
-                    CharacterDivineSection(character, catalog, editable, canChangeAscension, onChange)
+                    CharacterDivineSection(character, catalog, editable, canChangeAscension, onChange, patronPresenca)
+                }
+                item("divine_power") {
+                    CharacterDivinePowerSection(character, editable, canChangeAscension, onChange)
                 }
             }
 

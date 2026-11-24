@@ -13,4 +13,4 @@
 
 ## Planned changes
 
-No open character-sheet-only backlog items remain (`SHEET-PLAN-001` delivered).
+BACKLOG-026 adds current divine strength, Presence capacity and links, vulnerability suppression and recovery, and permanent growth/loss controls. Confirmed deity and inventory review fixes are included in the same delivery.
