@@ -3,6 +3,7 @@ package com.kinderman.sdo.ui
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 fun SdoField(
@@ -29,4 +30,17 @@ fun SdoField(
         keyboardOptions = keyboardOptions,
         onValue = onValueChange,
     )
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoFieldPreview() {
+    SdoTheme {
+        SdoField(
+            label = "NOME DO PERSONAGEM",
+            value = "Kaelen Vance",
+            onValueChange = {},
+            supportingText = "Identificação principal",
+        )
+    }
 }

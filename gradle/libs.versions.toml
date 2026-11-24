@@ -9,6 +9,8 @@ junit = "4.13.2"
 kotlinx = "1.11.0"
 lifecycle = "2.11.0"
 room = "2.8.5"
+uiToolingPreview = "1.12.1"
+uiTooling = "1.12.1"
 
 [libraries]
 gson = { group = "com.google.code.gson", name = "gson", version = "2.15.0" }
@@ -39,5 +41,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinx" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 
 [plugins]

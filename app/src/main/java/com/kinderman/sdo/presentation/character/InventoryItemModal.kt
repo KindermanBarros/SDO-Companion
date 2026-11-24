@@ -79,6 +79,8 @@ import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.SdoTheme
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.kinderman.sdo.ui.sdoClickable
 import kotlin.math.ceil
 
@@ -1552,6 +1554,26 @@ private fun EmptyBuilderCatalogState(onDismiss: () -> Unit) {
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth(),
             style = SdoActionStyle.SECONDARY,
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun InventoryItemModalPreview() {
+    SdoTheme {
+        InventoryItemModal(
+            mode = ItemModalMode.Sheet,
+            tab = ItemModalTab.CATALOG,
+            itemCatalog = emptyList(),
+            ashCatalog = emptyList(),
+            regionOptions = listOf("Mão Direita", "Tronco"),
+            itemCreationDraft = null,
+            onDraftChange = {},
+            onDismiss = {},
+            onAddCatalogItems = {},
+            onAddItem = {},
+            onAddAsh = { _, _ -> },
         )
     }
 }

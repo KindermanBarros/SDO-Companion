@@ -6,7 +6,7 @@ Android companion for creating and managing SDO RPG character sheets, running ca
 
 | Capability | Living requirements | Status |
 |---|---|---|
-| Character sheets | [Character sheets](requirements/character-sheets.md) | Active (`Room v36`, creation wizard, sheet sections 1–16) |
+| Character sheets | [Character sheets](requirements/character-sheets.md) | Active (`Room v37`, creation wizard, sheet sections 1–18) |
 | Campaigns & play modes | [Campaigns](requirements/campaigns.md) | Active (campaigns, invites, journal, Session & GM modes) |
 | RPG codex & rules | [Codex](requirements/codex.md) | Active (bundled catalogs + 1,853 atomic handbook rules) |
 | Synchronization | [Synchronization](requirements/synchronization.md) | Active (100% Spark Firestore Protocol v2) |

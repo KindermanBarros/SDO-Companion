@@ -14,6 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 /** Theme-aware metadata; delimiters retain their literal text and neutral emphasis. */
 @Composable
@@ -53,4 +54,12 @@ fun SdoMetadataText(
         overflow = overflow,
         autoSize = autoSize,
     )
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoMetadataTextPreview() {
+    SdoTheme {
+        SdoMetadataText(text = "NV 05 // ARCANO // SDO-01")
+    }
 }

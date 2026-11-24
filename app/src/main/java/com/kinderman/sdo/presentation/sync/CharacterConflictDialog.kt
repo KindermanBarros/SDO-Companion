@@ -39,6 +39,8 @@ import com.kinderman.sdo.ui.SdoButton
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoOutlinedButton
 import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.SdoTheme
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 fun CharacterConflictDialog(
@@ -438,5 +440,20 @@ private fun VersionChoice(
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun CharacterConflictDialogPreview() {
+    SdoTheme {
+        CharacterConflictDialog(
+            conflict = CharacterSyncConflict(
+                local = com.kinderman.sdo.domain.model.Character(id = "char-1", name = "Kaelen Vance"),
+                remote = com.kinderman.sdo.domain.model.Character(id = "char-1", name = "Kaelen Vance", level = 2),
+                remoteUpdatedAt = 1L,
+            ),
+            onResolve = {},
+        )
     }
 }

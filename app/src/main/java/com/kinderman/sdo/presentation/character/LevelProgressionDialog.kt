@@ -25,6 +25,8 @@ import com.kinderman.sdo.domain.model.ProgressionReward
 import com.kinderman.sdo.domain.model.ProgressionRewardType
 import com.kinderman.sdo.domain.model.basicKnowledgeId
 import com.kinderman.sdo.domain.progression.LevelProgression
+import com.kinderman.sdo.ui.SdoTheme
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 internal fun LevelProgressionDialog(
@@ -132,3 +134,16 @@ private fun buildRewards(levels: List<Int>, choices: Map<String, String>) = leve
 } }
 
 private val knowledgeKinds = setOf(CatalogKind.ACQUIRED_KNOWLEDGE, CatalogKind.ARCANE_KNOWLEDGE, CatalogKind.BATTLE_TECHNIQUE)
+
+@PreviewLightDark
+@Composable
+private fun LevelProgressionDialogPreview() {
+    SdoTheme {
+        LevelProgressionDialog(
+            character = Character(id = "char-1", name = "Kaelen Vance", level = 3),
+            catalog = emptyList(),
+            onDismiss = {},
+            onConfirm = {},
+        )
+    }
+}

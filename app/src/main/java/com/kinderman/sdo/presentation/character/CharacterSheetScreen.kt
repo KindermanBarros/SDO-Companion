@@ -11,22 +11,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import com.kinderman.sdo.ui.SdoIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -34,9 +32,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import com.kinderman.sdo.ui.SdoTextButton
-import com.kinderman.sdo.ui.SdoScreenMasthead
-import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,40 +39,41 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kinderman.sdo.domain.model.Character
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kinderman.sdo.domain.model.DeityDetailView
 import com.kinderman.sdo.domain.model.DivineTier
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.creation.CharacterCreation
-import com.kinderman.sdo.domain.model.CharacterLock
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.CharacterLock
+import com.kinderman.sdo.domain.model.ResourceValue
+import com.kinderman.sdo.domain.model.UserRole
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
-import com.kinderman.sdo.ui.Acid
-import com.kinderman.sdo.ui.AcidCyan
+import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.ui.Barcode
 import com.kinderman.sdo.ui.ComplianceMark
 import com.kinderman.sdo.ui.CyberGrungeHeroFont
 import com.kinderman.sdo.ui.HudBackground
-import com.kinderman.sdo.ui.Ice
-import com.kinderman.sdo.ui.Muted
-import com.kinderman.sdo.ui.Signal
-import com.kinderman.sdo.ui.TechPanel
-import com.kinderman.sdo.ui.TechInterfaceFont
-import com.kinderman.sdo.ui.TelemetryTag
-import com.kinderman.sdo.ui.Void
 import com.kinderman.sdo.ui.LocalSdoPreferences
+import com.kinderman.sdo.ui.SdoIconButton
+import com.kinderman.sdo.ui.SdoPreferences
+import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.SdoTheme
+import com.kinderman.sdo.ui.SdoThemeVariant
 import com.kinderman.sdo.ui.SdoVisualMode
+import com.kinderman.sdo.ui.TechPanel
+import com.kinderman.sdo.ui.TelemetryTag
 import kotlinx.coroutines.launch
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -515,5 +511,60 @@ internal fun SheetHero(
                 tint = if (saveError == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
             )
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun CharacterSheetScreenPreview() {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        CharacterSheetScreen(
+            character = Character(
+                id = "char-1",
+                name = "Kaelen Vance",
+                race = "Humano",
+                occupation = "Infiltrador",
+                level = 3,
+                life = ResourceValue(current = 18, maximum = 24),
+                arcane = ResourceValue(current = 10, maximum = 14),
+            ),
+            session = UserSession(
+                uid = "user-1",
+                displayName = "Jogador",
+                email = "player@sdo.app",
+                role = UserRole.ADMIN
+            ),
+            catalog = emptyList(),
+            snackbarHost = {},
+            onBack = {},
+            onClose = {},
+            onOpenSession = {},
+            onSave = {},
+            onAutosave = {},
+            onPlayerLock = { _, _ -> },
+            onHistorianLock = { _, _ -> },
+            onDelete = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun CharacterSheetScreenMissingPreview() {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        CharacterSheetScreen(
+            character = null,
+            session = null,
+            catalog = emptyList(),
+            snackbarHost = {},
+            onBack = {},
+            onClose = {},
+            onOpenSession = {},
+            onSave = {},
+            onAutosave = {},
+            onPlayerLock = { _, _ -> },
+            onHistorianLock = { _, _ -> },
+            onDelete = {},
+        )
     }
 }

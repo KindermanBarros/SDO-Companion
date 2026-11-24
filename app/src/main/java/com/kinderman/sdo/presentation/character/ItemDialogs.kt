@@ -40,7 +40,9 @@ import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.sdoClickable
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 internal fun EquipmentGlossaryDialog(
@@ -226,4 +228,12 @@ private fun InventoryItem.exclusiveSlot(): String = when {
     category.equals("Armadura", true) -> "armadura"
     category.equals("Acessório", true) -> "acessório"
     else -> ""
+}
+
+@PreviewLightDark
+@Composable
+private fun EquipmentGlossaryDialogPreview() {
+    SdoTheme {
+        EquipmentGlossaryDialog(onDismiss = {})
+    }
 }

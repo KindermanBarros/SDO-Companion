@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -135,5 +136,18 @@ fun SdoNavigationBar(items: List<SdoNavigationItem>, modifier: Modifier = Modifi
                 )
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoNavigationBarPreview() {
+    SdoTheme {
+        SdoNavigationBar(
+            items = listOf(
+                SdoNavigationItem(label = "FICHAS", selected = true, icon = Icons.Default.Warning, onClick = {}),
+                SdoNavigationItem(label = "DIÁRIO", selected = false, icon = Icons.Default.Warning, onClick = {}),
+            ),
+        )
     }
 }

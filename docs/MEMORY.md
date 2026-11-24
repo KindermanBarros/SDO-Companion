@@ -4,20 +4,20 @@ Centralizes active task states (`InProgress` / `InDevReview`), durable project i
 
 ## Active & Recent Deliveries (`InDevReview`)
 
-### Deity review corrections, Presence capacity, weakening and growth (BACKLOG-026, InDevReview)
-Updated: 2026-11-24 08:25 America/La_Paz on lab/deity-system-library-inventory-fixes.
+### Deity review corrections, Presence capacity, weakening and growth (`BACKLOG-026`, `InDevReview`)
+Updated: 2026-11-24 11:18 America/La_Paz on `lab/deity-system-library-inventory-fixes` (merged with `main`).
 - Owner authorized completing the numerical rules on 2026-11-24. Fixed inventory stack quantity/load, full structured GM detail, ascension budgets and Destiny refund, Avatar spending and secured actual patron Presence, and Corruption channeling restrictions.
 - Permanent Pillars and current strength are separate. Shared capacity is twice current Presence; Anchors cost 1 and Avatars cost 2. Overload is limited to 2, costs 1 PD per excess point per scene, and suspends newest unaffordable links without debt. Scene IDs prevent duplicate charges.
 - Vulnerability suppression is 1 or 2 points, combined cap 2 per Pillar. Scene-only suppression expires on scene reset. Persistent suppression recovers 1 per confirmed restorative scene, at most once per session. Permanent growth/loss requires unique milestones and arc IDs, within category caps. Profile edits preserve permanent Pillars.
 - The sheet exposes power management, restoration confirmation, milestones and fate through GM controls. Sealing suspends links and prevents channeling. Erasure is a resolved-encounter domain operation requiring a Greater God, 7 PD, exposed essence, an established vulnerability and overcome safeguards. Its adjudication remains with the GM.
-- Updated canonical Deidades e Avatares.md and Corrup??o Divina.md in sibling solidao-dos-oprimidos, preserving its unrelated dirty files. Deity resistance contradictions are reconciled, Greater God reserve is 10 PD and other categories 5, and recovery rounds Sanity cost up with minimum 1.
+- Updated canonical `Deidades e Avatares.md` and `Corrupção Divina.md` in sibling `solidao-dos-oprimidos`, preserving its unrelated dirty files. Deity resistance contradictions are reconciled, Greater God reserve is 10 PD and other categories 5, and recovery rounds Sanity cost up with minimum 1.
 - Sustained-channeling controls propagate into generated modifiers/conditions. Rupture ends explicitly sustained effects on the current sheet. Legacy effects without metadata remain unchanged; other sheets require their own adjudication.
-- Validation passed: 227 domain tests; 189 Dev and 189 Prod unit tests; Dev Debug assembly; 73 Firebase emulator Rules tests; 2 Galaxy S24 Ultra API 37 instrumented cases covering both themes, player access and idempotent scene charges; all four catalog generators; presentation import check; harness gate and scoped diff. Prod Debug lint passed on stable-source retry after an earlier Kotlin analyzer crash. Both theme screenshots were inspected from temporary captures.
-- Independent review found and verified fixes for same-tier Pillar redistribution bypass and persistent scene-only suppression. The scene-only editor choice is wired to domain state and expires on scene reset. Canonical vault edits remain in its existing dirty working tree; the Companion commit contains the application and task documentation.
+- Reconciled with `main` (`cc176fe` Compose previews) on `lab/deity-system-library-inventory-fixes`, fixing `InventoryItemModalPreview` signature/UTF-8 encoding and unlinking the redundant `SDO-Companion-deities` worktree.
+- Validation passed on merged branch: `:core:domain:test` (227 tests), `:app:testDevDebugUnitTest` (189 tests), `:app:testProdDebugUnitTest` (189 tests), `:app:assembleDevDebug`, `:app:lintProdDebug`, `npm --prefix firebase run test:rules` (73/73), all four catalog generators (`generate_deity_catalog.py`, `generate_catalog.py`, `generate_gem_catalog.py`, `generate_item_catalog.py`), presentation design-system import boundary, and `.agents/gates/validate-harness.ps1`. Physical-device runtime verification and Compose preview rendering remain unverified.
 
 ### Deity system, compact Library/Inventory filters & inventory/character-creation fixes (`BACKLOG-025`, `InDevReview`)
 Updated: 2026-11-23 23:03 America/La_Paz on `lab/deity-system-library-inventory-fixes`.
-- **Owner rule confirmation**: **Greater Gods (`Deus Maior`) have a base Destiny limit (`destinyBaseCeiling`) of `10 PD`** (implemented in `DivineSystem.kt:410`; Mortal/Avatar/Demigod/Lesser God base ceiling remains `5 PD`, plus `destiny.adjustment` + modifiers).
+- **Owner rule confirmation**: **Greater Gods (`Deus Maior`) have a base Destiny limit (`destinyBaseCeiling`) of `10 PD`** (implemented in `DivineSystem.kt:438`; Mortal/Avatar/Demigod/Lesser God base ceiling remains `5 PD`, plus `destiny.adjustment` + modifiers).
 - **Completed (Pipeline, Domain, Data/Persistence Room v37, Sync & Firestore Rules)**:
   1. **Vault Deity Pipeline (`tools/generate_deity_catalog.py`, `tools/generate_catalog.py`, `.github/workflows/sdo-companion-android.yml`)**:
      - Imported all 16 deity sheets + `Deidades.md` index from `..\solidao-dos-oprimidos` (12 Lesser/Greater Gods: 3 `Deus Maior` + 9 `Deus Menor`; 3 `Semideus`/`Semideusa`; 1 `Avatar`).
@@ -36,6 +36,11 @@ Updated: 2026-11-23 23:03 America/La_Paz on `lab/deity-system-library-inventory-
 - **Spoiler isolation**. Library and Historian use repository authorization and clear dialog state when campaign or viewer permissions change. Character-sheet references load public details. The app purges other viewers' offline cache data on session changes. Firestore limits global GM reads to a recent authorized campaign context, and the client clears that context after a fetch. Ascension authorization runs on its specific field write to preserve the operation expression budget.
 - **Evidence**. Dev Debug assembly passed. Domain tests passed (194), both Android unit suites passed (189 each), and Firebase emulator Rules tests passed (65). Prod Debug lint, all four catalog generators, the presentation import check, and the harness gate passed. Galaxy S24 Ultra emulator smoke verified the Deidades filter returns 16 records and local player details show public lore. Authenticated GM UI, divine sheet controls, and inventory picker still need runtime acceptance.
 - **Deployment**. The GM catalog still needs to be seeded in the target Firebase project and the revised Firestore Rules deployed before online GM lore is available there.
+
+### Compose previews (`InDevReview`)
+Updated: 2026-11-23 22:22 America/La_Paz.
+- Added Android Studio previews for presentation screens and shared controls, including light and dark theme previews where applicable.
+- Dev Debug assembly passed. Android Studio preview rendering remains unverified.
 
 ### Admin field-update `ACCESS_DENIED` fixes, condition `summary` unification & admin Rules ACLs (`BACKLOG-024`, `InDevReview`)
 Updated: 2026-11-20 14:25 America/La_Paz on `main`.
@@ -79,7 +84,7 @@ Updated: 2026-11-19 America/La_Paz (PRs #159, #160).
 
 ## Durable Project Invariants
 
-- **Architecture**: `:core:domain` (pure Kotlin/JVM, zero Android/Firebase deps) + `:app` (Compose, Hilt 2.60.1, Room v36 `exportSchema = true`, custom `AppSurface` navigation in `SdoApp`).
+- **Architecture**: `:core:domain` (pure Kotlin/JVM, zero Android/Firebase deps) + `:app` (Compose, Hilt 2.60.1, Room v37 `exportSchema = true`, custom `AppSurface` navigation in `SdoApp`).
 - **Design system**: presentation screens must use `Sdo*` controls (`Standard` & `Cybergrunge` modes); CI blocks raw Material3 `Button`/`Card`/`Switch`/etc. imports in `presentation/`.
 - **Spark Firestore Protocol v2 (`protocolVersion = 2`, `schemaVersion = 2`)**: 100% Firebase Spark (no Cloud Functions, Cloud Storage, or RTDB sheet mirrors). Decomposed `characters/{id}` + `fields/` + `items/` + `items/{id}/fields/` + immutable `operations/{opId}` receipts (`<=10` Rules accesses/rule, `<=20`/tx), `presence/` (`<=120s` TTL), and `media/avatar` (`<=64 KiB`, `<=256px`). Isolated RTDB retains only `grid/{campaignId}/{gridId}`.
 

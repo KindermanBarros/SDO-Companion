@@ -32,8 +32,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.R
+import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignJournalEntry
 import com.kinderman.sdo.domain.model.CampaignJournalPolicy
 import com.kinderman.sdo.domain.model.CampaignState
@@ -53,6 +57,9 @@ import com.kinderman.sdo.ui.TechPanel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.kinderman.sdo.ui.SdoPreferences
+import com.kinderman.sdo.ui.SdoTheme
+import com.kinderman.sdo.ui.SdoThemeVariant
 
 private val StandardInfoBorderColor = Color(0xB85690DA)
 private val StandardLiveIndicatorColor = Color(0xFF00BCD4)
@@ -708,4 +715,101 @@ private fun formatJournalTimestamp(epochMs: Long): String {
     if (epochMs <= 0L) return "agora"
     val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("pt-BR"))
     return formatter.format(Date(epochMs))
+}
+
+private class JournalPreviewStateProvider : PreviewParameterProvider<JournalUiState> {
+    private val sampleCampaign = Campaign(
+        id = "camp-1",
+        name = "Crônicas de Neon-4",
+    )
+    private val sampleEntries = listOf(
+        CampaignJournalEntry(
+            id = "entry-1",
+            campaignId = "camp-1",
+            title = "Infiltração no Setor 7",
+            body = "A equipe conseguiu desativar os sensores térmicos antes da troca de turno.",
+            authorName = "Kaelen",
+            updatedAt = 1763600000000L,
+        ),
+        CampaignJournalEntry(
+            id = "entry-2",
+            campaignId = "camp-1",
+            title = "Contato com o Informante",
+            body = "Recebemos as coordenadas do cofre subterrâneo em troca de dois módulos de memória.",
+            authorName = "Vesper",
+            updatedAt = 1763510000000L,
+        ),
+    )
+
+    override val values: Sequence<JournalUiState> = sequenceOf(
+        JournalUiState(
+            campaign = sampleCampaign,
+            entries = sampleEntries,
+            syncState = JournalSyncState.LIVE,
+            isActiveMember = false,
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            entries = emptyList(),
+            syncState = JournalSyncState.LIVE,
+            isActiveMember = true,
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            syncState = JournalSyncState.LOADING,
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            syncState = JournalSyncState.ACCESS_REVOKED,
+            statusMessage = "Sem conexão com o servidor.",
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            syncState = JournalSyncState.UNAVAILABLE_OFFLINE,
+            statusMessage = "Indisponível Offline.",
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            syncState = JournalSyncState.ACCESS_REVOKED,
+            statusMessage = "Acesso revogado",
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            syncState = JournalSyncState.ARCHIVED,
+            statusMessage = "Arquivado.",
+        ),
+        JournalUiState(
+            campaign = sampleCampaign,
+            syncState = JournalSyncState.ERROR,
+            statusMessage = "Erro.",
+        ),
+    )
+}
+
+@PreviewLightDark
+@Composable
+private fun JournalScreenPreview(
+    @PreviewParameter(JournalPreviewStateProvider::class) state: JournalUiState,
+) {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        JournalScreen(
+            state = state,
+            onRetry = {},
+            onOpenEntry = {},
+            onNewEntry = {},
+            onEditEntry = {},
+            onUpdateDraft = { _, _ -> },
+            onSaveDraft = {},
+            onReloadConflict = {},
+            onRequestReplaceConflict = {},
+            onDismissReplaceConflict = {},
+            onConfirmReplaceConflict = {},
+            onRequestDelete = {},
+            onDismissDelete = {},
+            onConfirmDelete = {},
+            onBackPressed = {},
+            onDismissDiscard = {},
+            onConfirmDiscard = {},
+        )
+    }
 }

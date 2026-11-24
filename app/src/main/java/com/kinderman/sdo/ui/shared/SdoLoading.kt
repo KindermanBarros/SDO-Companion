@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
@@ -221,6 +222,26 @@ fun SdoGlobalSyncStatusPill(
                 color = tint,
                 style = MaterialTheme.typography.labelSmall,
             )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun CyberLoadingScreenPreview() {
+    SdoTheme {
+        CyberLoadingScreen(mode = CyberLoadingMode.CHARACTERS)
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoGlobalSyncStatusPillPreview() {
+    SdoTheme {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SdoGlobalSyncStatusPill(syncing = false, justUpdated = false, offline = false, hasError = false, onClick = {})
+            SdoGlobalSyncStatusPill(syncing = true, justUpdated = false, offline = false, hasError = false, onClick = {})
+            SdoGlobalSyncStatusPill(syncing = false, justUpdated = false, offline = true, hasError = false, onClick = {})
         }
     }
 }
