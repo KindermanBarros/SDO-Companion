@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 
 /** Drop-in contract for low-emphasis actions previously declared directly in screens. */
@@ -188,3 +189,13 @@ fun Modifier.sdoClickable(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ): Modifier = clickable(enabled = enabled, onClick = onClick)
+
+@PreviewLightDark
+@Composable
+private fun SdoPrimitiveControlsPreview() {
+    SdoTheme {
+        SdoButton(onClick = {}) {
+            androidx.compose.material3.Text("AÇÃO")
+        }
+    }
+}

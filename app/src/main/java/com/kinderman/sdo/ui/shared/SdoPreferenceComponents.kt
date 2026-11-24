@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 
 data class SdoToggleOption(
@@ -97,5 +98,19 @@ fun <T> SdoChoicePanel(
                 }
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoTogglePanelPreview() {
+    SdoTheme {
+        SdoTogglePanel(
+            title = "PREFERÊNCIAS",
+            options = listOf(
+                SdoToggleOption("MODO COMPACTO", selected = true, onChange = {}),
+                SdoToggleOption("ANIMAÇÕES", selected = false, onChange = {}),
+            ),
+        )
     }
 }

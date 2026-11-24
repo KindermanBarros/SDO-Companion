@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -138,4 +139,16 @@ internal fun responsiveColumnCount(
     val spacing = spacingDp.coerceAtLeast(0f)
     return ((widthDp.coerceAtLeast(0f) + spacing) / (minimumWidth + spacing)).toInt()
         .coerceIn(1, maxColumns.coerceAtLeast(1))
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoControlComponentsPreview() {
+    SdoTheme {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SdoActionButton("PRIMÁRIO", onClick = {}, style = SdoActionStyle.PRIMARY)
+            SdoActionButton("SECUNDÁRIO", onClick = {}, style = SdoActionStyle.SECONDARY)
+            SdoFilterChip(label = "FILTRO", selected = true, onClick = {})
+        }
+    }
 }

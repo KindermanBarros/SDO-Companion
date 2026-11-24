@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.sp
 
 /** Keeps a single-word Cybergrunge card heading intact by fitting its font to the available width. */
@@ -23,5 +24,13 @@ fun SdoCardTitle(
         AdaptiveSingleLineText(text, modifier, color, style, minimumSize = 1.sp)
     } else {
         Text(text, modifier = modifier, color = color, style = style)
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoCardTitlePreview() {
+    SdoTheme {
+        SdoCardTitle(text = "ATRIBUTOS")
     }
 }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,17 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,11 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
@@ -57,11 +54,13 @@ import com.kinderman.sdo.ui.HudBackground
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.SdoCardTitle
 import com.kinderman.sdo.ui.SdoFilterChip
-import com.kinderman.sdo.ui.SdoIconButton
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoResponsiveGrid
 import com.kinderman.sdo.ui.SdoScreenMasthead
+import com.kinderman.sdo.ui.SdoTheme
+import com.kinderman.sdo.ui.SdoThemeVariant
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
@@ -174,7 +173,6 @@ private val sessionAdditionTypes = setOf(
     SessionOperationType.EFFECT_OPERATION,
 )
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun LibraryScreen(
     campaigns: List<Campaign>,
@@ -259,6 +257,7 @@ fun LibraryScreen(
                 (ruleKeyword == "Todas" || keywords.any { it.equals(ruleKeyword, ignoreCase = true) }) &&
                 (ruleQuery.isBlank() ||
                     listOf(topic.title, topic.chapter, topic.part, topic.category, topic.summary)
+                        .asSequence()
                         .plus(keywords)
                         .plus(topic.formulas)
                         .plus(topic.scales)
@@ -619,7 +618,6 @@ fun LibraryScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GameRuleCard(
     topic: GameRuleTopic,
@@ -781,3 +779,18 @@ private fun GameRuleCard(
 
 private fun formatLibraryTime(timestamp: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(timestamp))
+
+@PreviewLightDark
+@Composable
+private fun LibraryScreenPreview() {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        LibraryScreen(
+            campaigns = listOf(Campaign(id = "camp-1", name = "Crônicas de Neon-4")),
+            characters = listOf(Character(id = "char-1", name = "Kaelen")),
+            catalog = emptyList(),
+            campaignLibrary = emptyList(),
+            audit = emptyList(),
+            onBack = {},
+        )
+    }
+}

@@ -4,6 +4,12 @@ Centralizes active task states (`InProgress` / `InDevReview`), durable project i
 
 ## Active & Recent Deliveries (`InDevReview`)
 
+### Compose previews (InDevReview)
+
+Updated: 2026-11-23 22:22 America/La_Paz.
+- Added Android Studio previews for presentation screens and shared controls, including light and dark theme previews where applicable.
+- Dev Debug assembly passed. Android Studio preview rendering remains unverified.
+
 ### Admin field-update `ACCESS_DENIED` fixes, condition `summary` unification & admin Rules ACLs (`BACKLOG-024`, `InDevReview`)
 Updated: 2026-11-20 14:25 America/La_Paz on `main`.
 - **Nested-`null` `baseValue` & partial-convergence receipt fixes (`SparkFirestoreSyncEngine`, `SparkWireCodec`)**:

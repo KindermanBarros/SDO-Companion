@@ -50,10 +50,16 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
 import com.kinderman.sdo.ui.SdoScreenMasthead
+import com.kinderman.sdo.ui.SdoPreferences
+import com.kinderman.sdo.ui.SdoTheme
+import com.kinderman.sdo.ui.SdoThemeVariant
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 
 @Composable
 fun LoginScreen(
-    activity: MainActivity,
+    activity: MainActivity? = null,
     state: AuthUiState,
     allowDemo: Boolean,
     onGoogleLogin: () -> Unit,
@@ -166,5 +172,28 @@ fun LoginScreen(
                 },
             )
         }
+    }
+}
+
+private class LoginPreviewStateProvider : PreviewParameterProvider<AuthUiState> {
+    override val values: Sequence<AuthUiState> = sequenceOf(
+        AuthUiState(),
+        AuthUiState(loading = true),
+        AuthUiState(error = "Falha ao autenticar com o Google. Verifique sua conexão."),
+    )
+}
+
+@PreviewLightDark
+@Composable
+private fun LoginScreenPreview(
+    @PreviewParameter(LoginPreviewStateProvider::class) state: AuthUiState,
+) {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        LoginScreen(
+            state = state,
+            allowDemo = true,
+            onGoogleLogin = {},
+            onDemo = {},
+        )
     }
 }
