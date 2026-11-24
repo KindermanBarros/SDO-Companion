@@ -17,3 +17,5 @@ Active architecture (`protocolVersion = 2`, `schemaVersion = 2`) running 100% on
 | **Presence, Media & Grid** | Firestore `presence/{uid}_{connId}` (`<=120s` TTL); local full-res `localPhotoUri` + optional `<=64 KiB` `media/avatar` thumbnail; isolated RTDB `grid/{campaignId}/{gridId}` with RTDB-only `acl/{uid}`. |
 
 Deployment and migration procedures: [Firebase deploy](../../firebase-deploy.md).
+
+**Deity data (BACKLOG-025)**. Ascension and scene runtime use independent Spark fields. Ascension changes require administrator or campaign GM access. Room v37 stores the GM lore cache by viewer, campaign and deity.

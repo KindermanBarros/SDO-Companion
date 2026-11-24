@@ -171,6 +171,7 @@ private fun CatalogKind.catalogLabel(): String = when (this) {
     CatalogKind.ASH -> "Cinza"
     CatalogKind.RUNE -> "Runa"
     CatalogKind.ITEM -> "Item"
+    CatalogKind.DEITY -> "Deidade"
     CatalogKind.ACQUIRED_KNOWLEDGE -> "Conhecimento adquirido"
     CatalogKind.ARCANE_KNOWLEDGE -> "Conhecimento arcano"
     CatalogKind.BATTLE_TECHNIQUE -> "Poder marcial"

@@ -30,8 +30,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.addInventoryItem
-import com.kinderman.sdo.domain.model.withAddedAsh
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -123,15 +121,12 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
 
 @Composable
 internal fun InventorySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
-    var dialog by remember { mutableStateOf<String?>(null) }
+    var showGlossary by rememberSaveable(character.id) { mutableStateOf(false) }
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
     val hasInitialShopping = character.inventory.any { it.participatesInInitialCreation() }
     val remainingHeritage = when {
         hasInitialShopping || character.inventory.isEmpty() -> (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0)
         else -> 0 // Personagens anteriores ao fluxo de PH permanecem válidos.
-    }
-    LaunchedEffect(remainingHeritage) {
-        if (remainingHeritage > 0 && dialog == null) dialog = "initial"
     }
     TechPanel {
         SectionHeader("10", "Inventário")
@@ -147,51 +142,16 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
                 onValue = { onChange(character.copy(inventory = character.inventory.replace(index, it))) },
             )
         }
-        AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
-        if (remainingHeritage > 0) {
-            AddButton("Equipamentos iniciais // escolher ou construir", enabled) { dialog = "initial" }
-        }
-        if (remainingHeritage == 0) {
-            AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
-            AddButton("Construtor de item // criação durante o jogo", enabled) { dialog = "builder" }
-            AddButton("Adicionar objeto narrativo sem valores mecânicos", enabled) { onChange(character.addInventoryItem(InventoryItem())) }
-        }
-    }
-    when (dialog) {
-        "glossary" -> EquipmentGlossaryDialog { dialog = null }
-        "initial", "initial_catalog", "initial_builder" -> InventoryItemModal(
-            mode = ItemModalMode.Creation(remainingHeritage),
-            itemCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ITEM },
-            ashCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ASH },
-            regionOptions = character.bodyRegions.map { it.name },
-            initialTab = if (dialog == "initial_builder") ItemModalTab.BUILDER else ItemModalTab.CATALOG,
-            onDismiss = { dialog = null },
-            onAddItem = { item ->
-                onChange(character.addInventoryItem(item))
-                dialog = null
-            },
-            onAddAsh = { entry, doses ->
-                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, initialCreation = true))
-                dialog = null
-            },
-        )
-        "catalog", "builder" -> InventoryItemModal(
-            mode = ItemModalMode.Sheet,
-            itemCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ITEM },
-            ashCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ASH },
-            regionOptions = character.bodyRegions.map { it.name },
-            initialTab = if (dialog == "builder") ItemModalTab.BUILDER else ItemModalTab.CATALOG,
-            onDismiss = { dialog = null },
-            onAddItem = { item ->
-                onChange(character.addInventoryItem(item))
-                dialog = null
-            },
-            onAddAsh = { entry, doses ->
-                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, initialCreation = false))
-                dialog = null
-            },
+        AddButton("Glossário de itens e materiais", true) { showGlossary = true }
+        InventoryAcquisitionActions(
+            character = character,
+            catalog = catalog,
+            mode = if (remainingHeritage > 0) ItemModalMode.Creation(remainingHeritage) else ItemModalMode.Sheet,
+            enabled = enabled,
+            onChange = onChange,
         )
     }
+    if (showGlossary) EquipmentGlossaryDialog(onDismiss = { showGlossary = false })
 }
 
 @Composable

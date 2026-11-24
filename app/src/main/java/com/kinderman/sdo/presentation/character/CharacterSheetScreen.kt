@@ -1,7 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
+import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -364,6 +364,8 @@ fun CharacterSheetScreen(
                 ) else CharacterSheetPager(
                     character = current,
                     saveError = saveError,
+                    canChangeAscension = editable &&
+                        CharacterAccessPolicy.canChangeAscension(session, isCampaignResponsible),
                     session = session,
                     catalog = catalog,
                     editable = editable,
@@ -458,7 +460,7 @@ internal fun SheetHero(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = if (editable) Modifier.clickable(onClick = onOpenPhotoPicker) else Modifier,
+                modifier = if (editable) Modifier.sdoClickable(onClick = onOpenPhotoPicker) else Modifier,
             ) {
                 com.kinderman.sdo.ui.SdoCharacterAvatar(
                     photoUri = character.photoUri,

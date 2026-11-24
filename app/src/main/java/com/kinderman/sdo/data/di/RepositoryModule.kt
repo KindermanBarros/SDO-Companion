@@ -1,8 +1,11 @@
 package com.kinderman.sdo.data.di
 
 import com.kinderman.sdo.data.auth.FirebaseAuthRepository
+import com.kinderman.sdo.data.repository.DeityGmRemoteDataSource
 import com.kinderman.sdo.data.repository.FirestoreCampaignJournalRepository
+import com.kinderman.sdo.data.repository.FirestoreDeityGmRemoteDataSource
 import com.kinderman.sdo.data.repository.LocalCatalogRepository
+import com.kinderman.sdo.data.repository.SecuredDeityRepository
 import com.kinderman.sdo.data.repository.SyncedCampaignRepository
 import com.kinderman.sdo.data.repository.SyncedCharacterRepository
 import com.kinderman.sdo.data.repository.SyncedOperationsRepository
@@ -14,6 +17,7 @@ import com.kinderman.sdo.domain.repository.CampaignRepository
 import com.kinderman.sdo.domain.repository.CatalogRepository
 import com.kinderman.sdo.domain.repository.CharacterRepository
 import com.kinderman.sdo.domain.repository.ConnectivityMonitor
+import com.kinderman.sdo.domain.repository.DeityRepository
 import com.kinderman.sdo.domain.repository.OperationsRepository
 import com.kinderman.sdo.domain.repository.OwnerRepository
 import dagger.Binds
@@ -58,4 +62,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindConnectivityMonitor(impl: AndroidConnectivityMonitor): ConnectivityMonitor
+
+    @Binds
+    @Singleton
+    abstract fun bindDeityGmRemoteDataSource(impl: FirestoreDeityGmRemoteDataSource): DeityGmRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindDeityRepository(impl: SecuredDeityRepository): DeityRepository
 }

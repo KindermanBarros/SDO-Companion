@@ -450,6 +450,8 @@ data class Character(
     val notes: String = "",
     val transports: List<CharacterTransport> = emptyList(),
     val familiars: List<CharacterFamiliar> = emptyList(),
+    val divineAscension: CharacterDivineAscension = CharacterDivineAscension(),
+    val divineRuntime: CharacterDivineRuntime = CharacterDivineRuntime(),
     val personalNotes: List<PersonalNote> = emptyList(),
     val lockType: CharacterLock = CharacterLock.NONE,
     val lockedBy: String = "",
@@ -469,8 +471,8 @@ data class Character(
     val isLocked: Boolean get() = lockType != CharacterLock.NONE
     val currentLoad: Int get() = inventory.filterNot { it.inventoryState == InventoryState.STORED }.sumOf { it.effectiveLoad() }
     val backpackCapacity: Int get() = inventory
-        .filter { it.inventoryState == InventoryState.EQUIPPED }
-        .filter { it.category.equals("Recipiente de Carga", true) || it.backpackCapacity > 0 }
+        .filter { it.inventoryState == InventoryState.EQUIPPED && !it.isBroken }
+        .filter { it.isContainerItem() }
         .maxOfOrNull(InventoryItem::backpackCapacity) ?: 0
     val maximumLoad: Int get() = 2 + attributeValue("FOR") + backpackCapacity
     val excessLoad: Int get() = (currentLoad - maximumLoad).coerceAtLeast(0)
@@ -499,7 +501,11 @@ data class Character(
     val sanityMaximum: Int get() = (sanityBase + sanity.adjustment + progressionSanityBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY")).coerceAtLeast(0)
     val arcaneMaximum: Int get() = (arcaneBase + arcane.adjustment + progressionArcaneBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ARCANE")).coerceAtLeast(0)
     val energyMaximum: Int get() = (energyBase + energy.adjustment + progressionEnergyBonus + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "ENERGY")).coerceAtLeast(0)
-    val destinyMaximum: Int get() = (5 + destiny.adjustment + powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "DESTINY")).coerceAtLeast(0)
+    val destinyMaximum: Int get() = (
+        derivedDivineEffects().destinyBaseCeiling +
+            destiny.adjustment +
+            powerModifier(AbilityModifierTarget.RESOURCE_MAXIMUM, "DESTINY")
+    ).coerceAtLeast(0)
 
     fun lifeCalculation() = CalculatedValue(lifeBase, life.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "LIFE"))
     fun sanityCalculation() = CalculatedValue(sanityBase, sanity.adjustment, powerValueModifiers(AbilityModifierTarget.RESOURCE_MAXIMUM, "SANITY"))
@@ -570,10 +576,10 @@ data class Character(
         val typedRegion = canonicalBody.regions[regionIndex]
         val regionName = typedRegion.name
         val candidates = inventory.filter { it.id in itemIds && !it.isBroken && it.matchesRegion(regionName) }
-        val armor = candidates.filter { it.category.equals("Armadura", true) }.takeLast(1)
-        val accessories = candidates.filter { it.category.equals("Acessório", true) }.takeLast(1)
+        val armor = candidates.filter { it.isArmorPieceItem() }.takeLast(1)
+        val accessories = candidates.filter { it.isAccessoryItem() }.takeLast(1)
         val other = candidates.filterNot {
-            it.category.equals("Armadura", true) || it.category.equals("Acessório", true)
+            it.isArmorPieceItem() || it.isAccessoryItem()
         }
         val selectedIds = (other + armor + accessories).mapTo(linkedSetOf()) { it.id }
         val updatedRegions = bodyRegions.mapIndexed { index, region ->

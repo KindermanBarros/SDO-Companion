@@ -28,6 +28,7 @@
     <string name="library_kind_ash">Cinza</string>
     <string name="library_kind_rune">Runa</string>
     <string name="library_kind_item">Item</string>
+    <string name="library_kind_deity">Deidade</string>
     <string name="library_kind_acquired_knowledge">Conhecimento adquirido</string>
     <string name="library_kind_arcane_knowledge">Conhecimento arcano</string>
     <string name="library_kind_battle_technique">Poder marcial</string>

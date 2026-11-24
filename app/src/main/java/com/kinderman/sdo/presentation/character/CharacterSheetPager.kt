@@ -29,13 +29,17 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kinderman.sdo.R
+import com.kinderman.sdo.domain.model.derivedDivineEffects
 import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.domain.model.Character
@@ -65,7 +69,12 @@ internal enum class SheetPage(val code: String, val label: String) {
     FAMILIARS("15", "FAMILIARES"),
     NOTES("16", "ANOTAÇÕES"),
     HISTORY("17", "HISTÓRIA"),
+    DIVINE("18", ""),
 }
+
+@Composable
+private fun SheetPage.displayLabel(): String =
+    if (this == SheetPage.DIVINE) stringResource(R.string.character_divine_title) else label
 
 @Composable
 internal fun CharacterSheetPager(
@@ -77,8 +86,38 @@ internal fun CharacterSheetPager(
     onOpenPhotoPicker: () -> Unit = {},
     modifier: Modifier = Modifier,
     saveError: String? = null,
+    canChangeAscension: Boolean = false,
 ) {
-    val pages = SheetPage.entries
+    val conceptual = character.derivedDivineEffects().usesConceptualPillars
+    key(character.id, conceptual) {
+        CharacterSheetPages(
+            character, session, catalog, editable, onChange, onOpenPhotoPicker,
+            modifier, saveError, canChangeAscension, conceptual,
+        )
+    }
+}
+
+@Composable
+private fun CharacterSheetPages(
+    character: Character,
+    session: UserSession,
+    catalog: List<CatalogEntry>,
+    editable: Boolean,
+    onChange: (Character) -> Unit,
+    onOpenPhotoPicker: () -> Unit,
+    modifier: Modifier,
+    saveError: String?,
+    canChangeAscension: Boolean,
+    conceptual: Boolean,
+) {
+    val pages = if (conceptual) {
+        listOf(
+            SheetPage.DIVINE, SheetPage.PROFILE, SheetPage.INVENTORY,
+            SheetPage.RECORD, SheetPage.NOTES, SheetPage.HISTORY,
+        )
+    } else {
+        SheetPage.entries
+    }
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val pageScrollStates = pages.map { rememberLazyListState() }
     val scope = rememberCoroutineScope()
@@ -108,6 +147,8 @@ internal fun CharacterSheetPager(
                 onOpenPhotoPicker = onOpenPhotoPicker,
                 scrollState = pageScrollStates[pageIndex],
                 saveError = saveError,
+                canChangeAscension = canChangeAscension,
+                conceptual = conceptual,
             )
         }
     }
@@ -182,7 +223,7 @@ private fun SheetPageNavigator(
                         AdaptiveSingleLineText(page.code, modifier = Modifier.padding(horizontal = 7.dp, vertical = 5.dp), style = MaterialTheme.typography.labelSmall, minimumSize = 8.sp, color = MaterialTheme.colorScheme.onPrimary)
                     }
                     Column(Modifier.weight(1f)) {
-                        AdaptiveSingleLineText(page.label, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, minimumSize = 10.sp)
+                        AdaptiveSingleLineText(page.displayLabel(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, minimumSize = 10.sp)
                         AdaptiveSingleLineText(
                             "SEÇÃO ${currentPage + 1} DE ${pages.size}",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -199,7 +240,7 @@ private fun SheetPageNavigator(
                     pages.forEachIndexed { index, option ->
                         androidx.compose.material3.DropdownMenuItem(
                             leadingIcon = { Text(option.code, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall) },
-                            text = { Text(option.label) },
+                            text = { Text(option.displayLabel()) },
                             onClick = {
                                 onMenuExpandedChange(false)
                                 onNavigate(index)
@@ -229,6 +270,8 @@ private fun SheetPageContent(
     onOpenPhotoPicker: () -> Unit,
     scrollState: LazyListState,
     saveError: String?,
+    canChangeAscension: Boolean,
+    conceptual: Boolean,
 ) {
     val compactCards = com.kinderman.sdo.ui.LocalSdoPreferences.current.compactCards
     LazyColumn(
@@ -238,10 +281,21 @@ private fun SheetPageContent(
         verticalArrangement = Arrangement.spacedBy(if (compactCards) 8.dp else 13.dp),
     ) {
         when (page) {
+            SheetPage.DIVINE -> {
+                if (conceptual) {
+                    item("hero") {
+                        SheetHero(character, session, saveError, editable = editable, onOpenPhotoPicker = onOpenPhotoPicker)
+                    }
+                }
+                item("divine") {
+                    CharacterDivineSection(character, catalog, editable, canChangeAscension, onChange)
+                }
+            }
+
             SheetPage.PROFILE -> {
                 item("hero") { SheetHero(character, session, saveError, editable = editable, onOpenPhotoPicker = onOpenPhotoPicker) }
                 item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade", "01") { IdentitySection(character, catalog, editable, onOpenPhotoPicker = onOpenPhotoPicker, onChange = onChange) } }
-                item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
+                if (!conceptual) item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
                 item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços", "03") { TraitSection(character, editable, onChange) } }
             }
 

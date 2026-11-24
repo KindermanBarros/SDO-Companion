@@ -26,4 +26,8 @@ object CharacterAccessPolicy {
 
     fun canTransferOwnership(session: UserSession, isCampaignResponsible: Boolean = false): Boolean =
         session.isAdmin || isCampaignResponsible
+
+    /** Only verified Administrators or the owning GM of the relevant campaign may modify a character's divine ascension. */
+    fun canChangeAscension(session: UserSession, isCampaignHistorian: Boolean = false): Boolean =
+        session.isAdmin || isCampaignHistorian
 }

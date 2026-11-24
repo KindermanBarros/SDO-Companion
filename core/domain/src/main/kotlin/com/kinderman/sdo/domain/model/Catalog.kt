@@ -10,6 +10,7 @@ enum class CatalogKind {
     ASH,
     RUNE,
     ITEM,
+    DEITY,
     ACQUIRED_KNOWLEDGE,
     ARCANE_KNOWLEDGE,
     BATTLE_TECHNIQUE,

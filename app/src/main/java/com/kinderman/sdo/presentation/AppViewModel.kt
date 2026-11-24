@@ -15,6 +15,7 @@ import com.kinderman.sdo.domain.model.SheetSyncStatus
 import com.kinderman.sdo.domain.model.CharacterSyncConflict
 import com.kinderman.sdo.domain.model.UserProfile
 import com.kinderman.sdo.domain.model.UserRole
+import com.kinderman.sdo.domain.repository.DeityRepository
 import com.kinderman.sdo.domain.model.UserSession
 import com.kinderman.sdo.domain.model.SessionCommand
 import com.kinderman.sdo.domain.model.InventoryState
@@ -86,6 +87,7 @@ class AppViewModel(
     private val cloudSyncPulseMs: Long = 800L,
     private val autosaveDebounceMs: Long = 0L,
     private val editingIdleSyncDelayMs: Long = 1_200L,
+    private val deityRepository: DeityRepository? = null,
 ) : ViewModel() {
     @Inject
     constructor(
@@ -95,6 +97,7 @@ class AppViewModel(
         campaignRepository: CampaignRepository,
         operationsRepository: OperationsRepository,
         connectivityMonitor: ConnectivityMonitor,
+        deityRepository: DeityRepository,
     ) : this(
         repository = repository,
         ownerRepository = ownerRepository,
@@ -103,6 +106,7 @@ class AppViewModel(
         operationsRepository = operationsRepository,
         connectivityMonitor = connectivityMonitor,
         externalScope = null,
+        deityRepository = deityRepository,
         cloudSyncPulseMs = 800L,
         autosaveDebounceMs = 0L,
         editingIdleSyncDelayMs = 1_200L,
@@ -302,6 +306,23 @@ class AppViewModel(
             .launchIn(scope)
     }
 
+    private val deityCacheMutex = Mutex()
+
+    suspend fun loadDeityDetail(deityId: String, campaignId: String?) = deityCacheMutex.withLock {
+        val viewer = currentSession.value
+        val detail = deityRepository?.getDeityDetail(viewer, deityId, campaignId)
+        detail.takeIf { currentSession.value == viewer }
+    }
+
+    private fun refreshDeityCacheOwner() {
+        val deities = deityRepository ?: return
+        scope.launch {
+            deityCacheMutex.withLock {
+                deities.clearUnauthorizedCaches(currentSession.value?.uid)
+            }
+        }
+    }
+
     fun setSession(session: UserSession) {
         if (currentSession.value == session) return
         resetTransientSyncJobs()
@@ -313,6 +334,7 @@ class AppViewModel(
         _syncFailure.value = null
         _saveErrors.value = emptyMap()
         currentSession.value = session
+        refreshDeityCacheOwner()
         if (shouldRunRemoteSync(automaticSync, RemoteSyncTrigger.APP_FOREGROUND)) startSync(initial = true)
     }
 
@@ -332,6 +354,7 @@ class AppViewModel(
         isSheetSurfaceActive = false
         activePresenceCharacterId = null
         currentSession.value = null
+        refreshDeityCacheOwner()
         _message.value = null
         _conflicts.value = emptyList()
         _invitePreview.value = null

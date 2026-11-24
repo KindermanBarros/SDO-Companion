@@ -182,6 +182,8 @@ object SparkWireCodec {
         putField("canonicalProgressionPayload", normalized.canonicalProgressionPayload)
         putField("transports", converters.transportsToString(normalized.transports))
         putField("familiars", converters.familiarsToString(normalized.familiars))
+        putField("divineAscensionPayload", normalized.divineAscensionPayload)
+        putField("divineRuntimePayload", normalized.divineRuntimePayload)
 
         // Ints
         putField("level", normalized.level.coerceIn(1, 20))
@@ -776,6 +778,8 @@ object SparkWireCodec {
             story = str("story"),
             transports = converters.stringToTransports(str("transports")),
             familiars = converters.stringToFamiliars(str("familiars")),
+            divineAscensionPayload = str("divineAscensionPayload"),
+            divineRuntimePayload = str("divineRuntimePayload"),
             personalNotes = notes,
             updatedAt = updatedAt,
             lastEditedBy = root["updatedBy"] as? String ?: "",

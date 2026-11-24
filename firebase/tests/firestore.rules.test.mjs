@@ -1542,3 +1542,89 @@ test('verified administrator can transfer ownership, link/unlink sheets, read st
   );
   await assertSucceeds(condEditBatch.commit());
 });
+
+test('deity spoilers follow campaign ownership and verified administrator access', async () => {
+  await seed();
+  const deityId = 'deity.fixture';
+  const globalRef = (db) => doc(db, 'deityGmCatalog', deityId);
+  const campaignRef = (db) => doc(db, 'campaigns', ids.campaign, 'deitySecrets', deityId);
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    const fixture = {
+      id: deityId,
+      name: 'Synthetic deity',
+      tierCode: 'LESSER_GOD',
+      payloadJson: '{}',
+      updatedBy: ids.owner,
+      updatedAt: Timestamp.fromMillis(1000),
+    };
+    await setDoc(globalRef(db), fixture);
+    await setDoc(campaignRef(db), fixture);
+  });
+
+  const owner = env.authenticatedContext(ids.owner).firestore();
+  const player = env.authenticatedContext(ids.player).firestore();
+  const guest = env.unauthenticatedContext().firestore();
+  const admin = env.authenticatedContext('verified-admin', {
+    email: 'kindbarros@gmail.com',
+    email_verified: true,
+  }).firestore();
+
+  await assertSucceeds(getDoc(campaignRef(owner)));
+  await assertFails(getDoc(globalRef(owner)));
+  await assertFails(getDoc(campaignRef(player)));
+  await assertFails(getDoc(globalRef(player)));
+  await assertFails(getDoc(campaignRef(guest)));
+  await assertFails(getDoc(globalRef(guest)));
+  await assertSucceeds(getDoc(campaignRef(admin)));
+  await assertSucceeds(getDoc(globalRef(admin)));
+
+  const activeContext = doc(owner, 'gmActiveContext', ids.owner);
+  await assertSucceeds(setDoc(activeContext, {
+    uid: ids.owner,
+    activeCampaignId: ids.campaign,
+    updatedAt: serverTimestamp(),
+  }));
+  await assertSucceeds(getDoc(globalRef(owner)));
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'gmActiveContext', ids.owner), {
+      uid: ids.owner,
+      activeCampaignId: ids.campaign,
+      updatedAt: Timestamp.fromMillis(1000),
+    });
+  });
+  await assertFails(getDoc(globalRef(owner)));
+  await assertSucceeds(deleteDoc(activeContext));
+  await assertFails(getDoc(globalRef(owner)));
+});
+
+test('active campaign owner can update linked character ascension', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(
+      doc(db, 'characters', ids.character, 'fields', 'divineAscensionPayload'),
+      makeField('divineAscensionPayload', ''),
+    );
+  });
+
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const opId = 'op-gm-ascension';
+  const key = 'divineAscensionPayload';
+  const value = '{"tier":"AVATAR"}';
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'characters', ids.character, 'fields', key), {
+    value,
+    revision: 2,
+    lastOperationId: opId,
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(
+    doc(db, 'characters', ids.character, 'operations', opId),
+    makeOp(opId, ids.owner, 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key, op: 'SET', expectedRevision: 1, nextRevision: 2, baseValue: '', desiredValue: value },
+    ]),
+  );
+  await assertSucceeds(batch.commit());
+});

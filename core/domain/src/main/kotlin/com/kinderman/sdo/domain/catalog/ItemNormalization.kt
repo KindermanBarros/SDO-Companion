@@ -1,5 +1,6 @@
 package com.kinderman.sdo.domain.catalog
 
+import com.kinderman.sdo.domain.model.CanonicalItemCategory
 import com.kinderman.sdo.domain.model.CURRENT_ITEM_DATA_VERSION
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.InventoryItem
@@ -8,6 +9,7 @@ import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.ItemPart
 import com.kinderman.sdo.domain.model.inventoryState
+import com.kinderman.sdo.domain.model.resolvedCategory
 import com.kinderman.sdo.domain.model.withValidInventoryStates
 
 fun Character.withNormalizedInventory(): Character {
@@ -38,9 +40,20 @@ internal fun InventoryItem.normalized(): InventoryItem? {
     )
     val resolved = ItemCreationRules.inventoryTemplate(catalogEntryId, name)
     if (dataVersion >= CURRENT_ITEM_DATA_VERSION) {
-        val (entry, template) = resolved ?: return cleaned
+        if (resolved == null) {
+            val mapped = cleaned.resolvedCategory()
+            val normalizedCategory = when (mapped.canonical) {
+                CanonicalItemCategory.UNKNOWN, CanonicalItemCategory.UNCATEGORIZED -> cleaned.category
+                CanonicalItemCategory.LEGACY_NARRATIVE -> "LEGACY_NARRATIVE"
+                else -> mapped.displayLabel
+            }
+            return cleaned.copy(category = normalizedCategory)
+        }
+        val (entry, template) = resolved
         return cleaned.copy(
-            category = category.ifBlank { template.category },
+            category = cleaned.category.takeUnless { it.isBlank() || it.equals("LEGACY_NARRATIVE", true) }
+                ?.let { cleaned.copy(category = it).resolvedCategory().displayLabel }
+                ?: template.category,
             catalogEntryId = catalogEntryId.ifBlank { entry.id },
             catalogVersion = maxOf(catalogVersion, entry.version),
             canonical = true,

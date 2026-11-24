@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 4,
+  "name": "Compêndio de Deidades (Para Jogadores)",
+  "source": "Compêndio de Deidades",
+  "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+  "deities": [
+    {
+      "id": "deity.edris_vhal",
+      "navigationOrder": 1,
+      "kind": "DEITY",
+      "name": "Edris Vhal — O Primeiro a Voltar",
+      "group": "Deus Maior",
+      "tierCode": "GREATER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Para os povos de Nulvara, Edris Vhal é o primeiro grande herói depois da Tragédia Planar — o viajante que atravessou o rasgo entre mundos, retornou ferido e ensinou os sobreviventes a erguer abrigos, organizar rotas e resistir ao desconhecido. Suas capelas simples nas estradas e portos são pontos de descanso para viajantes, e sua bênção é invocada por quem parte sem certeza de volta.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Maior"
+      ]
+    },
+    {
+      "id": "deity.namaris",
+      "navigationOrder": 2,
+      "kind": "DEITY",
+      "name": "Namaris — Senhora da Bruma",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Entre exilados, contrabandistas e moradores de Essolhen, Namaris é reverenciada como a Senhora da Bruma — a deusa que estende o nevoeiro sobre quem foge de perseguição injusta e guarda segredos pesados para que seus devotos possam dormir em paz. Diz-se que nenhum mapa traçado por invasores consegue encontrar sua ilha sem convite.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.fergus",
+      "navigationOrder": 3,
+      "kind": "DEITY",
+      "name": "Fergus — O Ferreiro do Último Prego",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nas forjas de Durnkhaz, Skratz e Caldera, Fergus é reverenciado como o antigo mestre anão que ensinou os povos a reerguer muralhas, próteses e máquinas a partir de destroços. Para artesãos e engenheiros, ele abençoa qualquer trabalho honesto que dê utilidade nova ao que estava perdido.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.ilyra",
+      "navigationOrder": 4,
+      "kind": "DEITY",
+      "name": "Ilyra — A Pastora do Último Sono",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Em todo velório ou enterro de estrada em Nulvara, pronuncia-se o nome do falecido em voz alta para que Ilyra o escute e guie sua alma em segurança até o Nexus das Almas. Seus sacerdotes confortam famílias enlutadas e caçam necromantes ou entidades que aprisionam espíritos contra sua vontade.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.vespera",
+      "navigationOrder": 5,
+      "kind": "DEITY",
+      "name": "Vespera — A Menina dos Mil Rostos",
+      "group": "Semideusa",
+      "tierCode": "DEMIGOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nos salões dos Aventureiros do Além e em estradas ermas, Vespera é a padroeira da sorte improvável e dos grupos improváveis. Contam que ela caminha disfarçada ao lado de expedições prestes a desistir, apontando um atalho impossível antes de sumir na curva seguinte.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Semideusa"
+      ]
+    },
+    {
+      "id": "deity.rhais",
+      "navigationOrder": 6,
+      "kind": "DEITY",
+      "name": "Rhais — A Ferrugem Órfã",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Em Nulvara, Rhais é conhecida entre veteranos, ferreiros e saqueadores como uma antiga guerreira anã vinda de outro mundo que recolhe armas esquecidas em campos de batalha. Seus devotos acreditam que ela reúne o **Arsenal da Última Guarda** para defender o continente quando uma catástrofe maior chegar, seguindo um preceito simples: quem larga sua lâmina perde o direito sobre ela.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.cartola_vermelha",
+      "navigationOrder": 7,
+      "kind": "DEITY",
+      "name": "Cartola Vermelha",
+      "group": "Deus Maior",
+      "tierCode": "GREATER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nas tavernas e becos de Nulvara, falar da Cartola Vermelha é invocar azar ou tentação extrema: histórias contam sobre um cavalheiro sem rosto fixo que aparece quando alguém deseja algo impossível e oferece um contrato que sempre se cumpre — mas nunca pelo preço que o contratante imaginou estar pagando.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Maior"
+      ]
+    },
+    {
+      "id": "deity.vael",
+      "navigationOrder": 8,
+      "kind": "DEITY",
+      "name": "Vael — O Arauto Amarelo",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Vael surge apenas em rumores de bastidores, panfletos censurados e relatos sobre um cavalheiro de terno açafrão que entrega chaves de latão sem dentes definidos a pessoas desesperadas em troca de \"um pequeno papel\". Dizem que quem gira sua chave encontra saída para qualquer beco, mas começa aos poucos a repetir frases que nunca pensou em dizer.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.ernest",
+      "navigationOrder": 9,
+      "kind": "DEITY",
+      "name": "Ernest — O Anfitrião do Oásis",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "No Deserto de Ferro e nas tavernas de Kalania, circula a história de uma porta impossível que só aparece para quem está exausto demais para seguir e prestes a encarar uma provação mortal. Lá dentro, dizem, um anfitrião de pijama serve whiskey de milho e música antiga sem cobrar Estribos, pedindo apenas que todos partam antes da tempestade.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.soren",
+      "navigationOrder": 10,
+      "kind": "DEITY",
+      "name": "Soren — O Faroleiro Sem Costa",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Marinheiros de Marevon, Portavrak, Kalania e das Ilhas Dravan conhecem Soren como o Faroleiro Sem Costa — a luz fria que corta o nevoeiro onde não há terra firme. Quem joga uma oferenda sincera às águas espera que sua lanterna aponte saída na tempestade; quem zomba do rito teme segui-la direto para recifes submersos.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.maera",
+      "navigationOrder": 11,
+      "kind": "DEITY",
+      "name": "Maera — A Senhora da Sobra",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nos bairros operários de Caldera e nas vilas das Serras de Keth, Maera é chamada em sussurro diante da dispensa vazia para que a última ração aguente mais um dia. Trabalhadores deixam alguns grãos no fogão em respeito, enquanto grandes mercadores culpam pragas inexplicáveis pelo apodrecimento repentino de seus armazéns trancados.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    },
+    {
+      "id": "deity.kaelith",
+      "navigationOrder": 12,
+      "kind": "DEITY",
+      "name": "Kaelith — O Escriba das Margens",
+      "group": "Semideus",
+      "tierCode": "DEMIGOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Entre arquivistas e investigadores de Susselvam, Kaelith é lembrado quando documentos raspados voltam a mostrar letras à luz de vela ou quando anotações surgem sozinhas nas bordas de livros censurados. Dizem que ele protege toda verdade que tentaram queimar.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Semideus"
+      ]
+    },
+    {
+      "id": "deity.tarek",
+      "navigationOrder": 13,
+      "kind": "DEITY",
+      "name": "Tarek — O Vigia do Segundo Silêncio",
+      "group": "Semideus",
+      "tierCode": "DEMIGOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Sentinelas de Durnkhaz e escoltas de caravanas contam que, quando um guarda exausto consegue atravessar três noites de cerco sem cair no sono, foi Tarek quem segurou o escudo ao lado dele.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Semideus"
+      ]
+    },
+    {
+      "id": "deity.liora",
+      "navigationOrder": 14,
+      "kind": "DEITY",
+      "name": "Liora — A Agulha de Latão",
+      "group": "Avatar",
+      "tierCode": "AVATAR",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nos becos de Skratz, Liora é lembrada como a cirurgiã itinerante que salva moribundos desenganados substituindo osso e carne arruinados por peças de latão sem cobrar um único Estribo na hora.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Avatar"
+      ]
+    },
+    {
+      "id": "deity.coro_sem_lingua",
+      "navigationOrder": 15,
+      "kind": "DEITY",
+      "name": "O Coro Sem Língua",
+      "group": "Deus Maior",
+      "tierCode": "GREATER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Moradores das capitais tratam o Coro Sem Língua como presságio urbano: quando uma feira inteira se cala de repente sem que ninguém saiba por quê, dizem que o Coro acabou de atravessar a rua — e que qualquer boato repetido depois daquele minuto vai se tornar verdade antes do fim da semana.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Maior"
+      ]
+    },
+    {
+      "id": "deity.a_noiva",
+      "navigationOrder": 16,
+      "kind": "DEITY",
+      "name": "A Noiva",
+      "group": "Deus Menor",
+      "tierCode": "LESSER_GOD",
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Entre sobreviventes de massacres e cidades sitiadas, ver uma lanterna azul imóvel na neblina significa que A Noiva marcou alguém fadado aos mortos. Dizem que os marcados passam a ser seguidos por olhos vindos de outro plano até enlouquecerem — mas que os raros capazes de derrotar essa perseguição recebem o direito de enganar a própria morte uma única vez.",
+      "source": "Compêndio de Deidades",
+      "ruleReference": "02 - Compêndio/Entidades/NPCs/Deidades/Deidades.md",
+      "keywords": [
+        "Deidades",
+        "Deus Menor"
+      ]
+    }
+  ]
+}

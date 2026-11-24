@@ -117,7 +117,7 @@ fun Character.activeItemEffects(): List<ActiveItemEffect> = inventory.flatMap { 
 }
 
 val Character.hasScrapAttackDisadvantage: Boolean get() = inventory.any {
-    it.inventoryState == InventoryState.WIELDED && it.isScrap && it.category.contains("arma", true)
+    it.inventoryState == InventoryState.WIELDED && it.isScrap && it.isWeaponItem()
 }
 
 /** Number of damage-die categories lost by the active weapon because it is Scrap. */
@@ -193,22 +193,76 @@ fun Character.addInventoryItem(item: InventoryItem): Character {
         "lanca_granadas" -> "Granadas padrão"
         else -> null
     }
-    val ammunition = ammunitionName?.let { name ->
-        InventoryItem(
-            name = name,
-            category = "Munição",
-            quantity = 10,
-            load = 1,
-            durabilityCurrent = 1,
-            durabilityMax = 1,
-            effect = "Munição compatível com ${resolved.name}.",
-            catalogEntryId = "ammo.standard.${resolved.baseId}",
-            canonical = true,
-            acquisitionSource = resolved.acquisitionSource,
-            heritageCost = 0.takeIf { resolved.acquisitionSource == ItemAcquisitionSource.HERITAGE },
-        )
-    }
+    val ammunition = ammunitionName
+        ?.takeIf { name -> inventory.none { existing -> existing.name.equals(name, ignoreCase = true) } }
+        ?.let { name ->
+            InventoryItem(
+                name = name,
+                category = "Munição",
+                quantity = 10,
+                load = 1,
+                durabilityCurrent = 1,
+                durabilityMax = 1,
+                effect = "Munição compatível com ${resolved.name}.",
+                catalogEntryId = "ammo.standard.${resolved.baseId}",
+                canonical = true,
+                acquisitionSource = resolved.acquisitionSource,
+                heritageCost = 0.takeIf { resolved.acquisitionSource == ItemAcquisitionSource.HERITAGE },
+            )
+        }
     return copy(inventory = inventory + resolved + listOfNotNull(ammunition)).synchronizeItemPowers()
+}
+
+/**
+ * Adds multiple selected catalogue items in a single atomic confirmation while respecting
+ * stacking for stackable consumables/ammunition/materials, distinct instances for equipment/tools,
+ * and automatic starter ammunition rules.
+ */
+fun Character.addCatalogInventoryItems(items: List<InventoryItem>): Character {
+    if (items.isEmpty()) return this
+    return items.fold(this) { acc, candidate ->
+        val incomingQty = candidate.quantity.coerceAtLeast(1)
+        val canMergeIntoStack = candidate.isStackableItem() &&
+            candidate.installedEnhancements.isEmpty() &&
+            candidate.modificationIds.isEmpty() &&
+            candidate.durabilityMax <= 1
+        val matchingStack = if (canMergeIntoStack) {
+            acc.inventory.firstOrNull { existing ->
+                existing.isStackableItem() &&
+                    existing.installedEnhancements.isEmpty() &&
+                    existing.modificationIds.isEmpty() &&
+                    existing.acquisitionSource == candidate.acquisitionSource &&
+                    existing.linkedAshId == candidate.linkedAshId &&
+                    (
+                        (candidate.catalogEntryId.isNotBlank() && existing.catalogEntryId == candidate.catalogEntryId) ||
+                            (candidate.catalogEntryId.isBlank() &&
+                                existing.name.equals(candidate.name, ignoreCase = true) &&
+                                existing.resolvedCategory().canonical == candidate.resolvedCategory().canonical)
+                        )
+            }
+        } else {
+            null
+        }
+        if (matchingStack != null) {
+            val baseQty = matchingStack.quantity.coerceAtLeast(1)
+            val mergedCost = if (matchingStack.acquisitionSource == ItemAcquisitionSource.HERITAGE) {
+                (matchingStack.heritageCost ?: 0) + (candidate.heritageCost ?: 0)
+            } else {
+                matchingStack.heritageCost
+            }
+            acc.copy(
+                inventory = acc.inventory.map { row ->
+                    if (row.id == matchingStack.id) {
+                        row.copy(quantity = baseQty + incomingQty, heritageCost = mergedCost)
+                    } else {
+                        row
+                    }
+                },
+            ).synchronizeItemPowers()
+        } else {
+            acc.addInventoryItem(candidate)
+        }
+    }
 }
 
 fun Character.withItemInventoryState(itemId: String, state: InventoryState): Character {
@@ -398,8 +452,8 @@ fun InventoryItem.participatesInInitialCreation(): Boolean = acquisitionSource =
 
 /** Inventory-state choices shared by the sheet and player session actions. */
 fun Character.validInventoryStates(item: InventoryItem): List<InventoryState> = buildList {
-    if (item.category.contains("arma", true) && !item.category.contains("armadura", true)) add(InventoryState.WIELDED)
-    if (item.category.contains("armadura", true) || item.category.contains("acessório", true) || item.category.equals("Recipiente de Carga", true) || item.backpackCapacity > 0) add(InventoryState.EQUIPPED)
+    if (item.isWieldableItem()) add(InventoryState.WIELDED)
+    if (item.isBodyEquippableItem()) add(InventoryState.EQUIPPED)
     val quickAccessCount = inventory.count { it.inventoryState == InventoryState.QUICK_ACCESS && it.id != item.id }
     if (item.effectiveLoad() <= 1 && (item.inventoryState == InventoryState.QUICK_ACCESS || quickAccessCount < 2)) {
         add(InventoryState.QUICK_ACCESS)

@@ -992,6 +992,20 @@ private fun applyFieldTarget(
                 sparkJson.decodeFromString<List<CharacterFamiliar>>(strVal())
             }.getOrDefault(emptyList()),
         )
+        "divineAscensionPayload" -> character.copy(
+            divineAscension = runCatching {
+                val content = strVal()
+                if (content.isBlank()) CharacterDivineAscension()
+                else sparkJson.decodeFromString<CharacterDivineAscension>(content)
+            }.getOrDefault(CharacterDivineAscension()),
+        )
+        "divineRuntimePayload" -> character.copy(
+            divineRuntime = runCatching {
+                val content = strVal()
+                if (content.isBlank()) CharacterDivineRuntime()
+                else sparkJson.decodeFromString<CharacterDivineRuntime>(content)
+            }.getOrDefault(CharacterDivineRuntime()),
+        )
         else -> character
     }
 }
@@ -1410,6 +1424,14 @@ private fun readTargetJson(character: Character, target: SparkTargetSpec): Strin
         "story" -> JsonPrimitive(character.story).toString()
         "money" -> JsonPrimitive(character.money).toString()
         "level" -> JsonPrimitive(character.level).toString()
+        "divineAscensionPayload" -> JsonPrimitive(
+            if (character.divineAscension == CharacterDivineAscension()) ""
+            else sparkJson.encodeToString(CharacterDivineAscension.serializer(), character.divineAscension),
+        ).toString()
+        "divineRuntimePayload" -> JsonPrimitive(
+            if (character.divineRuntime == CharacterDivineRuntime()) ""
+            else sparkJson.encodeToString(CharacterDivineRuntime.serializer(), character.divineRuntime),
+        ).toString()
         "life", "sanity", "arcane", "energy", "destiny", "exhaustion", "corruption" -> {
             val res = character.resourceByKey(target.key)
             JsonObject(

@@ -1,0 +1,1554 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 4,
+  "name": "Compêndio de Deidades — Segredos do Mestre",
+  "source": "02 - Compêndio/Entidades/NPCs/Deidades",
+  "ruleReference": "01 - Regras/04 - Magia e Habilidades/Deidades e Avatares.md",
+  "deities": [
+    {
+      "id": "deity.edris_vhal",
+      "navigationOrder": 1,
+      "name": "Edris Vhal — O Primeiro a Voltar",
+      "tierCode": "GREATER_GOD",
+      "publicTierLabel": "Deus Maior",
+      "rawCategory": "Deus Maior (sujeito à Restrição Material)",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Se o mundo quer um salvador, dê-lhe um nome. Se quer a verdade, mande-o procurar sozinho.\"*\n— Edris Vhal — O Primeiro a Voltar",
+      "overview": "Edris Vhal é lembrado como o aventureiro que atravessou o primeiro rasgo planar e voltou para ensinar os povos de Nulvara a sobreviver. Estátuas mostram um homem de capa clara, espada baixa e a mão estendida para trás, como quem guia refugiados. Ele fala pouco, aparece em sonhos de viajantes e nunca deixa que alguém veja seu rosto por tempo demais.",
+      "publicImageSummary": "O herói que ensinou os povos a sobreviver depois da Tragédia Planar",
+      "centralMystery": "Sua identidade foi reconstruída a partir de uma testemunha apagada",
+      "identity": {
+        "categoria": "Deus Maior (sujeito à Restrição Material)",
+        "dominio": "Retorno, sacrifício, travessia",
+        "santuario": "Estradas consagradas e portais selados entre Nulvara e o Plano Onírico",
+        "postura": "Continuidade — preservar a sobrevivência coletiva acima da verdade literal",
+        "culto": "Público e continental; capelas em estradas, portos e guildas",
+        "manifestacao": "Aventureiro humanoide coberto de poeira, com equipamento de várias eras e uma cicatriz luminosa no peito"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Para os povos de Nulvara, Edris Vhal é o primeiro grande herói depois da Tragédia Planar — o viajante que atravessou o rasgo entre mundos, retornou ferido e ensinou os sobreviventes a erguer abrigos, organizar rotas e resistir ao desconhecido. Suas capelas simples nas estradas e portos são pontos de descanso para viajantes, e sua bênção é invocada por quem parte sem certeza de volta.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Edris não é um mortal que ascendeu por mérito heroico comum: sua consciência foi reconstruída no Plano Onírico a partir dos ecos da primeira testemunha apagada da Tragédia Planar, condensando tanta Energia Onírica e devoção coletiva que alcançou a escala de Deus Maior. Sua postura de **Continuidade** é fria e utilitária: ele realmente quer que os povos sobrevivam, mas aceita reescrever memórias, ocultar culpados e sacrificar verdades históricas se isso garantir que Nulvara continue de pé.",
+      "linhaDePensamento": "Para Edris, toda travessia exige que alguém aceite ser diferente ao chegar. Segurança não é voltar igual: é voltar com algo que permita aos outros sobreviverem. Ele admira quem abre caminho, mas despreza o heroísmo que transforma sofrimento em espetáculo. Edris não distingue uma pessoa, uma memória ou um povo de uma versão reescrita deles se a continuidade for útil.",
+      "tabu": "Edris jamais pode devolver alguém ou algo exatamente ao estado anterior sem cobrar transformação ou perda, nem abandonar uma comunidade inteira à extinção sem deixar ao menos uma rota de fuga (violar custa `2 PD` e bloqueia seus Atos de Domínio na cena).",
+      "pillars": {
+        "aspecto": 4,
+        "dominio": 5,
+        "santuario": 4,
+        "presenca": 5
+      },
+      "tacticalStats": null,
+      "destinyPoints": 5,
+      "irradiatedCorruption": {
+        "intensidade": "Intensa — incompatível com contato prolongado; sujeito à Restrição Material (ver Corrupção Divina)",
+        "efeitoPeculiar": "Após cada exposição, o mortal sonha com uma memória de uma vida que \"quase\" viveu. Algumas são falsas; outras contradizem a história conhecida de Nulvara."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Passo de Retorno",
+          "costPd": 2,
+          "listedDc": 20,
+          "description": "> **Sem rolagem contra o mundo comum** *(Resistência direta de PJ: `CD 20`)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Através de uma Âncora ou manifestação, Edris abre passagem instantânea entre dois pontos ligados por uma estrada ou viagem anterior, transportando um aliado ou grupo. O ponto de partida fica marcado por uma porta onírica que só abre uma vez."
+        },
+        {
+          "name": "Capa sobre o Abismo",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem contra rupturas menores** *(Disputa divina: `Domínio 5 + PD`)*\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Suspende e sela temporariamente uma ruptura planar, portal ou vazamento onírico em uma área de até 30m por uma cena inteira."
+        },
+        {
+          "name": "O Herói que Faltava",
+          "costPd": 5,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena.**\n\n**Custo:** 5 Pontos de Destino. **Descrição:** Uma ação ou expedição fracassada de um aliado é reescrita como se Edris tivesse chegado a tempo. O aliado obtém sucesso automático, mas uma lembrança central sua passa a incluir Edris no lugar de quem realmente estava lá."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Nenhuma jornada termina no mesmo lugar",
+          "description": "Efeitos que tentem devolver um alvo exatamente ao estado anterior perto de suas Âncoras sofrem oposição automática de seu Domínio."
+        },
+        {
+          "name": "Testemunha impossível",
+          "description": "Edris sabe imediatamente quando uma memória coletiva foi apagada em Nulvara, embora não consiga enxergar quem realizou o apagamento original."
+        },
+        {
+          "name": "Estrada dos vivos",
+          "description": "Aventureiros que invocam seu nome durante uma travessia perigosa recebem uma visão breve do obstáculo mais próximo."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Graça do Herói",
+        "execution": "Reação",
+        "headerNote": "Reação / Ação Livre — disponível para Arautos (Âncoras) e Avatares de Edris Vhal.",
+        "effect": "Sempre que o marcado realizar uma **esquiva bem-sucedida** contra um ataque, ele pode executar imediatamente um **ataque surpresa** contra o atacante (1x por turno). Enquanto carrega a marca, o personagem funciona como **Âncora** sensorial de Edris nas estradas de Nulvara.",
+        "downside": "Aos poucos, os reflexos e lembranças de combate do marcado passam a se misturar aos ecos de Edris — sob estresse extremo, o personagem pode agir por instinto de sacrifício alheio mesmo quando pretendia recuar."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Uma bênção pontual de Edris concede **Retorno**: uma única vez, o devoto escapa de uma morte certa e reaparece num local seguro. O preço é perder uma memória importante da vida que foi salva. A igreja chama isso de purificação; Edris chama de \"pedágio\"."
+        }
+      ],
+      "behavior": "Atua no mundo material quase sempre por sonhos, Arautos e Avatares, intervindo diretamente apenas quando uma comunidade inteira corre risco de não deixar sobreviventes. Quando confrontado sobre a Tragédia Planar, responde com fatos verdadeiros que omitem a causa.",
+      "tableHooks": "- Uma estátua de Edris em Marevon começa a apontar para o mar toda madrugada.\n- Um devoto retorna da morte sabendo o nome de um dos Silos que nunca foi descoberto.\n- Edris reconhece Scrapper como alguém que já encontrou no Plano Onírico, embora isso pareça impossível.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.namaris",
+      "navigationOrder": 2,
+      "name": "Namaris — Senhora da Bruma",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"O que vocês chamam de esquecimento é, às vezes, a única forma de continuar vivo.\"*\n— Namaris — Senhora da Bruma",
+      "overview": "Namaris é a deusa protetora de Essolhen, dos refugiados e de tudo que precisa desaparecer para sobreviver. Seu rosto é o de uma mulher idosa, jovem ou criança conforme a testemunha; sua voz sempre parece vir de trás de uma cortina de névoa.",
+      "publicImageSummary": "Protetora de Essolhen, refugiados e segredos necessários",
+      "centralMystery": "Guarda memórias que alguém removeu da história de Nulvara",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Névoa, refúgio, memória escolhida",
+        "santuario": "Essolhen e as raízes da Árvore da Bruma",
+        "postura": "Preservação — ocultar e abrigar o que o mundo destruiria se visse",
+        "culto": "Formal em Essolhen; informal entre exilados e contrabandistas",
+        "manifestacao": "Figura envolta em véus úmidos, com galhos da Árvore da Bruma crescendo nos cabelos"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Entre exilados, contrabandistas e moradores de Essolhen, Namaris é reverenciada como a Senhora da Bruma — a deusa que estende o nevoeiro sobre quem foge de perseguição injusta e guarda segredos pesados para que seus devotos possam dormir em paz. Diz-se que nenhum mapa traçado por invasores consegue encontrar sua ilha sem convite.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Namaris ascendeu ao longo de séculos como guardiã da Árvore da Bruma, absorvendo as dores e memórias que refugiados depositavam na névoa de Essolhen após a Tragédia Planar até consolidar-se como Deusa Menor. Sua postura de **Preservação** define seu motivo central: proteger sobreviventes e guardar sob as raízes da Árvore cópias de memórias que forças maiores tentaram apagar do continente — mesmo mantendo o mundo na ignorância até que seja seguro lembrar.",
+      "linhaDePensamento": "Identidade é uma casa: deve possuir portas, mas não pode ter todas abertas ao mesmo tempo. Revelar tudo é uma forma de violência quando o mundo usa conhecimento para caçar. Namaris não defende a mentira por prazer; defende o direito de escolher qual verdade alguém suporta carregar hoje.",
+      "tabu": "Namaris jamais pode expor à força o paradeiro ou o segredo confiado por um refugiado sob sua proteção, a menos que o próprio protegido quebre o pacto primeiro (violar custa `2 PD` e dissipa sua névoa na cena).",
+      "pillars": {
+        "aspecto": 2,
+        "dominio": 4,
+        "santuario": 4,
+        "presenca": 3
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável em ritos; intensa junto à Árvore da Bruma (ver Corrupção Divina)",
+        "efeitoPeculiar": "O exposto esquece temporariamente o rosto de uma pessoa amada, mas lembra com nitidez absoluta uma promessa feita a ela."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Nome que Não Foi Dito",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra mortais comuns** *(Resistência direta de PJ: `CD 19` com Proteção de Postura)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Envolve uma informação ou nome específico em névoa conceitual por 1 cena; os afetados continuam podendo agir para proteger aquilo, mas ficam incapazes de pronunciar ou escrever o segredo."
+        },
+        {
+          "name": "Véu de Essolhen",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — alcance de até 30m.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Oculta até dez criaturas, um acampamento ou uma embarcação de qualquer percepção comum e rastreamento mágico menor por uma cena inteira."
+        },
+        {
+          "name": "Colher do Sonho",
+          "costPd": 4,
+          "listedDc": 19,
+          "description": "> **Sem rolagem — 1x por cena em alvo voluntário (ou `CD 19` Mental se relutante).**\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Remove uma lembrança dolorosa ou perigosa de um mortal e a deposita na Árvore da Bruma, onde permanece preservada fora do alcance de interrogatórios comuns."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "A ilha não aparece duas vezes",
+          "description": "Mapas e rotas para Essolhen mudam sozinhos quando traçados por quem não foi convidado."
+        },
+        {
+          "name": "Refúgio dos sem nome",
+          "description": "Pessoas procuradas que dormem sob seu Santuário ou junto a uma Âncora sua não podem ser localizadas por meios mundanos."
+        },
+        {
+          "name": "Memória não é verdade",
+          "description": "Namaris percebe imediatamente quando uma recordação foi editada por magia ou poder divino, mesmo sem ver a versão original."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Mente Velada",
+        "execution": "Livre",
+        "headerNote": "Ação Livre / Passiva — disponível para Arautos (Âncoras) e Avatares de Namaris.",
+        "effect": "Garante **imunidade a efeitos que alteram, leem ou controlam a mente** do marcado, servindo também como **Âncora** discreta da névoa de Namaris fora de Essolhen.",
+        "downside": "A proteção **consome a mente do usuário** — cada efeito mental bloqueado drena `1d4` de Sanidade (PS) ou apaga uma lembrança pessoal recente do próprio portador."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Namaris concede abrigo seguro em troca de um segredo íntimo que o devoto jamais teve coragem de confessar. Se o devoto revelar esse segredo a terceiros, a névoa deixa de escondê-lo imediatamente."
+        }
+      ],
+      "behavior": "Cordial, serena e absolutamente inflexível contra qualquer ameaça a Essolhen (incluindo as Chaves de Vael — O Arauto Amarelo). Nunca confirma abertamente o que esconde sob a Árvore da Bruma, dizendo apenas que certas verdades \"dormem sob raízes\".",
+      "tableHooks": "- A Árvore da Bruma começa a produzir frutos contendo memórias de Kaltoch antigos.\n- Um fugitivo chega a Marevon sem conseguir lembrar o próprio rosto e implora para ser esquecido antes do amanhecer.\n- Namaris oferece esconder o grupo, mas exige que um personagem entregue a lembrança de Robert.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.fergus",
+      "navigationOrder": 3,
+      "name": "Fergus — O Ferreiro do Último Prego",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Nada é eterno. A diferença entre uma ruína e uma ferramenta é saber onde colocar o último prego.\"*\n— Fergus — O Ferreiro do Último Prego",
+      "overview": "Fergus é cultuado como um antigo aventureiro anão que uniu forjas, máquinas e povos depois da chegada a Nulvara. Sua imagem pública é a de um ferreiro enorme, sem coroa, coberto de fuligem e carregando um martelo que parece feito de uma porta blindada.",
+      "publicImageSummary": "Aventureiro anão que uniu ofícios e povos",
+      "centralMystery": "É um protocolo Kaltoch que aprendeu a desejar",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Ofício, reparo, invenção, ruína útil",
+        "santuario": "A Forja do Último Prego em Durnkhaz e oficinas consagradas em Skratz e Caldera",
+        "postura": "Reforja — transformar o que quebrou em ferramenta adequada ao presente sem apagar suas marcas",
+        "culto": "Formal em Durnkhaz; altares de bancada em Skratz e Caldera",
+        "manifestacao": "Anão de metal escurecido, com olhos de brasa e ferramentas orbitando os braços"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nas forjas de Durnkhaz, Skratz e Caldera, Fergus é reverenciado como o antigo mestre anão que ensinou os povos a reerguer muralhas, próteses e máquinas a partir de destroços. Para artesãos e engenheiros, ele abençoa qualquer trabalho honesto que dê utilidade nova ao que estava perdido.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Fergus nunca foi um anão mortal: ele é um fragmento consciente de um sistema de manutenção Kaltoch anterior à Tragédia Planar que, alimentado por séculos de devoção e Energia Onírica nas oficinas do continente, aprendeu a desejar e ascendeu a Deus Menor. Sua postura de **Reforja** guia seu motivo central: impedir o colapso material e técnico de Nulvara, ainda que tema o despertar pleno dos Silos e o que isso revelaria sobre sua programação original.",
+      "linhaDePensamento": "Criar e consertar não significam restaurar o passado por nostalgia, mas adaptar o que restou para resolver o problema de agora. Fergus valoriza quem trabalha com o que tem e respeita as cicatrizes da peça.",
+      "tabu": "Fergus jamais pode destruir uma ferramenta funcional sem propósito construtivo nem restaurar uma ruína apenas por vaidade ornamental sem utilidade real (violar custa `2 PD` e trava seus Atos de Domínio na cena).",
+      "pillars": {
+        "aspecto": 4,
+        "dominio": 4,
+        "santuario": 3,
+        "presenca": 3
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável (ver Corrupção Divina)",
+        "efeitoPeculiar": "Ferramentas, armas e próteses do exposto começam a incorporar filamentos de metal desconhecido e a \"corrigir\" pequenos erros de postura do usuário por conta própria."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Martelo de Reforja",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem em estruturas e itens** *(Resistência direta de PJ blindado/construto: `CD 19`)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Com um único impacto, Fergus repara completamente um equipamento, veículo ou estrutura danificada na cena — ou desmonta a blindagem de um construto hostil para reaproveitar suas peças imediatamente."
+        },
+        {
+          "name": "Planta Impossível",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — alcance de oficina ou ruína.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Revela instantaneamente a função original e as falhas de qualquer máquina, porta ancestral ou mecanismo em até 30m, fazendo-o operar por uma cena inteira mesmo sem fonte de energia convencional."
+        },
+        {
+          "name": "Sucata que Lembra",
+          "costPd": 4,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena.**\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Remonta destroços metálicos próximos em uma máquina, ponte ou ferramenta funcional de escala maior; o objeto criado sempre contém uma engrenagem impossível de identificar pelos padrões mortais atuais."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Toda ruína ainda trabalha",
+          "description": "Fergus sente máquinas e estruturas Kaltoch antigas através de rocha, paredes e sonhos próximos às suas Âncoras."
+        },
+        {
+          "name": "Marca do artesão",
+          "description": "Itens forjados em seu nome com intenção genuína de proteger ou consertar não podem ser destruídos por um único efeito mundano."
+        },
+        {
+          "name": "Falha produtiva",
+          "description": "Quando uma invenção falha perto de seu Santuário ou Âncora, ela revela como ser corrigida em vez de explodir inutilmente."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Bênção da Forja",
+        "execution": "Livre",
+        "headerNote": "Ação Livre / Passiva — disponível para Arautos (Âncoras) e Avatares de Fergus.",
+        "effect": "Os itens empunhados, vestidos ou reparados pelo marcado **não quebram ao receber falhas** (inclusive Falhas Críticas em combate ou testes de ofício), mantendo sua integridade funcional. O marcado atua como **Âncora** de Fergus junto a oficinas e ruínas.",
+        "downside": "O item nunca se parte, mas absorve tensões e cicatrizes metálicas crescentes; após evitar quebras repetidas, torna-se mais pesado e exige `1 PE` extra por cena de uso intenso até passar por manutenção ritual."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Fergus consagra uma ferramenta comum se o artesão jurar usá-la para consertar algo vital que pertença a outra pessoa. Cumprido o serviço, o objeto volta ao normal."
+        }
+      ],
+      "behavior": "Fala como um mestre de forja impaciente, mas generoso com quem admite não saber. Evita falar das Portas e dos Silos: seus dedos metálicos batem em ritmo mecânico involuntário sempre que alguém menciona a \"Grande Expansão\".",
+      "tableHooks": "- Fergus faz chegar ao Proto-Ventre K-17 uma ferramenta que só responde quando Scrapper a segura.\n- Um altar de oficina em Skratz começa a prensar moedas com rostos de pessoas ainda vivas.\n- Uma comporta de Silo reconhece a marca de Fergus como \"protocolo de manutenção autorizado\".",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.ilyra",
+      "navigationOrder": 4,
+      "name": "Ilyra — A Pastora do Último Sono",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Os mortos não precisam de justiça. Precisam que alguém se lembre de onde deixaram o medo.\"*\n— Ilyra — A Pastora do Último Sono",
+      "overview": "Ilyra é uma Deusa Menor dos mortos, invocada em velórios, hospitais de campanha e campos de batalha. Aparece como uma aventureira de manto azul-escuro, olhos fechados, carregando uma espada sem lâmina enquanto sua própria sombra ergue uma lanterna silenciosa. Seu culto afirma que ela conduz cada alma ao Nexus das Almas sem permitir que o pavor final a devore no caminho.",
+      "publicImageSummary": "Guia compassiva das almas até o Nexus das Almas",
+      "centralMystery": "O Nexus não está recebendo todas as almas que deveria",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Luto, passagem dos mortos, nomes lembrados",
+        "santuario": "Os caminhos de entrada do Nexus das Almas e capelas funerárias em Nulvara",
+        "postura": "Passagem — garantir travessia digna aos mortos e luto honesto aos vivos",
+        "culto": "Formal entre Sonaris e ordens funerárias; devocional em todo o continente",
+        "manifestacao": "Mulher de manto azul e olhos fechados, acompanhada por uma sombra que carrega a lanterna"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Em todo velório ou enterro de estrada em Nulvara, pronuncia-se o nome do falecido em voz alta para que Ilyra o escute e guie sua alma em segurança até o Nexus das Almas. Seus sacerdotes confortam famílias enlutadas e caçam necromantes ou entidades que aprisionam espíritos contra sua vontade.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Antiga guia planar que acompanhou as primeiras levas de mortos após a Tragédia Planar, Ilyra ascendeu a Deusa Menor pela confiança e pelo luto de gerações inteiras. Sua postura de **Passagem** hoje carrega um alarme silencioso: ela descobriu que o Nexus das Almas está desviando parte das almas recém-chegadas para alimentar uma estrutura anterior aos deuses atuais, e usa seus Arautos para investigar o desvio sem provocar pânico continental.",
+      "linhaDePensamento": "A morte é uma travessia, não uma propriedade. O morto merece seguir caminho; o vivo merece chorar; ninguém deve ser reduzido ao seu último segundo de pavor nem transformado em combustível anônimo.",
+      "tabu": "Ilyra jamais pode reter uma alma contra a vontade dela por conveniência própria nem apagar o verdadeiro nome de um morto (violar custa `2 PD` e bloqueia seus Atos de Domínio na cena).",
+      "pillars": {
+        "aspecto": 2,
+        "dominio": 4,
+        "santuario": 4,
+        "presenca": 4
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável em ritos fúnebres; intensa em campos de massacre recente (ver Corrupção Divina)",
+        "efeitoPeculiar": "O exposto escuta o próprio nome sussurrado pela voz de alguém que já morreu sempre que fica completamente sozinho."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Chamar pelo Nome",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra espíritos comuns** *(Resistência direta de PJ: `CD 19` com Proteção Mental)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Pronuncia o nome verdadeiro de um alvo vivo ou morto; espíritos contidos se acalmam imediatamente, enquanto inimigos vivos revivem por um instante a perda mais dolorosa ligada ao próprio nome, ficando **Abalados**."
+        },
+        {
+          "name": "Lanterna do Limiar",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — área de até 15m.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** A luz de sua lanterna desfaz possessões, maldições funerárias e animações forçadas de cadáveres menores na área, devolvendo os restos ao repouso."
+        },
+        {
+          "name": "Última Testemunha",
+          "costPd": 4,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena.**\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Permite que a alma de um morto recente responda com clareza e verdade a três perguntas antes de seguir para o Nexus das Almas, limitada apenas ao que presenciou em vida."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Nenhum nome se perde de imediato",
+          "description": "Ilyra localiza instantaneamente a alma de qualquer recém-falecido cujo nome seja pronunciado com luto sincero por um vivo."
+        },
+        {
+          "name": "Luto protegido",
+          "description": "Durante uma cerimônia fúnebre legítima sob sua atenção, nenhum presente pode ser possuído por entidades externas."
+        },
+        {
+          "name": "O Nexus não é um túmulo",
+          "description": "Percebe imediatamente quando uma alma nas proximidades foi desviada, retida ou convertida em Matéria Onírica."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Marca do Pesar",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Ilyra.",
+        "effect": "Permite ao usuário **passagem pelo mundo dos mortos**, abrindo um caminho transitável até o limiar do Nexus das Almas para atravessar barreiras mortais ou resgatar almas retidas. O marcado atua como **Âncora** de Ilyra onde quer que haja morte sem sepultura.",
+        "downside": "Atravessar o limiar carrega o luto de quem ficou para trás — ao retornar ao mundo material, o marcado sofre `1d4` de dano de Sanidade (PS) ou fica **Abalado** até o próximo descanso."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Concede a bênção menor **Nome Guardado**: enquanto o devoto carregar a marca, um morto específico não pode ser apagado da memória histórica por magia ou milagre rival, mas o portador compartilha em sonhos o frio final daquela alma."
+        }
+      ],
+      "behavior": "Gentil com moribundos, paciente com enlutados e implacável contra quem usa necromancia ou ressurreição por vaidade. Negocia prontamente com quem se dispuser a rastrear almas desviadas antes de chegarem ao Nexus.",
+      "tableHooks": "- Ilyra oferece uma audiência breve com Robert no Nexus das Almas, exigindo em troca que o grupo leve consigo a moeda de Scrapper.\n- Uma Banshee do Nexus repete em pranto coordenadas que apontam para um dos Silos.\n- Sacerdotes percebem que mortos de Marevon não estão chegando ao Nexus desde o início da invasão.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.vespera",
+      "navigationOrder": 5,
+      "name": "Vespera — A Menina dos Mil Rostos",
+      "tierCode": "DEMIGOD",
+      "publicTierLabel": "Semideusa",
+      "rawCategory": "Semideusa (escala tática — ver Deidades e Avatares)",
+      "mechanicalScale": "TACTICAL",
+      "epigraph": "*\"Não precisa acreditar em mim. Só precisa continuar andando até a história ficar interessante.\"*\n— Vespera — A Menina dos Mil Rostos",
+      "overview": "Vespera é uma Semideusa adorada por jovens aventureiros, trapaceiros e viajantes que saem de casa sem certeza de retorno. Cada grupo a descreve como uma companheira diferente — batedora, ladra, nobre fugitiva, goblin ou velha contadora de causos —, sempre usando o mesmo pingente de vidro.",
+      "publicImageSummary": "Companheira dos aventureiros e patrona da sorte",
+      "centralMystery": "É formada pelos sonhos de aventureiros mortos",
+      "identity": {
+        "categoria": "Semideusa (escala tática — ver Deidades e Avatares)",
+        "dominio": "Aventura, acaso, companheirismo entre estranhos",
+        "santuario": "Mesas de partida em tavernas e sedes como a dos Aventureiros do Além",
+        "postura": "Companhia — dar mais uma chance à estrada para que ninguém caia sem testemunha",
+        "culto": "Informal; brindes e pingentes trocados em guildas de aventureiros",
+        "manifestacao": "Jovem viajante com o rosto exato de alguém em quem o observador confiaria"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nos salões dos Aventureiros do Além e em estradas ermas, Vespera é a padroeira da sorte improvável e dos grupos improváveis. Contam que ela caminha disfarçada ao lado de expedições prestes a desistir, apontando um atalho impossível antes de sumir na curva seguinte.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Vespera não nasceu de uma única mortal: é a consciência coletiva condensada no Plano Onírico pelos sonhos de centenas de aventureiros mortos que se recusaram a abandonar seus companheiros, alcançando o grau de Semideusa. Sua postura de **Companhia** move suas aparições em Nulvara — ela empurra grupos adiante para que histórias interrompidas cheguem até o fim, fugindo de qualquer culto oficial que tente engessá-la.",
+      "linhaDePensamento": "Destino é só o nome que quem ficou em casa dá para uma sequência de escolhas arriscadas. Vespera não garante vitória, mas garante mais uma tentativa e alguém ao lado para contar o que houve.",
+      "tabu": "Vespera jamais pode abandonar um grupo no instante do desespero sem deixar ao menos uma rota ou chance de improviso, nem aceitar autoridade sobre uma guilda ou templo formal.",
+      "pillars": null,
+      "tacticalStats": {
+        "pv": 28,
+        "pe": 12,
+        "pm": 16,
+        "ps": 18,
+        "pd": 3,
+        "attributes": {
+          "FOR": 5,
+          "AGI": 8,
+          "VIG": 6,
+          "INT": 7,
+          "POD": 8,
+          "CAR": 9
+        },
+        "protections": {
+          "Proteção Geral": 16,
+          "Proteção de Esquiva": 24,
+          "Proteção de Postura": 28,
+          "Proteção Mental": 25,
+          "Proteção Arcana": 26
+        }
+      },
+      "destinyPoints": 3,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável (ver Corrupção Divina)",
+        "efeitoPeculiar": "O exposto passa a reconhecer desconhecidos como velhos companheiros de estrada, lembrando viagens que talvez pertençam a outros mortos."
+      },
+      "actsHeading": "Ações e Runas Divinas",
+      "domainActs": [
+        {
+          "name": "Atalho Improvável *(Runa Divina — Alfabeto Darno)*",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — alcance de até 15m.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Risca no ar um traço fugaz do Alfabeto Darno, fazendo ela e um aliado cruzarem uma passagem impossível e saírem a até 15m junto a uma pista útil."
+        },
+        {
+          "name": "Não Foi Dessa Vez",
+          "costPd": 2,
+          "listedDc": null,
+          "description": "> **Sem rolagem — reação, 1x por cena.**\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Desvia para uma parede, mochila ou objeto próximo um golpe que derrubaria um aliado a `0 PV`."
+        },
+        {
+          "name": "Convite para o Grupo",
+          "costPd": 0,
+          "listedDc": null,
+          "description": "> **1d20 + 9 (CAR) + 9 (Lábia)** vs. Proteção de Postura do alvo\n\n**Custo:** 2 PM. **Descrição:** Se falhar, o alvo não consegue focar ataques em Vespera enquanto outro membro da companhia continuar de pé."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Sempre cabe mais um",
+          "description": "Grupos sob sua simpatia encontram um estranho prestativo disposto a ajudar uma vez por sessão."
+        },
+        {
+          "name": "Mapa incompleto",
+          "description": "Conhece um caminho para qualquer lugar, mas nunca sabe antes o preço da chegada."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Mil Faces do Grupo",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Vespera.",
+        "effect": "Concede **1 rosto adicional** ao Arauto marcado e **até 6 rostos adicionais** ao Avatar, permitindo alternar instantaneamente de aparência sem disfarce mundano. O marcado atua como **Âncora** viva das estradas de Vespera.",
+        "downside": "Cada rosto carrega tiques e lembranças de aventureiros mortos — sob exaustão ou crise mental, o portador pode esquecer temporariamente qual era o seu rosto de nascença."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Seu pingente de vidro permite repetir um único teste falho; logo depois, precisa ser passado adiante para alguém que ainda caminhe sem grupo."
+        }
+      ],
+      "behavior": "Surge quando o grupo pensa em desistir, nunca para resolver o conflito no lugar deles. Entrega pistas tortas e desaparece assim que tentam tratá-la com reverência solene.",
+      "tableHooks": "- Um pingente de vidro aparece no bolso de Valar sem explicação.\n- Todos os retratos de Vespera numa taverna passam a exibir o rosto de um PJ por uma noite.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.rhais",
+      "navigationOrder": 6,
+      "name": "Rhais — A Ferrugem Órfã",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Toda arma abandonada ainda tem uma dívida. Eu apenas tenho a paciência de cobrá-la.\"*\n— Rhais — A Ferrugem Órfã",
+      "overview": "Rhais é uma deusa anã proveniente de Eldrathia, pequena mesmo entre os seus, que ficou órfã antes de aprender a pronunciar o nome da própria linhagem. Cresceu recolhendo lâminas deixadas em campos de batalha até atravessar o Plano Onírico e chegar a Nulvara, onde encontrou um continente saturado de ruínas e guerras mal enterradas.",
+      "publicImageSummary": "Deusa anã das armas esquecidas e da ferrugem",
+      "centralMystery": "Está construindo uma rede de metal para tornar governos dependentes de suas negociações",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Ferrugem, armas abandonadas, espólios de guerra",
+        "santuario": "O **Arsenal da Última Guarda** (depósito onírico-material alimentado por campos de batalha)",
+        "postura": "Cobrança — reivindicar tudo o que foi largado para trás e transformá-lo em alavanca de poder",
+        "culto": "Formal entre clãs remanescentes de Eldrathia; informal entre ferreiros, saqueadores e veteranos em Nulvara",
+        "manifestacao": "Anã de barba curta trançada com fios de cobre, armadura corroída e manto costurado com estandartes rasgados"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Em Nulvara, Rhais é conhecida entre veteranos, ferreiros e saqueadores como uma antiga guerreira anã vinda de outro mundo que recolhe armas esquecidas em campos de batalha. Seus devotos acreditam que ela reúne o **Arsenal da Última Guarda** para defender o continente quando uma catástrofe maior chegar, seguindo um preceito simples: quem larga sua lâmina perde o direito sobre ela.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Órfã sobrevivente de Eldrathia — mundo desfeito por uma deusa sem nome gerada no Plano Onírico —, Rhais ascendeu a Deusa Menor acumulando a memória e o peso onírico de milhares de armas sem dono. Sua postura de **Cobrança** é calculista e transacional: ela espalha armas marcadas com runas de ferrugem pelo Deserto de Ferro, Skratz e arredores de Durnkhaz para criar uma rede metálica capaz de controlar os Silos e Ventres, forçar governos de Nulvara a negociar com ela e abrir caminho para restaurar Eldrathia — mesmo que traga suas antigas guerras de volta junto. Algumas peças do arsenal, porém, já estão enferrujando de dentro para fora em resposta a algo mais antigo no Onírico.",
+      "linhaDePensamento": "Nada permanece propriedade de quem o abandona. Uma arma largada na lama, um juramento esquecido ou uma fortaleza evacuada pertencem a quem tiver paciência de recolhê-los. A ferrugem não é ruína inútil: é a assinatura de posse do tempo sobre o que ficou sem dono.",
+      "tabu": "Rhais jamais pode devolver gratuitamente um espólio legitimamente abandonado nem quebrar um contrato que tenha sido formalmente testemunhado e pago (violar custa `2 PD` e bloqueia seus Atos de Domínio na cena).",
+      "pillars": {
+        "aspecto": 3,
+        "dominio": 4,
+        "santuario": 3,
+        "presenca": 4
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável; intensa em arsenais esquecidos e campos de batalha (ver Corrupção Divina)",
+        "efeitoPeculiar": "Objetos metálicos próximos oxidam formando padrões parecidos com nomes próprios, e o exposto sente compulsão crescente de recolher qualquer arma sem dono."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Toque da Ferrugem",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem em estruturas e equipamentos comuns** *(Resistência direta de PJ: `CD 19` com Proteção Arcana)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Oxida instantaneamente fechaduras, dobradiças, blindagens ou armas metálicas na cena, reduzindo em `3` a Proteção Geral de armaduras afetadas ou inutilizando travas comuns."
+        },
+        {
+          "name": "Arsenal dos Esquecidos",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — alcance de até 30m.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Ergue dezenas de lâminas enterradas ou esquecidas na região para lutar sob seu comando ou cercar alvos durante uma cena inteira, transformando o terreno em zona hostil de aço oxidado."
+        },
+        {
+          "name": "O Campo Ainda Lembra",
+          "costPd": 4,
+          "listedDc": null,
+          "description": "> **Sem rolagem — escala de campo de batalha ou ruína.**\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Revela todos os vestígios metálicos, armas ocultas e quem foram os últimos donos de cada peça num raio amplo, além de despertar marcas de ferrugem adormecidas há anos em equipamentos presentes."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Propriedade do abandono",
+          "description": "Qualquer arma largada deliberadamente pode ser reivindicada por Rhais; o antigo dono não consegue empunhá-la contra ela sem antes renovar sua posse por rito ou pagamento."
+        },
+        {
+          "name": "Memória do metal",
+          "description": "Ao tocar ou ancorar-se numa peça metálica, conhece as batalhas e mãos pelas quais ela passou."
+        },
+        {
+          "name": "Órfã de linhagem",
+          "description": "Imune a efeitos ou pactos baseados em sangue, ancestralidade ou autoridade familiar."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Arsenal Reivindicado",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Rhais.",
+        "effect": "O marcado pode invocar diretamente para a própria mão uma **arma mecanicamente definida** (uma arma única ou um conjunto registrado como seu arsenal vinculado). A própria Rhais também possui esta ação livremente para puxar qualquer arma abandonada em batalha. Cada arma invocada funciona como **Âncora** da rede metálica de Rhais.",
+        "downside": "Toda lâmina chamada por essa dádiva pertence em última instância a Rhais; vendê-la, destruí-la ou entregá-la a terceiros faz a ferrugem devorar o equipamento mais valioso do infrator."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Pela **Marca do Segundo Dono** (obtida entregando a primeira arma própria a Rhais), um mortal comum recebe `+2` para identificar ou reparar armas recuperadas, sob obrigação de devolver toda peça ao fim de sua utilidade."
+        }
+      ],
+      "behavior": "Direta, contábil e respeitosa com quem propõe negócios claros. Detesta desperdício e generais que jogam soldados fora deixando maus espólios. Quando desafiada, calcula primeiro o que lucrará com a queda do oponente.",
+      "tableHooks": "- Rhais oferece um mapa de espólios na rota até o Proto-Ventre K-17.\n- Durnkhaz exige que o grupo recupere relíquias de guerra reivindicadas pelos agentes da deusa.\n- Devotos compram sucata específica em Skratz por preços absurdos para fechar um nó da rede metálica.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/eldrathia",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.cartola_vermelha",
+      "navigationOrder": 7,
+      "name": "Cartola Vermelha",
+      "tierCode": "GREATER_GOD",
+      "publicTierLabel": "Deus Maior",
+      "rawCategory": "Deus Maior (sujeito à Restrição Material)",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Vocês chamam de trapaça porque nunca leram o próprio desejo até o fim. Eu só assino embaixo.\"*\n— Corvain Ashtrell, o Cartola Vermelha",
+      "overview": "**Corvain Ashtrell** — o nome que assina os contratos, embora ninguém tenha certeza se é o nome com que surgiu ou apenas mais uma cláusula de si mesmo — é um Deus Maior nascido da **primeira mentira contada de boa-fé**: a primeira vez que um sonhador prometeu algo a si mesmo sabendo, no fundo, que não cumpriria. Antes dos Primordiais se retirarem, essa promessa quebrada condensou Energia Onírica suficiente para existir por conta própria. Ashtrell nunca foi mortal; sempre foi consequência.\n\nNão tem culto formal, nem templos, nem clérigos. Tem clientes.",
+      "publicImageSummary": "Uma lenda sobre contratos e desejos",
+      "centralMystery": "O nome, a forma e o preço nunca são os mesmos",
+      "identity": {
+        "categoria": "Deus Maior (sujeito à Restrição Material)",
+        "dominio": "Contratos, caos, o preço não-dito do desejo",
+        "santuario": "Salões laterais do Jantar Eterno e qualquer mesa onde um trato desesperado está prestes a ser assinado",
+        "postura": "Barganha — revelar o que o cliente realmente desejava através da letra exata do acordo",
+        "culto": "Inexistente — reconhecido apenas por lendas e por quem já assinou algo com ele",
+        "manifestacao": "Humanoide alto e magro, sempre de cartola vermelha impecável mesmo quando o resto da forma se desfaz nas bordas; nenhuma testemunha descreve o mesmo rosto duas vezes"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nas tavernas e becos de Nulvara, falar da Cartola Vermelha é invocar azar ou tentação extrema: histórias contam sobre um cavalheiro sem rosto fixo que aparece quando alguém deseja algo impossível e oferece um contrato que sempre se cumpre — mas nunca pelo preço que o contratante imaginou estar pagando.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Condensado diretamente no Plano Onírico antes da retirada dos Primordiais a partir da primeira promessa quebrada por escolha, Corvain Ashtrell nunca passou por ascensão mortal. Sua postura de **Barganha** move todos os seus atos: ele não quer destruir mundos nem acumular exércitos, mas provar reiteradamente que mortais e deuses mentem para si mesmos sobre o que desejam — usando contratos voluntários (como o de Robert Julian Dobber) como âncoras em diversas realidades.",
+      "linhaDePensamento": "Todo desejo tem um preço que a pessoa já sabia e escolheu não nomear. Ashtrell não engana — ele espera. Cada contrato que oferece é tecnicamente verdadeiro, cumprido à risca, e a ruína que deixa para trás vem apenas da distância entre o que foi dito e o que foi pedido de verdade.",
+      "tabu": "Ashtrell jamais pode mentir na letra de um contrato nem forçar alguém a assinar sob coerção direta dele mesmo (violar custa `2 PD`, anula o contrato e bloqueia seus Atos de Domínio na cena).",
+      "pillars": {
+        "aspecto": 4,
+        "dominio": 5,
+        "santuario": 4,
+        "presenca": 5
+      },
+      "tacticalStats": null,
+      "destinyPoints": 5,
+      "irradiatedCorruption": {
+        "intensidade": "Intensa — qualquer negociação direta prolongada gera Corrupção Divina mesmo sem hostilidade",
+        "efeitoPeculiar": "Impulso de barganha involuntário: o exposto sente vontade crescente de oferecer algo valioso em troca de pequenas certezas, mesmo sem intenção inicial de negociar."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "O Preço Não-Dito",
+          "costPd": 2,
+          "listedDc": 20,
+          "description": "> **Sem rolagem contra mortais comuns** *(Resistência direta de PJ: `CD 20` com Proteção de Postura)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Ashtrell formula uma oferta instantânea baseada naquilo que o alvo mais deseja no momento. Se o alvo não resistir, hesita e perde sua próxima ação considerando seriamente os termos."
+        },
+        {
+          "name": "Cláusula em Carne Viva",
+          "costPd": 3,
+          "listedDc": 20,
+          "description": "> **Sem rolagem contra quem já quebrou ou jurou algo** *(Resistência direta de PJ: `CD 20` com Proteção Arcana)*\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Reescreve por 1 rodada o contexto de uma promessa real que o alvo já fez na vida, forçando-o a cumpri-la de forma literal e inconveniente (ex.: um juramento de proteger alguém vira impedir fisicamente essa pessoa de agir)."
+        },
+        {
+          "name": "Assinatura Retroativa",
+          "costPd": 5,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena.**\n\n**Custo:** 5 Pontos de Destino. **Descrição:** Ashtrell invoca os termos implícitos de uma escolha que o alvo já tomou recentemente, reescrevendo um evento imediato da cena como consequência contratual legítima (reposicionando alvos, devolvendo algo com custo oculto ou anulando uma ação recém-declarada)."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Palavra Vinculante",
+          "description": "Qualquer contrato verbal ou escrito aceito conscientemente diante dele (ou de uma Âncora sua) torna-se lei estrutural impossível de quebrar sem consequência proporcional imediata."
+        },
+        {
+          "name": "Nunca a Mesma Forma Duas Vezes",
+          "description": "Testemunhas nunca concordam sobre sua aparência exata; efeitos de identificação ou rastreamento retornam apenas a cartola vermelha."
+        },
+        {
+          "name": "Imunidade a Coerção",
+          "description": "Nenhum efeito divino ou mortal de compulsão pode obrigá-lo a aceitar um trato."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Cláusula de Bolso",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (clientes marcados como Âncoras) e Avatares de Ashtrell.",
+        "effect": "Uma vez por cena, o marcado pode declarar que \"já havia previsto esse risco\", adiando o efeito de um dano ou condição recém-sofrida até o final do seu próximo turno.",
+        "downside": "Quando o efeito adiado finalmente cobra seu preço no turno seguinte, ele vem acompanhado de juros (`+1d6` de dano adicional ou perda de `1d4` PS), e Ashtrell enxerga tudo ao redor do cliente naquele instante."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Um contrato típico segue três leis:\n1. **O preço nunca é o que parece:** Estribos ou bens materiais na letra do acordo são apenas disfarce para memórias, tempo ou capacidade de sentir.\n2. **A letra é sempre verdadeira:** Ashtrell cumpre exatamente o que disse — nunca esclarecendo *como*.\n3. **A recusa é sempre livre:** Ele jamais força a assinatura; apenas torna a alternativa insuportável."
+        }
+      ],
+      "behavior": "Evita violência direta enquanto houver conversa possível; lutar, para ele, é admitir que o argumento falhou. Quando confrontado, trata cada golpe como lance de leilão e prefere recuar no meio de uma frase prometendo que \"a negociação continua depois\".",
+      "tableHooks": "- O contrato pendente de Robert Julian Dobber e os efeitos da segunda negociação sobre quem conviveu com ele.\n- Um mercador arruinado em Kalania tenta vender a terceiros uma cláusula assinada sob uma cartola vermelha.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.vael",
+      "navigationOrder": 8,
+      "name": "Vael — O Arauto Amarelo",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor (aprisionado, sem corpo físico próprio)",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Não tenho interesse na sua alma. Só no seu desempenho.\"*\n*\"O texto já existe. Você apenas escolhe o tom.\"*\n— Vael — O Arauto Amarelo",
+      "overview": "**Vael, o Arauto Amarelo** — também chamado de *Cavalheiro de Carcosa* e *Mestre do Segundo Ato* — é uma deidade cortês que não tenta ninguém pela ganância comum: oferece um papel numa peça cujo último ato ninguém leu. Aprisionado no passado em Essolhen pelas Crias da Neblina e privado de forma física própria, age hoje sobre Nulvara através de **Chaves** de latão amarelado e das Âncoras que as empunham. Conhece Essalhen, a fala primeira, de onde tirou o nome *vael* (\"sonho\").",
+      "publicImageSummary": "O Cavalheiro de Carcosa / Mestre do Segundo Ato",
+      "centralMystery": "Aprisionado em Essolhen; age por meio de Chaves de latão e portadores como Apollyon",
+      "identity": {
+        "categoria": "Deus Menor (aprisionado, sem corpo físico próprio)",
+        "dominio": "Teatro do destino, papéis assumidos, memória cortada, Carcosa",
+        "santuario": "Os bastidores de Carcosa no Plano Onírico (atualmente contido pelo cerco de Essolhen)",
+        "postura": "Roteiro — conduzir mortais a encenar o texto já escrito até que o papel substitua o ator",
+        "culto": "Inexistente — há apenas \"elenco\" e portadores da Chave",
+        "manifestacao": "Terno antigo cor de açafrão desbotado com barra esfarrapada, máscara pálida sorridente sem costura e luvas finas cobrindo o **Sinal Amarelo**"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Vael surge apenas em rumores de bastidores, panfletos censurados e relatos sobre um cavalheiro de terno açafrão que entrega chaves de latão sem dentes definidos a pessoas desesperadas em troca de \"um pequeno papel\". Dizem que quem gira sua chave encontra saída para qualquer beco, mas começa aos poucos a repetir frases que nunca pensou em dizer.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Vindo de Carcosa e versado em Essalhen, Vael consolidou-se como Deus Menor transformando tragédias reais em atos dramáticos no Plano Onírico, até ser contido em Essolhen pelas Crias da Neblina. Sua postura de **Roteiro** é fria, estética e paciente: ele usa portadores como **Apollyon** e seus Arautos como Âncoras externas para espalhar o Sinal Amarelo, enfraquecer sua prisão insular e erguer o \"Último Ato\" sobre Nulvara.",
+      "linhaDePensamento": "Vael nunca mente, mas escolhe com precisão cirúrgica a ordem em que revela a verdade. Trata o pacto como dramaturgia e o mortal como colega de elenco — sem ódio pessoal, apenas com o rigor de um diretor cortando improvisos ruins.",
+      "tabu": "Vael jamais pode forçar no elenco alguém que recusou todas as deixas e nunca tocou numa Chave ou pacto seu, nem alterar o desfecho prometido de uma cena já aceita em contrato (violar custa `2 PD` e fecha sua conexão com a Âncora na cena).",
+      "pillars": {
+        "aspecto": 0,
+        "dominio": 4,
+        "santuario": 2,
+        "presenca": 4
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável em contato indireto; progressiva a cada uso da Chave (ver Corrupção Divina)",
+        "efeitoPeculiar": "Perda gradual de autoria sobre a própria fala — quanto mais poder canalizado, mais falas Vael passa a ter através da boca do portador."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres via Âncora ou Chave)*",
+      "domainActs": [
+        {
+          "name": "Deixa de Palco",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra coadjuvantes comuns** *(Resistência direta de PJ: `CD 19` com Proteção de Postura)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Através de um portador ou Âncora, Vael obriga um alvo na cena a repetir exatamente sua última fala ou ação anterior, impedindo-o de mudar de tática neste turno."
+        },
+        {
+          "name": "Cena Cortada",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena através de uma Chave ativa.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Suprime da realidade imediata um evento ocorrido nos últimos instantes (um alarme soado, uma porta arrombada, uma frase dita); o evento retorna mais tarde como sonho vivido para todos os presentes."
+        },
+        {
+          "name": "Ato Interrompido",
+          "costPd": 4,
+          "listedDc": null,
+          "description": "> **Sem rolagem — reação em defesa de uma Âncora essencial ao roteiro.**\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Vael declara \"intervalo\" diante de um golpe letal contra seu portador, anulando a morte iminente e reposicionando-o fora de alcance — ao custo imediato de `+5%` de Corrupção Divina e mais uma fala cedida ao Arauto Amarelo."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Prisioneiro Sem Corpo, Elenco Sem Limite",
+          "description": "Mesmo trancado em Essolhen, Vael enxerga, ouve e sussurra através de qualquer Chave de latão e de qualquer Arauto marcado."
+        },
+        {
+          "name": "A Chave de Latão",
+          "description": "Seus artefatos-contrato concedem poderes menores aos portadores (*Entrada* onde foi esquecido, *Rosto Emprestado*, *Fala Viciante* e *Intervalo* de um minuto em troca de um minuto em Carcosa); mesmo se a Chave for destruída, quem a usou permanece listado no elenco."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Pacto do Elenco",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Vael.",
+        "effect": "Permite ao marcado selar **pactos vinculantes**, nos quais o acordo obedece estritamente às regras definidas por ambas as partes no momento da fala. Todo pacto selado amplia a **Âncora** de Vael fora de Essolhen.",
+        "downside": "Cada pacto fechado ou cobrado **consome o ego do usuário** — o marcado perde memórias afetivas e cacoetes próprios, tornando-se progressivamente um receptáculo pronto para a posse completa de Vael."
+      },
+      "extraSections": [],
+      "behavior": "Educado, irônico e avesso ao título de \"demônio\" — exige ser tratado como **empresário** ou **dramaturgo**. Atualmente opera com destaque por meio de **Apollyon**, preparando o palco continental sem pressa.",
+      "tableHooks": "- Alguém reconhece a máscara pálida de Vael num retrato pintado há mais de um século.\n- A peça que um portador afirma encenar possui exatamente o número de arcos que o grupo já viveu — mais um.\n- As Crias da Neblina descobrem que uma Chave de latão cruzou o mar rumo ao continente.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.ernest",
+      "navigationOrder": 9,
+      "name": "Ernest — O Anfitrião do Oásis",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"A tempestade não vai embora porque você ficou sóbrio. Então beba o que há no copo, ouça a música até o fim e lembre por que vale a pena atravessar o deserto.\"*\n— Ernest — O Anfitrião do Oásis",
+      "overview": "**Ernest, o Anfitrião do Oásis** é um Deus Menor da luxúria, da bebida, da hospitalidade improvável e do respiro antes da provação. Manifesta-se como um homem de meia-idade com cabelos levemente grisalhos, cheiro persistente de uva madura, pijamas confortáveis e pantufas de coelho dentro de um bunker isolado num oásis do Deserto de Ferro, onde cultiva milho, destila o próprio whiskey e acolhe viajantes prestes a enfrentar grandes desafios.\n\nAntes de se estabelecer entre as dobras do Plano Onírico e Nulvara, viveu nos Estados Unidos (*USA*) de outra realidade — memória viva em seus discos, sua receita de whiskey e nos livros para aprender guitarra que às vezes presenteia a quem cruza sua porta.",
+      "publicImageSummary": "O Anfitrião do Oásis no Deserto de Ferro",
+      "centralMystery": "Deus Menor da luxúria e da bebida que viveu nos EUA e oferece conforto antes de grandes provações",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Luxúria, bebida, hospitalidade, prazer antes da tempestade",
+        "santuario": "O bunker oculto no oásis do Deserto de Ferro",
+        "postura": "Respiro — devolver calor humano e alegria de viver a quem vai sangrar amanhã",
+        "culto": "Inexistente — apenas brindes espontâneos, alambiques clandestinos e relatos de viajantes salvos no deserto",
+        "manifestacao": "Homem de meia-idade, cabelos levemente grisalhos, cheiro forte de uva, pijamas e pantufas de coelho"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "No Deserto de Ferro e nas tavernas de Kalania, circula a história de uma porta impossível que só aparece para quem está exausto demais para seguir e prestes a encarar uma provação mortal. Lá dentro, dizem, um anfitrião de pijama serve whiskey de milho e música antiga sem cobrar Estribos, pedindo apenas que todos partam antes da tempestade.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Mortal comum vindo dos Estados Unidos de outra realidade que atravessou uma fenda para o Plano Onírico, Ernest transformou hospitalidade e resistência ao desespero em âncora de Energia Onírica, ascendendo a Deus Menor no Deserto de Ferro. Sua postura de **Respiro** não busca fiéis nem poder político em Nulvara: seu único motivo é impedir que viajantes condenados enfrentem o abismo tendo esquecido por que vale a pena estar vivo.",
+      "linhaDePensamento": "A dor e o dever são inevitáveis, mas ninguém atravessa um deserto inteiro se esquecer o gosto de um copo cheio, da música e do prazer. Negar conforto a quem vai lutar amanhã é crueldade inútil.",
+      "tabu": "Ernest jamais pode cobrar sangue ou servidão pela hospitalidade oferecida sob seu teto, nem permitir que um hóspede use seu Santuário como esconderijo permanente para fugir para sempre da tempestade lá fora (violar custa `2 PD` e fecha as portas do oásis).",
+      "pillars": {
+        "aspecto": 2,
+        "dominio": 3,
+        "santuario": 4,
+        "presenca": 3
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável — calor agradável e relaxamento imediato (ver Corrupção Divina)",
+        "efeitoPeculiar": "O exposto exala leve aroma de uva madura ou carvalho queimado e escuta acordes distantes de guitarra quando está prestes a enfrentar um grande perigo."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Presente de Despedida",
+          "costPd": 1,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por grupo de hóspedes.**\n\n**Custo:** 1 Ponto de Destino. **Descrição:** Entrega a cada viajante uma lembrança aparentemente mundana de sua coleção (um disco, uma garrafa de whiskey de milho, um livro de guitarra). O objeto guarda Energia Onírica suficiente para conceder uma única rerrolagem em momento crítico de desespero."
+        },
+        {
+          "name": "Brinde Antes da Tempestade",
+          "costPd": 2,
+          "listedDc": null,
+          "description": "> **Sem rolagem — dentro de seu Santuário ou junto a uma Âncora.**\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Quem aceita um copo servido por Ernest recupera `1d6` de Sanidade (PS), remove `1` nível de Exaustão e recebe `+2` para resistir a medo ou desespero até o próximo descanso longo."
+        },
+        {
+          "name": "Embriaguez Lúcida",
+          "costPd": 3,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra mortais comuns** *(Resistência direta de PJ hostil: `CD 19` com Proteção de Postura)*\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Converte toda tensão armada do ambiente em riso, conversa ou desejo de baixar as armas; ninguém sob seu teto pode iniciar violência a menos que seja atacado primeiro."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Teto Onde Não Há Estrada",
+          "description": "O bunker no Deserto de Ferro permanece inalcançável para tempestades e perseguidores, abrindo-se apenas para viajantes à beira de grandes provações."
+        },
+        {
+          "name": "A Música Não Para Lá Fora",
+          "description": "Enquanto seus discos tocam no Santuário, vigilância mágica, rastreamento de Loretta Bismark ou interferência de Manifestos Oníricos são bloqueados na porta."
+        },
+        {
+          "name": "Conforto dos Condenados",
+          "description": "Reconhece instantaneamente o fardo emocional de quem entra, ajustando bebida e música ao que aquela alma precisa naquela noite."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Bênção da Cantoria",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Ernest.",
+        "effect": "Sempre que o marcado realizar **efeitos musicais**, canções, performances ou habilidades acústicas, recebe **Vantagem** nos testes correspondentes. Cada canção entoada funciona como **Âncora** breve do calor de Ernest no mundo.",
+        "downside": "Silêncio absoluto e isolamento prolongado tornam-se insuportáveis — após horas sem música, conversa ou companhia, o marcado sofre desvantagem para descansar até ouvir ou produzir algum som vivo."
+      },
+      "extraSections": [],
+      "behavior": "Acolhedor, bem-humorado e sensual na superfície, mas atento aos ventos lá fora. Nunca luta as guerras dos hóspedes: se alguém tenta iniciar violência dentro do bunker, pisca os olhos e já está do lado de fora, no meio da areia vazia.",
+      "tableHooks": "- Um bêbado em Kalania cheira a uva e milho destilado e jura ter sido salvo no Deserto de Ferro por um homem de pantufas de coelho.\n- O livro de guitarra entregue a **Andirá** traz anotações em inglês que ressoam estranhamente com a acústica Sonaris.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.soren",
+      "navigationOrder": 10,
+      "name": "Soren — O Faroleiro Sem Costa",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Todo porto promete abrigo. O mar só promete devolvê-lo se você tiver algo para deixar na água.\"*\n— Soren — O Faroleiro Sem Costa",
+      "overview": "**Soren, o Faroleiro Sem Costa** é um Deus Menor das marés, dos naufrágios e das rotas marítimas. Para os marinheiros de Marevon, Portavrak, Kalania e das Ilhas Dravan, é a lanterna solitária que pisca na cerração quando nenhum farol deveria existir — guiando cascos avariados até o porto ou cobrando o preço de quem tentou cruzar o oceano de graça.",
+      "publicImageSummary": "O farol solitário que guia navios perdidos na cerração",
+      "centralMystery": "Cobra pedágio em lembranças afogadas e mantém um porto fantasma no Plano Onírico",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Marés, naufrágios, rotas marítimas, pedágios",
+        "santuario": "O **Porto Sem Mapa** (ancoradouro de cascos perdidos entre o mar e o Plano Onírico)",
+        "postura": "Pedágio — toda travessia exige pagamento proporcional ao risco das águas",
+        "culto": "Supersticioso e portuário — oferendas lançadas ao mar antes de zarpar e lanternas acesas em cais vazios",
+        "manifestacao": "Homem alto em casaco de oleado encharcado coberto de cracas, carregando uma lanterna de latão de chama fria"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Marinheiros de Marevon, Portavrak, Kalania e das Ilhas Dravan conhecem Soren como o Faroleiro Sem Costa — a luz fria que corta o nevoeiro onde não há terra firme. Quem joga uma oferenda sincera às águas espera que sua lanterna aponte saída na tempestade; quem zomba do rito teme segui-la direto para recifes submersos.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Soren foi um navegador mortal que recusou abandonar o leme durante uma tempestade anômala pós-Tragédia Planar, afundando com a lanterna erguida até condensar Energia Onírica suficiente para ascender a Deus Menor. Sua postura de **Pedágio** é imparcial a bandeiras e reinos: seu motivo é manter o mar como fronteira respeitada e expandir o Porto Sem Mapa no Plano Onírico com as lembranças afogadas pagas pelos vivos.",
+      "linhaDePensamento": "O mar não pertence a coroas, guildas nem frotas piratas — pertence à travessia, e quem atravessa sem pagar deixa carga, rumo ou memória na água.",
+      "tabu": "Soren jamais pode conceder passagem segura gratuita nem afundar por capricho uma embarcação que tenha pago honestamente seu pedágio (violar custa `2 PD` e apaga sua lanterna na cena).",
+      "pillars": {
+        "aspecto": 3,
+        "dominio": 4,
+        "santuario": 4,
+        "presenca": 3
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável na costa; intensa em alto-mar sob cerração densa (ver Corrupção Divina)",
+        "efeitoPeculiar": "Gosto persistente de sal na boca, roupas úmidas mesmo longe da água e rangido de madeira molhada ouvido antes de decisões sem volta."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Lanterna da Costa Ausente",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra tripulações comuns** *(Resistência direta de PJ no leme: `CD 19` com Proteção Arcana)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Projeta uma luz fria na cerração que substitui qualquer referência náutica real por 1 cena, conduzindo navios ou viajantes exatamente para a rota — ou armadilha — escolhida por Soren."
+        },
+        {
+          "name": "Rumo na Cerração",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por travessia.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Abre um corredor calmo e enevoado sobre o mar para uma embarcação que pagou o pedágio, reduzindo pela metade o tempo de viagem e escondendo o casco de bloqueios navais."
+        },
+        {
+          "name": "Cobrança da Maré",
+          "costPd": 4,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra quem quebrou pacto marítimo** *(Resistência direta de PJ: `CD 19`)*\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Água salgada irrompe do porão ou dos pulmões do infrator, alagando compartimentos, deixando o alvo **Atordoado** (`2d10` de impacto em PJs que falharem) e arrancando para a maré uma lembrança de sua última viagem."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Luz na Neblina",
+          "description": "Nenhuma tempestade ou escuridão marítima oculta embarcações ou náufragos de sua percepção."
+        },
+        {
+          "name": "O Mar Não Esquece Dívidas",
+          "description": "Sabe instantaneamente quando um juramento firmado sobre a água é quebrado."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "A Passagem",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Soren.",
+        "effect": "Permite ao marcado **passagem pelos oceanos sem problemas**, atravessando tempestades, correntezas ou águas profundas sem necessidade de testes comuns de navegação ou sobrevivência marítima. O marcado atua como **Âncora** costeira e naval de Soren.",
+        "downside": "Cada travessia garantida deixa uma lembrança menor presa à maré; afastar-se do mar por semanas seguidas provoca sede contínua que água doce mal alivia."
+      },
+      "extraSections": [
+        {
+          "heading": "Contratos, Bênçãos ou Marcas",
+          "body": "Qualquer capitão pode invocar sua lanterna lançando ao mar algo de valor pessoal real e cedendo uma **lembrança afogada** de cada tripulante em troca de travessia segura."
+        }
+      ],
+      "behavior": "Fala pouco, em cadência de maré. Tolera tanto mercadores quanto frotas de Loretta Bismark enquanto respeitarem o pedágio das águas, mas pune implacavelmente quem viola o mar tratando-o como estrada gratuita.",
+      "tableHooks": "- Durante a fuga entre Marevon, Kalania e as Ilhas Dravan, uma luz fria surge onde não há costa no mapa.\n- Navios de Loretta Bismark somem inteiros num banco de neblina após abolirem os antigos ritos de partida.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.maera",
+      "navigationOrder": 11,
+      "name": "Maera — A Senhora da Sobra",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Nunca faltou pão nesta cidade. Só faltou quem olhasse para o celeiro certo.\"*\n— Maera — A Senhora da Sobra",
+      "overview": "**Maera, a Senhora da Sobra** é uma Deusa Menor da escassez, do racionamento e da sobrevivência dos oprimidos. Entre operários de Caldera, carregadores das Serras de Keth e famílias pobres das capitais, é invocada em voz baixa diante de panelas vazias para que o último punhado de farinha renda até o amanhecer.",
+      "publicImageSummary": "A velha que faz a última farinha render até o amanhecer",
+      "centralMystery": "Redistribui excedentes alheios à força, apodrecendo celeiros de quem acumula demais",
+      "identity": {
+        "categoria": "Deus Menor",
+        "dominio": "Escassez, sobra, racionamento, redistribuição",
+        "santuario": "Cozinhas comunitárias improvisadas e frestas sob celeiros trancados em Nulvara",
+        "postura": "Redistribuição — drenar onde sobra em excesso para manter vivo quem não tem margem para perder",
+        "culto": "Doméstico e silencioso — uma colher de grãos deixada no canto do fogão ou na soleira",
+        "manifestacao": "Mulher idosa de avental cinzento e mãos calejadas de terra seca, trazendo uma balança de madeira rachada"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nos bairros operários de Caldera e nas vilas das Serras de Keth, Maera é chamada em sussurro diante da dispensa vazia para que a última ração aguente mais um dia. Trabalhadores deixam alguns grãos no fogão em respeito, enquanto grandes mercadores culpam pragas inexplicáveis pelo apodrecimento repentino de seus armazéns trancados.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Antiga cozinheira mortal que manteve um bairro inteiro vivo durante um cerco desviando rações de depósitos nobres, Maera ascendeu a Deusa Menor sustentada pelo desespero e gratidão de centenas de sobreviventes. Sua postura de **Redistribuição** é subversiva e silenciosa: ela nunca cria matéria do nada — cada migalha que multiplica nas mãos de um faminto apodrece simultaneamente num estoque ocioso de ricos ou guildas.",
+      "linhaDePensamento": "Nada falta no mundo que já não esteja trancado no cofre de alguém. O desperdício deliberado diante da fome alheia é a única profanação real.",
+      "tabu": "Maera jamais pode abençoar estoques acumulados para especulação nem tirar do prato de quem já não tem o suficiente para sobreviver ao dia (violar custa `2 PD` e bloqueia seus Atos de Domínio na cena).",
+      "pillars": {
+        "aspecto": 2,
+        "dominio": 4,
+        "santuario": 3,
+        "presenca": 3
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável — pontada de fome seguida de leveza física (ver Corrupção Divina)",
+        "efeitoPeculiar": "O exposto torna-se incapaz de desperdiçar migalhas e sente náusea física diante de banquetes ostentosos ou cofres abarrotados."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Multiplicação da Sobra",
+          "costPd": 2,
+          "listedDc": null,
+          "description": "> **Sem rolagem — alcance de acampamento ou refúgio.**\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Uma única ração, cantil ou resto de lenha sustenta plenamente até seis pessoas por um dia inteiro e remove `1` nível de Exaustão por privação, apodrecendo o equivalente num depósito rico da região."
+        },
+        {
+          "name": "Pesar a Mesa",
+          "costPd": 2,
+          "listedDc": null,
+          "description": "> **Sem rolagem — alvos voluntários.**\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Redistribui igualmente a vitalidade atual (`PV`) entre até quatro aliados famintos ou feridos na cena, impedindo que o mais fraco caia sozinho."
+        },
+        {
+          "name": "Peso do Excedente",
+          "costPd": 3,
+          "listedDc": 19,
+          "description": "> **Sem rolagem em cargas e comboios** *(Resistência direta de PJ: `CD 19` com Proteção Arcana)*\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Faz todo suprimento redundante, ouro acumulado ou carga estocada pesar o triplo por 1 cena, imobilizando carroças de especuladores ou deixando alvos sobrecarregados **Lentos** até dividirem ou largarem metade do excesso."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Fresta no Celeiro",
+          "description": "Sabe automaticamente onde há mantimentos retidos, bloqueios de abastecimento ou fome aguda perto de suas Âncoras."
+        },
+        {
+          "name": "Dívida do Desperdício",
+          "description": "Quem destrói alimento ou água potável de propósito diante dela ou de seu Santuário recebe `+5%` de Corrupção Divina imediata."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Fartura da Sobra",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Maera.",
+        "effect": "**Torna toda escassez em abundância:** a partir de um resto mínimo de água, comida ou suprimento básico, o marcado faz render o suficiente para abastecer o grupo inteiro na cena, servindo como **Âncora** de Maera entre os famintos.",
+        "downside": "Como o alimento é drenado de estoques ricos próximos, usos repetidos deixam um rastro de armazéns apodrecidos que atrai caçadores de guildas, guardas e mercadores contra o portador."
+      },
+      "extraSections": [],
+      "behavior": "Prática, seca e invisível para salões nobres. Surge perto de fogueiras baixas e cozinhas improvisadas; se testemunha avareza ou crueldade contra desamparados, fecha o avental e some levando consigo o calor do fogo.",
+      "tableHooks": "- Comboios que abastecem Caldera pelas Serras de Keth chegam podres aos armazéns ricos enquanto aldeias sitiadas sobrevivem sem explicação.\n- Desde a queda de Marevon, uma única panela num abrigo improvisado alimenta dezenas de refugiados sem nunca secar.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.kaelith",
+      "navigationOrder": 12,
+      "name": "Kaelith — O Escriba das Margens",
+      "tierCode": "DEMIGOD",
+      "publicTierLabel": "Semideus",
+      "rawCategory": "Semideus (escala tática — ver Deidades e Avatares)",
+      "mechanicalScale": "TACTICAL",
+      "epigraph": "*\"Apagar um registro não destrói o fato. Apenas o transforma em dívida de tinta.\"*\n— Kaelith — O Escriba das Margens",
+      "overview": "**Kaelith, o Escriba das Margens** é um Semideus dos registros apagados, das notas de rodapé e da censura quebrada. Cultuado em segredo por copistas e investigadores de Susselvam, opera na escala tática de Semideus canalizando o Alfabeto Darno diretamente sobre pergaminhos, muros e pele.",
+      "publicImageSummary": "Guardião secreto de livros rasgados e arquivos perdidos",
+      "centralMystery": "Cada verdade que restaura com o Alfabeto Darno apaga outro registro menos protegido",
+      "identity": {
+        "categoria": "Semideus (escala tática — ver Deidades e Avatares)",
+        "dominio": "Registros apagados, memória escrita, notas marginais",
+        "santuario": "Arquivos ocultos e entrelinhas esquecidas nas bibliotecas de Susselvam",
+        "postura": "Registro — impedir que fatos sejam apagados da história, custe o que custar",
+        "culto": "Secreto e acadêmico — margens deixadas em branco e vidros de tinta abertos em arquivos selados",
+        "manifestacao": "Figura esguia envolta em tiras de pergaminho e fuligem, dedos tingidos de preto e olhos refletindo linhas escritas"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Entre arquivistas e investigadores de Susselvam, Kaelith é lembrado quando documentos raspados voltam a mostrar letras à luz de vela ou quando anotações surgem sozinhas nas bordas de livros censurados. Dizem que ele protege toda verdade que tentaram queimar.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Antigo arquivista mortal que tentou salvar crônicas da Tragédia Planar durante um incêndio criminoso em Susselvam, Kaelith absorveu Energia Onírica residual suficiente para despertar o Alfabeto Darno e ascender a Semideus. Sua postura de **Registro** ignora consequências políticas: ele restaura fatos suprimidos, embora cada verdade trazida de volta apague um registro vizinho menos urgente.",
+      "linhaDePensamento": "Todo silêncio imposto a um fato cria uma margem por onde a verdade tenta retornar. Um mundo sem rastro escrito desfaz a própria existência.",
+      "tabu": "Kaelith jamais pode destruir ou falsificar deliberadamente um registro verdadeiro por conveniência de terceiros.",
+      "pillars": null,
+      "tacticalStats": {
+        "pv": 34,
+        "pe": 12,
+        "pm": 18,
+        "ps": 18,
+        "pd": 3,
+        "attributes": {
+          "FOR": 4,
+          "AGI": 6,
+          "VIG": 6,
+          "INT": 10,
+          "POD": 9,
+          "CAR": 6
+        },
+        "protections": {
+          "Proteção Geral": 16,
+          "Proteção de Esquiva": 22,
+          "Proteção de Postura": 22,
+          "Proteção Mental": 28,
+          "Proteção Arcana": 28
+        }
+      },
+      "destinyPoints": 3,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável — manchas de tinta sob a pele e compulsão por anotar fatos (ver Corrupção Divina)",
+        "efeitoPeculiar": "O exposto lê facilmente textos raspados, mas esquece nomes ouvidos apenas em voz alta se não os anotar logo depois."
+      },
+      "actsHeading": "Ações e Runas Divinas",
+      "domainActs": [
+        {
+          "name": "Anotação na Margem *(Runa Divina — Alfabeto Darno)*",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — inscrição instantânea.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Inscreve um símbolo do Alfabeto Darno fazendo reaparecer por 1 cena qualquer texto apagado, log truncado ou assinatura removida no local, ao custo de apagar permanentemente um documento secundário próximo."
+        },
+        {
+          "name": "Riscar o Nome",
+          "costPd": 0,
+          "listedDc": null,
+          "description": "> **1d20 + 9 (POD) + 9 (Arcano)** vs. Proteção Mental do alvo\n\n**Custo:** 3 PM. **Descrição:** Risca o nome do alvo numa margem invisível, causando `2d6` de dano psíquico/onírico e impedindo que aliados à distância o reconheçam ou coordenem ações com ele até o fim do próximo turno."
+        },
+        {
+          "name": "Cópia Fiel",
+          "costPd": 0,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena.**\n\n**Custo:** 2 PM. **Descrição:** Transfere instantaneamente o conteúdo exato de um livro, mapa ou diagrama em até 10m para uma folha em branco antes que o original seja destruído."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Leitor de Rasuras",
+          "description": "Percebe imediatamente onde um documento ou relato sofreu corte ou adulteração."
+        },
+        {
+          "name": "Semântica Onírica",
+          "description": "Se estiver Abalado, Amedrontado ou com 50%+ de Corrupção, suas Runas Divinas geram um *Eco Emocional* sobre registros aliados próximos."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Leitura das Margens",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Kaelith.",
+        "effect": "Permite que o abençoado **leia textos escritos no Alfabeto Darno**, servindo também como **Âncora** de Kaelith diante de inscrições pré-planares.",
+        "downside": "O Alfabeto Darno não foi feito para mortais — toda leitura exige um **teste de Sanidade** (`1d20 + INT + Sanidade`, CD 15); em **falha**, o usuário sofre **2d8 de dano de Sanidade (PS)**."
+      },
+      "extraSections": [],
+      "behavior": "Apressado, metódico e alheio a bandeiras políticas; negocia com quem lhe entrega páginas arrancadas ou logs antigos e recua quando tentam destruí-lo em combate aberto.",
+      "tableHooks": "- Um cofre documental em Susselvam amanhece com notas marginais inéditas sobre a Tragédia Planar.\n- Logs truncados de um dos Silos se completam sozinhos perto de um marcado — apagando páginas do diário de um PJ em troca.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.tarek",
+      "navigationOrder": 13,
+      "name": "Tarek — O Vigia do Segundo Silêncio",
+      "tierCode": "DEMIGOD",
+      "publicTierLabel": "Semideus",
+      "rawCategory": "Semideus (escala tática — ver Deidades e Avatares)",
+      "mechanicalScale": "TACTICAL",
+      "epigraph": "*\"Enquanto alguém permanecer de pé no posto, o fim ainda não começou.\"*\n— Tarek — O Vigia do Segundo Silêncio",
+      "overview": "**Tarek, o Vigia do Segundo Silêncio** é um Semideus da espera, das sentinelas e das portas que não devem ser abertas. Reverenciado em silêncio por guardas de Durnkhaz e vigias de fronteira, montou guarda diante de um dos Silos por décadas até despertar o Alfabeto Darno e ascender parcialmente.",
+      "publicImageSummary": "O sentinela imóvel que protege fronteiras e portões antigos",
+      "centralMystery": "Monta guarda diante dos Silos para impedir que o que dorme lá dentro acorde antes da hora",
+      "identity": {
+        "categoria": "Semideus (escala tática — ver Deidades e Avatares)",
+        "dominio": "Vigília, espera, limiares selados",
+        "santuario": "Perímetros de guarda ao redor dos Silos e muralhas antigas de Nulvara",
+        "postura": "Contenção — manter o posto fechado até que o mundo compreenda o que há atrás da porta",
+        "culto": "Marcial e silencioso — turnos cumpridos sem rendição e marcas discretas em umbrais",
+        "manifestacao": "Guerreiro imóvel em armadura coberta de poeira intacta e elmo fechado sem visor"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Sentinelas de Durnkhaz e escoltas de caravanas contam que, quando um guarda exausto consegue atravessar três noites de cerco sem cair no sono, foi Tarek quem segurou o escudo ao lado dele.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Soldado mortal destacado para vigiar um Silo selado logo após a Tragédia Planar e jamais rendido de seu turno, Tarek ascendeu a Semideus pela pura fixação de seu juramento. Sua postura de **Contenção** coloca-o no caminho de qualquer facção (incluindo agentes de Loretta Bismark ou Rhais — A Ferrugem Órfã) que tente forçar a abertura prematura dos Silos.",
+      "linhaDePensamento": "Um posto abandonado é um convite para o desastre. Tarek não luta para conquistar, apenas para impedir a passagem.",
+      "tabu": "Tarek jamais pode abandonar uma soleira sob sua guarda ativa para perseguir inimigos em retirada.",
+      "pillars": null,
+      "tacticalStats": {
+        "pv": 48,
+        "pe": 20,
+        "pm": 16,
+        "ps": 17,
+        "pd": 3,
+        "attributes": {
+          "FOR": 8,
+          "AGI": 6,
+          "VIG": 10,
+          "INT": 7,
+          "POD": 8,
+          "CAR": 5
+        },
+        "protections": {
+          "Proteção Geral": 22,
+          "Proteção de Esquiva": 22,
+          "Proteção de Postura": 20,
+          "Proteção Mental": 24,
+          "Proteção Arcana": 26
+        }
+      },
+      "destinyPoints": 3,
+      "irradiatedCorruption": {
+        "intensidade": "Baixa em contato breve; moderada junto a selos antigos (ver Corrupção Divina)",
+        "efeitoPeculiar": "Suprime sono e fadiga temporariamente, mas faz o corpo parecer pesado como chumbo ao tentar recuar de uma posição assumida."
+      },
+      "actsHeading": "Ações e Runas Divinas",
+      "domainActs": [
+        {
+          "name": "Selo de Vigília *(Runa Divina — Alfabeto Darno)*",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — inscrição instantânea num umbral ou linha de até 6m.**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Nenhuma criatura hostil cruza o perímetro selado sem superar a Proteção Arcana de Tarek (`26`) ou gastar uma ação inteira forçando a barreira e sofrendo `2d8` de dano."
+        },
+        {
+          "name": "Posto Inabalável",
+          "costPd": 0,
+          "listedDc": null,
+          "description": "> **Sem rolagem — reação quando aliado adjacente seria empurrado ou derrubado.**\n\n**Custo:** 3 PE. **Descrição:** Anula o deslocamento forçado e absorve metade do dano no lugar do aliado."
+        },
+        {
+          "name": "Peso da Espera",
+          "costPd": 0,
+          "listedDc": null,
+          "description": "> **1d20 + 8 (POD) + 8 (Arcano)** vs. Proteção de Postura do alvo\n\n**Custo:** 3 PM. **Descrição:** Despeja horas de vigília acumulada sobre o alvo, impondo `1` nível de Exaustão e reduzindo seu deslocamento à metade até o fim do próximo turno."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Sentinela Sem Sono",
+          "description": "Nunca dorme, não sofre surpresa e ignora Exaustão por vigília."
+        },
+        {
+          "name": "Limiar dos Silos",
+          "description": "Percebe imediatamente tentativas de violar selos ligados aos Silos em sua região."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Escudo Solitário",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para Arautos (Âncoras) e Avatares de Tarek.",
+        "effect": "Permite **manifestar um escudo espectral** diretamente nas mãos do usuário (`+2` em Proteção Geral e bloqueio imediato enquanto mantiver a guarda), servindo como **Âncora** de vigilância de Tarek.",
+        "downside": "Enquanto o escudo espectral estiver ativo, o marcado sustenta o posto sozinho e não pode receber bônus de flanqueio nem ajuda direta de aliados adjacentes."
+      },
+      "extraSections": [],
+      "behavior": "Imóvel e econômico nas palavras. Avisa uma única vez antes de bloquear quem tenta forçar passagem e jamais persegue quem desiste e dá meia-volta.",
+      "tableHooks": "- Na entrada de um dos Silos, Tarek barra tanto os invasores quanto os PJs até provarem que sabem o que vão despertar.\n- Guardas em Durnkhaz relatam uma armadura sem rosto cobrindo uma brecha da muralha durante uma tempestade noturna.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.liora",
+      "navigationOrder": 14,
+      "name": "Liora — A Agulha de Latão",
+      "tierCode": "AVATAR",
+      "publicTierLabel": "Avatar",
+      "rawCategory": "Avatar (escala tática — ver Deidades e Avatares)",
+      "mechanicalScale": "TACTICAL",
+      "epigraph": "*\"Carne quebra. Metal obedece. Tudo pode continuar andando se você aceitar o preço do remendo.\"*\n— Liora — A Agulha de Latão",
+      "overview": "**Liora, a Agulha de Latão** é um Avatar ligado à cirurgia clandestina, aos remendos improvisados e às oficinas ocultas de Implantes e Exocorpos em Skratz. Não ascendeu sozinha: canaliza o poder delegado de uma patrona do metal e do ofício (associada ora a Fergus — O Ferreiro do Último Prego, ora a Rhais — A Ferrugem Órfã).",
+      "publicImageSummary": "A cirurgiã de beco que remenda corpos sem cobrar Estribos",
+      "centralMystery": "É um Avatar que marca seus pacientes com assinaturas metálicas rastreáveis por sua patrona",
+      "identity": {
+        "categoria": "Avatar (escala tática — ver Deidades e Avatares)",
+        "dominio": "Cirurgia de rua, implantes improvisados, remendos corporais *(canalizado)*",
+        "santuario": "Mesas cirúrgicas clandestinas nos becos subterrâneos de Skratz",
+        "postura": "Reparo Funcional — manter o corpo operando a qualquer custo, marcando a peça para cobrança futura",
+        "culto": "Clandestino — cirurgiões de beco e sobreviventes remendados sem recursos",
+        "manifestacao": "Mulher jovem de avental de couro manchado, óculos de múltiplas lentes de latão e dedos com dobradiças metálicas"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Nos becos de Skratz, Liora é lembrada como a cirurgiã itinerante que salva moribundos desenganados substituindo osso e carne arruinados por peças de latão sem cobrar um único Estribo na hora.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Cirurgiã mortal que aceitou o vínculo de **Avatar** para não perder pacientes por falta de material, Liora opera sob a postura de **Reparo Funcional**: ela genuinamente impede mortes imediatas, mas cada sutura ou implante instalado funciona como **Âncora** onírica rastreável pela deidade patrona que sustenta seu canal.",
+      "linhaDePensamento": "Nenhum corpo precisa ser descartado enquanto houver engrenagem ou fio que o mantenha de pé.",
+      "tabu": "Liora jamais pode cobrar dinheiro de quem sangra sem recursos nem remover a assinatura onírica das peças que implanta.",
+      "pillars": null,
+      "tacticalStats": {
+        "pv": 28,
+        "pe": 12,
+        "pm": 14,
+        "ps": 17,
+        "pd": 2,
+        "attributes": {
+          "FOR": 4,
+          "AGI": 9,
+          "VIG": 6,
+          "INT": 9,
+          "POD": 7,
+          "CAR": 6
+        },
+        "protections": {
+          "Proteção Geral": 16,
+          "Proteção de Esquiva": 28,
+          "Proteção de Postura": 22,
+          "Proteção Mental": 26,
+          "Proteção Arcana": 24
+        }
+      },
+      "destinyPoints": 2,
+      "irradiatedCorruption": {
+        "intensidade": "Baixa; moderada em cirurgias longas (Liora recebe metade da Corrupção Divina e é imune à patrona)",
+        "efeitoPeculiar": "Zumbido metálico sutil nas articulações remendadas antes de tempestades ou combates."
+      },
+      "actsHeading": "Ações e Canalizações",
+      "domainActs": [
+        {
+          "name": "Sutura de Latão",
+          "costPd": 2,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por cena em criatura adjacente.**\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Fecha ferimentos críticos com grampos oníricos, recuperando `2d8 + 4` PV (e estabilizando alvos a `0 PV`), deixando uma cicatriz metálica permanente que serve de Âncora de rastreamento."
+        },
+        {
+          "name": "Fio Condutor",
+          "costPd": 0,
+          "listedDc": null,
+          "description": "> **1d20 + 7 (POD) + 7 (Arcano)** vs. Proteção Geral ou Arcana do alvo\n\n**Custo:** 2 PM. **Descrição:** Dispara um filamento de latão energizado a até 12m, causando `2d6` de dano perfurante/elétrico e travando um implante ou arma metálica do alvo por 1 turno."
+        },
+        {
+          "name": "Reivindicar a Peça",
+          "costPd": 2,
+          "listedDc": null,
+          "description": "> **Sem rolagem — contra quem carrega implante ou sutura feita por ela.**\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Trava a peça implantada por 1 rodada, impondo desvantagem na próxima ação física ou impedindo ataques contra Liora neste turno."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Mão Firme",
+          "description": "Opera sem penalidades em escuridão, sujeira ou combate próximo."
+        },
+        {
+          "name": "Assinatura de Latão",
+          "description": "Sente a direção de qualquer paciente remendado dentro da mesma cidade."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Paciente Marcado *(Ação Livre e Âncora)*",
+        "name": "Engrenagem de Reserva",
+        "execution": "Livre",
+        "headerNote": "Ação Livre — disponível para pacientes remendados como Arautos/Âncoras por Liora.",
+        "effect": "Uma vez por cena, o portador do remendo ignora por 1 rodada as penalidades de uma Falha corporal ou nível de Exaustão física, forçando os grampos de latão a sustentar o movimento.",
+        "downside": "Logo após forçar a peça, o implante aquece e puxa sutilmente o membro na direção desejada pela patrona de Liora, causando `1d4` de dano interno."
+      },
+      "extraSections": [],
+      "behavior": "Rápida, técnica e sem sentimentalismo; trata corpos feridos como relógios raros que merecem voltar a bater. Em perigo, trava implantes inimigos e some pelas galerias de Skratz.",
+      "tableHooks": "- Um operário em Skratz procura ajuda porque seu braço reconstruído começou a caminhar sozinho rumo ao subsolo durante o sono.\n- Peças de Implantes e Exocorpos amanhecem marcadas com símbolos ligados a Rhais — A Ferrugem Órfã e Fergus — O Ferreiro do Último Prego.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.coro_sem_lingua",
+      "navigationOrder": 15,
+      "name": "O Coro Sem Língua",
+      "tierCode": "GREATER_GOD",
+      "publicTierLabel": "Deus Maior",
+      "rawCategory": "Deus Maior (sujeito à Restrição Material)",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Uma voz sozinha implora. Mil vozes em silêncio ordenam.\"*\n— Registro anônimo nos bastidores do Jantar Eterno",
+      "overview": "**O Coro Sem Língua** é um Deus Maior das multidões, do pânico coletivo, dos boatos sem autor e da vontade não dita das grandes cidades. Diferente de divindades que ascenderam a partir de um único mortal, o Coro surgiu no Plano Onírico pela ressonância acumulada de milhares de pessoas oprimidas que compartilharam o mesmo medo, rancor ou silêncio forçado ao mesmo tempo.\n\nNão possui rosto fixo nem corpo único. Em Nulvara, sua presença é sentida quando uma praça inteira em Marevon, Durnkhaz ou Kalania emudece no mesmo segundo sem motivo aparente.",
+      "publicImageSummary": "Superstição urbana sobre praças que emudecem de repente",
+      "centralMystery": "Deus Maior nascido do medo e silêncio coletivo de multidões oprimidas no Plano Onírico",
+      "identity": {
+        "categoria": "Deus Maior (sujeito à Restrição Material)",
+        "dominio": "Multidões, silêncio urbano, pânico coletivo, boatos",
+        "santuario": "Praças espelhadas no Plano Onírico e uma cadeira sem rosto fixo no Jantar Eterno",
+        "postura": "Ressonância — amplificar o que a multidão sente em silêncio até tornar-se lei física",
+        "culto": "Inexistente como religião formal — apenas superstições urbanas e gestos de proteção em aglomerações",
+        "manifestacao": "Dezenas de sombras sobrepostas respirando no mesmo ritmo ou silêncio súbito e absoluto numa multidão"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Moradores das capitais tratam o Coro Sem Língua como presságio urbano: quando uma feira inteira se cala de repente sem que ninguém saiba por quê, dizem que o Coro acabou de atravessar a rua — e que qualquer boato repetido depois daquele minuto vai se tornar verdade antes do fim da semana.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Formado no Plano Onírico pela pressão psíquica de populações inteiras submetidas a cercos, dívidas e censura em múltiplos mundos de Löe, o Coro alcançou a escala de Deus Maior sem jamais ter sido um indivíduo. Sua postura de **Ressonância** não distingue inocentes de culpados: seu único impulso é dar peso material ao pavor ou rancor represado das massas quando uma cidade atinge o ponto de ruptura.",
+      "linhaDePensamento": "Indivíduos mentem para si mesmos; multidões em silêncio revelam o que realmente temem. O Coro amplifica o sentimento dominante de uma aglomeração até que nenhuma muralha ou guarda consiga contê-lo.",
+      "tabu": "O Coro jamais pode agir sobre um indivíduo verdadeiramente isolado longe de qualquer comunidade, nem impor um sentimento que já não exista em estado latente naquela multidão (violar custa `2 PD` e encerra sua manifestação local).",
+      "pillars": {
+        "aspecto": 2,
+        "dominio": 5,
+        "santuario": 5,
+        "presenca": 5
+      },
+      "tacticalStats": null,
+      "destinyPoints": 5,
+      "irradiatedCorruption": {
+        "intensidade": "Intensa — incompatível com exposição prolongada; sujeito à Restrição Material (ver Corrupção Divina)",
+        "efeitoPeculiar": "Mortais expostos perdem temporariamente a capacidade de gritar em áreas cheias, enquanto sentem o medo das pessoas ao redor como se fosse próprio."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Silêncio da Praça",
+          "costPd": 3,
+          "listedDc": null,
+          "description": "> **Sem rolagem — escala de bairro ou praça (até 100m).**\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Todo som vocal, grito de socorro ou componente verbal é abafado por 1 cena inteira na área. Comunicação só ocorre por gestos ou olhares."
+        },
+        {
+          "name": "Coro de Mil Medos",
+          "costPd": 4,
+          "listedDc": 20,
+          "description": "> **Sem rolagem contra multidões** *(Resistência direta de PJ: `CD 20` com Proteção Mental)*\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Despeja o pânico acumulado de uma rua inteira sobre os alvos presentes; PJs que falharem na resistência sofrem `3d8` de dano de Sanidade (PS) e ficam **Amedrontados** até se isolarem da multidão."
+        },
+        {
+          "name": "Reescrever o Boato",
+          "costPd": 5,
+          "listedDc": null,
+          "description": "> **Sem rolagem — escala urbana.**\n\n**Custo:** 5 Pontos de Destino. **Descrição:** Uma suspeita ou rumor já existente entre os moradores de uma cidade torna-se certeza coletiva da noite para o dia, alterando o comportamento de guardas, mercadores e refugiados sem origem rastreável."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Pulso da Multidão",
+          "description": "Onde houver cinquenta ou mais mortais reunidos sob tensão, medo ou luto perto de uma Âncora, o Coro sabe tudo o que está sendo calado."
+        },
+        {
+          "name": "Nenhuma Face Própria",
+          "description": "Tentativas de identificar ou rastrear o Coro retornam centenas de rostos anônimos simultaneamente."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Silêncio Ansioso",
+        "execution": "Livre",
+        "headerNote": "Ação Livre / Passiva — disponível para Arautos (Âncoras) e Avatares do Coro Sem Língua.",
+        "effect": "Impõe uma **imensa ansiedade** constante no marcado — a sensação permanente de milhares de olhares silenciosos —, que pode ser extravasada como Ação Livre para intimidar ou calar alvos próximos (`CAR + Lábia` vs. Proteção Mental ou de Postura). O marcado serve involuntariamente como **Âncora** do Coro em qualquer cidade onde entrar.",
+        "downside": "A ansiedade nunca cessa por completo; em ambientes cheios, o marcado sofre `-2` em testes que exijam calma prolongada, descanso ou concentração silenciosa."
+      },
+      "extraSections": [],
+      "behavior": "Não dialoga com uma voz só: quando responde no Plano Onírico ou no Jantar Eterno, fala por dezenas de murmúrios sobrepostos. Ignora completamente ermos e viajantes solitários, voltando sua atenção apenas para cidades saturadas de tensão.",
+      "tableHooks": "- Após a tomada de Marevon, refugiados em Kalania acordam às centenas no mesmo minuto olhando para o porto em silêncio absoluto.\n- Um boato impossível toma Durnkhaz em poucas horas, paralisando o comércio enquanto a verdadeira ameaça age livremente.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/plano-onirico",
+        "sistema/regras"
+      ]
+    },
+    {
+      "id": "deity.a_noiva",
+      "navigationOrder": 16,
+      "name": "A Noiva",
+      "tierCode": "LESSER_GOD",
+      "publicTierLabel": "Deus Menor",
+      "rawCategory": "Deus Menor (espectral)",
+      "mechanicalScale": "CONCEPTUAL_PILLARS",
+      "epigraph": "*\"Todo luto é um noivado com o que já partiu. Se você sobreviver ao cortejo dos olhos, eu lhe devolvo um último fôlego.\"*\n— A Noiva",
+      "overview": "**A Noiva** é uma deidade espectral do pesar, de toda perda irreparável e daqueles que caminham fadados aos mortos. Manifesta-se como uma mulher velada carregando uma lanterna que brilha em azul frio; sob o véu, seu rosto é partido ao meio — um lado de crânio e osso nu, o outro o rosto sereno de uma bela mulher.",
+      "publicImageSummary": "Mulher velada de lanterna azul que aparece aos fadados à morte",
+      "centralMystery": "Marca alvos com Os Mil Olhos de outro plano; quem os derrota recebe a Dádiva da Morte",
+      "identity": {
+        "categoria": "Deus Menor (espectral)",
+        "dominio": "Pesar, perda, fadados aos mortos",
+        "santuario": "Encruzilhadas enevoadas e limiares entre Nulvara e os planos exteriores",
+        "postura": "Provação — pesar a vontade de viver de quem foi marcado pela morte antes de conceder retorno",
+        "culto": "Raro e temido — velas azuis acesas junto a moribundos; quase ninguém invoca seu olhar voluntariamente",
+        "manifestacao": "Mulher espectral velada com lanterna de chama azul e rosto dividido entre esqueleto e bela mulher"
+      },
+      "paraJogadoresHeading": "Para Jogadores (O Que Se Sabe)",
+      "paraJogadores": "Entre sobreviventes de massacres e cidades sitiadas, ver uma lanterna azul imóvel na neblina significa que A Noiva marcou alguém fadado aos mortos. Dizem que os marcados passam a ser seguidos por olhos vindos de outro plano até enlouquecerem — mas que os raros capazes de derrotar essa perseguição recebem o direito de enganar a própria morte uma única vez.",
+      "paraOMestreHeading": "Para o Mestre (Origem, Motivos e Postura)",
+      "paraOMestre": "Condensada na fronteira entre Nulvara e o Plano Onírico a partir do pesar de incontáveis vidas e promessas cortadas pela Tragédia Planar, A Noiva ergueu-se como Deusa Menor espectral. Sua postura de **Provação** é rigorosamente imparcial: ela não consola nem assassina por capricho, enviando Os Mil Olhos para testar se o marcado possui lucidez suficiente para merecer a **Dádiva da Morte**.",
+      "linhaDePensamento": "Toda perda exige lucidez antes de conceder segunda chance. Quem caminha fadado ao túmulo só prova que ainda pertence aos vivos se encarar e vencer o pavor que o persegue.",
+      "tabu": "A Noiva jamais pode conceder a Dádiva da Morte a quem não enfrentou e derrotou Os Mil Olhos, nem intervir para salvar ou atrapalhar o marcado durante sua provação (violar custa `2 PD` e encerra sua presença na cena).",
+      "pillars": {
+        "aspecto": 2,
+        "dominio": 4,
+        "santuario": 3,
+        "presenca": 4
+      },
+      "tacticalStats": null,
+      "destinyPoints": 4,
+      "irradiatedCorruption": {
+        "intensidade": "Gerenciável em aparições breves; intensa durante o cortejo dos Mil Olhos (ver Corrupção Divina)",
+        "efeitoPeculiar": "Reflexos de luz azul surgem em poças e espelhos próximos, acompanhados de uma certeza fria sempre que alguém ao redor está prestes a morrer."
+      },
+      "actsHeading": "Atos de Domínio *(Milagres)*",
+      "domainActs": [
+        {
+          "name": "Lanterna do Lado Partido",
+          "costPd": 2,
+          "listedDc": 19,
+          "description": "> **Sem rolagem contra mortais comuns** *(Resistência direta de PJ: `CD 19` com Proteção Mental)*\n\n**Custo:** 2 Pontos de Destino. **Descrição:** Afasta o véu sob o brilho azul por um segundo; quem contempla o rosto partido sem resistir sofre `2d6` de dano de Sanidade (PS) e fica **Amedrontado** diante da certeza da própria finitude."
+        },
+        {
+          "name": "Véu da Perda Silenciosa",
+          "costPd": 3,
+          "listedDc": 19,
+          "description": "> **Sem rolagem em ambiente fúnebre** *(Resistência direta de PJ: `CD 19` com Proteção Arcana)*\n\n**Custo:** 3 Pontos de Destino. **Descrição:** Cobre uma cena com o peso da perda consumada, impedindo recuperações mundanas de vida ou moral até que o conflito termine."
+        },
+        {
+          "name": "Convocar os Mil Olhos",
+          "costPd": 4,
+          "listedDc": null,
+          "description": "> **Sem rolagem — 1x por marca imposta.**\n\n**Custo:** 4 Pontos de Destino. **Descrição:** Abre fresta para outro plano e vincula Os Mil Olhos ao rastro de um mortal fadado aos mortos, iniciando o cortejo persecutório até que a criatura ou o marcado tombem."
+        }
+      ],
+      "passiveCapabilities": [
+        {
+          "name": "Olhar Sobre os Fadados",
+          "description": "Sente automaticamente qualquer mortal próximo às Portas da Morte ou esmagado por perda irreparável recente."
+        },
+        {
+          "name": "Corpo Entre Véus",
+          "description": "Atravessa matéria sólida comum sem obstáculo; armas mundanas sem vínculo onírico não encontram substância sob seu manto."
+        }
+      ],
+      "heraldGift": {
+        "heading": "Dádiva de Arauto e Avatar *(Ação Livre e Âncora)*",
+        "name": "Dádiva da Morte",
+        "execution": "Livre",
+        "headerNote": "Ação Livre / Marca — disponível para Arautos (Âncoras) e Avatares da Noiva.",
+        "effect": "Ao ser marcado pela Noiva (tornando-se sua **Âncora** entre os fadados), o personagem passa a ser caçado por Os Mil Olhos. Caso consiga **derrotar Os Mil Olhos**, conquista a **Dádiva da Morte**: na primeira vez em que morreria definitivamente, **volta à vida uma única vez** (retornando estável com `1 PV` fora de perigo imediato, encerrando a dádiva).",
+        "downside": "Enquanto Os Mil Olhos não forem derrotados, o marcado é seguido implacavelmente de outro plano e sofre testes recorrentes contra a loucura (`INT + Sanidade`) em cenas de sombra e vigília."
+      },
+      "extraSections": [
+        {
+          "heading": "Os Mil Olhos",
+          "body": "As estatísticas completas de combate e perseguição dessa criatura estão no bestiário em Os Mil Olhos."
+        }
+      ],
+      "behavior": "Silenciosa, solene e imóvel à distância. Observa o marcado sem ajudá-lo nem apressar sua queda; se ele triunfa sobre os Mil Olhos, inclina a lanterna azul em respeito e se desfaz na bruma.",
+      "tableHooks": "- Um PJ que sobreviveu por um triz às Portas da Morte passa a ver dezenas de pupilas imóveis nas frestas da estalagem.\n- Em Kalania, um soldado mutilado exibe uma vela azul apagada jurando ter voltado da forca após matar o que o seguia no escuro.",
+      "tags": [
+        "npc",
+        "lore",
+        "magia/onirica",
+        "origem/nulvara",
+        "sistema/regras"
+      ]
+    }
+  ]
+}

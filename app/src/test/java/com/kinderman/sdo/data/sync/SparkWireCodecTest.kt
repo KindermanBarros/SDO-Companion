@@ -849,7 +849,7 @@ class SparkWireCodecTest {
             "avatarPreset", "pathName", "pathMotto", "story", "agilityLimit", "creationStatus",
             "itemCreationDraft", "migrationReviewPayload", "unrecognizedFieldsPayload", "canonicalBodyPayload",
             "activeModifiersPayload", "scopedItemCatalogPayload", "canonicalProgressionPayload",
-            "transports", "familiars",
+            "transports", "familiars", "divineAscensionPayload", "divineRuntimePayload",
             "level", "creationStep", "creationRulesVersion", "creationCompletedAt",
             "money", "containerCapacity",
             "progressionLifeBonus", "progressionSanityBonus", "progressionArcaneBonus", "progressionEnergyBonus",

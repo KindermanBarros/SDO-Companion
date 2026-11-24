@@ -19,4 +19,7 @@ internal object FirestoreCollections {
     const val CAMPAIGN_LIBRARY = "campaignLibrary"
     const val CAMPAIGN_DELIVERIES = "campaignDeliveries"
     const val CAMPAIGN_JOURNAL = "campaignJournal"
+    const val CAMPAIGN_DEITY_SECRETS_SUBCOLLECTION = "deitySecrets"
+    const val DEITY_GM_CATALOG = "deityGmCatalog"
+    const val GM_ACTIVE_CONTEXT = "gmActiveContext"
 }

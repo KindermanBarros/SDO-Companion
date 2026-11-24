@@ -352,6 +352,14 @@ class SparkFirestoreSyncEngine(
                     lastEditedBy = accountId,
                     dirty = false,
                 )
+            if (projected.divineAscension != currentProjected.divineAscension) {
+                val campaignId = normalizeCampaignId(currentProjected.campaignId)
+                val campaign = campaignId.takeIf(String::isNotBlank)?.let { localStore.getCampaign(it) }
+                val ownsCampaign = campaign?.state == CampaignState.ACTIVE.name && campaign.ownerId == session.uid
+                check(CharacterAccessPolicy.canChangeAscension(session, ownsCampaign)) {
+                    "Somente o Mestre da campanha ou Administrador pode alterar a categoria de ascensão divina."
+                }
+            }
 
             val workingState = computeWorkingRevisionsAndHeads(snapshot, existingIntents)
             val afterRecord = projected.toRecord()
