@@ -4,6 +4,13 @@ Centralizes active task states (`InProgress` / `InDevReview`), durable project i
 
 ## Active & Recent Deliveries (`InDevReview`)
 
+### Deity review corrections and Presence capacity rule (BACKLOG-026, ToDo)
+Updated: 2026-11-24 00:13 America/La_Paz.
+- Owner requested adding a numerical Presence rule to the outstanding deity tasks. Define capacity at Presence 0?5 for living Anchors and Avatars, whether they share a budget, and costs or consequences of exceeding it. Specify establishment, release, and capacity reduction behavior. The formula and strain consequences remain product decisions.
+- Resolve review findings from 5cf1c97: enforce ascension Pillar budgets, apply Corruption channeling restrictions and scene Exhaustion, preserve spent Destiny during Ascension edits, track Avatar spending and use actual patron Presence for autonomy, preserve consumable stack load, avoid extra units when refilling empty stacks, and render structured GM deity content.
+- Reconcile conflicting Lesser God resistance and Avatar patron-immunity wording. Transition-test success thresholds and recovery rounding remain unspecified in the source.
+- Acceptance requires consistent canonical rules, domain calculations, sheet feedback, and meaningful regression coverage. Recording this task does not approve a numerical formula.
+
 ### Deity system, compact Library/Inventory filters & inventory/character-creation fixes (`BACKLOG-025`, `InDevReview`)
 Updated: 2026-11-23 23:03 America/La_Paz on `lab/deity-system-library-inventory-fixes`.
 - **Owner rule confirmation**: **Greater Gods (`Deus Maior`) have a base Destiny limit (`destinyBaseCeiling`) of `10 PD`** (implemented in `DivineSystem.kt:410`; Mortal/Avatar/Demigod/Lesser God base ceiling remains `5 PD`, plus `destiny.adjustment` + modifiers).
