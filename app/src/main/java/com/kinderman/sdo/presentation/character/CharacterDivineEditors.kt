@@ -1,7 +1,18 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,14 +21,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.R
-import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterDivineAscension
+import com.kinderman.sdo.domain.model.DeityOption
 import com.kinderman.sdo.domain.model.DivineMark
 import com.kinderman.sdo.domain.model.DivineMarkKind
 import com.kinderman.sdo.domain.model.DivinePassiveCapability
@@ -27,12 +41,15 @@ import com.kinderman.sdo.domain.model.DivineScale
 import com.kinderman.sdo.domain.model.DivineTier
 import com.kinderman.sdo.domain.model.ExecutionKind
 import com.kinderman.sdo.domain.model.applyDivineCorruption
-import com.kinderman.sdo.domain.model.currentDivinePillars
-import com.kinderman.sdo.domain.model.performDomainAct
-import com.kinderman.sdo.domain.model.toDeityPublicProfile
+import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.SdoField
 import com.kinderman.sdo.ui.SdoFilterChip
+import com.kinderman.sdo.ui.SdoInsetCard
+import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoOutlinedButton
+import com.kinderman.sdo.ui.SdoRadioButton
 import com.kinderman.sdo.ui.SdoResponsiveGrid
+import com.kinderman.sdo.ui.SdoTextButton
 import kotlinx.serialization.json.Json
 
 private inline fun <reified T : Any> divineDraftSaver(): Saver<T, String> =
@@ -41,7 +58,7 @@ private inline fun <reified T : Any> divineDraftSaver(): Saver<T, String> =
 @Composable
 internal fun CharacterAscensionEditor(
     ascension: CharacterDivineAscension,
-    deities: List<CatalogEntry>,
+    deities: List<DeityOption>,
     onDismiss: () -> Unit,
     onSave: (CharacterDivineAscension) -> Unit,
 ) {
@@ -59,7 +76,8 @@ internal fun CharacterAscensionEditor(
     ) {
         DivineChoices(
             DivineTier.entries.filter(DivineTier::playableOnCharacterSheet),
-            draft.tier, { it.label },
+            draft.tier,
+            { it.label },
         ) { tier ->
             draft = draft.copy(
                 tier = tier,
@@ -67,7 +85,12 @@ internal fun CharacterAscensionEditor(
             )
         }
         if (usesPatron) {
-            DivineDeityPicker(R.string.character_divine_choose_patron, draft.patronDeityId, deities) { deity ->
+            DivineDeityPicker(
+                title = R.string.character_divine_choose_patron,
+                selectedId = draft.patronDeityId,
+                fallbackName = draft.patronName,
+                deities = deities,
+            ) { deity ->
                 draft = draft.copy(patronDeityId = deity?.id.orEmpty(), patronName = deity?.name.orEmpty())
             }
         }
@@ -106,12 +129,19 @@ internal fun CharacterAscensionEditor(
             }
         }
         if (conceptual) {
+            Text(
+                stringResource(R.string.character_divine_powers_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Text(stringResource(R.string.character_divine_passives), style = MaterialTheme.typography.titleSmall)
             draft.passiveCapabilities.forEach { passive ->
                 fun update(next: DivinePassiveCapability) {
-                    draft = draft.copy(passiveCapabilities = draft.passiveCapabilities.map {
-                        if (it.id == next.id) next else it
-                    })
+                    draft = draft.copy(
+                        passiveCapabilities = draft.passiveCapabilities.map {
+                            if (it.id == next.id) next else it
+                        },
+                    )
                 }
                 DivineField(R.string.character_divine_passive_name, passive.name) { update(passive.copy(name = it)) }
                 DivineField(R.string.character_divine_effect, passive.description) {
@@ -131,7 +161,7 @@ internal fun CharacterAscensionEditor(
 @Composable
 internal fun CharacterDivineMarkEditor(
     existing: DivineMark?,
-    deities: List<CatalogEntry>,
+    deities: List<DeityOption>,
     onDismiss: () -> Unit,
     onRemove: (String) -> Unit,
     onSave: (DivineMark) -> Unit,
@@ -150,18 +180,25 @@ internal fun CharacterDivineMarkEditor(
         return
     }
     DivineEditorDialog(
-        title, onDismiss,
-        canApply = draft.deityId.isNotBlank(),
+        title,
+        onDismiss,
+        canApply = draft.deityId.isNotBlank() || draft.deityName.isNotBlank(),
         onApply = { onSave(draft) },
     ) {
-        DivineDeityPicker(R.string.character_divine_mark_deity, draft.deityId, deities) { deity ->
+        DivineDeityPicker(
+            title = R.string.character_divine_mark_deity,
+            selectedId = draft.deityId,
+            fallbackName = draft.deityName,
+            deities = deities,
+        ) { deity ->
             draft = draft.copy(deityId = deity?.id.orEmpty(), deityName = deity?.name.orEmpty())
         }
         DivineChoices(DivineMarkKind.entries, draft.kind, { it.label }) { draft = draft.copy(kind = it) }
         DivineField(R.string.character_divine_gift, draft.giftName) { draft = draft.copy(giftName = it) }
         DivineChoices(
             listOf(ExecutionKind.Free, ExecutionKind.Reaction, ExecutionKind.Passive, ExecutionKind.Action),
-            draft.executionKind, { it.label },
+            draft.executionKind,
+            { it.label },
         ) { draft = draft.copy(executionKind = it) }
         DivineField(R.string.character_divine_effect, draft.effect) { draft = draft.copy(effect = it) }
         DivineField(R.string.character_divine_downside, draft.downside) { draft = draft.copy(downside = it) }
@@ -178,45 +215,14 @@ internal fun CharacterDivineMarkEditor(
 }
 
 @Composable
-internal fun CharacterDomainActEditor(
-    character: Character,
-    onDismiss: () -> Unit,
-    onChange: ((Character) -> Character) -> Unit,
-) {
-    var pillar by rememberSaveable { mutableStateOf(DivinePillarKind.DOMINIO) }
-    var base by rememberSaveable { mutableStateOf("0") }
-    var extra by rememberSaveable { mutableStateOf("0") }
-    val basePd = base.toIntOrNull()
-    val extraPd = extra.toIntOrNull()
-    val available = character.destiny.current
-    val canApply = basePd != null && extraPd != null && basePd <= available && extraPd <= available - basePd &&
-        character.corruption.current < 100 && !character.divineRuntime.tabuViolatedInScene
-    DivineEditorDialog(
-        R.string.character_divine_domain_act, onDismiss, canApply,
-        onApply = {
-            if (basePd != null && extraPd != null) onChange { it.performDomainAct(basePd, extraPd) }
-        },
-    ) {
-        DivineChoices(DivinePillarKind.entries, pillar, { it.label }) { pillar = it }
-        DivineNumberField(R.string.character_divine_base_pd, base) { base = it }
-        DivineNumberField(R.string.character_divine_extra_pd, extra) { extra = it }
-        val dc = DivineRules.calculateDirectResistanceDc(
-            character.currentDivinePillars().get(pillar), (extraPd ?: 0).coerceAtMost(available.coerceAtLeast(0)),
-        )
-        Text(stringResource(R.string.character_divine_resistance, dc))
-        Text(stringResource(R.string.character_divine_available_pd, available))
-        if (character.divineRuntime.tabuViolatedInScene) Text(stringResource(R.string.character_divine_blocked))
-    }
-}
-
-@Composable
 internal fun CharacterCorruptionEditor(
     character: Character,
-    deities: List<CatalogEntry>,
+    deities: List<DeityOption>,
     onDismiss: () -> Unit,
     onChange: ((Character) -> Character) -> Unit,
 ) {
     var sourceId by rememberSaveable { mutableStateOf("") }
+    var sourceName by rememberSaveable { mutableStateOf("") }
     var sourceTier by rememberSaveable { mutableStateOf<DivineTier?>(null) }
     var purify by rememberSaveable { mutableStateOf(false) }
     var amount by rememberSaveable { mutableStateOf(DivineRules.DEFAULT_CORRUPTION_GAIN.toString()) }
@@ -225,24 +231,34 @@ internal fun CharacterCorruptionEditor(
     val projected = character.applyDivineCorruption(sourceTier, sourceId, delta).corruption.current
     val valid = raw != null && raw in 1..100
     DivineEditorDialog(
-        R.string.character_divine_resolve_corruption, onDismiss, valid,
+        R.string.character_divine_resolve_corruption,
+        onDismiss,
+        valid,
         onApply = { onChange { it.applyDivineCorruption(sourceTier, sourceId, delta) } },
     ) {
         DivineChoices(
-            listOf(false, true), purify,
+            listOf(false, true),
+            purify,
             { if (it) stringResource(R.string.character_divine_purify) else stringResource(R.string.character_divine_gain) },
         ) {
             purify = it
             amount = (if (it) -DivineRules.DEFAULT_CORRUPTION_PURIFICATION else DivineRules.DEFAULT_CORRUPTION_GAIN).toString()
         }
         if (!purify) {
-            DivineDeityPicker(R.string.character_divine_source, sourceId, deities) { deity ->
+            DivineDeityPicker(
+                title = R.string.character_divine_source,
+                selectedId = sourceId,
+                fallbackName = sourceName,
+                deities = deities,
+            ) { deity ->
                 sourceId = deity?.id.orEmpty()
-                sourceTier = deity?.toDeityPublicProfile()?.tier
+                sourceName = deity?.name.orEmpty()
+                sourceTier = deity?.tier
             }
             if (sourceId.isBlank()) {
                 DivineChoices(
-                    listOf(null) + DivineTier.entries, sourceTier,
+                    listOf(null) + DivineTier.entries,
+                    sourceTier,
                     { it?.label ?: stringResource(R.string.character_divine_unknown_source) },
                 ) { sourceTier = it }
             }
@@ -256,22 +272,102 @@ internal fun CharacterCorruptionEditor(
 private fun DivineDeityPicker(
     title: Int,
     selectedId: String,
-    deities: List<CatalogEntry>,
-    onSelect: (CatalogEntry?) -> Unit,
+    fallbackName: String,
+    deities: List<DeityOption>,
+    onSelect: (DeityOption?) -> Unit,
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var choosing by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
     val selected = deities.firstOrNull { it.id == selectedId }
-    DivineAction(title, "deity_picker") { expanded = !expanded }
-    if (selected != null) Text(selected.name)
-    else if (selectedId.isNotBlank()) Text(selectedId)
-    if (expanded) {
-        DivineChoices(
-            listOf(null) + deities, selected,
-            { it?.name ?: stringResource(R.string.character_divine_no_deity) },
-        ) {
-            onSelect(it)
-            expanded = false
+    val currentLabel = selected?.name
+        ?: fallbackName.takeIf(String::isNotBlank)
+        ?: selectedId.takeIf(String::isNotBlank)
+        ?: stringResource(R.string.character_divine_no_deity)
+
+    SdoOutlinedButton(
+        onClick = { choosing = true },
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("character_divine_deity_picker"),
+    ) {
+        Column(Modifier.weight(1f)) {
+            SdoMetadataText(stringResource(title).uppercase(), color = DivinePinkAccent)
+            Text(currentLabel, color = MaterialTheme.colorScheme.onSurface)
         }
+        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+    }
+
+    if (choosing) {
+        val trimmed = query.trim()
+        val filtered = deities.filter {
+            trimmed.isEmpty() ||
+                it.name.contains(trimmed, ignoreCase = true) ||
+                it.subtitle.contains(trimmed, ignoreCase = true)
+        }
+        AlertDialog(
+            onDismissRequest = { choosing = false; query = "" },
+            title = { Text(stringResource(title).uppercase()) },
+            text = {
+                Column {
+                    HudTextField(
+                        label = stringResource(R.string.race_picker_search),
+                        value = query,
+                        modifier = Modifier.fillMaxWidth(),
+                        onValue = { query = it },
+                    )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 380.dp).padding(top = 8.dp),
+                    ) {
+                        item(key = "none") {
+                            SdoInsetCard(
+                                modifier = Modifier
+                                    .padding(vertical = 3.dp)
+                                    .heightIn(min = 48.dp)
+                                    .selectable(selected = selectedId.isBlank(), role = Role.RadioButton) {
+                                        onSelect(null)
+                                        choosing = false
+                                        query = ""
+                                    },
+                                accent = if (selectedId.isBlank()) DivinePinkAccent else MaterialTheme.colorScheme.outlineVariant,
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(stringResource(R.string.character_divine_no_deity), Modifier.weight(1f))
+                                    SdoRadioButton(selected = selectedId.isBlank(), onClick = null)
+                                }
+                            }
+                        }
+                        items(filtered, key = DeityOption::id) { option ->
+                            val isSelected = option.id == selectedId
+                            SdoInsetCard(
+                                modifier = Modifier
+                                    .padding(vertical = 3.dp)
+                                    .heightIn(min = 48.dp)
+                                    .selectable(selected = isSelected, role = Role.RadioButton) {
+                                        onSelect(option)
+                                        choosing = false
+                                        query = ""
+                                    },
+                                accent = if (isSelected) DivinePinkAccent else MaterialTheme.colorScheme.outlineVariant,
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(option.name)
+                                        SdoMetadataText(
+                                            option.subtitle,
+                                            color = if (option.isCampaignCharacter) DivinePinkAccent else MaterialTheme.colorScheme.secondary,
+                                        )
+                                    }
+                                    SdoRadioButton(selected = isSelected, onClick = null)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                SdoTextButton(onClick = { choosing = false; query = "" }) {
+                    Text(stringResource(R.string.character_divine_cancel))
+                }
+            },
+        )
     }
 }
 
@@ -297,7 +393,7 @@ private fun DivineNumberField(label: Int, value: String, maximum: Int = Int.MAX_
     SdoField(
         label = stringResource(label),
         value = value,
-        onValueChange = { if (it.isEmpty() || it.toIntOrNull()?.let { value -> value in 0..maximum } == true) onChange(it) },
+        onValueChange = { if (it.isEmpty() || it.toIntOrNull()?.let { num -> num in 0..maximum } == true) onChange(it) },
         modifier = Modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
     )

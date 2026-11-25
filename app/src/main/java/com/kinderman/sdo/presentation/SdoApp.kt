@@ -369,6 +369,7 @@ fun SdoApp(
                 AppSurface.SHEET -> CharacterSheetScreen(
                     loadDeityDetail = appViewModel::loadDeityDetail,
                     character = selectedCharacter,
+                    characters = characters,
                     saveError = saveErrors[selectedCharacter?.id],
                     fieldPresence = fieldPresence,
                     onFieldFocus = { field, focused ->

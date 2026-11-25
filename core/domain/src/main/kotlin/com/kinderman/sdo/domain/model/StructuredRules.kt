@@ -1119,7 +1119,10 @@ object CanonicalValidator {
             }
         } else {
             if (ability.duration == null) add(DomainError.InvalidReference("Habilidade ativa exige duração."))
-            if (ability.kind == AbilityKind.POWER && ability.cost.amount < 1) {
+            val allowsZeroActiveCost = (ability.cost as? AbilityCost.PowerCost)?.let {
+                it.resource == SpendableResource.PD && it.isDivineOrLuckBased
+            } == true
+            if (ability.kind == AbilityKind.POWER && ability.cost.amount < 1 && !allowsZeroActiveCost) {
                 add(DomainError.ValidationError("Poder ativo deve ter custo mínimo 1."))
             }
         }

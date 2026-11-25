@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="character_divine_title">Deidades</string>
+    <string name="character_divine_title">Ascensão Divina</string>
+    <string name="character_divine_awaken_ascension">Despertar ou editar ascensão divina</string>
+    <string name="character_divine_no_marks">Nenhuma marca divina ativa.</string>
+    <string name="character_divine_powers_hint">Capacidades ativas e passivas são gerenciadas na aba Poderes usando PD.</string>
     <string name="character_divine_destiny">Destino: %1$d/%2$d PD</string>
     <string name="character_divine_pillars">Pilares Divinos</string>
     <string name="character_divine_pillar_value">%1$s: %2$d</string>

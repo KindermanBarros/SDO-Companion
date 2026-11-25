@@ -82,6 +82,7 @@ fun CharacterSheetScreen(
     character: Character?,
     session: UserSession?,
     catalog: List<CatalogEntry>,
+    characters: List<Character> = emptyList(),
     loadDeityDetail: suspend (String, String?) -> DeityDetailView? = { _, _ -> null },
     readOnly: Boolean = false,
     saveError: String? = null,
@@ -115,15 +116,29 @@ fun CharacterSheetScreen(
     var patronPresenca by remember(current.id, patronId, campaignId, session, canReadPatronPresence, divineTier) {
         mutableStateOf<Int?>(null)
     }
-    LaunchedEffect(current.id, patronId, campaignId, session, canReadPatronPresence, divineTier) {
-        if (divineTier == DivineTier.AVATAR && patronId.isNotBlank() && canReadPatronPresence) {
-            try {
-                patronPresenca = loadDeityDetail(patronId, campaignId)?.gmContent?.pillars?.presenca
-            } catch (error: kotlinx.coroutines.CancellationException) {
-                throw error
-            } catch (_: Exception) {
+    LaunchedEffect(current.id, patronId, campaignId, session, canReadPatronPresence, divineTier, characters) {
+        if (divineTier == DivineTier.AVATAR && patronId.isNotBlank()) {
+            if (patronId.startsWith("sheet:")) {
+                val sheetId = patronId.removePrefix("sheet:")
+                val patronSheet = characters.firstOrNull {
+                    it.id == sheetId && normalizeCampaignId(it.campaignId) == (campaignId ?: "")
+                }
+                patronPresenca = patronSheet?.let { it.divineAscension.pillars.presenca -
+                    (it.divineRuntime.pillarSuppression.presenca + it.divineRuntime.scenePillarSuppression.presenca).coerceAtMost(2)
+                }?.coerceAtLeast(0)
+            } else if (canReadPatronPresence) {
+                try {
+                    patronPresenca = loadDeityDetail(patronId, campaignId)?.gmContent?.pillars?.presenca
+                } catch (error: kotlinx.coroutines.CancellationException) {
+                    throw error
+                } catch (_: Exception) {
+                    patronPresenca = null
+                }
+            } else {
                 patronPresenca = null
             }
+        } else {
+            patronPresenca = null
         }
     }
     var confirmDelete by rememberSaveable(character.id) { mutableStateOf(false) }
@@ -382,6 +397,7 @@ fun CharacterSheetScreen(
                 ) else CharacterSheetPager(
                     patronPresenca = patronPresenca,
                     character = current,
+                    characters = characters,
                     saveError = saveError,
                     canChangeAscension = editable &&
                         CharacterAccessPolicy.canChangeAscension(session, isCampaignResponsible),

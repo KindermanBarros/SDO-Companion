@@ -328,4 +328,69 @@ class DivineSystemTest {
             assertTrue(DivineRules.validAscensionPillars(ascension, ascension.copy(dominio = "Profile edit")))
         }
     }
+
+    @Test
+    fun resolveAvailableDeityOptionsIncludesOnlySameCampaignDeitiesPlusCatalog() {
+        val current = Character(id = "hero", campaignId = "camp-a")
+        val sameCampLesser = Character(
+            id = "deity-same",
+            name = "Aurelia",
+            campaignId = "camp-a",
+            divineAscension = CharacterDivineAscension(tier = DivineTier.LESSER_GOD, dominio = "Aurora"),
+        )
+        val otherCampGreater = Character(
+            id = "deity-other",
+            name = "Malphas",
+            campaignId = "camp-b",
+            divineAscension = CharacterDivineAscension(tier = DivineTier.GREATER_GOD, dominio = "Cinzas"),
+        )
+        val sameCampMortal = Character(id = "mortal-same", name = "Bram", campaignId = "camp-a")
+        val catalogDeity = CatalogEntry(
+            id = "deity.namaris",
+            kind = CatalogKind.DEITY,
+            name = "Namaris — Senhora da Bruma",
+            group = "Deus Maior",
+            summary = "Bruma",
+        )
+
+        val options = resolveAvailableDeityOptions(
+            currentCharacter = current,
+            catalog = listOf(catalogDeity),
+            characters = listOf(current, sameCampLesser, otherCampGreater, sameCampMortal),
+        )
+
+        assertEquals(listOf("sheet:deity-same", "deity.namaris"), options.map { it.id })
+        assertTrue(options.first().isCampaignCharacter)
+        assertFalse(options.last().isCampaignCharacter)
+    }
+
+    @Test
+    fun ascensionSyncsPassiveCapabilitiesIntoPdPowersAndSessionSpendsPdOnDivinePowers() {
+        val lesser = CharacterDivineAscension(
+            tier = DivineTier.LESSER_GOD,
+            pillars = DivinePillars(2, 2, 2, 2),
+            passiveCapabilities = listOf(DivinePassiveCapability(id = "p1", name = "Olhar da Bruma", description = "Enxerga na névoa.")),
+        )
+        val ascended = Character(destiny = ResourceValue(current = 4)).withDivineAscension(lesser)
+        val passiveAbility = ascended.allCanonicalAbilitiesSafely().single { it.id == "divine-passive:p1" }
+        assertEquals(ExecutionKind.Passive, passiveAbility.execution.kind)
+        assertEquals(SpendableResource.PD, (passiveAbility.cost as AbilityCost.PowerCost).resource)
+        assertEquals(0, passiveAbility.cost.amount)
+
+        val activeAct = Ability(
+            id = "act-1",
+            name = "Ato Menor da Bruma",
+            kind = AbilityKind.POWER,
+            source = Source.narrative(NarrativeSourceId("divine")),
+            cost = AbilityCost.PowerCost(2, SpendableResource.PD, isDivineOrLuckBased = true),
+        )
+        val withAct = ascended.copy(abilities = ascended.allCanonicalAbilitiesSafely() + activeAct)
+        val afterUse = withAct.applySessionCommand(
+            SessionCommand(type = SessionOperationType.ABILITY_USE, targetId = "act-1"),
+            "owner",
+        ).character
+        assertEquals(2, afterUse.destiny.current)
+        assertEquals(2, afterUse.divineRuntime.pdSpentInCurrentScene)
+        assertTrue(afterUse.divineRuntime.channeledInCurrentScene)
+    }
 }

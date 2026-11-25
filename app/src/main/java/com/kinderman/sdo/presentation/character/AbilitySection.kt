@@ -65,9 +65,16 @@ internal fun AbilitySection(
             ) { selecting = true }
             SdoTextButton(onClick = {
                 val kind = kinds.firstOrNull() ?: AbilityKind.POWER
+                val defaultPowerCost = if (kind == AbilityKind.POWER && character.derivedDivineEffects().usesConceptualPillars) {
+                    AbilityCost.PowerCost(1, SpendableResource.PD, isDivineOrLuckBased = true)
+                } else {
+                    defaultCost(kind)
+                }
                 val ability = Ability(
-                    name = "Nova habilidade", kind = kind,
-                    source = Source.narrative(NarrativeSourceId("manual")), cost = defaultCost(kind),
+                    name = if (character.derivedDivineEffects().usesConceptualPillars && kind == AbilityKind.POWER) "Novo Ato ou Capacidade Divina" else "Nova habilidade",
+                    kind = kind,
+                    source = Source.narrative(NarrativeSourceId("manual")),
+                    cost = defaultPowerCost,
                 )
                 onChange(character.copy(abilities = character.allCanonicalAbilitiesSafely() + ability))
             }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
@@ -170,23 +177,83 @@ private fun AbilityEditor(character: Character, ability: Ability, allowedKinds: 
                 update(ability.copy(kind = kind, cost = defaultCost(kind)))
             } },
             { field -> ChoiceField("Execução", ability.execution.kind, ExecutionKind.entries, mechanicsEditable, field, display = ExecutionKind::label) { kind ->
-                update(ability.copy(execution = Execution(kind, if (kind == ExecutionKind.Timed) TimedExecution(1, ExecutionTimeUnit.Minutes) else null)))
+                val nextDuration = if (kind == ExecutionKind.Passive) null else (ability.duration ?: Duration(DurationKind.Instant))
+                val nextCost = if (kind == ExecutionKind.Passive && ability.kind == AbilityKind.POWER) {
+                    abilityCostWithAmount(ability, 0)
+                } else if (kind != ExecutionKind.Passive && ability.kind == AbilityKind.POWER && ability.cost.amount == 0 && (ability.cost as? AbilityCost.PowerCost)?.resource != SpendableResource.PD) {
+                    abilityCostWithAmount(ability, 1)
+                } else {
+                    ability.cost
+                }
+                val nextPowerData = if (kind == ExecutionKind.Passive && ability.kind == AbilityKind.POWER) {
+                    (ability.powerData ?: PowerData()).copy(passiveState = ability.powerData?.passiveState ?: PassiveState.ManualToggle(active = true))
+                } else {
+                    ability.powerData
+                }
+                update(
+                    ability.copy(
+                        execution = Execution(kind, if (kind == ExecutionKind.Timed) TimedExecution(1, ExecutionTimeUnit.Minutes) else null),
+                        duration = nextDuration,
+                        cost = nextCost,
+                        powerData = nextPowerData,
+                    ),
+                )
             } },
         )
-        TwoFields(
-            { field -> ChoiceField("Alcance", ability.range.band, RangeBand.entries, mechanicsEditable, field, display = RangeBand::label) { update(ability.copy(range = RangeSpec(it))) } },
-            { field -> ChoiceField("Duração", durationKind, DurationKind.entries, mechanicsEditable, field, display = DurationKind::label) { kind ->
-                update(ability.copy(duration = ability.duration.withKind(kind)))
-            } },
-        )
-        TwoFields(
-            { field -> AbilityCostField(ability, mechanicsEditable, field, ::update) },
-            { field -> ChoiceField("Gatilho", triggerLabel(trigger), triggerOptions, mechanicsEditable, field) { selected ->
+        if (ability.execution.kind != ExecutionKind.Passive) {
+            TwoFields(
+                { field -> ChoiceField("Alcance", ability.range.band, RangeBand.entries, mechanicsEditable, field, display = RangeBand::label) { update(ability.copy(range = RangeSpec(it))) } },
+                { field -> ChoiceField("Duração", durationKind, DurationKind.entries, mechanicsEditable, field, display = DurationKind::label) { kind ->
+                    update(ability.copy(duration = ability.duration.withKind(kind)))
+                } },
+            )
+        } else {
+            ChoiceField("Alcance", ability.range.band, RangeBand.entries, mechanicsEditable, display = RangeBand::label) {
+                update(ability.copy(range = RangeSpec(it)))
+            }
+        }
+        if (ability.kind == AbilityKind.POWER) {
+            val powerResources = listOf(SpendableResource.PE, SpendableResource.PD, SpendableResource.PS, SpendableResource.PV)
+            val currentResource = (ability.cost as? AbilityCost.PowerCost)?.resource ?: SpendableResource.PE
+            TwoFields(
+                { field ->
+                    ChoiceField(
+                        "Recurso do custo",
+                        currentResource,
+                        powerResources,
+                        mechanicsEditable,
+                        field,
+                        display = { res -> if (res == SpendableResource.PD) "PD (Destino / Divino)" else res.name },
+                    ) { res ->
+                        val nextAmt = if (ability.execution.kind == ExecutionKind.Passive) 0 else ability.cost.amount
+                        update(
+                            ability.copy(
+                                cost = AbilityCost.PowerCost(
+                                    amount = nextAmt,
+                                    resource = res,
+                                    isDivineOrLuckBased = res == SpendableResource.PD || (ability.cost as? AbilityCost.PowerCost)?.isDivineOrLuckBased == true,
+                                ),
+                            ),
+                        )
+                    }
+                },
+                { field -> AbilityCostField(ability, mechanicsEditable && ability.execution.kind != ExecutionKind.Passive, field, ::update) },
+            )
+            ChoiceField("Gatilho", triggerLabel(trigger), triggerOptions, mechanicsEditable) { selected ->
                 val operations = ability.mechanicalEffect?.operations.orEmpty()
                 val effect = operations.takeIf { it.isNotEmpty() }?.let { MechanicalEffect(it, ability.mechanicalEffect?.usage, triggerFrom(selected)) }
                 update(ability.copy(mechanicalEffect = effect))
-            } },
-        )
+            }
+        } else {
+            TwoFields(
+                { field -> AbilityCostField(ability, mechanicsEditable, field, ::update) },
+                { field -> ChoiceField("Gatilho", triggerLabel(trigger), triggerOptions, mechanicsEditable, field) { selected ->
+                    val operations = ability.mechanicalEffect?.operations.orEmpty()
+                    val effect = operations.takeIf { it.isNotEmpty() }?.let { MechanicalEffect(it, ability.mechanicalEffect?.usage, triggerFrom(selected)) }
+                    update(ability.copy(mechanicalEffect = effect))
+                } },
+            )
+        }
         CollaborativeSheetField("abilities/${ability.id}/effect", "Descrição", ability.effect, multiline = true, enabled = mechanicsEditable) { update(ability.copy(effect = it)) }
         Text("OPERAÇÕES ESTRUTURADAS", color = MaterialTheme.colorScheme.primary)
         ability.mechanicalEffect?.operations.orEmpty().forEachIndexed { index, operation ->
@@ -280,11 +347,14 @@ private fun AbilityCostField(ability: Ability, enabled: Boolean, modifier: Modif
 }
 
 internal fun abilityCostWithAmount(ability: Ability, value: Int): AbilityCost = when (ability.kind) {
-    AbilityKind.POWER -> AbilityCost.PowerCost(
-        value.coerceAtLeast(0),
-        (ability.cost as? AbilityCost.PowerCost)?.resource ?: SpendableResource.PE,
-        (ability.cost as? AbilityCost.PowerCost)?.isDivineOrLuckBased ?: false,
-    )
+    AbilityKind.POWER -> {
+        val res = (ability.cost as? AbilityCost.PowerCost)?.resource ?: SpendableResource.PE
+        AbilityCost.PowerCost(
+            value.coerceAtLeast(0),
+            res,
+            res == SpendableResource.PD || (ability.cost as? AbilityCost.PowerCost)?.isDivineOrLuckBased == true,
+        )
+    }
     AbilityKind.SPELL -> AbilityCost.SpellCost(value.coerceAtLeast(0))
     AbilityKind.RUNE -> AbilityCost.RuneCost(value.coerceAtLeast(0))
     AbilityKind.ASH -> AbilityCost.AshCost(value.coerceAtLeast(1))

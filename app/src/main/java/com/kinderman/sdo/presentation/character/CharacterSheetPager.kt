@@ -69,12 +69,7 @@ internal enum class SheetPage(val code: String, val label: String) {
     FAMILIARS("15", "FAMILIARES"),
     NOTES("16", "ANOTAÇÕES"),
     HISTORY("17", "HISTÓRIA"),
-    DIVINE("18", ""),
 }
-
-@Composable
-private fun SheetPage.displayLabel(): String =
-    if (this == SheetPage.DIVINE) stringResource(R.string.character_divine_title) else label
 
 @Composable
 internal fun CharacterSheetPager(
@@ -88,11 +83,12 @@ internal fun CharacterSheetPager(
     saveError: String? = null,
     canChangeAscension: Boolean = false,
     patronPresenca: Int? = null,
+    characters: List<Character> = emptyList(),
 ) {
     val conceptual = character.derivedDivineEffects().usesConceptualPillars
     key(character.id, conceptual) {
         CharacterSheetPages(
-            character, session, catalog, editable, onChange, onOpenPhotoPicker,
+            character, session, catalog, characters, editable, onChange, onOpenPhotoPicker,
             modifier, saveError, canChangeAscension, conceptual, patronPresenca,
         )
     }
@@ -103,6 +99,7 @@ private fun CharacterSheetPages(
     character: Character,
     session: UserSession,
     catalog: List<CatalogEntry>,
+    characters: List<Character>,
     editable: Boolean,
     onChange: (Character) -> Unit,
     onOpenPhotoPicker: () -> Unit,
@@ -114,7 +111,7 @@ private fun CharacterSheetPages(
 ) {
     val pages = if (conceptual) {
         listOf(
-            SheetPage.DIVINE, SheetPage.PROFILE, SheetPage.INVENTORY,
+            SheetPage.PROFILE, SheetPage.POWERS, SheetPage.MYSTIC, SheetPage.INVENTORY,
             SheetPage.RECORD, SheetPage.NOTES, SheetPage.HISTORY,
         )
     } else {
@@ -144,13 +141,13 @@ private fun CharacterSheetPages(
                 character = character,
                 session = session,
                 catalog = catalog,
+                characters = characters,
                 editable = editable,
                 onChange = onChange,
                 onOpenPhotoPicker = onOpenPhotoPicker,
                 scrollState = pageScrollStates[pageIndex],
                 saveError = saveError,
                 canChangeAscension = canChangeAscension,
-                conceptual = conceptual,
                 patronPresenca = patronPresenca,
             )
         }
@@ -226,7 +223,7 @@ private fun SheetPageNavigator(
                         AdaptiveSingleLineText(page.code, modifier = Modifier.padding(horizontal = 7.dp, vertical = 5.dp), style = MaterialTheme.typography.labelSmall, minimumSize = 8.sp, color = MaterialTheme.colorScheme.onPrimary)
                     }
                     Column(Modifier.weight(1f)) {
-                        AdaptiveSingleLineText(page.displayLabel(), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, minimumSize = 10.sp)
+                        AdaptiveSingleLineText(page.label, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium, minimumSize = 10.sp)
                         AdaptiveSingleLineText(
                             "SEÇÃO ${currentPage + 1} DE ${pages.size}",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -243,7 +240,7 @@ private fun SheetPageNavigator(
                     pages.forEachIndexed { index, option ->
                         androidx.compose.material3.DropdownMenuItem(
                             leadingIcon = { Text(option.code, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall) },
-                            text = { Text(option.displayLabel()) },
+                            text = { Text(option.label) },
                             onClick = {
                                 onMenuExpandedChange(false)
                                 onNavigate(index)
@@ -268,16 +265,17 @@ private fun SheetPageContent(
     character: Character,
     session: UserSession,
     catalog: List<CatalogEntry>,
+    characters: List<Character>,
     editable: Boolean,
     onChange: (Character) -> Unit,
     onOpenPhotoPicker: () -> Unit,
     scrollState: LazyListState,
     saveError: String?,
     canChangeAscension: Boolean,
-    conceptual: Boolean,
     patronPresenca: Int?,
 ) {
     val compactCards = com.kinderman.sdo.ui.LocalSdoPreferences.current.compactCards
+    val showDivineInProfile = canChangeAscension || character.divineAscension.tier != com.kinderman.sdo.domain.model.DivineTier.MORTAL
     LazyColumn(
         Modifier.fillMaxSize(),
         state = scrollState,
@@ -285,24 +283,23 @@ private fun SheetPageContent(
         verticalArrangement = Arrangement.spacedBy(if (compactCards) 8.dp else 13.dp),
     ) {
         when (page) {
-            SheetPage.DIVINE -> {
-                if (conceptual) {
-                    item("hero") {
-                        SheetHero(character, session, saveError, editable = editable, onOpenPhotoPicker = onOpenPhotoPicker)
-                    }
-                }
-                item("divine") {
-                    CharacterDivineSection(character, catalog, editable, canChangeAscension, onChange, patronPresenca)
-                }
-                item("divine_power") {
-                    CharacterDivinePowerSection(character, editable, canChangeAscension, onChange)
-                }
-            }
-
             SheetPage.PROFILE -> {
                 item("hero") { SheetHero(character, session, saveError, editable = editable, onOpenPhotoPicker = onOpenPhotoPicker) }
                 item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade", "01") { IdentitySection(character, catalog, editable, onOpenPhotoPicker = onOpenPhotoPicker, onChange = onChange) } }
-                if (!conceptual) item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
+                if (showDivineInProfile) {
+                    item("divine_profile") {
+                        CharacterDivineSection(
+                            character = character,
+                            catalog = catalog,
+                            editable = editable,
+                            canChangeAscension = canChangeAscension,
+                            onChange = onChange,
+                            patronPresenca = patronPresenca,
+                            characters = characters,
+                        )
+                    }
+                }
+                item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
                 item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços", "03") { TraitSection(character, editable, onChange) } }
             }
 
@@ -345,6 +342,17 @@ private fun SheetPageContent(
 
             SheetPage.RECORD -> {
                 item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições", "13") { ConditionSection(character, editable, onChange) } }
+                item("divine_marks") {
+                    com.kinderman.sdo.ui.CollapsibleSection("Marcas divinas", "13B") {
+                        CharacterDivineMarksConditionPanel(
+                            character = character,
+                            catalog = catalog,
+                            characters = characters,
+                            enabled = editable,
+                            onChange = onChange,
+                        )
+                    }
+                }
             }
 
             SheetPage.TRANSPORT -> item("transport") {

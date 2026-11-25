@@ -9,7 +9,7 @@
 - **Profile Avatars (`SHEET-PLAN-001`)**: preset portraits plus local photo picker with 1:1 `AvatarCropDialog` for non-square images and optional `<= 64 KiB` / `<= 256px` `media/avatar` cloud thumbnail.
 - **Canonical Persistence**: Room `v37` (`CharacterRecord`) + `LegacyFirestoreNormalizer` + `CharacterMigrationManager` preserving unrecognized fields (`unrecognizedFieldsJson`).
 
-- **Divine sheet (BACKLOG-025)**. The Deidades section shows patron and Marks, exposes scene and Corruption controls, and provides a campaign-owner or administrator Ascension editor. Greater and Lesser Gods use the four Divine Pillars.
+- **Divine profile, PD powers & mark conditions (`BACKLOG-025`, `BACKLOG-026`)**: `PROFILE` embeds a pink `Ascensão Divina` card (GM-editable; hidden from players until awakened above `Mortal`), `08 PODERES` manages active Domain Acts and passive divine capabilities using `PD`, `13 ESTADO` (`Condições`) embeds `Marcas divinas` alongside conditions, and patron/mark pickers list both catalog deities and Lesser/Greater God sheets from the same campaign.
 
 ## Planned changes
 

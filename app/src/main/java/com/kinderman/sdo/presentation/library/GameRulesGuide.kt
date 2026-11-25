@@ -71,6 +71,7 @@ internal object GameRulesGuide {
         "Inventário & Carga",
         "Itens & Ofício",
         "Poderes & Arcano",
+        "Deidades & Divino",
         "Viagem",
     )
 
@@ -92,7 +93,8 @@ internal object GameRulesGuide {
         "magia" to "Poderes & Arcano",
         "cinzas" to "Poderes & Arcano",
         "runas" to "Poderes & Arcano",
-        "corrupcao_divina" to "Poderes & Arcano",
+        "corrupcao_divina" to "Deidades & Divino",
+        "deidades_e_avatares" to "Deidades & Divino",
         "energia_onirica" to "Poderes & Arcano",
         "materia_onirica" to "Poderes & Arcano",
         "tamanho_viagem_e_montarias" to "Viagem",
@@ -121,6 +123,12 @@ internal object GameRulesGuide {
         "critico" to "Crítico",
         "criticos" to "Críticos",
         "definicao" to "Definição",
+        "deidades" to "Deidades",
+        "divina" to "Divina",
+        "divinas" to "Divinas",
+        "divino" to "Divino",
+        "divinos" to "Divinos",
+        "dominio" to "Domínio",
         "distancia" to "Distância",
         "duracao" to "Duração",
         "economia" to "Economia",
@@ -147,6 +155,8 @@ internal object GameRulesGuide {
         "orgaos" to "Órgãos",
         "padrao" to "Padrão",
         "pericia" to "Perícia",
+        "pilares" to "Pilares",
+        "presenca" to "Presença",
         "preco" to "Preço",
         "precos" to "Preços",
         "progressao" to "Progressão",
@@ -164,12 +174,17 @@ internal object GameRulesGuide {
         "regiao" to "Região",
         "regioes" to "Regiões",
         "resistencia" to "Resistência",
+        "restricao" to "Restrição",
+        "santuario" to "Santuário",
         "sub" to "Sub",
+        "tabu" to "Tabu",
         "tecnica" to "Técnica",
         "tecnicas" to "Técnicas",
         "tecnologia" to "Tecnologia",
         "tecnologias" to "Tecnologias",
         "uniao" to "União",
+        "vinculos" to "Vínculos",
+        "ascensao" to "Ascensão",
     )
 
     private val lowercaseConnectors = setOf("de", "da", "do", "das", "dos", "e", "em", "a", "o", "para", "por", "com", "sem")
@@ -191,6 +206,7 @@ internal object GameRulesGuide {
         "Magia" to listOf("magia", "arcano", "feitiço", "conjuração", "conjuracao"),
         "Runas" to listOf("runa", "runas", "inscrição", "inscricao"),
         "Cinzas" to listOf("cinza", "cinzas", "pureza", "dose"),
+        "Deidades" to listOf("deidade", "deidades", "divina", "divino", "avatar", "semideus", "arauto", "pilar", "pilares", "tabu", "ascensão", "ascensao"),
         "Onírico" to listOf("onírico", "onirico", "onírica", "onirica", "corrupção", "corrupcao"),
         "Criação" to listOf("criação", "criacao", "herança", "heranca", "raça", "raca", "atributo", "conhecimento", "caminho"),
         "Viagem" to listOf("viagem", "montaria", "transporte", "tamanho", "deslocamento"),
@@ -219,6 +235,7 @@ internal object GameRulesGuide {
             "Testes" -> matched += "Testes"
             "Recuperação & Sanidade" -> matched += "Sanidade"
             "Inventário & Carga" -> matched += "Carga"
+            "Deidades & Divino" -> matched += "Deidades"
             "Viagem" -> matched += "Viagem"
             "Criação & Base" -> matched += "Criação"
         }

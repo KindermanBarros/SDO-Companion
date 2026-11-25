@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.AttributeValue
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CatalogEntry
+import com.kinderman.sdo.domain.model.derivedDivineEffects
 import com.kinderman.sdo.domain.model.withDivineCorruption
 import com.kinderman.sdo.domain.model.withTrackedDestiny
 import com.kinderman.sdo.domain.model.ResourceValue
@@ -117,48 +118,53 @@ internal fun IdentitySection(
 
 @Composable
 internal fun ResourceSection(character: Character, enabled: Boolean, onChange: (Character) -> Unit) {
+    val conceptual = character.derivedDivineEffects().usesConceptualPillars
     TechPanel(accent = MaterialTheme.colorScheme.primary) {
         SectionHeader("02", "Recursos")
-        CalculatedResourceEditor(
-            label = "VIDA",
-            formula = "10 + VITALIDADE",
-            resource = character.life,
-            base = character.lifeBase,
-            maximum = character.lifeMaximum,
-            accent = MaterialTheme.colorScheme.secondary,
-            enabled = enabled,
-        ) { onChange(character.copy(life = it)) }
-        CalculatedResourceEditor(
-            label = "SANIDADE",
-            formula = "10 + SANIDADE",
-            resource = character.sanity,
-            base = character.sanityBase,
-            maximum = character.sanityMaximum,
-            accent = MaterialTheme.colorScheme.secondary,
-            enabled = enabled,
-        ) { onChange(character.copy(sanity = it)) }
-        CalculatedResourceEditor(
-            label = "ARCANO",
-            formula = "POD + ARCANO",
-            resource = character.arcane,
-            base = character.arcaneBase,
-            maximum = character.arcaneMaximum,
-            accent = MaterialTheme.colorScheme.secondary,
-            enabled = enabled,
-        ) { onChange(character.copy(arcane = it)) }
-        CalculatedResourceEditor(
-            label = "ENERGIA",
-            formula = "VIG + ENERGIA",
-            resource = character.energy,
-            base = character.energyBase,
-            maximum = character.energyMaximum,
-            accent = MaterialTheme.colorScheme.secondary,
-            enabled = enabled,
-        ) { onChange(character.copy(energy = it)) }
+        if (!conceptual) {
+            CalculatedResourceEditor(
+                label = "VIDA",
+                formula = "10 + VITALIDADE",
+                resource = character.life,
+                base = character.lifeBase,
+                maximum = character.lifeMaximum,
+                accent = MaterialTheme.colorScheme.secondary,
+                enabled = enabled,
+            ) { onChange(character.copy(life = it)) }
+            CalculatedResourceEditor(
+                label = "SANIDADE",
+                formula = "10 + SANIDADE",
+                resource = character.sanity,
+                base = character.sanityBase,
+                maximum = character.sanityMaximum,
+                accent = MaterialTheme.colorScheme.secondary,
+                enabled = enabled,
+            ) { onChange(character.copy(sanity = it)) }
+            CalculatedResourceEditor(
+                label = "ARCANO",
+                formula = "POD + ARCANO",
+                resource = character.arcane,
+                base = character.arcaneBase,
+                maximum = character.arcaneMaximum,
+                accent = MaterialTheme.colorScheme.secondary,
+                enabled = enabled,
+            ) { onChange(character.copy(arcane = it)) }
+            CalculatedResourceEditor(
+                label = "ENERGIA",
+                formula = "VIG + ENERGIA",
+                resource = character.energy,
+                base = character.energyBase,
+                maximum = character.energyMaximum,
+                accent = MaterialTheme.colorScheme.secondary,
+                enabled = enabled,
+            ) { onChange(character.copy(energy = it)) }
+        }
         ManualResourceEditor("DESTINO", character.destiny.copy(maximum = character.destinyMaximum), MaterialTheme.colorScheme.secondary, enabled, fixedMaximum = character.destinyMaximum) {
             onChange(character.withTrackedDestiny(it))
         }
-        ManualResourceEditor("EXAUSTÃO", character.exhaustion, MaterialTheme.colorScheme.error, enabled) { onChange(character.copy(exhaustion = it)) }
+        if (!conceptual) {
+            ManualResourceEditor("EXAUSTÃO", character.exhaustion, MaterialTheme.colorScheme.error, enabled) { onChange(character.copy(exhaustion = it)) }
+        }
         ManualResourceEditor("CORRUPÇÃO DIVINA (%)", character.corruption.copy(maximum = 100), MaterialTheme.colorScheme.tertiary, enabled, fixedMaximum = 100) {
             onChange(character.withDivineCorruption(it))
         }

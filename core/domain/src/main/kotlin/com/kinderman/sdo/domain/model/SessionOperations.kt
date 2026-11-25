@@ -232,11 +232,26 @@ fun Character.applySessionCommand(command: SessionCommand, actorId: String): Ses
 private fun Character.useAbility(command: SessionCommand): Character {
     allCanonicalAbilitiesSafely().firstOrNull { it.id == command.targetId }?.let { ability ->
         require(ability.available) { "Esta habilidade não está disponível agora." }
+        val isDivinePower = (ability.cost as? AbilityCost.PowerCost)?.let {
+            it.resource == SpendableResource.PD || it.isDivineOrLuckBased
+        } == true
+        if (isDivinePower && derivedDivineEffects().usesConceptualPillars) {
+            require(!divineRuntime.tabuViolatedInScene) {
+                "Atos de Domínio estão bloqueados nesta cena por violação de Tabu."
+            }
+        }
         val channeling = ability.kind == AbilityKind.SPELL || ability.kind == AbilityKind.RUNE ||
-            ability.duration?.requiresChanneling == true
+            isDivinePower || ability.duration?.requiresChanneling == true
         val prepared = if (channeling) channelDivineOrArcanePower() else this
         val paid = prepared.payAbilityCost(ability)
-        return ability.mechanicalEffect?.operations.orEmpty().foldIndexed(paid) { index, current, operation ->
+        val withDivineSpend = if (isDivinePower && derivedDivineEffects().usesConceptualPillars && ability.cost.amount > 0) {
+            paid.copy(
+                divineRuntime = paid.divineRuntime.copy(
+                    pdSpentInCurrentScene = paid.divineRuntime.pdSpentInCurrentScene + ability.cost.amount,
+                ),
+            )
+        } else paid
+        return ability.mechanicalEffect?.operations.orEmpty().foldIndexed(withDivineSpend) { index, current, operation ->
             current.applyEffectOperation(
                 operation.withChannelingDuration(ability.duration),
                 idempotencyKey = "${command.idempotencyKey}:$index",

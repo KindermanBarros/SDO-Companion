@@ -476,6 +476,85 @@ object DivineRules {
     }
 }
 
+data class DeityOption(
+    val id: String,
+    val name: String,
+    val tier: DivineTier,
+    val subtitle: String,
+    val isCampaignCharacter: Boolean = false,
+)
+
+fun resolveAvailableDeityOptions(
+    currentCharacter: Character,
+    catalog: List<CatalogEntry>,
+    characters: List<Character> = emptyList(),
+): List<DeityOption> {
+    val currentCampaignId = normalizeCampaignId(currentCharacter.campaignId)
+    val campaignDeityOptions = if (currentCampaignId.isBlank()) {
+        emptyList()
+    } else {
+        characters.asSequence()
+            .filter { other ->
+                other.id != currentCharacter.id &&
+                    !other.deleted &&
+                    normalizeCampaignId(other.campaignId) == currentCampaignId &&
+                    (other.divineAscension.tier == DivineTier.LESSER_GOD ||
+                        other.divineAscension.tier == DivineTier.GREATER_GOD)
+            }
+            .map { deityChar ->
+                val domainHint = deityChar.divineAscension.dominio.takeIf(String::isNotBlank)
+                DeityOption(
+                    id = "sheet:${deityChar.id}",
+                    name = deityChar.name.ifBlank { "Divindade da campanha" },
+                    tier = deityChar.divineAscension.tier,
+                    subtitle = listOfNotNull(
+                        "${deityChar.divineAscension.tier.label} · Mesa atual",
+                        domainHint,
+                    ).joinToString(" // "),
+                    isCampaignCharacter = true,
+                )
+            }
+            .sortedBy(DeityOption::name)
+            .toList()
+    }
+    val catalogOptions = catalog.asSequence()
+        .filter { it.kind == CatalogKind.DEITY }
+        .distinctBy(CatalogEntry::id)
+        .map { entry ->
+            val profile = entry.toDeityPublicProfile()
+            DeityOption(
+                id = entry.id,
+                name = entry.name,
+                tier = profile.tier,
+                subtitle = profile.publicTierLabel,
+                isCampaignCharacter = false,
+            )
+        }
+        .sortedWith(compareBy<DeityOption> { catalogEntry -> catalog.indexOfFirst { it.id == catalogEntry.id } })
+        .toList()
+    return campaignDeityOptions + catalogOptions
+}
+
+fun DivineMark.displayDeityLabel(
+    catalogById: Map<String, CatalogEntry>,
+    charactersById: Map<String, Character>,
+): String {
+    val sheetId = deityId.removePrefix("sheet:").takeIf { deityId.startsWith("sheet:") }
+    val fromSheet = sheetId?.let { charactersById[it]?.name }?.takeIf(String::isNotBlank)
+    return fromSheet
+        ?: displayDeityLabel(catalogById)
+}
+
+fun CharacterDivineAscension.displayPatronLabel(
+    catalogById: Map<String, CatalogEntry>,
+    charactersById: Map<String, Character>,
+): String {
+    val sheetId = patronDeityId.removePrefix("sheet:").takeIf { patronDeityId.startsWith("sheet:") }
+    val fromSheet = sheetId?.let { charactersById[it]?.name }?.takeIf(String::isNotBlank)
+    return fromSheet
+        ?: displayPatronLabel(catalogById)
+}
+
 fun CatalogEntry.toDeityPublicProfile(): DeityPublicProfile {
     require(kind == CatalogKind.DEITY) { "CatalogEntry $id is not a DEITY" }
     val tier = when (group.lowercase()) {
@@ -547,7 +626,33 @@ fun Character.withDivineAscension(next: CharacterDivineAscension): Character {
     val updated = copy(divineAscension = sanitized)
     val newCeiling = updated.destinyMaximum
     val grantedPd = destiny.current.coerceIn(0, newCeiling)
-    return updated.copy(destiny = destiny.copy(current = grantedPd, maximum = newCeiling))
+    val syncedAbilities = buildList {
+        addAll(updated.allCanonicalAbilitiesSafely())
+        if (sanitized.tier.scale == DivineScale.CONCEPTUAL_PILLARS) {
+            sanitized.passiveCapabilities.forEach { passive ->
+                val trimmedName = passive.name.trim()
+                if (trimmedName.isNotBlank() && none { it.id == "divine-passive:${passive.id}" || it.name.equals(trimmedName, ignoreCase = true) }) {
+                    add(
+                        Ability(
+                            id = "divine-passive:${passive.id}",
+                            name = trimmedName,
+                            kind = AbilityKind.POWER,
+                            source = Source.narrative(NarrativeSourceId("divine-ascension")),
+                            execution = Execution(ExecutionKind.Passive),
+                            duration = null,
+                            cost = AbilityCost.PowerCost(0, SpendableResource.PD, isDivineOrLuckBased = true),
+                            effect = passive.description.trim(),
+                            powerData = PowerData(passiveState = PassiveState.ManualToggle(active = true)),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+    return updated.copy(
+        abilities = syncedAbilities,
+        destiny = destiny.copy(current = grantedPd, maximum = newCeiling),
+    )
 }
 
 /** Spend PD on a Domain Act (base cost + optional extra PD investment). Blocked when Tabu was violated in scene. */
