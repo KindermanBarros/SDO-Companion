@@ -1695,3 +1695,51 @@ test('active campaign owner can update linked character ascension', async () => 
   );
   await assertSucceeds(batch.commit());
 });
+
+test('sheet owner can complete GM-unlocked LESSER_GOD promotion once and cannot escalate to GREATER_GOD', async () => {
+  await seed();
+  const key = 'divineAscensionPayload';
+  const unlockedPayload = '{"tier":"MORTAL","pendingPromotionTier":"LESSER_GOD"}';
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'characters', ids.character, 'fields', key), makeField(key, unlockedPayload));
+  });
+
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+
+  // Attempt to jump straight to GREATER_GOD when only LESSER_GOD was unlocked -> rejected
+  const badBatch = writeBatch(playerDb);
+  const badValue = '{"tier":"GREATER_GOD","pendingPromotionTier":null}';
+  badBatch.update(doc(playerDb, 'characters', ids.character, 'fields', key), {
+    value: badValue,
+    revision: 2,
+    lastOperationId: 'op-bad-promo',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  badBatch.set(
+    doc(playerDb, 'characters', ids.character, 'operations', 'op-bad-promo'),
+    makeOp('op-bad-promo', ids.player, 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key, op: 'SET', expectedRevision: 1, nextRevision: 2, baseValue: unlockedPayload, desiredValue: badValue },
+    ]),
+  );
+  await assertFails(badBatch.commit());
+
+  // Valid completion to LESSER_GOD clearing pendingPromotionTier -> allowed
+  const okBatch = writeBatch(playerDb);
+  const okValue = '{"tier":"LESSER_GOD","dominio":"Bruma","pendingPromotionTier":null}';
+  okBatch.update(doc(playerDb, 'characters', ids.character, 'fields', key), {
+    value: okValue,
+    revision: 2,
+    lastOperationId: 'op-ok-promo',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  okBatch.set(
+    doc(playerDb, 'characters', ids.character, 'operations', 'op-ok-promo'),
+    makeOp('op-ok-promo', ids.player, 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key, op: 'SET', expectedRevision: 1, nextRevision: 2, baseValue: unlockedPayload, desiredValue: okValue },
+    ]),
+  );
+  await assertSucceeds(okBatch.commit());
+});

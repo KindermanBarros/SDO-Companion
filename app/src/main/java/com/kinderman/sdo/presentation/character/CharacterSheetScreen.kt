@@ -53,6 +53,8 @@ import com.kinderman.sdo.domain.model.DeityDetailView
 import com.kinderman.sdo.domain.model.DivineTier
 import com.kinderman.sdo.domain.model.normalizeCampaignId
 import com.kinderman.sdo.domain.creation.CharacterCreation
+import com.kinderman.sdo.domain.creation.DivineAscensionCreation
+import com.kinderman.sdo.domain.creation.DivineAscensionCreation.hasPendingDivinePromotion
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.Character
 import com.kinderman.sdo.domain.model.CharacterLock
@@ -394,6 +396,13 @@ fun CharacterSheetScreen(
                     onChange = changeCharacter,
                     modifier = Modifier.padding(padding),
                     onOpenPhotoPicker = { if (editable) showPhotoPicker = true },
+                ) else if (current.hasPendingDivinePromotion) DivineAscensionWizard(
+                    character = current,
+                    enabled = editable,
+                    canCancelPromotion = editable &&
+                        CharacterAccessPolicy.canChangeAscension(session, isCampaignResponsible),
+                    onChange = changeCharacter,
+                    modifier = Modifier.padding(padding).fillMaxSize(),
                 ) else CharacterSheetPager(
                     patronPresenca = patronPresenca,
                     character = current,

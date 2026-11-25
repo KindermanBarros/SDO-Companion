@@ -1048,6 +1048,25 @@ service cloud.firestore {
         }
 
         // Delegates sheet/campaign auth, deleted, and lock checks to operations/{lastOperationId} (1 access).
+        function canCompleteUnlockedAscension(isCreate, prevVal, nextVal) {
+          let sheet = isCreate ? null : get(characterPath(charId)).data;
+          return !isCreate
+            && sheet != null
+            && sheet.get('ownerId', '') == request.auth.uid
+            && prevVal is string
+            && nextVal is string
+            && (
+              (
+                prevVal.matches('.*"pendingPromotionTier":"LESSER_GOD".*')
+                && nextVal.matches('.*"tier":"LESSER_GOD".*')
+              ) || (
+                prevVal.matches('.*"pendingPromotionTier":"GREATER_GOD".*')
+                && nextVal.matches('.*"tier":"GREATER_GOD".*')
+              )
+            )
+            && !nextVal.matches('.*"pendingPromotionTier":"(LESSER_GOD|GREATER_GOD)".*');
+        }
+
         function canWriteAscension(isCreate) {
           let sheet = isCreate ? getAfter(characterPath(charId)).data : get(characterPath(charId)).data;
           let cid = sheet.get('campaignId', '');
@@ -1066,6 +1085,7 @@ service cloud.firestore {
               || (isCreate && opDoc.data.type == 'CREATE_SHEET' && request.resource.data.value == '')
               || isAdministrator()
               || canWriteAscension(opDoc.data.type == 'CREATE_SHEET')
+              || canCompleteUnlockedAscension(isCreate, isCreate ? '' : resource.data.value, request.resource.data.value)
             )
             && t.expectedRevision == expectedRev
             && t.nextRevision == nextRev

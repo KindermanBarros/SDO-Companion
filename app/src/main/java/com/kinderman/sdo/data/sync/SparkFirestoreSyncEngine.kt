@@ -88,6 +88,7 @@ import com.kinderman.sdo.domain.model.resourceMaximum
 import com.kinderman.sdo.domain.model.resourceValue
 import com.kinderman.sdo.domain.model.toSyncStatus
 import com.kinderman.sdo.domain.model.validateAtomicSparkActionBudget
+import com.kinderman.sdo.domain.creation.DivineAscensionCreation
 import com.kinderman.sdo.domain.policy.CharacterAccessPolicy
 import com.kinderman.sdo.domain.repository.RemoteSyncEvent
 import java.util.Date
@@ -356,8 +357,14 @@ class SparkFirestoreSyncEngine(
                 val campaignId = normalizeCampaignId(currentProjected.campaignId)
                 val campaign = campaignId.takeIf(String::isNotBlank)?.let { localStore.getCampaign(it) }
                 val ownsCampaign = campaign?.state == CampaignState.ACTIVE.name && campaign.ownerId == session.uid
-                check(CharacterAccessPolicy.canChangeAscension(session, ownsCampaign)) {
-                    "Somente o Mestre da campanha ou Administrador pode alterar a categoria de ascensão divina."
+                val gmOrAdmin = CharacterAccessPolicy.canChangeAscension(session, ownsCampaign)
+                val playerCompletingUnlockedPromotion = currentProjected.ownerId == session.uid &&
+                    DivineAscensionCreation.isAuthorizedPlayerPromotionCompletion(
+                        before = currentProjected.divineAscension,
+                        after = projected.divineAscension,
+                    )
+                check(gmOrAdmin || playerCompletingUnlockedPromotion) {
+                    "Somente o Mestre da campanha ou Administrador pode alterar ou liberar a ascensão divina."
                 }
             }
 

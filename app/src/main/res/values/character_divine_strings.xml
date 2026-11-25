@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="character_divine_title">Ascensão Divina</string>
-    <string name="character_divine_awaken_ascension">Despertar ou editar ascensão divina</string>
+    <string name="character_divine_awaken_ascension">Editar vínculo / categoria divina (Mestre)</string>
+    <string name="character_divine_unlock_lesser">Liberar criação de Deus Menor (8 Pilares)</string>
+    <string name="character_divine_unlock_greater">Liberar promoção a Deus Maior (+4 Pilares)</string>
+    <string name="character_divine_herald_gift_profile">Dádiva de Arauto concedida: %1$s (%2$s)</string>
     <string name="character_divine_no_marks">Nenhuma marca divina ativa.</string>
     <string name="character_divine_powers_hint">Capacidades ativas e passivas são gerenciadas na aba Poderes usando PD.</string>
     <string name="character_divine_destiny">Destino: %1$d/%2$d PD</string>

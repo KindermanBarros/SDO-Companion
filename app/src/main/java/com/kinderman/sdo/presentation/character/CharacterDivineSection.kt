@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.R
+import com.kinderman.sdo.domain.creation.DivineAscensionCreation
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
 import com.kinderman.sdo.domain.model.Character
@@ -141,6 +142,21 @@ internal fun CharacterDivineSection(
         }
 
         if (canChangeAscension) {
+            if (effects.tier in setOf(DivineTier.MORTAL, DivineTier.AVATAR, DivineTier.DEMIGOD)) {
+                DivineAction(
+                    label = R.string.character_divine_unlock_lesser,
+                    tag = "unlock_lesser_god",
+                ) {
+                    change { DivineAscensionCreation.unlockPromotion(it, DivineTier.LESSER_GOD) }
+                }
+            } else if (effects.tier == DivineTier.LESSER_GOD) {
+                DivineAction(
+                    label = R.string.character_divine_unlock_greater,
+                    tag = "unlock_greater_god",
+                ) {
+                    change { DivineAscensionCreation.unlockPromotion(it, DivineTier.GREATER_GOD) }
+                }
+            }
             DivineAction(
                 label = if (isDivine) R.string.character_divine_edit_ascension else R.string.character_divine_awaken_ascension,
                 tag = "ascension",
@@ -204,11 +220,31 @@ internal fun CharacterDivineSection(
             R.string.character_divine_thought to ascension.linhaDePensamento,
             R.string.character_divine_tabu to ascension.tabu,
         ).filter { it.second.isNotBlank() }
-        if (identityDetails.isNotEmpty()) {
+        if (identityDetails.isNotEmpty() || ascension.heraldGift.name.isNotBlank()) {
             SdoInsetCard(accent = DivinePinkAccent.copy(alpha = 0.45f), contentPadding = 10.dp, verticalSpacing = 6.dp) {
                 identityDetails.forEach { (label, value) ->
                     SdoMetadataText(stringResource(label).uppercase(), color = DivinePinkAccent)
                     Text(value, style = MaterialTheme.typography.bodyMedium)
+                }
+                if (ascension.heraldGift.name.isNotBlank()) {
+                    SdoMetadataText(
+                        stringResource(
+                            R.string.character_divine_herald_gift_profile,
+                            ascension.heraldGift.name,
+                            ascension.heraldGift.executionKind.label,
+                        ),
+                        color = DivinePinkAccent,
+                    )
+                    if (ascension.heraldGift.effect.isNotBlank()) {
+                        Text(ascension.heraldGift.effect, style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (ascension.heraldGift.downside.isNotBlank()) {
+                        Text(
+                            "Contrapartida: ${ascension.heraldGift.downside}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = DivinePinkAccent,
+                        )
+                    }
                 }
             }
         }

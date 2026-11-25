@@ -116,9 +116,44 @@ data class DivinePassiveCapability(
     val description: String = "",
 )
 
+@Serializable
+data class DivineAscensionActDraft(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+    val costPd: Int = 1,
+    val executionKind: ExecutionKind = ExecutionKind.Action,
+    val rangeBand: RangeBand = RangeBand.Short,
+    val durationKind: DurationKind = DurationKind.Scene,
+    val description: String = "",
+)
+
+@Serializable
+data class DivineHeraldGiftDraft(
+    val name: String = "",
+    val executionKind: ExecutionKind = ExecutionKind.Free,
+    val effect: String = "",
+    val downside: String = "",
+)
+
+@Serializable
+data class DivineAscensionDraft(
+    val step: Int = 1,
+    val dominio: String = "",
+    val santuario: String = "",
+    val postura: String = "",
+    val linhaDePensamento: String = "",
+    val tabu: String = "",
+    val materialRestrictionNote: String = "",
+    val pillars: DivinePillars = DivinePillars(),
+    val passiveCapabilities: List<DivinePassiveCapability> = emptyList(),
+    val domainActs: List<DivineAscensionActDraft> = emptyList(),
+    val heraldGift: DivineHeraldGiftDraft = DivineHeraldGiftDraft(),
+)
+
 /**
  * GM-controlled ascension profile stored separately from player runtime state so write authorization
- * can restrict tier, patron, Domain, Postura, Tabu, Pillars, and Divine Passives to GMs and Admins.
+ * can restrict tier, patron, Domain, Postura, Tabu, Pillars, and Divine Passives to GMs and Admins,
+ * while allowing a GM-unlocked [pendingPromotionTier] (`LESSER_GOD` / `GREATER_GOD`) to be completed by the sheet owner.
  */
 @Serializable
 data class CharacterDivineAscension(
@@ -133,6 +168,8 @@ data class CharacterDivineAscension(
     val pillars: DivinePillars = DivinePillars(),
     val passiveCapabilities: List<DivinePassiveCapability> = emptyList(),
     val materialRestrictionNote: String = "",
+    val heraldGift: DivineHeraldGiftDraft = DivineHeraldGiftDraft(),
+    val pendingPromotionTier: DivineTier? = null,
 ) {
     fun displayPatronLabel(catalogById: Map<String, CatalogEntry> = emptyMap()): String =
         catalogById[patronDeityId]?.name
@@ -142,7 +179,7 @@ data class CharacterDivineAscension(
             ?: ""
 }
 
-/** Session-scoped divine runtime state (marks, scene Tabu lock, and scene PD expenditure). */
+/** Session-scoped divine runtime state (marks, scene Tabu lock, scene PD expenditure, and in-progress ascension draft). */
 @Serializable
 data class CharacterDivineRuntime(
     val marks: List<DivineMark> = emptyList(),
@@ -162,6 +199,7 @@ data class CharacterDivineRuntime(
     val linkScenePayments: Map<String, Int> = emptyMap(),
     val divineFate: DivineFate = DivineFate.ACTIVE,
     val divineFateCauseIds: Set<String> = emptySet(),
+    val ascensionDraft: DivineAscensionDraft? = null,
 )
 
 /** Official corruption threshold stages (`Corrupção Divina.md:11-17`). */
