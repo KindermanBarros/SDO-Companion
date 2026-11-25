@@ -206,7 +206,7 @@ internal object GameRulesGuide {
         "Magia" to listOf("magia", "arcano", "feitiço", "conjuração", "conjuracao"),
         "Runas" to listOf("runa", "runas", "inscrição", "inscricao"),
         "Cinzas" to listOf("cinza", "cinzas", "pureza", "dose"),
-        "Deidades" to listOf("deidade", "deidades", "divina", "divino", "avatar", "semideus", "arauto", "pilar", "pilares", "tabu", "ascensão", "ascensao"),
+        "Deidades" to listOf("deidade", "deidades", "divina", "divino", "avatar", "semideus", "arauto", "marcado", "pilar", "pilares", "tabu", "ascensão", "ascensao", "santuário", "santuario", "domínio", "dominio", "apagamento", "darno"),
         "Onírico" to listOf("onírico", "onirico", "onírica", "onirica", "corrupção", "corrupcao"),
         "Criação" to listOf("criação", "criacao", "herança", "heranca", "raça", "raca", "atributo", "conhecimento", "caminho"),
         "Viagem" to listOf("viagem", "montaria", "transporte", "tamanho", "deslocamento"),

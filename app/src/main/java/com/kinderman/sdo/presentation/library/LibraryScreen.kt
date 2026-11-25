@@ -495,7 +495,7 @@ fun LibraryScreen(
                             HudTextField(
                                 label = "Buscar regra ou keyword",
                                 value = ruleSearch,
-                                placeholder = "Ex.: combate, ataque, ações, trauma, runas",
+                                placeholder = "Ex.: combate, deidades, pilares, trauma, runas",
                                 onValue = { ruleSearch = it },
                             )
                             SdoCompactFilterBar(
