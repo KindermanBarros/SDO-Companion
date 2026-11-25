@@ -12,6 +12,7 @@ import com.kinderman.sdo.domain.model.ItemEffectCondition
 import com.kinderman.sdo.domain.model.ItemEffectType
 import com.kinderman.sdo.domain.model.EnhancementKind
 import com.kinderman.sdo.domain.model.InstalledEnhancement
+import com.kinderman.sdo.domain.model.resolvedItemCategory
 import kotlin.math.roundToInt
 import java.util.Locale
 
@@ -451,6 +452,7 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
             canonical = true,
         )
     }
+    val resolvedCategory = resolvedItemCategory().displayLabel
     return InventoryItem(
         name = name,
         load = load,
@@ -459,10 +461,10 @@ fun CatalogEntry.toInventoryItem(initialCreation: Boolean = false): InventoryIte
         durabilityMax = durability.toDurabilityPair().second,
         region = region,
         effect = listOfNotNull(
-            "Categoria: $group".takeIf { group.isNotBlank() },
+            "Categoria: $resolvedCategory".takeIf { resolvedCategory.isNotBlank() },
             summary.takeIf(String::isNotBlank),
         ).joinToString("\n"),
-        category = group,
+        category = resolvedCategory,
         acquisitionSource = if (initialCreation) ItemAcquisitionSource.HERITAGE else ItemAcquisitionSource.NARRATIVE,
         heritageCost = if (initialCreation) (creationCost.toIntOrNull() ?: 1).coerceAtLeast(1) else null,
         purchasePrice = null,

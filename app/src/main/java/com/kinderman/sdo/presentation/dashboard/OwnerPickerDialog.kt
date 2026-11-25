@@ -41,6 +41,8 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.TechCutDark
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
+import com.kinderman.sdo.ui.SdoTheme
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 internal fun OwnerPickerDialog(
@@ -154,5 +156,21 @@ private fun OwnerOption(
             }
             TelemetryTag(if (selected) "OWNER.ATUAL" else owner.role.name)
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun OwnerPickerDialogPreview() {
+    SdoTheme {
+        OwnerPickerDialog(
+            character = Character(id = "char-1", name = "Kaelen Vance"),
+            owners = listOf(
+                UserProfile(uid = "u-1", displayName = "Ana Silva", email = "ana@sdo.app"),
+                UserProfile(uid = "u-2", displayName = "Bruno Costa", email = "bruno@sdo.app"),
+            ),
+            onDismiss = {},
+            onSelect = {},
+        )
     }
 }

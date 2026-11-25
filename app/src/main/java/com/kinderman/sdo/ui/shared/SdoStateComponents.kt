@@ -4,6 +4,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 
 enum class SdoStateTone { NEUTRAL, OFFLINE, ERROR }
 
@@ -30,5 +32,19 @@ private fun SdoStatePanel(title: String, message: String, status: String, tone: 
         TelemetryTag(status, accent)
         Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
         Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoStateComponentsPreview() {
+    SdoTheme {
+        androidx.compose.foundation.layout.Column(
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+        ) {
+            SdoEmptyState("VAZIO", "Nenhum registro encontrado.")
+            SdoOfflineState("OFFLINE", "Alterações salvas localmente.")
+            SdoErrorState("ERRO", "Falha na sincronização.")
+        }
     }
 }

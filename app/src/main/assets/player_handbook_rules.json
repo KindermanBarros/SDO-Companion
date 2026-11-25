@@ -13,7 +13,7 @@
   },
   "secoes_origem": 188,
   "secoes_com_regras": 185,
-  "total_regras": 1853,
+  "total_regras": 1902,
   "regras": [
     {
       "id": "combate.recursos_de_combate.item.01",
@@ -27489,7 +27489,7 @@
       "id": "corrupcao_divina.corrupcao_divina.resistencia.regra.01",
       "caminho": "corrupcao_divina.corrupcao_divina.resistencia.regra",
       "tipo": "regra",
-      "texto": "Deuses são imunes à Corrupção de fontes de categoria igual ou inferior.",
+      "texto": "Deuses Menores e Maiores são imunes à Corrupção de fontes de categoria igual ou inferior e a efeitos mentais mortais; fontes de categoria superior aplicam o ganho normal.",
       "formula": null,
       "campos": {},
       "tags": [
@@ -27503,7 +27503,7 @@
       "id": "corrupcao_divina.corrupcao_divina.resistencia.regra.02",
       "caminho": "corrupcao_divina.corrupcao_divina.resistencia.regra",
       "tipo": "regra",
-      "texto": "Mortais, Semideuses e Deuses Menores não possuem resistência inata sem regra específica.",
+      "texto": "Avatares são imunes à Corrupção da própria patrona e recebem metade do ganho (arredondado para cima) de outras fontes; Mortais, Arautos e Semideuses não possuem resistência inata sem regra específica.",
       "formula": null,
       "campos": {},
       "tags": [
@@ -29859,6 +29859,793 @@
       ],
       "ver_tambem": [],
       "origem": "200-tamanho-viagem-e-montarias-tamanho-viagem-e-mont"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.regra.01",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.regra",
+      "tipo": "regra",
+      "texto": "Mortais, Arautos, Avatares e Semideuses operam na escala tática de Combate (Atributos, PV, PE, PM, PS e 1d20).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "divindades",
+        "combate"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.regra.02",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.regra",
+      "tipo": "regra",
+      "texto": "A partir de Deus Menor, a ficha converte-se para a escala conceitual medida por Pilares Divinos, Domínio e Pontos de Destino (milagres sem rolagem).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.regra.03",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.regra",
+      "tipo": "regra",
+      "texto": "Divindades presentes na mesma campanha (do catálogo ou personagens ascendidos na mesa) podem marcar companheiros como Arautos ou elevá-los a Avatares.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "avatares",
+        "arautos"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.01",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Mortal — Escala tática • 1 PD/sessão (teto 5) • Resistência à Corrupção: nenhuma inata.",
+      "formula": null,
+      "campos": {
+        "entrada": "Mortal",
+        "escala": "Ficha comum (Combate)",
+        "pd_sessao": "1 (teto 5)",
+        "resistencia": "Nenhuma inata"
+      },
+      "tags": [
+        "deidades",
+        "divindades"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.02",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Arauto (Marcado) — Ficha comum + 1 Dádiva/Âncora • 1 PD/sessão (teto 5) • Resistência à Corrupção: nenhuma inata.",
+      "formula": null,
+      "campos": {
+        "entrada": "Arauto (Marcado)",
+        "escala": "Ficha comum + 1 Dádiva/Âncora",
+        "pd_sessao": "1 (teto 5)",
+        "resistencia": "Nenhuma inata"
+      },
+      "tags": [
+        "deidades",
+        "arautos",
+        "condicoes"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.03",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Avatar — Ficha comum + Canalização Delegada • 2 PD/sessão (teto 5) • Metade do ganho de Corrupção (arredondado p/ cima); imune à patrona.",
+      "formula": null,
+      "campos": {
+        "entrada": "Avatar",
+        "escala": "Ficha comum + Canalização Delegada",
+        "pd_sessao": "2 (teto 5)",
+        "resistencia": "Metade do ganho (arredondado p/ cima); imune à patrona"
+      },
+      "tags": [
+        "deidades",
+        "avatares"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.04",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Semideus — Ficha comum + Alfabeto Darno • 3 PD/sessão (teto 5) • Nenhuma resistência inata salvo regra específica.",
+      "formula": null,
+      "campos": {
+        "entrada": "Semideus",
+        "escala": "Ficha comum + Alfabeto Darno",
+        "pd_sessao": "3 (teto 5)",
+        "resistencia": "Nenhuma inata (salvo regra específica)"
+      },
+      "tags": [
+        "deidades",
+        "semideuses",
+        "runas"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.05",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Deus Menor — Pilares Divinos (0–4) + Atos de Domínio • 4 PD/sessão (teto 5) • Imune a efeitos mentais mortais e fontes de categoria <= Deus Menor.",
+      "formula": null,
+      "campos": {
+        "entrada": "Deus Menor",
+        "escala": "Pilares Divinos (0–4) + Atos de Domínio",
+        "pd_sessao": "4 (teto 5)",
+        "resistencia": "Imune a efeitos mentais mortais e fontes de categoria <= Deus Menor"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.06",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Deus Maior — Pilares Divinos (0–5) + Atos + Restrição Material • 5 PD/sessão (teto 10) • Imune a efeitos mentais mortais e fontes de categoria <= Deus Maior.",
+      "formula": null,
+      "campos": {
+        "entrada": "Deus Maior",
+        "escala": "Pilares Divinos (0–5) + Restrição Material",
+        "pd_sessao": "5 (teto 10)",
+        "resistencia": "Imune a efeitos mentais mortais e fontes de categoria <= Deus Maior"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.categorias_e_escalas_divinas.tabela.07",
+      "caminho": "deidades_e_avatares.categorias_e_escalas_divinas.tabela",
+      "tipo": "tabela",
+      "texto": "Primordial — Força cósmica sem ficha jogável.",
+      "formula": null,
+      "campos": {
+        "entrada": "Primordial",
+        "escala": "Força cósmica sem ficha"
+      },
+      "tags": [
+        "deidades",
+        "onirico"
+      ],
+      "ver_tambem": [],
+      "origem": "190-deidades-e-avatares-categorias"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.regra.01",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.regra",
+      "tipo": "regra",
+      "texto": "Deuses Menores e Maiores não utilizam FOR/AGI/VIG nem PV convencionais: sua grandeza é medida por quatro Pilares graduados de 0 a 5 (teto 4 em Deus Menor; teto 5 em Deus Maior).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.regra.02",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.regra",
+      "tipo": "regra",
+      "texto": "Divindades operam segundo uma Postura diante do próprio Domínio (como Preservação, Cobrança, Subversão, Testemunho, Provação, Reforja, Barganha ou Ressonância) e uma Linha de Pensamento que funciona como Tabu mecânico.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "tabu"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.regra.03",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.regra",
+      "tipo": "regra",
+      "texto": "Violação de Tabu: agir diretamente contra a própria Linha de Pensamento consome imediatamente 2 PD e bloqueia a realização de Atos de Domínio pelo restante da cena.",
+      "formula": "Violação de Tabu = −2 PD e bloqueio de Atos de Domínio na cena",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "tabu"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.tabela.01",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.tabela",
+      "tipo": "tabela",
+      "texto": "Aspecto (0–5) — Capacidade física, sensorial e mental sobre-humana na manifestação, sem precisar invocar o conceito.",
+      "formula": null,
+      "campos": {
+        "entrada": "Aspecto (0–5)",
+        "valor_ou_descricao": "Capacidade física, sensorial e mental sobre-humana na manifestação"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.tabela.02",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.tabela",
+      "tipo": "tabela",
+      "texto": "Domínio (0–5) — Autoridade direta sobre o conceito governado (Criar, Preservar, Destruir, Alterar ou Saber).",
+      "formula": null,
+      "campos": {
+        "entrada": "Domínio (0–5)",
+        "valor_ou_descricao": "Autoridade direta sobre o conceito governado (Criar, Preservar, Destruir, Alterar, Saber)"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.tabela.03",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.tabela",
+      "tipo": "tabela",
+      "texto": "Santuário (0–5) — Poder exercido no próprio território consagrado, refúgio ou âncora planar.",
+      "formula": null,
+      "campos": {
+        "entrada": "Santuário (0–5)",
+        "valor_ou_descricao": "Poder exercido no próprio território consagrado, refúgio ou âncora planar"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.pilares_divinos_e_tabu.tabela.04",
+      "caminho": "deidades_e_avatares.pilares_divinos_e_tabu.tabela",
+      "tipo": "tabela",
+      "texto": "Presença (0–5) — Densidade espiritual, capacidade de vínculos vivos e resistência contra milagres rivais.",
+      "formula": null,
+      "campos": {
+        "entrada": "Presença (0–5)",
+        "valor_ou_descricao": "Densidade espiritual, capacidade de vínculos vivos e resistência divina"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "191-deidades-pilares-e-tabu"
+    },
+    {
+      "id": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.formula.01",
+      "caminho": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.formula",
+      "tipo": "formula",
+      "texto": "Capacidade compartilhada de vínculos ativos",
+      "formula": "Capacidade = 2 × Presença atual (Âncora viva = 1, Avatar = 2)",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "presenca",
+        "avatares"
+      ],
+      "ver_tambem": [],
+      "origem": "192-deidades-capacidade-de-presenca"
+    },
+    {
+      "id": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra.01",
+      "caminho": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra",
+      "tipo": "regra",
+      "texto": "Uma cena de marcação estabelece a Âncora; Avatar exige Ascensão inicial (CD 15) ou Delegação Direta (5 PD). Devotos comuns, marcas dormentes e santuários territoriais não consomem capacidade.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "presenca",
+        "arautos"
+      ],
+      "ver_tambem": [],
+      "origem": "192-deidades-capacidade-de-presenca"
+    },
+    {
+      "id": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra.02",
+      "caminho": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra",
+      "tipo": "regra",
+      "texto": "Sobrecarga permite até 2 pontos excedentes pagando 1 PD por ponto excedente por cena (cobrado uma única vez na cena, sem reembolso e sem gerar dívida; Presença 0 não permite sobrecarga).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "presenca"
+      ],
+      "ver_tambem": [],
+      "origem": "192-deidades-capacidade-de-presenca"
+    },
+    {
+      "id": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra.03",
+      "caminho": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra",
+      "tipo": "regra",
+      "texto": "Se a Presença atual cair ou faltar PD para sustentar o excesso, suspendem-se vínculos imediatamente (os mais recentes primeiro, salvo escolha da patrona).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "presenca"
+      ],
+      "ver_tambem": [],
+      "origem": "192-deidades-capacidade-de-presenca"
+    },
+    {
+      "id": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra.04",
+      "caminho": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.regra",
+      "tipo": "regra",
+      "texto": "Suspensão desativa Dádivas, percepção, projeção, Canalização Delegada e tentativas de controle sem remover categoria/PD pessoais e sem penalidade de ruptura; reativação ocorre entre cenas.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "presenca",
+        "avatares"
+      ],
+      "ver_tambem": [],
+      "origem": "192-deidades-capacidade-de-presenca"
+    },
+    {
+      "id": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.tabela.01",
+      "caminho": "deidades_e_avatares.capacidade_de_presenca_e_vinculos.tabela",
+      "tipo": "tabela",
+      "texto": "Presença 0..5 — Capacidade 0, 2, 4, 6, 8, 10 (até 0, 1, 2, 3, 4 ou 5 Avatares sem Âncoras adicionais).",
+      "formula": null,
+      "campos": {
+        "entrada": "Presença 0 a 5",
+        "capacidade": "0 / 2 / 4 / 6 / 8 / 10 pontos",
+        "max_avatares": "0 / 1 / 2 / 3 / 4 / 5 Avatares"
+      },
+      "tags": [
+        "deidades",
+        "presenca"
+      ],
+      "ver_tambem": [],
+      "origem": "192-deidades-capacidade-de-presenca"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.regra.01",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.regra",
+      "tipo": "regra",
+      "texto": "Deidades não rolam dados contra o ambiente ou mortais comuns: Atos de Domínio ativos e Capacidades Passivas (0 PD) funcionam como Poderes pagos em PD. Limite-base de reserva: 5 PD (10 PD para Deus Maior).",
+      "formula": "CD de resistência direta de PJ = 15 + Pilar atual relevante + PD extras investidos",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "destino",
+        "poderes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.regra.02",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.regra",
+      "tipo": "regra",
+      "texto": "Choque de Domínios (Deidade vs. Deidade): sem rolagem; compara-se Pilar atual relevante + PD investidos. Empate favorece quem estiver no próprio Santuário e, persistindo, a categoria divina superior.",
+      "formula": "Choque Divino = Pilar atual relevante + PD investidos",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "combate"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.regra.03",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.regra",
+      "tipo": "regra",
+      "texto": "Recuperação adicional (Avatar ou superior): converta max(1, ceil(PS máximo × 0,10)) — ou sacrifique irreversivelmente uma Âncora/Santuário real no caso de deuses imunes a PS — para recuperar +1 PD até o teto.",
+      "formula": "Custo PS = max(1, ceil(PS máximo × 0,10)) → +1 PD",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "sanidade",
+        "destino"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela.01",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela",
+      "tipo": "tabela",
+      "texto": "0 PD (Presença / Sinais) — Perceber ocorrências do Domínio perto de si/Âncoras, sinais sensoriais e feitos menores de Aspecto.",
+      "formula": null,
+      "campos": {
+        "entrada": "0 PD — Presença / Sinais",
+        "valor_ou_descricao": "Percepção do Domínio, sinais sensoriais e feitos menores de Aspecto"
+      },
+      "tags": [
+        "deidades",
+        "poderes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela.02",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela",
+      "tipo": "tabela",
+      "texto": "1–2 PD (Ato Menor / Local) — Saber, Criar, Preservar, Alterar ou Destruir instância local do Domínio (cena / até 15 m).",
+      "formula": null,
+      "campos": {
+        "entrada": "1–2 PD — Ato Menor (Local)",
+        "valor_ou_descricao": "Manipular instância local do Domínio (alcance de cena / até 15 m)"
+      },
+      "tags": [
+        "deidades",
+        "poderes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela.03",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela",
+      "tipo": "tabela",
+      "texto": "3–4 PD (Ato Maior / Regional) — Moldar distrito, navio ou campo de batalha por 1 cena/dia; erguer Proteção de Santuário.",
+      "formula": null,
+      "campos": {
+        "entrada": "3–4 PD — Ato Maior (Regional)",
+        "valor_ou_descricao": "Afetar distrito/campo de batalha por 1 cena ou dia; Proteção de Santuário"
+      },
+      "tags": [
+        "deidades",
+        "poderes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela.04",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela",
+      "tipo": "tabela",
+      "texto": "5 PD (Ato Mítico / Planar) — Lei local permanente (até 100 m), Intervenção Direta (Deus Maior), Criar Avatar ou Ressurreição via Nexus das Almas.",
+      "formula": null,
+      "campos": {
+        "entrada": "5 PD — Ato Mítico",
+        "valor_ou_descricao": "Lei local permanente, Intervenção Direta, Criar Avatar ou Ressurreição"
+      },
+      "tags": [
+        "deidades",
+        "poderes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela.05",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.tabela",
+      "tipo": "tabela",
+      "texto": "7 PD (Apagamento — Deus Maior) — Remover permanentemente ser ou conceito de categoria inferior (morte verdadeira).",
+      "formula": null,
+      "campos": {
+        "entrada": "7 PD — Apagamento (Deus Maior)",
+        "valor_ou_descricao": "Morte verdadeira contra ser ou conceito de categoria inferior"
+      },
+      "tags": [
+        "deidades",
+        "poderes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.atos_de_dominio_e_conflitos.exemplo.01",
+      "caminho": "deidades_e_avatares.atos_de_dominio_e_conflitos.exemplo",
+      "tipo": "exemplo",
+      "texto": "Um Deus Menor com Domínio atual 3 gasta 2 PD num Ato Menor mais 1 PD extra para impor paralisia ferruginosa a um PJ relutante: o personagem resiste contra CD 15 + 3 + 1 = 19.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "testes"
+      ],
+      "ver_tambem": [],
+      "origem": "193-deidades-atos-de-dominio"
+    },
+    {
+      "id": "deidades_e_avatares.arautos_avatares_e_semideuses.regra.01",
+      "caminho": "deidades_e_avatares.arautos_avatares_e_semideuses.regra",
+      "tipo": "regra",
+      "texto": "Arautos (Marcados): estar marcado opera como uma condição persistente na ficha; mantém 1 PD/sessão, concede a Dádiva de Arauto com contrapartida obrigatória e torna o portador uma Âncora viva (projetar Atos através dele soma +1 PD ao custo). Remover contra a vontade da deidade exige purificação equivalente à redução de Corrupção.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "arautos",
+        "condicoes"
+      ],
+      "ver_tambem": [],
+      "origem": "194-deidades-arautos-avatares-semideuses"
+    },
+    {
+      "id": "deidades_e_avatares.arautos_avatares_e_semideuses.regra.02",
+      "caminho": "deidades_e_avatares.arautos_avatares_e_semideuses.regra",
+      "tipo": "regra",
+      "texto": "Avatares: recuperam 2 PD/sessão, herdam a Dádiva da patrona e usam Canalização Delegada (1 Ato Menor da patrona por cena pagando PD). Gastar 2+ PD na mesma cena ou violar a Linha de Pensamento exige teste de autonomia (INT + Sanidade ou POD + Controle contra CD 15 + Presença atual da patrona).",
+      "formula": "CD de Autonomia do Avatar = 15 + Presença atual da patrona",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "avatares",
+        "testes"
+      ],
+      "ver_tambem": [],
+      "origem": "194-deidades-arautos-avatares-semideuses"
+    },
+    {
+      "id": "deidades_e_avatares.arautos_avatares_e_semideuses.regra.03",
+      "caminho": "deidades_e_avatares.arautos_avatares_e_semideuses.regra",
+      "tipo": "regra",
+      "texto": "Ruptura real do vínculo de Avatar retorna o personagem a mortal comum e aplica imediatamente +1d6% de Corrupção Divina e 1 nível de Exaustão.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "avatares",
+        "corrupcao_divina"
+      ],
+      "ver_tambem": [],
+      "origem": "194-deidades-arautos-avatares-semideuses"
+    },
+    {
+      "id": "deidades_e_avatares.arautos_avatares_e_semideuses.regra.04",
+      "caminho": "deidades_e_avatares.arautos_avatares_e_semideuses.regra",
+      "tipo": "regra",
+      "texto": "Semideuses e Alfabeto Darno: recuperam 3 PD/sessão e inscrevem Runas Divinas instantaneamente (1 ação, 3 PD, sem ferramentas ou cinzas). Se estiverem Abalados, Amedrontados, em Ruptura de Sanidade ou com 50%+ de Corrupção, a Runa funciona mas gera Eco Emocional colateral.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "semideuses",
+        "runas"
+      ],
+      "ver_tambem": [],
+      "origem": "194-deidades-arautos-avatares-semideuses"
+    },
+    {
+      "id": "deidades_e_avatares.arautos_avatares_e_semideuses.tabela.01",
+      "caminho": "deidades_e_avatares.arautos_avatares_e_semideuses.tabela",
+      "tipo": "tabela",
+      "texto": "Usos de Avatar (2–3 PD) — Resistência divina (2 PD: ignora efeito de Corrupção), Manifestação menor (2 PD: Ato Menor da patrona), Visão onírica (2 PD) e Proteção de aliados (3 PD: estende resistência à Corrupção em contato por 1 cena).",
+      "formula": null,
+      "campos": {
+        "entrada": "Usos de Avatar (2–3 PD)",
+        "valor_ou_descricao": "Resistência divina (2 PD), Manifestação menor (2 PD), Visão onírica (2 PD), Proteção de aliados (3 PD)"
+      },
+      "tags": [
+        "deidades",
+        "avatares",
+        "destino"
+      ],
+      "ver_tambem": [],
+      "origem": "194-deidades-arautos-avatares-semideuses"
+    },
+    {
+      "id": "deidades_e_avatares.arautos_avatares_e_semideuses.tabela.02",
+      "caminho": "deidades_e_avatares.arautos_avatares_e_semideuses.tabela",
+      "tipo": "tabela",
+      "texto": "Usos de Semideus (3–4 PD) — Runa Divina (3 PD), Alterar resultado de dado antes de modificadores (3 PD), Presença divina (3 PD: CD 18 Mental ou Abalado a 15 m) e Fragmento de memória no Nexus das Almas (4 PD).",
+      "formula": null,
+      "campos": {
+        "entrada": "Usos de Semideus (3–4 PD)",
+        "valor_ou_descricao": "Runa Divina (3 PD), Alterar resultado (3 PD), Presença divina (3 PD, CD 18), Fragmento de memória (4 PD)"
+      },
+      "tags": [
+        "deidades",
+        "semideuses",
+        "destino"
+      ],
+      "ver_tambem": [],
+      "origem": "194-deidades-arautos-avatares-semideuses"
+    },
+    {
+      "id": "deidades_e_avatares.ascensao_e_restricao_material.regra.01",
+      "caminho": "deidades_e_avatares.ascensao_e_restricao_material.regra",
+      "tipo": "regra",
+      "texto": "A Ascensão segue a Via Vinculada (Mortal → Avatar CD 15 → Semideus CD 18 → Deus Menor CD 22 → Deus Maior CD 28) ou a Via Autônoma (Mortal → Semideus CD 18 → Deus Menor CD 22 → Deus Maior CD 28), sem exigir passagem prévia por Arauto ou Avatar.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "ascensao"
+      ],
+      "ver_tambem": [],
+      "origem": "195-deidades-ascensao-e-restricao"
+    },
+    {
+      "id": "deidades_e_avatares.ascensao_e_restricao_material.regra.02",
+      "caminho": "deidades_e_avatares.ascensao_e_restricao_material.regra",
+      "tipo": "regra",
+      "texto": "Quatro Testes de Transição: Intenção Verdadeira (CAR + Lábia), Controle Mental (INT + Sanidade; 1 natural causa +2d6% de Corrupção imediata), Subconsciente Coeso (POD + Controle) e Domínio Onírico (POD + Arcano).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "ascensao",
+        "testes"
+      ],
+      "ver_tambem": [],
+      "origem": "195-deidades-ascensao-e-restricao"
+    },
+    {
+      "id": "deidades_e_avatares.ascensao_e_restricao_material.regra.03",
+      "caminho": "deidades_e_avatares.ascensao_e_restricao_material.regra",
+      "tipo": "regra",
+      "texto": "Criação de Deus Menor (CD 22): após liberação do Mestre, o personagem define Domínio, Santuário, Postura e Linha de Pensamento (Tabu), distribui 8 pontos nos 4 Pilares (máx. 4/Pilar) e registra 2–3 Capacidades Passivas (0 PD), Atos de Domínio em PD e Dádiva de Arauto opcional.",
+      "formula": "Deus Menor = 8 pontos em Pilares (máx. 4 por Pilar)",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "ascensao",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "195-deidades-ascensao-e-restricao"
+    },
+    {
+      "id": "deidades_e_avatares.ascensao_e_restricao_material.regra.04",
+      "caminho": "deidades_e_avatares.ascensao_e_restricao_material.regra",
+      "tipo": "regra",
+      "texto": "Promoção a Deus Maior (CD 28): exige reconhecimento planar e sacrifício irreversível de mortalidade; soma +4 pontos aos Pilares existentes (total base 12, máx. 5/Pilar, sem reduzir nenhum Pilar anterior), eleva a reserva-base para 10 PD e impõe a Restrição Material.",
+      "formula": "Deus Maior = Pilares anteriores + 4 pontos (máx. 5 por Pilar, sem redução)",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "ascensao",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "195-deidades-ascensao-e-restricao"
+    },
+    {
+      "id": "deidades_e_avatares.ascensao_e_restricao_material.regra.05",
+      "caminho": "deidades_e_avatares.ascensao_e_restricao_material.regra",
+      "tipo": "regra",
+      "texto": "Restrição Material (Deuses Maiores): sem permanência física livre no plano material; atuam por Âncoras, Avatares, Santuários ou Intervenção Direta (5 PD por 1 turno, ou 1 cena em santuário preparado), causando +1d6% de Corrupção a mortais próximos desprotegidos.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "onirico",
+        "corrupcao_divina"
+      ],
+      "ver_tambem": [],
+      "origem": "195-deidades-ascensao-e-restricao"
+    },
+    {
+      "id": "deidades_e_avatares.ascensao_e_restricao_material.tabela.01",
+      "caminho": "deidades_e_avatares.ascensao_e_restricao_material.tabela",
+      "tipo": "tabela",
+      "texto": "CDs de Transição — Avatar: CD 15 • Semideus: CD 18 • Deus Menor: CD 22 (8 Pilares, máx. 4) • Deus Maior: CD 28 (+4 Pilares, máx. 5).",
+      "formula": null,
+      "campos": {
+        "entrada": "CDs de Transição",
+        "avatar": "CD 15 (2 PD/sessão)",
+        "semideus": "CD 18 (3 PD/sessão + Alfabeto Darno)",
+        "deus_menor": "CD 22 (8 Pilares máx. 4, 4 PD/sessão)",
+        "deus_maior": "CD 28 (+4 Pilares máx. 5, 5 PD/sessão, teto 10 PD)"
+      },
+      "tags": [
+        "deidades",
+        "ascensao"
+      ],
+      "ver_tambem": [],
+      "origem": "195-deidades-ascensao-e-restricao"
+    },
+    {
+      "id": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.formula.01",
+      "caminho": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.formula",
+      "tipo": "formula",
+      "texto": "Pilar efetivo sob supressão (teto de 2 pontos suprimidos por Pilar)",
+      "formula": "Pilar atual = max(0, Pilar permanente − supressão)",
+      "campos": {},
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "196-deidades-enfraquecimento-e-morte"
+    },
+    {
+      "id": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.regra.01",
+      "caminho": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.regra",
+      "tipo": "regra",
+      "texto": "Explorar vulnerabilidade investigada suprime −1 no Pilar (−2 em objetivo maior preparado, máximo de 2 pontos suprimidos por Pilar). Perturbação de manifestação dura até o fim da cena; causas persistentes recuperam 1 ponto por cena restaurativa após resolver a causa (máx. 1 ponto por sessão para a deidade).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "196-deidades-enfraquecimento-e-morte"
+    },
+    {
+      "id": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.regra.02",
+      "caminho": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.regra",
+      "tipo": "regra",
+      "texto": "Crescimento e perda permanente: marcos duradouros concedem +1 Pilar permanente (máx. 1 por arco, respeitando os tetos 4/5); destruição irreversível de fonte definidora causa −1 Pilar permanente (máx. 1 por arco, piso 0).",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "196-deidades-enfraquecimento-e-morte"
+    },
+    {
+      "id": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.regra.03",
+      "caminho": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.regra",
+      "tipo": "regra",
+      "texto": "Derrota expulsa a manifestação pela cena sem destruir a essência. Selamento exige vulnerabilidade preparada e condição de manutenção. Morte verdadeira exige Apagamento (7 PD, exclusivo de Deus Maior contra categoria inferior) após alcançar a essência, cumprir vulnerabilidade de morte estabelecida e superar salvaguardas restaurativas.",
+      "formula": null,
+      "campos": {},
+      "tags": [
+        "deidades",
+        "combate"
+      ],
+      "ver_tambem": [],
+      "origem": "196-deidades-enfraquecimento-e-morte"
+    },
+    {
+      "id": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.tabela.01",
+      "caminho": "deidades_e_avatares.enfraquecimento_crescimento_e_morte_divina.tabela",
+      "tipo": "tabela",
+      "texto": "Alvos de vulnerabilidade por Pilar — Aspecto: manifestações/relíquias • Domínio: pactos/contradições • Santuário: profanação/ocupação territorial • Presença: Âncoras/vínculos/lembrança coletiva.",
+      "formula": null,
+      "campos": {
+        "entrada": "Fontes e vulnerabilidades dos Pilares",
+        "aspecto": "Manifestações, relíquias definidoras e amarras",
+        "dominio": "Autoridade conceitual, pactos e contradições",
+        "santuario": "Locais consagrados, ocupação e profanação",
+        "presenca": "Âncoras, Avatares, culto e lembrança coletiva"
+      },
+      "tags": [
+        "deidades",
+        "pilares_divinos"
+      ],
+      "ver_tambem": [],
+      "origem": "196-deidades-enfraquecimento-e-morte"
     }
   ]
 }

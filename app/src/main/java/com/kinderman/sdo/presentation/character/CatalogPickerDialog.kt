@@ -35,7 +35,9 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.LocalSdoPreferences
 import com.kinderman.sdo.ui.SdoVisualMode
+import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.TechCutDark
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 internal fun CatalogPickerDialog(
@@ -171,6 +173,7 @@ private fun CatalogKind.catalogLabel(): String = when (this) {
     CatalogKind.ASH -> "Cinza"
     CatalogKind.RUNE -> "Runa"
     CatalogKind.ITEM -> "Item"
+    CatalogKind.DEITY -> "Deidade"
     CatalogKind.ACQUIRED_KNOWLEDGE -> "Conhecimento adquirido"
     CatalogKind.ARCANE_KNOWLEDGE -> "Conhecimento arcano"
     CatalogKind.BATTLE_TECHNIQUE -> "Poder marcial"
@@ -261,4 +264,17 @@ private fun DetailLine(label: String, value: String) {
         return
     }
     Text("$label // $value", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+}
+
+@PreviewLightDark
+@Composable
+private fun CatalogPickerDialogPreview() {
+    SdoTheme {
+        CatalogPickerDialog(
+            title = "SELECIONAR CONHECIMENTO",
+            entries = emptyList(),
+            onDismiss = {},
+            onSelect = {},
+        )
+    }
 }

@@ -100,6 +100,11 @@ import com.kinderman.sdo.ui.Signal
 import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.ui.SdoActionButton
 import com.kinderman.sdo.ui.SdoActionStyle
+import com.kinderman.sdo.domain.model.DeityDetailView
+import com.kinderman.sdo.domain.policy.DeityAccessPolicy
+import com.kinderman.sdo.presentation.library.DeityDetailButton
+import com.kinderman.sdo.presentation.library.DeityDetailDialog
+import com.kinderman.sdo.ui.SdoCompactFilterBar
 import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
@@ -125,11 +130,12 @@ private enum class HistorianSection(val label: String) {
 private enum class LibrarySource(val label: String) { ALL("TUDO"), CAMPAIGN("MODELOS"), CATALOG("CATÁLOGO") }
 
 private enum class LibraryCategory(val label: String) {
-    ALL("TODAS"), ITEM("ITENS"), ABILITY("HABILIDADES"), CONDITION("CONDIÇÕES"), KNOWLEDGE("CONHECIMENTOS"), NOTE("NOTAS")
+    ALL("TODAS"), DEITY("DEIDADES"), ITEM("ITENS"), ABILITY("HABILIDADES"), CONDITION("CONDIÇÕES"), KNOWLEDGE("CONHECIMENTOS"), NOTE("NOTAS")
 }
 
 private fun LibraryCategory.matches(kind: CampaignContentKind): Boolean = when (this) {
     LibraryCategory.ALL -> true
+    LibraryCategory.DEITY -> false
     LibraryCategory.ITEM -> kind == CampaignContentKind.ITEM
     LibraryCategory.ABILITY -> kind == CampaignContentKind.POWER
     LibraryCategory.CONDITION -> kind == CampaignContentKind.CONDITION
@@ -139,6 +145,7 @@ private fun LibraryCategory.matches(kind: CampaignContentKind): Boolean = when (
 
 private fun LibraryCategory.matches(kind: CatalogKind): Boolean = when (this) {
     LibraryCategory.ALL -> true
+    LibraryCategory.DEITY -> kind == CatalogKind.DEITY
     LibraryCategory.ITEM -> kind == CatalogKind.ITEM
     LibraryCategory.ABILITY -> kind in setOf(CatalogKind.POWER, CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH, CatalogKind.BATTLE_TECHNIQUE)
     LibraryCategory.CONDITION, LibraryCategory.NOTE -> false
@@ -152,6 +159,7 @@ private fun CatalogKind.labelResource(): Int = when (this) {
     CatalogKind.ASH -> R.string.library_kind_ash
     CatalogKind.RUNE -> R.string.library_kind_rune
     CatalogKind.ITEM -> R.string.library_kind_item
+    CatalogKind.DEITY -> R.string.library_kind_deity
     CatalogKind.ACQUIRED_KNOWLEDGE -> R.string.library_kind_acquired_knowledge
     CatalogKind.ARCANE_KNOWLEDGE -> R.string.library_kind_arcane_knowledge
     CatalogKind.BATTLE_TECHNIQUE -> R.string.library_kind_battle_technique
@@ -200,13 +208,14 @@ fun HistorianDashboardScreen(
     onOpenSession: (String) -> Unit,
     onOpenSheet: (String) -> Unit,
     onBack: () -> Unit,
+    loadDeityDetail: suspend (String, String?) -> DeityDetailView? = { _, _ -> null },
 ) {
     BackHandler(onBack = onBack)
     var section by rememberSaveable { mutableStateOf(HistorianSection.OPERATION) }
     var search by rememberSaveable { mutableStateOf("") }
     var operationSearch by rememberSaveable { mutableStateOf("") }
     var operationFilter by rememberSaveable { mutableStateOf(OperationFilter.ALL) }
-    var showOperationFiltersDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedDeityId by rememberSaveable { mutableStateOf<String?>(null) }
     var singleStatTarget by remember { mutableStateOf<Pair<String, HistorianSingleStatField>?>(null) }
     var librarySource by rememberSaveable { mutableStateOf(LibrarySource.ALL) }
     var libraryCategory by rememberSaveable { mutableStateOf(LibraryCategory.ALL) }
@@ -366,25 +375,20 @@ fun HistorianDashboardScreen(
                             }
                             if (campaignCharacters.isNotEmpty()) {
                                 item("operation_filters:${campaign.id}") {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.Bottom,
+                                    HudTextField(
+                                        label = "Buscar personagem",
+                                        value = operationSearch,
+                                        onValue = { operationSearch = it },
+                                    )
+                                    SdoCompactFilterBar(
+                                        activeFilters = listOfNotNull(
+                                            operationFilter.takeUnless { it == OperationFilter.ALL }?.label,
+                                        ),
+                                        onClear = { operationFilter = OperationFilter.ALL },
+                                        modifier = Modifier.testTag("historian_filter_trigger"),
                                     ) {
-                                        HudTextField(
-                                            label = "Buscar personagem",
-                                            value = operationSearch,
-                                            modifier = Modifier.weight(1f),
-                                            onValue = { operationSearch = it },
-                                        )
-                                        com.kinderman.sdo.ui.SdoOutlinedButton(
-                                            onClick = { showOperationFiltersDialog = true },
-                                            modifier = Modifier.testTag("historian_filter_trigger"),
-                                        ) {
-                                            Text(
-                                                if (operationFilter == OperationFilter.ALL) "Filtros"
-                                                else "Filtros (1)",
-                                            )
+                                        SdoResponsiveGrid(OperationFilter.entries, minItemWidth = 120.dp) { filter, modifier ->
+                                            SdoFilterChip(filter.label, operationFilter == filter, { operationFilter = filter }, modifier)
                                         }
                                     }
                                 }
@@ -500,7 +504,12 @@ fun HistorianDashboardScreen(
                         }
                         if (librarySource != LibrarySource.CAMPAIGN) {
                             item { SectionHeader("02.B", "Catálogo local de referência") }
-                            items(filtered, key = { "catalog:${it.id}" }) { entry -> CatalogReferenceCard(entry) }
+                            items(filtered, key = { "catalog:${it.id}" }) { entry ->
+                                CatalogReferenceCard(entry)
+                                if (entry.kind == CatalogKind.DEITY) {
+                                    DeityDetailButton(onClick = { selectedDeityId = entry.id })
+                                }
+                            }
                         }
                         val visibleResultCount =
                             (if (librarySource == LibrarySource.CATALOG) 0 else filteredLibrary.size) +
@@ -576,27 +585,15 @@ fun HistorianDashboardScreen(
             },
         )
     }
-    if (showOperationFiltersDialog) {
-        AlertDialog(
-            onDismissRequest = { showOperationFiltersDialog = false },
-            title = { Text("FILTROS DO MODO MESTRE") },
-            text = {
-                SdoResponsiveGrid(OperationFilter.entries, minItemWidth = 120.dp) { filter, modifier ->
-                    SdoFilterChip(
-                        label = filter.label,
-                        selected = operationFilter == filter,
-                        onClick = { operationFilter = filter },
-                        modifier = modifier,
-                    )
-                }
-            },
-            confirmButton = {
-                SdoTextButton(onClick = { showOperationFiltersDialog = false }) { Text("APLICAR") }
-            },
-            dismissButton = {
-                SdoTextButton(onClick = { operationFilter = OperationFilter.ALL; showOperationFiltersDialog = false }) { Text("LIMPAR") }
-            },
+    selectedDeityId?.let { id ->
+        val canShowGm = DeityAccessPolicy.canReadGmContent(
+            session,
+            selectedCampaignId,
+            campaigns.associateBy(Campaign::id),
         )
+        DeityDetailDialog(id, selectedCampaignId, session, canShowGm, loadDeityDetail) {
+            selectedDeityId = null
+        }
     }
     singleStatTarget?.let { (characterId, statField) ->
         val character = selectedCharacters.firstOrNull { it.id == characterId }

@@ -1,5 +1,7 @@
 package com.kinderman.sdo.presentation.historian
 
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.kinderman.sdo.ui.SdoTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -444,4 +446,17 @@ private fun buildQuickActionCommands(
         )
     }
     target to command
+}
+
+@PreviewLightDark
+@Composable
+private fun QuickActionsDialogPreview() {
+    SdoTheme {
+        QuickActionsDialog(
+            character = Character(id = "char-1", name = "Kaelen Vance"),
+            campaignCharacters = emptyList(),
+            onDismiss = {},
+            onApply = {},
+        )
+    }
 }

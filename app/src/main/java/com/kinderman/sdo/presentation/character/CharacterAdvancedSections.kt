@@ -1,5 +1,14 @@
 package com.kinderman.sdo.presentation.character
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.heightIn
+import com.kinderman.sdo.domain.model.withKind
+import com.kinderman.sdo.R
+import com.kinderman.sdo.ui.SdoSwitch
+
+
 import androidx.compose.foundation.background
 import com.kinderman.sdo.ui.sdoClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,8 +39,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kinderman.sdo.domain.model.Character
-import com.kinderman.sdo.domain.model.addInventoryItem
-import com.kinderman.sdo.domain.model.withAddedAsh
 import com.kinderman.sdo.domain.catalog.toMysticAbility
 import com.kinderman.sdo.domain.model.CatalogEntry
 import com.kinderman.sdo.domain.model.CatalogKind
@@ -123,15 +130,12 @@ internal fun PathSection(character: Character, catalog: List<CatalogEntry>, enab
 
 @Composable
 internal fun InventorySection(character: Character, catalog: List<CatalogEntry>, enabled: Boolean, onChange: (Character) -> Unit) {
-    var dialog by remember { mutableStateOf<String?>(null) }
+    var showGlossary by rememberSaveable(character.id) { mutableStateOf(false) }
     val spentHeritage = character.inventory.sumOf { it.initialCreationCost() }
     val hasInitialShopping = character.inventory.any { it.participatesInInitialCreation() }
     val remainingHeritage = when {
         hasInitialShopping || character.inventory.isEmpty() -> (ItemCreationRules.HERITAGE_BUDGET - spentHeritage).coerceAtLeast(0)
         else -> 0 // Personagens anteriores ao fluxo de PH permanecem válidos.
-    }
-    LaunchedEffect(remainingHeritage) {
-        if (remainingHeritage > 0 && dialog == null) dialog = "initial"
     }
     TechPanel {
         SectionHeader("10", "Inventário")
@@ -147,51 +151,16 @@ internal fun InventorySection(character: Character, catalog: List<CatalogEntry>,
                 onValue = { onChange(character.copy(inventory = character.inventory.replace(index, it))) },
             )
         }
-        AddButton("Glossário de itens e materiais", true) { dialog = "glossary" }
-        if (remainingHeritage > 0) {
-            AddButton("Equipamentos iniciais // escolher ou construir", enabled) { dialog = "initial" }
-        }
-        if (remainingHeritage == 0) {
-            AddButton("Catálogo de itens // fora da criação", enabled && catalog.isNotEmpty()) { dialog = "catalog" }
-            AddButton("Construtor de item // criação durante o jogo", enabled) { dialog = "builder" }
-            AddButton("Adicionar objeto narrativo sem valores mecânicos", enabled) { onChange(character.addInventoryItem(InventoryItem())) }
-        }
-    }
-    when (dialog) {
-        "glossary" -> EquipmentGlossaryDialog { dialog = null }
-        "initial", "initial_catalog", "initial_builder" -> InventoryItemModal(
-            mode = ItemModalMode.Creation(remainingHeritage),
-            itemCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ITEM },
-            ashCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ASH },
-            regionOptions = character.bodyRegions.map { it.name },
-            initialTab = if (dialog == "initial_builder") ItemModalTab.BUILDER else ItemModalTab.CATALOG,
-            onDismiss = { dialog = null },
-            onAddItem = { item ->
-                onChange(character.addInventoryItem(item))
-                dialog = null
-            },
-            onAddAsh = { entry, doses ->
-                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, initialCreation = true))
-                dialog = null
-            },
-        )
-        "catalog", "builder" -> InventoryItemModal(
-            mode = ItemModalMode.Sheet,
-            itemCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ITEM },
-            ashCatalog = catalog.filter { it.kind == com.kinderman.sdo.domain.model.CatalogKind.ASH },
-            regionOptions = character.bodyRegions.map { it.name },
-            initialTab = if (dialog == "builder") ItemModalTab.BUILDER else ItemModalTab.CATALOG,
-            onDismiss = { dialog = null },
-            onAddItem = { item ->
-                onChange(character.addInventoryItem(item))
-                dialog = null
-            },
-            onAddAsh = { entry, doses ->
-                onChange(character.withAddedAsh(entry.toMysticAbility(), doses, initialCreation = false))
-                dialog = null
-            },
+        AddButton("Glossário de itens e materiais", true) { showGlossary = true }
+        InventoryAcquisitionActions(
+            character = character,
+            catalog = catalog,
+            mode = if (remainingHeritage > 0) ItemModalMode.Creation(remainingHeritage) else ItemModalMode.Sheet,
+            enabled = enabled,
+            onChange = onChange,
         )
     }
+    if (showGlossary) EquipmentGlossaryDialog(onDismiss = { showGlossary = false })
 }
 
 @Composable
@@ -647,23 +616,34 @@ private fun ConditionEditor(
             TwoFields(
                 { IntegerField("Intensidade", condition.intensity ?: 0, enabled, it) { value -> onValue(condition.copy(payload = condition.payload.copy(intensity = value.takeIf { it > 0 })), draftDescription) } },
                 { ChoiceField("Duração", selectedDuration, DurationKind.entries, enabled, it, display = { value -> value.label }) { value ->
-                    val duration = when (value) {
-                        DurationKind.Instant, DurationKind.Scene, DurationKind.Session -> Duration(value)
-                        DurationKind.Turns -> Duration(value, turns = condition.duration?.turns ?: 1)
-                        DurationKind.Timed -> Duration(value, timed = condition.duration?.timed ?: TimedDuration(1, DurationTimeUnit.Hours))
-                    }
+                    val duration = condition.duration.withKind(value)
                     onValue(condition.copy(payload = condition.payload.copy(duration = duration)), draftDescription)
                 } },
             )
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics(mergeDescendants = true) {}
+                    .testTag("condition_channeling_" + condition.instanceId.value),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.sustained_channeling_label), Modifier.weight(1f))
+                SdoSwitch(
+                    checked = condition.duration?.requiresChanneling == true,
+                    enabled = enabled,
+                    onCheckedChange = { required ->
+                        val duration = (condition.duration ?: Duration(DurationKind.Scene)).copy(requiresChanneling = required)
+                        onValue(condition.copy(payload = condition.payload.copy(duration = duration)), draftDescription)
+                    },
+                )
+            }
             if (selectedDuration == DurationKind.Turns) IntegerField("Quantidade de turnos", condition.duration?.turns ?: 1, enabled) { value ->
-                onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Turns, turns = value.coerceAtLeast(1)))), draftDescription)
+                onValue(condition.copy(payload = condition.payload.copy(duration = condition.duration.withKind(DurationKind.Turns).copy(turns = value.coerceAtLeast(1)))), draftDescription)
             }
             if (selectedDuration == DurationKind.Timed) TwoFields(
                 { IntegerField("Tempo", condition.duration?.timed?.amount ?: 1, enabled, it) { value ->
-                    onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), draftDescription)
+                    onValue(condition.copy(payload = condition.payload.copy(duration = condition.duration.withKind(DurationKind.Timed).copy(timed = TimedDuration(value.coerceAtLeast(1), condition.duration?.timed?.unit ?: DurationTimeUnit.Hours)))), draftDescription)
                 } },
                 { ChoiceField("Unidade", condition.duration?.timed?.unit ?: DurationTimeUnit.Hours, DurationTimeUnit.entries, enabled, it, display = { unit -> unit.label }) { unit ->
-                    onValue(condition.copy(payload = condition.payload.copy(duration = Duration(DurationKind.Timed, timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), draftDescription)
+                    onValue(condition.copy(payload = condition.payload.copy(duration = condition.duration.withKind(DurationKind.Timed).copy(timed = TimedDuration(condition.duration?.timed?.amount ?: 1, unit)))), draftDescription)
                 } },
             )
             SheetTextField("Descrição", draftDescription, multiline = true, enabled = enabled, fieldKey = "conditions/${condition.instanceId.value}/description") {

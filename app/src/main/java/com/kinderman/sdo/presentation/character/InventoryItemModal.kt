@@ -1,5 +1,6 @@
 package com.kinderman.sdo.presentation.character
 
+import android.os.Bundle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +27,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -33,9 +37,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.kinderman.sdo.R
+import com.kinderman.sdo.domain.catalog.toMysticAbility
+import com.kinderman.sdo.domain.model.CanonicalItemCategory
+import com.kinderman.sdo.domain.model.Character
+import com.kinderman.sdo.domain.model.addCatalogInventoryItems
+import com.kinderman.sdo.domain.model.addInventoryItem
+import com.kinderman.sdo.domain.model.initialCreationCost
+import com.kinderman.sdo.domain.model.resolvedItemCategory
+import com.kinderman.sdo.domain.model.withAddedAsh
 import com.kinderman.sdo.domain.catalog.ItemCreationRules
 import com.kinderman.sdo.domain.catalog.enhancementInventoryItem
 import com.kinderman.sdo.domain.catalog.toInventoryItem
@@ -56,10 +74,13 @@ import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.SdoActionButton
 import com.kinderman.sdo.ui.SdoActionStyle
 import com.kinderman.sdo.ui.SdoCardTitle
+import com.kinderman.sdo.ui.SdoCompactFilterBar
 import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.SdoTextButton
+import com.kinderman.sdo.ui.SdoTheme
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.kinderman.sdo.ui.sdoClickable
 import kotlin.math.ceil
 
@@ -74,43 +95,86 @@ internal sealed interface ItemModalMode {
         get() = this is Creation
 }
 
-internal enum class ItemModalTab(val label: String) {
-    CATALOG("Catálogo"),
-    BUILDER("Construtor"),
-    ENHANCEMENTS("Aprimoramentos"),
-    ASH("Cinzas"),
+
+private enum class ItemModalTab(val labelRes: Int) {
+    CATALOG(R.string.inventory_select_catalog),
+    BUILDER(R.string.inventory_create_custom),
+    ENHANCEMENTS(R.string.inventory_add_enhancement),
+    ASH(R.string.inventory_add_ash),
 }
 
-private enum class CatalogSort(val label: String) {
-    NAME("A–Z"),
-    COST_ASC("Menor PH"),
-    COST_DESC("Maior PH"),
-    LOAD_ASC("Menor carga"),
+private enum class CatalogSort(val labelRes: Int) {
+    NAME(R.string.inventory_sort_name),
+    COST_ASC(R.string.inventory_sort_cost_asc),
+    COST_DESC(R.string.inventory_sort_cost_desc),
+    LOAD_ASC(R.string.inventory_sort_load),
 }
 
 @Composable
-internal fun InventoryItemModal(
+internal fun InventoryAcquisitionActions(
+    character: Character,
+    catalog: List<CatalogEntry>,
     mode: ItemModalMode,
+    enabled: Boolean,
+    onChange: (Character) -> Unit,
+) {
+    var activeTab by rememberSaveable(character.id, mode.isCreation) {
+        mutableStateOf<ItemModalTab?>(null)
+    }
+    val itemCatalog = remember(catalog) { catalog.filter { it.kind == CatalogKind.ITEM } }
+    val ashCatalog = remember(catalog) { catalog.filter { it.kind == CatalogKind.ASH } }
+    ItemModalTab.entries.forEach { tab ->
+        if (tab != ItemModalTab.ASH || ashCatalog.isNotEmpty()) {
+            SdoActionButton(
+                label = stringResource(tab.labelRes),
+                onClick = { activeTab = tab },
+                enabled = enabled && (tab != ItemModalTab.CATALOG || itemCatalog.isNotEmpty()),
+                modifier = Modifier.fillMaxWidth().testTag("inventory_open_" + tab.name.lowercase()),
+                style = SdoActionStyle.SECONDARY,
+            )
+        }
+    }
+    val tab = activeTab ?: return
+    InventoryItemModal(
+        mode = mode,
+        tab = tab,
+        itemCatalog = itemCatalog,
+        ashCatalog = ashCatalog,
+        regionOptions = character.bodyRegions.map { it.name },
+        itemCreationDraft = character.itemCreationDraft,
+        onDraftChange = { onChange(character.copy(itemCreationDraft = it)) },
+        onDismiss = { activeTab = null },
+        onAddCatalogItems = { items ->
+            onChange(character.addCatalogInventoryItems(items))
+            activeTab = null
+        },
+        onAddItem = { item ->
+            val updated = character.addInventoryItem(item)
+            onChange(if (tab == ItemModalTab.BUILDER) updated.copy(itemCreationDraft = null) else updated)
+            activeTab = null
+        },
+        onAddAsh = { entry, doses ->
+            onChange(character.withAddedAsh(entry.toMysticAbility(), doses, mode.isCreation))
+            activeTab = null
+        },
+    )
+}
+
+@Composable
+private fun InventoryItemModal(
+    mode: ItemModalMode,
+    tab: ItemModalTab,
     itemCatalog: List<CatalogEntry>,
     ashCatalog: List<CatalogEntry>,
     regionOptions: List<String>,
-    initialTab: ItemModalTab = if (itemCatalog.isNotEmpty()) ItemModalTab.CATALOG else ItemModalTab.BUILDER,
+    itemCreationDraft: ItemCreationDraft?,
+    onDraftChange: (ItemCreationDraft) -> Unit,
     onDismiss: () -> Unit,
+    onAddCatalogItems: (List<InventoryItem>) -> Unit,
     onAddItem: (InventoryItem) -> Unit,
     onAddAsh: (entry: CatalogEntry, doses: Int) -> Unit,
 ) {
-    val availableTabs = remember(itemCatalog.isNotEmpty(), ashCatalog.isNotEmpty()) {
-        buildList {
-            if (itemCatalog.isNotEmpty()) add(ItemModalTab.CATALOG)
-            add(ItemModalTab.BUILDER)
-            add(ItemModalTab.ENHANCEMENTS)
-            if (ashCatalog.isNotEmpty()) add(ItemModalTab.ASH)
-        }
-    }
-    var activeTab by remember(initialTab, availableTabs) {
-        mutableStateOf(if (initialTab in availableTabs) initialTab else availableTabs.first())
-    }
-    var previewCost by remember(activeTab) { mutableStateOf<Int?>(null) }
+    var previewCost by remember(tab) { mutableStateOf<Int?>(null) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -131,24 +195,24 @@ internal fun InventoryItemModal(
                 ModalHeader(
                     mode = mode,
                     previewCost = previewCost,
-                    availableTabs = availableTabs,
-                    activeTab = activeTab,
-                    onSelectTab = { activeTab = it },
+                    tab = tab,
                     onDismiss = onDismiss,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Box(Modifier.weight(1f).fillMaxWidth()) {
-                    when (activeTab) {
+                    when (tab) {
                         ItemModalTab.CATALOG -> CatalogTabContent(
                             mode = mode,
                             entries = itemCatalog,
                             onPreviewCostChange = { previewCost = it },
                             onDismiss = onDismiss,
-                            onSelect = onAddItem,
+                            onSelect = onAddCatalogItems,
                         )
                         ItemModalTab.BUILDER -> BuilderTabContent(
                             mode = mode,
                             regionOptions = regionOptions,
+                            itemCreationDraft = itemCreationDraft,
+                            onDraftChange = onDraftChange,
                             onPreviewCostChange = { previewCost = it },
                             onDismiss = onDismiss,
                             onAdd = onAddItem,
@@ -177,9 +241,7 @@ internal fun InventoryItemModal(
 private fun ModalHeader(
     mode: ItemModalMode,
     previewCost: Int?,
-    availableTabs: List<ItemModalTab>,
-    activeTab: ItemModalTab,
-    onSelectTab: (ItemModalTab) -> Unit,
+    tab: ItemModalTab,
     onDismiss: () -> Unit,
 ) {
     Column(
@@ -194,12 +256,12 @@ private fun ModalHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (mode.isCreation) "EQUIPAMENTOS INICIAIS" else "ADICIONAR ITEM",
+                text = stringResource(tab.labelRes),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
             )
-            SdoTextButton(onClick = onDismiss) { Text("FECHAR") }
+            SdoTextButton(onClick = onDismiss) { Text(stringResource(R.string.inventory_close)) }
         }
         mode.remainingHeritageOrNull?.let { remaining ->
             val spent = (ItemCreationRules.HERITAGE_BUDGET - remaining).coerceAtLeast(0)
@@ -207,9 +269,20 @@ private fun ModalHeader(
             val afterPreview = remaining - preview
             val overBudget = previewCost != null && afterPreview < 0
             val budgetText = if (previewCost != null) {
-                "HERANÇA // $spent + $preview PREVIEW = ${spent + preview}/${ItemCreationRules.HERITAGE_BUDGET} PH • $afterPreview RESTANTES"
+                stringResource(
+                    R.string.inventory_heritage_preview,
+                    spent,
+                    preview,
+                    ItemCreationRules.HERITAGE_BUDGET,
+                    afterPreview,
+                )
             } else {
-                "HERANÇA // $spent / ${ItemCreationRules.HERITAGE_BUDGET} PH GASTOS • $remaining RESTANTES"
+                stringResource(
+                    R.string.inventory_heritage_remaining,
+                    spent,
+                    ItemCreationRules.HERITAGE_BUDGET,
+                    remaining,
+                )
             }
             SdoMetadataText(
                 text = budgetText,
@@ -222,20 +295,6 @@ private fun ModalHeader(
                 color = if (overBudget) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             )
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            availableTabs.forEach { tab ->
-                SdoFilterChip(
-                    label = tab.label,
-                    selected = activeTab == tab,
-                    onClick = { onSelectTab(tab) },
-                )
-            }
-        }
     }
 }
 
@@ -245,238 +304,228 @@ private fun CatalogTabContent(
     entries: List<CatalogEntry>,
     onPreviewCostChange: (Int?) -> Unit,
     onDismiss: () -> Unit,
-    onSelect: (InventoryItem) -> Unit,
+    onSelect: (List<InventoryItem>) -> Unit,
 ) {
     val remainingHeritage = mode.remainingHeritageOrNull
     var query by rememberSaveable { mutableStateOf("") }
     var category by rememberSaveable { mutableStateOf("") }
-    var onlyAffordable by rememberSaveable { mutableStateOf(remainingHeritage != null) }
-    var sort by remember { mutableStateOf(if (remainingHeritage != null) CatalogSort.COST_ASC else CatalogSort.NAME) }
-    var selectedEntryId by rememberSaveable { mutableStateOf<String?>(null) }
-    var toolName by rememberSaveable { mutableStateOf("") }
-
-    val itemEntries = remember(entries, remainingHeritage) {
-        entries.filter { entry ->
-            entry.kind == CatalogKind.ITEM &&
-                (remainingHeritage == null || entry.creationCost.toIntOrNull() != null)
-        }
+    var onlyAffordable by rememberSaveable { mutableStateOf(mode.isCreation) }
+    val defaultSort = if (mode.isCreation) CatalogSort.COST_ASC else CatalogSort.NAME
+    var sort by rememberSaveable { mutableStateOf(defaultSort) }
+    var selectedIds by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
+    var toolNames by rememberSaveable { mutableStateOf(Bundle()) }
+    var reviewing by rememberSaveable { mutableStateOf(false) }
+    val itemEntries = remember(entries, mode.isCreation) {
+        entries.filter { !mode.isCreation || it.creationCost.toIntOrNull() != null }
+            .distinctBy(CatalogEntry::id)
     }
-    val categories = remember(itemEntries) {
-        itemEntries.map(CatalogEntry::group).filter(String::isNotBlank).distinct().sorted()
+    val resolvedCategories = remember(itemEntries) {
+        itemEntries.associate { it.id to it.resolvedItemCategory() }
     }
-    val sortOptions = remember(remainingHeritage) {
-        if (remainingHeritage != null) {
-            listOf(CatalogSort.COST_ASC, CatalogSort.COST_DESC, CatalogSort.NAME)
-        } else {
-            listOf(CatalogSort.NAME, CatalogSort.LOAD_ASC)
-        }
+    val categories = remember(resolvedCategories) {
+        resolvedCategories.values.sortedBy { it.displayLabel }.associate { it.filterKey to it.displayLabel }
+    }
+    val costs = remember(itemEntries, mode.isCreation) {
+        if (mode.isCreation) itemEntries.associate { it.id to it.toInventoryItem(true).initialCreationCost() }
+        else emptyMap()
+    }
+    val sortOptions = if (mode.isCreation) {
+        listOf(CatalogSort.COST_ASC, CatalogSort.COST_DESC, CatalogSort.NAME)
+    } else {
+        listOf(CatalogSort.NAME, CatalogSort.LOAD_ASC)
     }
     val filtered = remember(itemEntries, query, category, onlyAffordable, remainingHeritage, sort) {
         val needle = query.trim()
         val matched = itemEntries.filter { entry ->
-            val numericCost = entry.creationCost.toIntOrNull()?.coerceAtLeast(1)
-            (category.isBlank() || entry.group.equals(category, ignoreCase = true)) &&
-                (!onlyAffordable || remainingHeritage == null || (numericCost != null && numericCost <= remainingHeritage)) &&
-                (needle.isEmpty() ||
-                    entry.name.contains(needle, true) ||
-                    entry.group.contains(needle, true) ||
-                    entry.summary.contains(needle, true))
+            val resolved = resolvedCategories.getValue(entry.id)
+            (category !in categories || resolved.filterKey == category) &&
+                (!onlyAffordable || remainingHeritage == null || costs.getValue(entry.id) <= remainingHeritage) &&
+                (entry.searchableText().contains(needle, true) || resolved.displayLabel.contains(needle, true))
         }
         when (sort) {
             CatalogSort.NAME -> matched.sortedBy { it.name.lowercase() }
-            CatalogSort.COST_ASC -> matched.sortedWith(compareBy<CatalogEntry>({ it.creationCost.toIntOrNull()?.coerceAtLeast(1) ?: Int.MAX_VALUE }, { it.name.lowercase() }))
-            CatalogSort.COST_DESC -> matched.sortedWith(compareByDescending<CatalogEntry> { it.creationCost.toIntOrNull()?.coerceAtLeast(1) ?: 0 }.thenBy { it.name.lowercase() })
-            CatalogSort.LOAD_ASC -> matched.sortedWith(compareBy<CatalogEntry>({ it.load }, { it.name.lowercase() }))
-        }
-    }
-    val selectedEntry = remember(itemEntries, selectedEntryId) {
-        itemEntries.firstOrNull { it.id == selectedEntryId }
-    }
-    val selectedCost = selectedEntry?.creationCost?.toIntOrNull()?.coerceAtLeast(1)
-    val selectedAllowed = selectedEntry != null && (remainingHeritage == null || (selectedCost != null && selectedCost <= remainingHeritage))
-    val requiresToolName = selectedEntry?.group?.equals("Ferramenta", ignoreCase = true) == true
-    val canConfirm = selectedAllowed && (!requiresToolName || toolName.isNotBlank())
-
-    onPreviewCostChange(if (remainingHeritage != null) selectedCost else null)
-
-    Column(Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            HudTextField("Buscar por nome, categoria ou efeito", query) { query = it }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                SdoFilterChip(
-                    label = "Todas",
-                    selected = category.isBlank(),
-                    onClick = { category = "" },
-                )
-                categories.forEach { cat ->
-                    SdoFilterChip(
-                        label = cat,
-                        selected = category.equals(cat, ignoreCase = true),
-                        onClick = { category = if (category.equals(cat, ignoreCase = true)) "" else cat },
-                    )
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                if (remainingHeritage != null) {
-                    SdoFilterChip(
-                        label = "Cabe nos PH",
-                        selected = onlyAffordable,
-                        onClick = { onlyAffordable = !onlyAffordable },
-                    )
-                }
-                sortOptions.forEach { option ->
-                    SdoFilterChip(
-                        label = option.label,
-                        selected = sort == option,
-                        onClick = { sort = option },
-                    )
-                }
-            }
-            SdoMetadataText(
-                text = "RESULTADOS // ${filtered.size} ITENS",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
+            CatalogSort.COST_ASC -> matched.sortedWith(
+                compareBy<CatalogEntry> { costs.getValue(it.id) }.thenBy { it.name.lowercase() },
+            )
+            CatalogSort.COST_DESC -> matched.sortedWith(
+                compareByDescending<CatalogEntry> { costs.getValue(it.id) }.thenBy { it.name.lowercase() },
+            )
+            CatalogSort.LOAD_ASC -> matched.sortedWith(
+                compareBy(CatalogEntry::load, { it.name.lowercase() }),
             )
         }
+    }
+    val selectedEntries = remember(itemEntries, selectedIds) {
+        val entriesById = itemEntries.associateBy(CatalogEntry::id)
+        selectedIds.mapNotNull(entriesById::get)
+    }
+    val selectedCost = selectedEntries.sumOf { costs[it.id] ?: 0 }
+    val overBudget = remainingHeritage != null && selectedCost > remainingHeritage
+    val missingToolName = selectedEntries.any {
+        resolvedCategories.getValue(it.id).canonical == CanonicalItemCategory.TOOL &&
+            toolNames.getString(it.id).isNullOrBlank()
+    }
+    SideEffect {
+        onPreviewCostChange(selectedCost.takeIf { mode.isCreation && selectedEntries.isNotEmpty() })
+    }
+    val selectionLabel = pluralStringResource(
+        R.plurals.inventory_selected_count,
+        selectedEntries.size,
+        selectedEntries.size,
+    )
+    val affordableLabel = stringResource(R.string.inventory_affordable)
+    val categoryLabel = categories[category]
+    val sortLabels = sortOptions.associateWith { stringResource(it.labelRes) }
+    val sortLabel = sortLabels.getValue(sort)
 
+    val catalogListState = rememberLazyListState()
+    val reviewListState = rememberLazyListState()
+    Column(Modifier.fillMaxSize().testTag("inventory_catalog_picker")) {
+        SdoTextButton(
+            onClick = { reviewing = !reviewing },
+            enabled = reviewing || selectedEntries.isNotEmpty(),
+            modifier = Modifier.fillMaxWidth().testTag("inventory_review_selection"),
+        ) {
+            Text(if (reviewing) stringResource(R.string.inventory_back_to_catalog) else selectionLabel)
+        }
         LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            state = if (reviewing) reviewListState else catalogListState,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (filtered.isEmpty()) {
-                item(key = "catalog-empty") {
-                    SdoInsetCard(contentPadding = 14.dp, verticalSpacing = 8.dp) {
-                        Text(
-                            text = "Nenhum item encontrado para os filtros aplicados.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        SdoActionButton(
-                            label = "Limpar filtros",
-                            onClick = {
-                                query = ""
-                                category = ""
-                                onlyAffordable = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            style = SdoActionStyle.SECONDARY,
-                        )
-                    }
-                }
-            } else {
-                itemsIndexed(filtered, key = { index, entry -> "${entry.kind}:${entry.id}:$index" }) { _, entry ->
-                    val numericCost = entry.creationCost.toIntOrNull()?.coerceAtLeast(1)
-                    val allowed = remainingHeritage == null || (numericCost != null && numericCost <= remainingHeritage)
-                    val isSelected = selectedEntryId == entry.id
-                    SelectableModalCard(
-                        selected = isSelected,
-                        enabled = true,
-                        onClick = {
-                            if (isSelected) {
-                                selectedEntryId = null
-                            } else {
-                                selectedEntryId = entry.id
-                                toolName = ""
-                            }
+            if (!reviewing) {
+                item(key = "catalog-filters") {
+                    SdoCompactFilterBar(
+                        activeFilters = listOfNotNull(
+                            query.trim().takeIf(String::isNotEmpty),
+                            categoryLabel,
+                            affordableLabel.takeIf { onlyAffordable },
+                            sortLabel.takeIf { sort != defaultSort },
+                        ),
+                        onClear = {
+                            query = ""
+                            category = ""
+                            onlyAffordable = false
+                            sort = defaultSort
                         },
+                        modifier = Modifier.testTag("inventory_catalog_filters"),
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = entry.name,
-                                color = if (allowed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.weight(1f),
-                            )
-                            if (remainingHeritage != null) {
-                                SdoMetadataText(
-                                    text = if (allowed) "${numericCost ?: "—"} PH" else "ACIMA (${numericCost ?: "#"} PH)",
-                                    color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                            }
-                        }
-                        SdoMetadataText(
-                            text = buildList {
-                                add(entry.group)
-                                add("CARGA ${entry.load}")
-                                if (entry.durability.isNotBlank()) add("DUR ${entry.durability}")
-                                if (entry.region.isNotBlank()) add(entry.region)
-                            }.filter(String::isNotBlank).joinToString(" // "),
-                            color = if (allowed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                        if (entry.summary.isNotBlank()) {
-                            Text(
-                                text = entry.summary,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                        if (isSelected && entry.mechanicalEffect.isNotBlank() && entry.mechanicalEffect != entry.summary) {
-                            Text(
-                                text = entry.mechanicalEffect,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                        if (isSelected && entry.group.equals("Ferramenta", ignoreCase = true)) {
-                            HudTextField("Nome ou ofício (obrigatório)", toolName) { toolName = it }
-                            Text(
-                                text = "Ex.: Relojoeiro — será salva como ${entry.name} — Relojoeiro.",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
+                        HudTextField(stringResource(R.string.inventory_catalog_search), query) { query = it }
+                        InventoryCategoryFilter(categories, category) { category = it }
+                        ChoiceField(
+                            stringResource(R.string.inventory_sort),
+                            sort,
+                            sortOptions,
+                            true,
+                            modifier = Modifier.testTag("inventory_catalog_sort"),
+                            display = sortLabels::getValue,
+                        ) { sort = it }
+                        if (mode.isCreation) {
+                            SdoFilterChip(
+                                label = affordableLabel,
+                                selected = onlyAffordable,
+                                onClick = { onlyAffordable = !onlyAffordable },
                             )
                         }
                     }
                 }
             }
+            val displayed = if (reviewing) selectedEntries else filtered
+            if (displayed.isEmpty()) {
+                item(key = "catalog-empty") {
+                    Text(
+                        stringResource(
+                            if (reviewing) R.string.inventory_selection_empty else R.string.inventory_no_results,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            items(displayed, key = { "catalog:" + it.id }) { entry ->
+                val resolved = resolvedCategories.getValue(entry.id)
+                val selected = entry.id in selectedIds
+                val numericCost = costs[entry.id]
+                SelectableModalCard(
+                    selected = selected,
+                    modifier = Modifier.testTag("inventory_catalog_entry_" + entry.id),
+                    onClick = {
+                        selectedIds = ArrayList(
+                            if (selected) selectedIds - entry.id else selectedIds + entry.id,
+                        )
+                        if (selected) toolNames = android.os.Bundle(toolNames).apply { remove(entry.id) }
+                    },
+                ) {
+                    Text(entry.name, style = MaterialTheme.typography.titleSmall)
+                    if (selected) Text(stringResource(R.string.inventory_entry_selected), style = MaterialTheme.typography.labelSmall)
+                    val loadLabel = stringResource(R.string.inventory_load, entry.load)
+                    val costLabel = numericCost?.let { stringResource(R.string.inventory_heritage_cost, it) }
+                    SdoMetadataText(
+                        listOfNotNull(
+                            resolved.displayLabel,
+                            loadLabel,
+                            costLabel,
+                            entry.durability.takeIf(String::isNotBlank)
+                                ?.let { stringResource(R.string.inventory_durability, it) },
+                            entry.region.takeIf(String::isNotBlank),
+                        ).joinToString(" // "),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    if (entry.summary.isNotBlank()) {
+                        Text(entry.summary, style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (selected && entry.mechanicalEffect.isNotBlank() && entry.mechanicalEffect != entry.summary) {
+                        Text(entry.mechanicalEffect, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+                if (selected && resolved.canonical == CanonicalItemCategory.TOOL) {
+                    HudTextField(
+                        stringResource(R.string.inventory_tool_name),
+                        toolNames.getString(entry.id).orEmpty(),
+                    ) { name ->
+                        toolNames = android.os.Bundle(toolNames).apply { putString(entry.id, name) }
+                    }
+                }
+            }
         }
-
         ModalBottomActions(
-            secondaryLabel = "Cancelar",
+            secondaryLabel = stringResource(R.string.inventory_cancel),
             onSecondary = onDismiss,
             primaryLabel = when {
-                selectedEntry == null -> "Selecione um item"
-                !selectedAllowed -> "Saldo PH insuficiente"
-                requiresToolName && toolName.isBlank() -> "Informe o ofício"
-                remainingHeritage != null && selectedCost != null -> "Adicionar • $selectedCost PH"
-                else -> "Adicionar item"
+                overBudget -> stringResource(R.string.inventory_over_budget)
+                missingToolName -> stringResource(R.string.inventory_missing_tool_name)
+                else -> stringResource(R.string.inventory_confirm_selection)
             },
-            primaryEnabled = canConfirm,
+            primaryEnabled = selectedEntries.isNotEmpty() && !overBudget && !missingToolName,
             onPrimary = {
-                val entry = selectedEntry ?: return@ModalBottomActions
-                val baseItem = entry.toInventoryItem(initialCreation = remainingHeritage != null)
-                val finalItem = if (requiresToolName) {
-                    baseItem.copy(name = "${entry.name} — ${toolName.trim()}")
-                } else {
-                    baseItem
-                }
-                onSelect(finalItem)
+                onSelect(selectedEntries.map { entry ->
+                    val item = entry.toInventoryItem(initialCreation = mode.isCreation)
+                    val toolName = toolNames.getString(entry.id)?.trim()
+                    if (toolName.isNullOrEmpty()) item else item.copy(name = entry.name + " — " + toolName)
+                })
             },
         )
     }
+}
+
+@Composable
+internal fun InventoryCategoryFilter(
+    categories: Map<String, String>,
+    selectedKey: String,
+    onSelect: (String) -> Unit,
+) {
+    if (categories.isEmpty()) return
+    val allCategories = stringResource(R.string.inventory_all_categories)
+    ChoiceField(
+        stringResource(R.string.inventory_category),
+        selectedKey.takeIf(categories::containsKey).orEmpty(),
+        listOf("") + categories.keys,
+        true,
+        modifier = Modifier.testTag("inventory_category_filter"),
+        display = { categories[it] ?: allCategories },
+        onValue = onSelect,
+    )
 }
 
 private enum class BuilderKind(val label: String, val draftCategory: String) {
@@ -500,6 +549,8 @@ private enum class BuilderStep(val label: String) {
 private fun BuilderTabContent(
     mode: ItemModalMode,
     regionOptions: List<String>,
+    itemCreationDraft: ItemCreationDraft?,
+    onDraftChange: (ItemCreationDraft) -> Unit,
     onPreviewCostChange: (Int?) -> Unit,
     onDismiss: () -> Unit,
     onAdd: (InventoryItem) -> Unit,
@@ -513,15 +564,33 @@ private fun BuilderTabContent(
             BuilderKind.entries
         }
     }
-    var kind by remember { mutableStateOf(BuilderKind.WEAPON) }
-    var stepIndex by rememberSaveable { mutableIntStateOf(0) }
-    var draft by remember { mutableStateOf(ItemCreationDraft(category = BuilderKind.WEAPON.draftCategory)) }
+    var draft by remember { mutableStateOf(itemCreationDraft ?: ItemCreationDraft()) }
+    val kind = availableKinds.firstOrNull { it.draftCategory == draft.category } ?: BuilderKind.WEAPON
+    val stepIndex = (draft.step - 1).coerceIn(0, BuilderStep.entries.lastIndex)
     var searchQuery by remember(kind, stepIndex) { mutableStateOf("") }
-    var narrativeName by rememberSaveable { mutableStateOf("") }
-    var narrativeDescription by rememberSaveable { mutableStateOf("") }
+
+    fun updateDraft(next: ItemCreationDraft) {
+        draft = next
+        onDraftChange(next)
+    }
+
+    fun selectKind(selected: BuilderKind) {
+        if (selected == kind) return
+        updateDraft(
+            draft.copy(
+                category = selected.draftCategory,
+                step = 1,
+                baseId = "",
+                materialId = "",
+                secondaryMaterialId = "",
+                modificationIds = emptyList(),
+                enhancementIds = emptyList(),
+            ),
+        )
+    }
 
     if (kind == BuilderKind.NARRATIVE) {
-        onPreviewCostChange(null)
+        SideEffect { onPreviewCostChange(null) }
         Column(Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
@@ -531,18 +600,15 @@ private fun BuilderTabContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                BuilderKindSelector(availableKinds, kind) { selected ->
-                    kind = selected
-                    stepIndex = 0
-                }
+                BuilderKindSelector(availableKinds, kind, ::selectKind)
                 Text(
                     text = "Crie um objeto narrativo sem valores mecânicos fixos. Você poderá editá-lo depois no inventário.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
-                HudTextField("Nome do item", narrativeName) { narrativeName = it }
-                HudTextField("Descrição ou uso narrativo (opcional)", narrativeDescription, multiline = true) {
-                    narrativeDescription = it
+                HudTextField("Nome do item", draft.commonName) { updateDraft(draft.copy(commonName = it)) }
+                HudTextField("Descrição ou uso narrativo (opcional)", draft.commonEffect, multiline = true) {
+                    updateDraft(draft.copy(commonEffect = it))
                 }
             }
             ModalBottomActions(
@@ -553,9 +619,9 @@ private fun BuilderTabContent(
                 onPrimary = {
                     onAdd(
                         InventoryItem(
-                            name = narrativeName.trim().ifBlank { "Item narrativo" },
+                            name = draft.commonName.trim().ifBlank { "Item narrativo" },
                             category = "Item",
-                            effect = narrativeDescription.trim(),
+                            effect = draft.commonEffect.trim(),
                             quantity = 1,
                         ),
                     )
@@ -566,7 +632,7 @@ private fun BuilderTabContent(
     }
 
     if (kind == BuilderKind.FREE_ITEM) {
-        onPreviewCostChange(null)
+        SideEffect { onPreviewCostChange(null) }
         val freeCategories = remember {
             listOf("Item", "Arma", "Armadura", "Acessório", "Escudo", "Consumível", "Munição", "Ferramenta", "Recipiente de Carga")
         }
@@ -583,11 +649,8 @@ private fun BuilderTabContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                BuilderKindSelector(availableKinds, kind) { selected ->
-                    kind = selected
-                    stepIndex = 0
-                }
-                HudTextField("Nome do item (obrigatório)", draft.commonName) { draft = draft.copy(commonName = it) }
+                BuilderKindSelector(availableKinds, kind, ::selectKind)
+                HudTextField("Nome do item (obrigatório)", draft.commonName) { updateDraft(draft.copy(commonName = it)) }
                 SdoMetadataText("CATEGORIA", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -597,7 +660,7 @@ private fun BuilderTabContent(
                         SdoFilterChip(
                             label = cat,
                             selected = draft.commonCategory.equals(cat, ignoreCase = true),
-                            onClick = { draft = draft.copy(commonCategory = cat) },
+                            onClick = { updateDraft(draft.copy(commonCategory = cat)) },
                         )
                     }
                 }
@@ -610,13 +673,13 @@ private fun BuilderTabContent(
                         SdoFilterChip(
                             label = opt.label,
                             selected = quality == opt,
-                            onClick = { draft = draft.copy(quality = opt) },
+                            onClick = { updateDraft(draft.copy(quality = opt)) },
                         )
                     }
                 }
                 TwoFields(
-                    { IntegerField("Quantidade", draft.commonQuantity, true, it) { value -> draft = draft.copy(commonQuantity = value.coerceAtLeast(1)) } },
-                    { IntegerField("Carga total", draft.commonLoad, true, it) { value -> draft = draft.copy(commonLoad = value.coerceAtLeast(0)) } },
+                    { IntegerField("Quantidade", draft.commonQuantity, true, it) { value -> updateDraft(draft.copy(commonQuantity = value.coerceAtLeast(1))) } },
+                    { IntegerField("Carga total", draft.commonLoad, true, it) { value -> updateDraft(draft.copy(commonLoad = value.coerceAtLeast(0))) } },
                 )
                 SdoMetadataText("REGIÃO CORPORAL", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                 Row(
@@ -628,23 +691,23 @@ private fun BuilderTabContent(
                         SdoFilterChip(
                             label = region,
                             selected = selected,
-                            onClick = { draft = draft.copy(commonRegion = if (region == "Nenhuma") "" else region) },
+                            onClick = { updateDraft(draft.copy(commonRegion = if (region == "Nenhuma") "" else region)) },
                         )
                     }
                 }
                 TwoFields(
-                    { IntegerField("Durabilidade", draft.commonDurability.coerceAtLeast(1), true, it) { value -> draft = draft.copy(commonDurability = value.coerceAtLeast(1)) } },
-                    { IntegerField("Alcance", draft.commonRange, true, it) { value -> draft = draft.copy(commonRange = value.coerceAtLeast(0)) } },
+                    { IntegerField("Durabilidade", draft.commonDurability.coerceAtLeast(1), true, it) { value -> updateDraft(draft.copy(commonDurability = value.coerceAtLeast(1))) } },
+                    { IntegerField("Alcance", draft.commonRange, true, it) { value -> updateDraft(draft.copy(commonRange = value.coerceAtLeast(0))) } },
                 )
                 TwoFields(
-                    { IntegerField("PG", draft.commonPg, true, it) { value -> draft = draft.copy(commonPg = value) } },
-                    { IntegerField("PL", draft.commonPl, true, it) { value -> draft = draft.copy(commonPl = value) } },
+                    { IntegerField("PG", draft.commonPg, true, it) { value -> updateDraft(draft.copy(commonPg = value)) } },
+                    { IntegerField("PL", draft.commonPl, true, it) { value -> updateDraft(draft.copy(commonPl = value)) } },
                 )
                 TwoFields(
-                    { IntegerField("Ataque", draft.commonAttack, true, it) { value -> draft = draft.copy(commonAttack = value) } },
-                    { IntegerField("Dano", draft.commonDamage, true, it) { value -> draft = draft.copy(commonDamage = value) } },
+                    { IntegerField("Ataque", draft.commonAttack, true, it) { value -> updateDraft(draft.copy(commonAttack = value)) } },
+                    { IntegerField("Dano", draft.commonDamage, true, it) { value -> updateDraft(draft.copy(commonDamage = value)) } },
                 )
-                HudTextField("Descrição ou efeito", draft.commonEffect, multiline = true) { draft = draft.copy(commonEffect = it) }
+                HudTextField("Descrição ou efeito", draft.commonEffect, multiline = true) { updateDraft(draft.copy(commonEffect = it)) }
             }
             ModalBottomActions(
                 secondaryLabel = "Cancelar",
@@ -692,7 +755,7 @@ private fun BuilderTabContent(
         }
     }
     if (basePool.isEmpty()) {
-        onPreviewCostChange(null)
+        SideEffect { onPreviewCostChange(null) }
         EmptyBuilderCatalogState(onDismiss)
         return
     }
@@ -703,7 +766,7 @@ private fun BuilderTabContent(
         ItemCreationRules.materialsFor(restricted, initialCreation)
     }
     if (materialPool.isEmpty()) {
-        onPreviewCostChange(null)
+        SideEffect { onPreviewCostChange(null) }
         EmptyBuilderCatalogState(onDismiss)
         return
     }
@@ -744,7 +807,7 @@ private fun BuilderTabContent(
     )
     val builtCost = built.creationCost
     val allowedByBudget = remainingHeritage == null || (builtCost != null && builtCost <= remainingHeritage)
-    onPreviewCostChange(if (initialCreation) builtCost else null)
+    SideEffect { onPreviewCostChange(if (initialCreation) builtCost else null) }
 
     val steps = BuilderStep.entries
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
@@ -756,18 +819,7 @@ private fun BuilderTabContent(
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            BuilderKindSelector(availableKinds, kind) { selected ->
-                kind = selected
-                stepIndex = 0
-                draft = draft.copy(
-                    category = selected.draftCategory,
-                    baseId = "",
-                    materialId = "",
-                    secondaryMaterialId = "",
-                    modificationIds = emptyList(),
-                    enhancementIds = emptyList(),
-                )
-            }
+            BuilderKindSelector(availableKinds, kind, ::selectKind)
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -776,7 +828,7 @@ private fun BuilderTabContent(
                     SdoFilterChip(
                         label = "${idx + 1}. ${step.label}",
                         selected = currentStep == step,
-                        onClick = { stepIndex = idx },
+                        onClick = { updateDraft(draft.copy(step = idx + 1)) },
                     )
                 }
             }
@@ -793,7 +845,7 @@ private fun BuilderTabContent(
             when (currentStep) {
                 BuilderStep.BASE -> {
                     HudTextField("Nome personalizado (opcional)", draft.customName) {
-                        draft = draft.copy(customName = it)
+                        updateDraft(draft.copy(customName = it))
                     }
                     HudTextField("Filtrar tipo de ${kind.label.lowercase()}", searchQuery) { searchQuery = it }
                     val filteredBases = basePool.filter { part ->
@@ -810,11 +862,11 @@ private fun BuilderTabContent(
                                 val nextMods = draft.modificationIds.filter { id ->
                                     ItemCreationRules.compatibleModifications(part, weapon).any { it.id == id }
                                 }
-                                draft = draft.copy(
+                                updateDraft(draft.copy(
                                     baseId = part.id,
                                     materialId = nextMaterialId,
                                     modificationIds = nextMods,
-                                )
+                                ))
                             },
                         ) {
                             PartCardSummary(part = part, weapon = weapon, showHeritageCost = initialCreation)
@@ -833,10 +885,10 @@ private fun BuilderTabContent(
                         SelectableModalCard(
                             selected = material.id == part.id,
                             onClick = {
-                                draft = draft.copy(
+                                updateDraft(draft.copy(
                                     materialId = part.id,
                                     secondaryMaterialId = draft.secondaryMaterialId.takeIf { part.id.startsWith("ligas_") && it != part.id }.orEmpty(),
-                                )
+                                ))
                             },
                         ) {
                             PartCardSummary(part = part, weapon = weapon, showHeritageCost = initialCreation)
@@ -846,14 +898,14 @@ private fun BuilderTabContent(
                         SdoMetadataText("LIGA // SEGUNDO MATERIAL (OPCIONAL)", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                         SelectableModalCard(
                             selected = secondaryMaterial == null,
-                            onClick = { draft = draft.copy(secondaryMaterialId = "") },
+                            onClick = { updateDraft(draft.copy(secondaryMaterialId = "")) },
                         ) {
                             Text("Material puro (sem mistura)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                         }
                         materialPool.filter { it.id != material.id }.forEach { part ->
                             SelectableModalCard(
                                 selected = secondaryMaterial?.id == part.id,
-                                onClick = { draft = draft.copy(secondaryMaterialId = part.id) },
+                                onClick = { updateDraft(draft.copy(secondaryMaterialId = part.id)) },
                             ) {
                                 PartCardSummary(part = part, weapon = weapon, showHeritageCost = initialCreation)
                             }
@@ -864,7 +916,7 @@ private fun BuilderTabContent(
                     qualityOptions.forEach { opt ->
                         SelectableModalCard(
                             selected = quality == opt,
-                            onClick = { draft = draft.copy(quality = opt) },
+                            onClick = { updateDraft(draft.copy(quality = opt)) },
                         ) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(opt.label, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
@@ -910,7 +962,7 @@ private fun BuilderTabContent(
                                     selected = checked,
                                     onClick = {
                                         val next = ItemCreationRules.toggleModification(modifications, mod).map(ItemPart::id)
-                                        draft = draft.copy(modificationIds = next)
+                                        updateDraft(draft.copy(modificationIds = next))
                                     },
                                 ) {
                                     Row(
@@ -961,7 +1013,7 @@ private fun BuilderTabContent(
                                     } else {
                                         draft.enhancementIds
                                     }
-                                    draft = draft.copy(enhancementIds = nextIds)
+                                    updateDraft(draft.copy(enhancementIds = nextIds))
                                 },
                             ) {
                                 Row(
@@ -1060,7 +1112,7 @@ private fun BuilderTabContent(
         val isLastStep = stepIndex >= steps.lastIndex
         ModalBottomActions(
             secondaryLabel = if (stepIndex > 0) "Voltar" else "Cancelar",
-            onSecondary = { if (stepIndex > 0) stepIndex -= 1 else onDismiss() },
+            onSecondary = { if (stepIndex > 0) updateDraft(draft.copy(step = stepIndex)) else onDismiss() },
             primaryLabel = when {
                 !isLastStep -> "Continuar"
                 !allowedByBudget -> "Saldo PH insuficiente"
@@ -1070,7 +1122,7 @@ private fun BuilderTabContent(
             primaryEnabled = !isLastStep || allowedByBudget,
             onPrimary = {
                 if (!isLastStep) {
-                    stepIndex += 1
+                    updateDraft(draft.copy(step = stepIndex + 2))
                 } else {
                     onAdd(built.toInventoryItem(initialCreation = initialCreation))
                 }
@@ -1099,7 +1151,7 @@ private fun EnhancementsTabContent(
         val categories = remember(options) {
             options.map { ItemCreationRules.enhancementCategory(it.id) }.distinct().sorted()
         }
-        onPreviewCostChange(null)
+        SideEffect { onPreviewCostChange(null) }
         Column(Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -1157,7 +1209,7 @@ private fun EnhancementsTabContent(
         }
     }
     val selected = options.firstOrNull { it.id == selectedId }
-    onPreviewCostChange(null)
+    SideEffect { onPreviewCostChange(null) }
 
     Column(Modifier.fillMaxSize()) {
         Column(
@@ -1237,7 +1289,7 @@ private fun AshTabContent(
     val purity = selected?.catalogAshPurity ?: AshPurity.RAW
     val previewCost = if (selected != null) doses.coerceAtLeast(1) * purity.heritageCostPerDose else null
     val allowed = selected != null && (remainingHeritage == null || (previewCost != null && previewCost <= remainingHeritage))
-    onPreviewCostChange(if (remainingHeritage != null) previewCost else null)
+    SideEffect { onPreviewCostChange(if (remainingHeritage != null) previewCost else null) }
 
     if (selectedAshName == null) {
         Column(Modifier.fillMaxSize()) {
@@ -1420,14 +1472,16 @@ private fun PartCardSummary(
 @Composable
 private fun SelectableModalCard(
     selected: Boolean,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
+            .semantics { this.selected = selected }
             .sdoClickable(enabled = enabled, onClick = onClick),
         shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
         color = if (selected) {
@@ -1500,6 +1554,26 @@ private fun EmptyBuilderCatalogState(onDismiss: () -> Unit) {
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth(),
             style = SdoActionStyle.SECONDARY,
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun InventoryItemModalPreview() {
+    SdoTheme {
+        InventoryItemModal(
+            mode = ItemModalMode.Sheet,
+            tab = ItemModalTab.CATALOG,
+            itemCatalog = emptyList(),
+            ashCatalog = emptyList(),
+            regionOptions = listOf("Mão Direita", "Tronco"),
+            itemCreationDraft = null,
+            onDraftChange = {},
+            onDismiss = {},
+            onAddCatalogItems = {},
+            onAddItem = {},
+            onAddAsh = { _, _ -> },
         )
     }
 }

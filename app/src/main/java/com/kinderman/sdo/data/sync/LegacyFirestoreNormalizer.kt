@@ -61,7 +61,8 @@ object LegacyFirestoreNormalizer {
         "money", "life", "sanity", "arcane", "energy", "destiny", "exhaustion", "corruption",
         "attributes", "protections", "protectionAdjustments", "positiveTraits", "negativeTraits",
         "pathName", "pathMotto", "pathKeywords", "pathPillars", "powers", "inventory",
-        "itemCreationDraft", "story", "notes", "transports", "familiars", "personalNotes",
+        "itemCreationDraft", "story", "notes", "transports", "familiars", "divineAscensionPayload",
+        "divineRuntimePayload", "personalNotes",
         "learnedKnowledges", "arcaneKnowledges", "battleTechniques", "containerCapacity",
         "bodyRegions", "agilityLimit", "organs", "mysticAbilities", "conditions",
     )
@@ -140,6 +141,8 @@ object LegacyFirestoreNormalizer {
             notes = "",
             transports = decodeTransports(rawRoot["transports"]),
             familiars = decodeFamiliars(rawRoot["familiars"]),
+            divineAscensionPayload = asString(rawRoot["divineAscensionPayload"]),
+            divineRuntimePayload = asString(rawRoot["divineRuntimePayload"]),
             personalNotes = parsedPersonalNotes,
             updatedAt = asLong(rawRoot["updatedAt"]) ?: 0L,
             lastEditedBy = asString(rawRoot["lastEditedBy"]).ifBlank { asString(rawRoot["updatedBy"]) },

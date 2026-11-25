@@ -25,8 +25,9 @@ import java.security.MessageDigest
         CampaignLibraryRecord::class,
         CampaignDeliveryRecord::class,
         CampaignAlertSettingsRecord::class,
+        DeityGmCacheRecord::class,
     ],
-    version = 36,
+    version = 37,
     exportSchema = true,
 )
 @TypeConverters(CharacterConverters::class)
@@ -40,11 +41,39 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun catalogDao(): CatalogDao
     abstract fun campaignDao(): CampaignDao
     abstract fun operationsDao(): OperationsDao
+    abstract fun deityGmCacheDao(): DeityGmCacheDao
 
     companion object {
         private fun tableExists(db: SupportSQLiteDatabase, tableName: String): Boolean =
             db.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", arrayOf(tableName))
                 .use { cursor -> cursor.moveToFirst() }
+
+        val MIGRATION_36_37 = object : Migration(36, 37) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columns = db.query("PRAGMA table_info(characters)").use { cursor ->
+                    val nameColumn = cursor.getColumnIndex("name")
+                    buildSet { while (cursor.moveToNext()) add(cursor.getString(nameColumn)) }
+                }
+                if ("divineAscensionPayload" !in columns) {
+                    db.execSQL("ALTER TABLE characters ADD COLUMN divineAscensionPayload TEXT NOT NULL DEFAULT ''")
+                }
+                if ("divineRuntimePayload" !in columns) {
+                    db.execSQL("ALTER TABLE characters ADD COLUMN divineRuntimePayload TEXT NOT NULL DEFAULT ''")
+                }
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS deity_gm_cache (
+                        viewerUid TEXT NOT NULL,
+                        campaignScopeId TEXT NOT NULL,
+                        deityId TEXT NOT NULL,
+                        payloadJson TEXT NOT NULL,
+                        cachedAt INTEGER NOT NULL,
+                        PRIMARY KEY(viewerUid, campaignScopeId, deityId)
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
 
         val MIGRATION_35_36 = object : Migration(35, 36) {
             override fun migrate(db: SupportSQLiteDatabase) {

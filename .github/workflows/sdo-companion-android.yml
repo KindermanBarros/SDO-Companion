@@ -3,9 +3,9 @@ name: SDO Companion Android release
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'core/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'core/**', 'catalogs/**', 'tools/generate_catalog.py', 'tools/generate_deity_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   pull_request:
-    paths: ['app/**', 'core/**', 'catalogs/**', 'tools/generate_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
+    paths: ['app/**', 'core/**', 'catalogs/**', 'tools/generate_catalog.py', 'tools/generate_deity_catalog.py', '*.gradle.kts', 'gradle.properties', 'gradle/**', '.github/actions/**', '.github/workflows/sdo-companion-android.yml']
   workflow_dispatch:
 
 permissions:
@@ -29,6 +29,7 @@ jobs:
 
       - name: Validate canonical catalog contract
         run: |
+          python3 tools/generate_deity_catalog.py --check
           python3 tools/generate_catalog.py --check
           python3 tools/generate_gem_catalog.py --check
           python3 tools/generate_item_catalog.py --check
@@ -78,6 +79,7 @@ jobs:
 
       - name: Validate canonical catalog contract
         run: |
+          python3 tools/generate_deity_catalog.py --check
           python3 tools/generate_catalog.py --check
           python3 tools/generate_gem_catalog.py --check
           python3 tools/generate_item_catalog.py --check

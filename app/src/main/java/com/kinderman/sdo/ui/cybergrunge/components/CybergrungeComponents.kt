@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -260,5 +261,21 @@ internal fun CyberGrungeChoiceRow(
             Text(description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
         Text(if (selected) "LOCK" else "OPEN", color = accent, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun CybergrungeComponentsPreview() {
+    SdoTheme(SdoPreferences(visualMode = SdoVisualMode.CYBERGRUNGE, theme = SdoThemeVariant.CYBERGRUNGE_SIGNAL)) {
+        CyberGrungePanel(
+            modifier = Modifier,
+            accent = MaterialTheme.colorScheme.primary,
+            compact = false,
+            content = {
+                Text("CYBERGRUNGE PANEL", color = MaterialTheme.colorScheme.onSurface)
+                CyberGrungeAction("EXECUTAR", onClick = {}, modifier = Modifier, enabled = true, style = SdoActionStyle.PRIMARY)
+            },
+        )
     }
 }

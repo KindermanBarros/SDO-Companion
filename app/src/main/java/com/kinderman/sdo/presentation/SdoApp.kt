@@ -281,7 +281,8 @@ fun SdoApp(
             val selectedCampaign = campaigns.firstOrNull { it.id == selectedCampaignId }
             val membership = memberships.firstOrNull { it.campaignId == selectedCampaignId }
             val isCampaignHistorian = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
-            val isCampaignResponsible = appSession?.isAdmin == true || selectedCampaign?.ownerId == appSession?.uid
+            val isCampaignResponsible = appSession?.isAdmin == true ||
+                (appSession != null && selectedCampaign?.isDeleted == false && selectedCampaign.ownerId == appSession?.uid)
             val wide = LocalSdoUseNavigationRail.current
             val canOpenHistorian = appSession?.isAdmin == true || campaigns.any { it.ownerId == appSession?.uid }
             Row(Modifier.fillMaxSize()) {
@@ -366,7 +367,9 @@ fun SdoApp(
                 )
 
                 AppSurface.SHEET -> CharacterSheetScreen(
+                    loadDeityDetail = appViewModel::loadDeityDetail,
                     character = selectedCharacter,
+                    characters = characters,
                     saveError = saveErrors[selectedCharacter?.id],
                     fieldPresence = fieldPresence,
                     onFieldFocus = { field, focused ->
@@ -477,6 +480,7 @@ fun SdoApp(
                     onArchiveLibrary = appViewModel::archiveLibrary,
                     onDeliverLibrary = appViewModel::deliverLibrary,
                     onSaveAlertSettings = appViewModel::saveAlertSettings,
+                    loadDeityDetail = appViewModel::loadDeityDetail,
                     onOpenSession = {
                         navigate(AppSurface.SESSION, it)
                     },
@@ -527,6 +531,9 @@ fun SdoApp(
                         catalog = libraryState.catalog,
                         campaignLibrary = libraryState.campaignLibrary,
                         audit = libraryState.audit,
+                        session = appSession,
+                        memberships = memberships,
+                        loadDeityDetail = appViewModel::loadDeityDetail,
                         onBack = { goBack() },
                     )
                 }

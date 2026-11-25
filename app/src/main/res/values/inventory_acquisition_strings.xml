@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inventory_select_catalog">Selecionar do catálogo</string>
+    <string name="inventory_create_custom">Criar item personalizado</string>
+    <string name="inventory_add_enhancement">Adicionar aprimoramento</string>
+    <string name="inventory_add_ash">Adicionar cinzas</string>
+    <string name="inventory_close">Fechar</string>
+    <string name="inventory_cancel">Cancelar</string>
+    <string name="inventory_catalog_search">Buscar por nome, categoria ou efeito</string>
+    <string name="inventory_sheet_search">Buscar por nome, categoria, material ou estado</string>
+    <string name="inventory_category">Categoria</string>
+    <string name="inventory_all_categories">Todas as categorias</string>
+    <string name="inventory_sort">Ordenar por</string>
+    <string name="inventory_sort_default">Ordem do inventário</string>
+    <string name="inventory_sort_name">Nome (A–Z)</string>
+    <string name="inventory_sort_cost_asc">Menor PH</string>
+    <string name="inventory_sort_cost_desc">Maior PH</string>
+    <string name="inventory_sort_load">Menor carga</string>
+    <string name="inventory_affordable">Cabe no saldo de PH</string>
+    <string name="inventory_back_to_catalog">Voltar ao catálogo</string>
+    <string name="inventory_selection_empty">Nenhum item selecionado.</string>
+    <string name="inventory_no_results">Nenhum item encontrado.</string>
+    <string name="inventory_confirm_selection">Adicionar seleção</string>
+    <string name="inventory_over_budget">Saldo de PH insuficiente</string>
+    <string name="inventory_missing_tool_name">Informe o ofício das ferramentas</string>
+    <string name="inventory_tool_name">Nome ou ofício (obrigatório)</string>
+    <string name="inventory_load">Carga %1$d</string>
+    <string name="inventory_heritage_cost">%1$d PH</string>
+    <string name="inventory_durability">Durabilidade %1$s</string>
+    <string name="inventory_group_summary">%1$s // %2$d // Carga %3$d</string>
+    <string name="inventory_entry_selected">Selecionado</string>
+    <string name="inventory_heritage_preview">Herança // %1$d PH gastos + %2$d PH previstos • %4$d PH restantes de %3$d</string>
+    <string name="inventory_heritage_remaining">Herança // %1$d de %2$d PH gastos • %3$d restantes</string>
+    <plurals name="inventory_selected_count">
+        <item quantity="one">%d item selecionado</item>
+        <item quantity="other">%d itens selecionados</item>
+    </plurals>
+</resources>

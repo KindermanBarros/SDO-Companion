@@ -46,7 +46,9 @@ import com.kinderman.sdo.ui.SdoActionStyle
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
 import com.kinderman.sdo.ui.SdoOutlinedButton
+import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.HudTextField
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 internal fun RacePickerDialog(
@@ -270,4 +272,16 @@ private fun <T> SelectionMenu(
     onSelect: (T) -> Unit,
 ) {
     ChoiceField(title, value, options, true, display = optionLabel, onValue = onSelect)
+}
+
+@PreviewLightDark
+@Composable
+private fun RacePickerDialogPreview() {
+    SdoTheme {
+        RacePickerDialog(
+            character = Character(id = "char-1", name = "Kaelen Vance"),
+            onDismiss = {},
+            onConfirm = { _, _, _, _, _ -> },
+        )
+    }
 }

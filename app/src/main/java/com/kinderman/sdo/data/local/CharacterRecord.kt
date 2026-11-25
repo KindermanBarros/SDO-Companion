@@ -160,6 +160,10 @@ data class CharacterRecord(
     val transports: List<com.kinderman.sdo.domain.model.CharacterTransport> = emptyList(),
     @ColumnInfo(defaultValue = "''")
     val familiars: List<com.kinderman.sdo.domain.model.CharacterFamiliar> = emptyList(),
+    @ColumnInfo(defaultValue = "''")
+    val divineAscensionPayload: String = "",
+    @ColumnInfo(defaultValue = "''")
+    val divineRuntimePayload: String = "",
     val personalNotes: List<PersonalNote> = emptyList(),
     val updatedAt: Long = 0,
     val lastEditedBy: String = "",
@@ -322,6 +326,8 @@ fun CharacterRecord.toDomain(): Character {
     notes = notes,
     transports = transports,
     familiars = familiars,
+    divineAscension = canonicalConverters.stringToDivineAscension(divineAscensionPayload),
+    divineRuntime = canonicalConverters.stringToDivineRuntime(divineRuntimePayload),
     personalNotes = personalNotes.ifEmpty {
         notes.takeIf(String::isNotBlank)?.let { legacyText ->
             listOf(PersonalNote(id = "legacy-$id", title = "Registro Pessoal 1", text = legacyText))
@@ -420,6 +426,8 @@ fun Character.toRecord(): CharacterRecord {
     notes = "",
     transports = transports,
     familiars = familiars,
+    divineAscensionPayload = canonicalConverters.divineAscensionToString(divineAscension),
+    divineRuntimePayload = canonicalConverters.divineRuntimeToString(divineRuntime),
     personalNotes = personalNotes,
     updatedAt = updatedAt,
     lastEditedBy = lastEditedBy,

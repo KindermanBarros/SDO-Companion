@@ -64,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -815,4 +816,16 @@ private fun centerCropSquare(source: Bitmap): Bitmap {
     val x = ((source.width - side) / 2).coerceAtLeast(0)
     val y = ((source.height - side) / 2).coerceAtLeast(0)
     return Bitmap.createBitmap(source, x, y, side, side)
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoCharacterAvatarPreview() {
+    SdoTheme {
+        SdoCharacterAvatar(
+            name = "Kaelen Vance",
+            photoUri = "",
+            size = 72.dp,
+        )
+    }
 }

@@ -1,4 +1,23 @@
 rules_version = '2';
+// ===============================================================
+// Assumed Data Model (Deity Spoiler & Ascension Additions)
+// ===============================================================
+// Collection: deityGmCatalog/{deityId}
+//   - id: string (required, ^deity\.[A-Za-z0-9_.-]{1,96}$)
+//   - name: string (required, 1..200 chars)
+//   - tierCode: string (required, AVATAR|DEMIGOD|LESSER_GOD|GREATER_GOD)
+//   - payloadJson: string (required, 1..250000 chars, serialized DeityGmContent)
+//   - updatedBy: string (required, == request.auth.uid)
+//   - updatedAt: timestamp (required, == request.time)
+// Collection: gmActiveContext/{uid}
+//   - uid: string (required, == uid == request.auth.uid)
+//   - activeCampaignId: string (required, non-deleted campaign owned by uid)
+//   - updatedAt: timestamp (required, == request.time)
+// Subcollection: campaigns/{campaignId}/deitySecrets/{deityId}
+//   - Same schema as deityGmCatalog/{deityId}; readable only by Admin or non-deleted campaign owner.
+// Character Field: characters/{charId}/fields/divineAscensionPayload
+//   - Writable only by verified Admin or active linked campaign GM (`ownerId`).
+// ===============================================================
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() {
@@ -78,6 +97,49 @@ service cloud.firestore {
 
     function isCampaignResponsible(campaignId) {
       return isAdministrator() || isCampaignOwner(campaignId);
+    }
+
+    function isNonDeletedCampaignOwner(campaignId) {
+      let camp = get(campaignPath(campaignId));
+      return signedIn()
+        && campaignId != ''
+        && campaignId != 'default'
+        && camp != null
+        && camp.data.state != 'DELETED'
+        && camp.data.ownerId == request.auth.uid;
+    }
+
+    function hasVerifiedGmCampaignContext() {
+      let ctx = get(/databases/$(database)/documents/gmActiveContext/$(request.auth.uid));
+      let cid = ctx != null ? ctx.data.get('activeCampaignId', '') : '';
+      return ctx != null
+        && ctx.data.updatedAt > request.time - duration.value(60, 's')
+        && isNonDeletedCampaignOwner(cid);
+    }
+
+    function isValidDeityGmDocument(data, deityId) {
+      return data.keys().hasOnly(['id', 'name', 'tierCode', 'payloadJson', 'updatedBy', 'updatedAt'])
+        && data.keys().hasAll(['id', 'name', 'tierCode', 'payloadJson', 'updatedBy', 'updatedAt'])
+        && data.id == deityId
+        && deityId.matches('^deity\\.[A-Za-z0-9_.-]{1,96}$')
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 200
+        && data.tierCode in ['AVATAR', 'DEMIGOD', 'LESSER_GOD', 'GREATER_GOD']
+        && data.payloadJson is string
+        && data.payloadJson.size() > 0
+        && data.payloadJson.size() <= 250000
+        && data.updatedBy == request.auth.uid
+        && data.updatedAt == request.time;
+    }
+
+    function isValidGmActiveContext(data, uid) {
+      return data.keys().hasOnly(['uid', 'activeCampaignId', 'updatedAt'])
+        && data.keys().hasAll(['uid', 'activeCampaignId', 'updatedAt'])
+        && data.uid == uid
+        && isSafeId(data.activeCampaignId)
+        && data.updatedAt == request.time
+        && isNonDeletedCampaignOwner(data.activeCampaignId);
     }
 
     function isActiveMember(campaignId) {
@@ -235,7 +297,8 @@ service cloud.firestore {
           'avatarPreset', 'pathName', 'pathMotto', 'story', 'agilityLimit', 'creationStatus',
           'itemCreationDraft', 'migrationReviewPayload', 'unrecognizedFieldsPayload', 'canonicalBodyPayload',
           'activeModifiersPayload', 'scopedItemCatalogPayload', 'canonicalProgressionPayload',
-          'transports', 'familiars'        ] && val is string && val.size() <= 250000
+          'transports', 'familiars', 'divineAscensionPayload', 'divineRuntimePayload'
+        ] && val is string && val.size() <= 250000
       ) || (
         fieldKey in ['level', 'creationStep'] && val is int && val >= 1 && val <= 20
       ) || (
@@ -541,6 +604,38 @@ service cloud.firestore {
 
         allow delete: if signedIn() && isCampaignResponsible(campaignId);
       }
+
+      match /deitySecrets/{deityId} {
+        allow read: if signedIn() && (
+          isAdministrator()
+          || isNonDeletedCampaignOwner(campaignId)
+        );
+
+        allow create, update: if signedIn()
+          && campaignIsActive(campaignId)
+          && isCampaignResponsible(campaignId)
+          && isValidDeityGmDocument(request.resource.data, deityId);
+
+        allow delete: if signedIn() && isCampaignResponsible(campaignId);
+      }
+    }
+
+    match /gmActiveContext/{uid} {
+      allow read: if signedIn() && (uid == request.auth.uid || isAdministrator());
+      allow create, update: if signedIn()
+        && uid == request.auth.uid
+        && isValidGmActiveContext(request.resource.data, uid);
+      allow delete: if signedIn() && (uid == request.auth.uid || isAdministrator());
+    }
+
+    match /deityGmCatalog/{deityId} {
+      allow read: if signedIn() && (
+        isAdministrator()
+        || hasVerifiedGmCampaignContext()
+      );
+      allow create, update: if isAdministrator()
+        && isValidDeityGmDocument(request.resource.data, deityId);
+      allow delete: if isAdministrator();
     }
 
     match /{path=**}/members/{uid} {
@@ -953,6 +1048,31 @@ service cloud.firestore {
         }
 
         // Delegates sheet/campaign auth, deleted, and lock checks to operations/{lastOperationId} (1 access).
+        function canCompleteUnlockedAscension(isCreate, prevVal, nextVal) {
+          let sheet = isCreate ? null : get(characterPath(charId)).data;
+          return !isCreate
+            && sheet != null
+            && sheet.get('ownerId', '') == request.auth.uid
+            && prevVal is string
+            && nextVal is string
+            && (
+              (
+                prevVal.matches('.*"pendingPromotionTier":"LESSER_GOD".*')
+                && nextVal.matches('.*"tier":"LESSER_GOD".*')
+              ) || (
+                prevVal.matches('.*"pendingPromotionTier":"GREATER_GOD".*')
+                && nextVal.matches('.*"tier":"GREATER_GOD".*')
+              )
+            )
+            && !nextVal.matches('.*"pendingPromotionTier":"(LESSER_GOD|GREATER_GOD)".*');
+        }
+
+        function canWriteAscension(isCreate) {
+          let sheet = isCreate ? getAfter(characterPath(charId)).data : get(characterPath(charId)).data;
+          let cid = sheet.get('campaignId', '');
+          return campaignIsActive(cid) && isNonDeletedCampaignOwner(cid);
+        }
+
         function validFieldOp(expectedRev, nextRev, isCreate) {
           let opDoc = getAfter(opPath(charId, request.resource.data.lastOperationId));
           let t = validOpHeader(opDoc, request.resource.data.lastOperationId)
@@ -960,6 +1080,13 @@ service cloud.firestore {
             : null;
           return t != null
             && opDoc.data.type in ['CREATE_SHEET', 'PATCH_FIELDS', 'UPSERT_ITEM', 'ADJUST_RESOURCE', 'ITEM_CONSUME', 'SESSION_ACTION', 'ACCEPT_DELIVERY']
+            && (
+              fieldKey != 'divineAscensionPayload'
+              || (isCreate && opDoc.data.type == 'CREATE_SHEET' && request.resource.data.value == '')
+              || isAdministrator()
+              || canWriteAscension(opDoc.data.type == 'CREATE_SHEET')
+              || canCompleteUnlockedAscension(isCreate, isCreate ? '' : resource.data.value, request.resource.data.value)
+            )
             && t.expectedRevision == expectedRev
             && t.nextRevision == nextRev
             && (isCreate || !('baseValue' in t) || resource.data.value == t.baseValue)

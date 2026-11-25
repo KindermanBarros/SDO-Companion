@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @Composable
 internal fun StandardTextAction(
@@ -32,3 +33,13 @@ internal fun StandardIconAction(
     ),
     content = content,
 )
+
+@PreviewLightDark
+@Composable
+private fun StandardControlsPreview() {
+    SdoTheme {
+        StandardTextAction(onClick = {}, modifier = Modifier, enabled = true) {
+            androidx.compose.material3.Text("AÇÃO PADRÃO")
+        }
+    }
+}

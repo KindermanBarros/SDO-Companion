@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ('powers', 'magic', 'ashes', 'runes', 'knowledge')
+FILES = ('powers', 'magic', 'ashes', 'runes', 'knowledge', 'deities')
 ABILITY_FILES = {'magic': 'MAGIC', 'ashes': 'ASH', 'runes': 'RUNE'}
 FIELDS = {
     'id': str, 'kind': str, 'name': str, 'group': str, 'summary': str,
@@ -41,7 +41,7 @@ ABILITY_OPTIONAL_FIELDS = {
     'executionValue': int, 'executionUnit': str, 'durationValue': int,
     'durationUnit': str,
 }
-COUNTS = {'POWER': 107, 'MAGIC': 56, 'ASH': 168, 'RUNE': 56,
+COUNTS = {'POWER': 107, 'MAGIC': 56, 'ASH': 168, 'RUNE': 56, 'DEITY': 16,
           'ACQUIRED_KNOWLEDGE': 55, 'ARCANE_KNOWLEDGE': 54, 'BATTLE_TECHNIQUE': 52}
 
 SOURCE_VALUES = {'Conhecimento': 'KNOWLEDGE', 'Raça': 'RACE', 'Caminho': 'PATH',
@@ -188,12 +188,43 @@ def load_abilities(name, doc):
         entries.append(ability_to_catalog(entry, doc))
     return entries
 
+def deity_to_catalog(entry, version):
+    return {
+        'id': entry['id'], 'kind': 'DEITY', 'name': entry['name'],
+        'group': entry['group'], 'summary': entry['paraJogadores'],
+        'cost': '', 'action': '', 'range': '', 'duration': '',
+        'source': entry['source'], 'version': version, 'creationCost': '',
+        'price': 0, 'load': 0, 'durability': '', 'region': '',
+        'relatedAttribute': '', 'initialValue': entry['navigationOrder'],
+        'prerequisites': [], 'mechanicalEffect': entry['paraJogadores'],
+        'ruleReference': entry['ruleReference'], 'keywords': entry['keywords'],
+        'repeatable': False, 'limit': '', 'activationCondition': '',
+        'enhancements': '', 'deactivationCondition': '',
+    }
+
+def load_deities(doc):
+    assert doc['schemaVersion'] == 1
+    assert doc['name'].strip()
+    deities = doc['deities']
+    assert len(deities) == 16, f'Expected 16 deities, found {len(deities)}'
+    entries = []
+    for entry in deities:
+        assert entry['kind'] == 'DEITY'
+        assert entry['id'].startswith('deity.'), entry['id']
+        assert entry['name'].strip() and entry['group'].strip() and entry['paraJogadores'].strip()
+        assert 'paraOMestre' not in entry, f"GM spoiler field leaked into public deities.json: {entry['id']}"
+        entries.append(deity_to_catalog(entry, doc['catalogVersion']))
+    return entries
+
 def load_catalog(directory):
     entries = []
     for name in FILES:
-        doc = json.loads((directory / f'{name}.json').read_text())
+        doc = json.loads((directory / f'{name}.json').read_text(encoding='utf-8'))
         if name == 'knowledge':
             entries.extend(load_knowledge(doc))
+            continue
+        if name == 'deities':
+            entries.extend(load_deities(doc))
             continue
         if name in ABILITY_FILES:
             entries.extend(load_abilities(name, doc))

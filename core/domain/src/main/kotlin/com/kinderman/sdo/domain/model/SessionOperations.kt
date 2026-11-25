@@ -216,7 +216,9 @@ fun Character.applySessionCommand(command: SessionCommand, actorId: String): Ses
                 SessionOperationType.EFFECT_OPERATION -> command.effectOperation?.let { CanonicalSessionPayload(effectOperations = listOf(it)) }
                 SessionOperationType.ABILITY_USE -> allCanonicalAbilitiesSafely().firstOrNull { it.id == command.targetId }?.let { ability ->
                     CanonicalSessionPayload(
-                        effectOperations = ability.mechanicalEffect?.operations.orEmpty(),
+                        effectOperations = ability.mechanicalEffect?.operations.orEmpty().map {
+                            it.withChannelingDuration(ability.duration)
+                        },
                         abilityId = ability.id,
                         abilityCost = ability.cost,
                     )
@@ -230,10 +232,28 @@ fun Character.applySessionCommand(command: SessionCommand, actorId: String): Ses
 private fun Character.useAbility(command: SessionCommand): Character {
     allCanonicalAbilitiesSafely().firstOrNull { it.id == command.targetId }?.let { ability ->
         require(ability.available) { "Esta habilidade não está disponível agora." }
-        val paid = payAbilityCost(ability)
-        return ability.mechanicalEffect?.operations.orEmpty().foldIndexed(paid) { index, current, operation ->
+        val isDivinePower = (ability.cost as? AbilityCost.PowerCost)?.let {
+            it.resource == SpendableResource.PD || it.isDivineOrLuckBased
+        } == true
+        if (isDivinePower && derivedDivineEffects().usesConceptualPillars) {
+            require(!divineRuntime.tabuViolatedInScene) {
+                "Atos de Domínio estão bloqueados nesta cena por violação de Tabu."
+            }
+        }
+        val channeling = ability.kind == AbilityKind.SPELL || ability.kind == AbilityKind.RUNE ||
+            isDivinePower || ability.duration?.requiresChanneling == true
+        val prepared = if (channeling) channelDivineOrArcanePower() else this
+        val paid = prepared.payAbilityCost(ability)
+        val withDivineSpend = if (isDivinePower && derivedDivineEffects().usesConceptualPillars && ability.cost.amount > 0) {
+            paid.copy(
+                divineRuntime = paid.divineRuntime.copy(
+                    pdSpentInCurrentScene = paid.divineRuntime.pdSpentInCurrentScene + ability.cost.amount,
+                ),
+            )
+        } else paid
+        return ability.mechanicalEffect?.operations.orEmpty().foldIndexed(withDivineSpend) { index, current, operation ->
             current.applyEffectOperation(
-                operation,
+                operation.withChannelingDuration(ability.duration),
                 idempotencyKey = "${command.idempotencyKey}:$index",
                 reason = "Uso de habilidade: ${ability.id}",
             ).character
@@ -261,7 +281,9 @@ private fun Character.useAbility(command: SessionCommand): Character {
         ),
     ) else this
     val costType = if (ability.type.equals("Runa", true)) AbilityCostType.ARCANE else ability.costType
-    return prepared.payCanonicalAbilityCost(costType, ability.costValue, ability.id)
+    val channeling = ability.type.equals("Runa", true) || ability.type.equals("Magia", true)
+    val channeled = if (channeling) prepared.channelDivineOrArcanePower() else prepared
+    return channeled.payCanonicalAbilityCost(costType, ability.costValue, ability.id)
 }
 
 private fun Character.payAbilityCost(ability: Ability): Character = when (val cost = ability.cost) {
@@ -326,9 +348,9 @@ private fun Character.mutateResource(resource: SessionResource, delta: Int): Cha
         SessionResource.SANITY -> copy(sanity = changed)
         SessionResource.ENERGY -> copy(energy = changed)
         SessionResource.ARCANE -> copy(arcane = changed)
-        SessionResource.DESTINY -> copy(destiny = changed)
+        SessionResource.DESTINY -> withTrackedDestiny(changed)
         SessionResource.EXHAUSTION -> copy(exhaustion = changed)
-        SessionResource.CORRUPTION -> copy(corruption = changed)
+        SessionResource.CORRUPTION -> withDivineCorruption(changed)
     }
 }
 

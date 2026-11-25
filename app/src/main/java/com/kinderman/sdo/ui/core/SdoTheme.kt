@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.R
@@ -844,4 +845,28 @@ fun HudTextField(
             )
         },
     )
+}
+
+@PreviewLightDark
+@Composable
+private fun SdoThemePreview() {
+    SdoTheme {
+        HudBackground {
+            Column(
+                Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                TechPanel(accent = MaterialTheme.colorScheme.primary) {
+                    Text("SDO THEME // HUD", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Primary / Secondary / Surface", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Box(Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary))
+                        Box(Modifier.size(32.dp).background(MaterialTheme.colorScheme.secondary))
+                        Box(Modifier.size(32.dp).background(MaterialTheme.colorScheme.tertiary))
+                        Box(Modifier.size(32.dp).background(MaterialTheme.colorScheme.error))
+                    }
+                }
+            }
+        }
+    }
 }

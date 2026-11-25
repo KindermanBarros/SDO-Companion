@@ -7,6 +7,7 @@ import com.kinderman.sdo.data.local.CampaignDao
 import com.kinderman.sdo.data.local.CatalogDao
 import com.kinderman.sdo.data.local.CharacterDao
 import com.kinderman.sdo.data.local.CharacterMigrationManager
+import com.kinderman.sdo.data.local.DeityGmCacheDao
 import com.kinderman.sdo.data.local.OperationsDao
 import com.kinderman.sdo.data.local.OwnerDao
 import com.kinderman.sdo.data.repository.SyncedCampaignRepository
@@ -77,6 +78,7 @@ object DatabaseModule {
                 AppDatabase.MIGRATION_33_34,
                 AppDatabase.MIGRATION_34_35,
                 AppDatabase.MIGRATION_35_36,
+                AppDatabase.MIGRATION_36_37,
             )
             .build()
 
@@ -85,6 +87,7 @@ object DatabaseModule {
     @Provides fun provideCatalogDao(db: AppDatabase): CatalogDao = db.catalogDao()
     @Provides fun provideCampaignDao(db: AppDatabase): CampaignDao = db.campaignDao()
     @Provides fun provideOperationsDao(db: AppDatabase): OperationsDao = db.operationsDao()
+    @Provides fun provideDeityGmCacheDao(db: AppDatabase): DeityGmCacheDao = db.deityGmCacheDao()
 
     @Provides
     @Singleton

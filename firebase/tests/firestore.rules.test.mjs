@@ -1542,3 +1542,204 @@ test('verified administrator can transfer ownership, link/unlink sheets, read st
   );
   await assertSucceeds(condEditBatch.commit());
 });
+
+test('deity spoilers follow campaign ownership and verified administrator access', async () => {
+  await seed();
+  const deityId = 'deity.fixture';
+  const globalRef = (db) => doc(db, 'deityGmCatalog', deityId);
+  const campaignRef = (db) => doc(db, 'campaigns', ids.campaign, 'deitySecrets', deityId);
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    const fixture = {
+      id: deityId,
+      name: 'Synthetic deity',
+      tierCode: 'LESSER_GOD',
+      payloadJson: '{}',
+      updatedBy: ids.owner,
+      updatedAt: Timestamp.fromMillis(1000),
+    };
+    await setDoc(globalRef(db), fixture);
+    await setDoc(campaignRef(db), fixture);
+  });
+
+  const owner = env.authenticatedContext(ids.owner).firestore();
+  const player = env.authenticatedContext(ids.player).firestore();
+  const guest = env.unauthenticatedContext().firestore();
+  const admin = env.authenticatedContext('verified-admin', {
+    email: 'kindbarros@gmail.com',
+    email_verified: true,
+  }).firestore();
+
+  await assertSucceeds(getDoc(campaignRef(owner)));
+  await assertFails(getDoc(globalRef(owner)));
+  await assertFails(getDoc(campaignRef(player)));
+  await assertFails(getDoc(globalRef(player)));
+  await assertFails(getDoc(campaignRef(guest)));
+  await assertFails(getDoc(globalRef(guest)));
+  await assertSucceeds(getDoc(campaignRef(admin)));
+  await assertSucceeds(getDoc(globalRef(admin)));
+
+  const activeContext = doc(owner, 'gmActiveContext', ids.owner);
+  await assertSucceeds(setDoc(activeContext, {
+    uid: ids.owner,
+    activeCampaignId: ids.campaign,
+    updatedAt: serverTimestamp(),
+  }));
+  await assertSucceeds(getDoc(globalRef(owner)));
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'gmActiveContext', ids.owner), {
+      uid: ids.owner,
+      activeCampaignId: ids.campaign,
+      updatedAt: Timestamp.fromMillis(1000),
+    });
+  });
+  await assertFails(getDoc(globalRef(owner)));
+  await assertSucceeds(deleteDoc(activeContext));
+  await assertFails(getDoc(globalRef(owner)));
+});
+
+for (const { role, actorUid, archived, unrelatedGm, allowed } of [
+  { role: 'ordinary sheet owner', actorUid: ids.player, allowed: false },
+  { role: 'active campaign owner', actorUid: ids.owner, allowed: true },
+  { role: 'unrelated campaign owner', actorUid: ids.outsider, unrelatedGm: true, allowed: false },
+  { role: 'archived campaign owner', actorUid: ids.owner, archived: true, allowed: false },
+]) {
+  for (const existing of [false, true]) {
+    test(`${role} ${allowed ? 'can' : 'cannot'} ${existing ? 'update' : 'create'} linked character ascension`, async () => {
+      await seed({ archived });
+      const key = 'divineAscensionPayload';
+      await env.withSecurityRulesDisabled(async (context) => {
+        const db = context.firestore();
+        if (existing) {
+          await setDoc(
+            doc(db, 'characters', ids.character, 'fields', key),
+            makeField(key, ''),
+          );
+        }
+        if (unrelatedGm) {
+          const campaign = await getDoc(doc(db, 'campaigns', ids.campaign));
+          await setDoc(doc(db, 'campaigns', 'unrelated-campaign'), {
+            ...campaign.data(),
+            id: 'unrelated-campaign',
+            ownerId: actorUid,
+          });
+          await setDoc(
+            doc(db, 'campaigns', 'unrelated-campaign', 'members', actorUid),
+            makeMember('unrelated-campaign', actorUid),
+          );
+        }
+      });
+
+      const db = env.authenticatedContext(actorUid).firestore();
+      const opId = 'op-ascension';
+      const value = '{"tier":"AVATAR"}';
+      const batch = writeBatch(db);
+      const fieldRef = doc(db, 'characters', ids.character, 'fields', key);
+      const field = {
+        value,
+        revision: existing ? 2 : 1,
+        lastOperationId: opId,
+        updatedBy: actorUid,
+        updatedAt: serverTimestamp(),
+      };
+      if (existing) {
+        batch.update(fieldRef, field);
+      } else {
+        batch.set(fieldRef, { key, ...field });
+      }
+      batch.set(
+        doc(db, 'characters', ids.character, 'operations', opId),
+        makeOp(opId, actorUid, 'PATCH_FIELDS', [
+          {
+            kind: 'FIELD', itemId: '', key,
+            op: existing ? 'SET' : 'CREATE',
+            expectedRevision: existing ? 1 : 0,
+            nextRevision: existing ? 2 : 1,
+            ...(existing ? { baseValue: '' } : {}),
+            desiredValue: value,
+          },
+        ]),
+      );
+      await (allowed ? assertSucceeds(batch.commit()) : assertFails(batch.commit()));
+    });
+  }
+}
+
+test('active campaign owner can update linked character ascension', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(
+      doc(db, 'characters', ids.character, 'fields', 'divineAscensionPayload'),
+      makeField('divineAscensionPayload', ''),
+    );
+  });
+
+  const db = env.authenticatedContext(ids.owner).firestore();
+  const opId = 'op-gm-ascension';
+  const key = 'divineAscensionPayload';
+  const value = '{"tier":"AVATAR"}';
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'characters', ids.character, 'fields', key), {
+    value,
+    revision: 2,
+    lastOperationId: opId,
+    updatedBy: ids.owner,
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(
+    doc(db, 'characters', ids.character, 'operations', opId),
+    makeOp(opId, ids.owner, 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key, op: 'SET', expectedRevision: 1, nextRevision: 2, baseValue: '', desiredValue: value },
+    ]),
+  );
+  await assertSucceeds(batch.commit());
+});
+
+test('sheet owner can complete GM-unlocked LESSER_GOD promotion once and cannot escalate to GREATER_GOD', async () => {
+  await seed();
+  const key = 'divineAscensionPayload';
+  const unlockedPayload = '{"tier":"MORTAL","pendingPromotionTier":"LESSER_GOD"}';
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'characters', ids.character, 'fields', key), makeField(key, unlockedPayload));
+  });
+
+  const playerDb = env.authenticatedContext(ids.player).firestore();
+
+  // Attempt to jump straight to GREATER_GOD when only LESSER_GOD was unlocked -> rejected
+  const badBatch = writeBatch(playerDb);
+  const badValue = '{"tier":"GREATER_GOD","pendingPromotionTier":null}';
+  badBatch.update(doc(playerDb, 'characters', ids.character, 'fields', key), {
+    value: badValue,
+    revision: 2,
+    lastOperationId: 'op-bad-promo',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  badBatch.set(
+    doc(playerDb, 'characters', ids.character, 'operations', 'op-bad-promo'),
+    makeOp('op-bad-promo', ids.player, 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key, op: 'SET', expectedRevision: 1, nextRevision: 2, baseValue: unlockedPayload, desiredValue: badValue },
+    ]),
+  );
+  await assertFails(badBatch.commit());
+
+  // Valid completion to LESSER_GOD clearing pendingPromotionTier -> allowed
+  const okBatch = writeBatch(playerDb);
+  const okValue = '{"tier":"LESSER_GOD","dominio":"Bruma","pendingPromotionTier":null}';
+  okBatch.update(doc(playerDb, 'characters', ids.character, 'fields', key), {
+    value: okValue,
+    revision: 2,
+    lastOperationId: 'op-ok-promo',
+    updatedBy: ids.player,
+    updatedAt: serverTimestamp(),
+  });
+  okBatch.set(
+    doc(playerDb, 'characters', ids.character, 'operations', 'op-ok-promo'),
+    makeOp('op-ok-promo', ids.player, 'PATCH_FIELDS', [
+      { kind: 'FIELD', itemId: '', key, op: 'SET', expectedRevision: 1, nextRevision: 2, baseValue: unlockedPayload, desiredValue: okValue },
+    ]),
+  );
+  await assertSucceeds(okBatch.commit());
+});

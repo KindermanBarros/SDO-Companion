@@ -1,6 +1,7 @@
 package com.kinderman.sdo.presentation.character
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class CharacterSheetPagerTest {
@@ -18,5 +19,10 @@ class CharacterSheetPagerTest {
         val mysticIndex = pages.indexOf(SheetPage.MYSTIC)
 
         assertEquals(SheetPage.INVENTORY, pages[mysticIndex + 1])
+    }
+
+    @Test
+    fun `sheet pages do not expose standalone divine tab`() {
+        assertFalse(SheetPage.entries.any { it.name == "DIVINE" })
     }
 }

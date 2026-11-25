@@ -1,11 +1,9 @@
 package com.kinderman.sdo.presentation.library
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,17 +12,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,11 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import com.kinderman.sdo.domain.model.Campaign
 import com.kinderman.sdo.domain.model.CampaignContentKind
 import com.kinderman.sdo.domain.model.CampaignLibraryEntry
@@ -56,12 +52,20 @@ import com.kinderman.sdo.presentation.historian.racialReferences
 import com.kinderman.sdo.ui.HudBackground
 import com.kinderman.sdo.ui.HudTextField
 import com.kinderman.sdo.ui.SdoCardTitle
-import com.kinderman.sdo.ui.SdoFilterChip
+import com.kinderman.sdo.domain.model.CampaignMember
+import com.kinderman.sdo.domain.model.DeityDetailView
+import com.kinderman.sdo.domain.model.UserSession
+import com.kinderman.sdo.domain.policy.DeityAccessPolicy
+import com.kinderman.sdo.ui.SdoCompactFilterBar
 import com.kinderman.sdo.ui.SdoIconButton
+import com.kinderman.sdo.ui.SdoFilterChip
 import com.kinderman.sdo.ui.SdoInsetCard
 import com.kinderman.sdo.ui.SdoMetadataText
+import com.kinderman.sdo.ui.SdoPreferences
 import com.kinderman.sdo.ui.SdoResponsiveGrid
 import com.kinderman.sdo.ui.SdoScreenMasthead
+import com.kinderman.sdo.ui.SdoTheme
+import com.kinderman.sdo.ui.SdoThemeVariant
 import com.kinderman.sdo.ui.SectionHeader
 import com.kinderman.sdo.ui.TechPanel
 import com.kinderman.sdo.ui.TelemetryTag
@@ -82,6 +86,7 @@ private enum class LibraryScopeFilter(val label: String) {
 
 private enum class LibraryKindFilter(val label: String) {
     ALL("Todas"),
+    DEITY("Deidades"),
     PATH("Caminhos"),
     POWER("Poderes"),
     MYSTIC("Místico"),
@@ -92,6 +97,7 @@ private enum class LibraryKindFilter(val label: String) {
 
 private fun LibraryKindFilter.matchesCatalog(kind: CatalogKind): Boolean = when (this) {
     LibraryKindFilter.ALL -> true
+    LibraryKindFilter.DEITY -> kind == CatalogKind.DEITY
     LibraryKindFilter.PATH -> kind == CatalogKind.PATH
     LibraryKindFilter.POWER -> kind == CatalogKind.POWER
     LibraryKindFilter.MYSTIC -> kind in setOf(CatalogKind.MAGIC, CatalogKind.RUNE, CatalogKind.ASH)
@@ -106,6 +112,7 @@ private fun LibraryKindFilter.matchesCatalog(kind: CatalogKind): Boolean = when 
 
 private fun LibraryKindFilter.matchesCampaignEntry(kind: CampaignContentKind): Boolean = when (this) {
     LibraryKindFilter.ALL -> true
+    LibraryKindFilter.DEITY -> false
     LibraryKindFilter.PATH -> false
     LibraryKindFilter.POWER -> kind == CampaignContentKind.POWER
     LibraryKindFilter.MYSTIC -> false
@@ -142,6 +149,7 @@ private fun CatalogKind.displayLabel(): String = when (this) {
     CatalogKind.ASH -> "CINZA"
     CatalogKind.RUNE -> "RUNA"
     CatalogKind.ITEM -> "ITEM"
+    CatalogKind.DEITY -> "DEIDADE"
     CatalogKind.ACQUIRED_KNOWLEDGE -> "CONHECIMENTO"
     CatalogKind.ARCANE_KNOWLEDGE -> "ARCANO"
     CatalogKind.BATTLE_TECHNIQUE -> "TÉCNICA"
@@ -174,7 +182,6 @@ private val sessionAdditionTypes = setOf(
     SessionOperationType.EFFECT_OPERATION,
 )
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun LibraryScreen(
     campaigns: List<Campaign>,
@@ -183,6 +190,9 @@ fun LibraryScreen(
     campaignLibrary: List<CampaignLibraryEntry>,
     audit: List<SessionOperation>,
     onBack: () -> Unit,
+    session: UserSession? = null,
+    memberships: List<CampaignMember> = emptyList(),
+    loadDeityDetail: suspend (String, String?) -> DeityDetailView? = { _, _ -> null },
 ) {
     BackHandler(onBack = onBack)
     var activeTab by rememberSaveable { mutableStateOf(LibraryTab.COMPENDIUM) }
@@ -193,7 +203,7 @@ fun LibraryScreen(
     var ruleSearch by rememberSaveable { mutableStateOf("") }
     var ruleCategory by rememberSaveable { mutableStateOf("Todas") }
     var ruleKeyword by rememberSaveable { mutableStateOf("Todas") }
-    var showFiltersDialog by rememberSaveable { mutableStateOf(false) }
+    var deityId by rememberSaveable { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val handbookRules = remember(context) { GameRulesGuide.load(context) }
 
@@ -259,6 +269,7 @@ fun LibraryScreen(
                 (ruleKeyword == "Todas" || keywords.any { it.equals(ruleKeyword, ignoreCase = true) }) &&
                 (ruleQuery.isBlank() ||
                     listOf(topic.title, topic.chapter, topic.part, topic.category, topic.summary)
+                        .asSequence()
                         .plus(keywords)
                         .plus(topic.formulas)
                         .plus(topic.scales)
@@ -303,41 +314,46 @@ fun LibraryScreen(
 
                 if (activeTab == LibraryTab.COMPENDIUM) {
                 item(key = "filters") {
-                    val activeFilterCount = (if (scopeFilter != LibraryScopeFilter.ALL) 1 else 0) +
-                        (if (kindFilter != LibraryKindFilter.ALL) 1 else 0) +
-                        (if (activeCampaignId.isNotBlank()) 1 else 0)
                     val total = filteredCampaignEntries.values.sumOf { it.size } +
                         filteredSessionAdditions.size +
                         filteredBaseEntries.size
                     TechPanel(accent = MaterialTheme.colorScheme.primary) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Bottom,
+                        HudTextField(
+                            label = "Buscar na biblioteca",
+                            value = search,
+                            placeholder = "Nome, efeito ou campanha",
+                            onValue = { search = it },
+                        )
+                        SdoCompactFilterBar(
+                            activeFilters = buildList {
+                                if (scopeFilter != LibraryScopeFilter.ALL) add(scopeFilter.label)
+                                if (kindFilter != LibraryKindFilter.ALL) add(kindFilter.label)
+                                campaignById[activeCampaignId]?.name?.let(::add)
+                            },
+                            onClear = {
+                                scopeFilter = LibraryScopeFilter.ALL
+                                kindFilter = LibraryKindFilter.ALL
+                                selectedCampaignId = ""
+                            },
+                            modifier = Modifier.testTag("library_filter_trigger"),
                         ) {
-                            HudTextField(
-                                label = "Buscar na biblioteca",
-                                value = search,
-                                placeholder = "Nome, efeito ou campanha",
-                                modifier = Modifier.weight(1f),
-                                onValue = { search = it },
-                            )
-                            com.kinderman.sdo.ui.SdoOutlinedButton(
-                                onClick = { showFiltersDialog = true },
-                                modifier = Modifier.testTag("library_filter_trigger"),
-                            ) {
-                                Text(if (activeFilterCount > 0) "Filtros ($activeFilterCount)" else "Filtros")
+                            SdoResponsiveGrid(LibraryScopeFilter.entries, minItemWidth = 112.dp) { option, modifier ->
+                                SdoFilterChip(option.label, scopeFilter == option, { scopeFilter = option }, modifier)
+                            }
+                            if (campaigns.isNotEmpty()) {
+                                ChoiceField(
+                                    label = "Campanha",
+                                    value = activeCampaignId,
+                                    options = campaignOptions,
+                                    enabled = true,
+                                    display = { campaignById[it]?.name ?: "Todas as campanhas" },
+                                ) { selectedCampaignId = it }
+                            }
+                            SdoResponsiveGrid(LibraryKindFilter.entries, minItemWidth = 116.dp) { option, modifier ->
+                                SdoFilterChip(option.label, kindFilter == option, { kindFilter = option }, modifier)
                             }
                         }
-                        val activeSummary = buildList {
-                            add(scopeFilter.label)
-                            if (activeCampaignId.isNotBlank()) add(campaignById[activeCampaignId]?.name ?: activeCampaignId)
-                            add(kindFilter.label)
-                        }.joinToString(" // ")
-                        SdoMetadataText(
-                            "$total REGISTROS // $activeSummary",
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+                        SdoMetadataText("$total REGISTROS")
                     }
                 }
 
@@ -453,7 +469,11 @@ fun LibraryScreen(
                             if (entry.summary.isNotBlank()) {
                                 Text(entry.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                             }
-                            CompendiumDetails(entry)
+                            if (entry.kind == CatalogKind.DEITY) {
+                                DeityDetailButton(onClick = { deityId = entry.id })
+                            } else {
+                                CompendiumDetails(entry)
+                            }
                         }
                     }
                 }
@@ -475,37 +495,45 @@ fun LibraryScreen(
                             HudTextField(
                                 label = "Buscar regra ou keyword",
                                 value = ruleSearch,
-                                placeholder = "Ex.: combate, ataque, ações, trauma, runas",
+                                placeholder = "Ex.: combate, deidades, pilares, trauma, runas",
                                 onValue = { ruleSearch = it },
                             )
-                            SdoMetadataText("KEYWORDS", color = MaterialTheme.colorScheme.primary)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            SdoCompactFilterBar(
+                                activeFilters = listOf(ruleKeyword, ruleCategory).filterNot { it == "Todas" },
+                                onClear = {
+                                    ruleKeyword = "Todas"
+                                    ruleCategory = "Todas"
+                                },
                             ) {
-                                GameRulesGuide.featuredKeywords.forEach { keyword ->
-                                    SdoFilterChip(
-                                        label = keyword,
-                                        selected = ruleKeyword == keyword,
-                                        onClick = { ruleKeyword = if (ruleKeyword == keyword) "Todas" else keyword },
-                                    )
+                                SdoMetadataText("KEYWORDS", color = MaterialTheme.colorScheme.primary)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    GameRulesGuide.featuredKeywords.forEach { keyword ->
+                                        SdoFilterChip(
+                                            label = keyword,
+                                            selected = ruleKeyword == keyword,
+                                            onClick = { ruleKeyword = if (ruleKeyword == keyword) "Todas" else keyword },
+                                        )
+                                    }
                                 }
-                            }
-                            SdoMetadataText("TEMA", color = MaterialTheme.colorScheme.secondary)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            ) {
-                                GameRulesGuide.categories.forEach { category ->
-                                    SdoFilterChip(
-                                        label = category,
-                                        selected = ruleCategory == category,
-                                        onClick = { ruleCategory = if (ruleCategory == category) "Todas" else category },
-                                    )
+                                SdoMetadataText("TEMA", color = MaterialTheme.colorScheme.secondary)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    GameRulesGuide.categories.forEach { category ->
+                                        SdoFilterChip(
+                                            label = category,
+                                            selected = ruleCategory == category,
+                                            onClick = { ruleCategory = if (ruleCategory == category) "Todas" else category },
+                                        )
+                                    }
                                 }
                             }
                             Row(
@@ -562,64 +590,19 @@ fun LibraryScreen(
             }
         }
     }
-    if (showFiltersDialog) {
-        AlertDialog(
-            onDismissRequest = { showFiltersDialog = false },
-            title = { Text("FILTROS DA BIBLIOTECA") },
-            text = {
-                Column(
-                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    SdoMetadataText("ORIGEM DOS DADOS", color = MaterialTheme.colorScheme.secondary)
-                    SdoResponsiveGrid(LibraryScopeFilter.entries, minItemWidth = 112.dp) { option, modifier ->
-                        SdoFilterChip(
-                            label = option.label,
-                            selected = scopeFilter == option,
-                            onClick = { scopeFilter = option },
-                            modifier = modifier,
-                        )
-                    }
-                    if (campaigns.isNotEmpty() && scopeFilter != LibraryScopeFilter.BASE) {
-                        ChoiceField(
-                            label = "Campanha",
-                            value = activeCampaignId,
-                            options = campaignOptions,
-                            enabled = true,
-                            display = { id ->
-                                if (id.isBlank()) "Todas as campanhas"
-                                else campaignById[id]?.name ?: id
-                            },
-                        ) { selectedCampaignId = it }
-                    }
-                    SdoMetadataText("CATEGORIA", color = MaterialTheme.colorScheme.secondary)
-                    SdoResponsiveGrid(LibraryKindFilter.entries, minItemWidth = 116.dp) { option, modifier ->
-                        SdoFilterChip(
-                            label = option.label,
-                            selected = kindFilter == option,
-                            onClick = { kindFilter = option },
-                            modifier = modifier,
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                com.kinderman.sdo.ui.SdoTextButton(onClick = { showFiltersDialog = false }) { Text("APLICAR") }
-            },
-            dismissButton = {
-                com.kinderman.sdo.ui.SdoTextButton(
-                    onClick = {
-                        scopeFilter = LibraryScopeFilter.ALL
-                        kindFilter = LibraryKindFilter.ALL
-                        selectedCampaignId = ""
-                    },
-                ) { Text("LIMPAR") }
-            },
+    deityId?.let { id ->
+        val campaignContext = DeityAccessPolicy.resolveLibraryCampaignContext(
+            session,
+            activeCampaignId,
+            campaigns,
+            memberships.filter { it.isActive && it.userId == session?.uid }
+                .mapTo(mutableSetOf()) { it.campaignId },
         )
+        val canShowGm = DeityAccessPolicy.canReadGmContent(session, campaignContext, campaignById)
+        DeityDetailDialog(id, campaignContext, session, canShowGm, loadDeityDetail) { deityId = null }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GameRuleCard(
     topic: GameRuleTopic,
@@ -633,7 +616,6 @@ private fun GameRuleCard(
 
     TechPanel(
         accent = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.clickable { expanded = !expanded },
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -648,11 +630,13 @@ private fun GameRuleCard(
                 )
                 SdoCardTitle(topic.title, color = MaterialTheme.colorScheme.onSurface)
             }
-            Icon(
-                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (isExpanded) "Recolher regra" else "Expandir regra",
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            SdoIconButton(onClick = { expanded = !expanded }, enabled = !forceExpanded) {
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "Recolher regra" else "Expandir regra",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
 
         if (keywords.isNotEmpty()) {
@@ -663,14 +647,7 @@ private fun GameRuleCard(
             ) {
                 keywords.forEach { keyword ->
                     val selected = activeKeyword.equals(keyword, ignoreCase = true)
-                    androidx.compose.foundation.layout.Box(
-                        modifier = Modifier.clickable { onSelectKeyword(keyword) },
-                    ) {
-                        TelemetryTag(
-                            text = "#${keyword.uppercase()}",
-                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                        )
-                    }
+                    SdoFilterChip("#${keyword.uppercase()}", selected, { onSelectKeyword(keyword) })
                 }
             }
         }
@@ -781,3 +758,18 @@ private fun GameRuleCard(
 
 private fun formatLibraryTime(timestamp: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(timestamp))
+
+@PreviewLightDark
+@Composable
+private fun LibraryScreenPreview() {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        LibraryScreen(
+            campaigns = listOf(Campaign(id = "camp-1", name = "Crônicas de Neon-4")),
+            characters = listOf(Character(id = "char-1", name = "Kaelen")),
+            catalog = emptyList(),
+            campaignLibrary = emptyList(),
+            audit = emptyList(),
+            onBack = {},
+        )
+    }
+}

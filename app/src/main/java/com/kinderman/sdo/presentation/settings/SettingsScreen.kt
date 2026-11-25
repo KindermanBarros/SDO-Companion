@@ -40,7 +40,9 @@ import com.kinderman.sdo.ui.SdoToggleOption
 import com.kinderman.sdo.ui.SdoTogglePanel
 import com.kinderman.sdo.ui.SdoVisualMode
 import com.kinderman.sdo.ui.TechPanel
+import com.kinderman.sdo.ui.SdoTheme
 import com.kinderman.sdo.ui.TelemetryTag
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -146,5 +148,17 @@ fun SettingsScreen(
 
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SettingsScreenPreview() {
+    SdoTheme(preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM)) {
+        SettingsScreen(
+            preferences = SdoPreferences(theme = SdoThemeVariant.SYSTEM),
+            onPreferencesChange = {},
+            onBack = {},
+        )
     }
 }

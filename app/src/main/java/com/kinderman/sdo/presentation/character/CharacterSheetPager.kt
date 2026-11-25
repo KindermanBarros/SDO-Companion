@@ -29,13 +29,17 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kinderman.sdo.R
+import com.kinderman.sdo.domain.model.derivedDivineEffects
 import androidx.compose.ui.unit.sp
 import com.kinderman.sdo.ui.AdaptiveSingleLineText
 import com.kinderman.sdo.domain.model.Character
@@ -77,8 +81,42 @@ internal fun CharacterSheetPager(
     onOpenPhotoPicker: () -> Unit = {},
     modifier: Modifier = Modifier,
     saveError: String? = null,
+    canChangeAscension: Boolean = false,
+    patronPresenca: Int? = null,
+    characters: List<Character> = emptyList(),
 ) {
-    val pages = SheetPage.entries
+    val conceptual = character.derivedDivineEffects().usesConceptualPillars
+    key(character.id, conceptual) {
+        CharacterSheetPages(
+            character, session, catalog, characters, editable, onChange, onOpenPhotoPicker,
+            modifier, saveError, canChangeAscension, conceptual, patronPresenca,
+        )
+    }
+}
+
+@Composable
+private fun CharacterSheetPages(
+    character: Character,
+    session: UserSession,
+    catalog: List<CatalogEntry>,
+    characters: List<Character>,
+    editable: Boolean,
+    onChange: (Character) -> Unit,
+    onOpenPhotoPicker: () -> Unit,
+    modifier: Modifier,
+    saveError: String?,
+    canChangeAscension: Boolean,
+    conceptual: Boolean,
+    patronPresenca: Int?,
+) {
+    val pages = if (conceptual) {
+        listOf(
+            SheetPage.PROFILE, SheetPage.POWERS, SheetPage.MYSTIC, SheetPage.INVENTORY,
+            SheetPage.RECORD, SheetPage.NOTES, SheetPage.HISTORY,
+        )
+    } else {
+        SheetPage.entries
+    }
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val pageScrollStates = pages.map { rememberLazyListState() }
     val scope = rememberCoroutineScope()
@@ -103,11 +141,14 @@ internal fun CharacterSheetPager(
                 character = character,
                 session = session,
                 catalog = catalog,
+                characters = characters,
                 editable = editable,
                 onChange = onChange,
                 onOpenPhotoPicker = onOpenPhotoPicker,
                 scrollState = pageScrollStates[pageIndex],
                 saveError = saveError,
+                canChangeAscension = canChangeAscension,
+                patronPresenca = patronPresenca,
             )
         }
     }
@@ -224,13 +265,17 @@ private fun SheetPageContent(
     character: Character,
     session: UserSession,
     catalog: List<CatalogEntry>,
+    characters: List<Character>,
     editable: Boolean,
     onChange: (Character) -> Unit,
     onOpenPhotoPicker: () -> Unit,
     scrollState: LazyListState,
     saveError: String?,
+    canChangeAscension: Boolean,
+    patronPresenca: Int?,
 ) {
     val compactCards = com.kinderman.sdo.ui.LocalSdoPreferences.current.compactCards
+    val showDivineInProfile = canChangeAscension || character.divineAscension.tier != com.kinderman.sdo.domain.model.DivineTier.MORTAL
     LazyColumn(
         Modifier.fillMaxSize(),
         state = scrollState,
@@ -241,6 +286,19 @@ private fun SheetPageContent(
             SheetPage.PROFILE -> {
                 item("hero") { SheetHero(character, session, saveError, editable = editable, onOpenPhotoPicker = onOpenPhotoPicker) }
                 item("identity") { com.kinderman.sdo.ui.CollapsibleSection("Identidade", "01") { IdentitySection(character, catalog, editable, onOpenPhotoPicker = onOpenPhotoPicker, onChange = onChange) } }
+                if (showDivineInProfile) {
+                    item("divine_profile") {
+                        CharacterDivineSection(
+                            character = character,
+                            catalog = catalog,
+                            editable = editable,
+                            canChangeAscension = canChangeAscension,
+                            onChange = onChange,
+                            patronPresenca = patronPresenca,
+                            characters = characters,
+                        )
+                    }
+                }
                 item("resources") { com.kinderman.sdo.ui.CollapsibleSection("Recursos", "02") { ResourceSection(character, editable, onChange) } }
                 item("traits") { com.kinderman.sdo.ui.CollapsibleSection("Traços", "03") { TraitSection(character, editable, onChange) } }
             }
@@ -284,6 +342,17 @@ private fun SheetPageContent(
 
             SheetPage.RECORD -> {
                 item("conditions") { com.kinderman.sdo.ui.CollapsibleSection("Condições", "13") { ConditionSection(character, editable, onChange) } }
+                item("divine_marks") {
+                    com.kinderman.sdo.ui.CollapsibleSection("Marcas divinas", "13B") {
+                        CharacterDivineMarksConditionPanel(
+                            character = character,
+                            catalog = catalog,
+                            characters = characters,
+                            enabled = editable,
+                            onChange = onChange,
+                        )
+                    }
+                }
             }
 
             SheetPage.TRANSPORT -> item("transport") {

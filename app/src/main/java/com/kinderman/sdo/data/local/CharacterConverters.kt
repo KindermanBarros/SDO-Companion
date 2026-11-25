@@ -54,6 +54,8 @@ import com.kinderman.sdo.domain.model.AbilityCatalogId
 import com.kinderman.sdo.domain.model.AuditableChoice
 import com.kinderman.sdo.domain.model.CatalogEntryId
 import com.kinderman.sdo.domain.model.CatalogReference
+import com.kinderman.sdo.domain.model.CharacterDivineAscension
+import com.kinderman.sdo.domain.model.CharacterDivineRuntime
 import com.kinderman.sdo.domain.model.CharacterProgression
 import com.kinderman.sdo.domain.model.ChoiceKind
 import com.kinderman.sdo.domain.model.EntityId
@@ -127,6 +129,24 @@ class CharacterConverters {
         ?.let { runCatching { canonicalJson.decodeFromString(ListSerializer(ScopedItemDefinition.serializer()), it) }.getOrDefault(emptyList()) }.orEmpty()
     fun isScopedItemCatalogPayloadValid(value: String): Boolean = value.isBlank() ||
         runCatching { canonicalJson.decodeFromString(ListSerializer(ScopedItemDefinition.serializer()), value) }.isSuccess
+
+    fun divineAscensionToString(value: CharacterDivineAscension): String =
+        if (value == CharacterDivineAscension()) ""
+        else canonicalJson.encodeToString(CharacterDivineAscension.serializer(), value)
+
+    fun stringToDivineAscension(value: String): CharacterDivineAscension =
+        value.takeIf(String::isNotBlank)
+            ?.let { runCatching { canonicalJson.decodeFromString(CharacterDivineAscension.serializer(), it) }.getOrNull() }
+            ?: CharacterDivineAscension()
+
+    fun divineRuntimeToString(value: CharacterDivineRuntime): String =
+        if (value == CharacterDivineRuntime()) ""
+        else canonicalJson.encodeToString(CharacterDivineRuntime.serializer(), value)
+
+    fun stringToDivineRuntime(value: String): CharacterDivineRuntime =
+        value.takeIf(String::isNotBlank)
+            ?.let { runCatching { canonicalJson.decodeFromString(CharacterDivineRuntime.serializer(), it) }.getOrNull() }
+            ?: CharacterDivineRuntime()
 
     @Serializable
     private data class ChoicePayload(

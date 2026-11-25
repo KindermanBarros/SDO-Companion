@@ -1,0 +1,9 @@
+﻿<resources>
+    <string name="compact_filters_show">Filtros</string>
+    <string name="compact_filters_hide">Recolher filtros</string>
+    <string name="compact_filters_clear">Limpar filtros</string>
+    <string name="deity_open_detail">Ver detalhes da deidade</string>
+    <string name="deity_detail_loading">Carregando deidade…</string>
+    <string name="deity_detail_unavailable">Detalhes indisponíveis.</string>
+    <string name="deity_detail_close">Fechar</string>
+</resources>
